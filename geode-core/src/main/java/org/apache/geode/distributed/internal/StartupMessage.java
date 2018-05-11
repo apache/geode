@@ -364,7 +364,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
   /**
    * Notes a problem that occurs while invoking {@link #fromData}.
    */
-  private void fromDataProblem(String s) {
+  private void recordFromDataProblem(String s) {
     if (this.fromDataProblems == null) {
       this.fromDataProblems = new StringBuffer();
     }
@@ -392,7 +392,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
           InternalDataSerializer.register(cName, false, null, null, id);
         }
       } catch (IllegalArgumentException ex) {
-        fromDataProblem(
+        recordFromDataProblem(
             LocalizedStrings.StartupMessage_ILLEGALARGUMENTEXCEPTION_WHILE_REGISTERING_A_DATASERIALIZER_0
                 .toLocalizedString(ex));
       }
@@ -409,7 +409,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
           InternalInstantiator.register(instantiatorClassName, instantiatedClassName, id, false);
         }
       } catch (IllegalArgumentException ex) {
-        fromDataProblem(
+        recordFromDataProblem(
             LocalizedStrings.StartupMessage_ILLEGALARGUMENTEXCEPTION_WHILE_REGISTERING_AN_INSTANTIATOR_0
                 .toLocalizedString(ex));
       }

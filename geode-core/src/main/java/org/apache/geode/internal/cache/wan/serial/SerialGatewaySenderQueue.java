@@ -1221,7 +1221,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     @Override
-    protected boolean shouldNotifyBridgeClients() {
+    public boolean shouldNotifyBridgeClients() {
       return false;
     }
 

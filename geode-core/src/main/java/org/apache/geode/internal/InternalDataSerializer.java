@@ -828,7 +828,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    *
    * @see DataSerializer#register(Class)
    */
-  private static DataSerializer newInstance(Class c) {
+  static DataSerializer newInstance(Class c) {
     if (!DataSerializer.class.isAssignableFrom(c)) {
       throw new IllegalArgumentException(
           LocalizedStrings.DataSerializer_0_DOES_NOT_EXTEND_DATASERIALIZER
@@ -1019,7 +1019,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   /**
    * Marks a {@code DataSerializer} className for registration with the data serialization
-   * framework. Does not necessarily load the classes into this VM.
+   * framework if and when it is needed. Does not necessarily load the classes into this VM.
    *
    * @param className Name of the DataSerializer class.
    * @param distribute If true, distribute this data serializer.
@@ -1073,18 +1073,38 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
-  public static void updateSupportedClassesMap(HashMap<Integer, ArrayList<String>> map) {
-    for (Entry<Integer, ArrayList<String>> e : map.entrySet()) {
+  /**
+   * During client/server handshakes the server may send a collection of DataSerializers and
+   * the classes they support. The DataSerializers are registered as "holders" to avoid loading the
+   * actual classes until they're needed. This method registers the names of classes supported
+   * by the DataSerializers
+   *
+   * @param map The classes returned by DataSerializer.supportedClasses()
+   */
+  public static void updateSupportedClassesMap(Map<Integer, List<String>> map) {
+    for (Entry<Integer, List<String>> e : map.entrySet()) {
       for (String supportedClassName : e.getValue()) {
-        supportedClassesToHolders.putIfAbsent(supportedClassName, idsToHolders.get(e.getKey()));
+        SerializerAttributesHolder serializerAttributesHolder = idsToHolders.get(e.getKey());
+        if (serializerAttributesHolder != null) {
+          supportedClassesToHolders.putIfAbsent(supportedClassName, serializerAttributesHolder);
+        }
       }
     }
   }
 
   public static void updateSupportedClassesMap(String dsClassName, String supportedClassName) {
-    supportedClassesToHolders.putIfAbsent(supportedClassName, dsClassesToHolders.get(dsClassName));
+    SerializerAttributesHolder holder = dsClassesToHolders.get(dsClassName);
+    if (holder != null) {
+      supportedClassesToHolders.putIfAbsent(supportedClassName, holder);
+    }
   }
 
+  /**
+   * A SerializerAttributesHolder holds information required to load a DataSerializer
+   * and exists to allow client/server connections to be created more quickly than
+   * they would if the DataSerializer information downloaded from the server were
+   * used to immediately load the corresponding classes.
+   */
   public static class SerializerAttributesHolder {
     private String className = "";
     private EventID eventId = null;

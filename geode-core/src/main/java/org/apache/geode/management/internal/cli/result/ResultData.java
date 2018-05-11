@@ -25,11 +25,22 @@ public interface ResultData {
   String RESULT_CONTENT = "content";
   String RESULT_FOOTER = "footer";
 
-
   String TYPE_COMPOSITE = "composite";
   String TYPE_ERROR = "error";
   String TYPE_INFO = "info";
   String TYPE_TABULAR = "table";
+  String TYPE_MODEL = "model";
+
+  String SECTION_DATA_ACCESSOR = "__sections__";
+  String TABLE_DATA_ACCESSOR = "__tables__";
+  String BYTE_DATA_ACCESSOR = "__bytes__";
+  int FILE_TYPE_BINARY = 0;
+  int FILE_TYPE_TEXT = 1;
+  String FILE_NAME_FIELD = "fileName";
+  String FILE_TYPE_FIELD = "fileType";
+  String FILE_DATA_FIELD = "fileData";
+  String DATA_LENGTH_FIELD = "dataLength";
+  String FILE_MESSAGE = "fileMessage";
 
   String getHeader();
 

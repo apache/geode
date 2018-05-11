@@ -887,7 +887,7 @@ public abstract class DynamicRegionFactory {
 
     // while internal, its contents should be communicated with bridge clients
     @Override
-    protected boolean shouldNotifyBridgeClients() {
+    public boolean shouldNotifyBridgeClients() {
       return getCache().getCacheServers().size() > 0;
     }
 

@@ -94,12 +94,14 @@ public class DestroyConnectionFunctionTest {
   public void destroyConnectionConfigReturnsTrueIfConnectionDestroyed() {
     when(service.getConnectionConfig(eq(connectionName))).thenReturn(configuration);
 
-    assertThat(function.destroyConnectionConfig(service, connectionName)).isTrue();
+    CliFunctionResult result = function.executeFunction(context);
+    assertThat(result.isSuccessful()).isTrue();
   }
 
   @Test
   public void destroyConnectionConfigReturnsFalseIfConnectionDoesNotExist() {
-    assertThat(function.destroyConnectionConfig(service, connectionName)).isFalse();
+    CliFunctionResult result = function.executeFunction(context);
+    assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test

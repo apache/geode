@@ -38,6 +38,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -350,6 +351,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey);
 
+  void txApplyPutPart2(RegionEntry regionEntry, Object key, long lastModified, boolean isCreate,
+      boolean didDestroy, boolean clearConflict);
+
+  void txApplyPutHandleDidDestroy(Object key);
+
   void handleReliableDistribution(Set successfulRecipients);
 
   StoppableCountDownLatch getInitializationLatchBeforeGetInitialImage();
@@ -379,4 +385,16 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   RegionTTLExpiryTask getRegionTTLExpiryTask();
 
   RegionIdleExpiryTask getRegionIdleExpiryTask();
+
+  boolean isAllEvents();
+
+  boolean shouldDispatchListenerEvent();
+
+  boolean shouldNotifyBridgeClients();
+
+  default Set adviseNetWrite() {
+    return null;
+  }
+
+  EvictionController getEvictionController();
 }

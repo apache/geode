@@ -27,24 +27,23 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-class InheritsDefaultPermissionsJDBCFunction extends JdbcCliFunction<String, CliFunctionResult> {
+class InheritsDefaultPermissionsJDBCFunction extends CliFunction<String> {
 
   InheritsDefaultPermissionsJDBCFunction() {
     super();
   }
 
   @Override
-  CliFunctionResult getFunctionResult(JdbcConnectorService service,
-      FunctionContext<String> context) {
-    return new CliFunctionResult();
+  public CliFunctionResult executeFunction(FunctionContext<String> context) {
+    return new CliFunctionResult("some-member", true, "some-message");
   }
 }
 

@@ -55,6 +55,7 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
     this.uniqId = uniqId;
   }
 
+  @Override
   public InternalDistributedMember getMemberId() {
     return this.memberId;
   }

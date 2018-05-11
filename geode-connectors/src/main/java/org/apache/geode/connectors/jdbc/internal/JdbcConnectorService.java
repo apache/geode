@@ -16,10 +16,11 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.util.Set;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.CacheService;
 
-
+@Experimental
 public interface JdbcConnectorService extends CacheService {
 
   void createConnectionConfig(ConnectorService.Connection config)

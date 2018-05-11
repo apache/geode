@@ -20,6 +20,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.DistributedMember;
@@ -31,10 +32,11 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
-      "Create a mapping for a region for use with a JDBC database connection.";
+      EXPERIMENTAL + "Create a mapping for a region for use with a JDBC database connection.";
   static final String CREATE_MAPPING__REGION_NAME = "region";
   static final String CREATE_MAPPING__REGION_NAME__HELP =
       "Name of the region the mapping is being created for.";
@@ -81,7 +83,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateMappingFunction(), mapping, targetMembers);
 
-    ResultModel result = ResultModel.createMemberStatusResult(results);
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
     result.setConfigObject(mapping);
     return result;
   }

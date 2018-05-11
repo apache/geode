@@ -18,6 +18,8 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.util.Objects;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -56,12 +58,16 @@ import org.apache.geode.annotations.Experimental;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "parameter-type", namespace = "http://geode.apache.org/schema/cache")
 @Experimental
-public class ParameterType extends RegionConfig.Entry.Type {
+public class ParameterType extends ObjectType {
 
   @XmlAttribute(name = "name", required = true)
   protected String name;
 
   public ParameterType() {};
+
+  public ParameterType(String name) {
+    this.name = name;
+  }
 
   public ParameterType(String name, String value) {
     this.name = name;
@@ -90,4 +96,25 @@ public class ParameterType extends RegionConfig.Entry.Type {
     this.name = value;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ParameterType that = (ParameterType) o;
+    return Objects.equals(name, that.name) && super.equals(o);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name);
+  }
+
+  @Override
+  public String toString() {
+    return name + ":" + super.toString();
+  }
 }

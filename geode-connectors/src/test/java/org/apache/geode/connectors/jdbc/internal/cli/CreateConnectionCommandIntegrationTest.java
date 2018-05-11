@@ -101,6 +101,7 @@ public class CreateConnectionCommandIntegrationTest {
     }
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+
     assertThat(service.getConnectionConfig(name)).isSameAs(connectionConfig);
   }
 

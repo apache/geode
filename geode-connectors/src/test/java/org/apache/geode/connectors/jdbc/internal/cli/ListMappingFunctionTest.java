@@ -107,7 +107,7 @@ public class ListMappingFunctionTest {
     expected.add(regionMapping3);
 
     Set<ConnectorService.RegionMapping> actual =
-        function.getFunctionResult(service, mock(FunctionContext.class));
+        (Set<ConnectorService.RegionMapping>) function.executeFunction(context).getResultObject();
 
     assertThat(actual).containsExactlyInAnyOrder(regionMapping1, regionMapping2, regionMapping3);
   }
@@ -115,7 +115,7 @@ public class ListMappingFunctionTest {
   @Test
   public void getRegionMappingsReturnsEmpty() {
     Set<ConnectorService.RegionMapping> actual =
-        function.getFunctionResult(service, mock(FunctionContext.class));
+        (Set<ConnectorService.RegionMapping>) function.executeFunction(context).getResultObject();
 
     assertThat(actual).isEmpty();
   }
@@ -128,21 +128,20 @@ public class ListMappingFunctionTest {
 
     function.execute(context);
 
-    ArgumentCaptor<Set<ConnectorService.RegionMapping>> argument =
-        ArgumentCaptor.forClass(Set.class);
+    ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue()).containsExactlyInAnyOrder(regionMapping1, regionMapping2,
-        regionMapping3);
+    Set<ConnectorService.RegionMapping> mappings =
+        (Set<ConnectorService.RegionMapping>) argument.getValue().getResultObject();
+    assertThat(mappings).containsExactlyInAnyOrder(regionMapping1, regionMapping2, regionMapping3);
   }
 
   @Test
   public void executeReturnsEmptyResultForNoRegionMappings() {
     function.execute(context);
 
-    ArgumentCaptor<Set<ConnectorService.RegionMapping>> argument =
-        ArgumentCaptor.forClass(Set.class);
+    ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue()).isEmpty();
+    assertThat((Set) argument.getValue().getResultObject()).isEmpty();
   }
 
   @Test
@@ -164,7 +163,6 @@ public class ListMappingFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus()).contains("some message")
-        .doesNotContain(IllegalArgumentException.class.getName());
+    assertThat(argument.getValue().getStatus()).contains("some message");
   }
 }

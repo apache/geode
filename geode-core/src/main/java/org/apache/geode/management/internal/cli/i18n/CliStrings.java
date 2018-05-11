@@ -1838,7 +1838,7 @@ public class CliStrings {
   public static final String QUERY__INTERACTIVE__HELP =
       "Deprecated: Since Geode 1.4. This option has no effect, but is kept around to maintain backwards compatibility with existing scripts.";
   public static final String QUERY__MSG__QUERY_EMPTY = "Query is either empty or Null";
-  public static final String QUERY__MSG__INVALID_QUERY = "Query is invalid due for error : <{0}>";
+  public static final String QUERY__MSG__INVALID_QUERY = "Query is invalid due to error : <{0}>";
   public static final String QUERY__MSG__REGIONS_NOT_FOUND =
       "Cannot find regions <{0}> in any of the members";
   public static final String QUERY__MSG__NOT_SUPPORTED_ON_MEMBERS = CliStrings.QUERY

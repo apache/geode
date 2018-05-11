@@ -20,13 +20,13 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__URL;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
@@ -35,19 +35,21 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class DescribeConnectionCommand extends GfshCommand {
   private static Logger logger = LogService.getLogger();
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
-  static final String DESCRIBE_CONNECTION__HELP = "Describe the specified jdbc connection.";
+  static final String DESCRIBE_CONNECTION__HELP =
+      EXPERIMENTAL + "Describe the specified jdbc connection .";
   static final String DESCRIBE_CONNECTION__NAME = "name";
   static final String DESCRIBE_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be described.";
@@ -59,8 +61,8 @@ public class DescribeConnectionCommand extends GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result describeConnection(@CliOption(key = DESCRIBE_CONNECTION__NAME, mandatory = true,
-      help = DESCRIBE_CONNECTION__NAME__HELP) String name) {
+  public ResultModel describeConnection(@CliOption(key = DESCRIBE_CONNECTION__NAME,
+      mandatory = true, help = DESCRIBE_CONNECTION__NAME__HELP) String name) {
     ConnectorService.Connection connection = null;
 
     // check if CC is available and use it to describe the connection
@@ -79,42 +81,40 @@ public class DescribeConnectionCommand extends GfshCommand {
       Set<DistributedMember> members = findMembers(null, null);
       if (members.size() > 0) {
         DistributedMember targetMember = members.iterator().next();
-        List<?> result =
-            (List<?>) executeFunction(new DescribeConnectionFunction(), name, targetMember)
-                .getResult();
-        if (!result.isEmpty()) {
-          connection = (ConnectorService.Connection) result.get(0);
+        CliFunctionResult result = executeFunctionAndGetFunctionResult(
+            new DescribeConnectionFunction(), name, targetMember);
+        if (result != null) {
+          connection = (ConnectorService.Connection) result.getResultObject();
         }
       }
     }
 
     if (connection == null) {
-      throw new EntityNotFoundException("connection named '" + name + "' not found");
+      throw new EntityNotFoundException(
+          EXPERIMENTAL + "\n" + "connection named '" + name + "' not found");
     }
 
-    CompositeResultData resultData = ResultBuilder.createCompositeResultData();
-    fillResultData(connection, resultData);
-    return ResultBuilder.buildResult(resultData);
+    ResultModel resultModel = new ResultModel();
+    fillResultData(connection, resultModel);
+    resultModel.setHeader(EXPERIMENTAL);
+    return resultModel;
   }
 
-  private void fillResultData(ConnectorService.Connection connection,
-      CompositeResultData resultData) {
-    CompositeResultData.SectionResultData sectionResult =
-        resultData.addSection(RESULT_SECTION_NAME);
-    sectionResult.addSeparator('-');
-    sectionResult.addData(CREATE_CONNECTION__NAME, connection.getName());
-    sectionResult.addData(CREATE_CONNECTION__URL, connection.getUrl());
+  private void fillResultData(ConnectorService.Connection connection, ResultModel resultModel) {
+    DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
+    sectionModel.addData(CREATE_CONNECTION__NAME, connection.getName());
+    sectionModel.addData(CREATE_CONNECTION__URL, connection.getUrl());
     if (connection.getUser() != null) {
-      sectionResult.addData(CREATE_CONNECTION__USER, connection.getUser());
+      sectionModel.addData(CREATE_CONNECTION__USER, connection.getUser());
     }
     if (connection.getPassword() != null) {
-      sectionResult.addData(CREATE_CONNECTION__PASSWORD, OBSCURED_PASSWORD);
+      sectionModel.addData(CREATE_CONNECTION__PASSWORD, OBSCURED_PASSWORD);
     }
-    TabularResultData tabularResultData = sectionResult.addTable(CREATE_CONNECTION__PARAMS);
-    tabularResultData.setHeader("Additional connection parameters:");
+    TabularResultModel tabularResultModel = resultModel.addTable(CREATE_CONNECTION__PARAMS);
+    tabularResultModel.setHeader("Additional connection parameters:");
     connection.getParameterMap().entrySet().forEach((entry) -> {
-      tabularResultData.accumulate("Param Name", entry.getKey());
-      tabularResultData.accumulate("Value", entry.getValue());
+      tabularResultModel.accumulate("Param Name", entry.getKey());
+      tabularResultModel.accumulate("Value", entry.getValue());
     });
   }
 }

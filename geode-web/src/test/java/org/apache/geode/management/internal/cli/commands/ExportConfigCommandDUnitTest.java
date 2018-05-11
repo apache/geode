@@ -39,6 +39,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class ExportConfigCommandDUnitTest {
+
   @Rule
   public ClusterStartupRule startupRule = new ClusterStartupRule().withLogFile();
 

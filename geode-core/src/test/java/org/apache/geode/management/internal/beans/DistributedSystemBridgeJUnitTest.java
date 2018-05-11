@@ -14,16 +14,23 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__GATEWAYSENDER_MXBEAN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Map;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +47,8 @@ import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.backup.FinishBackupRequest;
 import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -49,8 +58,13 @@ public class DistributedSystemBridgeJUnitTest {
   private GemFireCacheImpl cache;
   private BackupService backupService;
 
+  private DistributedSystemBridge bridge;
+
+  private ObjectName name1, name2, name3, name4;
+  private GatewaySenderMXBean bean1, bean2, bean3, bean4;
+
   @Before
-  public void createCache() throws IOException {
+  public void createCache() throws MalformedObjectNameException {
     cache = Fakes.cache();
     PersistentMemberManager memberManager = mock(PersistentMemberManager.class);
     backupService = mock(BackupService.class);
@@ -62,6 +76,31 @@ public class DistributedSystemBridgeJUnitTest {
     when(dlock.lock(any(), anyLong(), anyLong())).thenReturn(true);
 
     DLockService.addLockServiceForTests(BackupDataStoreHelper.LOCK_SERVICE_NAME, dlock);
+
+    name1 = ObjectName
+        .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender1", "server1"));
+    name2 = ObjectName
+        .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender2", "server2"));
+    name3 = ObjectName
+        .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender3", "server3"));
+    name4 = ObjectName
+        .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender4", "server4"));
+
+    bean1 = mock(GatewaySenderMXBean.class);
+    bean2 = mock(GatewaySenderMXBean.class);
+    bean3 = mock(GatewaySenderMXBean.class);
+    bean4 = mock(GatewaySenderMXBean.class);
+
+    doReturn(2).when(bean1).getRemoteDSId();
+    doReturn(2).when(bean2).getRemoteDSId();
+    doReturn(3).when(bean3).getRemoteDSId();
+    doReturn(3).when(bean4).getRemoteDSId();
+
+    bridge = new DistributedSystemBridge(null, cache);
+    bridge.addGatewaySenderToSystem(name1, bean1, mock(FederationComponent.class));
+    bridge.addGatewaySenderToSystem(name2, bean2, mock(FederationComponent.class));
+    bridge.addGatewaySenderToSystem(name3, bean3, mock(FederationComponent.class));
+    bridge.addGatewaySenderToSystem(name4, bean4, mock(FederationComponent.class));
   }
 
   @After
@@ -73,7 +112,6 @@ public class DistributedSystemBridgeJUnitTest {
   public void testSuccessfulBackup() throws Exception {
     DistributionManager dm = cache.getDistributionManager();
 
-    DistributedSystemBridge bridge = new DistributedSystemBridge(null, cache);
     bridge.backupAllMembers("/tmp", null);
 
     InOrder inOrder = inOrder(dm, backupService);
@@ -94,8 +132,6 @@ public class DistributedSystemBridgeJUnitTest {
     when(dm.putOutgoing(isA(PrepareBackupRequest.class)))
         .thenThrow(new RuntimeException("Fail the prepare"));
 
-
-    DistributedSystemBridge bridge = new DistributedSystemBridge(null, cache);
     try {
       bridge.backupAllMembers("/tmp", null);
       fail("Should have failed with an exception");
@@ -104,5 +140,101 @@ public class DistributedSystemBridgeJUnitTest {
 
     verify(dm).putOutgoing(isA(AbortBackupRequest.class));
     verify(backupService).abortBackup();
+  }
+
+  @Test
+  public void viewClusterStatusShouldBeTrueIfAllParallelSendersAreConnected() {
+    // parallel senders for dsid = 2
+    doReturn(true).when(bean1).isParallel();
+    doReturn(true).when(bean1).isConnected();
+    doReturn(true).when(bean2).isParallel();
+    doReturn(true).when(bean2).isConnected();
+
+    // parallel senders for dsid = 3
+    doReturn(true).when(bean3).isParallel();
+    doReturn(true).when(bean3).isConnected();
+    doReturn(true).when(bean4).isParallel();
+    doReturn(true).when(bean4).isConnected();
+
+    Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
+    assertThat(status.keySet()).hasSize(2);
+    assertThat(status.keySet()).contains("2", "3");
+    assertThat(status.values()).contains(true, true);
+  }
+
+  @Test
+  public void viewClusterStatusShouldBeFalseIfAnyParallelSendersIsNotConnected() {
+    // parallel senders for dsid = 2
+    doReturn(true).when(bean1).isParallel();
+    doReturn(true).when(bean1).isConnected();
+    doReturn(true).when(bean2).isParallel();
+    doReturn(true).when(bean2).isConnected();
+
+    // parallel senders for dsid = 3
+    doReturn(true).when(bean3).isParallel();
+    doReturn(true).when(bean3).isConnected();
+    doReturn(true).when(bean4).isParallel();
+    doReturn(false).when(bean4).isConnected();
+
+    Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
+    assertThat(status.keySet()).hasSize(2);
+    assertThat(status.keySet()).contains("2", "3");
+    assertThat(status.values()).contains(true, false);
+  }
+
+  @Test
+  public void viewClusterStatusShouldBeTrueIfASerialPrimaryIsConnected() {
+    // serial primary for dsid = 2
+    doReturn(false).when(bean1).isParallel();
+    doReturn(true).when(bean1).isPrimary();
+    doReturn(true).when(bean1).isConnected();
+
+    // serial secondary for dsid = 2
+    doReturn(false).when(bean2).isParallel();
+    doReturn(false).when(bean2).isPrimary();
+    doReturn(false).when(bean2).isConnected();
+
+    // serial primary for dsid = 3
+    doReturn(false).when(bean3).isParallel();
+    doReturn(true).when(bean3).isPrimary();
+    doReturn(true).when(bean3).isConnected();
+
+    // serial secondary for dsid = 3
+    doReturn(false).when(bean4).isParallel();
+    doReturn(false).when(bean4).isPrimary();
+    doReturn(false).when(bean4).isConnected();
+
+    Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
+    assertThat(status.keySet()).hasSize(2);
+    assertThat(status.keySet()).contains("2", "3");
+    assertThat(status.values()).contains(true, true);
+  }
+
+  @Test
+  public void viewClusterStatusShouldBeFalseIfASerialPrimaryIsNotConnected() {
+    // serial primary for dsid = 2
+    doReturn(false).when(bean1).isParallel();
+    doReturn(true).when(bean1).isPrimary();
+    doReturn(true).when(bean1).isConnected();
+
+    // serial secondary for dsid = 2
+    doReturn(false).when(bean2).isParallel();
+    doReturn(false).when(bean2).isPrimary();
+    doReturn(false).when(bean2).isConnected();
+
+    // serial primary for dsid = 3
+    doReturn(false).when(bean3).isParallel();
+    doReturn(true).when(bean3).isPrimary();
+    doReturn(false).when(bean3).isConnected();
+
+    // serial secondary for dsid = 3
+    doReturn(false).when(bean4).isParallel();
+    doReturn(false).when(bean4).isPrimary();
+    doReturn(true).when(bean4).isConnected();
+
+    Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
+    assertThat(status.keySet()).hasSize(2);
+    assertThat(status.keySet()).contains("2", "3");
+    assertThat(status.values()).contains(true, false);
   }
 }

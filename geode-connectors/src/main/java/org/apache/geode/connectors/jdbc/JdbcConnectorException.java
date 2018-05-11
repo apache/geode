@@ -21,10 +21,10 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.geode.cache.CacheRuntimeException;
 
 /**
- * An exception thrown when communication with an external JDBC data source fails and can be used to
- * diagnose the cause of database communication failures. In cases where the cause of this exception
- * is not safe to serialize to clients, the stack trace is included in the message of the exception
- * and the cause is left empty.
+ * An exception thrown when communication with an external JDBC data source fails and can be used
+ * to diagnose the cause of database communication failures. In cases where the cause of this
+ * exception is not safe to serialize to clients, the stack trace is included in the message of the
+ * exception and the cause is left empty.
  *
  * @since Geode 1.5
  */
