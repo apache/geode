@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Map;
-
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -26,14 +24,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.dto.Car;
 import org.apache.geode.management.internal.cli.dto.Key;
 import org.apache.geode.management.internal.cli.dto.Key1;
 import org.apache.geode.management.internal.cli.dto.ObjectWithCharAttr;
 import org.apache.geode.management.internal.cli.dto.Value;
 import org.apache.geode.management.internal.cli.dto.Value2;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -99,7 +95,7 @@ public class PutCommandIntegrationTest {
 
   @Test
   // Bug : 51587 : GFSH command failing when ; is present in either key or value in put operation
-  public void putWithSemicolon() throws Exception {
+  public void putWithSemicoln() throws Exception {
     gfsh.executeAndAssertThat("put --region=/testRegion --key=key1;key1 --value=value1;value1")
         .statusIsSuccess().containsKeyValuePair("Result", "true");
     assertThat(server.getCache().getRegion("testRegion").get("key1;key1"))
@@ -112,11 +108,8 @@ public class PutCommandIntegrationTest {
     gfsh.executeAndAssertThat("help put").statusIsSuccess()
         .containsOutput("(Deprecated: Use --if-not-exists).");
 
-    CommandResult result =
-        gfsh.executeCommand("put --region=/testRegion --key=key1 --value=value1");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    Map<String, String> data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value1")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
 
     // if unspecified then override
     gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value2")
@@ -137,30 +130,10 @@ public class PutCommandIntegrationTest {
 
   @Test
   public void putWithSimpleJson() throws Exception {
-    CommandResult result = gfsh.executeCommand(
-        "put --region=testRegion --key=('key':'1') --value=('value':'1') " + "--key-class="
-            + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    Map<String, String> data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-  }
-
-  @Test
-  public void putWithCorrectJsonSyntax() throws Exception {
-    CommandResult result = gfsh.executeCommand(
-        "put --region=testRegion --key={\"key\":\"1\"} --value={\"value\":\"1\"} " + "--key-class="
-            + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    Map<String, String> data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-  }
-
-  @Test
-  public void putWithInvalidJson() throws Exception {
     gfsh.executeAndAssertThat(
-        "put --region=testRegion --key=('key':'1') --value=(value:2) " + "--key-class="
+        "put --region=testRegion --key=('key':'1') --value=('value':'1') " + "--key-class="
             + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName())
-        .statusIsError().containsOutput("Failed to convert input key");
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
   }
 
   @Test
@@ -175,11 +148,7 @@ public class PutCommandIntegrationTest {
     String command =
         "put --region=testRegion --key=" + keyJson + " --value=" + stateJson + " --key-class="
             + Key1.class.getCanonicalName() + " --value-class=" + Value2.class.getCanonicalName();
-    CommandResult result = gfsh.executeCommand(command);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    Map<String, String> data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     // put the car json
     String list = "['red','white','blue']";
@@ -190,19 +159,11 @@ public class PutCommandIntegrationTest {
     valueJson = valueJson.replaceAll("\\?map", map);
     command = "put --region=testRegion --key=" + keyJson + " --value=" + valueJson + " --key-class="
         + Key1.class.getCanonicalName() + " --value-class=" + Car.class.getCanonicalName();
-    result = gfsh.executeCommand(command);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     // put with json with single character field
     command = "put --region=testRegion --key-class=" + ObjectWithCharAttr.class.getCanonicalName()
         + " --value=456 --key=('name':'hesdfdsfy2','t':456,'c':'d')";
-    result = gfsh.executeCommand(command);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 }

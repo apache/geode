@@ -38,13 +38,15 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -53,7 +55,7 @@ public class QueryCommand extends InternalGfshCommand {
 
   @CliCommand(value = "query", help = CliStrings.QUERY__HELP)
   @CliMetaData(interceptor = "org.apache.geode.management.internal.cli.commands.QueryInterceptor")
-  public ResultModel query(
+  public Result query(
       @CliOption(key = CliStrings.QUERY__QUERY, help = CliStrings.QUERY__QUERY__HELP,
           mandatory = true) final String query,
       @CliOption(key = "file", help = "File in which to output the results.",
@@ -61,7 +63,8 @@ public class QueryCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.QUERY__INTERACTIVE, unspecifiedDefaultValue = "false",
           help = CliStrings.QUERY__INTERACTIVE__HELP) final boolean interactive) {
     DataCommandResult dataResult = select(query);
-    return dataResult.toSelectCommandResult();
+    CompositeResultData rd = dataResult.toSelectCommandResult();
+    return ResultBuilder.buildResult(rd);
   }
 
   private DataCommandResult select(String query) {

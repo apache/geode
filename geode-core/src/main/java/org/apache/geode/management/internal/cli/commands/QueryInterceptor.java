@@ -19,32 +19,34 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.springframework.shell.event.ParseResult;
 
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.InfoResultData;
+import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
 
 public class QueryInterceptor extends AbstractCliAroundInterceptor {
   public static final String FILE_ALREADY_EXISTS_MESSAGE =
       "The specified output file already exists.";
 
   @Override
-  public ResultModel preExecution(GfshParseResult parseResult) {
+  public Result preExecution(GfshParseResult parseResult) {
     File outputFile = getOutputFile(parseResult);
 
     if (outputFile != null && outputFile.exists()) {
-      return ResultModel.createError(FILE_ALREADY_EXISTS_MESSAGE);
+      return ResultBuilder.createUserErrorResult(FILE_ALREADY_EXISTS_MESSAGE);
     }
 
-    return new ResultModel();
+    return ResultBuilder.createInfoResult("");
   }
 
   @Override
@@ -56,36 +58,36 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
       return result;
     }
 
-    ResultModel model = ((ModelCommandResult) result).getResultData();
-    Map<String, String> sectionResultData = model.getDataSection("0").getContent();
+    CompositeResultData resultData = (CompositeResultData) result.getResultData();
+    CompositeResultData.SectionResultData sectionResultData = resultData.retrieveSectionByIndex(0);
 
-    String limit = sectionResultData.get("Limit");
-    String resultString = sectionResultData.get("Result");
-    String rows = sectionResultData.get("Rows");
+    String limit = sectionResultData.retrieveString("Limit");
+    String resultString = sectionResultData.retrieveString("Result");
+    String rows = sectionResultData.retrieveString("Rows");
 
     if ("false".equalsIgnoreCase(resultString)) {
       return result;
     }
 
+    TabularResultData tabularResultData = sectionResultData.retrieveTableByIndex(0);
+    CommandResult resultTable = new LegacyCommandResult(tabularResultData);
     try {
-      writeResultTableToFile(outputFile, result);
+      writeResultTableToFile(outputFile, resultTable);
       // return a result w/ message explaining limit
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
-    ResultModel newModel = new ResultModel();
-    DataResultModel data = newModel.addData();
-
-    data.addData("Result", resultString);
+    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
+    infoResultData.addLine("Result : " + resultString);
     if (StringUtils.isNotBlank(limit)) {
-      data.addData("Limit", limit);
+      infoResultData.addLine("Limit  : " + limit);
     }
-    data.addData("Rows", rows);
+    infoResultData.addLine("Rows   : " + rows);
+    infoResultData.addLine(SystemUtils.LINE_SEPARATOR);
+    infoResultData.addLine("Query results output to " + outputFile.getAbsolutePath());
 
-    newModel.addInfo().addLine("Query results output to " + outputFile.getAbsolutePath());
-
-    return new ModelCommandResult(newModel);
+    return new LegacyCommandResult(infoResultData);
   }
 
   private File getOutputFile(ParseResult parseResult) {

@@ -14,19 +14,17 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -44,6 +42,8 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.NanoTimer;
@@ -56,8 +56,9 @@ import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult.SelectResultRow;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
-import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
@@ -191,6 +192,7 @@ public class DataCommandFunction implements InternalFunction {
   @SuppressWarnings("rawtypes")
   private DataCommandResult select(InternalCache cache, Object principal, String queryString) {
 
+    AtomicInteger nestedObjectCount = new AtomicInteger(0);
     if (StringUtils.isEmpty(queryString)) {
       return DataCommandResult.createSelectInfoResult(null, null, -1, null,
           CliStrings.QUERY__MSG__QUERY_EMPTY, false);
@@ -217,15 +219,15 @@ public class DataCommandFunction implements InternalFunction {
         queryObserver.reset2();
       }
       if (results instanceof SelectResults) {
-        select_SelectResults((SelectResults) results, principal, list, cache);
+        select_SelectResults((SelectResults) results, principal, list, nestedObjectCount, cache);
       } else {
         select_NonSelectResults(results, list);
       }
       return DataCommandResult.createSelectResult(queryString, list, queryVerboseMsg, null, null,
           true);
 
-    } catch (FunctionDomainException | QueryInvocationTargetException | NameResolutionException
-        | TypeMismatchException e) {
+    } catch (FunctionDomainException | GfJsonException | QueryInvocationTargetException
+        | NameResolutionException | TypeMismatchException e) {
       logger.warn(e.getMessage(), e);
       return DataCommandResult.createSelectResult(queryString, null, queryVerboseMsg, e,
           e.getMessage(), false);
@@ -240,30 +242,97 @@ public class DataCommandFunction implements InternalFunction {
     if (logger.isDebugEnabled()) {
       logger.debug("BeanResults : Bean Results class is {}", results.getClass());
     }
-    list.add(createSelectResultRow(results));
+    String str = toJson(results);
+    GfJsonObject jsonBean;
+    try {
+      jsonBean = new GfJsonObject(str);
+    } catch (GfJsonException e) {
+      logger.info("Exception occurred:", e);
+      jsonBean = new GfJsonObject();
+      try {
+        jsonBean.put("msg", e.getMessage());
+      } catch (GfJsonException e1) {
+        logger.warn("Ignored GfJsonException:", e1);
+      }
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("BeanResults : Adding bean json string : {}", jsonBean);
+    }
+    list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_BEAN, jsonBean.toString()));
   }
 
   private void select_SelectResults(SelectResults selectResults, Object principal,
-      List<SelectResultRow> list, InternalCache cache) {
+      List<SelectResultRow> list, AtomicInteger nestedObjectCount, InternalCache cache)
+      throws GfJsonException {
     for (Object object : selectResults) {
       // Post processing
       object = cache.getSecurityService().postProcess(principal, null, null, object, false);
 
-      list.add(createSelectResultRow(object));
+      if (object instanceof Struct) {
+        StructImpl impl = (StructImpl) object;
+        GfJsonObject jsonStruct = getJSONForStruct(impl, nestedObjectCount);
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Adding select json string : {}", jsonStruct);
+        }
+        list.add(
+            new SelectResultRow(DataCommandResult.ROW_TYPE_STRUCT_RESULT, jsonStruct.toString()));
+      } else if (JsonUtil.isPrimitiveOrWrapper(object.getClass())) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Adding select primitive : {}", object);
+        }
+        list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_PRIMITIVE, object));
+      } else {
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Bean Results class is {}", object.getClass());
+        }
+        String str = toJson(object);
+        GfJsonObject jsonBean;
+        try {
+          jsonBean = new GfJsonObject(str);
+        } catch (GfJsonException e) {
+          logger.error(e.getMessage(), e);
+          jsonBean = new GfJsonObject();
+          try {
+            jsonBean.put("msg", e.getMessage());
+          } catch (GfJsonException e1) {
+            logger.warn("Ignored GfJsonException:", e1);
+          }
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("SelectResults : Adding bean json string : {}", jsonBean);
+        }
+        list.add(new SelectResultRow(DataCommandResult.ROW_TYPE_BEAN, jsonBean.toString()));
+      }
     }
   }
 
-  private SelectResultRow createSelectResultRow(Object object) {
-    int rowType;
-    if (object instanceof Struct) {
-      rowType = DataCommandResult.ROW_TYPE_STRUCT_RESULT;
-    } else if (JsonUtil.isPrimitiveOrWrapper(object.getClass())) {
-      rowType = DataCommandResult.ROW_TYPE_PRIMITIVE;
+  private String toJson(Object object) {
+    if (object instanceof Undefined) {
+      return "{\"Value\":\"UNDEFINED\"}";
+    } else if (object instanceof PdxInstance) {
+      return pdxToJson((PdxInstance) object);
     } else {
-      rowType = DataCommandResult.ROW_TYPE_BEAN;
+      return JsonUtil.objectToJsonNestedChkCDep(object, NESTED_JSON_LENGTH);
     }
+  }
 
-    return new SelectResultRow(rowType, object);
+  private GfJsonObject getJSONForStruct(StructImpl impl, AtomicInteger ai) throws GfJsonException {
+    String fields[] = impl.getFieldNames();
+    Object[] values = impl.getFieldValues();
+    GfJsonObject jsonObject = new GfJsonObject();
+    for (int i = 0; i < fields.length; i++) {
+      Object value = values[i];
+      if (value != null) {
+        if (JsonUtil.isPrimitiveOrWrapper(value.getClass())) {
+          jsonObject.put(fields[i], value);
+        } else {
+          jsonObject.put(fields[i], toJson(value));
+        }
+      } else {
+        jsonObject.put(fields[i], "null");
+      }
+    }
+    return jsonObject;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -302,7 +371,7 @@ public class DataCommandFunction implements InternalFunction {
           if (logger.isDebugEnabled()) {
             logger.debug("Removed key {} successfully", key);
           }
-          Object array[] = getClassAndJson(value);
+          Object array[] = getJSONForNonPrimitiveObject(value);
           DataCommandResult result =
               DataCommandResult.createRemoveResult(key, array[1], null, null, true);
           if (array[0] != null) {
@@ -379,7 +448,7 @@ public class DataCommandFunction implements InternalFunction {
         if (logger.isDebugEnabled()) {
           logger.debug("Get for key {} value {}", key, value);
         }
-        Object array[] = getClassAndJson(value);
+        Object array[] = getJSONForNonPrimitiveObject(value);
         if (value != null) {
           DataCommandResult result =
               DataCommandResult.createGetResult(key, array[1], null, null, true);
@@ -394,7 +463,7 @@ public class DataCommandFunction implements InternalFunction {
         if (logger.isDebugEnabled()) {
           logger.debug("Key is not present in the region {}", regionName);
         }
-        return DataCommandResult.createGetInfoResult(key, getClassAndJson(null)[1], null,
+        return DataCommandResult.createGetInfoResult(key, null, null,
             CliStrings.GET__MSG__KEY_NOT_FOUND_REGION, false);
       }
     }
@@ -476,8 +545,8 @@ public class DataCommandFunction implements InternalFunction {
               PartitionRegionHelper.getPrimaryMemberForKey(region, keyObject);
           int bucketId = pr.getKeyInfo(keyObject).getBucketId();
           boolean isPrimary = member == primaryMember;
-          keyInfo.addLocation(new Object[] {region.getFullPath(), true, getClassAndJson(value)[1],
-              isPrimary, "" + bucketId});
+          keyInfo.addLocation(new Object[] {region.getFullPath(), true,
+              getJSONForNonPrimitiveObject(value)[1], isPrimary, "" + bucketId});
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("Key is not present in the region {}", regionPath);
@@ -492,8 +561,8 @@ public class DataCommandFunction implements InternalFunction {
             logger.debug("Get for key {} value {} in region {}", key, value, region.getFullPath());
           }
           if (value != null) {
-            keyInfo.addLocation(
-                new Object[] {region.getFullPath(), true, getClassAndJson(value)[1], false, null});
+            keyInfo.addLocation(new Object[] {region.getFullPath(), true,
+                getJSONForNonPrimitiveObject(value)[1], false, null});
           } else {
             keyInfo.addLocation(new Object[] {region.getFullPath(), false, null, false, null});
           }
@@ -562,7 +631,7 @@ public class DataCommandFunction implements InternalFunction {
       } else {
         returnValue = region.put(keyObject, valueObject);
       }
-      Object array[] = getClassAndJson(returnValue);
+      Object array[] = getJSONForNonPrimitiveObject(returnValue);
       DataCommandResult result = DataCommandResult.createPutResult(key, array[1], null, null, true);
       if (array[0] != null) {
         result.setValueClass((String) array[0]);
@@ -583,44 +652,115 @@ public class DataCommandFunction implements InternalFunction {
       return string;
     }
 
-    Object resultObject;
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
-      resultObject = mapper.readValue(string, klass);
-    } catch (IOException e) {
-      throw new IllegalArgumentException(
-          "Failed to convert input key to " + klassString + " Msg : " + e.getMessage());
+    if (JsonUtil.isPrimitiveOrWrapper(klass)) {
+      try {
+        if (klass.equals(Byte.class)) {
+          return Byte.parseByte(string);
+        } else if (klass.equals(Short.class)) {
+          return Short.parseShort(string);
+        } else if (klass.equals(Integer.class)) {
+          return Integer.parseInt(string);
+        } else if (klass.equals(Long.class)) {
+          return Long.parseLong(string);
+        } else if (klass.equals(Double.class)) {
+          return Double.parseDouble(string);
+        } else if (klass.equals(Boolean.class)) {
+          return Boolean.parseBoolean(string);
+        } else if (klass.equals(Float.class)) {
+          return Float.parseFloat(string);
+        }
+        return null;
+      } catch (NumberFormatException e) {
+        throw new IllegalArgumentException(
+            "Failed to convert input key to " + klassString + " Msg : " + e.getMessage());
+      }
     }
 
-    return resultObject;
+    return getObjectFromJson(string, klass);
   }
 
-  private Object[] getClassAndJson(Object obj) {
+  @SuppressWarnings({"rawtypes"})
+  public static Object[] getJSONForNonPrimitiveObject(Object obj) {
     Object[] array = new Object[2];
-
     if (obj == null) {
       array[0] = null;
-      array[1] = null;
+      array[1] = "<NULL>";
+      return array;
+    } else {
+      array[0] = obj.getClass().getCanonicalName();
+      Class klass = obj.getClass();
+      if (JsonUtil.isPrimitiveOrWrapper(klass)) {
+        array[1] = obj;
+      } else if (obj instanceof PdxInstance) {
+        String str = pdxToJson((PdxInstance) obj);
+        array[1] = str;
+      } else {
+        GfJsonObject object = new GfJsonObject(obj, true);
+        Iterator keysIterator = object.keys();
+        while (keysIterator.hasNext()) {
+          String key = (String) keysIterator.next();
+          Object value = object.get(key);
+          if (GfJsonObject.isJSONKind(value)) {
+            GfJsonObject jsonVal = new GfJsonObject(value);
+            try {
+              if (jsonVal.has("type-class")) {
+                object.put(key, jsonVal.get("type-class"));
+              } else {
+                // Its Map Value
+                object.put(key, "a Map");
+              }
+            } catch (GfJsonException e) {
+              throw new RuntimeException(e);
+            }
+          } else if (value instanceof JSONArray) {
+            // Its a collection either a set or list
+            try {
+              object.put(key, "a Collection");
+            } catch (GfJsonException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        }
+        String str = object.toString();
+        array[1] = str;
+      }
       return array;
     }
-
-    array[0] = obj.getClass().getCanonicalName();
-
-    if (obj instanceof PdxInstance) {
-      array[1] = JSONFormatter.toJSON((PdxInstance) obj);
-      return array;
-    }
-
-    ObjectMapper mapper = new ObjectMapper();
-    try {
-      array[1] = mapper.writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
-      array[1] = e.getMessage();
-    }
-
-    return array;
   }
+
+  private static String pdxToJson(PdxInstance obj) {
+    if (obj != null) {
+      try {
+        GfJsonObject json = new GfJsonObject();
+        for (String field : obj.getFieldNames()) {
+          Object fieldValue = obj.getField(field);
+          if (fieldValue != null) {
+            if (JsonUtil.isPrimitiveOrWrapper(fieldValue.getClass())) {
+              json.put(field, fieldValue);
+            } else {
+              json.put(field, fieldValue.getClass());
+            }
+          }
+        }
+        return json.toString();
+      } catch (GfJsonException e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  public static <V> V getObjectFromJson(String json, Class<V> klass) {
+    String newString = json.replaceAll("'", "\"");
+    if (newString.charAt(0) == '(') {
+      int len = newString.length();
+      StringBuilder sb = new StringBuilder();
+      sb.append("{").append(newString.substring(1, len - 1)).append("}");
+      newString = sb.toString();
+    }
+    return JsonUtil.jsonToObject(newString, klass);
+  }
+
 
   /**
    * Returns a sorted list of all region full paths found in the specified cache.

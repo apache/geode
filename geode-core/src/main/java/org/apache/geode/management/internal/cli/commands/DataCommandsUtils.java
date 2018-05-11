@@ -21,21 +21,19 @@ import java.util.Set;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
 public class DataCommandsUtils {
 
-  static String makeBrokenJsonCompliant(String json) {
-    if (json == null) {
-      return null;
-    }
-
-    if (json.startsWith("(") && json.endsWith(")")) {
-      return "{" + json.substring(1, json.length() - 1) + "}";
+  static Result makePresentationResult(DataCommandResult dataResult) {
+    if (dataResult != null) {
+      return dataResult.toCommandResult();
     } else {
-      return json;
+      return ResultBuilder.createGemFireErrorResult("Error executing data command");
     }
   }
 

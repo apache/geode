@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.io.Serializable;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,19 +29,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxInstanceFactory;
-import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -51,16 +44,6 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, GfshTest.class})
 public class GetCommandIntegrationTest {
-
-  private static final Map<String, User> userDataStore = new HashMap<String, User>(5);
-
-  static {
-    userDataStore.put("jackhandy", new User("jackhandy"));
-    userDataStore.put("janedoe", new User("janedoe"));
-    userDataStore.put("jondoe", new User("jondoe"));
-    userDataStore.put("piedoe", new User("piedoe"));
-    userDataStore.put("supertool", new User("supertool"));
-  }
 
   private static ServerStarterRule server =
       new ServerStarterRule().withJMXManager().withAutoStart();
@@ -73,34 +56,23 @@ public class GetCommandIntegrationTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    InternalCache cache = server.getCache();
+    Cache cache = server.getCache();
+    RegionFactory<String, User> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
 
-    // Region containing POJOs
-    RegionFactory<String, User> userRegionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE);
-    userRegionFactory.setCacheLoader(new UserDataStoreCacheLoader());
-    Region<String, User> users = userRegionFactory.create("Users");
+    regionFactory.setCacheLoader(new UserDataStoreCacheLoader());
+    regionFactory.setInitialCapacity(51);
+    regionFactory.setKeyConstraint(String.class);
+    regionFactory.setLoadFactor(0.75f);
+    regionFactory.setStatisticsEnabled(false);
+    regionFactory.setValueConstraint(User.class);
+
+    Region<String, User> users = regionFactory.create("Users");
+    assertThat(users.getName()).isEqualTo("Users");
+    assertThat(users.getFullPath()).isEqualTo("/Users");
 
     users.put("jonbloom", new User("jonbloom"));
     assertFalse(users.isEmpty());
     assertEquals(1, users.size());
-
-    // Region containing PdxInstances
-    RegionFactory<String, PdxInstance> userPdxRegionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE);
-    userPdxRegionFactory.setCacheLoader(new UserPdxDataStoreCacheLoader(cache));
-    Region<String, PdxInstance> pdxRegion = userPdxRegionFactory.create("UsersPdx");
-    pdxRegion.put("jonbloom", makePdxInstance(new User("jonbloom"), cache));
-
-    // Region containing primitives
-    RegionFactory<String, String> userStringRegionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE);
-    userStringRegionFactory.setCacheLoader(new UserStringDataStoreCacheLoader());
-    Region<String, String> usersString = userStringRegionFactory.create("UsersString");
-
-    usersString.put("jonbloom", "6a6f6e626c6f6f6d");
-    assertFalse(usersString.isEmpty());
-    assertEquals(1, usersString.size());
   }
 
   @Test
@@ -114,100 +86,20 @@ public class GetCommandIntegrationTest {
   }
 
   @Test
-  public void getOnCacheMissForRegularRegion() throws Exception {
-    CommandResult result = gfsh.executeCommand("get --region=Users --key=jonbloom");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+  public void getOnCacheMiss() throws Exception {
+    gfsh.executeAndAssertThat("get --region=Users --key=jonbloom").statusIsSuccess();
+    assertThat(gfsh.getGfshOutput()).contains("Result      : true");
+    gfsh.executeAndAssertThat("get --region=Users --key=jondoe --load-on-cache-miss=false")
+        .statusIsSuccess();
+    assertThat(gfsh.getGfshOutput()).contains("Result      : false");
 
-    Map<String, String> data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-
-    result = gfsh.executeCommand("get --region=Users --key=jondoe --load-on-cache-miss=false");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
-
-    result = gfsh.executeCommand("get --region=Users --key=jondoe");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value Class")).isEqualTo(User.class.getCanonicalName());
+    gfsh.executeAndAssertThat("get --region=Users --key=jondoe").statusIsSuccess();
+    assertThat(gfsh.getGfshOutput()).contains("Result      : true");
 
     // get something that does not exist
-    result = gfsh.executeCommand("get --region=Users --key=missingUser --load-on-cache-miss");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Value")).isEqualTo("null");
-  }
-
-  @Test
-  public void getOnCacheMissForPdxRegion() {
-    CommandResult result = gfsh.executeCommand("get --region=UsersPdx --key=jonbloom");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    Map<String, String> data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-
-    result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe --load-on-cache-miss=false");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
-
-    result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value Class")).isEqualTo(PdxInstanceImpl.class.getCanonicalName());
-
-    // get something that does not exist
-    result = gfsh.executeCommand("get --region=UsersPdx --key=missingUser --load-on-cache-miss");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Value")).isEqualTo("null");
-  }
-
-  @Test
-  public void getOnCacheMissForStringRegion() throws Exception {
-    CommandResult result = gfsh.executeCommand("get --region=UsersString --key=jonbloom");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    Map<String, String> data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value")).isEqualTo("\"6a6f6e626c6f6f6d\"");
-
-    result =
-        gfsh.executeCommand("get --region=UsersString --key=jondoe --load-on-cache-miss=false");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
-    assertThat(data.get("Value")).isEqualTo("null");
-
-    result = gfsh.executeCommand("get --region=UsersString --key=jondoe");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value Class")).isEqualTo(String.class.getName());
-    assertThat(data.get("Value")).isEqualTo("\"6a6f6e646f65\"");
-
-    // get something that does not exist
-    result = gfsh.executeCommand("get --region=UsersString --key=missingUser --load-on-cache-miss");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getMapFromSection("0");
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Value")).isEqualTo("null");
+    gfsh.executeAndAssertThat("get --region=Users --key=missingUser --load-on-cache-miss")
+        .statusIsSuccess();
+    assertThat(gfsh.getGfshOutput()).contains("Result      : false");
   }
 
   private static class User implements Serializable {
@@ -220,17 +112,6 @@ public class GetCommandIntegrationTest {
 
     public String getUsername() {
       return username;
-    }
-
-    public String getHashcode() {
-      StringBuilder sb = new StringBuilder(username.getBytes().length * 2);
-
-      Formatter formatter = new Formatter(sb);
-      for (byte b : username.getBytes()) {
-        formatter.format("%02x", b);
-      }
-
-      return sb.toString();
     }
 
     @Override
@@ -250,60 +131,29 @@ public class GetCommandIntegrationTest {
   }
 
   private static class UserDataStoreCacheLoader implements CacheLoader<String, User>, Serializable {
+
+    private static final Map<String, User> userDataStore = new HashMap<String, User>(5);
+
+    static {
+      userDataStore.put("jackhandy", createUser("jackhandy"));
+      userDataStore.put("janedoe", createUser("janedoe"));
+      userDataStore.put("jondoe", createUser("jondoe"));
+      userDataStore.put("piedoe", createUser("piedoe"));
+      userDataStore.put("supertool", createUser("supertool"));
+    }
+
+    protected static User createUser(final String username) {
+      return new User(username);
+    }
+
     @Override
     public User load(final LoaderHelper<String, User> helper) throws CacheLoaderException {
       return userDataStore.get(helper.getKey());
     }
 
     @Override
-    public void close() {}
-  }
-
-  private static class UserPdxDataStoreCacheLoader
-      implements CacheLoader<String, PdxInstance>, Serializable {
-
-    private InternalCache cache;
-
-    UserPdxDataStoreCacheLoader(InternalCache cache) {
-      this.cache = cache;
+    public void close() {
+      userDataStore.clear();
     }
-
-    @Override
-    public PdxInstance load(final LoaderHelper<String, PdxInstance> helper)
-        throws CacheLoaderException {
-      User user = userDataStore.get(helper.getKey());
-      if (user == null) {
-        return null;
-      }
-
-      return makePdxInstance(user, cache);
-    }
-
-    @Override
-    public void close() {}
-  }
-
-  private static class UserStringDataStoreCacheLoader
-      implements CacheLoader<String, String>, Serializable {
-
-    @Override
-    public String load(final LoaderHelper<String, String> helper) throws CacheLoaderException {
-      User user = userDataStore.get(helper.getKey());
-      if (user == null) {
-        return null;
-      }
-
-      return user.getHashcode();
-    }
-
-    @Override
-    public void close() {}
-  }
-
-  private static PdxInstance makePdxInstance(User user, InternalCache cache) {
-    PdxInstanceFactory pf = PdxInstanceFactoryImpl.newCreator("User", false, cache);
-    pf.writeString("username", user.getUsername());
-    pf.writeString("hashcode", user.getHashcode());
-    return pf.create();
   }
 }
