@@ -92,10 +92,22 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void setsEventOldValueToExistingRegionEntryValue_ifOperationGuaranteesOldValue() {
+    Object oldValue = new Object();
+    givenExistingRegionEntryWithValue(oldValue);
+    givenAnOperationThatGuaranteesOldValue();
+
+    doPut();
+
+    verify(event, times(1)).setOldValue(same(oldValue), eq(true));
+    verify(event, never()).setOldValue(not(same(oldValue)), eq(true));
+  }
+
+  @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifIsRequiredOldValueAndOperationDoesNotGuaranteeOldValue() {
     this.requireOldValue = true;
     Object oldValue = new Object();
-    givenExistingRegionEntryWithValue(oldValue);
+    givenExistingRegionEntryWithValueInMemory(oldValue);
     givenAnOperationThatDoesNotGuaranteeOldValue();
 
     doPut();
@@ -107,7 +119,7 @@ public class RegionMapPutTest {
   @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue() {
     Object oldValue = new Object();
-    givenExistingRegionEntryWithValue(oldValue);
+    givenExistingRegionEntryWithValueInMemory(oldValue);
     givenAnOperationThatDoesNotGuaranteeOldValue();
     givenPutNeedsToDoCacheWrite();
 
@@ -121,7 +133,7 @@ public class RegionMapPutTest {
   public void setsEventOldValueToNotAvailable_ifIsCacheWriteAndOperationDoesNotGuaranteeOldValue_andExistingValueIsNull() {
     givenPutNeedsToDoCacheWrite();
     givenAnOperationThatDoesNotGuaranteeOldValue();
-    givenExistingRegionEntryWithValue(null);
+    givenExistingRegionEntryWithValueInMemory(null);
 
     doPut();
 
@@ -411,7 +423,11 @@ public class RegionMapPutTest {
   }
 
   private void givenAnOperationThatDoesNotGuaranteeOldValue() {
-    when(event.getOperation()).thenReturn(Operation.UPDATE); // does not guarantee old value
+    when(event.getOperation()).thenReturn(Operation.UPDATE);
+  }
+
+  private void givenAnOperationThatGuaranteesOldValue() {
+    when(event.getOperation()).thenReturn(Operation.PUT_IF_ABSENT);
   }
 
   private void givenPutNeedsToDoCacheWrite() {
@@ -420,6 +436,13 @@ public class RegionMapPutTest {
   }
 
   private void givenExistingRegionEntryWithValue(Object value) {
+    RegionEntry existingRegionEntry = mock(RegionEntry.class);
+    when(existingRegionEntry.getValueOffHeapOrDiskWithoutFaultIn(same(internalRegion)))
+        .thenReturn(value);
+    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
+  }
+
+  private void givenExistingRegionEntryWithValueInMemory(Object value) {
     RegionEntry existingRegionEntry = mock(RegionEntry.class);
     when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(value);
     when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
