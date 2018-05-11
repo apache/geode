@@ -45,7 +45,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, JDBCConnectorTest.class, GfshTest.class})
+@Category({DistributedTest.class, JDBCConnectorTest.class})
 public class DescribeConnectionCommandDUnitTest implements Serializable {
 
   private static final String CONNECTION_NAME = "connectionName";

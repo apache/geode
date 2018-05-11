@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, JDBCConnectorTest.class, GfshTest.class})
+@Category({DistributedTest.class, JDBCConnectorTest.class})
 @SuppressWarnings("serial")
 public class JdbcClusterConfigDistributedTest {
 

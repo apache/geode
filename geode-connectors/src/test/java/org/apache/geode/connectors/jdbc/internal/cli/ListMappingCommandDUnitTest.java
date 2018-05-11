@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class})
 public class ListMappingCommandDUnitTest implements Serializable {
 
   @Rule

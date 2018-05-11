@@ -32,7 +32,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 
-@Category({IntegrationTest.class, JDBCConnectorTest.class, GfshTest.class})
+@Category({IntegrationTest.class, JDBCConnectorTest.class})
 public class DestroyConnectionCommandIntegrationTest {
 
   private String connectionName;

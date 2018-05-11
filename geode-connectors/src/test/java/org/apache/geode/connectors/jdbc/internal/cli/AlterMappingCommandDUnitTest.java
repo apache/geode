@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({DistributedTest.class, JDBCConnectorTest.class, GfshTest.class})
+@Category({DistributedTest.class, JDBCConnectorTest.class})
 public class AlterMappingCommandDUnitTest {
 
   @Rule
