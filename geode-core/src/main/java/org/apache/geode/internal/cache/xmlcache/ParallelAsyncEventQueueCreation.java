@@ -87,5 +87,5 @@ public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender
   }
 
   @Override
-  protected void setModifiedEventId(EntryEventImpl clonedEvent) {}
+  public void setModifiedEventId(EntryEventImpl clonedEvent) {}
 }
