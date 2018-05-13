@@ -197,7 +197,7 @@ public class ResultBuilder {
     boolean success = false;
     for (CliFunctionResult result : functionResults) {
       tabularData.accumulate("Member", result.getMemberIdOrName());
-      tabularData.accumulate("Status", result.getStatus());
+      tabularData.accumulate("Status", result.getLegacyStatus());
       // if one member returns back successful results, the command results in success
       if (result.isSuccessful()) {
         success = true;

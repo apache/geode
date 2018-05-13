@@ -35,6 +35,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   private boolean successful;
   private XmlEntity xmlEntity;
   private byte[] byteData = new byte[0];
+  private boolean ignorableFailure = false;
 
   @Deprecated
   public CliFunctionResult() {}
@@ -119,6 +120,39 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   }
 
   public String getStatus() {
+    if (ignorableFailure) {
+      return "IGNORED";
+    }
+
+    return successful ? "OK" : "ERROR";
+  }
+
+  public String getStatusMessage() {
+    String message = getMessage();
+
+    if (successful) {
+      return message;
+    }
+
+    String errorMessage = "";
+    if (message != null
+        && (resultObject == null || !((Throwable) resultObject).getMessage().contains(message))) {
+      errorMessage = message;
+    }
+
+    if (resultObject != null) {
+      errorMessage = errorMessage.trim() + " " + ((Throwable) resultObject).getClass().getName()
+          + ": " + ((Throwable) resultObject).getMessage();
+    }
+
+    return errorMessage;
+  }
+
+  /**
+   * This can be removed once all commands are using ResultModel.
+   */
+  @Deprecated
+  public String getLegacyStatus() {
     String message = getMessage();
 
     if (successful) {
@@ -163,6 +197,11 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_1_6_0_0(out);
+    DataSerializer.writePrimitiveBoolean(this.ignorableFailure, out);
+  }
+
+  public void toDataPre_GEODE_1_6_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
     DataSerializer.writePrimitiveBoolean(this.successful, out);
     DataSerializer.writeObject(this.xmlEntity, out);
@@ -179,6 +218,11 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_6_0_0(in);
+    this.ignorableFailure = DataSerializer.readPrimitiveBoolean(in);
+  }
+
+  public void fromDataPre_GEODE_1_6_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.successful = DataSerializer.readPrimitiveBoolean(in);
     this.xmlEntity = DataSerializer.readObject(in);
@@ -195,6 +239,25 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   public boolean isSuccessful() {
     return this.successful;
+  }
+
+  public boolean isIgnorableFailure() {
+    return ignorableFailure;
+  }
+
+  /**
+   * Use this to signal that an operation failed but it might be OK to ignore. This is intended to
+   * obviate the need to send a 'skip-if-exists' or 'if-not-exists' flag to any relevant function
+   * and allows the caller to now decide how to handle the result.
+   * <p/>
+   * An {@code IllegalStateException} will be thrown if the state of this {@code CliFunctionResult}
+   * is not already error.
+   */
+  public void setIgnorableFailure() {
+    if (successful) {
+      throw new IllegalStateException("Cannot call setIgnorableFailure when isSuccessful == true");
+    }
+    this.ignorableFailure = true;
   }
 
   @Deprecated

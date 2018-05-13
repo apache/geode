@@ -120,7 +120,8 @@ public class DescribeMappingFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus()).contains(NullPointerException.class.getName());
+    assertThat(argument.getValue().getStatusMessage())
+        .contains(NullPointerException.class.getName());
   }
 
   @Test
@@ -132,6 +133,6 @@ public class DescribeMappingFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus()).contains("some message");
+    assertThat(argument.getValue().getStatusMessage()).contains("some message");
   }
 }

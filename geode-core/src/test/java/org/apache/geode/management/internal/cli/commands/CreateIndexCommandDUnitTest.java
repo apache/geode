@@ -64,7 +64,7 @@ public class CreateIndexCommandDUnitTest {
   @Test
   public void regionNotExist() {
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=/noExist")
-        .statusIsError().containsOutput("ERROR: Region not found : \"/noExist\"");
+        .statusIsError().containsOutput("ERROR", "Region not found : \"/noExist\"");
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
