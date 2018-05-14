@@ -64,6 +64,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
+import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.dto.Value1;
 import org.apache.geode.management.internal.cli.dto.Value2;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -753,7 +754,7 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
   private void validateResult(CommandResult cmdResult, Boolean expected) {
     if (ResultData.TYPE_MODEL.equals(cmdResult.getType())) {
       ResultModel rd = (ResultModel) cmdResult.getResultData();
-      DataResultModel result = rd.getDataSection("0");
+      DataResultModel result = rd.getDataSection(DataCommandResult.DATA_INFO_SECTION);
       assertThat(result.getContent().get("Result")).isEqualTo(expected.toString());
     } else
       fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
@@ -763,12 +764,14 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       Integer expectedRows, String[] cols) {
     if (ResultData.TYPE_MODEL.equals(cmdResult.getType())) {
       ResultModel rd = (ResultModel) cmdResult.getResultData();
-      Map<String, String> data = rd.getDataSection("0").getContent();
+      Map<String, String> data =
+          rd.getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
       assertThat(data.get("Result")).isEqualTo(expectedFlag.toString());
       if (expectedFlag && expectedRows != -1) {
         assertThat(data.get("Rows")).isEqualTo(expectedRows.toString());
         if (expectedRows > 0 && cols != null) {
-          Map<String, List<String>> table = rd.getTableSection("1").getContent();
+          Map<String, List<String>> table =
+              rd.getTableSection(DataCommandResult.QUERY_SECTION).getContent();
           assertThat(table.keySet()).contains(cols);
         }
       }

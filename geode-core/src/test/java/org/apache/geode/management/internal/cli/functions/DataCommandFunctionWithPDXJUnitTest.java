@@ -136,7 +136,7 @@ public class DataCommandFunctionWithPDXJUnitTest {
     request.setQuery(query);
     DataCommandResult result = new DataCommandFunction().select(request, cache);
     ResultModel m = result.toSelectCommandResult();
-    return m.getTableSection("1");
+    return m.getTableSection(DataCommandResult.QUERY_SECTION);
   }
 
   private void assertThatRowIsBuiltCorrectly(Map<String, List<String>> table, int rowNum,

@@ -37,6 +37,7 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ListConnectionCommand extends GfshCommand {
+  public static final String JDBC_CONNECTIONS_SECTION = "jdbc-connections";
   static final String LIST_JDBC_CONNECTION = "list jdbc-connections";
   static final String LIST_JDBC_CONNECTION__HELP =
       EXPERIMENTAL + "Display jdbc connections for all members.";
@@ -82,7 +83,8 @@ public class ListConnectionCommand extends GfshCommand {
 
     // output
     ResultModel resultModel = new ResultModel();
-    boolean connectionsExist = fillTabularResultData(connections, resultModel.addTable());
+    boolean connectionsExist =
+        fillTabularResultData(connections, resultModel.addTable(JDBC_CONNECTIONS_SECTION));
     if (connectionsExist) {
       resultModel.setHeader(EXPERIMENTAL);
       return resultModel;
