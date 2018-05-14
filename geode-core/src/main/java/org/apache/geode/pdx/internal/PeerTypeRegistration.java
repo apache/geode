@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
@@ -66,11 +67,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   public static final String LOCK_SERVICE_NAME = "__PDX";
 
-  /**
-   * The region name. Public for tests only.
-   */
   public static final String REGION_NAME = "PdxTypes";
-
   public static final String REGION_FULL_PATH = "/" + REGION_NAME;
   public static final int PLACE_HOLDER_FOR_TYPE_ID = 0xFFFFFF;
   public static final int PLACE_HOLDER_FOR_DS_ID = 0xFF000000;
@@ -697,7 +694,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   @Override
   public Map<Integer, PdxType> types() {
     // ugh, I don't think we can rely on the local map to contain all types
-    Map<Integer, PdxType> types = new HashMap<Integer, PdxType>();
+    Map<Integer, PdxType> types = new HashMap<>();
     for (Entry<Object, Object> type : getIdToType().entrySet()) {
       Object id = type.getKey();
       if (type.getValue() instanceof PdxType) {
@@ -761,9 +758,9 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   /**
-   * For testing purpose
+   * For testing only.
    */
-  @Deprecated
+  @TestingOnly
   public Map<String, CopyOnWriteHashSet<PdxType>> getClassToType() {
     return classToType;
   }
