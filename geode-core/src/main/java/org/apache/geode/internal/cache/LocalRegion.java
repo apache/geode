@@ -10498,10 +10498,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     this.cacheServiceProfiles.put(profile.getId(), profile);
   }
 
-  public void removeCacheServiceProfile(String profileId) {
-    this.cacheServiceProfiles.remove(profileId);
-  }
-
   @Override
   public LoaderHelper createLoaderHelper(Object key, Object callbackArgument,
       boolean netSearchAllowed, boolean netLoadAllowed, SearchLoadAndWriteProcessor searcher) {

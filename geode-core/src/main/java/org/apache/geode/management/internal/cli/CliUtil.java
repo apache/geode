@@ -198,19 +198,6 @@ public class CliUtil {
   }
 
   /**
-   * Returns a set of all the members of the distributed system older than a specific version
-   * excluding locators.
-   */
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getNormalMembersWithSameOrOlderVersion(InternalCache cache,
-      Version version) {
-    return getAllNormalMembers(cache).stream()
-        .filter(member -> ((InternalDistributedMember) member).getVersionObject().equals(version))
-        .collect(Collectors.toSet());
-    // dm.removeMembersWithSameOrNewerVersion(oldMembers, version);
-  }
-
-  /**
    * Returns a set of all the members of the distributed system including locators.
    */
   @SuppressWarnings("unchecked")

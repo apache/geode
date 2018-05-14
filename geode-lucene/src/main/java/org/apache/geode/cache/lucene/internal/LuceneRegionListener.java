@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -28,6 +29,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionListener;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 public class LuceneRegionListener implements RegionListener {
 
@@ -52,6 +55,8 @@ public class LuceneRegionListener implements RegionListener {
   private AtomicBoolean beforeCreateInvoked = new AtomicBoolean();
 
   private AtomicBoolean afterCreateInvoked = new AtomicBoolean();
+
+  private static final Logger logger = LogService.getLogger();
 
   public LuceneRegionListener(LuceneServiceImpl service, InternalCache cache, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
@@ -111,7 +116,8 @@ public class LuceneRegionListener implements RegionListener {
       try {
         this.service.afterDataRegionCreated(this.luceneIndex);
       } catch (LuceneIndexDestroyedException e) {
-        // @todo log a warning here?
+        logger.warn(LocalizedStrings.LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED
+            .toString(indexName, regionPath));
         return;
       }
       this.service.createLuceneIndexOnDataRegion((PartitionedRegion) region, luceneIndex);

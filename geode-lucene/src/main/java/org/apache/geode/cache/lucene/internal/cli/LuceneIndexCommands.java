@@ -288,13 +288,13 @@ public class LuceneIndexCommands extends InternalGfshCommand {
 
     authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
 
-    // Get members >= 1.6
+    // Get members >= 1.7
     Set<DistributedMember> validVersionMembers =
-        getNormalMembersWithSameOrNewerVersion(Version.GEODE_160);
+        getNormalMembersWithSameOrNewerVersion(Version.GEODE_170);
     if (validVersionMembers.isEmpty()) {
       return ResultBuilder.createInfoResult(CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-          Version.GEODE_160));
+          Version.GEODE_170));
     }
 
     // Execute the destroy index function

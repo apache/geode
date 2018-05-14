@@ -269,7 +269,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     try {
       afterDataRegionCreated(luceneIndex);
     } catch (LuceneIndexDestroyedException e) {
-      // @todo log a warning here?
+      logger.warn(LocalizedStrings.LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED
+          .toString(indexName, regionPath));
       return;
     }
 
