@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -135,6 +136,44 @@ public class RegionMapPutTest {
 
     verify(event, times(1)).setOldValue(same(oldValue), eq(true));
     verify(event, never()).setOldValue(not(same(oldValue)), eq(true));
+  }
+
+  @Test
+  public void eventPutExistingEntryGivenOldValue_ifRetrieveOldValueForDelta()
+      throws RegionClearedException {
+    givenExistingRegionEntry();
+    Object oldValue = new Object();
+    when(existingRegionEntry.getValue(any())).thenReturn(oldValue);
+    when(event.getDeltaBytes()).thenReturn(new byte[1]);
+    doAnswer(invocation -> {
+      Runnable runnable = invocation.getArgument(0);
+      runnable.run();
+      return null;
+    }).when(focusedRegionMap).runWhileEvictionDisabled(any());
+
+    doPut();
+
+    verify(event, times(1)).putExistingEntry(same(internalRegion), same(existingRegionEntry),
+        eq(false), same(oldValue));
+  }
+
+  @Test
+  public void eventPutExistingEntryGivenNullOldValue_ifNotRetrieveOldValueForDelta()
+      throws RegionClearedException {
+    givenExistingRegionEntry();
+    Object oldValue = new Object();
+    when(existingRegionEntry.getValue(any())).thenReturn(oldValue);
+    when(event.getDeltaBytes()).thenReturn(null);
+    doAnswer(invocation -> {
+      Runnable runnable = invocation.getArgument(0);
+      runnable.run();
+      return null;
+    }).when(focusedRegionMap).runWhileEvictionDisabled(any());
+
+    doPut();
+
+    verify(event, times(1)).putExistingEntry(same(internalRegion), same(existingRegionEntry),
+        eq(false), eq(null));
   }
 
   @Test
