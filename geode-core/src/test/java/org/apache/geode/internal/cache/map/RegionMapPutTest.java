@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,10 +39,12 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
+import org.apache.geode.internal.cache.ImageState;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -74,6 +77,8 @@ public class RegionMapPutTest {
     when(internalRegion.getScope()).thenReturn(Scope.LOCAL);
     when(internalRegion.isInitialized()).thenReturn(true);
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
+    when(internalRegion.getAttributes()).thenReturn(mock(RegionAttributes.class));
+    when(internalRegion.getImageState()).thenReturn(mock(ImageState.class));
     when(focusedRegionMap.getEntryMap()).thenReturn(mock(Map.class));
     when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
     givenAnOperationThatDoesNotGuaranteeOldValue();
@@ -226,6 +231,133 @@ public class RegionMapPutTest {
     assertThat(instance.isRetrieveOldValueForDelta()).isFalse();
   }
 
+
+  @Test
+  public void eventOldValueNotAvailableCalled_ifCacheWriteNotNeededAndNotInitialized() {
+    givenPutDoesNotNeedToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(false);
+
+    doPut();
+
+    verify(event, times(1)).oldValueNotAvailable();
+  }
+
+  @Test
+  public void eventOperationNotSet_ifCacheWriteNeededAndInitializedAndReplaceOnClient() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(true);
+
+    doPut();
+
+    verify(event, never()).makeCreate();
+    verify(event, never()).makeUpdate();
+  }
+
+  @Test
+  public void eventOperationMadeCreate_ifCacheWriteNeededAndInitializedAndNotReplaceOnClientAndEntryRemoved() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(false);
+    when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
+
+    doPut();
+
+    verify(event, times(1)).makeCreate();
+    verify(event, never()).makeUpdate();
+  }
+
+  @Test
+  public void eventOperationMadeUpdate_ifCacheWriteNeededAndInitializedAndNotReplaceOnClientAndEntryExists() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(false);
+    when(regionEntry.isDestroyedOrRemoved()).thenReturn(false);
+
+    doPut();
+
+    verify(event, never()).makeCreate();
+    verify(event, times(1)).makeUpdate();
+  }
+
+  @Test
+  public void cacheWriterBeforePutNotCalled_ifNotInitialized() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(false);
+
+    doPut();
+
+    verify(internalRegion, never()).cacheWriteBeforePut(any(), any(), any(), anyBoolean(), any());
+  }
+
+  @Test
+  public void cacheWriterBeforePutNotCalled_ifCacheWriteNotNeeded() {
+    givenPutDoesNotNeedToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+
+    doPut();
+
+    verify(internalRegion, never()).cacheWriteBeforePut(any(), any(), any(), anyBoolean(), any());
+  }
+
+  @Test
+  public void cacheWriterBeforePutCalledWithRequireOldValue_givenRequireOldValueTrue() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    this.requireOldValue = true;
+
+    doPut();
+
+    verify(internalRegion, times(1)).cacheWriteBeforePut(same(event), any(), any(),
+        eq(this.requireOldValue), eq(null));
+  }
+
+  @Test
+  public void cacheWriterBeforePutCalledWithExpectedOldValue_givenRequireOldValueTrue() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    givenAnOperationThatGuaranteesOldValue();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.getValueRetain(same(internalRegion), eq(true))).thenReturn(null);
+    expectedOldValue = "expectedOldValue";
+    when(event.getRawOldValue()).thenReturn(expectedOldValue);
+
+    doPut();
+
+    verify(internalRegion, times(1)).cacheWriteBeforePut(same(event), any(), any(), anyBoolean(),
+        same(expectedOldValue));
+  }
+
+  @Test
+  public void cacheWriterBeforePutCalledWithCacheWriter_givenACacheWriter() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    CacheWriter cacheWriter = mock(CacheWriter.class);
+    when(internalRegion.basicGetWriter()).thenReturn(cacheWriter);
+
+    doPut();
+
+    verify(internalRegion, times(1)).cacheWriteBeforePut(same(event), eq(null), same(cacheWriter),
+        anyBoolean(), eq(null));
+  }
+
+  @Test
+  public void cacheWriterBeforePutCalledWithNetWriteRecipients_ifAdviseNetWrite() {
+    givenPutNeedsToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    when(internalRegion.basicGetWriter()).thenReturn(null);
+    Set netWriteRecipients = mock(Set.class);
+    when(internalRegion.adviseNetWrite()).thenReturn(netWriteRecipients);
+
+    doPut();
+
+    verify(internalRegion, times(1)).cacheWriteBeforePut(same(event), eq(netWriteRecipients),
+        eq(null), anyBoolean(), eq(null));
+  }
+
   @Test
   public void retrieveOldValueForDeltaTrueIfEventHasDeltaBytes() {
     when(event.getDeltaBytes()).thenReturn(new byte[1]);
@@ -265,6 +397,7 @@ public class RegionMapPutTest {
   @Test
   public void replaceOnClientIsFalseIfOperationIsReplaceAndOwnerIsNotClient() {
     when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(false);
 
     createInstance();
 
