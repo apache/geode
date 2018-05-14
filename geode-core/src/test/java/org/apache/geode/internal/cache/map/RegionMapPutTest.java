@@ -267,7 +267,7 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void cacheWriteIsFaseIfGenerateCallbacksButNotDistributedEtc() {
+  public void cacheWriteIsFalseIfGenerateCallbacksButNotDistributedEtc() {
     when(event.isGenerateCallbacks()).thenReturn(true);
     createInstance();
 
