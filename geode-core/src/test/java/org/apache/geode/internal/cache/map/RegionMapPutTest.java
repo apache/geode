@@ -405,6 +405,28 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void putReturnsNull_ifOnlyExistingAndEntryIsTombstone() {
+    ifOld = true;
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isTombstone()).thenReturn(true);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void putReturnsExistingEntry_ifOnlyExistingAndEntryIsNotTombstone() {
+    ifOld = true;
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isSameAs(existingRegionEntry);
+  }
+
+  @Test
   public void onlyExistingDefaultsToFalse() {
     createInstance();
 
