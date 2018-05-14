@@ -169,38 +169,34 @@ public class RegionMapPut extends AbstractRegionMapPut {
     final EntryEventImpl event = getEvent();
     final RegionEntry re = getRegionEntry();
     event.setRegionEntry(re);
-    boolean needToSetOldValue =
-        isCacheWrite() || isRequireOldValue() || event.getOperation().guaranteesOldValue();
-    if (needToSetOldValue) {
-      if (event.getOperation().guaranteesOldValue()) {
-        // In these cases we want to even get the old value from disk if it is not in memory
-        ReferenceCountHelper.skipRefCountTracking();
-        @Released
-        Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
-        ReferenceCountHelper.unskipRefCountTracking();
-        try {
-          event.setOldValue(oldValueInVMOrDisk, true);
-        } finally {
-          OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
-        }
-      } else {
-        // In these cases only need the old value if it is in memory
-        ReferenceCountHelper.skipRefCountTracking();
+    if (event.getOperation().guaranteesOldValue()) {
+      // In these cases we want to even get the old value from disk if it is not in memory
+      ReferenceCountHelper.skipRefCountTracking();
+      @Released
+      Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
+      ReferenceCountHelper.unskipRefCountTracking();
+      try {
+        event.setOldValue(oldValueInVMOrDisk, true);
+      } finally {
+        OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
+      }
+    } else if (isCacheWrite() || isRequireOldValue()) {
+      // In these cases only need the old value if it is in memory
+      ReferenceCountHelper.skipRefCountTracking();
 
-        @Retained
-        @Released
-        Object oldValueInVM = re.getValueRetain(event.getRegion(), true); // OFFHEAP: re
-        // synced so can use
-        // its ref.
-        if (oldValueInVM == null) {
-          oldValueInVM = Token.NOT_AVAILABLE;
-        }
-        ReferenceCountHelper.unskipRefCountTracking();
-        try {
-          event.setOldValue(oldValueInVM);
-        } finally {
-          OffHeapHelper.releaseWithNoTracking(oldValueInVM);
-        }
+      @Retained
+      @Released
+      Object oldValueInVM = re.getValueRetain(event.getRegion(), true); // OFFHEAP: re
+      // synced so can use
+      // its ref.
+      if (oldValueInVM == null) {
+        oldValueInVM = Token.NOT_AVAILABLE;
+      }
+      ReferenceCountHelper.unskipRefCountTracking();
+      try {
+        event.setOldValue(oldValueInVM);
+      } finally {
+        OffHeapHelper.releaseWithNoTracking(oldValueInVM);
       }
     } else {
       // if the old value is in memory then if it is a GatewaySenderEventImpl then
