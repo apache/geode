@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -515,6 +516,93 @@ public class RegionMapPutTest {
     assertThat(instance.isCacheWrite()).isFalse();
   }
 
+  @Test
+  public void basicPutPart2ToldClearDidNotOccur_ifPutDoneWithoutAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+
+    doPut();
+
+    verify(internalRegion, times(1)).basicPutPart2(any(), any(), anyBoolean(), anyLong(),
+        eq(false));
+  }
+
+  @Test
+  public void basicPutPart2ToldClearDidOccur_ifPutDoneWithAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    doThrow(RegionClearedException.class).when(event).putNewEntry(any(), any());
+
+    doPut();
+
+    verify(internalRegion, times(1)).basicPutPart2(any(), any(), anyBoolean(), anyLong(), eq(true));
+  }
+
+  @Test
+  public void lruUpdateCallbackCalled_ifPutDoneWithoutAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+
+    doPut();
+
+    verify(focusedRegionMap, times(1)).lruUpdateCallback();
+  }
+
+  @Test
+  public void lruUpdateCallbackNotCalled_ifPutDoneWithAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    doThrow(RegionClearedException.class).when(event).putNewEntry(any(), any());
+
+    doPut();
+
+    verify(focusedRegionMap, never()).lruUpdateCallback();
+  }
+
+  @Test
+  public void lruEnryCreateCalled_ifCreateDoneWithoutAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+
+    doPut();
+
+    verify(focusedRegionMap, times(1)).lruEntryCreate(regionEntry);
+  }
+
+  @Test
+  public void lruEnryCreateNotCalled_ifCreateDoneWithAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    doThrow(RegionClearedException.class).when(event).putNewEntry(any(), any());
+
+    doPut();
+
+    verify(focusedRegionMap, never()).lruEntryCreate(regionEntry);
+  }
+
+  @Test
+  public void lruEnryUpdateCalled_ifUpdateDoneWithoutAClear() throws Exception {
+    ifOld = true;
+    RegionEntry existingRegionEntry = mock(RegionEntry.class);
+    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
+
+    doPut();
+
+    verify(focusedRegionMap, times(1)).lruEntryUpdate(existingRegionEntry);
+  }
+
+  @Test
+  public void lruEnryUpdateNotCalled_ifUpdateDoneWithAClear() throws Exception {
+    ifOld = true;
+    RegionEntry existingRegionEntry = mock(RegionEntry.class);
+    when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
+    doThrow(RegionClearedException.class).when(event).putExistingEntry(any(), any(), anyBoolean(),
+        any());
+
+    doPut();
+
+    verify(focusedRegionMap, never()).lruEntryUpdate(existingRegionEntry);
+  }
 
   @Test
   public void createOnEmptyMapAddsEntry() throws Exception {
