@@ -17,6 +17,7 @@
 package org.apache.geode.internal.cache.map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -51,6 +52,8 @@ import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -602,6 +605,32 @@ public class RegionMapPutTest {
     doPut();
 
     verify(focusedRegionMap, never()).lruEntryUpdate(existingRegionEntry);
+  }
+
+  @Test
+  public void putThrows_ifCreateDoneWithConcurrentCacheModificationException() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    doThrow(ConcurrentCacheModificationException.class).when(event).putNewEntry(any(), any());
+
+    assertThatThrownBy(() -> doPut()).isInstanceOf(ConcurrentCacheModificationException.class);
+
+    verify(event, times(1)).getVersionTag();
+  }
+
+  @Test
+  public void putInvokesNotifyTimestampsToGateways_ifCreateDoneWithConcurrentCacheModificationException()
+      throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    doThrow(ConcurrentCacheModificationException.class).when(event).putNewEntry(any(), any());
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.isTimeStampUpdated()).thenReturn(true);
+    when(event.getVersionTag()).thenReturn(versionTag);
+
+    assertThatThrownBy(() -> doPut()).isInstanceOf(ConcurrentCacheModificationException.class);
+
+    verify(internalRegion, times(1)).notifyTimestampsToGateways(same(event));
   }
 
   @Test
