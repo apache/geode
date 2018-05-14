@@ -35,7 +35,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
@@ -170,45 +169,45 @@ public class RegionMapPut extends AbstractRegionMapPut {
     final RegionEntry re = getRegionEntry();
     event.setRegionEntry(re);
     if (event.getOperation().guaranteesOldValue()) {
-      // In these cases we want to even get the old value from disk if it is not in memory
-      ReferenceCountHelper.skipRefCountTracking();
-      @Released
-      Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
-      ReferenceCountHelper.unskipRefCountTracking();
-      try {
-        event.setOldValue(oldValueInVMOrDisk, true);
-      } finally {
-        OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
-      }
+      setOldValueEvenIfFaultedOut();
     } else if (isCacheWrite() || isRequireOldValue()) {
-      // In these cases only need the old value if it is in memory
-      ReferenceCountHelper.skipRefCountTracking();
-
-      @Retained
-      @Released
-      Object oldValueInVM = re.getValueRetain(event.getRegion(), true); // OFFHEAP: re
-      // synced so can use
-      // its ref.
-      if (oldValueInVM == null) {
-        oldValueInVM = Token.NOT_AVAILABLE;
-      }
-      ReferenceCountHelper.unskipRefCountTracking();
-      try {
-        event.setOldValue(oldValueInVM);
-      } finally {
-        OffHeapHelper.releaseWithNoTracking(oldValueInVM);
-      }
+      setOldValueIfNotFaultedOut();
     } else {
-      // if the old value is in memory then if it is a GatewaySenderEventImpl then
-      // we want to set the old value.
       @Unretained
-      Object ov = re.getValue(); // OFFHEAP _getValue is ok since re is synced and we only use it
-      // if its a GatewaySenderEventImpl.
-      // Since GatewaySenderEventImpl is never stored in an off-heap region nor a compressed region
-      // we don't need to worry about ov being compressed.
-      if (ov instanceof GatewaySenderEventImpl) {
-        event.setOldValue(ov, true);
+      Object existingValue = re.getValue();
+      if (existingValue instanceof GatewaySenderEventImpl) {
+        event.setOldValue(existingValue, true);
       }
+    }
+  }
+
+  private void setOldValueIfNotFaultedOut() {
+    final EntryEventImpl event = getEvent();
+    ReferenceCountHelper.skipRefCountTracking();
+    @Released
+    Object oldValueInVM = getRegionEntry().getValueRetain(event.getRegion(), true);
+    if (oldValueInVM == null) {
+      oldValueInVM = Token.NOT_AVAILABLE;
+    }
+    ReferenceCountHelper.unskipRefCountTracking();
+    try {
+      event.setOldValue(oldValueInVM);
+    } finally {
+      OffHeapHelper.releaseWithNoTracking(oldValueInVM);
+    }
+  }
+
+  private void setOldValueEvenIfFaultedOut() {
+    final EntryEventImpl event = getEvent();
+    ReferenceCountHelper.skipRefCountTracking();
+    @Released
+    Object oldValueInVMOrDisk =
+        getRegionEntry().getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
+    ReferenceCountHelper.unskipRefCountTracking();
+    try {
+      event.setOldValue(oldValueInVMOrDisk, true);
+    } finally {
+      OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
     }
   }
 
