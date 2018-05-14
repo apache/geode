@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.internal.Assert.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.Properties;
@@ -49,7 +50,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.FieldType;
@@ -69,6 +69,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -2571,7 +2572,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     final int port1 = (Integer) vm0.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
+        getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
         int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
@@ -2641,43 +2642,19 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       }
     });
 
-    // on server 1 verify local map in PeerTypeRegistration has fields
-    vm0.invoke(new SerializableCallable("Create client") {
-      @Override
-      public Object call() throws Exception {
-        TypeRegistration registration = getCache().getPdxRegistry().getTypeRegistration();
-        Assert.assertTrue(registration instanceof PeerTypeRegistration);
-        Map<String, CopyOnWriteHashSet<PdxType>> m =
-            ((PeerTypeRegistration) registration).getClassToType();
-        assertEquals(1, m.size());
-        assertEquals("PdxVersionedNewPortfolio", m.keySet().iterator().next());
-        assertEquals(2, m.values().iterator().next().size());
-        for (PdxType p : m.values().iterator().next()) {
-          assertEquals("PdxVersionedNewPortfolio", p.getClassName());
-        }
-        return null;
-      }
-    });
+    final SerializableRunnableIF verifyTwoPdxTypesArePresent = () -> {
+      TypeRegistration registration = getCache().getPdxRegistry().getTypeRegistration();
+      assertTrue(registration instanceof PeerTypeRegistration);
 
-    // on server 2 verify local map in PeerTypeRegistration has fields
-    vm1.invoke(new SerializableCallable("Create client") {
-      @Override
-      public Object call() throws Exception {
-        TypeRegistration registration = getCache().getPdxRegistry().getTypeRegistration();
-        Assert.assertTrue(registration instanceof PeerTypeRegistration);
-        Map<String, CopyOnWriteHashSet<PdxType>> m =
-            ((PeerTypeRegistration) registration).getClassToType();
-        assertEquals(1, m.size());
-        assertEquals("PdxVersionedNewPortfolio", m.keySet().iterator().next());
-        assertEquals(2, m.values().iterator().next().size());
-        for (PdxType p : m.values().iterator().next()) {
-          assertEquals("PdxVersionedNewPortfolio", p.getClassName());
-        }
-        return null;
+      final Map<Integer, PdxType> types = registration.types();
+      assertEquals(2, types.size());
+      for (PdxType type : types.values()) {
+        assertEquals("PdxVersionedNewPortfolio", type.getClassName());
       }
-    });
+    };
 
-    Invoke.invokeInEveryVM(DistributedTestCase.class, "disconnectFromDS");
+    vm0.invoke(verifyTwoPdxTypesArePresent);
+    vm1.invoke(verifyTwoPdxTypesArePresent);
   }
 
   /**
@@ -3188,7 +3165,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         }
         // check if the types registered on server are fetched by the client
         TypeRegistration registration = getCache().getPdxRegistry().getTypeRegistration();
-        Assert.assertTrue(registration instanceof ClientTypeRegistration);
+        assertTrue(registration instanceof ClientTypeRegistration);
         Map<Integer, PdxType> m = ((ClientTypeRegistration) registration).types();
         assertEquals(2, m.size());
         for (PdxType type : m.values()) {

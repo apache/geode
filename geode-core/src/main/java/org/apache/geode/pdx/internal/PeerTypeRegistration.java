@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
@@ -755,14 +754,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     } else {
       return pdxTypeSet.getSnapshot();
     }
-  }
-
-  /**
-   * For testing only.
-   */
-  @TestingOnly
-  public Map<String, CopyOnWriteHashSet<PdxType>> getClassToType() {
-    return classToType;
   }
 
   @Override
