@@ -69,7 +69,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 public class ResultModel {
 
   public static final String INFO_SECTION = "info";
-  public static final String ERROR_SECTION = "error";
   public static final String MEMBER_STATUS_SECTION = "member-status";
 
   private String header;
@@ -267,12 +266,11 @@ public class ResultModel {
   }
 
   /**
-   * Helper method to create an {@code InfoResultModel} named "error". This method will also set
+   * Helper method to create an {@code InfoResultModel} named "info". This method will also set
    * the status to ERROR.
    */
   public static ResultModel createError(String message) {
-    ResultModel result = new ResultModel();
-    result.addInfo(ERROR_SECTION).addLine(message);
+    ResultModel result = createInfo(message);
     result.setStatus(Result.Status.ERROR);
     return result;
   }

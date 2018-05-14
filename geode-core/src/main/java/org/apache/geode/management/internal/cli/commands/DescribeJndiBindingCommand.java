@@ -34,13 +34,12 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeJndiBindingCommand extends InternalGfshCommand {
+  public static final String JNDI_PROPERTIES_SECTION = "jndi-properties";
   private static final Logger logger = LogService.getLogger();
-
   static final String DESCRIBE_JNDI_BINDING = "describe jndi-binding";
   private static final String DESCRIBE_JNDIBINDING__HELP =
       "Describe the configuration of the given jndi binding.";
   private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
-  public static final String JNDI_PROPERTIES_SECTION = "jndi-properties";
 
   @CliCommand(value = DESCRIBE_JNDI_BINDING, help = DESCRIBE_JNDIBINDING__HELP)
   @CliMetaData
