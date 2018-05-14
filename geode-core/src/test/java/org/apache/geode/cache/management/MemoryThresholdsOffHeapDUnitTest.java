@@ -92,13 +92,14 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Tests the Off-Heap Memory thresholds of {@link ResourceManager}
  *
  * @since Geode 1.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD

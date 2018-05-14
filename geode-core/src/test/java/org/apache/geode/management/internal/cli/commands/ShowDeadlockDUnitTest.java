@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
  *
  * @see GemFireDeadlockDetectorDUnitTest
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class})
 public class ShowDeadlockDUnitTest {
   private static Thread stuckThread = null;
   private static final Lock LOCK = new ReentrantLock();

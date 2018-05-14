@@ -72,6 +72,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
@@ -88,7 +89,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  *
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, StatisticsTest.class})
 @SuppressWarnings({"rawtypes", "serial", "unused"})
 public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 

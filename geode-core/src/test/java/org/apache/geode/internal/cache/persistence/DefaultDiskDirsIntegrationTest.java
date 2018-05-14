@@ -28,8 +28,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.PersistenceTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, PersistenceTest.class})
 public class DefaultDiskDirsIntegrationTest {
 
   @Rule

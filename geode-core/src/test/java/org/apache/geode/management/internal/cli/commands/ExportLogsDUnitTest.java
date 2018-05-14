@@ -57,10 +57,11 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Member;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, LoggingTest.class})
 public class ExportLogsDUnitTest {
   private static final String ERROR_LOG_PREFIX = "[IGNORE]";
 

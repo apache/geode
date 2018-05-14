@@ -27,8 +27,9 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.PersistenceTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, PersistenceTest.class})
 public class PersistentRecoveryOrderOldConfigDUnitTest extends PersistentRecoveryOrderDUnitTest {
 
   public PersistentRecoveryOrderOldConfigDUnitTest() {

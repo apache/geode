@@ -23,8 +23,9 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueStats;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.JMXTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, JMXTest.class})
 public class AsyncEventQueueStatsJUnitTest extends MBeanStatsTestCase {
 
   private AsyncEventQueueMBeanBridge bridge;

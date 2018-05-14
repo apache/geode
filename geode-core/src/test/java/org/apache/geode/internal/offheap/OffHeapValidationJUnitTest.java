@@ -62,12 +62,13 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Basic integration tests for validating the off-heap implementation.
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OffHeapTest.class})
 public class OffHeapValidationJUnitTest {
 
   private GemFireCacheImpl cache;

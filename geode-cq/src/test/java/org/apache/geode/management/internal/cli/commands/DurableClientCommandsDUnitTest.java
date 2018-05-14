@@ -58,8 +58,10 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1705 GEODE-3404 GEODE-3359 GEODE-3530
+@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-1705 GEODE-3404
+                                                                    // GEODE-3359 GEODE-3530
 @SuppressWarnings("serial")
 public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
 

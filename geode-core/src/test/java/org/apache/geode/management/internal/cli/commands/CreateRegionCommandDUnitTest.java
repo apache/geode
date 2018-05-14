@@ -41,11 +41,11 @@ import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class, RegionsTest.class})
 public class CreateRegionCommandDUnitTest {
 
   private static MemberVM locator, server1, server2;

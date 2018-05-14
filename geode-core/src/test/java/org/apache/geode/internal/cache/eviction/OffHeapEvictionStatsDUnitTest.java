@@ -29,13 +29,14 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.EvictionTest;
 
 /**
  * Performs eviction stat dunit tests for off-heap regions.
  *
  * @since Geode 1.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, EvictionTest.class})
 public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
 
   @Override

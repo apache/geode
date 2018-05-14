@@ -34,12 +34,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
+import org.apache.geode.test.junit.categories.EvictionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This class tests the LRUCapacityController's core clock algorithm.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, EvictionTest.class})
 public class LRUListWithSyncSortingIntegrationTest {
 
   @Rule

@@ -39,8 +39,9 @@ import org.apache.geode.internal.cache.entries.VMThinRegionEntryOffHeapStringKey
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryOffHeapStringKey2;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryOffHeapUUIDKey;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OffHeapTest.class})
 public class InlineKeyJUnitTest {
   private GemFireCacheImpl createCache() {
     Properties props = new Properties();

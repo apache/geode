@@ -26,6 +26,7 @@ import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Tests Distributed Ack Overflow Region with ConcurrencyChecksEnabled and OffHeap memory.
@@ -33,7 +34,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * @since Geode 1.0
  */
 @SuppressWarnings({"deprecation", "serial"})
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class DistributedAckOverflowRegionCCEOffHeapDUnitTest
     extends DistributedAckOverflowRegionCCEDUnitTest {
 

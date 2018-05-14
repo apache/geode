@@ -39,13 +39,14 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Integration tests for {@link SimpleStatSampler}.
  *
  * @since GemFire 7.0
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   private LocalStatisticsFactory statisticsFactory;

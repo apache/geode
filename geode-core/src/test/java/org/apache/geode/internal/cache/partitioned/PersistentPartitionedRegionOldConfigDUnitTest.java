@@ -22,8 +22,9 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class PersistentPartitionedRegionOldConfigDUnitTest
     extends PersistentPartitionedRegionDUnitTest {
 

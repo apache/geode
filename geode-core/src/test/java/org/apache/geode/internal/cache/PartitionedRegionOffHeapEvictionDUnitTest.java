@@ -27,8 +27,9 @@ import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class PartitionedRegionOffHeapEvictionDUnitTest extends PartitionedRegionEvictionDUnitTest {
 
   @Override

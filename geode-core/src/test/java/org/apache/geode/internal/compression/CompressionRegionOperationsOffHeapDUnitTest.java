@@ -26,8 +26,9 @@ import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class CompressionRegionOperationsOffHeapDUnitTest
     extends CompressionRegionOperationsDUnitTest {
 

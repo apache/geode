@@ -43,13 +43,12 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
-import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({IntegrationTest.class})
 public class GetCommandIntegrationTest {
 
   private static final Map<String, User> userDataStore = new HashMap<String, User>(5);

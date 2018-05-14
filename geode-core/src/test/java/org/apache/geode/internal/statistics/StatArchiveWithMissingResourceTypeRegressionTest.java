@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * StatArchiveReader should throw IllegalStateException with detailed information instead of
@@ -42,7 +43,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * GEODE-2013: StatArchiveReader throws NullPointerException due to missing ResourceType
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class StatArchiveWithMissingResourceTypeRegressionTest {
 
   private static final String ARCHIVE_FILE_NAME =
