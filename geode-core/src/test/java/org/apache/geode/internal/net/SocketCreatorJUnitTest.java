@@ -16,8 +16,13 @@ package org.apache.geode.internal.net;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.net.Socket;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,11 +51,17 @@ public class SocketCreatorJUnitTest {
   @Test
   public void testConfigureServerSSLSocketSetsSoTimeout() throws Exception {
     final SocketCreator socketCreator = new SocketCreator(mock(SSLConfig.class));
-    final Socket socket = mock(Socket.class);
+    final SSLSocket socket = mock(SSLSocket.class);
+    Certificate[] certs = new Certificate[] {mock(X509Certificate.class)};
+    SSLSession session = mock(SSLSession.class);
+    when(session.getPeerCertificates()).thenReturn(certs);
+    when(socket.getSession()).thenReturn(session);
 
     final int timeout = 1938236;
-    socketCreator.startHandshakeIfSocketIsSSL(socket, timeout);
+    socketCreator.handshakeIfSocketIsSSL(socket, timeout);
 
+    verify(socket).getSession();
+    verify(session).getPeerCertificates();
     verify(socket).setSoTimeout(timeout);
   }
 

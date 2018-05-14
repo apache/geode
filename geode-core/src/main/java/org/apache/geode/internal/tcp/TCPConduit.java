@@ -688,7 +688,8 @@ public class TCPConduit implements Runnable {
                 ex);
             break;
           }
-          socketCreator.startHandshakeIfSocketIsSSL(othersock, idleConnectionTimeout);
+          othersock.setSoTimeout(0);
+          socketCreator.handshakeIfSocketIsSSL(othersock, idleConnectionTimeout);
         }
         if (stopped) {
           try {
