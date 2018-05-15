@@ -35,8 +35,9 @@ public abstract class AbstractExecutorGroup {
   private short numIterationsStuck;
   private long startTime;
 
-  private Properties nonDefault = new Properties();
-  private DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+  private static final Properties nonDefault = new Properties();
+  private static final DistributionConfigImpl distributionConfigImpl =
+      new DistributionConfigImpl(nonDefault);
 
   public AbstractExecutorGroup() {
     this.startTime = System.currentTimeMillis();
