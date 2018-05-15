@@ -261,6 +261,18 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void putExistingEntryCalled_ifReplaceOnClient() throws RegionClearedException {
+    givenPutDoesNotNeedToDoCacheWrite();
+    when(internalRegion.isInitialized()).thenReturn(true);
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(true);
+
+    doPut();
+
+    verify(event, times(1)).putExistingEntry(any(), any(), anyBoolean(), any());
+  }
+
+  @Test
   public void eventOperationMadeCreate_ifCacheWriteNeededAndInitializedAndNotReplaceOnClientAndEntryRemoved() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
