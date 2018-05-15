@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan.misc;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -24,7 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -49,6 +49,7 @@ import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.GatewayReceiverException;
+import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.MyGatewaySenderEventListener;
@@ -155,7 +156,6 @@ public class WANConfigurationJUnitTest {
    * distribution policy
    *
    */
-  @Ignore("Bug51491")
   @Test
   public void test_GatewaySender_Parallel_DistributedRegion() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
@@ -167,12 +167,11 @@ public class WANConfigurationJUnitTest {
     factory.addGatewaySenderId(sender1.getId());
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    try {
-      RegionFactory regionFactory = cache.createRegionFactory(factory.create());
-      Region region = regionFactory.create("test_GatewaySender_Parallel_DistributedRegion");
-    } catch (Exception e) {
-      fail("Unexpected Exception :" + e);
-    }
+    RegionFactory regionFactory = cache.createRegionFactory(factory.create());
+
+    assertThatThrownBy(() -> regionFactory.create("test_GatewaySender_Parallel_DistributedRegion"))
+        .isInstanceOf(GatewaySenderConfigurationException.class).hasMessage(
+            "Parallel gateway sender NYSender can not be used with replicated region /test_GatewaySender_Parallel_DistributedRegion");
   }
 
   @Test

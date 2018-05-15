@@ -217,6 +217,14 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void handleCacheClose(Operation op);
 
+  /**
+   * Execute any validation required prior to initializing the region.
+   * This method should throw an exception whenever an invalid configuration is detected.
+   */
+  default void preInitialize() {
+    // Do nothing by default.
+  }
+
   void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException;
