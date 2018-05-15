@@ -54,6 +54,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -251,8 +252,7 @@ public class RegionMapPutTest {
   public void eventOperationNotSet_ifCacheWriteNeededAndInitializedAndReplaceOnClient() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
-    when(event.getOperation()).thenReturn(Operation.REPLACE);
-    when(internalRegion.hasServerProxy()).thenReturn(true);
+    givenReplaceOnClient();
 
     doPut();
 
@@ -264,8 +264,7 @@ public class RegionMapPutTest {
   public void putExistingEntryCalled_ifReplaceOnClient() throws RegionClearedException {
     givenPutDoesNotNeedToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
-    when(event.getOperation()).thenReturn(Operation.REPLACE);
-    when(internalRegion.hasServerProxy()).thenReturn(true);
+    givenReplaceOnClient();
 
     doPut();
 
@@ -276,8 +275,7 @@ public class RegionMapPutTest {
   public void eventOperationMadeCreate_ifCacheWriteNeededAndInitializedAndNotReplaceOnClientAndEntryRemoved() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
-    when(event.getOperation()).thenReturn(Operation.REPLACE);
-    when(internalRegion.hasServerProxy()).thenReturn(false);
+    givenReplaceOnPeer();
     when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
 
     doPut();
@@ -290,8 +288,7 @@ public class RegionMapPutTest {
   public void eventOperationMadeUpdate_ifCacheWriteNeededAndInitializedAndNotReplaceOnClientAndEntryExists() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
-    when(event.getOperation()).thenReturn(Operation.REPLACE);
-    when(internalRegion.hasServerProxy()).thenReturn(false);
+    givenReplaceOnPeer();
     when(regionEntry.isDestroyedOrRemoved()).thenReturn(false);
 
     doPut();
@@ -403,8 +400,7 @@ public class RegionMapPutTest {
 
   @Test
   public void replaceOnClientIsTrueIfOperationIsReplaceAndOwnerIsClient() {
-    when(event.getOperation()).thenReturn(Operation.REPLACE);
-    when(internalRegion.hasServerProxy()).thenReturn(true);
+    givenReplaceOnClient();
 
     createInstance();
 
@@ -413,8 +409,7 @@ public class RegionMapPutTest {
 
   @Test
   public void replaceOnClientIsFalseIfOperationIsReplaceAndOwnerIsNotClient() {
-    when(event.getOperation()).thenReturn(Operation.REPLACE);
-    when(internalRegion.hasServerProxy()).thenReturn(false);
+    givenReplaceOnPeer();
 
     createInstance();
 
@@ -444,6 +439,79 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void putReturnsNull_ifOnlyExistingAndEntryIsRemoved() {
+    ifOld = true;
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(true);
+    givenReplaceOnPeer();
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void putReturnsExistingEntry_ifOnlyExistingEntryIsRemovedAndReplaceOnClient() {
+    ifOld = true;
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(true);
+    givenReplaceOnClient();
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isSameAs(existingRegionEntry);
+  }
+
+  @Test
+  public void putReturnsExistingEntry_ifReplaceOnClientAndTombstoneButNoVersionTag() {
+    ifOld = true;
+    givenReplaceOnClient();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isTombstone()).thenReturn(true);
+    when(event.getVersionTag()).thenReturn(null);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isSameAs(existingRegionEntry);
+  }
+
+  @Test
+  public void putReturnsNull_ifReplaceOnClientAndTombstoneAndVersionTag()
+      throws RegionClearedException {
+    ifOld = true;
+    givenReplaceOnClient();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isTombstone()).thenReturn(true);
+    when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    when(event.getVersionTag()).thenReturn(mock(VersionTag.class));
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isNull();
+    verify(existingRegionEntry, times(1)).setValue(internalRegion, Token.TOMBSTONE);
+    verify(internalRegion, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
+  }
+
+  @Test
+  public void putIgnoresRegionClearedException_ifReplaceOnClientAndTombstoneAndVersionTag()
+      throws RegionClearedException {
+    ifOld = true;
+    givenReplaceOnClient();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isTombstone()).thenReturn(true);
+    when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    when(event.getVersionTag()).thenReturn(mock(VersionTag.class));
+    doThrow(RegionClearedException.class).when(existingRegionEntry).setValue(internalRegion,
+        Token.TOMBSTONE);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isNull();
+    verify(existingRegionEntry, times(1)).setValue(internalRegion, Token.TOMBSTONE);
+    verify(internalRegion, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
+  }
+
+  @Test
   public void onlyExistingDefaultsToFalse() {
     createInstance();
 
@@ -462,8 +530,7 @@ public class RegionMapPutTest {
   @Test
   public void onlyExistingIsFalseIfOldAndReplaceOnClient() {
     ifOld = true;
-    when(event.getOperation()).thenReturn(Operation.REPLACE);
-    when(internalRegion.hasServerProxy()).thenReturn(true);
+    givenReplaceOnClient();
 
     createInstance();
 
@@ -817,6 +884,16 @@ public class RegionMapPutTest {
 
   private void givenExistingRegionEntry() {
     when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
+  }
+
+  private void givenReplaceOnClient() {
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(true);
+  }
+
+  private void givenReplaceOnPeer() {
+    when(event.getOperation()).thenReturn(Operation.REPLACE);
+    when(internalRegion.hasServerProxy()).thenReturn(false);
   }
 
 }

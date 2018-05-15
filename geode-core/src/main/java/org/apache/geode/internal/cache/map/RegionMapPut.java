@@ -329,10 +329,16 @@ public class RegionMapPut extends AbstractRegionMapPut {
    */
   @Override
   protected boolean checkPreconditions() {
-    if (continueUpdate() && continueOverwriteDestroyed() && satisfiesExpectedOldValue()) {
-      return true;
+    if (!continueUpdate()) {
+      return false;
     }
-    return false;
+    if (!continueOverwriteDestroyed()) {
+      return false;
+    }
+    if (!satisfiesExpectedOldValue()) {
+      return false;
+    }
+    return true;
   }
 
   private boolean continueUpdate() {
