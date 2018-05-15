@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -631,6 +632,17 @@ public class RegionMapPutTest {
     assertThatThrownBy(() -> doPut()).isInstanceOf(ConcurrentCacheModificationException.class);
 
     verify(internalRegion, times(1)).notifyTimestampsToGateways(same(event));
+  }
+
+  @Test
+  public void putThrows_ifLruUpdateCallbackThrowsDiskAccessException() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    doThrow(DiskAccessException.class).when(focusedRegionMap).lruUpdateCallback();
+
+    assertThatThrownBy(() -> doPut()).isInstanceOf(DiskAccessException.class);
+
+    verify(internalRegion, times(1)).handleDiskAccessException(any());
   }
 
   @Test
