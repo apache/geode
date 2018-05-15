@@ -21,7 +21,6 @@ import java.util.Set;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -295,17 +294,21 @@ public class RegionMapPut extends AbstractRegionMapPut {
             getLastModifiedTime(), invokeListeners, isIfNew(), isIfOld(), getExpectedOldValue(),
             isRequireOldValue());
       } finally {
-        if (!isClearOccurred()) {
-          try {
-            getRegionMap().lruUpdateCallback();
-          } catch (DiskAccessException dae) {
-            getOwner().handleDiskAccessException(dae);
-            throw dae;
-          }
-        }
+        lruUpdateCallbackIfNotCleared();
       }
     } else {
       getRegionMap().resetThreadLocals();
+    }
+  }
+
+  private void lruUpdateCallbackIfNotCleared() {
+    if (!isClearOccurred()) {
+      try {
+        getRegionMap().lruUpdateCallback();
+      } catch (DiskAccessException dae) {
+        getOwner().handleDiskAccessException(dae);
+        throw dae;
+      }
     }
   }
 
@@ -441,10 +444,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     } else {
       getOwner().updateSizeOnCreate(key, newBucketSize);
       if (!wasTombstone) {
-        CachePerfStats stats = getOwner().getCachePerfStats();
-        if (stats != null) {
-          stats.incEntryCount(1);
-        }
+        getOwner().getCachePerfStats().incEntryCount(1);
       }
     }
   }

@@ -811,6 +811,26 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void putWithTombstoneNewValue_callsBasicPutPart3WithFalse() {
+    when(event.basicGetNewValue()).thenReturn(Token.TOMBSTONE);
+
+    doPut();
+
+    verify(internalRegion, times(1)).basicPutPart3(any(), any(), anyBoolean(), anyLong(), eq(false),
+        anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
+  public void putWithNonTombstoneNewValue_callsBasicPutPart3WithTrue() {
+    when(event.basicGetNewValue()).thenReturn("newValue");
+
+    doPut();
+
+    verify(internalRegion, times(1)).basicPutPart3(any(), any(), anyBoolean(), anyLong(), eq(true),
+        anyBoolean(), anyBoolean(), any(), anyBoolean());
+  }
+
+  @Test
   public void putOnEmptyMapAddsEntry() throws Exception {
     ifNew = false;
     ifOld = false;
