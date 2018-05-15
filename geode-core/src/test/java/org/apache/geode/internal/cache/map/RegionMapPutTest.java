@@ -347,6 +347,40 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void putWithExpectedOldValueReturnsNull_ifExistingValueIsNotExpected() {
+    givenAnOperationThatGuaranteesOldValue();
+    expectedOldValue = "expectedOldValue";
+    when(event.getRawOldValue()).thenReturn("unexpectedValue");
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isNull();
+  }
+
+  @Test
+  public void putWithExpectedOldValueReturnsRegionEntry_ifExistingValueIsExpected() {
+    givenAnOperationThatGuaranteesOldValue();
+    expectedOldValue = "expectedOldValue";
+    when(event.getRawOldValue()).thenReturn(expectedOldValue);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isSameAs(createdRegionEntry);
+  }
+
+  @Test
+  public void putWithExpectedOldValueReturnsRegionEntry_ifExistingValueIsNotExpectedButIsReplaceOnClient() {
+    givenAnOperationThatGuaranteesOldValue();
+    expectedOldValue = "expectedOldValue";
+    when(event.getRawOldValue()).thenReturn("unexpectedValue");
+    givenReplaceOnClient();
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isSameAs(createdRegionEntry);
+  }
+
+  @Test
   public void cacheWriterBeforePutCalledWithCacheWriter_givenACacheWriter() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
