@@ -34,7 +34,6 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ExportConfigFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -88,10 +87,8 @@ public class ExportConfigCommand extends InternalGfshCommand {
         String cacheFileName = result.getMemberIdOrName() + "-cache.xml";
         String propsFileName = result.getMemberIdOrName() + "-gf.properties";
         String[] fileContent = (String[]) result.getSerializables();
-        crm.addFile(cacheFileName, fileContent[0].getBytes(), ResultData.FILE_TYPE_TEXT,
-            "Downloading Cache XML file: ");
-        crm.addFile(propsFileName, fileContent[1].getBytes(), ResultData.FILE_TYPE_TEXT,
-            "Downloading properties file: ");
+        crm.addFile(cacheFileName, fileContent[0], "Downloading Cache XML file: " + cacheFileName);
+        crm.addFile(propsFileName, fileContent[1], "Downloading properties file: " + propsFileName);
       }
     }
 

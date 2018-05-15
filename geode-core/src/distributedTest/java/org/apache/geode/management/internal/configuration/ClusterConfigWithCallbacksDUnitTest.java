@@ -80,8 +80,7 @@ public class ClusterConfigWithCallbacksDUnitTest {
     // import cluster configuration with a running server
     gfsh.executeAndAssertThat(
         "import cluster-configuration --zip-file-name=" + clusterConfigZip.getAbsolutePath())
-        .statusIsSuccess()
-        .containsOutput("Successfully applied the imported cluster configuration on server-1");
+        .statusIsSuccess().containsOutput("Configure the servers in 'cluster' group");
 
     // assert that the callbacks are properly hooked up with the region
     server.invoke(() -> {

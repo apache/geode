@@ -88,12 +88,12 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     serverProps.setProperty("groups", "group2");
     MemberVM server2 = lsRule.startServerVM(2, serverProps, locatorVM.getPort());
 
-    CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
-    assertThat(result.getMessageFromContent())
-        .contains("Successfully applied the imported cluster configuration on server-1");
-    assertThat(result.getMessageFromContent())
-        .contains("Successfully applied the imported cluster configuration on server-2");
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsSuccess().containsOutput("Cluster configuration successfully imported.")
+        .containsOutput("Configure the servers in 'cluster' group:").containsOutput("server-1")
+        .containsOutput("server-2");
     new ClusterConfig(CLUSTER).verify(server1);
     new ClusterConfig(CLUSTER, GROUP2).verify(server2);
 
@@ -110,8 +110,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     gfshConnector
         .executeAndAssertThat(
             "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
-        .statusIsError()
-        .containsOutput("Running servers have existing cluster configuration applied already.");
+        .statusIsError().containsOutput("Can not configure servers that are already configured.");
   }
 
   @Test
@@ -123,8 +122,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     gfshConnector
         .executeAndAssertThat(
             "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
-        .statusIsError()
-        .containsOutput("Running servers have existing cluster configuration applied already.");
+        .statusIsError().containsOutput("Can not configure servers that are already configured.");
   }
 
   @Test
