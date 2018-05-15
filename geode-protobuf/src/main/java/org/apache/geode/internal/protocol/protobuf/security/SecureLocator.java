@@ -12,19 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
-import org.apache.geode.security.ResourcePermission;
+import java.util.Set;
+
+import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
- * Authorization checker. When security is enabled, this wraps a subject and checks that the
- * subject is allowed to perform the requested operation
+ * Access layer for locator that performs authorization checks
  */
-public interface Authorizer {
-  default void authorize(ResourcePermission.Resource data, ResourcePermission.Operation read,
-      String regionName, Object key) {
-    authorize(new ResourcePermission(data, read, regionName, key.toString()));
-  }
-
-  void authorize(ResourcePermission resourcePermission);
+public interface SecureLocator {
+  ServerLocation findServer(Set<ServerLocation> excludedServers, String serverGroup);
 }

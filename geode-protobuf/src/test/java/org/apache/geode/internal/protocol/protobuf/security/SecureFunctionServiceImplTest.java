@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import static org.apache.geode.security.ResourcePermission.ALL;
 import static org.apache.geode.security.ResourcePermission.Operation.WRITE;
@@ -42,12 +42,12 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, ClientServerTest.class})
-public class AuthorizingFunctionServiceImplTest {
+public class SecureFunctionServiceImplTest {
   public static final String REGION = "TestRegion";
   public static final String FUNCTION_ID = "id";
-  private AuthorizingFunctionServiceImpl functionService;
+  private SecureFunctionServiceImpl functionService;
   private InternalCache cache;
-  private Authorizer authorizer;
+  private Security security;
   private Region region;
   private Function function;
 
@@ -56,10 +56,10 @@ public class AuthorizingFunctionServiceImplTest {
     cache = mock(InternalCache.class);
     region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
-    authorizer = mock(Authorizer.class);
-    doThrow(NotAuthorizedException.class).when(authorizer).authorize(any());
-    doThrow(NotAuthorizedException.class).when(authorizer).authorize(any(), any(), any(), any());
-    functionService = new AuthorizingFunctionServiceImpl(cache, authorizer);
+    security = mock(Security.class);
+    doThrow(NotAuthorizedException.class).when(security).authorize(any());
+    doThrow(NotAuthorizedException.class).when(security).authorize(any(), any(), any(), any());
+    functionService = new SecureFunctionServiceImpl(cache, security);
     function = mock(Function.class);
     when(function.getId()).thenReturn("id");
     FunctionService.registerFunction(function);
@@ -99,9 +99,8 @@ public class AuthorizingFunctionServiceImplTest {
 
   private void authorize(ResourcePermission.Resource resource,
       ResourcePermission.Operation operation, String region, String key) {
-    doNothing().when(authorizer).authorize(resource, operation, region, key);
-    doNothing().when(authorizer)
-        .authorize(new ResourcePermission(resource, operation, region, key));
+    doNothing().when(security).authorize(resource, operation, region, key);
+    doNothing().when(security).authorize(new ResourcePermission(resource, operation, region, key));
   }
 
 }

@@ -42,7 +42,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandler implements
     List<String> memberNameList = request.getGroupNameList();
     Object arguments = getFunctionArguments(request, serializationService);
 
-    List<Object> results = messageExecutionContext.getAuthorizingCache().getFunctionService()
+    List<Object> results = messageExecutionContext.getSecureCache().getFunctionService()
         .executeFunctionOnGroups(functionID, arguments, memberNameList);
 
     final FunctionAPI.ExecuteFunctionOnGroupResponse.Builder responseMessage =

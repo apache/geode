@@ -36,7 +36,7 @@ public class ClearRequestOperationHandler
 
     String regionName = request.getRegionName();
 
-    messageExecutionContext.getAuthorizingCache().clear(regionName);
+    messageExecutionContext.getSecureCache().clear(regionName);
 
     return Success.of(RegionAPI.ClearResponse.newBuilder().build());
   }

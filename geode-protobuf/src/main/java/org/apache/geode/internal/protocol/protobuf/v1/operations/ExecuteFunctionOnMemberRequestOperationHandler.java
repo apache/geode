@@ -40,7 +40,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandler implements
     List<String> memberNameList = request.getMemberNameList();
     Object arguments = getFunctionArguments(request, serializationService);
 
-    List<Object> results = messageExecutionContext.getAuthorizingCache().getFunctionService()
+    List<Object> results = messageExecutionContext.getSecureCache().getFunctionService()
         .executeFunctionOnMember(functionID, arguments, memberNameList);
 
     final ExecuteFunctionOnMemberResponse.Builder responseMessage =

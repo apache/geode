@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import java.util.List;
 import java.util.Set;
@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Access layer for the function service that performs authorization checks
  */
-public interface AuthorizingFunctionService {
+public interface SecureFunctionService {
   List<Object> executeFunctionOnRegion(String functionID, String regionName, Object arguments,
       Set<?> keyFilter);
 
