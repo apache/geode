@@ -54,7 +54,7 @@ public class CreateIndexFunction implements InternalFunction {
       }
 
       context.getResultSender()
-          .lastResult(new CliFunctionResult(memberId, null, "Index successfully created"));
+          .lastResult(new CliFunctionResult(memberId, true, "Index successfully created"));
 
     } catch (IndexExistsException e) {
       String message =

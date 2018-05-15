@@ -65,7 +65,7 @@ public class AlterConnectionCommandTest {
     result = mock(CliFunctionResult.class);
     when(result.isSuccessful()).thenReturn(true);
     when(result.getMemberIdOrName()).thenReturn("memberName");
-    when(result.getStatus()).thenReturn("message");
+    when(result.getStatusMessage()).thenReturn("message");
     ccService = mock(InternalConfigurationPersistenceService.class);
     cacheConfig = mock(CacheConfig.class);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);

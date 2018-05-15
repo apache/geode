@@ -65,7 +65,7 @@ public class AlterMappingCommandTest {
     result = mock(CliFunctionResult.class);
     when(result.isSuccessful()).thenReturn(true);
     when(result.getMemberIdOrName()).thenReturn("memberName");
-    when(result.getStatus()).thenReturn("message");
+    when(result.getStatusMessage()).thenReturn("message");
     ccService = mock(InternalConfigurationPersistenceService.class);
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     cacheConfig = mock(CacheConfig.class);

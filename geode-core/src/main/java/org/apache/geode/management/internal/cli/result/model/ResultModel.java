@@ -285,8 +285,13 @@ public class ResultModel {
     return result;
   }
 
+  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
+      boolean ignoreIfFailed) {
+    return createMemberStatusResult(functionResults, null, null, ignoreIfFailed);
+  }
+
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults) {
-    return createMemberStatusResult(functionResults, null, null);
+    return createMemberStatusResult(functionResults, null, null, false);
   }
 
   /**
@@ -294,15 +299,16 @@ public class ResultModel {
    * to tabulate the status from calls to a number of members.
    */
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
-      String header, String footer) {
+      String header, String footer, boolean ignoreIfFailed) {
     ResultModel result = new ResultModel();
-    boolean atLeastOneSuccess = false;
+    boolean atLeastOneSuccess = ignoreIfFailed;
     TabularResultModel tabularResultModel = result.addTable(MEMBER_STATUS_SECTION);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
-    tabularResultModel.setColumnHeader("Member", "Status");
+    tabularResultModel.setColumnHeader("Member", "Status", "Message");
     for (CliFunctionResult functionResult : functionResults) {
-      tabularResultModel.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus());
+      tabularResultModel.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(),
+          functionResult.getStatusMessage());
       if (functionResult.isSuccessful()) {
         atLeastOneSuccess = true;
       }

@@ -67,6 +67,6 @@ public class GatewayReceiverCreateFunctionTest {
 
     CliFunctionResult result = (CliFunctionResult) resultObject.getValue();
 
-    assertThat(result.getStatus()).contains("5555");
+    assertThat(result.getStatusMessage()).contains("5555");
   }
 }

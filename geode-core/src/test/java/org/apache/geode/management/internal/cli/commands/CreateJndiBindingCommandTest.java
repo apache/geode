@@ -228,7 +228,7 @@ public class CreateJndiBindingCommandTest {
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
-        .tableHasColumnOnlyWithValues("Status",
+        .tableHasColumnOnlyWithValues("Status", "OK").tableHasColumnOnlyWithValues("Message",
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
@@ -273,7 +273,7 @@ public class CreateJndiBindingCommandTest {
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
-        .tableHasColumnOnlyWithValues("Status",
+        .tableHasColumnOnlyWithValues("Status", "OK").tableHasColumnOnlyWithValues("Message",
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
