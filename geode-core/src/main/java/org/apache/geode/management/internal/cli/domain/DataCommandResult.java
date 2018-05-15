@@ -43,9 +43,13 @@ import org.apache.geode.pdx.PdxInstance;
  * Domain object used for Data Commands Functions
  */
 public class DataCommandResult implements Serializable {
-  private static Logger logger = LogManager.getLogger();
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2601227194108110936L;
+
+  public static Logger logger = LogManager.getLogger();
+  public static final String DATA_INFO_SECTION = "data-info";
+  public static final String QUERY_SECTION = "query";
+  public static final String LOCATION_SECTION = "location";
   private String command;
   private Object putResult;
   private Object getResult;
@@ -376,7 +380,7 @@ public class DataCommandResult implements Serializable {
     }
 
     ResultModel result = new ResultModel();
-    DataResultModel data = result.addData();
+    DataResultModel data = result.addData(DATA_INFO_SECTION);
 
     if (errorString != null) {
       data.addData("Message", errorString);
@@ -416,7 +420,7 @@ public class DataCommandResult implements Serializable {
     data.addData("Key", inputKey);
 
     if (locateEntryLocations != null) {
-      TabularResultModel locationTable = result.addTable();
+      TabularResultModel locationTable = result.addTable(LOCATION_SECTION);
 
       int totalLocations = 0;
 
@@ -494,9 +498,9 @@ public class DataCommandResult implements Serializable {
    */
   public ResultModel toSelectCommandResult() {
     ResultModel result = new ResultModel();
+    DataResultModel data = result.addData(DATA_INFO_SECTION);
     if (!operationCompletedSuccessfully) {
       result.setStatus(Result.Status.ERROR);
-      DataResultModel data = result.addData();
       data.addData(RESULT_FLAG, operationCompletedSuccessfully);
       if (errorString != null) {
         data.addData("Message", errorString);
@@ -505,8 +509,7 @@ public class DataCommandResult implements Serializable {
       }
       return result;
     } else {
-      DataResultModel data = result.addData();
-      TabularResultModel table = result.addTable();
+      TabularResultModel table = result.addTable(DataCommandResult.QUERY_SECTION);
       data.addData(RESULT_FLAG, operationCompletedSuccessfully);
       if (infoString != null) {
         data.addData("Message", infoString);

@@ -27,6 +27,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.dto.Key;
 import org.apache.geode.management.internal.cli.dto.Value;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -83,7 +84,7 @@ public class LocateEntryDUnitTest {
     CommandResult result = gfsh.executeCommand("locate entry --region=regionA --key=key");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Locations Found")).isEqualTo("1");
   }
 
@@ -92,7 +93,7 @@ public class LocateEntryDUnitTest {
     CommandResult result = gfsh.executeCommand("locate entry --region=regionB --key=key");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Locations Found")).isEqualTo("2");
   }
 
@@ -102,7 +103,7 @@ public class LocateEntryDUnitTest {
         gfsh.executeCommand("locate entry --region=regionB --key=key --recursive=true");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Locations Found")).isEqualTo("4");
   }
 
@@ -117,7 +118,7 @@ public class LocateEntryDUnitTest {
             + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName());
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Locations Found")).isEqualTo("1");
   }
 }

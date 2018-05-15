@@ -27,6 +27,7 @@ import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
@@ -57,7 +58,8 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
     }
 
     ResultModel model = ((ModelCommandResult) result).getResultData();
-    Map<String, String> sectionResultData = model.getDataSection("0").getContent();
+    Map<String, String> sectionResultData =
+        model.getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
 
     String limit = sectionResultData.get("Limit");
     String resultString = sectionResultData.get("Result");
@@ -75,7 +77,7 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
     }
 
     ResultModel newModel = new ResultModel();
-    DataResultModel data = newModel.addData();
+    DataResultModel data = newModel.addData(DataCommandResult.DATA_INFO_SECTION);
 
     data.addData("Result", resultString);
     if (StringUtils.isNotBlank(limit)) {

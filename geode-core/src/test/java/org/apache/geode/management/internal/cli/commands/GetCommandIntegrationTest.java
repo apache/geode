@@ -38,6 +38,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -117,20 +118,20 @@ public class GetCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand("get --region=Users --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("true");
 
     result = gfsh.executeCommand("get --region=Users --key=jondoe --load-on-cache-miss=false");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
 
     result = gfsh.executeCommand("get --region=Users --key=jondoe");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value Class")).isEqualTo(User.class.getCanonicalName());
 
@@ -138,7 +139,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=Users --key=missingUser --load-on-cache-miss");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Value")).isEqualTo("null");
   }
@@ -148,20 +149,20 @@ public class GetCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand("get --region=UsersPdx --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("true");
 
     result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe --load-on-cache-miss=false");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
 
     result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value Class")).isEqualTo(PdxInstanceImpl.class.getCanonicalName());
 
@@ -169,7 +170,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=UsersPdx --key=missingUser --load-on-cache-miss");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Value")).isEqualTo("null");
   }
@@ -179,7 +180,7 @@ public class GetCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand("get --region=UsersString --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value")).isEqualTo("\"6a6f6e626c6f6f6d\"");
 
@@ -187,7 +188,7 @@ public class GetCommandIntegrationTest {
         gfsh.executeCommand("get --region=UsersString --key=jondoe --load-on-cache-miss=false");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
     assertThat(data.get("Value")).isEqualTo("null");
@@ -195,7 +196,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=UsersString --key=jondoe");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value Class")).isEqualTo(String.class.getName());
     assertThat(data.get("Value")).isEqualTo("\"6a6f6e646f65\"");
@@ -204,7 +205,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=UsersString --key=missingUser --load-on-cache-miss");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection("0");
+    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Value")).isEqualTo("null");
   }

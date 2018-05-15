@@ -33,6 +33,9 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ListMembersCommand extends InternalGfshCommand {
+
+  public static final String MEMBERS_SECTION = "members";
+
   @CliCommand(value = {CliStrings.LIST_MEMBER}, help = CliStrings.LIST_MEMBER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_SERVER)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -50,7 +53,7 @@ public class ListMembersCommand extends InternalGfshCommand {
       return crm;
     }
 
-    TabularResultModel resultData = crm.addTable();
+    TabularResultModel resultData = crm.addTable(MEMBERS_SECTION);
     final DistributedMember coordinatorMember = getCoordinator();
     for (DistributedMember member : memberSet) {
       resultData.accumulate("Name", member.getName());

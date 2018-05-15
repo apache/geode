@@ -113,7 +113,7 @@ public class CommandExecutor {
     }
 
     // if command result is ok, we will need to see if we need to update cluster configuration
-    InfoResultModel infoResultModel = resultModel.addInfo();
+    InfoResultModel infoResultModel = resultModel.addInfo(ResultModel.INFO_SECTION);
     ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
     if (ccService == null) {
       infoResultModel.addLine(

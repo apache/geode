@@ -37,6 +37,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -200,7 +201,7 @@ public class QueryCommandIntegrationTest {
     gfsh.executeAndAssertThat("set variable --name=QUERY_LIMIT --value=10").statusIsSuccess();
     CommandResult result = gfsh.executeCommand(
         "query --query='select c.name, c.address from ${DATA_REGION} c limit ${QUERY_LIMIT}'");
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
 
     assertThat(data.get("Rows")).isEqualTo("10");
   }
@@ -216,7 +217,7 @@ public class QueryCommandIntegrationTest {
   public void invalidQueryGivesDescriptiveErrorMessage() {
     CommandResult result = gfsh.executeCommand("query --query='this is not a valid query'");
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Message"))
         .startsWith("Query is invalid due to error : <Syntax error in query:");
@@ -233,7 +234,8 @@ public class QueryCommandIntegrationTest {
     CommandResult result =
         gfsh.executeCommand("query --query='select c.unknown from /complexRegion c limit 10'");
 
-    Map<String, List<String>> table = result.getMapFromTableContent("1");
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(DataCommandResult.QUERY_SECTION);
     assertThat(table.get("Value").size()).isEqualTo(10);
     assertThat(table.get("Value").get(0)).isEqualTo("UNDEFINED");
   }
@@ -243,10 +245,11 @@ public class QueryCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand(
         "query --query=\"(select c.address from /complexRegion c where c.name = 'name1' limit 1).size\"");
 
-    Map<String, String> data = result.getMapFromSection("0");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
     assertThat(data.get("Rows")).isEqualTo("1");
 
-    Map<String, List<String>> table = result.getMapFromTableContent("1");
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(DataCommandResult.QUERY_SECTION);
     assertThat(table.get("Result")).contains("1");
   }
 

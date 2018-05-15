@@ -68,7 +68,8 @@ public class ListMembersCommandDUnitTest {
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, List<String>> table = result.getMapFromTableContent("0");
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(ListMembersCommand.MEMBERS_SECTION);
 
     assertThat(table.get("Name").size()).isEqualTo(4);
     assertThat(table.get("Name")).contains("locator-0", "server-1", "server-2", "server-3");
