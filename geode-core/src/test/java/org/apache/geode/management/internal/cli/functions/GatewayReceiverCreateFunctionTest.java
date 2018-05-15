@@ -55,7 +55,6 @@ public class GatewayReceiverCreateFunctionTest {
     doCallRealMethod().when(function).execute(context);
     doReturn(false).when(function).gatewayReceiverExists(any());
     doReturn(receiver).when(function).createGatewayReceiver(cache, args);
-    doReturn(null).when(function).getXmlEntity(args);
 
     doReturn(5555).when(receiver).getPort();
   }
