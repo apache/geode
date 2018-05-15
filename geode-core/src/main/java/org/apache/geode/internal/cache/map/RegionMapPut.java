@@ -324,24 +324,27 @@ public class RegionMapPut extends AbstractRegionMapPut {
   }
 
   /**
-   * @return false if precondition indicates that
+   * @return false if preconditions indicate that
    *         the put should not be done.
    */
   @Override
   protected boolean checkPreconditions() {
-    if (!continueUpdate()) {
+    if (!checkUpdatePreconditions()) {
       return false;
     }
-    if (!continueOverwriteDestroyed()) {
+    if (!checkUninitializedRegionPreconditions()) {
       return false;
     }
-    if (!satisfiesExpectedOldValue()) {
+    if (!checkCreatePreconditions()) {
+      return false;
+    }
+    if (!checkExpectedOldValuePrecondition()) {
       return false;
     }
     return true;
   }
 
-  private boolean continueUpdate() {
+  private boolean checkUpdatePreconditions() {
     if (isIfOld()) {
       final EntryEventImpl event = getEvent();
       final RegionEntry re = getRegionEntry();
@@ -365,23 +368,29 @@ public class RegionMapPut extends AbstractRegionMapPut {
     return true;
   }
 
-  private boolean continueOverwriteDestroyed() {
-    Token oldValueInVM = getRegionEntry().getValueAsToken();
-    // if region is under GII, check if token is destroyed
-    if (!isOverwriteDestroyed()) {
-      if (!getOwner().isInitialized()
-          && (oldValueInVM == Token.DESTROYED || oldValueInVM == Token.TOMBSTONE)) {
-        getEvent().setOldValueDestroyedToken();
-        return false;
+  private boolean checkUninitializedRegionPreconditions() {
+    if (!getOwner().isInitialized()) {
+      if (!isOverwriteDestroyed()) {
+        Token oldValueInVM = getRegionEntry().getValueAsToken();
+        if (oldValueInVM == Token.DESTROYED || oldValueInVM == Token.TOMBSTONE) {
+          getEvent().setOldValueDestroyedToken();
+          return false;
+        }
       }
-    }
-    if (isIfNew() && !Token.isRemoved(oldValueInVM)) {
-      return false;
     }
     return true;
   }
 
-  private boolean satisfiesExpectedOldValue() {
+  private boolean checkCreatePreconditions() {
+    if (isIfNew()) {
+      if (!getRegionEntry().isDestroyedOrRemoved()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private boolean checkExpectedOldValuePrecondition() {
     // replace is propagated to server, so no need to check
     // satisfiesOldValue on client
     final EntryEventImpl event = getEvent();

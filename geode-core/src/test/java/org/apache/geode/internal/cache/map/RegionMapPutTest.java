@@ -92,6 +92,7 @@ public class RegionMapPutTest {
     when(event.getRegion()).thenReturn(internalRegion);
     when(regionEntry.getValueAsToken()).thenReturn(Token.REMOVED_PHASE1);
     when(regionEntry.isRemoved()).thenReturn(true);
+    when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
   }
 
   private void createInstance() {
@@ -490,6 +491,42 @@ public class RegionMapPutTest {
     assertThat(result).isNull();
     verify(existingRegionEntry, times(1)).setValue(internalRegion, Token.TOMBSTONE);
     verify(internalRegion, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
+  }
+
+  @Test
+  public void createWithoutOverwriteDestroyedReturnsNullAndCallsSetOldValueDestroyedToken_ifRegionUninitializedAndCurrentValueIsDestroyed() {
+    overwriteDestroyed = false;
+    when(internalRegion.isInitialized()).thenReturn(false);
+    when(regionEntry.getValueAsToken()).thenReturn(Token.DESTROYED);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isNull();
+    verify(event, times(1)).setOldValueDestroyedToken();
+  }
+
+  @Test
+  public void createWithoutOverwriteDestroyedReturnsNullAndCallsSetOldValueDestroyedToken_ifRegionUninitializedAndCurrentValueIsTombstone() {
+    overwriteDestroyed = false;
+    when(internalRegion.isInitialized()).thenReturn(false);
+    when(regionEntry.getValueAsToken()).thenReturn(Token.TOMBSTONE);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isNull();
+    verify(event, times(1)).setOldValueDestroyedToken();
+  }
+
+  @Test
+  public void createWithOverwriteDestroyedReturnsCreatedRegionEntry_ifRegionUninitializedAndCurrentValueIsDestroyed() {
+    overwriteDestroyed = true;
+    when(internalRegion.isInitialized()).thenReturn(false);
+    when(regionEntry.getValueAsToken()).thenReturn(Token.DESTROYED);
+
+    RegionEntry result = doPut();
+
+    assertThat(result).isSameAs(regionEntry);
+    verify(event, never()).setOldValueDestroyedToken();
   }
 
   @Test
