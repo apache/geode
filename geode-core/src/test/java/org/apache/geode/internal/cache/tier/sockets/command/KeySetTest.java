@@ -104,8 +104,21 @@ public class KeySetTest {
   }
 
   @Test
+  public void nonRetryKeySet_doesNotWriteTransactionException() throws Exception {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(true);
+    when(message.isRetry()).thenReturn(false);
+    when(region.getPartitionAttributes()).thenReturn(null);
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
+    assertThat(keySet.exceptionSentToClient).isNull();
+  }
+
+  @Test
   public void retryKeySet_doesNotWriteTransactionException_ifIsInTransactionAndIsNotPartitionedRegion()
-      throws IOException, InterruptedException {
+      throws Exception {
     long startTime = 0; // arbitrary value
     TestableKeySet keySet = new TestableKeySet();
     keySet.setIsInTransaction(true);
@@ -116,9 +129,10 @@ public class KeySetTest {
 
     assertThat(keySet.exceptionSentToClient).isNull();
   }
-  
+
   @Test
-  public void retryKeySet_writesTransactionException_ifIsInTransactionAndIsPartitionedRegion() throws Exception {
+  public void retryKeySet_writesTransactionException_ifIsInTransactionAndIsPartitionedRegion()
+      throws Exception {
     long startTime = 0; // arbitrary value
     TestableKeySet keySet = new TestableKeySet();
     keySet.setIsInTransaction(true);
