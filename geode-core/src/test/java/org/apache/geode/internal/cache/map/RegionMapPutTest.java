@@ -153,15 +153,11 @@ public class RegionMapPutTest {
   @Test
   public void eventPutExistingEntryGivenOldValue_ifRetrieveOldValueForDelta()
       throws RegionClearedException {
+    givenThatRunWhileEvictionDisabledCallsItsRunnable();
     givenExistingRegionEntry();
     Object oldValue = new Object();
     when(existingRegionEntry.getValue(any())).thenReturn(oldValue);
     when(event.getDeltaBytes()).thenReturn(new byte[1]);
-    doAnswer(invocation -> {
-      Runnable runnable = invocation.getArgument(0);
-      runnable.run();
-      return null;
-    }).when(focusedRegionMap).runWhileEvictionDisabled(any());
 
     doPut();
 
@@ -172,15 +168,11 @@ public class RegionMapPutTest {
   @Test
   public void eventPutExistingEntryGivenNullOldValue_ifNotRetrieveOldValueForDelta()
       throws RegionClearedException {
+    givenThatRunWhileEvictionDisabledCallsItsRunnable();
     givenExistingRegionEntry();
     Object oldValue = new Object();
     when(existingRegionEntry.getValue(any())).thenReturn(oldValue);
     when(event.getDeltaBytes()).thenReturn(null);
-    doAnswer(invocation -> {
-      Runnable runnable = invocation.getArgument(0);
-      runnable.run();
-      return null;
-    }).when(focusedRegionMap).runWhileEvictionDisabled(any());
 
     doPut();
 
@@ -985,6 +977,14 @@ public class RegionMapPutTest {
   private void givenReplaceOnPeer() {
     when(event.getOperation()).thenReturn(Operation.REPLACE);
     when(internalRegion.hasServerProxy()).thenReturn(false);
+  }
+
+  private void givenThatRunWhileEvictionDisabledCallsItsRunnable() {
+    doAnswer(invocation -> {
+      Runnable runnable = invocation.getArgument(0);
+      runnable.run();
+      return null;
+    }).when(focusedRegionMap).runWhileEvictionDisabled(any());
   }
 
 }
