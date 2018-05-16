@@ -26,11 +26,17 @@ sourceSets {
   }
 }
 
-
-
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
+  classesOutput {
+    extendsFrom compile
+    description  'a dependency that exposes the compiled classes'
+  }
+  testClassesOutput {
+    extendsFrom compile
+    description  'a dependency that exposes the compiled test classes'
+  }
 }
 
 dependencies {
@@ -130,11 +136,11 @@ dependencies {
 
   jcaCompile sourceSets.main.output
 
-  testCompile project(':geode-junit')
-
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
-
   // Test Dependencies
+  testCompile(project(path: ':geode-test')) {
+    transitive = false
+  }
+
   // External
   testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
@@ -155,6 +161,9 @@ dependencies {
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
+
+  classesOutput sourceSets.main.output
+  testClassesOutput sourceSets.test.output
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -229,16 +238,4 @@ task jcaJar (type: Jar, dependsOn: raJar) {
   from raJar.archivePath
 }
 
-configurations {
-  classesOutput {
-    extendsFrom compile
-    description  'a dependency that exposes the compiled classes'
-  }
-}
-
-dependencies {
-  classesOutput sourceSets.main.output
-}
-
 tasks.eclipse.dependsOn(generateGrammarSource)
-

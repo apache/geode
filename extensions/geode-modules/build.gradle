@@ -17,7 +17,7 @@
 
 dependencies {
   compile project(':geode-core')
-  
+
   compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   compile ('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
     exclude module: 'annotations-api'
@@ -30,8 +30,8 @@ dependencies {
   testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
   testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
-  testCompile project(path: ':geode-junit')
-  testCompile files(project(':geode-core').sourceSets.test.output)
+  testCompile project(path: ':geode-core', configuration: 'testOutput')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
 }
 
 disableMavenPublishing()

@@ -44,7 +44,7 @@ public class GfshRuleTest {
   @Test
   public void checkGfsh130() {
     assertThat(gfsh130.getGfshPath().toString())
-        .contains("geode-old-versions/build/apache-geode-1.3.0/bin/gfsh");
+        .contains("geode-test/build/apache-geode-1.3.0/bin/gfsh");
   }
 
 }

@@ -27,6 +27,13 @@ sourceSets {
   }
 }
 
+configurations {
+  testClassesOutput {
+    extendsFrom compile
+    description  'a dependency that exposes the compiled test classes'
+  }
+}
+
 dependencies {
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
 
@@ -75,9 +82,8 @@ dependencies {
   provided 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
   provided 'com.google.guava:guava:' + project.'guava.version'
 
-  testCompile project(':geode-junit')
-  testCompile project(':geode-core')
-  testCompile files(project(':geode-core').sourceSets.test.output)
+  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
 
   testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
   testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
@@ -88,6 +94,8 @@ dependencies {
   testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
   testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
   testRuntime 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
+
+  testClassesOutput sourceSets.test.output
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -145,4 +153,3 @@ task uiTest(type:Test) {
 uiTest.dependsOn war
 uiTest.finalizedBy rootProject.combineReports
 rootProject.combineReports.mustRunAfter uiTest
-

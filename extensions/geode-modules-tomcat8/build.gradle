@@ -38,10 +38,9 @@ dependencies {
   testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
   testCompile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
 
-  testCompile project(path: ':geode-junit')
-  testCompile files(project(':geode-core').sourceSets.test.output)
-  testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
+  testCompile project(path: ':geode-core', configuration: 'testOutput')
+  testCompile project(path: ':geode-test', configuration: 'runtime')
+  testCompile project(path: ':extensions/geode-modules', configuration: 'testOutput')
 
   eclipse.classpath.file {
     whenMerged { classpath ->
