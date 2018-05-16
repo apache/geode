@@ -22,6 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -31,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.operations.KeySetOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -100,6 +103,19 @@ public class KeySetTest {
   }
 
   @Test
+  public void retryKeySetInPartitionedRegion_failsIfInTransaction() throws Exception {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(true);
+    when(message.isRetry()).thenReturn(true);
+    when(region.isUsedForPartitionedRegionBucket()).thenReturn(true);
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+    assertThat(keySet.exceptionSentToClient).isInstanceOf(TransactionException.class).hasMessage(
+        "Failover on a set operation of a partitioned region is not allowed in a transaction.");
+  }
+
+  @Test
   public void noSecurityShouldSucceed() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
@@ -161,4 +177,23 @@ public class KeySetTest {
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
 
+  private class TestableKeySet extends KeySet {
+    private boolean isInTransaction = false;
+    public Throwable exceptionSentToClient;
+
+    public void setIsInTransaction(boolean isInTransaction) {
+      this.isInTransaction = isInTransaction;
+    }
+
+    @Override
+    public boolean isInTransaction() {
+      return isInTransaction;
+    }
+
+    @Override
+    protected void keySetWriteChunkedException(Message clientMessage, Throwable ex,
+        ServerConnection serverConnection) throws IOException {
+      this.exceptionSentToClient = ex;
+    }
+  }
 }
