@@ -77,6 +77,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   public void setup() {
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(factoryRegionEntry);
     when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    when(existingRegionEntry.getKey()).thenReturn(key);
     when(keyInfo.getKey()).thenReturn(key);
     when(txId.getMemberId()).thenReturn(myId);
   }
@@ -111,7 +112,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasNoPendingCallback_givenRemovedRegionEntry() {
+  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsRemoved() {
     givenLocalRegion();
     givenExistingRegionEntry();
     when(existingRegionEntry.isRemoved()).thenReturn(true);
@@ -122,7 +123,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyInvokesRescheduleTombstone_givenRemovedTombstoneRegionEntry() {
+  public void txApplyDestroyInvokesRescheduleTombstone_givenExistingRegionEntryThatIsTombstone() {
     givenLocalRegion();
     givenExistingRegionEntry();
     when(existingRegionEntry.isRemoved()).thenReturn(true);
@@ -132,6 +133,137 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     verify(owner, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
   }
+
+  @Test
+  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsValidWithInTokenModeAndNotInRI() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    this.inTokenMode = true;
+    this.inRI = false;
+
+    doTxApplyDestroy();
+
+    validateNoPendingCallbacks();
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndNotInRI() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    this.inTokenMode = false;
+    this.inRI = false;
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+
+  }
+
+  // verify(owner, never()).txApplyDestroyPart2(any(), any(), anyBoolean(), anyBoolean());
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndWithInRI() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    this.inTokenMode = false;
+    this.inRI = true;
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithInTokenModeAndInRI() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    this.inTokenMode = true;
+    this.inRI = true;
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsValidWithPartitionedRegion() {
+    givenBucketRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+
+    doTxApplyDestroy();
+
+    validateNoPendingCallbacks();
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsValidWithoutConcurrencyChecks() {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(false);
+
+    doTxApplyDestroy();
+
+    validateNoPendingCallbacks();
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithShouldDispatchListenerEvent() {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    when(owner.shouldDispatchListenerEvent()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithshouldNotifyBridgeClients() {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    when(owner.shouldNotifyBridgeClients()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
+        eq(this.inTokenMode), eq(false));
+  }
+
 
   private void validateNoPendingCallbacks() {
     assertThat(pendingCallbacks).isEmpty();
