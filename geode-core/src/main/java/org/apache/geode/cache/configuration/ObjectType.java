@@ -17,6 +17,7 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -48,7 +49,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"string", "declarable"})
-public class ObjectType {
+public class ObjectType implements Serializable {
   @XmlElement(name = "string", namespace = "http://geode.apache.org/schema/cache")
   protected String string;
   @XmlElement(name = "declarable", namespace = "http://geode.apache.org/schema/cache")

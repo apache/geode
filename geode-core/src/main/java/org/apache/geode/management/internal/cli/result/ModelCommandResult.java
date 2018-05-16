@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
@@ -33,6 +35,14 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class ModelCommandResult implements CommandResult {
+  private static final String DO_NOT_USE_PERSISTED_FLAG =
+      "The persisted flag is an artifact of the legacy model and should not be used ModelCommandResult.";
+  private static final String FILE_LOGIC_NOT_YET_IMPLEMENTED =
+      "File transfer logic has not yet been implemented in ModelCommandResult";
+  private static final String CANNOT_PASS_GF_JSON_OBJECT_TO_MODEL_COMMAND_RESULT =
+      "Cannot pass GfJsonObject to ModelCommandResult";
+  private static final String CANNOT_USE_GF_JSON_OBJECT_FROM_MODEL_COMMAND_RESULT =
+      "Cannot use GfJsonObject from ModelCommandResult";
 
   private ResultModel result;
   private List<String> commandOutput;
@@ -121,12 +131,12 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public String getHeader(GfJsonObject gfJsonObject) {
-    throw new IllegalArgumentException("Cannot pass GfJsonObject to ModelCommandResult");
+    throw new IllegalArgumentException(CANNOT_PASS_GF_JSON_OBJECT_TO_MODEL_COMMAND_RESULT);
   }
 
   @Override
   public GfJsonObject getContent() {
-    throw new IllegalArgumentException("Cannot use GfJsonObject from ModelCommandResult");
+    throw new IllegalArgumentException(CANNOT_USE_GF_JSON_OBJECT_FROM_MODEL_COMMAND_RESULT);
   }
 
   @Override
@@ -187,17 +197,17 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public boolean failedToPersist() {
-    return false;
+    throw new IllegalArgumentException(DO_NOT_USE_PERSISTED_FLAG);
   }
 
   @Override
   public void setCommandPersisted(boolean commandPersisted) {
-
+    throw new IllegalArgumentException(DO_NOT_USE_PERSISTED_FLAG);
   }
 
   @Override
   public void setFileToDownload(Path fileToDownload) {
-
+    throw new NotImplementedException(FILE_LOGIC_NOT_YET_IMPLEMENTED);
   }
 
   // Convenience implementation using the first table found

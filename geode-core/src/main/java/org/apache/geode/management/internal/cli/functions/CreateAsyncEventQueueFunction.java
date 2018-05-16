@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -25,6 +26,10 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.ClassNameType;
+import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
@@ -34,9 +39,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
@@ -56,7 +59,7 @@ public class CreateAsyncEventQueueFunction implements InternalFunction {
     String memberId = "";
 
     try {
-      AsyncEventQueueFunctionArgs aeqArgs = (AsyncEventQueueFunctionArgs) context.getArguments();
+      CacheConfig.AsyncEventQueue config = (CacheConfig.AsyncEventQueue) context.getArguments();
 
       InternalCache cache = (InternalCache) context.getCache();
 
@@ -68,18 +71,21 @@ public class CreateAsyncEventQueueFunction implements InternalFunction {
         memberId = member.getName();
       }
 
-      AsyncEventQueueFactory asyncEventQueueFactory = cache.createAsyncEventQueueFactory()
-          .setParallel(aeqArgs.isParallel())
-          .setBatchConflationEnabled(aeqArgs.isEnableBatchConflation())
-          .setBatchSize(aeqArgs.getBatchSize()).setBatchTimeInterval(aeqArgs.getBatchTimeInterval())
-          .setPersistent(aeqArgs.isPersistent()).setDiskStoreName(aeqArgs.getDiskStoreName())
-          .setDiskSynchronous(aeqArgs.isDiskSynchronous())
-          .setForwardExpirationDestroy(aeqArgs.isForwardExpirationDestroy())
-          .setMaximumQueueMemory(aeqArgs.getMaxQueueMemory())
-          .setDispatcherThreads(aeqArgs.getDispatcherThreads())
-          .setOrderPolicy(OrderPolicy.valueOf(aeqArgs.getOrderPolicy()));
+      AsyncEventQueueFactory asyncEventQueueFactory =
+          cache.createAsyncEventQueueFactory().setParallel(config.isParallel())
+              .setBatchConflationEnabled(config.isEnableBatchConflation())
+              .setBatchSize(Integer.parseInt(config.getBatchSize()))
+              .setBatchTimeInterval(Integer.parseInt(config.getBatchTimeInterval()))
+              .setPersistent(config.isPersistent()).setDiskStoreName(config.getDiskStoreName())
+              .setDiskSynchronous(config.isDiskSynchronous())
+              .setForwardExpirationDestroy(config.isForwardExpirationDestroy())
+              .setMaximumQueueMemory(Integer.parseInt(config.getMaximumQueueMemory()))
+              .setDispatcherThreads(Integer.parseInt(config.getDispatcherThreads()))
+              .setOrderPolicy(OrderPolicy.valueOf(config.getOrderPolicy()));
 
-      String[] gatewayEventFilters = aeqArgs.getGatewayEventFilters();
+      String[] gatewayEventFilters = config.getGatewayEventFilter().stream()
+          .map(ClassNameType::getClassName).toArray(String[]::new);
+
       if (gatewayEventFilters != null) {
         for (String gatewayEventFilter : gatewayEventFilters) {
           asyncEventQueueFactory
@@ -87,19 +93,26 @@ public class CreateAsyncEventQueueFunction implements InternalFunction {
         }
       }
 
-      String gatewaySubstitutionFilter = aeqArgs.getGatewaySubstitutionFilter();
-      if (gatewaySubstitutionFilter != null) {
+      DeclarableType gatewayEventSubstitutionFilter = config.getGatewayEventSubstitutionFilter();
+
+      if (gatewayEventSubstitutionFilter != null) {
+        String gatewaySubstitutionFilter = gatewayEventSubstitutionFilter.getClassName();
         asyncEventQueueFactory.setGatewayEventSubstitutionListener(
             (GatewayEventSubstitutionFilter<?, ?>) newInstance(gatewaySubstitutionFilter));
       }
 
-      String listenerClassName = aeqArgs.getListenerClassName();
+      String listenerClassName = config.getAsyncEventListener().getClassName();
       Object listenerInstance;
       Class<?> listenerClass = InternalDataSerializer.getCachedClass(listenerClassName);
       listenerInstance = listenerClass.newInstance();
 
-      Properties listenerProperties = aeqArgs.getListenerProperties();
-      if (listenerProperties != null && !listenerProperties.isEmpty()) {
+      List<ParameterType> parameters = config.getAsyncEventListener().getParameter();
+      Properties listenerProperties = new Properties();
+      for (ParameterType p : parameters) {
+        listenerProperties.put(p.getName(), p.getString());
+      }
+
+      if (!listenerProperties.isEmpty()) {
         if (!(listenerInstance instanceof Declarable)) {
           throw new IllegalArgumentException(
               "Listener properties were provided, but the listener specified does not implement Declarable.");
@@ -108,18 +121,14 @@ public class CreateAsyncEventQueueFunction implements InternalFunction {
         ((Declarable) listenerInstance).initialize(cache, listenerProperties);
         ((Declarable) listenerInstance).init(listenerProperties); // for backwards compatibility
 
-        Map<Declarable, Properties> declarablesMap = new HashMap<Declarable, Properties>();
+        Map<Declarable, Properties> declarablesMap = new HashMap<>();
         declarablesMap.put((Declarable) listenerInstance, listenerProperties);
         cache.addDeclarableProperties(declarablesMap);
       }
 
-      asyncEventQueueFactory.create(aeqArgs.getAsyncEventQueueId(),
-          (AsyncEventListener) listenerInstance);
+      asyncEventQueueFactory.create(config.getId(), (AsyncEventListener) listenerInstance);
 
-      XmlEntity xmlEntity =
-          new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, "id", aeqArgs.getAsyncEventQueueId());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity, "Success"));
-
+      context.getResultSender().lastResult(new CliFunctionResult(memberId, true, "Success"));
     } catch (CacheClosedException cce) {
       context.getResultSender().lastResult(new CliFunctionResult(memberId, false, null));
     } catch (Exception e) {
