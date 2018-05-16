@@ -65,6 +65,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
       mock(ConcurrentMapWithReusableEntries.class);
   private final RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
   private final RegionEntry factoryRegionEntry = mock(RegionEntry.class);
+  private final RegionEntry existingRegionEntry = mock(RegionEntry.class);
   private final PartitionedRegion pr = mock(PartitionedRegion.class);
 
   private LocalRegion owner;
@@ -135,10 +136,26 @@ public class AbstractRegionMapTxApplyDestroyTest {
     verify(txEntryState, times(1)).setTailKey(tailKey);
   }
 
+  @Test
+  public void txApplyDestroyHasNoPendingCallback_givenRemovedRegionEntry() {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    validateNoPendingCallbacks();
+  }
+
+  private void validateNoPendingCallbacks() {
+    assertThat(pendingCallbacks).isEmpty();
+  }
+
   private void validatePendingCallbacks(EntryEventImpl expectedEvent) {
     assertThat(pendingCallbacks).hasSize(1);
-    if (!pendingCallbacks.get(0).checkEquality(expectedEvent)) {
-      assertThat(pendingCallbacks.get(0)).isEqualTo(expectedEvent);
+    EntryEventImpl callbackEvent = pendingCallbacks.get(0);
+    if (!callbackEvent.checkEquality(expectedEvent)) {
+      assertThat(callbackEvent).isEqualTo(expectedEvent);
     }
   }
 
@@ -152,6 +169,10 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
   private void givenNoRegionEntry() {
     when(entryMap.get(eq(key))).thenReturn(null);
+  }
+
+  private void givenExistingRegionEntry() {
+    when(entryMap.get(eq(key))).thenReturn(existingRegionEntry);
   }
 
   private void givenNotInTokenMode() {
