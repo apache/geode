@@ -307,8 +307,8 @@ public class ResultModel {
     tabularResultModel.setFooter(footer);
     tabularResultModel.setColumnHeader("Member", "Status", "Message");
     for (CliFunctionResult functionResult : functionResults) {
-      tabularResultModel.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(),
-          functionResult.getStatusMessage());
+      tabularResultModel.addRow(functionResult.getMemberIdOrName(),
+          functionResult.getStatus(ignoreIfFailed), functionResult.getStatusMessage());
       if (functionResult.isSuccessful()) {
         atLeastOneSuccess = true;
       }

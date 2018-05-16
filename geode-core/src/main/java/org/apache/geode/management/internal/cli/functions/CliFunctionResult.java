@@ -131,12 +131,16 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     return (String) this.serializables[0];
   }
 
-  public String getStatus() {
-    if (isIgnorableFailure()) {
-      return "IGNORED";
+  public String getStatus(boolean allowIgnorableFailures) {
+    if (!allowIgnorableFailures && state == StatusState.IGNORED) {
+      return StatusState.ERROR.name();
     }
 
-    return isSuccessful() ? "OK" : "ERROR";
+    return getStatus();
+  }
+
+  public String getStatus() {
+    return state.name();
   }
 
   public String getStatusMessage() {
