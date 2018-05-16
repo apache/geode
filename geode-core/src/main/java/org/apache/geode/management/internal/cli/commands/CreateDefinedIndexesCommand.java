@@ -25,23 +25,27 @@ import java.util.TreeSet;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateDefinedIndexesCommand extends InternalGfshCommand {
+public class CreateDefinedIndexesCommand extends SingleGfshCommand {
   private static final CreateDefinedIndexesFunction createDefinedIndexesFunction =
       new CreateDefinedIndexesFunction();
 
@@ -50,7 +54,7 @@ public class CreateDefinedIndexesCommand extends InternalGfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   // TODO : Add optionContext for indexName
-  public Result createDefinedIndexes(
+  public ResultModel createDefinedIndexes(
 
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
@@ -60,53 +64,49 @@ public class CreateDefinedIndexesCommand extends InternalGfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
-    Result result;
-    List<XmlEntity> xmlEntities = new ArrayList<>();
+    ResultModel result = new ResultModel();
+//    List<XmlEntity> xmlEntities = new ArrayList<>();
 
     if (IndexDefinition.indexDefinitions.isEmpty()) {
-      final InfoResultData infoResult = ResultBuilder.createInfoResultData();
-      infoResult.addLine(CliStrings.DEFINE_INDEX__FAILURE__MSG);
-      return ResultBuilder.buildResult(infoResult);
+      result.addInfo().addLine(CliStrings.DEFINE_INDEX__FAILURE__MSG);
+      return result;
     }
 
     try {
       final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 
       if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+        result.addInfo().addLine(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+        return result;
       }
 
       final ResultCollector<?, ?> rc = executeFunction(createDefinedIndexesFunction,
           IndexDefinition.indexDefinitions, targetMembers);
 
-      final List<Object> funcResults = (List<Object>) rc.getResult();
+      final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
       final Set<String> successfulMembers = new TreeSet<>();
       final Map<String, Set<String>> indexOpFailMap = new HashMap<>();
 
-      for (final Object funcResult : funcResults) {
-        if (funcResult instanceof CliFunctionResult) {
-          final CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
+      for (CliFunctionResult cliFunctionResult : funcResults) {
+        if (cliFunctionResult.isSuccessful()) {
+          successfulMembers.add(cliFunctionResult.getMemberIdOrName());
 
-          if (cliFunctionResult.isSuccessful()) {
-            successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-
-            // Only add the XmlEntity if it wasn't previously added from the result of another
-            // successful member.
-            XmlEntity resultEntity = cliFunctionResult.getXmlEntity();
-            if ((null != resultEntity) && (!xmlEntities.contains(resultEntity))) {
-              xmlEntities.add(cliFunctionResult.getXmlEntity());
-            }
-          } else {
-            final String exceptionMessage = cliFunctionResult.getMessage();
-            Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-            if (failedMembers == null) {
-              failedMembers = new TreeSet<>();
-            }
-
-            failedMembers.add(cliFunctionResult.getMemberIdOrName());
-            indexOpFailMap.put(exceptionMessage, failedMembers);
+          // Only add the XmlEntity if it wasn't previously added from the result of another
+          // successful member.
+          XmlEntity resultEntity = cliFunctionResult.getXmlEntity();
+          if ((null != resultEntity) && (!xmlEntities.contains(resultEntity))) {
+            xmlEntities.add(cliFunctionResult.getXmlEntity());
           }
+        } else {
+          final String exceptionMessage = cliFunctionResult.getMessage();
+          Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
+
+          if (failedMembers == null) {
+            failedMembers = new TreeSet<>();
+          }
+
+          failedMembers.add(cliFunctionResult.getMemberIdOrName());
+          indexOpFailMap.put(exceptionMessage, failedMembers);
         }
       }
 
@@ -159,5 +159,10 @@ public class CreateDefinedIndexesCommand extends InternalGfshCommand {
     }
 
     return result;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+
   }
 }

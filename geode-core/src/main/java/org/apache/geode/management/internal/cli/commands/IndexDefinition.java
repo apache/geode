@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
+import org.apache.geode.cache.configuration.RegionConfig;
 
 class IndexDefinition {
-  static final Set<IndexInfo> indexDefinitions =
-      Collections.synchronizedSet(new HashSet<IndexInfo>());
+  static final Set<RegionConfig.Index> indexDefinitions =
+      Collections.synchronizedSet(new HashSet<>());
 }

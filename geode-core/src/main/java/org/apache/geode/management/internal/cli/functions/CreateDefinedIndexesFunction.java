@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.Index;
@@ -29,21 +30,24 @@ import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.cli.converters.IndexTypeConverter;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class CreateDefinedIndexesFunction implements InternalFunction {
-  private static final long serialVersionUID = 1L;
+public class CreateDefinedIndexesFunction extends InternalFunction {
+
+  private static final long serialVersionUID = 6756381106602823693L;
 
   @Override
   public String getId() {
     return CreateDefinedIndexesFunction.class.getName();
   }
 
-  XmlEntity createXmlEntity(final String regionName) {
-    return new XmlEntity(CacheXml.REGION, "name", regionName);
-  }
+//  XmlEntity createXmlEntity(final String regionName) {
+//    return new XmlEntity(CacheXml.REGION, "name", regionName);
+//  }
 
   @Override
   public void execute(FunctionContext context) {
@@ -56,16 +60,17 @@ public class CreateDefinedIndexesFunction implements InternalFunction {
       ResultSender sender = context.getResultSender();
       QueryService queryService = cache.getQueryService();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
-      Set<IndexInfo> indexDefinitions = (Set<IndexInfo>) context.getArguments();
+      Set<RegionConfig.Index> indexDefinitions = (Set<RegionConfig.Index>) context.getArguments();
 
-      for (IndexInfo indexDefinition : indexDefinitions) {
-        String indexName = indexDefinition.getIndexName();
-        String regionPath = indexDefinition.getRegionPath();
-        String indexedExpression = indexDefinition.getIndexedExpression();
+      for (RegionConfig.Index indexDefinition : indexDefinitions) {
+        String indexName = indexDefinition.getName();
+        String regionPath = indexDefinition.getFromClause();
+        String indexedExpression = indexDefinition.getExpression();
+        IndexType indexType = IndexType.valueOf(indexDefinition.getType());
 
-        if (indexDefinition.getIndexType() == IndexType.PRIMARY_KEY) {
+        if (indexType == IndexType.PRIMARY_KEY) {
           queryService.defineKeyIndex(indexName, indexedExpression, regionPath);
-        } else if (indexDefinition.getIndexType() == IndexType.HASH) {
+        } else if (indexType == IndexType.HASH) {
           queryService.defineHashIndex(indexName, indexedExpression, regionPath);
         } else {
           queryService.defineIndex(indexName, indexedExpression, regionPath);
@@ -73,52 +78,56 @@ public class CreateDefinedIndexesFunction implements InternalFunction {
       }
 
       List<Index> indexes = queryService.createDefinedIndexes();
-      // Build the results with one XmlEntity per region.
+      // Build the results. We pass back a list of regions on which indexes were created
       List<String> processedRegions = new ArrayList<>();
-      List<CliFunctionResult> functionResults = new ArrayList<>();
+//      List<CliFunctionResult> functionResults = new ArrayList<>();
 
       for (Index index : indexes) {
         String regionName = index.getRegion().getName();
 
         if (!processedRegions.contains(regionName)) {
-          XmlEntity xmlEntity = createXmlEntity(regionName);
-          functionResults.add(new CliFunctionResult(memberId, xmlEntity));
+//          XmlEntity xmlEntity = createXmlEntity(regionName);
+//          functionResults.add(new CliFunctionResult(memberId, xmlEntity));
           processedRegions.add(regionName);
         }
       }
 
-      for (Iterator<CliFunctionResult> iterator = functionResults.iterator(); iterator.hasNext();) {
-        CliFunctionResult cliFunctionResult = iterator.next();
-
-        if (iterator.hasNext()) {
-          sender.sendResult(cliFunctionResult);
-        } else {
-          sender.lastResult(cliFunctionResult);
-          lastResultSent = Boolean.TRUE;
-        }
-      }
-
-      if (!lastResultSent) {
-        // No indexes were created and no exceptions were thrown during the process.
-        // We still need to make sure the function returns to the caller.
-        sender.lastResult(
-            new CliFunctionResult(memberId, true, CliStrings.DEFINE_INDEX__FAILURE__MSG));
-      }
+//      for (Iterator<CliFunctionResult> iterator = functionResults.iterator(); iterator.hasNext();) {
+//        CliFunctionResult cliFunctionResult = iterator.next();
+//
+//        if (iterator.hasNext()) {
+//          sender.sendResult(cliFunctionResult);
+//        } else {
+//          sender.lastResult(cliFunctionResult);
+//          lastResultSent = Boolean.TRUE;
+//        }
+//      }
+//
+//      if (!lastResultSent) {
+//        // No indexes were created and no exceptions were thrown during the process.
+//        // We still need to make sure the function returns to the caller.
+//        sender.lastResult(
+//            new CliFunctionResult(memberId, true, CliStrings.DEFINE_INDEX__FAILURE__MSG));
+//      }
+      sender.lastResult(new CliFunctionResult(memberId, processedRegions));
     } catch (MultiIndexCreationException multiIndexCreationException) {
-      StringBuffer sb = new StringBuffer();
-      sb.append("Index creation failed for indexes: ").append("\n");
-      for (Map.Entry<String, Exception> failedIndex : multiIndexCreationException.getExceptionsMap()
-          .entrySet()) {
-        sb.append(failedIndex.getKey()).append(" : ").append(failedIndex.getValue().getMessage())
-            .append("\n");
-      }
+//      StringBuffer sb = new StringBuffer();
+//      sb.append("Index creation failed for indexes: ").append("\n");
+//      for (Map.Entry<String, Exception> failedIndex : multiIndexCreationException.getExceptionsMap()
+//          .entrySet()) {
+//        sb.append(failedIndex.getKey()).append(" : ").append(failedIndex.getValue().getMessage())
+//            .append("\n");
+//      }
       context.getResultSender()
-          .lastResult(new CliFunctionResult(memberId, multiIndexCreationException, sb.toString()));
+          .lastResult(new CliFunctionResult(memberId, multiIndexCreationException));
     } catch (Exception exception) {
       String exceptionMessage = CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE,
           exception.getClass().getName(), exception.getMessage());
       context.getResultSender()
           .lastResult(new CliFunctionResult(memberId, exception, exceptionMessage));
     }
+
+
   }
+
 }
