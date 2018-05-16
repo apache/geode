@@ -104,8 +104,7 @@ public class KeySetTest {
   }
 
   @Test
-  public void retryKeySet_doesNotWriteTransactionException_ifIsNotInTransaction()
-      throws Exception {
+  public void retryKeySet_doesNotWriteTransactionException_ifIsNotInTransaction() throws Exception {
     long startTime = 0; // arbitrary value
     TestableKeySet keySet = new TestableKeySet();
     keySet.setIsInTransaction(false);
@@ -116,7 +115,7 @@ public class KeySetTest {
 
     assertThat(keySet.exceptionSentToClient).isNull();
   }
-  
+
   @Test
   public void nonRetryKeySet_doesNotWriteTransactionException() throws Exception {
     long startTime = 0; // arbitrary value
