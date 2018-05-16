@@ -291,7 +291,7 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void cacheWriterBeforePutNotCalled_ifNotInitialized() {
+  public void cacheWriteBeforePutNotCalled_ifNotInitialized() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(false);
 
@@ -301,7 +301,7 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void cacheWriterBeforePutNotCalled_ifCacheWriteNotNeeded() {
+  public void cacheWriteBeforePutNotCalled_ifCacheWriteNotNeeded() {
     givenPutDoesNotNeedToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
 
@@ -311,7 +311,7 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void cacheWriterBeforePutCalledWithRequireOldValue_givenRequireOldValueTrue() {
+  public void cacheWriteBeforePutCalledWithRequireOldValue_givenRequireOldValueTrue() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
     this.requireOldValue = true;
@@ -323,7 +323,7 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void cacheWriterBeforePutCalledWithExpectedOldValue_givenRequireOldValueTrue() {
+  public void cacheWriteBeforePutCalledWithExpectedOldValue_givenRequireOldValueTrue() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
     givenAnOperationThatGuaranteesOldValue();
@@ -373,7 +373,7 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void cacheWriterBeforePutCalledWithCacheWriter_givenACacheWriter() {
+  public void cacheWriteBeforePutCalledWithCacheWriter_givenACacheWriter() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
     CacheWriter cacheWriter = mock(CacheWriter.class);
@@ -386,7 +386,7 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void cacheWriterBeforePutCalledWithNetWriteRecipients_ifAdviseNetWrite() {
+  public void cacheWriteBeforePutCalledWithNetWriteRecipients_ifAdviseNetWrite() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
     when(internalRegion.basicGetWriter()).thenReturn(null);
