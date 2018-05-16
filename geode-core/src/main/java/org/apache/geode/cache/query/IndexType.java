@@ -84,4 +84,16 @@ public enum IndexType {
     return name;
   }
 
+  public static IndexType valueOfSynonym(String name) {
+    name = name.toUpperCase();
+
+    switch (name) {
+      case "KEY":
+        return valueOf("PRIMARY_KEY");
+      case "RANGE":
+        return valueOf("FUNCTIONAL");
+    }
+
+    return valueOf(name);
+  }
 }

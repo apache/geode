@@ -18,14 +18,13 @@ package org.apache.geode.management.internal.cli.commands;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -35,7 +34,7 @@ public class DefineIndexCommand extends InternalGfshCommand {
   // TODO : Add optionContext for indexName
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  public Result defineIndex(
+  public ResultModel defineIndex(
       @CliOption(key = CliStrings.DEFINE_INDEX_NAME, mandatory = true,
           help = CliStrings.DEFINE_INDEX__HELP) final String indexName,
       @CliOption(key = CliStrings.DEFINE_INDEX__EXPRESSION, mandatory = true,
@@ -47,18 +46,22 @@ public class DefineIndexCommand extends InternalGfshCommand {
           optionContext = ConverterHint.INDEX_TYPE,
           help = CliStrings.DEFINE_INDEX__TYPE__HELP) final IndexType indexType) {
 
-    Result result;
+    ResultModel result = new ResultModel();
 
-    IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, indexType);
+    RegionConfig.Index indexInfo = new RegionConfig.Index();
+    indexInfo.setName(indexName);
+    indexInfo.setExpression(indexedExpression);
+    indexInfo.setFromClause(regionPath);
+    indexInfo.setType(indexType.getName());
+
     IndexDefinition.indexDefinitions.add(indexInfo);
 
-    final InfoResultData infoResult = ResultBuilder.createInfoResultData();
+    InfoResultModel infoResult = result.addInfo();
     infoResult.addLine(CliStrings.DEFINE_INDEX__SUCCESS__MSG);
     infoResult.addLine(CliStrings.format(CliStrings.DEFINE_INDEX__NAME__MSG, indexName));
     infoResult
         .addLine(CliStrings.format(CliStrings.DEFINE_INDEX__EXPRESSION__MSG, indexedExpression));
     infoResult.addLine(CliStrings.format(CliStrings.DEFINE_INDEX__REGIONPATH__MSG, regionPath));
-    result = ResultBuilder.buildResult(infoResult);
 
     return result;
   }
