@@ -94,7 +94,7 @@ public class KeySet extends BaseCommand {
       return;
     }
 
-    if (isInTransaction() && region.isUsedForPartitionedRegionBucket()) {
+    if (isInTransaction() && region.getPartitionAttributes() != null) {
       // GEODE-5186: fail the the transaction if it is a retry after failover for keySet on
       // partitioned region
       if (clientMessage.isRetry()) {

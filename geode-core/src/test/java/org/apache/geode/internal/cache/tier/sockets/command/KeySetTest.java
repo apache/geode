@@ -33,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.operations.KeySetOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
@@ -108,7 +109,7 @@ public class KeySetTest {
     TestableKeySet keySet = new TestableKeySet();
     keySet.setIsInTransaction(true);
     when(message.isRetry()).thenReturn(true);
-    when(region.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    when(region.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
 
     keySet.cmdExecute(message, serverConnection, securityService, startTime);
     assertThat(keySet.exceptionSentToClient).isInstanceOf(TransactionException.class).hasMessage(
