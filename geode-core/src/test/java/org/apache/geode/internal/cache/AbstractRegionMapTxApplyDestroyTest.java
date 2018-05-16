@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,6 +36,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -74,37 +76,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   @Before
   public void setup() {
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(factoryRegionEntry);
+    when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     when(keyInfo.getKey()).thenReturn(key);
     when(txId.getMemberId()).thenReturn(myId);
-  }
-
-  private void givenLocalRegion() {
-    owner = mock(LocalRegion.class);
-    setupLocalRegion();
-    regionMap = new TestableAbstractRegionMap();
-  }
-
-  private void givenBucketRegion() {
-    BucketRegion bucketRegion = mock(BucketRegion.class);
-    when(bucketRegion.isUsedForPartitionedRegionBucket()).thenReturn(true);
-    when(bucketRegion.getPartitionedRegion()).thenReturn(pr);
-    when(bucketRegion.getBucketAdvisor()).thenReturn(mock(BucketAdvisor.class));
-    owner = bucketRegion;
-    setupLocalRegion();
-    regionMap = new TestableAbstractRegionMap();
-  }
-
-  private void setupLocalRegion() {
-    when(owner.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
-    when(owner.getCache()).thenReturn(mock(InternalCache.class));
-    when(owner.getMyId()).thenReturn(myId);
-    when(owner.getKeyInfo(any(), any(), any())).thenReturn(keyInfo);
-  }
-
-  private void doTxApplyDestroy() {
-    regionMap.txApplyDestroy(key, txId, txEvent, inTokenMode, inRI, op, eventId, aCallbackArgument,
-        pendingCallbacks, filterRoutingInfo, bridgeContext, isOriginRemote, txEntryState,
-        versionTag, tailKey);
   }
 
   @Test
@@ -147,6 +121,18 @@ public class AbstractRegionMapTxApplyDestroyTest {
     validateNoPendingCallbacks();
   }
 
+  @Test
+  public void txApplyDestroyInvokesRescheduleTombstone_givenRemovedTombstoneRegionEntry() {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(true);
+    when(existingRegionEntry.isTombstone()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
+  }
+
   private void validateNoPendingCallbacks() {
     assertThat(pendingCallbacks).isEmpty();
   }
@@ -181,6 +167,35 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
   private void givenNoConcurrencyChecks() {
     when(owner.getConcurrencyChecksEnabled()).thenReturn(false);
+  }
+
+  private void givenLocalRegion() {
+    owner = mock(LocalRegion.class);
+    setupLocalRegion();
+    regionMap = new TestableAbstractRegionMap();
+  }
+
+  private void givenBucketRegion() {
+    BucketRegion bucketRegion = mock(BucketRegion.class);
+    when(bucketRegion.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    when(bucketRegion.getPartitionedRegion()).thenReturn(pr);
+    when(bucketRegion.getBucketAdvisor()).thenReturn(mock(BucketAdvisor.class));
+    owner = bucketRegion;
+    setupLocalRegion();
+    regionMap = new TestableAbstractRegionMap();
+  }
+
+  private void setupLocalRegion() {
+    when(owner.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
+    when(owner.getCache()).thenReturn(mock(InternalCache.class));
+    when(owner.getMyId()).thenReturn(myId);
+    when(owner.getKeyInfo(any(), any(), any())).thenReturn(keyInfo);
+  }
+
+  private void doTxApplyDestroy() {
+    regionMap.txApplyDestroy(key, txId, txEvent, inTokenMode, inRI, op, eventId, aCallbackArgument,
+        pendingCallbacks, filterRoutingInfo, bridgeContext, isOriginRemote, txEntryState,
+        versionTag, tailKey);
   }
 
   private class TestableAbstractRegionMap extends AbstractRegionMap {
