@@ -104,12 +104,26 @@ public class KeySetTest {
   }
 
   @Test
+  public void retryKeySet_doesNotWriteTransactionException_ifIsNotInTransaction()
+      throws Exception {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(false);
+    when(message.isRetry()).thenReturn(true);
+    when(region.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
+    assertThat(keySet.exceptionSentToClient).isNull();
+  }
+  
+  @Test
   public void nonRetryKeySet_doesNotWriteTransactionException() throws Exception {
     long startTime = 0; // arbitrary value
     TestableKeySet keySet = new TestableKeySet();
     keySet.setIsInTransaction(true);
     when(message.isRetry()).thenReturn(false);
-    when(region.getPartitionAttributes()).thenReturn(null);
+    when(region.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
 
     keySet.cmdExecute(message, serverConnection, securityService, startTime);
 
