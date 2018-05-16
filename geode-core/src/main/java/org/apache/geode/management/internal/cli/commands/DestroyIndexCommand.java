@@ -113,8 +113,7 @@ public class DestroyIndexCommand extends SingleGfshCommand {
       }
     } else {
       // Need to search for the index name as region was not specified
-      List<RegionConfig> regions = config.getRegion();
-      for (RegionConfig r : regions) {
+      for (RegionConfig r : config.getRegion()) {
         CacheElement.removeElement(r.getIndex(), indexName);
       }
     }

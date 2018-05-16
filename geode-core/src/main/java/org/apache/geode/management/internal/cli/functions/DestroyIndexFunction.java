@@ -23,14 +23,14 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
-public class DestroyIndexFunction implements InternalFunction {
+public class DestroyIndexFunction extends CliFunction {
   private static final long serialVersionUID = -868082551095130315L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext context) {
     RegionConfig.Index indexInfo = (RegionConfig.Index) context.getArguments();
     String memberId = null;
 
@@ -88,7 +88,7 @@ public class DestroyIndexFunction implements InternalFunction {
       result = new CliFunctionResult(memberId, e, e.getMessage());
     }
 
-    context.getResultSender().lastResult(result);
+    return result;
   }
 
   /***
