@@ -104,7 +104,21 @@ public class KeySetTest {
   }
 
   @Test
-  public void retryKeySetInPartitionedRegion_failsIfInTransaction() throws Exception {
+  public void retryKeySet_doesNotWriteTransactionException_ifIsInTransactionAndIsNotPartitionedRegion()
+      throws IOException, InterruptedException {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(true);
+    when(message.isRetry()).thenReturn(true);
+    when(region.getPartitionAttributes()).thenReturn(null);
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
+    assertThat(keySet.exceptionSentToClient).isNull();
+  }
+  
+  @Test
+  public void retryKeySet_writesTransactionException_ifIsInTransactionAndIsPartitionedRegion() throws Exception {
     long startTime = 0; // arbitrary value
     TestableKeySet keySet = new TestableKeySet();
     keySet.setIsInTransaction(true);
@@ -112,6 +126,7 @@ public class KeySetTest {
     when(region.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
 
     keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
     assertThat(keySet.exceptionSentToClient).isInstanceOf(TransactionException.class).hasMessage(
         "Failover on a set operation of a partitioned region is not allowed in a transaction.");
   }

@@ -106,6 +106,7 @@ public class KeySet extends BaseCommand {
         return;
       }
     }
+
     try {
       securityService.authorize(Resource.DATA, Operation.READ, regionName);
     } catch (NotAuthorizedException ex) {
