@@ -23,11 +23,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SessionTest;
 
 /**
  * This runs all tests with a local cache enabled
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SessionTest.class})
 public class SessionReplicationLocalCacheJUnitTest extends CommonTests {
 
   @Before
