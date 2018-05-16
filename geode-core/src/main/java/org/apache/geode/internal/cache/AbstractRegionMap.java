@@ -1048,7 +1048,7 @@ public abstract class AbstractRegionMap
     final LocalRegion owner = _getOwner();
 
     final boolean isRegionReady = !inTokenMode;
-    final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
+    final boolean hasRemoteOrigin = !txId.getMemberId().equals(owner.getMyId());
     boolean callbackEventAddedToPending = false;
     IndexManager oqlIndexManager = owner.getIndexManager();
     try {
@@ -2126,7 +2126,7 @@ public abstract class AbstractRegionMap
 
   private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl callbackEvent,
       TXEntryState txEntryState) {
-    ((BucketRegion) owner).handleWANEvent(callbackEvent);
+    owner.handleWANEvent(callbackEvent);
     if (txEntryState != null) {
       txEntryState.setTailKey(callbackEvent.getTailKey());
     }
@@ -2253,7 +2253,7 @@ public abstract class AbstractRegionMap
     DistributedMember originator = null;
     // txId should not be null even on localOrigin
     Assert.assertTrue(txId != null);
-    originator = ((TXId) txId).getMemberId();
+    originator = txId.getMemberId();
 
     InternalRegion eventRegion = internalRegion;
     if (eventRegion.isUsedForPartitionedRegionBucket()) {
