@@ -21,7 +21,6 @@ import java.util.Set;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -35,7 +34,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
@@ -169,50 +167,46 @@ public class RegionMapPut extends AbstractRegionMapPut {
     final EntryEventImpl event = getEvent();
     final RegionEntry re = getRegionEntry();
     event.setRegionEntry(re);
-    boolean needToSetOldValue =
-        isCacheWrite() || isRequireOldValue() || event.getOperation().guaranteesOldValue();
-    if (needToSetOldValue) {
-      if (event.getOperation().guaranteesOldValue()) {
-        // In these cases we want to even get the old value from disk if it is not in memory
-        ReferenceCountHelper.skipRefCountTracking();
-        @Released
-        Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
-        ReferenceCountHelper.unskipRefCountTracking();
-        try {
-          event.setOldValue(oldValueInVMOrDisk, true);
-        } finally {
-          OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
-        }
-      } else {
-        // In these cases only need the old value if it is in memory
-        ReferenceCountHelper.skipRefCountTracking();
-
-        @Retained
-        @Released
-        Object oldValueInVM = re.getValueRetain(event.getRegion(), true); // OFFHEAP: re
-        // synced so can use
-        // its ref.
-        if (oldValueInVM == null) {
-          oldValueInVM = Token.NOT_AVAILABLE;
-        }
-        ReferenceCountHelper.unskipRefCountTracking();
-        try {
-          event.setOldValue(oldValueInVM);
-        } finally {
-          OffHeapHelper.releaseWithNoTracking(oldValueInVM);
-        }
-      }
+    if (event.getOperation().guaranteesOldValue()) {
+      setOldValueEvenIfFaultedOut();
+    } else if (isCacheWrite() || isRequireOldValue()) {
+      setOldValueIfNotFaultedOut();
     } else {
-      // if the old value is in memory then if it is a GatewaySenderEventImpl then
-      // we want to set the old value.
       @Unretained
-      Object ov = re.getValue(); // OFFHEAP _getValue is ok since re is synced and we only use it
-      // if its a GatewaySenderEventImpl.
-      // Since GatewaySenderEventImpl is never stored in an off-heap region nor a compressed region
-      // we don't need to worry about ov being compressed.
-      if (ov instanceof GatewaySenderEventImpl) {
-        event.setOldValue(ov, true);
+      Object existingValue = re.getValue();
+      if (existingValue instanceof GatewaySenderEventImpl) {
+        event.setOldValue(existingValue, true);
       }
+    }
+  }
+
+  private void setOldValueIfNotFaultedOut() {
+    final EntryEventImpl event = getEvent();
+    ReferenceCountHelper.skipRefCountTracking();
+    @Released
+    Object oldValueInVM = getRegionEntry().getValueRetain(event.getRegion(), true);
+    if (oldValueInVM == null) {
+      oldValueInVM = Token.NOT_AVAILABLE;
+    }
+    ReferenceCountHelper.unskipRefCountTracking();
+    try {
+      event.setOldValue(oldValueInVM);
+    } finally {
+      OffHeapHelper.releaseWithNoTracking(oldValueInVM);
+    }
+  }
+
+  private void setOldValueEvenIfFaultedOut() {
+    final EntryEventImpl event = getEvent();
+    ReferenceCountHelper.skipRefCountTracking();
+    @Released
+    Object oldValueInVMOrDisk =
+        getRegionEntry().getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
+    ReferenceCountHelper.unskipRefCountTracking();
+    try {
+      event.setOldValue(oldValueInVMOrDisk, true);
+    } finally {
+      OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
     }
   }
 
@@ -300,17 +294,21 @@ public class RegionMapPut extends AbstractRegionMapPut {
             getLastModifiedTime(), invokeListeners, isIfNew(), isIfOld(), getExpectedOldValue(),
             isRequireOldValue());
       } finally {
-        if (!isClearOccurred()) {
-          try {
-            getRegionMap().lruUpdateCallback();
-          } catch (DiskAccessException dae) {
-            getOwner().handleDiskAccessException(dae);
-            throw dae;
-          }
-        }
+        lruUpdateCallbackIfNotCleared();
       }
     } else {
       getRegionMap().resetThreadLocals();
+    }
+  }
+
+  private void lruUpdateCallbackIfNotCleared() {
+    if (!isClearOccurred()) {
+      try {
+        getRegionMap().lruUpdateCallback();
+      } catch (DiskAccessException dae) {
+        getOwner().handleDiskAccessException(dae);
+        throw dae;
+      }
     }
   }
 
@@ -329,18 +327,27 @@ public class RegionMapPut extends AbstractRegionMapPut {
   }
 
   /**
-   * @return false if precondition indicates that
+   * @return false if preconditions indicate that
    *         the put should not be done.
    */
   @Override
   protected boolean checkPreconditions() {
-    if (continueUpdate() && continueOverwriteDestroyed() && satisfiesExpectedOldValue()) {
-      return true;
+    if (!checkUpdatePreconditions()) {
+      return false;
     }
-    return false;
+    if (!checkUninitializedRegionPreconditions()) {
+      return false;
+    }
+    if (!checkCreatePreconditions()) {
+      return false;
+    }
+    if (!checkExpectedOldValuePrecondition()) {
+      return false;
+    }
+    return true;
   }
 
-  private boolean continueUpdate() {
+  private boolean checkUpdatePreconditions() {
     if (isIfOld()) {
       final EntryEventImpl event = getEvent();
       final RegionEntry re = getRegionEntry();
@@ -364,23 +371,29 @@ public class RegionMapPut extends AbstractRegionMapPut {
     return true;
   }
 
-  private boolean continueOverwriteDestroyed() {
-    Token oldValueInVM = getRegionEntry().getValueAsToken();
-    // if region is under GII, check if token is destroyed
-    if (!isOverwriteDestroyed()) {
-      if (!getOwner().isInitialized()
-          && (oldValueInVM == Token.DESTROYED || oldValueInVM == Token.TOMBSTONE)) {
-        getEvent().setOldValueDestroyedToken();
-        return false;
+  private boolean checkUninitializedRegionPreconditions() {
+    if (!getOwner().isInitialized()) {
+      if (!isOverwriteDestroyed()) {
+        Token oldValueInVM = getRegionEntry().getValueAsToken();
+        if (oldValueInVM == Token.DESTROYED || oldValueInVM == Token.TOMBSTONE) {
+          getEvent().setOldValueDestroyedToken();
+          return false;
+        }
       }
-    }
-    if (isIfNew() && !Token.isRemoved(oldValueInVM)) {
-      return false;
     }
     return true;
   }
 
-  private boolean satisfiesExpectedOldValue() {
+  private boolean checkCreatePreconditions() {
+    if (isIfNew()) {
+      if (!getRegionEntry().isDestroyedOrRemoved()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private boolean checkExpectedOldValuePrecondition() {
     // replace is propagated to server, so no need to check
     // satisfiesOldValue on client
     final EntryEventImpl event = getEvent();
@@ -431,10 +444,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     } else {
       getOwner().updateSizeOnCreate(key, newBucketSize);
       if (!wasTombstone) {
-        CachePerfStats stats = getOwner().getCachePerfStats();
-        if (stats != null) {
-          stats.incEntryCount(1);
-        }
+        getOwner().getCachePerfStats().incEntryCount(1);
       }
     }
   }
