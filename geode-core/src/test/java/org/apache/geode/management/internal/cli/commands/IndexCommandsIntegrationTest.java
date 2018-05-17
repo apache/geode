@@ -18,6 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -37,6 +39,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -207,7 +210,7 @@ public class IndexCommandsIntegrationTest {
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "IncorrectRegion");
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("ERROR: Region \"IncorrectRegion\" not found");
+    assertThat(gfsh.getGfshOutput()).contains("ERROR", "Region \"IncorrectRegion\" not found");
   }
 
   @Test
@@ -286,8 +289,13 @@ public class IndexCommandsIntegrationTest {
     csb.addOption(CliStrings.IFEXISTS);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Destroyed index " + indexName);
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput("Index " + indexName + " not found - skipped");
+    CommandResult result = gfsh.executeCommand(csb.toString());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(ResultModel.MEMBER_STATUS_SECTION);
+    assertThat(table.get("Status")).containsExactly("IGNORED");
+    assertThat(table.get("Message")).containsExactly("Index named \"" + indexName + "\" not found");
   }
 
   private void createSimpleIndexA() throws Exception {
