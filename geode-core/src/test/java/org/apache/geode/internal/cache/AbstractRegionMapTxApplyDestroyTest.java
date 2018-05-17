@@ -551,6 +551,20 @@ public class AbstractRegionMapTxApplyDestroyTest {
     verify(regionEntryFactory, times(1)).createEntry(same(owner), eq(key), eq(Token.DESTROYED));
   }
 
+  @Test
+  public void txApplyDestroyPreparesAndReleasesIndexManager_givenNoExistingRegionEntryAndConcurrencyChecksWithIndexManager() {
+    givenLocalRegion();
+    givenNoExistingRegionEntry();
+    givenConcurrencyChecks();
+    IndexManager indexManager = mock(IndexManager.class);
+    when(owner.getIndexManager()).thenReturn(indexManager);
+
+    doTxApplyDestroy();
+
+    InOrder inOrder = inOrder(indexManager);
+    inOrder.verify(indexManager, times(1)).waitForIndexInit();
+    inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
+  }
 
   private void validateNoPendingCallbacks() {
     assertThat(pendingCallbacks).isEmpty();
