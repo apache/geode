@@ -38,8 +38,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
 /**
  * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
@@ -47,14 +48,13 @@ import org.apache.geode.internal.logging.LogService;
  *
  * @since GemFire 8.0
  */
-public class CreateAsyncEventQueueFunction implements InternalFunction {
+public class CreateAsyncEventQueueFunction extends CliFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
 
-  @SuppressWarnings("deprecation")
   @Override
-  public void execute(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 
@@ -128,12 +128,12 @@ public class CreateAsyncEventQueueFunction implements InternalFunction {
 
       asyncEventQueueFactory.create(config.getId(), (AsyncEventListener) listenerInstance);
 
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, true, "Success"));
+      return new CliFunctionResult(memberId, StatusState.OK, "Success");
     } catch (CacheClosedException cce) {
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, false, null));
+      return new CliFunctionResult(memberId, StatusState.ERROR, null);
     } catch (Exception e) {
       logger.error("Could not create async event queue: {}", e.getMessage(), e);
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, null));
+      return new CliFunctionResult(memberId, e, null);
     }
   }
 

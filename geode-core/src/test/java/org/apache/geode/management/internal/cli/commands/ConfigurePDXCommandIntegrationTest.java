@@ -51,7 +51,7 @@ public class ConfigurePDXCommandIntegrationTest {
 
   @Test
   public void commandShouldSucceedWhenUsingDefaults() {
-    gfsh.executeAndAssertThat(BASE_COMMAND_STRING).statusIsSuccess().hasNoFailToPersistError();
+    gfsh.executeAndAssertThat(BASE_COMMAND_STRING).statusIsSuccess();
 
     String sharedConfigXml = locator.getLocator().getConfigurationPersistenceService()
         .getConfiguration("cluster").getCacheXmlContent();
@@ -63,7 +63,7 @@ public class ConfigurePDXCommandIntegrationTest {
   public void commandShouldSucceedWhenConfiguringAutoSerializableClassesWithPersistence() {
     gfsh.executeAndAssertThat(BASE_COMMAND_STRING
         + "--read-serialized=true --disk-store=myDiskStore --ignore-unread-fields=true --auto-serializable-classes=com.company.DomainObject.*#identity=id")
-        .statusIsSuccess().hasNoFailToPersistError();
+        .statusIsSuccess();
 
     String sharedConfigXml = locator.getLocator().getConfigurationPersistenceService()
         .getConfiguration("cluster").getCacheXmlContent();
@@ -81,7 +81,7 @@ public class ConfigurePDXCommandIntegrationTest {
   public void commandShouldSucceedWhenConfiguringAutoSerializableClassesWithoutPersistence() {
     gfsh.executeAndAssertThat(BASE_COMMAND_STRING
         + "--read-serialized=false --ignore-unread-fields=false --auto-serializable-classes=com.company.DomainObject.*#identity=id")
-        .statusIsSuccess().hasNoFailToPersistError();
+        .statusIsSuccess();
 
     String sharedConfigXml = locator.getLocator().getConfigurationPersistenceService()
         .getConfiguration("cluster").getCacheXmlContent();
@@ -99,7 +99,7 @@ public class ConfigurePDXCommandIntegrationTest {
   public void commandShouldSucceedWhenConfiguringPortableAutoSerializableClassesWithPersistence() {
     gfsh.executeAndAssertThat(BASE_COMMAND_STRING
         + "--read-serialized=true --disk-store=myDiskStore --ignore-unread-fields=true --portable-auto-serializable-classes=com.company.DomainObject.*#identity=id")
-        .statusIsSuccess().hasNoFailToPersistError();
+        .statusIsSuccess();
 
     String sharedConfigXml = locator.getLocator().getConfigurationPersistenceService()
         .getConfiguration("cluster").getCacheXmlContent();
@@ -119,7 +119,7 @@ public class ConfigurePDXCommandIntegrationTest {
   public void commandShouldSucceedWhenConfiguringPortableAutoSerializableClassesWithoutPersistence() {
     gfsh.executeAndAssertThat(BASE_COMMAND_STRING
         + "--read-serialized=false --ignore-unread-fields=false --portable-auto-serializable-classes=com.company.DomainObject.*#identity=id")
-        .statusIsSuccess().hasNoFailToPersistError();
+        .statusIsSuccess();
 
     String sharedConfigXml = locator.getLocator().getConfigurationPersistenceService()
         .getConfiguration("cluster").getCacheXmlContent();
