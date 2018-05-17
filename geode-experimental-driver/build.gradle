@@ -21,7 +21,7 @@ dependencies {
 
     compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
     testCompile project(':geode-core')
-    testCompile project(':geode-test')
+    testCompile project(':geode-junit')
     testCompile project(':geode-protobuf')
-    testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
+    testCompile files(project(':geode-core').sourceSets.test.output)
 }
