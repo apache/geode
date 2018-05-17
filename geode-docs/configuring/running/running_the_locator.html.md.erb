@@ -33,7 +33,7 @@ You can run the locator standalone or embedded within another <%=vars.product_na
 
 Locator configuration and log files have the following properties:
 
--   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR file `lib/geode-dependencies.jar` into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify this JAR file inside the command used to launch the locator process. For more information on CLASSPATH settings in <%=vars.product_name%>, see [CLASSPATH Settings for <%=vars.product_name%> Processes](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
+-   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR file `lib/geode-dependencies.jar` into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify this JAR file inside the command used to launch the locator process. For more information on CLASSPATH settings in <%=vars.product_name%>, see [Setting Up the CLASSPATH](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
 -   Locators are members of the distributed system just like any other member. In terms of `mcast-port` and `locators` configuration, a locator should be configured in the same manner as a server. Therefore, if there are two other locators in the distributed system, each locator should reference the other locators (just like a server member would). For example:
 
     ``` pre
