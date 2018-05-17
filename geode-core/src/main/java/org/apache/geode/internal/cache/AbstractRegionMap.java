@@ -922,7 +922,7 @@ public abstract class AbstractRegionMap
                     done = true;
                   } finally {
                     if (event != null) {
-                      event.release();
+                      releaseEvent(event);
                       event = null;
                     }
                   }
@@ -974,7 +974,7 @@ public abstract class AbstractRegionMap
                 done = true;
               } finally {
                 if (event != null) {
-                  event.release();
+                  releaseEvent(event);
                   event = null;
                 }
               }
@@ -998,7 +998,7 @@ public abstract class AbstractRegionMap
         } // synchronized
       } finally {
         if (event != null)
-          event.release();
+          releaseEvent(event);
         OffHeapHelper.release(oldValue);
       }
     } catch (RegionClearedException rce) {
@@ -1132,7 +1132,7 @@ public abstract class AbstractRegionMap
                 }
               } finally {
                 if (!callbackEventAddedToPending)
-                  callbackEvent.release();
+                  releaseEvent(callbackEvent);
               }
             }
           }
@@ -1202,7 +1202,7 @@ public abstract class AbstractRegionMap
                       lruEntryDestroy(oldRe);
                     } finally {
                       if (!callbackEventAddedToPending)
-                        callbackEvent.release();
+                        releaseEvent(callbackEvent);
                     }
                   } catch (RegionClearedException rce) {
                     owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
@@ -1259,7 +1259,7 @@ public abstract class AbstractRegionMap
                 // and will be removed when gii completes
               } finally {
                 if (!callbackEventAddedToPending)
-                  callbackEvent.release();
+                  releaseEvent(callbackEvent);
               }
             }
             if (owner.getConcurrencyChecksEnabled() && txEntryState != null
@@ -1293,13 +1293,17 @@ public abstract class AbstractRegionMap
           callbackEventAddedToPending = true;
         } finally {
           if (!callbackEventAddedToPending)
-            callbackEvent.release();
+            releaseEvent(callbackEvent);
         }
       }
     } catch (DiskAccessException dae) {
       owner.handleDiskAccessException(dae);
       throw dae;
     }
+  }
+
+  void releaseEvent(final EntryEventImpl event) {
+    event.release();
   }
 
   /**
@@ -1908,7 +1912,7 @@ public abstract class AbstractRegionMap
                     }
                   } finally {
                     if (!callbackEventInPending)
-                      callbackEvent.release();
+                      releaseEvent(callbackEvent);
                   }
                 }
               }
@@ -1951,7 +1955,7 @@ public abstract class AbstractRegionMap
                 }
               } finally {
                 if (!callbackEventInPending)
-                  callbackEvent.release();
+                  releaseEvent(callbackEvent);
               }
             }
           } finally {
@@ -2013,7 +2017,7 @@ public abstract class AbstractRegionMap
                 }
               } finally {
                 if (!callbackEventInPending)
-                  callbackEvent.release();
+                  releaseEvent(callbackEvent);
               }
               return;
             }
@@ -2036,7 +2040,7 @@ public abstract class AbstractRegionMap
             callbackEventInPending = true;
           } finally {
             if (!callbackEventInPending)
-              callbackEvent.release();
+              releaseEvent(callbackEvent);
           }
         }
       }

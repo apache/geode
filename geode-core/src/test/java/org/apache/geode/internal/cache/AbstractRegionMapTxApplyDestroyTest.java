@@ -299,6 +299,31 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
+  public void txApplyDestroyCallsUpdateSizeOnRemove_givenExistingRegionEntryThatIsValid() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    int oldSize = 79;
+    when(owner.calculateRegionEntryValueSize(same(existingRegionEntry))).thenReturn(oldSize);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).updateSizeOnRemove(eq(key), eq(oldSize));
+  }
+
+  @Test
+  public void txApplyDestroyCallsReleaseEvent_givenExistingRegionEntryThatIsValid() {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+
+    doTxApplyDestroy();
+
+    verify(regionMap, times(1)).releaseEvent(any());
+  }
+
+  @Test
   public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndNotInRI() {
     givenLocalRegion();
     when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
