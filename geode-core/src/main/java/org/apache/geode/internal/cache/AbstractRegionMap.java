@@ -1070,7 +1070,7 @@ public abstract class AbstractRegionMap
               // for this region
               boolean invokeCallbacks = shouldCreateCallbackEvent(owner, isRegionReady || inRI);
               @Released
-              EntryEventImpl callbackEvent = createCallbackEvent(owner, op, key, null, txId,
+              final EntryEventImpl callbackEvent = createCallbackEvent(owner, op, key, null, txId,
                   txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                   txEntryState, versionTag, tailKey);
               try {
@@ -1127,8 +1127,7 @@ public abstract class AbstractRegionMap
                 if (!clearOccured) {
                   lruEntryDestroy(re);
                 }
-                if (owner.getConcurrencyChecksEnabled() && txEntryState != null
-                    && callbackEvent != null) {
+                if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
