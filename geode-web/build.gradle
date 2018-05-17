@@ -45,19 +45,21 @@ dependencies {
   }
 
   provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-
+   
   // have to use output since we exclude the dependent classes from jar :(
   provided project(path: ':geode-core', configuration: 'classesOutput')
-
+  
+  testCompile project(':geode-junit')
   testRuntime project(':geode-common')
-  testCompile project(path: ':geode-core', configuration: 'testClassesOutput')
-  testCompile project(path: ':geode-test', configuration: 'runtime')
+  testRuntime project(':geode-core')
+  testCompile files(project(':geode-core').sourceSets.test.output)
 
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
 
   testRuntime files(war.destinationDir)
+  testCompile files(project(':geode-old-versions').sourceSets.main.output)
 }
 
 //Remove the gradle output directories from the eclipse classpath. These

@@ -1,0 +1,39 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+dependencies {
+  compile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+    exclude module: 'junit-dep'
+  }
+  compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
+  testCompile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
+  compile 'org.assertj:assertj-core:' + project.'assertj-core.version'
+  compile 'commons-io:commons-io:' + project.'commons-io.version'
+  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile 'com.google.guava:guava:' + project.'guava.version'
+  compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+  compile 'org.awaitility:awaitility:' + project.'awaitility.version'
+  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+
+  compile('junit:junit:' + project.'junit.version') {
+    exclude module: 'hamcrest-core'
+  }
+  compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
+  compile project(":geode-old-versions")
+}
