@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -51,7 +55,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   private boolean inRI;
   private Operation op;
   private EventID eventId;
-  private Object aCallbackArgument;
+  private Object aCallbackArgument = "aCallbackArgument";
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
   private FilterRoutingInfo filterRoutingInfo;
   private ClientProxyMembershipID bridgeContext;
@@ -69,6 +73,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   private final RegionEntry factoryRegionEntry = mock(RegionEntry.class);
   private final RegionEntry existingRegionEntry = mock(RegionEntry.class);
   private final PartitionedRegion pr = mock(PartitionedRegion.class);
+  private final VersionTag existingVersionTag = mock(VersionTag.class);
 
   private LocalRegion owner;
   private TestableAbstractRegionMap regionMap;
@@ -76,7 +81,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   @Before
   public void setup() {
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(factoryRegionEntry);
-    when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(versionStamp.asVersionTag()).thenReturn(existingVersionTag);
+    when(existingRegionEntry.getVersionStamp()).thenReturn(versionStamp);
     when(existingRegionEntry.getKey()).thenReturn(key);
     when(keyInfo.getKey()).thenReturn(key);
     when(txId.getMemberId()).thenReturn(myId);
@@ -152,6 +159,115 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
+  public void txApplyDestroySetsRegionEntryOnEvent_givenExistingRegionEntryThatIsValid() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getRegionEntry()).isSameAs(existingRegionEntry);
+  }
+
+  @Test
+  public void txApplyDestroySetsOldValueOnEvent_givenExistingRegionEntryThatIsValid() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    Object oldValue = "oldValue";
+    when(existingRegionEntry.getValueInVM(owner)).thenReturn(oldValue);
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getOldValue()).isSameAs(oldValue);
+  }
+
+  @Test
+  public void txApplyDestroyUpdateIndexes_givenExistingRegionEntryThatIsValid()
+      throws QueryException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    IndexManager indexManager = mock(IndexManager.class);
+    when(owner.getIndexManager()).thenReturn(indexManager);
+
+    doTxApplyDestroy();
+
+    verify(indexManager, times(1)).updateIndexes(same(existingRegionEntry), eq(IndexManager.REMOVE_ENTRY),
+        eq(IndexProtocol.OTHER_OP));
+  }
+
+  @Test
+  public void txApplyDestroyCallsAddDestroy_givenExistingRegionEntryThatIsValidAndTxRmtEvent()  {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    txEvent = mock(TXRmtEvent.class);
+
+    doTxApplyDestroy();
+
+    verify(txEvent, times(1)).addDestroy(same(owner), same(existingRegionEntry),
+        eq(key), same(aCallbackArgument));
+  }
+
+
+  @Test
+  public void txApplyDestroyCallsProcessAndGenerateTXVersionTag_givenExistingRegionEntryThatIsValid() {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    txEntryState = mock(TXEntryState.class);
+
+    doTxApplyDestroy();
+
+    verify(regionMap, times(1)).processAndGenerateTXVersionTag(any(), same(existingRegionEntry), same(txEntryState));
+  }
+
+  @Test
+  public void txApplyDestroySetsValueToDestoryToken_givenExistingRegionEntryThatIsValidWithInTokenMode()
+      throws RegionClearedException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    inTokenMode = true;
+
+    doTxApplyDestroy();
+
+    verify(existingRegionEntry, times(1)).setValue(same(owner), eq(Token.DESTROYED));
+  }
+
+  @Test
+  public void txApplyDestroyCallsUnscheduleTombstone_givenExistingRegionEntryThatIsTombstoneWithInTokenMode()
+      throws RegionClearedException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    inTokenMode = true;
+    when(existingRegionEntry.getValueInVM(owner)).thenReturn(Token.TOMBSTONE);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).unscheduleTombstone(same(existingRegionEntry));
+  }
+
+  @Test
+  public void txApplyDestroyCallsRescheduleTombstone_givenExistingRegionEntryThatIsValidWithoutInTokenModeWithoutConcurrencyCheck()
+      throws RegionClearedException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(false);
+    givenExistingRegionEntry();
+    inTokenMode = false;
+
+    doTxApplyDestroy();
+
+    verify(existingRegionEntry, times(1)).removePhase1(same(owner), eq(false));
+    verify(existingRegionEntry, times(1)).removePhase2();
+    verify(regionMap, times(1)).removeEntry(eq(key), same(existingRegionEntry), eq(false));
+  }
+
+  @Test
   public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndNotInRI() {
     givenLocalRegion();
     when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
@@ -217,6 +333,20 @@ public class AbstractRegionMapTxApplyDestroyTest {
     validateNoPendingCallbacks();
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
         eq(this.inTokenMode), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyCallsHandleWanEvent_givenExistingRegionEntryThatIsValidWithPartitionedRegion() {
+    givenBucketRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    txEntryState = mock(TXEntryState.class);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).handleWANEvent(any());
+    verify(txEntryState, times(1)).setTailKey(tailKey);
   }
 
   @Test
@@ -304,7 +434,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   private void givenLocalRegion() {
     owner = mock(LocalRegion.class);
     setupLocalRegion();
-    regionMap = new TestableAbstractRegionMap();
+    regionMap = spy(new TestableAbstractRegionMap());
   }
 
   private void givenBucketRegion() {
@@ -314,7 +444,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     when(bucketRegion.getBucketAdvisor()).thenReturn(mock(BucketAdvisor.class));
     owner = bucketRegion;
     setupLocalRegion();
-    regionMap = new TestableAbstractRegionMap();
+    regionMap = spy(new TestableAbstractRegionMap());
   }
 
   private void setupLocalRegion() {
