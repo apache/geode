@@ -19,8 +19,11 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -240,6 +243,36 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
+  public void txApplyDestroyHandlesClear_givenExistingRegionEntryThatIsValidWithInTokenModeAndSetValueThrowsRegionClearedException()
+      throws RegionClearedException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    inTokenMode = true;
+    doThrow(RegionClearedException.class).when(existingRegionEntry).setValue(same(owner),
+        eq(Token.DESTROYED));
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(true));
+    verify(regionMap, never()).lruEntryDestroy(any());
+  }
+
+  @Test
+  public void txApplyDestroyHandlesNoClear_givenExistingRegionEntryThatIsValidWithInTokenMode()
+      throws RegionClearedException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    inTokenMode = true;
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(false));
+    verify(regionMap, times(1)).lruEntryDestroy(any());
+  }
+
+  @Test
   public void txApplyDestroyCallsUnscheduleTombstone_givenExistingRegionEntryThatIsTombstoneWithInTokenMode()
       throws RegionClearedException {
     givenLocalRegion();
@@ -401,6 +434,36 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     verify(owner, times(1)).handleWANEvent(any());
     verify(txEntryState, times(1)).setTailKey(tailKey);
+  }
+
+  @Test
+  public void txApplyDestroyDoesNotCallSetVersionTag_givenExistingRegionEntryThatIsValidWithPartitionedRegionButNoConcurrencyChecks() {
+    givenBucketRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    txEntryState = mock(TXEntryState.class);
+    versionTag = mock(VersionTag.class);
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(false);
+
+    doTxApplyDestroy();
+
+    verify(txEntryState, never()).setVersionTag(any());
+  }
+
+  @Test
+  public void txApplyDestroyCallsSetVersionTag_givenExistingRegionEntryThatIsValidWithPartitionedRegionAndConcurrencyChecks() {
+    givenBucketRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isTombstone()).thenReturn(false);
+    txEntryState = mock(TXEntryState.class);
+    versionTag = mock(VersionTag.class);
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    verify(txEntryState, times(1)).setVersionTag(same(versionTag));
   }
 
   @Test
