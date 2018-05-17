@@ -195,12 +195,12 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(indexManager, times(1)).updateIndexes(same(existingRegionEntry), eq(IndexManager.REMOVE_ENTRY),
-        eq(IndexProtocol.OTHER_OP));
+    verify(indexManager, times(1)).updateIndexes(same(existingRegionEntry),
+        eq(IndexManager.REMOVE_ENTRY), eq(IndexProtocol.OTHER_OP));
   }
 
   @Test
-  public void txApplyDestroyCallsAddDestroy_givenExistingRegionEntryThatIsValidAndTxRmtEvent()  {
+  public void txApplyDestroyCallsAddDestroy_givenExistingRegionEntryThatIsValidAndTxRmtEvent() {
     givenLocalRegion();
     when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
     givenExistingRegionEntry();
@@ -208,8 +208,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(txEvent, times(1)).addDestroy(same(owner), same(existingRegionEntry),
-        eq(key), same(aCallbackArgument));
+    verify(txEvent, times(1)).addDestroy(same(owner), same(existingRegionEntry), eq(key),
+        same(aCallbackArgument));
   }
 
 
@@ -222,7 +222,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(regionMap, times(1)).processAndGenerateTXVersionTag(any(), same(existingRegionEntry), same(txEntryState));
+    verify(regionMap, times(1)).processAndGenerateTXVersionTag(any(), same(existingRegionEntry),
+        same(txEntryState));
   }
 
   @Test
