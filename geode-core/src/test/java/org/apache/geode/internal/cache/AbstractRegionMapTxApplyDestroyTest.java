@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
@@ -36,6 +37,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.InOrder;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.QueryException;
@@ -449,6 +451,20 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(txEntryState, never()).setVersionTag(any());
+  }
+
+  @Test
+  public void txApplyDestroyPreparesAndReleasesIndexManager_givenExistingRegionEntryWithIndexManager() {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    IndexManager indexManager = mock(IndexManager.class);
+    when(owner.getIndexManager()).thenReturn(indexManager);
+
+    doTxApplyDestroy();
+
+    InOrder inOrder = inOrder(indexManager);
+    inOrder.verify(indexManager, times(1)).waitForIndexInit();
+    inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
   }
 
   @Test
