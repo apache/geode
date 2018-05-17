@@ -64,7 +64,8 @@ public class CreateIndexCommandDUnitTest {
   @Test
   public void regionNotExist() {
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=/noExist")
-        .statusIsError().containsOutput("ERROR", "Region not found : \"/noExist\"");
+        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Region not found : \"/noExist\"");
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
@@ -92,7 +93,8 @@ public class CreateIndexCommandDUnitTest {
     });
 
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionA")
-        .statusIsSuccess().containsOutput("Index successfully created");
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Status", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index successfully created");
 
     // after index is created, the cluster config is not udpated with regionA or index
     locator.invoke(() -> {
