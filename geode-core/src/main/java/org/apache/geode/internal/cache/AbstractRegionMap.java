@@ -1099,7 +1099,7 @@ public abstract class AbstractRegionMap
                   } else {
                     if (!re.isTombstone()) {
                       {
-                        if (shouldPerformConcurrencyChecks(owner, callbackEvent)
+                        if (owner.getConcurrencyChecksEnabled()
                             && callbackEvent.getVersionTag() != null) {
                           re.makeTombstone(owner, callbackEvent.getVersionTag());
                         } else {
@@ -1209,7 +1209,7 @@ public abstract class AbstractRegionMap
                     owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
                         true /* Clear Conflicting with the operation */);
                   }
-                  if (shouldPerformConcurrencyChecks(owner, callbackEvent)
+                  if (owner.getConcurrencyChecksEnabled()
                       && callbackEvent.getVersionTag() != null) {
                     oldRe.makeTombstone(owner, callbackEvent.getVersionTag());
                   } else if (!inTokenMode) {
@@ -1246,8 +1246,7 @@ public abstract class AbstractRegionMap
                 }
                 EntryLogger.logTXDestroy(_getOwnerObject(), key);
                 owner.updateSizeOnCreate(newRe.getKey(), 0);
-                if (shouldPerformConcurrencyChecks(owner, callbackEvent)
-                    && callbackEvent.getVersionTag() != null) {
+                if (owner.getConcurrencyChecksEnabled() && callbackEvent.getVersionTag() != null) {
                   newRe.makeTombstone(owner, callbackEvent.getVersionTag());
                 } else if (!inTokenMode) {
                   // only remove for NORMAL regions if they do not generate versions see 51781
