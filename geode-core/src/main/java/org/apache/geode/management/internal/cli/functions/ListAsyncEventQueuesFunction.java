@@ -14,21 +14,18 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
 
 /**
@@ -38,8 +35,7 @@ import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
  *
  * @since GemFire 8.0
  */
-public class ListAsyncEventQueuesFunction implements InternalFunction {
-  private static final Logger logger = LogService.getLogger();
+public class ListAsyncEventQueuesFunction extends CliFunction {
 
   private static final long serialVersionUID = 1L;
 
@@ -49,53 +45,26 @@ public class ListAsyncEventQueuesFunction implements InternalFunction {
   }
 
   @Override
-  public void execute(final FunctionContext context) {
-    // Declared here so that it's available when returning a Throwable
-    String memberId = "";
+  public CliFunctionResult executeFunction(final FunctionContext context) {
+    Cache cache = context.getCache();
+    DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
-    try {
-      Cache cache = context.getCache();
+    // Identify by name if the name is non-trivial. Otherwise, use the ID
+    String memberId = !member.getName().equals("") ? member.getName() : member.getId();
 
-      DistributedMember member = cache.getDistributedSystem().getDistributedMember();
+    Set<AsyncEventQueue> asyncEventQueues = cache.getAsyncEventQueues();
 
-      memberId = member.getId();
-      // If they set a name use it instead
-      if (!member.getName().equals("")) {
-        memberId = member.getName();
+    List<AsyncEventQueueDetails> details = asyncEventQueues.stream().map(queue -> {
+      AsyncEventListener listener = queue.getAsyncEventListener();
+      Properties listenerProperties = new Properties();
+      if (listener instanceof Declarable2) {
+        listenerProperties = ((Declarable2) listener).getConfig();
       }
+      return new AsyncEventQueueDetails(queue.getId(), queue.getBatchSize(), queue.isPersistent(),
+          queue.getDiskStoreName(), queue.getMaximumQueueMemory(), listener.getClass().getName(),
+          listenerProperties);
+    }).collect(Collectors.toList());
 
-      Set<AsyncEventQueue> asyncEventQueues = cache.getAsyncEventQueues();
-
-      AsyncEventQueueDetails[] asyncEventQueueDetails =
-          new AsyncEventQueueDetails[asyncEventQueues.size()];
-      int i = 0;
-      for (AsyncEventQueue queue : asyncEventQueues) {
-        AsyncEventListener listener = queue.getAsyncEventListener();
-        Properties listenerProperties = new Properties();
-        if (listener instanceof Declarable2) {
-          listenerProperties = ((Declarable2) listener).getConfig();
-        }
-        asyncEventQueueDetails[i++] = new AsyncEventQueueDetails(queue.getId(),
-            queue.getBatchSize(), queue.isPersistent(), queue.getDiskStoreName(),
-            queue.getMaximumQueueMemory(), listener.getClass().getName(), listenerProperties);
-      }
-
-      CliFunctionResult result = new CliFunctionResult(memberId, asyncEventQueueDetails);
-      context.getResultSender().lastResult(result);
-
-    } catch (CacheClosedException cce) {
-      CliFunctionResult result = new CliFunctionResult(memberId, false, null);
-      context.getResultSender().lastResult(result);
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      logger.error("Could not list async event queues: {}", th.getMessage(), th);
-      CliFunctionResult result = new CliFunctionResult(memberId, th, null);
-      context.getResultSender().lastResult(result);
-    }
+    return new CliFunctionResult(memberId, details);
   }
 }
