@@ -269,6 +269,36 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
+  public void txApplyDestroyCallsRescheduleTombstone_givenExistingRegionEntryThatIsValidWithoutInTokenModeWithConcurrencyCheckButNoVersionTag()
+      throws RegionClearedException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    inTokenMode = false;
+    versionTag = null;
+
+    doTxApplyDestroy();
+
+    verify(existingRegionEntry, times(1)).removePhase1(same(owner), eq(false));
+    verify(existingRegionEntry, times(1)).removePhase2();
+    verify(regionMap, times(1)).removeEntry(eq(key), same(existingRegionEntry), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyCallsRescheduleTombstone_givenExistingRegionEntryThatIsValidWithoutInTokenModeWithConcurrencyCheckAndVersionTag()
+      throws RegionClearedException {
+    givenLocalRegion();
+    when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenExistingRegionEntry();
+    inTokenMode = false;
+    versionTag = mock(VersionTag.class);
+
+    doTxApplyDestroy();
+
+    verify(existingRegionEntry, times(1)).makeTombstone(same(owner), same(versionTag));
+  }
+
+  @Test
   public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndNotInRI() {
     givenLocalRegion();
     when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
@@ -285,8 +315,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
         eq(this.inTokenMode), eq(false));
 
   }
-
-  // verify(owner, never()).txApplyDestroyPart2(any(), any(), anyBoolean(), anyBoolean());
 
   @Test
   public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndWithInRI() {
