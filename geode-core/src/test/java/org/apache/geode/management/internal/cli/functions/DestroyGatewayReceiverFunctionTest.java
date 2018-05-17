@@ -16,11 +16,14 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -57,7 +61,6 @@ public class DestroyGatewayReceiverFunctionTest {
   @Test
   public void getGatewayReceiversNull_doesNotThrowException() {
     when(cache.getGatewayReceivers()).thenReturn(null);
-    when(context.getArguments()).thenReturn(false);
     function.execute(context);
 
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -68,28 +71,46 @@ public class DestroyGatewayReceiverFunctionTest {
   }
 
   @Test
-  public void getGatewayReceiversNotFound_ifExists_false() {
+  public void getGatewayReceiversNotFound_returnsStatusIgnored() {
     when(cache.getGatewayReceivers()).thenReturn(Collections.emptySet());
-    when(context.getArguments()).thenReturn(false);
     function.execute(context);
 
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
-    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatus(true)).contains("IGNORED");
     assertThat(result.getThrowable()).isNull();
     assertThat(result.getMessage()).isEqualTo("Gateway receiver not found.");
   }
 
   @Test
-  public void getGatewayReceiversNotFound_ifExists_true() {
-    when(cache.getGatewayReceivers()).thenReturn(Collections.emptySet());
-    when(context.getArguments()).thenReturn(true);
+  public void runningReceivers_stopCalledBeforeDestroying() {
+    GatewayReceiver receiver = mock(GatewayReceiver.class);
+    Set<GatewayReceiver> receivers = new HashSet<>();
+    receivers.add(receiver);
+
+    when(cache.getGatewayReceivers()).thenReturn(receivers);
+    when(receiver.isRunning()).thenReturn(true);
     function.execute(context);
 
     verify(resultSender).lastResult(resultCaptor.capture());
+    verify(receiver).stop();
     CliFunctionResult result = resultCaptor.getValue();
-    assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getThrowable()).isNull();
-    assertThat(result.getMessage()).isEqualTo("Skipping: Gateway receiver not found.");
+    assertThat(result.getStatus(true)).isEqualTo("OK");
+  }
+
+  @Test
+  public void stoppedReceivers_stopNotCalledBeforeDestroying() {
+    GatewayReceiver receiver = mock(GatewayReceiver.class);
+    Set<GatewayReceiver> receivers = new HashSet<>();
+    receivers.add(receiver);
+
+    when(cache.getGatewayReceivers()).thenReturn(receivers);
+    when(receiver.isRunning()).thenReturn(false);
+    function.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    verify(receiver, never()).stop();
+    CliFunctionResult result = resultCaptor.getValue();
+    assertThat(result.getStatus(true)).isEqualTo("OK");
   }
 }
