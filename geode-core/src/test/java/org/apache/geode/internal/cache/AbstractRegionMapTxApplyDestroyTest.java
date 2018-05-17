@@ -566,6 +566,109 @@ public class AbstractRegionMapTxApplyDestroyTest {
     inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
   }
 
+  @Test
+  public void txApplyDestroyHasNoPendingCallback_givenNoExistingRegionEntryWithInTokenModeAndNotInRI() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    this.inTokenMode = true;
+    this.inRI = false;
+
+    doTxApplyDestroy();
+
+    validateNoPendingCallbacks();
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenNoExistingRegionEntrydWithoutInTokenModeAndNotInRI() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    this.inTokenMode = false;
+    this.inRI = false;
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenNoExistingRegionEntryWithoutInTokenModeAndWithInRI() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    this.inTokenMode = false;
+    this.inRI = true;
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenNoExistingRegionEntryThatIsValidWithInTokenModeAndInRI() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    this.inTokenMode = true;
+    this.inRI = true;
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+  }
+
+  @Test
+  public void txApplyDestroyHasNoPendingCallback_givenNoExistingRegionEntryWithPartitionedRegion() {
+    givenBucketRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    validateNoPendingCallbacks();
+  }
+
+  @Test
+  public void txApplyDestroyHasNoPendingCallback_givenNoExistingRegionEntryWithoutConcurrencyChecks() {
+    givenLocalRegion();
+    givenNoExistingRegionEntry();
+    givenNoConcurrencyChecks();
+    inTokenMode = true;
+
+    doTxApplyDestroy();
+
+    validateNoPendingCallbacks();
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenNoExistingRegionEntryWithShouldDispatchListenerEvent() {
+    givenLocalRegion();
+    givenNoConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    inTokenMode = true;
+    inRI = true;
+    when(owner.shouldDispatchListenerEvent()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+  }
+
+  @Test
+  public void txApplyDestroyHasPendingCallback_givenNoExistingRegionEntryWithshouldNotifyBridgeClients() {
+    givenLocalRegion();
+    givenNoConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    inTokenMode = true;
+    inRI = true;
+    when(owner.shouldNotifyBridgeClients()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).hasSize(1);
+  }
+
   private void validateNoPendingCallbacks() {
     assertThat(pendingCallbacks).isEmpty();
   }
