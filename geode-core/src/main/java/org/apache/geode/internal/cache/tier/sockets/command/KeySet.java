@@ -219,7 +219,7 @@ public class KeySet extends BaseCommand {
     chunkedResponseMsg.sendChunk(servConn);
   }
 
-  public boolean isInTransaction() {
+  boolean isInTransaction() {
     return TXManagerImpl.getCurrentTXState() != null;
   }
 }
