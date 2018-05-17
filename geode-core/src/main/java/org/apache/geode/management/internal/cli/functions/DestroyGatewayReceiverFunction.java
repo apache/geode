@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -22,50 +23,43 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
-public class DestroyGatewayReceiverFunction implements InternalFunction {
+public class DestroyGatewayReceiverFunction extends CliFunction {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1490927519860899562L;
   private static final String ID = DestroyGatewayReceiverFunction.class.getName();
   public static DestroyGatewayReceiverFunction INSTANCE = new DestroyGatewayReceiverFunction();
 
   @Override
-  public void execute(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
     Cache cache = context.getCache();
     String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
-    boolean ifExists = (boolean) context.getArguments();
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
-    if (gatewayReceivers == null || gatewayReceivers.isEmpty()) {
-      String message = "Gateway receiver not found.";
-      if (ifExists) {
-        resultSender
-            .lastResult(new CliFunctionResult(memberNameOrId, true, "Skipping: " + message));
-      } else {
-        resultSender.lastResult(new CliFunctionResult(memberNameOrId, false, message));
-      }
-      return;
-    }
-    for (GatewayReceiver receiver : cache.getGatewayReceivers()) {
-      try {
-        if (receiver.isRunning()) {
-          receiver.stop();
+    if (gatewayReceivers != null && !gatewayReceivers.isEmpty()) {
+      for (GatewayReceiver receiver : gatewayReceivers) {
+        try {
+          if (receiver.isRunning()) {
+            receiver.stop();
+          }
+          receiver.destroy();
+          return new CliFunctionResult(memberNameOrId, StatusState.OK,
+              String.format("GatewayReceiver destroyed on \"%s\"", memberNameOrId));
+        } catch (Exception e) {
+          logger.error(e.getMessage(), e);
+          return new CliFunctionResult(memberNameOrId, e, "");
         }
-        receiver.destroy();
-        resultSender.sendResult(new CliFunctionResult(memberNameOrId, true,
-            String.format("GatewayReceiver destroyed on \"%s\"", memberNameOrId)));
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-        resultSender.sendResult(new CliFunctionResult(memberNameOrId, e, ""));
       }
-      resultSender.lastResult(-1);
     }
+    return new CliFunctionResult(memberNameOrId, StatusState.IGNORED,
+        "Gateway receiver not found.");
   }
 
   @Override
