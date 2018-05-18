@@ -1275,7 +1275,7 @@ public abstract class AbstractRegionMap
             oqlIndexManager.countDownIndexUpdaters();
           }
         }
-      } else if (re == null) {
+      } else { // re == null
         // Fix bug#43594
         // In cases where bucket region is re-created, it may so happen that
         // the destroy is already applied on the Initial image provider, thus
