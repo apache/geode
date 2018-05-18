@@ -145,8 +145,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    * @throws IllegalStateException if gfsh doesn't have an active connection.
    */
   private Result executeOnRemote(GfshParseResult parseResult) {
-    CommandResult commandResult = null;
-    Object response = null;
     Path tempFile = null;
 
     if (!shell.isConnectedAndReady()) {
@@ -195,6 +193,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     }
 
     // 2. Remote Execution
+    Object response = null;
     final Map<String, String> env = shell.getEnv();
     try {
       response = shell.getOperationInvoker()
@@ -216,14 +215,16 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       env.clear();
     }
 
-    // the response could be a string which is a json representation of the CommandResult object
+    // the response could be a string which is a json representation of the
+    // CommandResult/ResultModel object
     // it can also be a Path to a temp file downloaded from the rest http request
+    Object commandResult = null;
     if (response instanceof String) {
       try {
-        // TODO: stuff when failedToPersist...
-        // TODO: stuff for debug info...
-        commandResult = ResultBuilder.createModelBasedCommandResult((String) response);
+        // if it's ResultModel
+        commandResult = ResultModel.fromJson((String) response);
       } catch (Exception ex) {
+        // if it's a CommandResult
         CommandResponse commandResponse =
             CommandResponseBuilder.prepareCommandResponseFromJson((String) response);
 
@@ -249,17 +250,17 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
     // 3. Post Remote Execution
     if (interceptor != null) {
-      CommandResult postExecResult =
-          interceptor.postExecution(parseResult, commandResult, tempFile);
-      if (postExecResult != null) {
-        if (Status.ERROR.equals(postExecResult.getStatus())) {
-          if (logWrapper.infoEnabled()) {
-            logWrapper.info("Post execution Result :: " + postExecResult);
-          }
-        } else if (logWrapper.fineEnabled()) {
-          logWrapper.fine("Post execution Result :: " + postExecResult);
+      try {
+        if (commandResult instanceof CommandResult) {
+          commandResult =
+              interceptor.postExecution(parseResult, (CommandResult) commandResult, tempFile);
+        } else {
+          commandResult =
+              interceptor.postExecution(parseResult, (ResultModel) commandResult, tempFile);
         }
-        commandResult = postExecResult;
+      } catch (Exception e) {
+        logWrapper.severe("error running post interceptor", e);
+        commandResult = ResultBuilder.createGemFireErrorResult(e.getMessage());
       }
     }
 
@@ -268,6 +269,13 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
           .createGemFireErrorResult("Unable to build commandResult using the remote response.");
     }
 
-    return commandResult;
+    CommandResult gfshResult;
+    if (commandResult instanceof ResultModel) {
+      gfshResult = new ModelCommandResult((ResultModel) commandResult);
+    } else {
+      gfshResult = (CommandResult) commandResult;
+    }
+
+    return gfshResult;
   }
 }

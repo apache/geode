@@ -49,15 +49,14 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
   }
 
   @Override
-  public CommandResult postExecution(GfshParseResult parseResult, CommandResult result,
-      Path tempFile) {
+  public ResultModel postExecution(GfshParseResult parseResult, ResultModel model, Path tempFile)
+      throws Exception {
     File outputFile = getOutputFile(parseResult);
 
     if (outputFile == null) {
-      return result;
+      return model;
     }
 
-    ResultModel model = ((ModelCommandResult) result).getResultData();
     Map<String, String> sectionResultData =
         model.getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
 
@@ -66,16 +65,10 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
     String rows = sectionResultData.get("Rows");
 
     if ("false".equalsIgnoreCase(resultString)) {
-      return result;
+      return model;
     }
 
-    try {
-      writeResultTableToFile(outputFile, result);
-      // return a result w/ message explaining limit
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
+    writeResultTableToFile(outputFile, new ModelCommandResult(model));
     ResultModel newModel = new ResultModel();
     DataResultModel data = newModel.addData(DataCommandResult.DATA_INFO_SECTION);
 
@@ -87,7 +80,7 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
 
     newModel.addInfo().addLine("Query results output to " + outputFile.getAbsolutePath());
 
-    return new ModelCommandResult(newModel);
+    return newModel;
   }
 
   private File getOutputFile(ParseResult parseResult) {
