@@ -169,12 +169,10 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsValidWithInTokenModeAndNotInRI() {
+  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryWithInTokenModeAndNotInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     this.inTokenMode = true;
     this.inRI = false;
 
@@ -368,11 +366,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsReleaseEvent_givenExistingRegionEntryThatIsValid() {
+  public void txApplyDestroyCallsReleaseEvent_givenExistingRegionEntry() {
     givenLocalRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
 
     doTxApplyDestroy();
 
@@ -380,12 +376,10 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndNotInRI() {
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryWithoutInTokenModeAndNotInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     this.inTokenMode = false;
     this.inRI = false;
 
@@ -398,12 +392,10 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithoutInTokenModeAndWithInRI() {
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryWithoutInTokenModeAndWithInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     this.inTokenMode = false;
     this.inRI = true;
 
@@ -415,12 +407,10 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithInTokenModeAndInRI() {
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryWithInTokenModeAndInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     this.inTokenMode = true;
     this.inRI = true;
 
@@ -432,11 +422,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsValidWithPartitionedRegion() {
+  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryWithPartitionedRegion() {
     givenBucketRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
 
     doTxApplyDestroy();
 
@@ -446,11 +434,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsHandleWanEvent_givenExistingRegionEntryThatIsValidWithPartitionedRegion() {
+  public void txApplyDestroyCallsHandleWanEvent_givenExistingRegionEntryWithPartitionedRegion() {
     givenBucketRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
@@ -460,11 +446,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyDoesNotCallSetVersionTag_givenExistingRegionEntryThatIsValidWithPartitionedRegionButNoConcurrencyChecks() {
+  public void txApplyDestroyDoesNotCallSetVersionTag_givenExistingRegionEntryWithPartitionedRegionButNoConcurrencyChecks() {
     givenBucketRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     txEntryState = mock(TXEntryState.class);
     versionTag = mock(VersionTag.class);
     givenNoConcurrencyChecks();
@@ -489,11 +473,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsSetVersionTag_givenExistingRegionEntryThatIsValidWithPartitionedRegionAndConcurrencyChecks() {
+  public void txApplyDestroyCallsSetVersionTag_givenExistingRegionEntryWithPartitionedRegionAndConcurrencyChecks() {
     givenBucketRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     txEntryState = mock(TXEntryState.class);
     versionTag = mock(VersionTag.class);
     givenConcurrencyChecks();
@@ -504,11 +486,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsValidWithoutConcurrencyChecks() {
+  public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryWithoutConcurrencyChecks() {
     givenLocalRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     givenNoConcurrencyChecks();
 
     doTxApplyDestroy();
@@ -519,11 +499,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithShouldDispatchListenerEvent() {
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryWithShouldDispatchListenerEvent() {
     givenLocalRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     when(owner.shouldDispatchListenerEvent()).thenReturn(true);
 
     doTxApplyDestroy();
@@ -534,11 +512,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryThatIsValidWithshouldNotifyBridgeClients() {
+  public void txApplyDestroyHasPendingCallback_givenExistingRegionEntryWithshouldNotifyBridgeClients() {
     givenLocalRegion();
     givenExistingRegionEntry();
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isTombstone()).thenReturn(false);
     when(owner.shouldNotifyBridgeClients()).thenReturn(true);
 
     doTxApplyDestroy();
@@ -629,7 +605,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenFactoryRegionEntryThatIsValidWithInTokenModeAndInRI() {
+  public void txApplyDestroyHasPendingCallback_givenFactoryRegionEntryWithInTokenModeAndInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
@@ -969,7 +945,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenOldRegionEntryThatIsValidWithInTokenModeAndInRI() {
+  public void txApplyDestroyHasPendingCallback_givenOldRegionEntryWithInTokenModeAndInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
