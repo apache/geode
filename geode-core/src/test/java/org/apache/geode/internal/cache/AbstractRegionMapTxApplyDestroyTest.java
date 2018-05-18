@@ -289,7 +289,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsRescheduleTombstone_givenExistingRegionEntryThatIsValidWithoutInTokenModeWithoutConcurrencyCheck()
+  public void txApplyDestroyCallsRemoveEntry_givenExistingRegionEntryThatIsValidWithoutInTokenModeWithoutConcurrencyCheck()
       throws RegionClearedException {
     givenLocalRegion();
     givenNoConcurrencyChecks();
@@ -623,6 +623,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenNoExistingRegionEntry();
+    when(pr.getConcurrencyChecksEnabled()).thenReturn(false);
 
     doTxApplyDestroy();
 
@@ -630,7 +631,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasNoPendingCallback_givenNoExistingRegionEntryWithoutConcurrencyChecks() {
+  public void txApplyDestroyHasNoPendingCallback_givenNoExistingRegionEntryWithoutConcurrencyChecksInTokenMode() {
     givenLocalRegion();
     givenNoExistingRegionEntry();
     givenNoConcurrencyChecks();
@@ -791,7 +792,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     verify(factoryRegionEntry, never()).makeTombstone(any(), any());
   }
 
-
   @Test
   public void txApplyDestroyNeverCallsMakeTombstone_givenNoExistingRegionEntryWithoutConcurrencyCheckButWithInTokenModeAndVersionTag()
       throws RegionClearedException {
@@ -804,6 +804,32 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(factoryRegionEntry, never()).makeTombstone(any(), any());
+  }
+
+  @Test
+  public void txApplyDestroyCallsRemoveEntry_givenNoExistingRegionEntryWithConcurrencyCheck()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    verify(factoryRegionEntry, times(1)).removePhase1(same(owner), eq(false));
+    verify(factoryRegionEntry, times(1)).removePhase2();
+    verify(regionMap, times(1)).removeEntry(eq(key), same(factoryRegionEntry), eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyCallsReleaseEvent_givenNoExistingRegionEntryWithoutConcurrencyChecksInTokenMode() {
+    givenLocalRegion();
+    givenNoExistingRegionEntry();
+    givenNoConcurrencyChecks();
+    inTokenMode = true;
+
+    doTxApplyDestroy();
+
+    verify(regionMap, times(1)).releaseEvent(any());
   }
 
   private void validateNoPendingCallbacks() {
