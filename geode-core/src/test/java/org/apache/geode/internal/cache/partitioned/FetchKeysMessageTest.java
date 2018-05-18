@@ -1,9 +1,9 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -11,14 +11,17 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
+import org.mockito.Mock;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -32,40 +35,45 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class FetchKeysMessageTest {
-
-  private PartitionedRegion region;
+  @Mock(answer = RETURNS_DEEP_STUBS)
+  private InternalCache cache;
+  @Mock
   private DistributionManager distributionManager;
-  private TXStateProxy txStateProxy;
-  private TXManagerImpl txManager;
+  @Mock(answer = RETURNS_DEEP_STUBS)
+  private InternalDistributedSystem distributedSystem;
+  @Mock
   private InternalDistributedMember recipient;
+  @Mock(answer = RETURNS_DEEP_STUBS)
+  private PartitionedRegion region;
+  @Mock
+  private TXStateProxy txStateProxy;
+  @Captor
   private ArgumentCaptor<FetchKeysMessage> sentMessage;
+  private TXManagerImpl originalTxManager;
+  private TXManagerImpl txManager;
 
   @Before
   public void setup() {
-    recipient = mock(InternalDistributedMember.class);
-    txStateProxy = mock(TXStateProxy.class);
-    region = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
-    distributionManager = mock(DistributionManager.class);
-    InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);
-    when(distributedSystem.getDistributionManager()).thenReturn(distributionManager);
+    initMocks(this);
 
-    InternalCache cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
+    when(distributedSystem.getDistributionManager()).thenReturn(distributionManager);
+    when(region.getCache()).thenReturn(cache);
+    when(region.getDistributionManager()).thenReturn(distributionManager);
+    when(txStateProxy.isInProgress()).thenReturn(true);
 
+    originalTxManager = TXManagerImpl.getCurrentInstanceForTest();
     // The constructor sets the new tx manager as currentInstance
     txManager = spy(new TXManagerImpl(mock(CachePerfStats.class), cache));
-
-    when(cache.getTxManager()).thenReturn(txManager);
-
-    sentMessage = ArgumentCaptor.forClass(FetchKeysMessage.class);
-
-    when(distributedSystem.getOriginalConfig()).thenReturn(mock(DistributionConfig.class));
-    when(txStateProxy.isInProgress()).thenReturn(true);
-    when(region.getDistributionManager()).thenReturn(distributionManager);
-    when(region.getCache()).thenReturn(cache);
-
     txManager.setTXState(txStateProxy);
     txManager.setDistributed(false);
+
+    when(cache.getTxManager()).thenReturn(txManager);
+  }
+
+  @After
+  public void restoreTxManager() {
+    TXManagerImpl.setCurrentInstanceForTest(originalTxManager);
   }
 
   @Test
