@@ -131,8 +131,8 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     return (String) this.serializables[0];
   }
 
-  public String getStatus(boolean allowIgnorableFailures) {
-    if (!allowIgnorableFailures && state == StatusState.IGNORED) {
+  public String getStatus(boolean skipIgnore) {
+    if (!skipIgnore && state == StatusState.IGNORED) {
       return StatusState.ERROR.name();
     }
 
@@ -259,21 +259,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   public boolean isIgnorableFailure() {
     return this.state == StatusState.IGNORED;
-  }
-
-  /**
-   * Use this to signal that an operation failed but it might be OK to ignore. This is intended to
-   * obviate the need to send a 'skip-if-exists' or 'if-not-exists' flag to any relevant function
-   * and allows the caller to now decide how to handle the result.
-   * <p/>
-   * An {@code IllegalStateException} will be thrown if the state of this {@code CliFunctionResult}
-   * is not already error.
-   */
-  public void setIgnorableFailure() {
-    if (isSuccessful()) {
-      throw new IllegalStateException("Cannot call setIgnorableFailure when state == OK");
-    }
-    this.state = StatusState.IGNORED;
   }
 
   @Deprecated

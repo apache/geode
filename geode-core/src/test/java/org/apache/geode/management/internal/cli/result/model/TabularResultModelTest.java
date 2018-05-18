@@ -17,13 +17,20 @@
 
 package org.apache.geode.management.internal.cli.result.model;
 
+import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.ERROR;
+import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.IGNORED;
+import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
@@ -57,5 +64,65 @@ public class TabularResultModelTest {
   public void cannotAddRowWithDifferentSize() {
     table1.setColumnHeader("c1", "c2", "c3");
     assertThatThrownBy(() -> table1.addRow("v1", "v2")).isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  public void setContentAllOK() {
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(new CliFunctionResult("member1", OK, "success"));
+    results.add(new CliFunctionResult("member2", OK, "success"));
+    assertThat(table1.setContent(results, true)).isEqualTo(true);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[OK, OK]");
+
+    assertThat(table1.setContent(results, false)).isEqualTo(true);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[OK, OK]");
+  }
+
+  @Test
+  public void setContentAllError() {
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(new CliFunctionResult("member1", ERROR, "failed"));
+    results.add(new CliFunctionResult("member2", ERROR, "failed"));
+    assertThat(table1.setContent(results, true)).isEqualTo(false);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
+
+    assertThat(table1.setContent(results, false)).isEqualTo(false);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
+  }
+
+  @Test
+  public void setContentOKAndError() {
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(new CliFunctionResult("member1", OK, "success"));
+    results.add(new CliFunctionResult("member2", ERROR, "failed"));
+    assertThat(table1.setContent(results, true)).isEqualTo(true);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
+
+    assertThat(table1.setContent(results, false)).isEqualTo(true);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
+  }
+
+  @Test
+  public void setContentOKAndIgnore() {
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(new CliFunctionResult("member1", OK, "success"));
+    results.add(new CliFunctionResult("member2", IGNORED, "can be ignored"));
+    assertThat(table1.setContent(results, true)).isEqualTo(true);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[OK, IGNORED]");
+
+    assertThat(table1.setContent(results, false)).isEqualTo(true);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
+  }
+
+  @Test
+  public void setContentErrorAndIgnore() {
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(new CliFunctionResult("member1", ERROR, "failed"));
+    results.add(new CliFunctionResult("member2", IGNORED, "can be ignored"));
+    assertThat(table1.setContent(results, true)).isEqualTo(true);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[ERROR, IGNORED]");
+
+    assertThat(table1.setContent(results, false)).isEqualTo(false);
+    assertThat(table1.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
   }
 }

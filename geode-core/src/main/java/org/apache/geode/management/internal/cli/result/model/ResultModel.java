@@ -203,6 +203,20 @@ public class ResultModel {
     return section;
   }
 
+  public TabularResultModel addTable(String namedSection, List<CliFunctionResult> functionResults,
+      boolean skipIgnored) {
+    Object model = sections.get(namedSection);
+    if (model != null) {
+      throw new IllegalStateException(
+          String.format("Section already exists. Can't overwrite it with this new content.",
+              model.getClass().getSimpleName()));
+    }
+    TabularResultModel section = new TabularResultModel();
+    boolean success = section.setContent(functionResults, skipIgnored);
+    setStatus(success ? Result.Status.OK : Result.Status.ERROR);
+    return section;
+  }
+
   @JsonIgnore
   public List<TabularResultModel> getTableSections() {
     return sections.values().stream().filter(TabularResultModel.class::isInstance)
@@ -312,21 +326,12 @@ public class ResultModel {
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
       String header, String footer, boolean ignoreIfFailed) {
     ResultModel result = new ResultModel();
-    boolean atLeastOneSuccess = ignoreIfFailed;
+
     TabularResultModel tabularResultModel = result.addTable(MEMBER_STATUS_SECTION);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
-    tabularResultModel.setColumnHeader("Member", "Status", "Message");
-    for (CliFunctionResult functionResult : functionResults) {
-      tabularResultModel.addRow(functionResult.getMemberIdOrName(),
-          functionResult.getStatus(ignoreIfFailed), functionResult.getStatusMessage());
-      if (functionResult.isSuccessful()) {
-        atLeastOneSuccess = true;
-      }
-    }
-    if (!atLeastOneSuccess) {
-      result.setStatus(Result.Status.ERROR);
-    }
+    boolean status = tabularResultModel.setContent(functionResults, ignoreIfFailed);
+    result.setStatus(status ? Result.Status.OK : Result.Status.ERROR);
     return result;
   }
 }
