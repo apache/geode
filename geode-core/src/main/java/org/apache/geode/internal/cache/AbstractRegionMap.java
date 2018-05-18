@@ -1191,6 +1191,8 @@ public abstract class AbstractRegionMap
                           oldSize = owner.calculateRegionEntryValueSize(oldRe);
                         }
                       }
+                      // TODO: Token.DESTROYED should only be used if "inTokenMode".
+                      // Otherwise this should be a TOMBSTONE
                       oldRe.setValue(owner, Token.DESTROYED);
                       EntryLogger.logTXDestroy(_getOwnerObject(), key);
                       if (wasTombstone) {

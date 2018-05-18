@@ -701,6 +701,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   @Test
   public void txApplyDestroyCallsHandleWanEvent_givenFactoryRegionEntryWithPartitionedRegion() {
     givenBucketRegion();
+    givenConcurrencyChecks();
     givenFactoryRegionEntry();
     txEntryState = mock(TXEntryState.class);
 
@@ -1011,6 +1012,181 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     assertThat(pendingCallbacks).hasSize(1);
+  }
+
+  @Test
+  public void txApplyDestroySetsRegionEntryOnEvent_givenOldRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getRegionEntry()).isSameAs(oldRegionEntry);
+  }
+
+  @Test
+  public void txApplyDestroySetsOldValueOnEventToNotAvailable_givenOldRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getRawOldValue()).isSameAs(Token.NOT_AVAILABLE);
+  }
+
+  @Test
+  public void txApplyDestroyCallsHandleWanEvent_givenOldRegionEntryWithPartitionedRegion() {
+    givenBucketRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+    txEntryState = mock(TXEntryState.class);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).handleWANEvent(any());
+    verify(txEntryState, times(1)).setTailKey(tailKey);
+  }
+
+  @Test
+  public void txApplyDestroyCallsProcessAndGenerateTXVersionTag_givenOldRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+    txEntryState = mock(TXEntryState.class);
+
+    doTxApplyDestroy();
+
+    verify(regionMap, times(1)).processAndGenerateTXVersionTag(any(), same(oldRegionEntry),
+        same(txEntryState));
+  }
+
+  @Test
+  public void txApplyDestroySetsRemoteOrigin_givenOldRegionEntryAndRemoteTxId() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+    when(txId.getMemberId()).thenReturn(remoteId);
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.isOriginRemote()).isTrue();
+  }
+
+  @Test
+  public void txApplyDestroySetsRemoteOrigin_givenOldRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.isOriginRemote()).isFalse();
+  }
+
+  @Test
+  public void txApplyDestroySetsRegionOnEvent_givenOldRegionEntryAndBucket() {
+    givenBucketRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getRegion()).isSameAs(pr);
+  }
+
+  @Test
+  public void txApplyDestroyCallUpdateSizeOnRemoveWithZero_givenOldRegionEntryThatIsTombstone() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+    when(oldRegionEntry.isTombstone()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).updateSizeOnRemove(eq(key), eq(0));
+  }
+
+  @Test
+  public void txApplyDestroyCallUpdateSizeOnRemoveWithOldSize_givenOldRegionEntryThatIsNotTombstone() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+    int oldSize = 79;
+    when(owner.calculateRegionEntryValueSize(oldRegionEntry)).thenReturn(oldSize);
+    when(oldRegionEntry.isTombstone()).thenReturn(false);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).updateSizeOnRemove(eq(key), eq(oldSize));
+  }
+
+  @Test
+  public void txApplyDestroySetsValueToTokenDestroyed_givenOldRegionEntry()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+
+    doTxApplyDestroy();
+
+    verify(oldRegionEntry, times(1)).setValue(same(owner), eq(Token.DESTROYED));
+  }
+
+  @Test
+  public void txApplyDestroySetsValueToTokenDestroyed_givenOldRegionEntryAndInTokenMode()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenNoConcurrencyChecks();
+    givenOldRegionEntry();
+    inTokenMode = true;
+
+    doTxApplyDestroy();
+
+    verify(oldRegionEntry, times(1)).setValue(same(owner), eq(Token.DESTROYED));
+  }
+
+  @Test
+  public void txApplyDestroyCallsUnscheduleTombstone_givenOldRegionEntryThatIsTombstone() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+    when(oldRegionEntry.isTombstone()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).unscheduleTombstone(same(oldRegionEntry));
+  }
+
+  @Test
+  public void txApplyDestroyCallsTxApplyDestroyPart2_givenOldRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).txApplyDestroyPart2(same(oldRegionEntry), eq(key), eq(inTokenMode),
+        eq(false));
+  }
+
+  @Test
+  public void txApplyDestroyCallsTxApplyDestroyPart2_givenOldRegionEntryWithInTokenMode() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenOldRegionEntry();
+    inTokenMode = true;
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).txApplyDestroyPart2(same(oldRegionEntry), eq(key), eq(inTokenMode),
+        eq(false));
   }
 
   // helper methods for the tests
