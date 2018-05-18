@@ -131,10 +131,7 @@ public class FetchKeysMessage extends PartitionMessage {
   private static boolean isTransactionInternalSuspendNeeded(TXManagerImpl txManager) {
     TXStateProxy txState = txManager.getTXState();
     // handle distributed transaction when needed.
-    if (txState != null && txState.isRealDealLocal() && !txState.isDistTx()) {
-      return true;
-    }
-    return false;
+    return txState != null && txState.isRealDealLocal() && !txState.isDistTx();
   }
 
   /**
