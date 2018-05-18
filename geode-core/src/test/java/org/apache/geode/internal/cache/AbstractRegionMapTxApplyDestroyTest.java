@@ -859,6 +859,34 @@ public class AbstractRegionMapTxApplyDestroyTest {
     verify(txEntryState, times(1)).setVersionTag(same(versionTag));
   }
 
+  @Test
+  public void txApplyDestroyDoesNotCallTxApplyDestroyPart2_givenExistingRegionEntryWithMakeTombstoneThrowingRegionDestroyedException()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    versionTag = mock(VersionTag.class);
+    doThrow(RegionClearedException.class).when(factoryRegionEntry).makeTombstone(any(), any());
+
+    doTxApplyDestroy();
+
+    verify(owner, never()).txApplyDestroyPart2(any(), any(), anyBoolean(), anyBoolean());
+  }
+
+  @Test
+  public void txApplyDestroyDoesNotCallsTxApplyDestroyPart2_givenExistingRegionEntry()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    versionTag = mock(VersionTag.class);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).txApplyDestroyPart2(same(factoryRegionEntry), eq(key), eq(inTokenMode),
+        eq(false));
+  }
+
   private void validateNoPendingCallbacks() {
     assertThat(pendingCallbacks).isEmpty();
   }
