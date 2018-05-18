@@ -72,9 +72,8 @@ public class FetchKeysMessage extends PartitionMessage {
   private boolean allowTombstones;
 
   private FetchKeysMessage(InternalDistributedMember recipient, int regionId,
-                           ReplyProcessor21 processor, Integer bucketId, int itype,
-                           Object interestArg,
-                           boolean allowTombstones) {
+      ReplyProcessor21 processor, Integer bucketId, int itype, Object interestArg,
+      boolean allowTombstones) {
     super(recipient, regionId, processor);
     this.bucketId = bucketId;
     this.interestType = itype;
@@ -85,11 +84,11 @@ public class FetchKeysMessage extends PartitionMessage {
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
    */
-  public FetchKeysMessage() {
-  }
+  public FetchKeysMessage() {}
 
   /**
    * Sends a PartitionedRegion message to fetch keys for a bucketId
+   *
    * @param recipient the member that the fetch keys message is sent to
    * @param r the PartitionedRegion that contains the bucket
    * @param bucketId the identity of the bucket that contains the keys to be returned
@@ -98,13 +97,13 @@ public class FetchKeysMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static FetchKeysResponse send(InternalDistributedMember recipient, PartitionedRegion r,
-                                       Integer bucketId, boolean allowTombstones)
-      throws ForceReattemptException {
+      Integer bucketId, boolean allowTombstones) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchKeysMessage NULL recipient");
-    boolean resetTxState = isTransactionInternalSuspendNeeded();
+    TXManagerImpl txManager = r.getCache().getTxManager();
+    boolean resetTxState = isTransactionInternalSuspendNeeded(txManager);
     TXStateProxy txStateProxy = null;
     if (resetTxState) {
-      txStateProxy = r.getCache().getTxManager().pauseTransaction();
+      txStateProxy = txManager.pauseTransaction();
     }
 
     try {
@@ -114,7 +113,7 @@ public class FetchKeysMessage extends PartitionMessage {
           (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
       FetchKeysMessage m = new FetchKeysMessage(recipient, r.getPRId(), p, bucketId,
           InterestType.REGULAR_EXPRESSION, ".*", allowTombstones);
-      m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
+      m.setTransactionDistributed(txManager.isDistributed());
 
       Set failures = r.getDistributionManager().putOutgoing(m);
       if (failures != null && failures.size() > 0) {
@@ -124,13 +123,13 @@ public class FetchKeysMessage extends PartitionMessage {
       return p;
     } finally {
       if (resetTxState) {
-        r.getCache().getTxManager().unpauseTransaction(txStateProxy);
+        txManager.unpauseTransaction(txStateProxy);
       }
     }
   }
 
-  private static boolean isTransactionInternalSuspendNeeded() {
-    TXStateProxy txState = TXManagerImpl.getCurrentTXState();
+  private static boolean isTransactionInternalSuspendNeeded(TXManagerImpl txManager) {
+    TXStateProxy txState = txManager.getTXState();
     // handle distributed transaction when needed.
     if (txState != null && txState.isRealDealLocal() && !txState.isDistTx()) {
       return true;
@@ -143,8 +142,7 @@ public class FetchKeysMessage extends PartitionMessage {
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static FetchKeysResponse sendInterestQuery(InternalDistributedMember recipient,
-                                                    PartitionedRegion r, Integer bucketId,
-                                                    int itype, Object arg, boolean allowTombstones)
+      PartitionedRegion r, Integer bucketId, int itype, Object arg, boolean allowTombstones)
       throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchKeysMessage NULL recipient");
     FetchKeysMessage tmp = new FetchKeysMessage();
@@ -170,8 +168,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
-                                               long startTime)
-      throws CacheException, ForceReattemptException {
+      long startTime) throws CacheException, ForceReattemptException {
     if (logger.isDebugEnabled()) {
       logger.debug("FetchKeysMessage operateOnRegion: {} bucketId: {} type: {} {}", r.getFullPath(),
           this.bucketId, InterestType.getString(interestType),
@@ -274,13 +271,11 @@ public class FetchKeysMessage extends PartitionMessage {
     /**
      * Empty constructor to conform to DataSerializable interface
      */
-    public FetchKeysReplyMessage() {
-    }
+    public FetchKeysReplyMessage() {}
 
     private FetchKeysReplyMessage(InternalDistributedMember recipient, int processorId,
-                                  HeapDataOutputStream chunk, int seriesNum, int msgNum,
-                                  int numSeries,
-                                  boolean lastInSeries) {
+        HeapDataOutputStream chunk, int seriesNum, int msgNum, int numSeries,
+        boolean lastInSeries) {
       super();
       setRecipient(recipient);
       setProcessorId(processorId);
@@ -293,10 +288,11 @@ public class FetchKeysMessage extends PartitionMessage {
 
     /**
      * Send an ack
+     *
      * @throws ForceReattemptException if the peer is no longer available
      */
     public static void send(final InternalDistributedMember recipient, final int processorId,
-                            final DistributionManager dm, Set keys) throws ForceReattemptException {
+        final DistributionManager dm, Set keys) throws ForceReattemptException {
 
       Assert.assertTrue(recipient != null, "FetchKeysReplyMessage NULL reply message");
 
@@ -350,9 +346,8 @@ public class FetchKeysMessage extends PartitionMessage {
 
 
     static boolean sendChunk(InternalDistributedMember recipient, int processorId,
-                             DistributionManager dm, HeapDataOutputStream chunk, int seriesNum,
-                             int msgNum,
-                             int numSeries, boolean lastInSeries) {
+        DistributionManager dm, HeapDataOutputStream chunk, int seriesNum, int msgNum,
+        int numSeries, boolean lastInSeries) {
       FetchKeysReplyMessage reply = new FetchKeysReplyMessage(recipient, processorId, chunk,
           seriesNum, msgNum, numSeries, lastInSeries);
       Set failures = dm.putOutgoing(reply);
@@ -364,10 +359,11 @@ public class FetchKeysMessage extends PartitionMessage {
      * the byte[] chunk and an int indicating whether it is the last chunk (positive means last
      * chunk, zero othewise). The return value of proc indicates whether to continue to the next
      * chunk (true) or abort (false).
+     *
      * @return true if finished all chunks, false if stopped early
      */
     static boolean chunkSet(InternalDistributedMember recipient, Set set, int CHUNK_SIZE_IN_BYTES,
-                            boolean includeValues, ObjectIntProcedure proc) throws IOException {
+        boolean includeValues, ObjectIntProcedure proc) throws IOException {
       Iterator it = set.iterator();
 
       boolean keepGoing = true;
@@ -414,6 +410,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -486,6 +483,7 @@ public class FetchKeysMessage extends PartitionMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
+   *
    * @since GemFire 5.0
    */
   public static class FetchKeysResponse extends PartitionResponse {
