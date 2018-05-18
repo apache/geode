@@ -145,6 +145,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
     verify(regionMap, times(1)).releaseEvent(any());
   }
 
+  // tests for "existingRegionEntry"
+
   @Test
   public void txApplyDestroyHasNoPendingCallback_givenExistingRegionEntryThatIsRemoved() {
     givenLocalRegion();
@@ -524,6 +526,20 @@ public class AbstractRegionMapTxApplyDestroyTest {
         eq(this.inTokenMode), eq(false));
   }
 
+  @Test
+  public void txApplyDestroyDoesNotCallsTxApplyDestroyPart2_givenExistingRegionEntry()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenFactoryRegionEntry();
+    versionTag = mock(VersionTag.class);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).txApplyDestroyPart2(same(factoryRegionEntry), eq(key), eq(inTokenMode),
+        eq(false));
+  }
+
   // tests for "factoryRegionEntry" (that is, no existing region entry and no oldRegionEntry).
   // All these tests require no existing region entry (that is, not found by getEntry).
   // All these tests need one of the following: givenConcurrencyChecks OR inTokenMode
@@ -579,7 +595,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenFactoryRegionEntrydWithoutInTokenModeAndNotInRI() {
+  public void txApplyDestroyHasPendingCallback_givenFactoryRegionEntryWithoutInTokenModeAndNotInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
@@ -871,20 +887,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(owner, never()).txApplyDestroyPart2(any(), any(), anyBoolean(), anyBoolean());
-  }
-
-  @Test
-  public void txApplyDestroyDoesNotCallsTxApplyDestroyPart2_givenExistingRegionEntry()
-      throws RegionClearedException {
-    givenLocalRegion();
-    givenConcurrencyChecks();
-    givenFactoryRegionEntry();
-    versionTag = mock(VersionTag.class);
-
-    doTxApplyDestroy();
-
-    verify(owner, times(1)).txApplyDestroyPart2(same(factoryRegionEntry), eq(key), eq(inTokenMode),
-        eq(false));
   }
 
   // tests for "oldRegionEntry" (that is, an existing region entry found by putIfAbsent).
