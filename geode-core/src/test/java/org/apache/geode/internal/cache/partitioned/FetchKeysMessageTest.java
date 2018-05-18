@@ -17,10 +17,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -54,29 +51,29 @@ public class FetchKeysMessageTest {
 
     InternalCache cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
-    
+
     // The constructor sets the new tx manager as currentInstance
     txManager = spy(new TXManagerImpl(mock(CachePerfStats.class), cache));
 
     when(cache.getTxManager()).thenReturn(txManager);
-    
+
     sentMessage = ArgumentCaptor.forClass(FetchKeysMessage.class);
 
     when(distributedSystem.getOriginalConfig()).thenReturn(mock(DistributionConfig.class));
     when(txStateProxy.isInProgress()).thenReturn(true);
     when(region.getDistributionManager()).thenReturn(distributionManager);
     when(region.getCache()).thenReturn(cache);
-    
+
     txManager.setTXState(txStateProxy);
     txManager.setDistributed(false);
   }
-  
+
   @Test
   public void sendsWithTransactionPaused_ifTransactionIsHostedLocally() throws Exception {
     // Transaction is locally hosted
     when(txStateProxy.isRealDealLocal()).thenReturn(true);
     when(txStateProxy.isDistTx()).thenReturn(false);
-    
+
     FetchKeysMessage.send(recipient, region, 1, false);
 
     InOrder inOrder = inOrder(txManager, distributionManager);
