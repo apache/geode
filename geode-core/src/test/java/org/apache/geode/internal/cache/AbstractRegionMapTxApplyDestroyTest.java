@@ -90,6 +90,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     when(versionStamp.asVersionTag()).thenReturn(existingVersionTag);
     when(existingRegionEntry.getVersionStamp()).thenReturn(versionStamp);
     when(existingRegionEntry.getKey()).thenReturn(key);
+    when(factoryRegionEntry.getKey()).thenReturn(key);
     when(keyInfo.getKey()).thenReturn(key);
     when(txId.getMemberId()).thenReturn(myId);
   }
@@ -217,7 +218,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
         same(aCallbackArgument));
   }
 
-
   @Test
   public void txApplyDestroyCallsProcessAndGenerateTXVersionTag_givenExistingRegionEntryThatIsValid() {
     givenLocalRegion();
@@ -320,7 +320,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsRescheduleTombstone_givenExistingRegionEntryThatIsValidWithoutInTokenModeWithConcurrencyCheckAndVersionTag()
+  public void txApplyDestroyCallsMakeTombstone_givenExistingRegionEntryThatIsValidWithoutInTokenModeWithConcurrencyCheckAndVersionTag()
       throws RegionClearedException {
     givenLocalRegion();
     givenConcurrencyChecks();
@@ -669,6 +669,143 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
   }
 
+  @Test
+  public void txApplyDestroySetsRegionEntryOnEvent_givenNoExistingRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getRegionEntry()).isSameAs(factoryRegionEntry);
+  }
+
+  @Test
+  public void txApplyDestroySetsOldValueOnEventToNotAvailable_givenNoExistingRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getRawOldValue()).isSameAs(Token.NOT_AVAILABLE);
+  }
+
+  @Test
+  public void txApplyDestroyCallsHandleWanEvent_givenNoExistingRegionEntryWithPartitionedRegion() {
+    givenBucketRegion();
+    givenNoExistingRegionEntry();
+    txEntryState = mock(TXEntryState.class);
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).handleWANEvent(any());
+    verify(txEntryState, times(1)).setTailKey(tailKey);
+  }
+
+  @Test
+  public void txApplyDestroyCallsProcessAndGenerateTXVersionTag_givenNoExistingRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    txEntryState = mock(TXEntryState.class);
+
+    doTxApplyDestroy();
+
+    verify(regionMap, times(1)).processAndGenerateTXVersionTag(any(), same(factoryRegionEntry),
+        same(txEntryState));
+  }
+
+  @Test
+  public void txApplyDestroySetsRemoteOrigin_givenNoExistingRegionEntryAndRemoteTxId() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    when(txId.getMemberId()).thenReturn(remoteId);
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.isOriginRemote()).isTrue();
+  }
+
+  @Test
+  public void txApplyDestroySetsRemoteOrigin_givenNoExistingRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.isOriginRemote()).isFalse();
+  }
+
+  @Test
+  public void txApplyDestroySetsRegionOnEvent_givenNoExistingRegionEntryAndBucket() {
+    givenBucketRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    EntryEventImpl event = pendingCallbacks.get(0);
+    assertThat(event.getRegion()).isSameAs(pr);
+  }
+
+  @Test
+  public void txApplyDestroyCallUpdateSizeOnCreate_givenNoExistingRegionEntry() {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    verify(owner, times(1)).updateSizeOnCreate(eq(key), eq(0));
+  }
+
+  @Test
+  public void txApplyDestroyCallsMakeTombstone_givenNoExistingRegionEntryWithConcurrencyCheckAndVersionTag()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    versionTag = mock(VersionTag.class);
+
+    doTxApplyDestroy();
+
+    verify(factoryRegionEntry, times(1)).makeTombstone(same(owner), same(versionTag));
+  }
+
+  @Test
+  public void txApplyDestroyNeverCallsMakeTombstone_givenNoExistingRegionEntryWithConcurrencyCheckButNoVersionTag()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenNoExistingRegionEntry();
+
+    doTxApplyDestroy();
+
+    verify(factoryRegionEntry, never()).makeTombstone(any(), any());
+  }
+
+
+  @Test
+  public void txApplyDestroyNeverCallsMakeTombstone_givenNoExistingRegionEntryWithoutConcurrencyCheckButWithInTokenModeAndVersionTag()
+      throws RegionClearedException {
+    givenLocalRegion();
+    givenNoConcurrencyChecks();
+    givenNoExistingRegionEntry();
+    inTokenMode = true;
+    versionTag = mock(VersionTag.class);
+
+    doTxApplyDestroy();
+
+    verify(factoryRegionEntry, never()).makeTombstone(any(), any());
+  }
+
   private void validateNoPendingCallbacks() {
     assertThat(pendingCallbacks).isEmpty();
   }
@@ -707,6 +844,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
   private void givenConcurrencyChecks() {
     when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(pr.getConcurrencyChecksEnabled()).thenReturn(true);
   }
 
   private void givenNoConcurrencyChecks() {
