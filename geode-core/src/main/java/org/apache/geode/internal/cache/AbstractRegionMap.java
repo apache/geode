@@ -1262,8 +1262,7 @@ public abstract class AbstractRegionMap
                   releaseEvent(callbackEvent);
               }
             }
-            if (owner.getConcurrencyChecksEnabled() && txEntryState != null
-                && callbackEvent != null) {
+            if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
               txEntryState.setVersionTag(callbackEvent.getVersionTag());
             }
           }

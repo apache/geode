@@ -832,6 +832,33 @@ public class AbstractRegionMapTxApplyDestroyTest {
     verify(regionMap, times(1)).releaseEvent(any());
   }
 
+  @Test
+  public void txApplyDestroyDoesNotCallSetVersionTag_givenNoExistingRegionEntryWithPartitionedRegionButNoConcurrencyChecks() {
+    givenBucketRegion();
+    givenNoExistingRegionEntry();
+    txEntryState = mock(TXEntryState.class);
+    versionTag = mock(VersionTag.class);
+    givenNoConcurrencyChecks();
+    inTokenMode = true;
+
+    doTxApplyDestroy();
+
+    verify(txEntryState, never()).setVersionTag(any());
+  }
+
+  @Test
+  public void txApplyDestroyDoesNotCallSetVersionTag_givenNoExistingRegionEntryWithPartitionedRegionAndConcurrencyChecks() {
+    givenBucketRegion();
+    givenNoExistingRegionEntry();
+    txEntryState = mock(TXEntryState.class);
+    versionTag = mock(VersionTag.class);
+    givenConcurrencyChecks();
+
+    doTxApplyDestroy();
+
+    verify(txEntryState, times(1)).setVersionTag(same(versionTag));
+  }
+
   private void validateNoPendingCallbacks() {
     assertThat(pendingCallbacks).isEmpty();
   }
