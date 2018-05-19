@@ -27,6 +27,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -249,22 +250,22 @@ public class ManagementAgent {
 
           if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
             this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire", gemfireWar,
-                securityService);
+                securityService, null);
             this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode-mgmt",
-                gemfireWar, securityService);
+                gemfireWar, securityService, null);
           }
 
           if (agentUtil.isWebApplicationAvailable(pulseWar)) {
-            this.httpServer =
-                JettyHelper.addWebApplication(this.httpServer, "/pulse", pulseWar, securityService);
+            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/pulse", pulseWar,
+                securityService, createSslProps());
           }
 
           if (isServer && this.config.getStartDevRestApi()) {
             if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
               this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode",
-                  gemfireAPIWar, securityService);
+                  gemfireAPIWar, securityService, null);
               this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire-api",
-                  gemfireAPIWar, securityService);
+                  gemfireAPIWar, securityService, null);
               isRestWebAppAdded = true;
             }
           } else {
@@ -326,6 +327,40 @@ public class ManagementAgent {
       setStatusMessage(managerBean,
           "Embedded HTTP server configured not to start (http-service-port=0) or (jmx-manager-http-port=0)");
     }
+  }
+
+  private Map<String, String> createSslProps() {
+    Map<String, String> sslProps = new HashMap<>();
+    if (StringUtils.isNotEmpty(config.getSSLKeyStore())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE, config.getSSLKeyStore());
+    }
+    if (StringUtils.isNotEmpty(config.getSSLKeyStorePassword())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD,
+          config.getSSLKeyStorePassword());
+    }
+    if (StringUtils.isNotEmpty(config.getSSLKeyStoreType())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE, config.getSSLKeyStoreType());
+    }
+    if (StringUtils.isNotEmpty(config.getSSLTrustStore())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE, config.getSSLTrustStore());
+    }
+    if (StringUtils.isNotEmpty(config.getSSLTrustStorePassword())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD,
+          config.getSSLTrustStorePassword());
+    }
+    if (StringUtils.isNotEmpty(config.getSSLTrustStoreType())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, config.getSSLTrustStoreType());
+    }
+    if (StringUtils.isNotEmpty(config.getSSLCiphers())
+        && !config.getSSLCiphers().equalsIgnoreCase("any")) {
+      sslProps.put("javax.rmi.ssl.client.enabledCipherSuites", config.getSSLCiphers());
+    }
+    if (StringUtils.isNotEmpty(config.getSSLProtocols())
+        && !config.getSSLProtocols().equalsIgnoreCase("any")) {
+      sslProps.put("javax.rmi.ssl.client.enabledProtocols", config.getSSLProtocols());
+    }
+
+    return sslProps;
   }
 
   private String getHost(final String bindAddress) throws UnknownHostException {

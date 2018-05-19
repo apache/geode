@@ -20,6 +20,7 @@ package org.apache.geode.tools.pulse.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -28,10 +29,12 @@ import java.util.Set;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.tools.pulse.internal.controllers.PulseController;
+import org.apache.geode.tools.pulse.internal.data.JMXDataUpdater;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
@@ -45,6 +48,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 public class PulseAppListener implements ServletContextListener {
   private static final Logger logger = LogManager.getLogger();
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
+  private static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
 
   private Properties pulseProperties;
   private Properties pulseSecurityProperties;
@@ -88,11 +92,40 @@ public class PulseAppListener implements ServletContextListener {
       repository.setPort(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT,
           PulseConstants.GEMFIRE_DEFAULT_PORT));
 
-      // SSL, all the other system properties are already set in the embedded VM
       repository.setUseSSLManager(
           Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER)));
       repository.setUseSSLLocator(
           Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR)));
+
+      Object sslConfigObject =
+          event.getServletContext().getAttribute(GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM);
+      if (sslConfigObject instanceof Map) {
+        Map<String, String> sslConfig = (Map<String, String>) sslConfigObject;
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_KEYSTORE))) {
+          repository.setKeyStore(sslConfig.get(JMXDataUpdater.JAVAX_KEYSTORE));
+        }
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_KEYSTORE_PASSWORD))) {
+          repository.setKeyStorePassword(sslConfig.get(JMXDataUpdater.JAVAX_KEYSTORE_PASSWORD));
+        }
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_KEYSTORE_TYPE))) {
+          repository.setKeyStoreType(sslConfig.get(JMXDataUpdater.JAVAX_KEYSTORE_TYPE));
+        }
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_TRUSTSTORE))) {
+          repository.setTrustStore(sslConfig.get(JMXDataUpdater.JAVAX_TRUSTSTORE));
+        }
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_TRUSTSTORE_PASSWORD))) {
+          repository.setTrustStorePassword(sslConfig.get(JMXDataUpdater.JAVAX_TRUSTSTORE_PASSWORD));
+        }
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_TRUSTSTORE_TYPE))) {
+          repository.setTrustStoreType(sslConfig.get(JMXDataUpdater.JAVAX_TRUSTSTORE_TYPE));
+        }
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_RMI_CIPHERS))) {
+          repository.setCiphers(sslConfig.get(JMXDataUpdater.JAVAX_RMI_CIPHERS));
+        }
+        if (StringUtils.isNotEmpty(sslConfig.get(JMXDataUpdater.JAVAX_RMI_PROTOCOLS))) {
+          repository.setProtocols(sslConfig.get(JMXDataUpdater.JAVAX_RMI_PROTOCOLS));
+        }
+      }
     } else {
       // jmx connection parameters
       logger.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_NONEMBEDDED_MODE"));

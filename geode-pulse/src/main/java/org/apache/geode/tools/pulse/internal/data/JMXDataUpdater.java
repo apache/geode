@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -89,6 +90,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private ObjectName MBEAN_OBJECT_NAME_MEMBER;
   private ObjectName MBEAN_OBJECT_NAME_MEMBER_MANAGER;
   private ObjectName MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED;
+
+  public static final String JAVAX_KEYSTORE = "javax.net.ssl.keyStore";
+  public static final String JAVAX_KEYSTORE_TYPE = "javax.net.ssl.keyStoreType";
+  public static final String JAVAX_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
+  public static final String JAVAX_TRUSTSTORE = "javax.net.ssl.trustStore";
+  public static final String JAVAX_TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
+  public static final String JAVAX_TRUSTSTORE_TYPE = "javax.net.ssl.trustStoreType";
+  public static final String JAVAX_RMI_CIPHERS = "javax.rmi.ssl.client.enabledCipherSuites";
+  public static final String JAVAX_RMI_PROTOCOLS = "javax.rmi.ssl.client.enabledProtocols";
 
   private Set<ObjectName> systemMBeans = null;
 
@@ -209,14 +219,48 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         Map<String, Object> env = new HashMap<String, Object>();
         env.put(JMXConnector.CREDENTIALS, creds);
 
-        if (repository.isUseSSLManager()) {
-          // use ssl to connect
-          env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
+        Properties originalProperties = System.getProperties();
+        try {
+          Properties updatedProperties = new Properties(originalProperties);
+          if (repository.isUseSSLManager()) {
+            if (StringUtils.isNotEmpty(repository.getKeyStore())) {
+              updatedProperties.setProperty(JAVAX_KEYSTORE, repository.getKeyStore());
+            }
+            if (StringUtils.isNotEmpty(repository.getKeyStorePassword())) {
+              updatedProperties.setProperty(JAVAX_KEYSTORE_PASSWORD,
+                  repository.getKeyStorePassword());
+            }
+            if (StringUtils.isNotEmpty(repository.getKeyStoreType())) {
+              updatedProperties.setProperty(JAVAX_KEYSTORE_TYPE, repository.getKeyStoreType());
+            }
+            if (StringUtils.isNotEmpty(repository.getTrustStore())) {
+              updatedProperties.setProperty(JAVAX_TRUSTSTORE, repository.getTrustStore());
+            }
+            if (StringUtils.isNotEmpty(repository.getTrustStorePassword())) {
+              updatedProperties.setProperty(JAVAX_TRUSTSTORE_PASSWORD,
+                  repository.getTrustStorePassword());
+            }
+            if (StringUtils.isNotEmpty(repository.getTrustStoreType())) {
+              updatedProperties.setProperty(JAVAX_TRUSTSTORE_TYPE, repository.getTrustStoreType());
+            }
+            if (StringUtils.isNotEmpty(repository.getCiphers())) {
+              updatedProperties.setProperty(JAVAX_RMI_CIPHERS, repository.getCiphers());
+            }
+            if (StringUtils.isNotEmpty(repository.getProtocols())) {
+              updatedProperties.setProperty(JAVAX_RMI_PROTOCOLS, repository.getProtocols());
+            }
+
+            System.setProperties(updatedProperties);
+            // use ssl to connect
+            env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
+          }
+          logger.info("Connecting to jmxURL : {}", jmxSerURL);
+          this.conn = JMXConnectorFactory.connect(url, env);
+          this.mbs = this.conn.getMBeanServerConnection();
+          cluster.setConnectedFlag(true);
+        } finally {
+          System.setProperties(originalProperties);
         }
-        logger.info("Connecting to jmxURL : {}", jmxSerURL);
-        this.conn = JMXConnectorFactory.connect(url, env);
-        this.mbs = this.conn.getMBeanServerConnection();
-        cluster.setConnectedFlag(true);
       }
     } catch (Exception e) {
       cluster.setConnectedFlag(false);

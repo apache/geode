@@ -43,6 +43,14 @@ public class Repository {
   private String port;
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
+  private String trustStore;
+  private String trustStorePassword;
+  private String trustStoreType;
+  private String keyStore;
+  private String keyStorePassword;
+  private String keyStoreType;
+  private String ciphers;
+  private String protocols;
 
   Locale locale =
       new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
@@ -104,6 +112,69 @@ public class Repository {
     return this.pulseConfig;
   }
 
+  public String getTrustStore() {
+    return trustStore;
+  }
+
+  public void setTrustStore(String trustStore) {
+    this.trustStore = trustStore;
+  }
+
+  public String getTrustStorePassword() {
+    return trustStorePassword;
+  }
+
+  public void setTrustStorePassword(String trustStorePassword) {
+    this.trustStorePassword = trustStorePassword;
+  }
+
+  public String getTrustStoreType() {
+    return trustStoreType;
+  }
+
+  public void setTrustStoreType(String trustStoreType) {
+    this.trustStoreType = trustStoreType;
+  }
+
+  public String getKeyStore() {
+    return keyStore;
+  }
+
+  public void setKeyStore(String keyStore) {
+    this.keyStore = keyStore;
+  }
+
+  public String getKeyStorePassword() {
+    return keyStorePassword;
+  }
+
+  public void setKeyStorePassword(String keyStorePassword) {
+    this.keyStorePassword = keyStorePassword;
+  }
+
+  public String getKeyStoreType() {
+    return keyStoreType;
+  }
+
+  public void setKeyStoreType(String keyStoreType) {
+    this.keyStoreType = keyStoreType;
+  }
+
+  public String getCiphers() {
+    return ciphers;
+  }
+
+  public void setCiphers(String ciphers) {
+    this.ciphers = ciphers;
+  }
+
+  public String getProtocols() {
+    return protocols;
+  }
+
+  public void setProtocols(String protocols) {
+    this.protocols = protocols;
+  }
 
   /**
    * this will return a cluster already connected to the geode jmx manager for the user in the
