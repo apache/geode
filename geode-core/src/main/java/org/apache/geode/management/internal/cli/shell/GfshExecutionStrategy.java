@@ -160,6 +160,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     CliAroundInterceptor interceptor = null;
 
     String interceptorClass = getInterceptor(parseResult.getMethod());
+    boolean useResultModel = false;
 
     // 1. Pre Remote Execution
     if (!CliMetaData.ANNOTATION_NULL_VALUE.equals(interceptorClass)) {
@@ -176,6 +177,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
       Object preExecResult = interceptor.preExecution(parseResult);
       if (preExecResult instanceof ResultModel) {
+        useResultModel = true;
         if (((ResultModel) preExecResult).getStatus() != Status.OK) {
           return new ModelCommandResult((ResultModel) preExecResult);
         }
@@ -223,6 +225,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       try {
         // if it's ResultModel
         commandResult = ResultModel.fromJson((String) response);
+        useResultModel = true;
       } catch (Exception ex) {
         // if it's a CommandResult
         CommandResponse commandResponse =
@@ -251,12 +254,12 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     // 3. Post Remote Execution
     if (interceptor != null) {
       try {
-        if (commandResult instanceof CommandResult) {
-          commandResult =
-              interceptor.postExecution(parseResult, (CommandResult) commandResult, tempFile);
-        } else {
+        if (useResultModel) {
           commandResult =
               interceptor.postExecution(parseResult, (ResultModel) commandResult, tempFile);
+        } else {
+          commandResult =
+              interceptor.postExecution(parseResult, (CommandResult) commandResult, tempFile);
         }
       } catch (Exception e) {
         logWrapper.severe("error running post interceptor", e);
