@@ -36,6 +36,11 @@ import org.apache.geode.security.NotAuthorizedException;
  * For AuthorizationExceptions, it logs it and then rethrow it.
  */
 public class CommandExecutor {
+  public static final String RUN_ON_MEMBER_CHANGE_NOT_PERSISTED =
+      "Configuration change is not persisted because the command is executed on specific member.";
+  public static final String SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED =
+      "Cluster configuration service is not running. Configuration change is not persisted.";
+
   private Logger logger = LogService.getLogger();
 
   // used by the product
@@ -116,14 +121,12 @@ public class CommandExecutor {
     InfoResultModel infoResultModel = resultModel.addInfo(ResultModel.INFO_SECTION);
     ConfigurationPersistenceService ccService = gfshCommand.getConfigurationPersistenceService();
     if (ccService == null) {
-      infoResultModel.addLine(
-          "Cluster configuration service is not running. Configuration change is not persisted.");
+      infoResultModel.addLine(SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
       return resultModel;
     }
 
     if (parseResult.getParamValue("member") != null) {
-      infoResultModel.addLine(
-          "Configuration change is not persisted because the command is executed on specific member.");
+      infoResultModel.addLine(RUN_ON_MEMBER_CHANGE_NOT_PERSISTED);
       return resultModel;
     }
 

@@ -20,6 +20,7 @@ package org.apache.geode.cache.configuration;
 
 import static org.apache.geode.cache.configuration.CacheElement.findElement;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -1107,7 +1108,7 @@ public class CacheConfig {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
       propOrder = {"gatewayEventFilter", "gatewayEventSubstitutionFilter", "asyncEventListener"})
-  public static class AsyncEventQueue {
+  public static class AsyncEventQueue implements Serializable {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
     protected List<DeclarableType> gatewayEventFilter;
