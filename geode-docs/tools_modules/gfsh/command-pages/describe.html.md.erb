@@ -37,6 +37,10 @@ Display details of a member's configuration, shell connection, disk-stores, memb
 
     Display information about a member's disk store.
 
+-   **[describe jndi-binding](#describe_jndi-binding)**
+
+    Display information about the configuration of a JNDI binding.
+
 -   **[describe lucene index](#describe_lucene_index)**
 
     Display information about a Lucene index.
@@ -230,6 +234,44 @@ PDX Serialization Meta-Data Stored : No
 ------------------------------- | ----------
 /home/user/server1/DiskStore1 | 2147483647
 
+```
+
+## <a id="describe_jndi-binding" class="no-quick-link"></a>describe jndi-binding
+
+Print the configuration information that describes a JDBC connection.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+describe jndi-binding --name=value
+```
+
+**Parameters, describe jndi-binding:**
+
+
+| Name                                               | Description                                                                  |
+|----------------------------------------------------|------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the JNDI binding to be described.                    |
+
+**Example Commands:**
+
+``` pre
+describe jndi-binding --name=jndi1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>describe jndi-binding --name=jndi1
+    Property      | Value
+----------------- | ------------------------------------
+type              | SimpleDataSource
+jndi-name         | jndi1
+jdbc-driver-class | org.apache.derby.jdbc.EmbeddedDriver
+user-name         |
+connection-url    | jdbc:derby:newDB
 ```
 
 ## <a id="describe_lucene_index" class="no-quick-link"></a>describe lucene index
