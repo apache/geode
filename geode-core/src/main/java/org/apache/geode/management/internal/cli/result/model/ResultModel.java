@@ -208,12 +208,21 @@ public class ResultModel {
     Object model = sections.get(namedSection);
     if (model != null) {
       throw new IllegalStateException(
-          String.format("Section already exists. Can't overwrite it with this new content.",
-              model.getClass().getSimpleName()));
+          "Section already exists. Can't overwrite it with this new content.");
     }
-    TabularResultModel section = new TabularResultModel();
-    boolean success = section.setContent(functionResults, skipIgnored);
-    setStatus(success ? Result.Status.OK : Result.Status.ERROR);
+    TabularResultModel section = this.addTable(namedSection);
+    boolean atLeastOneSuccess = false;
+    section.setColumnHeader("Member", "Status", "Message");
+    for (CliFunctionResult functionResult : functionResults) {
+      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnored),
+          functionResult.getStatusMessage());
+      if (functionResult.isSuccessful()) {
+        atLeastOneSuccess = true;
+      } else if (functionResult.isIgnorableFailure() && skipIgnored) {
+        atLeastOneSuccess = true;
+      }
+    }
+    setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
     return section;
   }
 
@@ -327,11 +336,10 @@ public class ResultModel {
       String header, String footer, boolean ignoreIfFailed) {
     ResultModel result = new ResultModel();
 
-    TabularResultModel tabularResultModel = result.addTable(MEMBER_STATUS_SECTION);
+    TabularResultModel tabularResultModel =
+        result.addTable(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
-    boolean status = tabularResultModel.setContent(functionResults, ignoreIfFailed);
-    result.setStatus(status ? Result.Status.OK : Result.Status.ERROR);
     return result;
   }
 }

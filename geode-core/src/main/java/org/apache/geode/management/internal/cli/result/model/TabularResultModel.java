@@ -23,8 +23,6 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.ArrayUtils;
 
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-
 public class TabularResultModel extends AbstractResultModel {
 
   /*
@@ -69,22 +67,5 @@ public class TabularResultModel extends AbstractResultModel {
     for (int i = 0; i < values.length; i++) {
       table.get(columnHeaders[i]).add(values[i]);
     }
-  }
-
-  public boolean setContent(List<CliFunctionResult> functionResults, boolean skipIgnore) {
-    // clear the old content if any
-    table.clear();
-    boolean atLeastOneSuccess = false;
-    setColumnHeader("Member", "Status", "Message");
-    for (CliFunctionResult functionResult : functionResults) {
-      addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnore),
-          functionResult.getStatusMessage());
-      if (functionResult.isSuccessful()) {
-        atLeastOneSuccess = true;
-      } else if (functionResult.isIgnorableFailure() && skipIgnore) {
-        atLeastOneSuccess = true;
-      }
-    }
-    return atLeastOneSuccess;
   }
 }

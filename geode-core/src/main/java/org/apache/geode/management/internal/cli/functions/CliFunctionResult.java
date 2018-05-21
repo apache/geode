@@ -37,7 +37,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   private StatusState state;
 
   public enum StatusState {
-    OK, ERROR, IGNORED
+    OK, ERROR, IGNORABLE
   }
 
   @Deprecated
@@ -132,15 +132,15 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   }
 
   public String getStatus(boolean skipIgnore) {
-    if (!skipIgnore && state == StatusState.IGNORED) {
-      return StatusState.ERROR.name();
+    if (state == StatusState.IGNORABLE) {
+      return skipIgnore ? "IGNORED" : "ERROR";
     }
 
-    return getStatus();
+    return state.name();
   }
 
   public String getStatus() {
-    return state.name();
+    return getStatus(true);
   }
 
   public String getStatusMessage() {
@@ -258,7 +258,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   }
 
   public boolean isIgnorableFailure() {
-    return this.state == StatusState.IGNORED;
+    return this.state == StatusState.IGNORABLE;
   }
 
   @Deprecated
