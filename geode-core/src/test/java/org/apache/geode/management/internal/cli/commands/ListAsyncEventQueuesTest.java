@@ -252,7 +252,7 @@ public class ListAsyncEventQueuesTest {
     }
 
     private String[] expectedRowHeaderAndValue() {
-      return new String[] {"Member", "ID", "Batch size", "Persistent", "Disk Store", "Max Memory",
+      return new String[] {"Member", "ID", "Batch Size", "Persistent", "Disk Store", "Max Memory",
           "Listener", memberName, queueId, String.valueOf(batchSize), String.valueOf(persistent),
           diskStoreName, String.valueOf(maxQueueMemory), expectedListenerOutput()};
     }

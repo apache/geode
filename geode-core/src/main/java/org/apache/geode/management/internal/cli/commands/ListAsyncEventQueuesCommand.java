@@ -86,7 +86,7 @@ public class ListAsyncEventQueuesCommand extends InternalGfshCommand {
       ((List<AsyncEventQueueDetails>) successfulResult.getResultObject())
           .forEach(entry -> detailsTable.addRow(memberName, entry.getId(),
               String.valueOf(entry.getBatchSize()), String.valueOf(entry.isPersistent()),
-              entry.getDiskStoreName(), String.valueOf(entry.getMaxQueueMemory()),
+              String.valueOf(entry.getDiskStoreName()), String.valueOf(entry.getMaxQueueMemory()),
               getListenerEntry(entry)));
     });
     return result;
