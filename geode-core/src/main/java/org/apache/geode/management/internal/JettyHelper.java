@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal;
 
 import java.io.File;
-import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang.StringUtils;
@@ -58,7 +58,7 @@ public class JettyHelper {
   public static final String SECURITY_SERVICE_SERVLET_CONTEXT_PARAM =
       "org.apache.geode.securityService";
 
-  public static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
+  private static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
 
   public static Server initJetty(final String bindAddress, final int port, SSLConfig sslConfig) {
 
@@ -165,7 +165,7 @@ public class JettyHelper {
   }
 
   public static Server addWebApplication(final Server jetty, final String webAppContext,
-      final String warFilePath, SecurityService securityService, Map<String, String> sslConfig) {
+      final String warFilePath, SecurityService securityService, Properties sslConfig) {
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath);

@@ -27,7 +27,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -329,8 +329,8 @@ public class ManagementAgent {
     }
   }
 
-  private Map<String, String> createSslProps() {
-    Map<String, String> sslProps = new HashMap<>();
+  private Properties createSslProps() {
+    Properties sslProps = new Properties();
     if (StringUtils.isNotEmpty(config.getSSLKeyStore())) {
       sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE, config.getSSLKeyStore());
     }
