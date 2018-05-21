@@ -138,9 +138,9 @@ public class RestAgent {
             SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar,
-            securityService);
-        this.httpServer =
-            JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar, securityService);
+            securityService, null);
+        this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar,
+            securityService, null);
 
         if (logger.isDebugEnabled()) {
           logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
