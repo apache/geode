@@ -147,8 +147,7 @@ public class ResultModel {
     this.files = files;
   }
 
-  public void addFile(String fileName, byte[] data, int fileType, String message,
-      boolean addTimestampToName) {
+  public void addFile(String fileName, byte[] data, int fileType, String message) {
     if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
       throw new IllegalArgumentException("Unsupported file type is specified.");
     }
@@ -260,6 +259,18 @@ public class ResultModel {
   // ********************************************
   // static convenience methods
   // ********************************************
+
+  public static ResultModel fromJson(String json) {
+    ObjectMapper mapper = new ObjectMapper();
+
+    ResultModel response;
+    try {
+      response = mapper.readValue(json, ResultModel.class);
+    } catch (IOException iox) {
+      throw new RuntimeException(iox);
+    }
+    return response;
+  }
 
   public static ResultModel createCommandProcessingError(String message) {
     return createError("Error processing command: " + message);
