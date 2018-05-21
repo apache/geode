@@ -36,7 +36,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ListAsyncEventQueuesCommand extends InternalGfshCommand {
   private static final String[] DETAILS_OUTPUT_COLUMNS =
-      {"Member", "ID", "Batch size", "Persistent", "Disk Store", "Max Memory", "Listener"};
+      {"Member", "ID", "Batch Size", "Persistent", "Disk Store", "Max Memory", "Listener"};
   private static final String ASYNC_EVENT_QUEUES_TABLE_SECTION = "Async Event Queues";
   private static final String MEMBER_ERRORS_TABLE_SECTION = "Member Errors";
 
@@ -104,7 +104,7 @@ public class ListAsyncEventQueuesCommand extends InternalGfshCommand {
    * @return A json format of the properties, or the empty string if the properties are empty.
    */
   static String propertiesToString(Properties props) {
-    if (props.isEmpty()) {
+    if (props == null || props.isEmpty()) {
       return "";
     }
     ObjectMapper mapper = new ObjectMapper();
