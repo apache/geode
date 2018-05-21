@@ -151,12 +151,12 @@ public class ExportImportClusterConfigurationCommands extends InternalGfshComman
       for (String groupName : groupNames) {
         CacheConfig cacheConfig = sc.getCacheConfig(groupName);
         if (cacheConfig != null) {
-          if (cacheConfig.getRegion().size() > 0 || cacheConfig.getAsyncEventQueue().size() > 0
-              || cacheConfig.getDiskStore().size() > 0
+          if (cacheConfig.getRegions().size() > 0 || cacheConfig.getAsyncEventQueues().size() > 0
+              || cacheConfig.getDiskStores().size() > 0
               || cacheConfig.getCustomCacheElements().size() > 0
               || cacheConfig.getJndiBindings().size() > 0
               || cacheConfig.getGatewayReceiver() != null
-              || cacheConfig.getGatewaySender().size() > 0) {
+              || cacheConfig.getGatewaySenders().size() > 0) {
             return ResultBuilder.createGemFireErrorResult(
                 "Running servers have existing cluster configuration applied already.");
           }

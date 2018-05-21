@@ -75,7 +75,7 @@ public class InternalConfigurationPersistenceServiceTest {
       RegionConfig regionConfig = new RegionConfig();
       regionConfig.setName("regionA");
       regionConfig.setRefid("REPLICATE");
-      cacheConfig.getRegion().add(regionConfig);
+      cacheConfig.getRegions().add(regionConfig);
       return cacheConfig;
     });
 
@@ -91,7 +91,7 @@ public class InternalConfigurationPersistenceServiceTest {
       jndiBinding.setJndiName("jndiOne");
       jndiBinding.setJdbcDriverClass("com.sun.ABC");
       jndiBinding.setType("SimpleDataSource");
-      jndiBinding.getConfigProperty()
+      jndiBinding.getConfigProperties()
           .add(new JndiBindingsType.JndiBinding.ConfigProperty("test", "test", "test"));
       cacheConfig.getJndiBindings().add(jndiBinding);
       return cacheConfig;

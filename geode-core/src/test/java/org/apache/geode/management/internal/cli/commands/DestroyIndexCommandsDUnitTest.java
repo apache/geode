@@ -233,7 +233,7 @@ public class DestroyIndexCommandsDUnitTest {
       InternalConfigurationPersistenceService svc =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       RegionConfig regionConfig = svc.getCacheConfig("cluster").findRegionConfiguration(REGION_1);
-      assertThat(regionConfig.getIndex().size()).isEqualTo(2);
+      assertThat(regionConfig.getIndexes().size()).isEqualTo(2);
     });
   }
 
@@ -273,7 +273,7 @@ public class DestroyIndexCommandsDUnitTest {
       InternalConfigurationPersistenceService svc =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       RegionConfig regionConfig = svc.getCacheConfig("cluster").findRegionConfiguration(region);
-      assertThat(regionConfig.getIndex().size()).isEqualTo(indexCount);
+      assertThat(regionConfig.getIndexes().size()).isEqualTo(indexCount);
     });
   }
 }

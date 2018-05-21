@@ -54,8 +54,8 @@ public class GatewayReceiverFunctionArgs implements Serializable {
         ? Integer.valueOf(configuration.getSocketBufferSize()) : null;
     this.maximumTimeBetweenPings = configuration.getMaximumTimeBetweenPings() != null
         ? Integer.valueOf(configuration.getMaximumTimeBetweenPings()) : null;
-    this.gatewayTransportFilters = configuration.getGatewayTransportFilter() != null
-        ? configuration.getGatewayTransportFilter().stream().map(DeclarableType::getClassName)
+    this.gatewayTransportFilters = configuration.getGatewayTransportFilters() != null
+        ? configuration.getGatewayTransportFilters().stream().map(DeclarableType::getClassName)
             .toArray(String[]::new)
         : null;
     this.hostnameForSenders = configuration.getHostnameForSenders();

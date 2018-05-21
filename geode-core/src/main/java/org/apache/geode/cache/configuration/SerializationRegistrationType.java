@@ -80,14 +80,15 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "serialization-registration-type",
-    namespace = "http://geode.apache.org/schema/cache", propOrder = {"serializer", "instantiator"})
+    namespace = "http://geode.apache.org/schema/cache",
+    propOrder = {"serializers", "instantiators"})
 @Experimental
 public class SerializationRegistrationType {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<SerializationRegistrationType.Serializer> serializer;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<SerializationRegistrationType.Instantiator> instantiator;
+  @XmlElement(name = "serializer", namespace = "http://geode.apache.org/schema/cache")
+  protected List<SerializationRegistrationType.Serializer> serializers;
+  @XmlElement(name = "instantiator", namespace = "http://geode.apache.org/schema/cache")
+  protected List<SerializationRegistrationType.Instantiator> instantiators;
 
   /**
    * Gets the value of the serializer property.
@@ -112,11 +113,11 @@ public class SerializationRegistrationType {
    *
    *
    */
-  public List<SerializationRegistrationType.Serializer> getSerializer() {
-    if (serializer == null) {
-      serializer = new ArrayList<SerializationRegistrationType.Serializer>();
+  public List<SerializationRegistrationType.Serializer> getSerializers() {
+    if (serializers == null) {
+      serializers = new ArrayList<SerializationRegistrationType.Serializer>();
     }
-    return this.serializer;
+    return this.serializers;
   }
 
   /**
@@ -142,11 +143,11 @@ public class SerializationRegistrationType {
    *
    *
    */
-  public List<SerializationRegistrationType.Instantiator> getInstantiator() {
-    if (instantiator == null) {
-      instantiator = new ArrayList<SerializationRegistrationType.Instantiator>();
+  public List<SerializationRegistrationType.Instantiator> getInstantiators() {
+    if (instantiators == null) {
+      instantiators = new ArrayList<SerializationRegistrationType.Instantiator>();
     }
-    return this.instantiator;
+    return this.instantiators;
   }
 
 

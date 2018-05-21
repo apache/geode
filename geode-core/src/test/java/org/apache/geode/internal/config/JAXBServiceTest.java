@@ -169,7 +169,7 @@ public class JAXBServiceTest {
     RegionConfig region = new RegionConfig();
     region.setName("testRegion");
     region.setRefid("REPLICATE");
-    cache.getRegion().add(region);
+    cache.getRegions().add(region);
   }
 
   @XmlAccessorType(XmlAccessType.FIELD)

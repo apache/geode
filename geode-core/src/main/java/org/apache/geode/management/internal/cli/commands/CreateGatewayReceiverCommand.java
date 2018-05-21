@@ -118,7 +118,7 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
             thisFilter.setClassName(fullyQualifiedClassName);
             return thisFilter;
           }).collect(Collectors.toList());
-      configuration.getGatewayTransportFilter().addAll(filters);
+      configuration.getGatewayTransportFilters().addAll(filters);
     }
     if (startPort != null) {
       configuration.setStartPort(String.valueOf(startPort));
