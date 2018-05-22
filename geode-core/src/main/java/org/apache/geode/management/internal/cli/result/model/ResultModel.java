@@ -203,8 +203,8 @@ public class ResultModel {
     return section;
   }
 
-  public TabularResultModel addTable(String namedSection, List<CliFunctionResult> functionResults,
-      boolean skipIgnored) {
+  public TabularResultModel addTableAndSetStatus(String namedSection,
+      List<CliFunctionResult> functionResults, boolean skipIgnored) {
     Object model = sections.get(namedSection);
     if (model != null) {
       throw new IllegalStateException(
@@ -337,7 +337,7 @@ public class ResultModel {
     ResultModel result = new ResultModel();
 
     TabularResultModel tabularResultModel =
-        result.addTable(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
+        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
     return result;
