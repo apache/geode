@@ -43,10 +43,6 @@ When you specify the `--groups` parameter in a `gfsh` command, (for example, `st
 
 You can export a zip file that contains all artifacts of a cluster configuration. The zip file contains all of the files in the `cluster_config` (or otherwise specified) subdirectory of a locator. You can import this configuration to a new cluster. See [Exporting and Importing Cluster Configurations](export-import.html#concept_wft_dkq_34).
 
-## Individual Configuration Files and Cluster Configuration Files
-
-<%=vars.product_name%> applies the cluster-wide configuration files first and then group-level configurations next. If a member has its own configuration files defined (cache.xml and gemfire.properties files), those configurations are applied last. Whenever possible, use the member group-level configuration files in the cluster configuration service to apply non-cluster-wide configurations on individual members.
-
 ## Troubleshooting Tips
 
 -   When you start a locator using `gfsh`, you should see the following message:
@@ -59,6 +55,13 @@ You can export a zip file that contains all artifacts of a cluster configuration
 
     -   If the command returns RUNNING, the cluster configuration is running normally.
     -   If the command returns WAITING, run the `status locator` command. The output of this command returns the cause of the WAITING status.
+-  When using a `cache.xml` file for configuration,
+there is a specific order to the application of the configuration
+in these files.
+<%=vars.product_name%> applies the cluster-wide configuration files first.
+Group-level configurations follow.
+Last will be the configuration in a member's own configuration files
+(`cache.xml` and `gemfire.properties` files).
 -   If a server start fails with the following exception: `ClusterConfigurationNotAvailableException`, the cluster configuration service may not be in the RUNNING state. Because the server requests the cluster configuration from the locator, which is not available, the `start server` command fails.
 -   You can determine what configurations a server received from a locator by examining the server's log file. See [Logging](../../managing/logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865).
 -   If a `start server` command specifies a cache.xml file that conflicts with the existing cluster configuration, the server startup may fail.
