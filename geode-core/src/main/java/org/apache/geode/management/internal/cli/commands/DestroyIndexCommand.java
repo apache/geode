@@ -107,14 +107,14 @@ public class DestroyIndexCommand extends SingleGfshCommand {
       }
 
       if (indexName.isEmpty()) {
-        regionConfig.getIndex().clear();
+        regionConfig.getIndexes().clear();
       } else {
-        CacheElement.removeElement(regionConfig.getIndex(), indexName);
+        CacheElement.removeElement(regionConfig.getIndexes(), indexName);
       }
     } else {
       // Need to search for the index name as region was not specified
-      for (RegionConfig r : config.getRegion()) {
-        CacheElement.removeElement(r.getIndex(), indexName);
+      for (RegionConfig r : config.getRegions()) {
+        CacheElement.removeElement(r.getIndexes(), indexName);
       }
     }
   }

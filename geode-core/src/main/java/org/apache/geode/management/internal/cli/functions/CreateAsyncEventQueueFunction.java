@@ -83,7 +83,7 @@ public class CreateAsyncEventQueueFunction extends CliFunction {
               .setDispatcherThreads(Integer.parseInt(config.getDispatcherThreads()))
               .setOrderPolicy(OrderPolicy.valueOf(config.getOrderPolicy()));
 
-      String[] gatewayEventFilters = config.getGatewayEventFilter().stream()
+      String[] gatewayEventFilters = config.getGatewayEventFilters().stream()
           .map(ClassNameType::getClassName).toArray(String[]::new);
 
       if (gatewayEventFilters != null) {
@@ -106,7 +106,7 @@ public class CreateAsyncEventQueueFunction extends CliFunction {
       Class<?> listenerClass = InternalDataSerializer.getCachedClass(listenerClassName);
       listenerInstance = listenerClass.newInstance();
 
-      List<ParameterType> parameters = config.getAsyncEventListener().getParameter();
+      List<ParameterType> parameters = config.getAsyncEventListener().getParameters();
       Properties listenerProperties = new Properties();
       for (ParameterType p : parameters) {
         listenerProperties.put(p.getName(), p.getString());

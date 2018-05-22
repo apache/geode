@@ -68,12 +68,12 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "function-service-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"function"})
+    propOrder = {"functions"})
 @Experimental
 public class FunctionServiceType {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<DeclarableType> function;
+  @XmlElement(name = "function", namespace = "http://geode.apache.org/schema/cache")
+  protected List<DeclarableType> functions;
 
   /**
    * Gets the value of the function property.
@@ -88,7 +88,7 @@ public class FunctionServiceType {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getFunction().add(newItem);
+   * getFunctions().add(newItem);
    * </pre>
    *
    *
@@ -98,10 +98,10 @@ public class FunctionServiceType {
    *
    *
    */
-  public List<DeclarableType> getFunction() {
-    if (function == null) {
-      function = new ArrayList<DeclarableType>();
+  public List<DeclarableType> getFunctions() {
+    if (functions == null) {
+      functions = new ArrayList<DeclarableType>();
     }
-    return this.function;
+    return this.functions;
   }
 }

@@ -331,7 +331,7 @@ import org.apache.geode.annotations.Experimental;
     propOrder = {"keyConstraint", "valueConstraint", "regionTimeToLive", "regionIdleTime",
         "entryTimeToLive", "entryIdleTime", "diskWriteAttributes", "diskDirs",
         "partitionAttributes", "membershipAttributes", "subscriptionAttributes", "cacheLoader",
-        "cacheWriter", "cacheListener", "compressor", "evictionAttributes"})
+        "cacheWriter", "cacheListeners", "compressor", "evictionAttributes"})
 @Experimental
 public class RegionAttributesType {
 
@@ -362,7 +362,7 @@ public class RegionAttributesType {
   @XmlElement(name = "cache-writer", namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType cacheWriter;
   @XmlElement(name = "cache-listener", namespace = "http://geode.apache.org/schema/cache")
-  protected List<DeclarableType> cacheListener;
+  protected List<DeclarableType> cacheListeners;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected ClassNameType compressor;
   @XmlElement(name = "eviction-attributes", namespace = "http://geode.apache.org/schema/cache")
@@ -723,7 +723,7 @@ public class RegionAttributesType {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getCacheListener().add(newItem);
+   * getCacheListeners().add(newItem);
    * </pre>
    *
    *
@@ -733,11 +733,11 @@ public class RegionAttributesType {
    *
    *
    */
-  public List<DeclarableType> getCacheListener() {
-    if (cacheListener == null) {
-      cacheListener = new ArrayList<DeclarableType>();
+  public List<DeclarableType> getCacheListeners() {
+    if (cacheListeners == null) {
+      cacheListeners = new ArrayList<DeclarableType>();
     }
-    return this.cacheListener;
+    return this.cacheListeners;
   }
 
   /**
@@ -2096,11 +2096,11 @@ public class RegionAttributesType {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"requiredRole"})
+  @XmlType(name = "", propOrder = {"requiredRoles"})
   public static class MembershipAttributes {
 
     @XmlElement(name = "required-role", namespace = "http://geode.apache.org/schema/cache")
-    protected List<RegionAttributesType.MembershipAttributes.RequiredRole> requiredRole;
+    protected List<RegionAttributesType.MembershipAttributes.RequiredRole> requiredRoles;
     @XmlAttribute(name = "loss-action")
     protected String lossAction;
     @XmlAttribute(name = "resumption-action")
@@ -2119,7 +2119,7 @@ public class RegionAttributesType {
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getRequiredRole().add(newItem);
+     * getRequiredRoles().add(newItem);
      * </pre>
      *
      *
@@ -2129,11 +2129,11 @@ public class RegionAttributesType {
      *
      *
      */
-    public List<RegionAttributesType.MembershipAttributes.RequiredRole> getRequiredRole() {
-      if (requiredRole == null) {
-        requiredRole = new ArrayList<RegionAttributesType.MembershipAttributes.RequiredRole>();
+    public List<RegionAttributesType.MembershipAttributes.RequiredRole> getRequiredRoles() {
+      if (requiredRoles == null) {
+        requiredRoles = new ArrayList<RegionAttributesType.MembershipAttributes.RequiredRole>();
       }
-      return this.requiredRole;
+      return this.requiredRoles;
     }
 
     /**
@@ -2299,13 +2299,13 @@ public class RegionAttributesType {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
-      propOrder = {"partitionResolver", "partitionListener", "fixedPartitionAttributes"})
+      propOrder = {"partitionResolver", "partitionListeners", "fixedPartitionAttributes"})
   public static class PartitionAttributes {
 
     @XmlElement(name = "partition-resolver", namespace = "http://geode.apache.org/schema/cache")
     protected DeclarableType partitionResolver;
     @XmlElement(name = "partition-listener", namespace = "http://geode.apache.org/schema/cache")
-    protected List<DeclarableType> partitionListener;
+    protected List<DeclarableType> partitionListeners;
     @XmlElement(name = "fixed-partition-attributes",
         namespace = "http://geode.apache.org/schema/cache")
     protected List<RegionAttributesType.PartitionAttributes.FixedPartitionAttributes> fixedPartitionAttributes;
@@ -2359,7 +2359,7 @@ public class RegionAttributesType {
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getPartitionListener().add(newItem);
+     * getPartitionListeners().add(newItem);
      * </pre>
      *
      *
@@ -2369,11 +2369,11 @@ public class RegionAttributesType {
      *
      *
      */
-    public List<DeclarableType> getPartitionListener() {
-      if (partitionListener == null) {
-        partitionListener = new ArrayList<DeclarableType>();
+    public List<DeclarableType> getPartitionListeners() {
+      if (partitionListeners == null) {
+        partitionListeners = new ArrayList<DeclarableType>();
       }
-      return this.partitionListener;
+      return this.partitionListeners;
     }
 
     /**

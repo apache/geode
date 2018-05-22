@@ -59,11 +59,11 @@ import org.apache.geode.management.internal.cli.domain.ClassName;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "declarable-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"parameter"})
+    propOrder = {"parameters"})
 @Experimental
 public class DeclarableType extends ClassNameType {
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<ParameterType> parameter;
+  @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
+  protected List<ParameterType> parameters;
 
   public DeclarableType() {}
 
@@ -78,7 +78,7 @@ public class DeclarableType extends ClassNameType {
   public DeclarableType(String className, Properties properties) {
     this.className = className;
     if (properties != null) {
-      parameter = properties.stringPropertyNames().stream()
+      parameters = properties.stringPropertyNames().stream()
           .map(k -> new ParameterType(k, properties.getProperty(k))).collect(Collectors.toList());
     }
   }
@@ -96,7 +96,7 @@ public class DeclarableType extends ClassNameType {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getParameter().add(newItem);
+   * getParameters().add(newItem);
    * </pre>
    *
    *
@@ -106,11 +106,11 @@ public class DeclarableType extends ClassNameType {
    *
    *
    */
-  public List<ParameterType> getParameter() {
-    if (parameter == null) {
-      parameter = new ArrayList<ParameterType>();
+  public List<ParameterType> getParameters() {
+    if (parameters == null) {
+      parameters = new ArrayList<ParameterType>();
     }
-    return this.parameter;
+    return this.parameters;
   }
 
   @Override
@@ -122,21 +122,21 @@ public class DeclarableType extends ClassNameType {
       return false;
     }
     DeclarableType that = (DeclarableType) o;
-    return Objects.equals(className, that.className) && Objects.equals(parameter, that.parameter);
+    return Objects.equals(className, that.className) && Objects.equals(parameters, that.parameters);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(className, parameter);
+    return Objects.hash(className, parameters);
   }
 
   @Override
   public String toString() {
-    if (parameter == null) {
+    if (parameters == null) {
       return className;
     }
 
     return className + "{"
-        + parameter.stream().map(Objects::toString).collect(Collectors.joining(",")) + "}";
+        + parameters.stream().map(Objects::toString).collect(Collectors.joining(",")) + "}";
   }
 }

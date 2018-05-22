@@ -110,6 +110,6 @@ public class CreateIndexCommand extends SingleGfshCommand {
     if (regionConfig == null) {
       throw new EntityNotFoundException("Region " + index.getFromClause() + " not found.");
     }
-    regionConfig.getIndex().add(index);
+    regionConfig.getIndexes().add(index);
   }
 }

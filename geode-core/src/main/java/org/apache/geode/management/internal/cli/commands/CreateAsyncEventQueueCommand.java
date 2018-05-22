@@ -118,7 +118,7 @@ public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
     config.setEnableBatchConflation(enableBatchConflation);
     config.setForwardExpirationDestroy(forwardExpirationDestroy);
     if (gatewayEventFilters != null) {
-      config.getGatewayEventFilter().addAll(Arrays.stream(gatewayEventFilters)
+      config.getGatewayEventFilters().addAll(Arrays.stream(gatewayEventFilters)
           .map(classname -> new DeclarableType((classname))).collect(Collectors.toList()));
     }
     if (gatewaySubstitutionListener != null) {
@@ -140,6 +140,6 @@ public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
 
   @Override
   public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
-    config.getAsyncEventQueue().add((CacheConfig.AsyncEventQueue) configObject);
+    config.getAsyncEventQueues().add((CacheConfig.AsyncEventQueue) configObject);
   }
 }

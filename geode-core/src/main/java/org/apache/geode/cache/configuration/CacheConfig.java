@@ -264,10 +264,10 @@ import org.apache.geode.cache.Region;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "",
-    propOrder = {"cacheTransactionManager", "dynamicRegionFactory", "gatewayHub", "gatewaySender",
-        "gatewayReceiver", "gatewayConflictResolver", "asyncEventQueue", "cacheServer", "pool",
-        "diskStore", "pdx", "regionAttributes", "jndiBindings", "region", "functionService",
-        "resourceManager", "serializationRegistration", "backup", "initializer", "cacheElements"})
+    propOrder = {"cacheTransactionManager", "dynamicRegionFactory", "gatewayHubs", "gatewaySenders",
+        "gatewayReceiver", "gatewayConflictResolver", "asyncEventQueues", "cacheServers", "pools",
+        "diskStores", "pdx", "regionAttributes", "jndiBindings", "regions", "functionService",
+        "resourceManager", "serializationRegistration", "backups", "initializer", "cacheElements"})
 @XmlRootElement(name = "cache", namespace = "http://geode.apache.org/schema/cache")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/cache",
     schemaLocation = "http://geode.apache.org/schema/cache/cache-1.0.xsd")
@@ -279,30 +279,30 @@ public class CacheConfig {
   @XmlElement(name = "dynamic-region-factory", namespace = "http://geode.apache.org/schema/cache")
   protected DynamicRegionFactoryType dynamicRegionFactory;
   @XmlElement(name = "gateway-hub", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.GatewayHub> gatewayHub;
+  protected List<CacheConfig.GatewayHub> gatewayHubs;
   @XmlElement(name = "gateway-sender", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.GatewaySender> gatewaySender;
+  protected List<CacheConfig.GatewaySender> gatewaySenders;
   @XmlElement(name = "gateway-receiver", namespace = "http://geode.apache.org/schema/cache")
   protected CacheConfig.GatewayReceiver gatewayReceiver;
   @XmlElement(name = "gateway-conflict-resolver",
       namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType gatewayConflictResolver;
   @XmlElement(name = "async-event-queue", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.AsyncEventQueue> asyncEventQueue;
+  protected List<CacheConfig.AsyncEventQueue> asyncEventQueues;
   @XmlElement(name = "cache-server", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.CacheServer> cacheServer;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType> pool;
+  protected List<CacheConfig.CacheServer> cacheServers;
+  @XmlElement(name = "pool", namespace = "http://geode.apache.org/schema/cache")
+  protected List<PoolType> pools;
   @XmlElement(name = "disk-store", namespace = "http://geode.apache.org/schema/cache")
-  protected List<DiskStoreType> diskStore;
+  protected List<DiskStoreType> diskStores;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected PdxType pdx;
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionAttributesType> regionAttributes;
   @XmlElement(name = "jndi-bindings", namespace = "http://geode.apache.org/schema/cache")
   protected JndiBindingsType jndiBindings;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig> region;
+  @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig> regions;
   @XmlElement(name = "function-service", namespace = "http://geode.apache.org/schema/cache")
   protected FunctionServiceType functionService;
   @XmlElement(name = "resource-manager", namespace = "http://geode.apache.org/schema/cache")
@@ -310,8 +310,8 @@ public class CacheConfig {
   @XmlElement(name = "serialization-registration",
       namespace = "http://geode.apache.org/schema/cache")
   protected SerializationRegistrationType serializationRegistration;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<String> backup;
+  @XmlElement(name = "backup", namespace = "http://geode.apache.org/schema/cache")
+  protected List<String> backups;
   @XmlElement(namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType initializer;
   @XmlAnyElement(lax = true)
@@ -383,19 +383,19 @@ public class CacheConfig {
   }
 
   /**
-   * Gets the value of the gatewayHub property.
+   * Gets the value of the gatewayHubs property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the gatewayHub property.
+   * This is why there is not a <CODE>set</CODE> method for the gatewayHubs property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getGatewayHub().add(newItem);
+   * getGatewayHubs().add(newItem);
    * </pre>
    *
    *
@@ -405,27 +405,27 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.GatewayHub> getGatewayHub() {
-    if (gatewayHub == null) {
-      gatewayHub = new ArrayList<CacheConfig.GatewayHub>();
+  public List<CacheConfig.GatewayHub> getGatewayHubs() {
+    if (gatewayHubs == null) {
+      gatewayHubs = new ArrayList<CacheConfig.GatewayHub>();
     }
-    return this.gatewayHub;
+    return this.gatewayHubs;
   }
 
   /**
-   * Gets the value of the gatewaySender property.
+   * Gets the value of the gatewaySenders property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the gatewaySender property.
+   * This is why there is not a <CODE>set</CODE> method for the gatewaySenders property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getGatewaySender().add(newItem);
+   * getGatewaySenders().add(newItem);
    * </pre>
    *
    *
@@ -435,11 +435,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.GatewaySender> getGatewaySender() {
-    if (gatewaySender == null) {
-      gatewaySender = new ArrayList<CacheConfig.GatewaySender>();
+  public List<CacheConfig.GatewaySender> getGatewaySenders() {
+    if (gatewaySenders == null) {
+      gatewaySenders = new ArrayList<CacheConfig.GatewaySender>();
     }
-    return this.gatewaySender;
+    return this.gatewaySenders;
   }
 
   /**
@@ -487,19 +487,19 @@ public class CacheConfig {
   }
 
   /**
-   * Gets the value of the asyncEventQueue property.
+   * Gets the value of the asyncEventQueues property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the asyncEventQueue property.
+   * This is why there is not a <CODE>set</CODE> method for the asyncEventQueues property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getAsyncEventQueue().add(newItem);
+   * getAsyncEventQueues().add(newItem);
    * </pre>
    *
    *
@@ -509,27 +509,27 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.AsyncEventQueue> getAsyncEventQueue() {
-    if (asyncEventQueue == null) {
-      asyncEventQueue = new ArrayList<CacheConfig.AsyncEventQueue>();
+  public List<CacheConfig.AsyncEventQueue> getAsyncEventQueues() {
+    if (asyncEventQueues == null) {
+      asyncEventQueues = new ArrayList<CacheConfig.AsyncEventQueue>();
     }
-    return this.asyncEventQueue;
+    return this.asyncEventQueues;
   }
 
   /**
-   * Gets the value of the cacheServer property.
+   * Gets the value of the cacheServers property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the cacheServer property.
+   * This is why there is not a <CODE>set</CODE> method for the cacheServers property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getCacheServer().add(newItem);
+   * getCacheServers().add(newItem);
    * </pre>
    *
    *
@@ -539,11 +539,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.CacheServer> getCacheServer() {
-    if (cacheServer == null) {
-      cacheServer = new ArrayList<CacheConfig.CacheServer>();
+  public List<CacheConfig.CacheServer> getCacheServers() {
+    if (cacheServers == null) {
+      cacheServers = new ArrayList<CacheConfig.CacheServer>();
     }
-    return this.cacheServer;
+    return this.cacheServers;
   }
 
   /**
@@ -559,7 +559,7 @@ public class CacheConfig {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getPool().add(newItem);
+   * getPools().add(newItem);
    * </pre>
    *
    *
@@ -569,11 +569,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<PoolType> getPool() {
-    if (pool == null) {
-      pool = new ArrayList<PoolType>();
+  public List<PoolType> getPools() {
+    if (pools == null) {
+      pools = new ArrayList<PoolType>();
     }
-    return this.pool;
+    return this.pools;
   }
 
   /**
@@ -589,7 +589,7 @@ public class CacheConfig {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getDiskStore().add(newItem);
+   * getDiskStores().add(newItem);
    * </pre>
    *
    *
@@ -599,11 +599,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<DiskStoreType> getDiskStore() {
-    if (diskStore == null) {
-      diskStore = new ArrayList<DiskStoreType>();
+  public List<DiskStoreType> getDiskStores() {
+    if (diskStores == null) {
+      diskStores = new ArrayList<DiskStoreType>();
     }
-    return this.diskStore;
+    return this.diskStores;
   }
 
   /**
@@ -685,7 +685,7 @@ public class CacheConfig {
     if (jndiBindings == null) {
       jndiBindings = new JndiBindingsType();
     }
-    return jndiBindings.getJndiBinding();
+    return jndiBindings.getJndiBindings();
   }
 
 
@@ -702,7 +702,7 @@ public class CacheConfig {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getRegion().add(newItem);
+   * getRegions().add(newItem);
    * </pre>
    *
    *
@@ -712,11 +712,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<RegionConfig> getRegion() {
-    if (region == null) {
-      region = new ArrayList<RegionConfig>();
+  public List<RegionConfig> getRegions() {
+    if (regions == null) {
+      regions = new ArrayList<RegionConfig>();
     }
-    return this.region;
+    return this.regions;
   }
 
   /**
@@ -798,7 +798,7 @@ public class CacheConfig {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getBackup().add(newItem);
+   * getBackups().add(newItem);
    * </pre>
    *
    *
@@ -808,11 +808,11 @@ public class CacheConfig {
    *
    *
    */
-  public List<String> getBackup() {
-    if (backup == null) {
-      backup = new ArrayList<String>();
+  public List<String> getBackups() {
+    if (backups == null) {
+      backups = new ArrayList<String>();
     }
-    return this.backup;
+    return this.backups;
   }
 
   /**
@@ -1030,7 +1030,7 @@ public class CacheConfig {
     if (regionPath.startsWith(Region.SEPARATOR)) {
       regionPath = regionPath.substring(1);
     }
-    return findElement(getRegion(), regionPath);
+    return findElement(getRegions(), regionPath);
   }
 
   public <T extends CacheElement> List<T> findCustomCacheElements(Class<T> classT) {
@@ -1107,11 +1107,11 @@ public class CacheConfig {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
-      propOrder = {"gatewayEventFilter", "gatewayEventSubstitutionFilter", "asyncEventListener"})
+      propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter", "asyncEventListener"})
   public static class AsyncEventQueue implements Serializable {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
-    protected List<DeclarableType> gatewayEventFilter;
+    protected List<DeclarableType> gatewayEventFilters;
     @XmlElement(name = "gateway-event-substitution-filter",
         namespace = "http://geode.apache.org/schema/cache")
     protected DeclarableType gatewayEventSubstitutionFilter;
@@ -1144,19 +1144,19 @@ public class CacheConfig {
     protected Boolean forwardExpirationDestroy;
 
     /**
-     * Gets the value of the gatewayEventFilter property.
+     * Gets the value of the gatewayEventFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayEventFilter().add(newItem);
+     * getGatewayEventFilters().add(newItem);
      * </pre>
      *
      *
@@ -1166,11 +1166,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<DeclarableType> getGatewayEventFilter() {
-      if (gatewayEventFilter == null) {
-        gatewayEventFilter = new ArrayList<DeclarableType>();
+    public List<DeclarableType> getGatewayEventFilters() {
+      if (gatewayEventFilters == null) {
+        gatewayEventFilters = new ArrayList<DeclarableType>();
       }
-      return this.gatewayEventFilter;
+      return this.gatewayEventFilters;
     }
 
     /**
@@ -1633,11 +1633,11 @@ public class CacheConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"gateway"})
+  @XmlType(name = "", propOrder = {"gateways"})
   public static class GatewayHub {
 
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-    protected List<CacheConfig.GatewayHub.Gateway> gateway;
+    @XmlElement(name = "gateway", namespace = "http://geode.apache.org/schema/cache")
+    protected List<CacheConfig.GatewayHub.Gateway> gateways;
     @XmlAttribute(name = "id", required = true)
     protected String id;
     @XmlAttribute(name = "bind-address")
@@ -1679,10 +1679,10 @@ public class CacheConfig {
      *
      */
     public List<CacheConfig.GatewayHub.Gateway> getGateway() {
-      if (gateway == null) {
-        gateway = new ArrayList<CacheConfig.GatewayHub.Gateway>();
+      if (gateways == null) {
+        gateways = new ArrayList<CacheConfig.GatewayHub.Gateway>();
       }
-      return this.gateway;
+      return this.gateways;
     }
 
     /**
@@ -1931,13 +1931,13 @@ public class CacheConfig {
      *
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {"gatewayEndpoint", "gatewayListener", "gatewayQueue"})
+    @XmlType(name = "", propOrder = {"gatewayEndpoints", "gatewayListeners", "gatewayQueue"})
     public static class Gateway {
 
       @XmlElement(name = "gateway-endpoint", namespace = "http://geode.apache.org/schema/cache")
-      protected List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> gatewayEndpoint;
+      protected List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> gatewayEndpoints;
       @XmlElement(name = "gateway-listener", namespace = "http://geode.apache.org/schema/cache")
-      protected List<DeclarableType> gatewayListener;
+      protected List<DeclarableType> gatewayListeners;
       @XmlElement(name = "gateway-queue", namespace = "http://geode.apache.org/schema/cache")
       protected CacheConfig.GatewayHub.Gateway.GatewayQueue gatewayQueue;
       @XmlAttribute(name = "early-ack")
@@ -1954,19 +1954,19 @@ public class CacheConfig {
       protected String orderPolicy;
 
       /**
-       * Gets the value of the gatewayEndpoint property.
+       * Gets the value of the gatewayEndpoints property.
        *
        * <p>
        * This accessor method returns a reference to the live list,
        * not a snapshot. Therefore any modification you make to the
        * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the gatewayEndpoint property.
+       * This is why there is not a <CODE>set</CODE> method for the gatewayEndpoints property.
        *
        * <p>
        * For example, to add a new item, do as follows:
        *
        * <pre>
-       * getGatewayEndpoint().add(newItem);
+       * getGatewayEndpoints().add(newItem);
        * </pre>
        *
        *
@@ -1976,27 +1976,27 @@ public class CacheConfig {
        *
        *
        */
-      public List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> getGatewayEndpoint() {
-        if (gatewayEndpoint == null) {
-          gatewayEndpoint = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayEndpoint>();
+      public List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> getGatewayEndpoints() {
+        if (gatewayEndpoints == null) {
+          gatewayEndpoints = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayEndpoint>();
         }
-        return this.gatewayEndpoint;
+        return this.gatewayEndpoints;
       }
 
       /**
-       * Gets the value of the gatewayListener property.
+       * Gets the value of the gatewayListeners property.
        *
        * <p>
        * This accessor method returns a reference to the live list,
        * not a snapshot. Therefore any modification you make to the
        * returned list will be present inside the JAXB object.
-       * This is why there is not a <CODE>set</CODE> method for the gatewayListener property.
+       * This is why there is not a <CODE>set</CODE> method for the gatewayListeners property.
        *
        * <p>
        * For example, to add a new item, do as follows:
        *
        * <pre>
-       * getGatewayListener().add(newItem);
+       * getGatewayListeners().add(newItem);
        * </pre>
        *
        *
@@ -2006,11 +2006,11 @@ public class CacheConfig {
        *
        *
        */
-      public List<DeclarableType> getGatewayListener() {
-        if (gatewayListener == null) {
-          gatewayListener = new ArrayList<DeclarableType>();
+      public List<DeclarableType> getGatewayListeners() {
+        if (gatewayListeners == null) {
+          gatewayListeners = new ArrayList<DeclarableType>();
         }
-        return this.gatewayListener;
+        return this.gatewayListeners;
       }
 
       /**
@@ -2552,12 +2552,12 @@ public class CacheConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"gatewayTransportFilter"})
+  @XmlType(name = "", propOrder = {"gatewayTransportFilters"})
   public static class GatewayReceiver {
 
     @XmlElement(name = "gateway-transport-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected List<DeclarableType> gatewayTransportFilter;
+    protected List<DeclarableType> gatewayTransportFilters;
     @XmlAttribute(name = "start-port")
     protected String startPort;
     @XmlAttribute(name = "end-port")
@@ -2574,19 +2574,19 @@ public class CacheConfig {
     protected Boolean manualStart;
 
     /**
-     * Gets the value of the gatewayTransportFilter property.
+     * Gets the value of the gatewayTransportFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayTransportFilter().add(newItem);
+     * getGatewayTransportFilters().add(newItem);
      * </pre>
      *
      *
@@ -2596,11 +2596,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<DeclarableType> getGatewayTransportFilter() {
-      if (gatewayTransportFilter == null) {
-        gatewayTransportFilter = new ArrayList<DeclarableType>();
+    public List<DeclarableType> getGatewayTransportFilters() {
+      if (gatewayTransportFilters == null) {
+        gatewayTransportFilters = new ArrayList<DeclarableType>();
       }
-      return this.gatewayTransportFilter;
+      return this.gatewayTransportFilters;
     }
 
     /**
@@ -2800,18 +2800,18 @@ public class CacheConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"gatewayEventFilter", "gatewayEventSubstitutionFilter",
-      "gatewayTransportFilter"})
+  @XmlType(name = "", propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter",
+      "gatewayTransportFilters"})
   public static class GatewaySender {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
-    protected List<DeclarableType> gatewayEventFilter;
+    protected List<DeclarableType> gatewayEventFilters;
     @XmlElement(name = "gateway-event-substitution-filter",
         namespace = "http://geode.apache.org/schema/cache")
     protected DeclarableType gatewayEventSubstitutionFilter;
     @XmlElement(name = "gateway-transport-filter",
         namespace = "http://geode.apache.org/schema/cache")
-    protected List<DeclarableType> gatewayTransportFilter;
+    protected List<DeclarableType> gatewayTransportFilters;
     @XmlAttribute(name = "id", required = true)
     protected String id;
     @XmlAttribute(name = "remote-distributed-system-id", required = true)
@@ -2846,19 +2846,19 @@ public class CacheConfig {
     protected String orderPolicy;
 
     /**
-     * Gets the value of the gatewayEventFilter property.
+     * Gets the value of the gatewayEventFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayEventFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayEventFilter().add(newItem);
+     * getGatewayEventFilters().add(newItem);
      * </pre>
      *
      *
@@ -2868,11 +2868,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<DeclarableType> getGatewayEventFilter() {
-      if (gatewayEventFilter == null) {
-        gatewayEventFilter = new ArrayList<DeclarableType>();
+    public List<DeclarableType> getGatewayEventFilters() {
+      if (gatewayEventFilters == null) {
+        gatewayEventFilters = new ArrayList<DeclarableType>();
       }
-      return this.gatewayEventFilter;
+      return this.gatewayEventFilters;
     }
 
     /**
@@ -2898,19 +2898,19 @@ public class CacheConfig {
     }
 
     /**
-     * Gets the value of the gatewayTransportFilter property.
+     * Gets the value of the gatewayTransportFilters property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilter property.
+     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilters property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getGatewayTransportFilter().add(newItem);
+     * getGatewayTransportFilters().add(newItem);
      * </pre>
      *
      *
@@ -2920,11 +2920,11 @@ public class CacheConfig {
      *
      *
      */
-    public List<DeclarableType> getGatewayTransportFilter() {
-      if (gatewayTransportFilter == null) {
-        gatewayTransportFilter = new ArrayList<DeclarableType>();
+    public List<DeclarableType> getGatewayTransportFilters() {
+      if (gatewayTransportFilters == null) {
+        gatewayTransportFilters = new ArrayList<DeclarableType>();
       }
-      return this.gatewayTransportFilter;
+      return this.gatewayTransportFilters;
     }
 
     /**

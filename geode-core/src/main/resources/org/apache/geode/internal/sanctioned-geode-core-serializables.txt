@@ -120,12 +120,12 @@ org/apache/geode/cache/client/SubscriptionNotEnabledException,true,-821244673777
 org/apache/geode/cache/client/internal/ContainsKeyOp$MODE,false
 org/apache/geode/cache/client/internal/TXSynchronizationOp$CompletionType,false
 org/apache/geode/cache/client/internal/pooling/ConnectionDestroyedException,true,-6918516787578041316
-org/apache/geode/cache/configuration/CacheConfig$AsyncEventQueue,false,asyncEventListener:org/apache/geode/cache/configuration/DeclarableType,batchSize:java/lang/String,batchTimeInterval:java/lang/String,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/String,enableBatchConflation:java/lang/Boolean,forwardExpirationDestroy:java/lang/Boolean,gatewayEventFilter:java/util/List,gatewayEventSubstitutionFilter:org/apache/geode/cache/configuration/DeclarableType,id:java/lang/String,maximumQueueMemory:java/lang/String,orderPolicy:java/lang/String,parallel:java/lang/Boolean,persistent:java/lang/Boolean
+org/apache/geode/cache/configuration/CacheConfig$AsyncEventQueue,false,asyncEventListener:org/apache/geode/cache/configuration/DeclarableType,batchSize:java/lang/String,batchTimeInterval:java/lang/String,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/String,enableBatchConflation:java/lang/Boolean,forwardExpirationDestroy:java/lang/Boolean,gatewayEventFilters:java/util/List,gatewayEventSubstitutionFilter:org/apache/geode/cache/configuration/DeclarableType,id:java/lang/String,maximumQueueMemory:java/lang/String,orderPolicy:java/lang/String,parallel:java/lang/Boolean,persistent:java/lang/Boolean
 org/apache/geode/cache/configuration/ClassNameType,false,className:java/lang/String
-org/apache/geode/cache/configuration/DeclarableType,false,parameter:java/util/List
+org/apache/geode/cache/configuration/DeclarableType,false,parameters:java/util/List
 org/apache/geode/cache/configuration/EnumActionDestroyOverflow,false,value:java/lang/String
 org/apache/geode/cache/configuration/EnumReadableWritable,false,value:java/lang/String
-org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding,false,blockingTimeoutSeconds:java/lang/String,configProperty:java/util/List,connPooledDatasourceClass:java/lang/String,connectionUrl:java/lang/String,idleTimeoutSeconds:java/lang/String,initPoolSize:java/lang/String,jdbcDriverClass:java/lang/String,jndiName:java/lang/String,loginTimeoutSeconds:java/lang/String,managedConnFactoryClass:java/lang/String,maxPoolSize:java/lang/String,password:java/lang/String,transactionType:java/lang/String,type:java/lang/String,userName:java/lang/String,xaDatasourceClass:java/lang/String
+org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding,false,blockingTimeoutSeconds:java/lang/String,configProperties:java/util/List,connPooledDatasourceClass:java/lang/String,connectionUrl:java/lang/String,idleTimeoutSeconds:java/lang/String,initPoolSize:java/lang/String,jdbcDriverClass:java/lang/String,jndiName:java/lang/String,loginTimeoutSeconds:java/lang/String,managedConnFactoryClass:java/lang/String,maxPoolSize:java/lang/String,password:java/lang/String,transactionType:java/lang/String,type:java/lang/String,userName:java/lang/String,xaDatasourceClass:java/lang/String
 org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding$ConfigProperty,false,configPropertyName:java/lang/String,configPropertyType:java/lang/String,configPropertyValue:java/lang/String
 org/apache/geode/cache/configuration/ObjectType,false,declarable:org/apache/geode/cache/configuration/DeclarableType,string:java/lang/String
 org/apache/geode/cache/configuration/ParameterType,false,name:java/lang/String
@@ -135,7 +135,7 @@ org/apache/geode/cache/configuration/RegionAttributesMirrorType,false,value:java
 org/apache/geode/cache/configuration/RegionAttributesScope,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesType$EvictionAttributes$LruHeapPercentage,false,action:org/apache/geode/cache/configuration/EnumActionDestroyOverflow
 org/apache/geode/cache/configuration/RegionAttributesType$EvictionAttributes$LruMemorySize,false,maximum:java/lang/String
-org/apache/geode/cache/configuration/RegionConfig,false,entry:java/util/List,index:java/util/List,name:java/lang/String,refid:java/lang/String,region:java/util/List,regionAttributes:java/util/List,regionElements:java/util/List
+org/apache/geode/cache/configuration/RegionConfig,false,entries:java/util/List,indexes:java/util/List,name:java/lang/String,refid:java/lang/String,regionAttributes:java/util/List,regionElements:java/util/List,regions:java/util/List
 org/apache/geode/cache/configuration/RegionConfig$Index,false,expression:java/lang/String,fromClause:java/lang/String,imports:java/lang/String,keyIndex:java/lang/Boolean,name:java/lang/String,type:java/lang/String
 org/apache/geode/cache/execute/EmptyRegionFunctionException,true,1
 org/apache/geode/cache/execute/FunctionAdapter,true,-4891043890440825485

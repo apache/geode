@@ -96,13 +96,13 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "server-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"group", "clientSubscription", "customLoadProbe"})
+    propOrder = {"groups", "clientSubscription", "customLoadProbe"})
 @XmlSeeAlso({CacheConfig.CacheServer.class})
 @Experimental
 public class ServerType {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<String> group;
+  @XmlElement(name = "group", namespace = "http://geode.apache.org/schema/cache")
+  protected List<String> groups;
   @XmlElement(name = "client-subscription", namespace = "http://geode.apache.org/schema/cache")
   protected ServerType.ClientSubscription clientSubscription;
   @XmlElement(name = "custom-load-probe", namespace = "http://geode.apache.org/schema/cache")
@@ -143,7 +143,7 @@ public class ServerType {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getGroup().add(newItem);
+   * getGroups().add(newItem);
    * </pre>
    *
    *
@@ -153,11 +153,11 @@ public class ServerType {
    *
    *
    */
-  public List<String> getGroup() {
-    if (group == null) {
-      group = new ArrayList<String>();
+  public List<String> getGroups() {
+    if (groups == null) {
+      groups = new ArrayList<String>();
     }
-    return this.group;
+    return this.groups;
   }
 
   /**

@@ -104,27 +104,27 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "jndi-bindings-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"jndiBinding"})
+    propOrder = {"jndiBindings"})
 @Experimental
 public class JndiBindingsType {
 
   @XmlElement(name = "jndi-binding", namespace = "http://geode.apache.org/schema/cache")
-  protected List<JndiBindingsType.JndiBinding> jndiBinding;
+  protected List<JndiBindingsType.JndiBinding> jndiBindings;
 
   /**
-   * Gets the value of the jndiBinding property.
+   * Gets the value of the jndiBindings property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the jndiBinding property.
+   * This is why there is not a <CODE>set</CODE> method for the jndiBindings property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getJndiBinding().add(newItem);
+   * getJndiBindings().add(newItem);
    * </pre>
    *
    *
@@ -134,11 +134,11 @@ public class JndiBindingsType {
    *
    *
    */
-  public List<JndiBindingsType.JndiBinding> getJndiBinding() {
-    if (jndiBinding == null) {
-      jndiBinding = new ArrayList<JndiBindingsType.JndiBinding>();
+  public List<JndiBindingsType.JndiBinding> getJndiBindings() {
+    if (jndiBindings == null) {
+      jndiBindings = new ArrayList<JndiBindingsType.JndiBinding>();
     }
-    return this.jndiBinding;
+    return this.jndiBindings;
   }
 
 
@@ -200,12 +200,12 @@ public class JndiBindingsType {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"configProperty"})
+  @XmlType(name = "", propOrder = {"configProperties"})
   @Experimental
   public static class JndiBinding implements CacheElement {
 
     @XmlElement(name = "config-property", namespace = "http://geode.apache.org/schema/cache")
-    protected List<JndiBindingsType.JndiBinding.ConfigProperty> configProperty;
+    protected List<JndiBindingsType.JndiBinding.ConfigProperty> configProperties;
     @XmlAttribute(name = "blocking-timeout-seconds")
     protected String blockingTimeoutSeconds;
     @XmlAttribute(name = "conn-pooled-datasource-class")
@@ -238,19 +238,19 @@ public class JndiBindingsType {
     protected String xaDatasourceClass;
 
     /**
-     * Gets the value of the configProperty property.
+     * Gets the value of the configProperties property.
      *
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the configProperty property.
+     * This is why there is not a <CODE>set</CODE> method for the configProperties property.
      *
      * <p>
      * For example, to add a new item, do as follows:
      *
      * <pre>
-     * getConfigProperty().add(newItem);
+     * getConfigProperties().add(newItem);
      * </pre>
      *
      *
@@ -260,11 +260,11 @@ public class JndiBindingsType {
      *
      *
      */
-    public List<JndiBindingsType.JndiBinding.ConfigProperty> getConfigProperty() {
-      if (configProperty == null) {
-        configProperty = new ArrayList<JndiBindingsType.JndiBinding.ConfigProperty>();
+    public List<JndiBindingsType.JndiBinding.ConfigProperty> getConfigProperties() {
+      if (configProperties == null) {
+        configProperties = new ArrayList<JndiBindingsType.JndiBinding.ConfigProperty>();
       }
-      return this.configProperty;
+      return this.configProperties;
     }
 
     /**
