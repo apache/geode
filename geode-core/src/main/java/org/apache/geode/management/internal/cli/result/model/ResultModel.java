@@ -203,6 +203,29 @@ public class ResultModel {
     return section;
   }
 
+  public TabularResultModel addTableAndSetStatus(String namedSection,
+      List<CliFunctionResult> functionResults, boolean skipIgnored) {
+    Object model = sections.get(namedSection);
+    if (model != null) {
+      throw new IllegalStateException(
+          "Section already exists. Can't overwrite it with this new content.");
+    }
+    TabularResultModel section = this.addTable(namedSection);
+    boolean atLeastOneSuccess = false;
+    section.setColumnHeader("Member", "Status", "Message");
+    for (CliFunctionResult functionResult : functionResults) {
+      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnored),
+          functionResult.getStatusMessage());
+      if (functionResult.isSuccessful()) {
+        atLeastOneSuccess = true;
+      } else if (functionResult.isIgnorableFailure() && skipIgnored) {
+        atLeastOneSuccess = true;
+      }
+    }
+    setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
+    return section;
+  }
+
   @JsonIgnore
   public List<TabularResultModel> getTableSections() {
     return sections.values().stream().filter(TabularResultModel.class::isInstance)
@@ -312,21 +335,11 @@ public class ResultModel {
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
       String header, String footer, boolean ignoreIfFailed) {
     ResultModel result = new ResultModel();
-    boolean atLeastOneSuccess = ignoreIfFailed;
-    TabularResultModel tabularResultModel = result.addTable(MEMBER_STATUS_SECTION);
+
+    TabularResultModel tabularResultModel =
+        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
-    tabularResultModel.setColumnHeader("Member", "Status", "Message");
-    for (CliFunctionResult functionResult : functionResults) {
-      tabularResultModel.addRow(functionResult.getMemberIdOrName(),
-          functionResult.getStatus(ignoreIfFailed), functionResult.getStatusMessage());
-      if (functionResult.isSuccessful()) {
-        atLeastOneSuccess = true;
-      }
-    }
-    if (!atLeastOneSuccess) {
-      result.setStatus(Result.Status.ERROR);
-    }
     return result;
   }
 }
