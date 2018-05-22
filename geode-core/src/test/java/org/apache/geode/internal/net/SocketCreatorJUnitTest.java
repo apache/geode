@@ -15,9 +15,11 @@
 package org.apache.geode.internal.net;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.Socket;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
@@ -65,8 +67,20 @@ public class SocketCreatorJUnitTest {
     verify(socket).setSoTimeout(timeout);
   }
 
+  @Test
+  public void testConfigureServerPlainSocketDoesntSetSoTimeout() throws Exception {
+    final SocketCreator socketCreator = new SocketCreator(mock(SSLConfig.class));
+    final Socket socket = mock(Socket.class);
+    final int timeout = 1938236;
+
+    socketCreator.handshakeIfSocketIsSSL(socket, timeout);
+    verify(socket, never()).setSoTimeout(timeout);
+  }
+
   private String getSingleKeyKeystore() {
     return TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore");
   }
+
+
 
 }
