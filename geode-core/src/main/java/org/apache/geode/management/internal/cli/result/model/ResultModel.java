@@ -147,8 +147,7 @@ public class ResultModel {
     this.files = files;
   }
 
-  public void addFile(String fileName, byte[] data, int fileType, String message,
-      boolean addTimestampToName) {
+  public void addFile(String fileName, byte[] data, int fileType, String message) {
     if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
       throw new IllegalArgumentException("Unsupported file type is specified.");
     }
@@ -201,6 +200,29 @@ public class ResultModel {
     TabularResultModel section = new TabularResultModel();
     sections.put(namedSection, section);
 
+    return section;
+  }
+
+  public TabularResultModel addTableAndSetStatus(String namedSection,
+      List<CliFunctionResult> functionResults, boolean skipIgnored) {
+    Object model = sections.get(namedSection);
+    if (model != null) {
+      throw new IllegalStateException(
+          "Section already exists. Can't overwrite it with this new content.");
+    }
+    TabularResultModel section = this.addTable(namedSection);
+    boolean atLeastOneSuccess = false;
+    section.setColumnHeader("Member", "Status", "Message");
+    for (CliFunctionResult functionResult : functionResults) {
+      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnored),
+          functionResult.getStatusMessage());
+      if (functionResult.isSuccessful()) {
+        atLeastOneSuccess = true;
+      } else if (functionResult.isIgnorableFailure() && skipIgnored) {
+        atLeastOneSuccess = true;
+      }
+    }
+    setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
     return section;
   }
 
@@ -261,6 +283,18 @@ public class ResultModel {
   // static convenience methods
   // ********************************************
 
+  public static ResultModel fromJson(String json) {
+    ObjectMapper mapper = new ObjectMapper();
+
+    ResultModel response;
+    try {
+      response = mapper.readValue(json, ResultModel.class);
+    } catch (IOException iox) {
+      throw new RuntimeException(iox);
+    }
+    return response;
+  }
+
   public static ResultModel createCommandProcessingError(String message) {
     return createError("Error processing command: " + message);
   }
@@ -301,21 +335,11 @@ public class ResultModel {
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
       String header, String footer, boolean ignoreIfFailed) {
     ResultModel result = new ResultModel();
-    boolean atLeastOneSuccess = ignoreIfFailed;
-    TabularResultModel tabularResultModel = result.addTable(MEMBER_STATUS_SECTION);
+
+    TabularResultModel tabularResultModel =
+        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
-    tabularResultModel.setColumnHeader("Member", "Status", "Message");
-    for (CliFunctionResult functionResult : functionResults) {
-      tabularResultModel.addRow(functionResult.getMemberIdOrName(),
-          functionResult.getStatus(ignoreIfFailed), functionResult.getStatusMessage());
-      if (functionResult.isSuccessful()) {
-        atLeastOneSuccess = true;
-      }
-    }
-    if (!atLeastOneSuccess) {
-      result.setStatus(Result.Status.ERROR);
-    }
     return result;
   }
 }

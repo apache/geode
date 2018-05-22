@@ -58,7 +58,7 @@ public class DestroyGatewayReceiverFunction extends CliFunction {
         }
       }
     }
-    return new CliFunctionResult(memberNameOrId, StatusState.IGNORED,
+    return new CliFunctionResult(memberNameOrId, StatusState.IGNORABLE,
         "Gateway receiver not found.");
   }
 

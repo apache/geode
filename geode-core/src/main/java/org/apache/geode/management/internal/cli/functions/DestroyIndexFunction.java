@@ -58,7 +58,7 @@ public class DestroyIndexFunction extends CliFunction {
               result = new CliFunctionResult(memberId, CliFunctionResult.StatusState.OK,
                   "Destroyed index " + indexName + " on region " + regionPath);
             } else {
-              result = new CliFunctionResult(memberId, CliFunctionResult.StatusState.IGNORED,
+              result = new CliFunctionResult(memberId, CliFunctionResult.StatusState.IGNORABLE,
                   CliStrings.format(CliStrings.DESTROY_INDEX__INDEX__NOT__FOUND, indexName));
             }
           }
@@ -77,7 +77,7 @@ public class DestroyIndexFunction extends CliFunction {
             result = new CliFunctionResult(memberId, CliFunctionResult.StatusState.OK,
                 "Destroyed index " + indexName);
           } else {
-            result = new CliFunctionResult(memberId, CliFunctionResult.StatusState.IGNORED,
+            result = new CliFunctionResult(memberId, CliFunctionResult.StatusState.IGNORABLE,
                 CliStrings.format(CliStrings.DESTROY_INDEX__INDEX__NOT__FOUND, indexName));
           }
         }
