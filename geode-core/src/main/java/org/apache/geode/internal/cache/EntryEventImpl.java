@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Objects.nonNull;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
@@ -23,6 +24,7 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
@@ -2085,168 +2087,26 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   public boolean checkEquality(EntryEventImpl other) {
-    if (this == other) {
-      return true;
-    }
-    if (other == null) {
-      return false;
-    }
-    if (getClass() != other.getClass()) {
-      return false;
-    }
-    if (!Arrays.equals(cachedSerializedNewValue, other.cachedSerializedNewValue)) {
-      return false;
-    }
-    if (causedByMessage == null) {
-      if (other.causedByMessage != null) {
-        return false;
-      }
-    } else if (!causedByMessage.equals(other.causedByMessage)) {
-      return false;
-    }
-    if (context == null) {
-      if (other.context != null) {
-        return false;
-      }
-    } else if (!context.equals(other.context)) {
-      return false;
-    }
-    if (!Arrays.equals(deltaBytes, other.deltaBytes)) {
-      return false;
-    }
-    if (distributedMember == null) {
-      if (other.distributedMember != null) {
-        return false;
-      }
-    } else if (!distributedMember.equals(other.distributedMember)) {
-      return false;
-    }
-    if (eventFlags != other.eventFlags) {
-      return false;
-    }
-    if (eventID == null) {
-      if (other.eventID != null) {
-        return false;
-      }
-    } else if (!eventID.equals(other.eventID)) {
-      return false;
-    }
-    if (eventType == null) {
-      if (other.eventType != null) {
-        return false;
-      }
-    } else if (!eventType.equals(other.eventType)) {
-      return false;
-    }
-    if (filterInfo == null) {
-      if (other.filterInfo != null) {
-        return false;
-      }
-    } else if (!filterInfo.equals(other.filterInfo)) {
-      return false;
-    }
-    if (isEvicted != other.isEvicted) {
-      return false;
-    }
-    if (isPendingSecondaryExpireDestroy != other.isPendingSecondaryExpireDestroy) {
-      return false;
-    }
-    if (keyInfo == null) {
-      if (other.keyInfo != null) {
-        return false;
-      }
-    } else if (!keyInfo.equals(other.keyInfo)) {
-      return false;
-    }
-    if (newValue == null) {
-      if (other.newValue != null) {
-        return false;
-      }
-    } else if (!newValue.equals(other.newValue)) {
-      return false;
-    }
-    if (newValueBucketSize != other.newValueBucketSize) {
-      return false;
-    }
-    if (!Arrays.equals(newValueBytes, other.newValueBytes)) {
-      return false;
-    }
-    if (nextRegionVersion != other.nextRegionVersion) {
-      return false;
-    }
-    if (offHeapOk != other.offHeapOk) {
-      return false;
-    }
-    if (oldValue == null) {
-      if (other.oldValue != null) {
-        return false;
-      }
-    } else if (!oldValue.equals(other.oldValue)) {
-      return false;
-    }
-    if (!Arrays.equals(oldValueBytes, other.oldValueBytes)) {
-      return false;
-    }
-    if (op == null) {
-      if (other.op != null) {
-        return false;
-      }
-    } else if (!op.equals(other.op)) {
-      return false;
-    }
-    if (putAllOp == null) {
-      if (other.putAllOp != null) {
-        return false;
-      }
-    } else if (!putAllOp.equals(other.putAllOp)) {
-      return false;
-    }
-    if (re == null) {
-      if (other.re != null) {
-        return false;
-      }
-    } else if (!re.equals(other.re)) {
-      return false;
-    }
-    if (readOldValueFromDisk != other.readOldValueFromDisk) {
-      return false;
-    }
-    if (region == null) {
-      if (other.region != null) {
-        return false;
-      }
-    } else if (!region.equals(other.region)) {
-      return false;
-    }
-    if (removeAllOp == null) {
-      if (other.removeAllOp != null) {
-        return false;
-      }
-    } else if (!removeAllOp.equals(other.removeAllOp)) {
-      return false;
-    }
-    if (tailKey == null) {
-      if (other.tailKey != null) {
-        return false;
-      }
-    } else if (!tailKey.equals(other.tailKey)) {
-      return false;
-    }
-    if (txId == null) {
-      if (other.txId != null) {
-        return false;
-      }
-    } else if (!txId.equals(other.txId)) {
-      return false;
-    }
-    if (versionTag == null) {
-      if (other.versionTag != null) {
-        return false;
-      }
-    } else if (!versionTag.equals(other.versionTag)) {
-      return false;
-    }
-    return true;
+    return this == other || nonNull(other) && Objects.equals(getClass(), other.getClass())
+        && Arrays.equals(cachedSerializedNewValue, other.cachedSerializedNewValue)
+        && Objects.equals(causedByMessage, other.causedByMessage)
+        && Objects.equals(context, other.context) && Arrays.equals(deltaBytes, other.deltaBytes)
+        && Objects.equals(distributedMember, other.distributedMember)
+        && eventFlags == other.eventFlags && Objects.equals(eventID, other.eventID)
+        && Objects.equals(eventType, other.eventType)
+        && Objects.equals(filterInfo, other.filterInfo) && isEvicted == other.isEvicted
+        && isPendingSecondaryExpireDestroy == other.isPendingSecondaryExpireDestroy
+        && Objects.equals(keyInfo, other.keyInfo) && Objects.equals(newValue, other.newValue)
+        && newValueBucketSize == other.newValueBucketSize
+        && Arrays.equals(newValueBytes, other.newValueBytes)
+        && nextRegionVersion == other.nextRegionVersion && offHeapOk == other.offHeapOk
+        && Objects.equals(oldValue, other.oldValue)
+        && Arrays.equals(oldValueBytes, other.oldValueBytes) && Objects.equals(op, other.op)
+        && Objects.equals(putAllOp, other.putAllOp) && Objects.equals(re, other.re)
+        && readOldValueFromDisk == other.readOldValueFromDisk
+        && Objects.equals(region, other.region) && Objects.equals(removeAllOp, other.removeAllOp)
+        && Objects.equals(tailKey, other.tailKey) && Objects.equals(txId, other.txId)
+        && Objects.equals(versionTag, other.versionTag);
   }
 
   @Override
