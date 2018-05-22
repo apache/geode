@@ -55,8 +55,9 @@ You can export a zip file that contains all artifacts of a cluster configuration
 
     -   If the command returns RUNNING, the cluster configuration is running normally.
     -   If the command returns WAITING, run the `status locator` command. The output of this command returns the cause of the WAITING status.
--  If configuration must be done through a `cache.xml` file,
-there is an ordering to the application of the configuration in these files.
+-  When using a `cache.xml` file for configuration,
+there is a specific order to the application of the configuration
+in these files.
 <%=vars.product_name%> applies the cluster-wide configuration files first.
 Group-level configurations follow.
 Last will be the configuration in a member's own configuration files
