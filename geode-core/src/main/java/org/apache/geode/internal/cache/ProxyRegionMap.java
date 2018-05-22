@@ -271,7 +271,7 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldCreateCallbackEvent(this.owner, !inTokenMode)) {
+      if (AbstractRegionMap.shouldInvokeCallbacks(this.owner, !inTokenMode)) {
         // fix for bug 39526
         @Released
         EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner, op, key, null,
@@ -294,7 +294,7 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldCreateCallbackEvent(this.owner, this.owner.isInitialized())) {
+      if (AbstractRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
         EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner,
@@ -320,7 +320,7 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addPut(putOperation, this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldCreateCallbackEvent(this.owner, this.owner.isInitialized())) {
+      if (AbstractRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
         EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner, putOperation, key,

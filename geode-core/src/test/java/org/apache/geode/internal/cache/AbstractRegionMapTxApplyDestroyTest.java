@@ -31,6 +31,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
+import org.mockito.Mock;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
@@ -67,6 +69,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   private FilterRoutingInfo filterRoutingInfo;
   private ClientProxyMembershipID bridgeContext;
   private boolean isOriginRemote;
+  @Mock
   private TXEntryState txEntryState;
   private VersionTag versionTag;
   private long tailKey;
@@ -89,6 +92,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
   @Before
   public void setup() {
+    initMocks(this);
     VersionStamp versionStamp = mock(VersionStamp.class);
     when(versionStamp.asVersionTag()).thenReturn(existingVersionTag);
     when(existingRegionEntry.getVersionStamp()).thenReturn(versionStamp);
@@ -120,7 +124,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenNoRegionEntry();
     givenNotInTokenMode();
     givenNoConcurrencyChecks();
-    txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
 
@@ -137,7 +140,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenNoRegionEntry();
     givenNotInTokenMode();
     givenNoConcurrencyChecks();
-    txEntryState = mock(TXEntryState.class);
     doThrow(RuntimeException.class).when(owner).handleWANEvent(any());
 
     assertThatThrownBy(() -> doTxApplyDestroy()).isInstanceOf(RuntimeException.class);
@@ -155,7 +157,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    validateNoPendingCallbacks();
+    assertThat(pendingCallbacks).isEmpty();
   }
 
   @Test
@@ -168,6 +170,20 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(owner, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
+  }
+
+  @Test
+  public void doesNotAddCallbackEvent_ifExistingRegionEntryIsTombstone() throws Exception {
+    givenLocalRegion();
+    givenExistingRegionEntry();
+    when(existingRegionEntry.isRemoved()).thenReturn(true);
+    when(existingRegionEntry.isTombstone()).thenReturn(true);
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).isEmpty();
+    verify(existingRegionEntry, never()).makeTombstone(any(), any());
+    verify(txEntryState, never()).setVersionTag(any());
   }
 
   @Test
@@ -186,15 +202,41 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroySetsRegionEntryOnEvent_givenExistingRegionEntryThatIsValid() {
+  public void doesNotAddCallbackEvent_givenExistingRegionEntryWithInTokenModeAndNotInRI()
+      throws Exception {
+    givenLocalRegion();
+    givenConcurrencyChecks();
+    givenExistingRegionEntry();
+    this.inTokenMode = true;
+    this.inRI = false;
+
+    doTxApplyDestroy();
+
+    assertThat(pendingCallbacks).isEmpty();
+    verify(owner).generateAndSetVersionTag(any(EntryEventImpl.class), same(existingRegionEntry));
+    verify(existingRegionEntry, never()).makeTombstone(any(), any());
+    verify(txEntryState).setVersionTag(any());
+  }
+
+  @Test
+  public void setsRegionEntryOnEvent_ifExistingRegionEntryIsValid() throws Exception {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
 
+    Object oldValue = "oldValue";
+    when(existingRegionEntry.getValueInVM(owner)).thenReturn(oldValue);
+
     doTxApplyDestroy();
 
+    assertThat(pendingCallbacks).size().isEqualTo(1);
     EntryEventImpl event = pendingCallbacks.get(0);
     assertThat(event.getRegionEntry()).isSameAs(existingRegionEntry);
+    assertThat(event.getOldValue()).isSameAs(oldValue);
+
+    verify(owner).generateAndSetVersionTag(any(EntryEventImpl.class), same(existingRegionEntry));
+    verify(existingRegionEntry, never()).makeTombstone(any(), any());
+    verify(txEntryState).setVersionTag(event.getVersionTag());
   }
 
   @Test
@@ -244,7 +286,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
-    txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
 
@@ -439,7 +480,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
   public void txApplyDestroyCallsHandleWanEvent_givenExistingRegionEntryWithPartitionedRegion() {
     givenBucketRegion();
     givenExistingRegionEntry();
-    txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
 
@@ -451,7 +491,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
   public void txApplyDestroyDoesNotCallSetVersionTag_givenExistingRegionEntryWithPartitionedRegionButNoConcurrencyChecks() {
     givenBucketRegion();
     givenExistingRegionEntry();
-    txEntryState = mock(TXEntryState.class);
     versionTag = mock(VersionTag.class);
     givenNoConcurrencyChecks();
 
@@ -478,7 +517,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
   public void txApplyDestroyCallsSetVersionTag_givenExistingRegionEntryWithPartitionedRegionAndConcurrencyChecks() {
     givenBucketRegion();
     givenExistingRegionEntry();
-    txEntryState = mock(TXEntryState.class);
     versionTag = mock(VersionTag.class);
     givenConcurrencyChecks();
 
@@ -714,7 +752,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
-    txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
 
@@ -727,7 +764,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
-    txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
 
@@ -852,7 +888,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
   public void txApplyDestroyDoesNotCallSetVersionTag_givenFactoryRegionEntryWithPartitionedRegionButNoConcurrencyChecks() {
     givenBucketRegion();
     givenFactoryRegionEntry();
-    txEntryState = mock(TXEntryState.class);
     versionTag = mock(VersionTag.class);
     givenNoConcurrencyChecks();
     inTokenMode = true;
@@ -866,7 +901,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
   public void txApplyDestroyDoesNotCallSetVersionTag_givenFactoryRegionEntryWithPartitionedRegionAndConcurrencyChecks() {
     givenBucketRegion();
     givenFactoryRegionEntry();
-    txEntryState = mock(TXEntryState.class);
     versionTag = mock(VersionTag.class);
     givenConcurrencyChecks();
 
@@ -1040,7 +1074,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
-    txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
 
@@ -1053,7 +1086,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
-    txEntryState = mock(TXEntryState.class);
 
     doTxApplyDestroy();
 

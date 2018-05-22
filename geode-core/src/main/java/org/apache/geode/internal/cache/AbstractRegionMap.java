@@ -1068,7 +1068,6 @@ public abstract class AbstractRegionMap
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
-              boolean invokeCallbacks = shouldCreateCallbackEvent(owner, isRegionReady || inRI);
               @Released
               final EntryEventImpl callbackEvent = createCallbackEvent(owner, op, key, null, txId,
                   txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
@@ -1119,6 +1118,7 @@ public abstract class AbstractRegionMap
                 }
                 owner.txApplyDestroyPart2(re, re.getKey(), inTokenMode,
                     clearOccured /* Clear Conflciting with the operation */);
+                boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
                   pendingCallbacks.add(callbackEvent);
@@ -1164,8 +1164,7 @@ public abstract class AbstractRegionMap
                   oldRe = putEntryIfAbsent(key, newRe);
                 } else {
                   try {
-                    boolean invokeCallbacks =
-                        shouldCreateCallbackEvent(owner, isRegionReady || inRI);
+                    boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
                     callbackEvent = createCallbackEvent(owner, op, key, null, txId, txEvent,
                         eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
                         versionTag, tailKey);
@@ -1226,7 +1225,7 @@ public abstract class AbstractRegionMap
             if (!opCompleted) {
               // already has value set to Token.DESTROYED
               opCompleted = true;
-              boolean invokeCallbacks = shouldCreateCallbackEvent(owner, isRegionReady || inRI);
+              boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
               callbackEvent = createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
                   aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag,
                   tailKey);
@@ -1863,7 +1862,7 @@ public abstract class AbstractRegionMap
                   // a receipt of a TXCommitMessage AND there are callbacks
                   // installed
                   // for this region
-                  boolean invokeCallbacks = shouldCreateCallbackEvent(owner, owner.isInitialized());
+                  boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
                   boolean callbackEventInPending = false;
                   callbackEvent = createCallbackEvent(owner,
                       localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue,
@@ -1919,7 +1918,7 @@ public abstract class AbstractRegionMap
               }
             }
             if (!opCompleted) {
-              boolean invokeCallbacks = shouldCreateCallbackEvent(owner, owner.isInitialized());
+              boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
               boolean callbackEventInPending = false;
               callbackEvent = createCallbackEvent(owner,
                   localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
@@ -1977,7 +1976,7 @@ public abstract class AbstractRegionMap
               // a receipt of a TXCommitMessage AND there are callbacks
               // installed
               // for this region
-              boolean invokeCallbacks = shouldCreateCallbackEvent(owner, owner.isInitialized());
+              boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
               boolean callbackEventInPending = false;
               callbackEvent = createCallbackEvent(owner,
                   localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
@@ -2222,7 +2221,7 @@ public abstract class AbstractRegionMap
     }
   }
 
-  static boolean shouldCreateCallbackEvent(final LocalRegion owner, final boolean isInitialized) {
+  static boolean shouldInvokeCallbacks(final LocalRegion owner, final boolean isInitialized) {
     LocalRegion lr = owner;
     boolean isPartitioned = lr.isUsedForPartitionedRegionBucket();
 
