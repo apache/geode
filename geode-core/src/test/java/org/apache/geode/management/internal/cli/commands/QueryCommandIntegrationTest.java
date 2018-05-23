@@ -72,7 +72,7 @@ public class QueryCommandIntegrationTest {
       String key = "key" + i;
 
       simpleRegion.put(key, "value" + i);
-      complexRegion.put(key, new Customer("name" + i, "address" + i));
+      complexRegion.put(key, new Customer("name" + i, "Main Street " + i, "Hometown"));
     }
   }
 
@@ -177,7 +177,7 @@ public class QueryCommandIntegrationTest {
 
     assertThat(lines.get(4)).containsPattern("name\\s+\\|\\s+address");
     lines.subList(6, lines.size())
-        .forEach(line -> assertThat(line).matches("name\\d+\\s+\\|\\s+address\\d+"));
+        .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*"));
   }
 
   @Test
@@ -191,7 +191,7 @@ public class QueryCommandIntegrationTest {
     assertThat(resultLines[2]).containsPattern("Rows\\s+:\\s+100");
     assertThat(resultLines[3]).containsPattern("name\\s+\\|\\s+address");
     Arrays.asList(resultLines).subList(5, resultLines.length)
-        .forEach(line -> assertThat(line).matches("name\\d+\\s+\\|\\s+address\\d+"));
+        .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*"));
   }
 
   @Test
@@ -259,15 +259,26 @@ public class QueryCommandIntegrationTest {
 
   public static class Customer implements Serializable {
     public String name;
-    public String address;
+    public Address address;
 
-    public Customer(String name, String address) {
+    public Customer(String name, String street, String city) {
       this.name = name;
-      this.address = address;
+      this.address = new Address(street, city);
     }
 
     public String toString() {
       return name + address;
     }
   }
+
+  public static class Address implements Serializable {
+    public String street;
+    public String city;
+
+    public Address(String street, String city) {
+      this.street = street;
+      this.city = city;
+    }
+  }
+
 }
