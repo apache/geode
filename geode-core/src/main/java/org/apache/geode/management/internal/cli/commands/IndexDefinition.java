@@ -20,8 +20,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.query.IndexType;
 
 class IndexDefinition {
   static final Set<RegionConfig.Index> indexDefinitions =
       Collections.synchronizedSet(new HashSet<>());
+
+  static RegionConfig.Index addIndex(String name, String expression, String fromClause,
+      IndexType type) {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setName(name);
+    index.setFromClause(fromClause);
+    index.setType(type.getName());
+    index.setExpression(expression);
+    indexDefinitions.add(index);
+
+    return index;
+  }
 }

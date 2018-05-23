@@ -134,7 +134,7 @@ public class DestroyJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput("No members found.")
-        .containsOutput("Changes to configuration for group 'cluster' is persisted.");
+        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(ccService).updateCacheConfig(any(), any());
     verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());

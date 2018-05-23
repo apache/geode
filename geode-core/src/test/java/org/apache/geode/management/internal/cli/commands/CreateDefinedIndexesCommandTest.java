@@ -21,14 +21,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -41,10 +43,8 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -74,8 +74,7 @@ public class CreateDefinedIndexesCommandTest {
 
   @Test
   public void noMembers() throws Exception {
-    IndexDefinition.indexDefinitions
-        .add(new IndexInfo("indexName", "indexedExpression", "TestRegion", IndexType.FUNCTIONAL));
+    IndexDefinition.addIndex("indexName", "indexedExpression", "TestRegion", IndexType.FUNCTIONAL);
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
     assertThat(result.getStatus()).isEqualTo(ERROR);
@@ -94,17 +93,14 @@ public class CreateDefinedIndexesCommandTest {
     doReturn(Arrays.asList(new CliFunctionResult(member.getId(), new Exception("MockException"),
         "Exception Message."))).when(resultCollector).getResult();
 
-    IndexDefinition.indexDefinitions
-        .add(new IndexInfo("index1", "value1", "TestRegion", IndexType.FUNCTIONAL));
+    IndexDefinition.addIndex("index1", "value1", "TestRegion", IndexType.FUNCTIONAL);
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
 
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    verify(command, never()).persistClusterConfiguration(any(), any());
   }
 
   @Test
   public void creationSuccess() throws Exception {
-    XmlEntity xmlEntity = mock(XmlEntity.class);
     DistributedMember member = mock(DistributedMember.class);
     when(member.getId()).thenReturn("memberId");
     InternalConfigurationPersistenceService mockService =
@@ -112,23 +108,21 @@ public class CreateDefinedIndexesCommandTest {
 
     doReturn(mockService).when(command).getConfigurationPersistenceService();
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
-    doReturn(Arrays.asList(new CliFunctionResult(member.getId(), xmlEntity))).when(resultCollector)
+    List<String> indexes = new ArrayList<>();
+    indexes.add("index1");
+    doReturn(Arrays.asList(new CliFunctionResult(member.getId(), indexes))).when(resultCollector)
         .getResult();
 
-    IndexDefinition.indexDefinitions
-        .add(new IndexInfo("index1", "value1", "TestRegion", IndexType.FUNCTIONAL));
+    IndexDefinition.addIndex("index1", "value1", "TestRegion", IndexType.FUNCTIONAL);
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
 
     assertThat(result.getStatus()).isEqualTo(OK);
     assertThat(result.failedToPersist()).isFalse();
-    verify(command, Mockito.times(1)).persistClusterConfiguration(any(), any());
-    assertThat(result.getMessageFromContent()).contains("Indexes successfully created");
+    verify(command, Mockito.times(0)).updateClusterConfig(any(), any(), any());
   }
 
   @Test
   public void multipleIndexesOnMultipleRegions() throws Exception {
-    XmlEntity xmlEntityRegion1 = mock(XmlEntity.class);
-    XmlEntity xmlEntityRegion2 = mock(XmlEntity.class);
     DistributedMember member1 = mock(DistributedMember.class);
     DistributedMember member2 = mock(DistributedMember.class);
     when(member1.getId()).thenReturn("memberId_1");
@@ -136,34 +130,26 @@ public class CreateDefinedIndexesCommandTest {
 
     InternalConfigurationPersistenceService mockService =
         mock(InternalConfigurationPersistenceService.class);
-    CliFunctionResult member1Region1Result =
-        new CliFunctionResult(member1.getId(), xmlEntityRegion1);
-    CliFunctionResult member1Region2Result =
-        new CliFunctionResult(member1.getId(), xmlEntityRegion2);
-    CliFunctionResult member2Region1Result =
-        new CliFunctionResult(member2.getId(), xmlEntityRegion2);
-    CliFunctionResult member2Region2Result =
-        new CliFunctionResult(member2.getId(), xmlEntityRegion2);
+    CliFunctionResult resultMember1 =
+        new CliFunctionResult(member1.getId(), Arrays.asList("index1", "index2"));
+    CliFunctionResult resultMember2 =
+        new CliFunctionResult(member2.getId(), Arrays.asList("index1", "index2"));
 
     doReturn(mockService).when(command).getConfigurationPersistenceService();
-    doReturn(new HashSet<>(Arrays.asList(new DistributedMember[] {member1, member2}))).when(command)
-        .findMembers(any(), any());
-    doReturn(Arrays.asList(new CliFunctionResult[] {member1Region1Result, member1Region2Result,
-        member2Region1Result, member2Region2Result})).when(resultCollector).getResult();
+    doReturn(new HashSet<>(Arrays.asList(member1, member2))).when(command).findMembers(any(),
+        any());
+    doReturn(Arrays.asList(resultMember1, resultMember2)).when(resultCollector).getResult();
 
-    IndexDefinition.indexDefinitions
-        .add(new IndexInfo("index1", "value1", "TestRegion1", IndexType.FUNCTIONAL));
-    IndexDefinition.indexDefinitions
-        .add(new IndexInfo("index2", "value2", "TestRegion2", IndexType.FUNCTIONAL));
+    IndexDefinition.addIndex("index1", "value1", "TestRegion1", IndexType.FUNCTIONAL);
+    IndexDefinition.addIndex("index2", "value2", "TestRegion2", IndexType.FUNCTIONAL);
 
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
 
     assertThat(result.getStatus()).isEqualTo(OK);
     assertThat(result.failedToPersist()).isFalse();
 
-    // The command will receive 4 results from 2 members, but we need to persist only 2 (#regions)
-    // of them.
-    verify(command, Mockito.times(2)).persistClusterConfiguration(any(), any());
-    assertThat(result.getMessageFromContent()).contains("Indexes successfully created");
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
+    assertThat(table.get("status")).contains("OK", "OK", "OK", "OK");
   }
 }
