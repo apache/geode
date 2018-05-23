@@ -199,7 +199,6 @@ public class CreateDefinedIndexesFunctionTest {
     when(index3.getName()).thenReturn("index3");
     when(index3.getRegion()).thenReturn(region1);
 
-    // doReturn(mock(XmlEntity.class)).when(function).createXmlEntity(any());
     when(queryService.createDefinedIndexes()).thenReturn(Arrays.asList(index1, index2, index3));
     context = new FunctionContextImpl(cache, CreateDefinedIndexesFunction.class.getName(),
         indexDefinitions, resultSender);

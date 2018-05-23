@@ -117,7 +117,6 @@ public class CreateDefinedIndexesCommandTest {
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
 
     assertThat(result.getStatus()).isEqualTo(OK);
-    assertThat(result.failedToPersist()).isFalse();
     verify(command, Mockito.times(0)).updateClusterConfig(any(), any(), any());
   }
 
@@ -146,7 +145,6 @@ public class CreateDefinedIndexesCommandTest {
     result = gfshParser.executeCommandWithInstance(command, "create defined indexes");
 
     assertThat(result.getStatus()).isEqualTo(OK);
-    assertThat(result.failedToPersist()).isFalse();
 
     Map<String, List<String>> table =
         result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);

@@ -31,6 +31,7 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.Locator;
@@ -166,8 +167,15 @@ public class CreateDefinedIndexesCommandDUnitTest {
       // Make sure the indexes exist in the cluster config
       InternalConfigurationPersistenceService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
-      assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent()).contains(index1Name,
-          index2Name);
+      RegionConfig region1Config =
+          sharedConfig.getCacheConfig("cluster").findRegionConfiguration(region1Name);
+      assertThat(region1Config.getIndexes().stream().map(RegionConfig.Index::getName)
+          .collect(Collectors.toList())).contains(index1Name);
+
+      RegionConfig region2Config =
+          sharedConfig.getCacheConfig("cluster").findRegionConfiguration(region2Name);
+      assertThat(region2Config.getIndexes().stream().map(RegionConfig.Index::getName)
+          .collect(Collectors.toList())).contains(index2Name);
     });
   }
 

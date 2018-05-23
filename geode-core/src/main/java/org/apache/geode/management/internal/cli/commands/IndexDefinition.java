@@ -26,8 +26,7 @@ class IndexDefinition {
   static final Set<RegionConfig.Index> indexDefinitions =
       Collections.synchronizedSet(new HashSet<>());
 
-  static RegionConfig.Index addIndex(String name, String expression, String fromClause,
-      IndexType type) {
+  static void addIndex(String name, String expression, String fromClause, IndexType type) {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName(name);
     index.setFromClause(fromClause);
@@ -35,6 +34,5 @@ class IndexDefinition {
     index.setExpression(expression);
     indexDefinitions.add(index);
 
-    return index;
   }
 }

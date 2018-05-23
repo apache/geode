@@ -28,7 +28,6 @@ public class ClearDefinedIndexesCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  // TODO : Add optionContext for indexName
   public ResultModel clearDefinedIndexes() {
     IndexDefinition.indexDefinitions.clear();
 

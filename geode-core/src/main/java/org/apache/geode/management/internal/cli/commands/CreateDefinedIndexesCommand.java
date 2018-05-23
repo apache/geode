@@ -46,7 +46,6 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  // TODO : Add optionContext for indexName
   public ResultModel createDefinedIndexes(
 
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
@@ -75,7 +74,7 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
     // indexes might have been created and where errors occurred. Thus it may be very difficult to
     // determine what to update for the cluster configuration. We try to alleviate this problem by
     // applying changes iteratively.
-    // TODO: It may be better to limit this command to EITHER executing on a list of members OR
+    // It may be better to limit this command to EITHER executing on a list of members OR
     // to execute on a SINGLE group.
 
     // First let's do the explicitly provided members. This implies changes to the whole cluster.

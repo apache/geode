@@ -31,7 +31,6 @@ import org.apache.geode.security.ResourcePermission;
 public class DefineIndexCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.DEFINE_INDEX, help = CliStrings.DEFINE_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  // TODO : Add optionContext for indexName
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   public ResultModel defineIndex(

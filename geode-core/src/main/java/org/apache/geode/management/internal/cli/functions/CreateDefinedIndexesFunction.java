@@ -30,7 +30,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
-public class CreateDefinedIndexesFunction implements InternalFunction {
+public class CreateDefinedIndexesFunction implements InternalFunction<Set<RegionConfig.Index>> {
 
   private static final long serialVersionUID = 6756381106602823693L;
 
@@ -40,7 +40,7 @@ public class CreateDefinedIndexesFunction implements InternalFunction {
   }
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Set<RegionConfig.Index>> context) {
     Cache cache;
     String memberId = null;
 
@@ -49,7 +49,7 @@ public class CreateDefinedIndexesFunction implements InternalFunction {
     QueryService queryService = cache.getQueryService();
     ResultSender<CliFunctionResult> sender = context.getResultSender();
     memberId = cache.getDistributedSystem().getDistributedMember().getId();
-    Set<RegionConfig.Index> indexDefinitions = (Set<RegionConfig.Index>) context.getArguments();
+    Set<RegionConfig.Index> indexDefinitions = context.getArguments();
 
     try {
       for (RegionConfig.Index indexDefinition : indexDefinitions) {
