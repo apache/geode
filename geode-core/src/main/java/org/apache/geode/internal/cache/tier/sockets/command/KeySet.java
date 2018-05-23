@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.operations.KeySetOperationContext;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -92,10 +94,23 @@ public class KeySet extends BaseCommand {
       return;
     }
 
+    if (isInTransaction() && region.getPartitionAttributes() != null) {
+      // GEODE-5186: fail the the transaction if it is a retry after failover for keySet on
+      // partitioned region
+      if (clientMessage.isRetry()) {
+        keySetWriteChunkedException(clientMessage,
+            new TransactionException(
+                "Failover on a set operation of a partitioned region is not allowed in a transaction."),
+            serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
+        return;
+      }
+    }
+
     try {
       securityService.authorize(Resource.DATA, Operation.READ, regionName);
     } catch (NotAuthorizedException ex) {
-      writeChunkedException(clientMessage, ex, serverConnection);
+      keySetWriteChunkedException(clientMessage, ex, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
@@ -149,6 +164,11 @@ public class KeySet extends BaseCommand {
 
   }
 
+  protected void keySetWriteChunkedException(Message clientMessage, Throwable ex,
+      ServerConnection serverConnection) throws IOException {
+    writeChunkedException(clientMessage, ex, serverConnection);
+  }
+
   private void fillAndSendKeySetResponseChunks(LocalRegion region, String regionName,
       KeySetOperationContext context, ServerConnection servConn) throws IOException {
 
@@ -199,4 +219,7 @@ public class KeySet extends BaseCommand {
     chunkedResponseMsg.sendChunk(servConn);
   }
 
+  boolean isInTransaction() {
+    return TXManagerImpl.getCurrentTXState() != null;
+  }
 }

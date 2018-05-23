@@ -195,6 +195,14 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     currentInstance = this;
   }
 
+  public static TXManagerImpl getCurrentInstanceForTest() {
+    return currentInstance;
+  }
+
+  public static void setCurrentInstanceForTest(TXManagerImpl instance) {
+    currentInstance = instance;
+  }
+
   InternalCache getCache() {
     return this.cache;
   }
