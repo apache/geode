@@ -34,35 +34,36 @@ public class LonerTypeRegistration implements TypeRegistration {
     this.cache = cache;
   }
 
+  @Override
   public int defineType(PdxType newType) {
     initializeRegistry();
     return delegate.defineType(newType);
   }
 
+  @Override
   public PdxType getType(int typeId) {
     initializeRegistry();
     return delegate.getType(typeId);
   }
 
+  @Override
   public void addRemoteType(int typeId, PdxType type) {
     initializeRegistry();
     delegate.addRemoteType(typeId, type);
   }
 
-  public int getLastAllocatedTypeId() {
-    initializeRegistry();
-    return delegate.getLastAllocatedTypeId();
-  }
-
+  @Override
   public void initialize() {
     // do nothing. This type registry is initialized lazily.
   }
 
+  @Override
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
     initializeRegistry(false);
     delegate.gatewaySenderStarted(gatewaySender);
   }
 
+  @Override
   public void creatingPersistentRegion() {
     if (delegate != null) {
       delegate.creatingPersistentRegion();
@@ -70,6 +71,7 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   }
 
+  @Override
   public void creatingPool() {
     initializeRegistry(true);
     delegate.creatingPool();
@@ -104,7 +106,7 @@ public class LonerTypeRegistration implements TypeRegistration {
    *
    * @return true if this member is a loner and we can't determine what type of registry they want.
    */
-  public static boolean isIndeterminateLoner(InternalCache cache) {
+  static boolean isIndeterminateLoner(InternalCache cache) {
     boolean isLoner = cache.getInternalDistributedSystem().isLoner();
     boolean pdxConfigured = cache.getPdxPersistent();
     return isLoner && !pdxConfigured/* && !hasGateways */;
@@ -151,9 +153,6 @@ public class LonerTypeRegistration implements TypeRegistration {
   public Set<PdxType> getPdxTypesForClassName(String className) {
     return delegate.getPdxTypesForClassName(className);
   }
-
-  @Override
-  public void testClearRegistry() {}
 
   @Override
   public boolean isClient() {

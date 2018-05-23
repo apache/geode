@@ -266,9 +266,6 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   @Override
-  public void testClearRegistry() {}
-
-  @Override
   public boolean isClient() {
     return true;
   }
