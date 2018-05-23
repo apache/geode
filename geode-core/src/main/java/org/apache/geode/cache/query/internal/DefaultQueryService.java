@@ -403,9 +403,12 @@ public class DefaultQueryService implements InternalQueryService {
     if (region instanceof PartitionedRegion) {
       return ((PartitionedRegion) region).getIndexes();
     }
+
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
-    if (indexManager == null)
-      return null;
+    if (indexManager == null) {
+      return Collections.emptyList();
+    }
+
     return indexManager.getIndexes();
   }
 
