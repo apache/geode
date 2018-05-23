@@ -1026,16 +1026,35 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenOldRegionEntryWithInTokenModeAndInRI() {
+  public void addsCallbackEvent_givenOldRegionEntryWithInTokenModeAndInRI() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
     inTokenMode = true;
     inRI = true;
 
+    when(owner.generateEventID()).thenReturn(true);
+    when(keyInfo.getCallbackArg()).thenReturn(aCallbackArgument);
+
     doTxApplyDestroy();
 
     assertThat(pendingCallbacks).hasSize(1);
+    EntryEventImpl callbackEvent = pendingCallbacks.get(0);
+    assertThat(callbackEvent.getRegion()).isSameAs(owner);
+    assertThat(callbackEvent.getOperation()).isSameAs(operation);
+    assertThat(callbackEvent.getKey()).isSameAs(key);
+    assertThat(callbackEvent.getNewValue()).isNull();
+    assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
+    assertThat(callbackEvent.getEventId()).isSameAs(eventId);
+    assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
+    assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
+    assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
+    assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
+    assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
+    assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
+
+    assertThat(callbackEvent.getRegionEntry()).isSameAs(oldRegionEntry);
+    assertThat(callbackEvent.getOldValue()).isNull();
   }
 
   @Test
