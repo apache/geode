@@ -413,6 +413,4 @@ public interface GatewaySender {
    *
    */
   void destroy();
-
-
 }

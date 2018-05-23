@@ -1015,6 +1015,32 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     return new DistributedLock(key);
   }
 
+  @Override
+  public void preInitialize() {
+    Set<String> allGatewaySenderIds = getAllGatewaySenderIds();
+
+    if (!allGatewaySenderIds.isEmpty()) {
+      for (GatewaySender sender : this.cache.getAllGatewaySenders()) {
+        if (sender.isParallel() && allGatewaySenderIds.contains(sender.getId())) {
+          // Once decided to support REPLICATED regions with parallel
+          // gateway-sender/asynchronous-event-queue, ShadowPartitionedRegionForUserRR should be
+          // called and this validation should be removed.
+          if (sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
+            throw new AsyncEventQueueConfigurationException(
+                LocalizedStrings.ParallelAsyncEventQueue_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
+                    .toLocalizedString(
+                        AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(sender.getId()),
+                        this.getFullPath()));
+          } else {
+            throw new GatewaySenderConfigurationException(
+                LocalizedStrings.ParallelGatewaySender_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
+                    .toLocalizedString(sender.getId(), this.getFullPath()));
+          }
+        }
+      }
+    }
+  }
+
   /**
    * Called while NOT holding lock on parent's subregions
    *
@@ -2507,25 +2533,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                       LocalizedStrings.DistributedRegion_EXCEPTION_OCCURRED_IN_REGIONMEMBERSHIPLISTENER),
                   t);
             }
-          }
-        }
-      }
-      Set<String> allGatewaySenderIds = getAllGatewaySenderIds();
-      if (!allGatewaySenderIds.isEmpty()) {
-        for (GatewaySender sender : this.cache.getAllGatewaySenders()) {
-          if (sender.isParallel() && allGatewaySenderIds.contains(sender.getId())) {
-            // Fix for Bug#51491. Once decided to support this configuration we have call
-            // addShadowPartitionedRegionForUserRR
-            if (sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
-              throw new AsyncEventQueueConfigurationException(
-                  LocalizedStrings.ParallelAsyncEventQueue_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
-                      .toLocalizedString(new Object[] {
-                          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(sender.getId()),
-                          this.getFullPath()}));
-            }
-            throw new GatewaySenderConfigurationException(
-                LocalizedStrings.ParallelGatewaySender_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
-                    .toLocalizedString(new Object[] {sender.getId(), this.getFullPath()}));
           }
         }
       }
