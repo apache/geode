@@ -19,6 +19,7 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
@@ -130,21 +131,24 @@ public class AbstractRegionMapTxApplyDestroyTest {
     when(keyInfo.getCallbackArg()).thenReturn(aCallbackArgument);
 
     doTxApplyDestroy();
-
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
-    assertThat(callbackEvent.getRegion()).isSameAs(owner);
-    assertThat(callbackEvent.getOperation()).isSameAs(operation);
-    assertThat(callbackEvent.getKey()).isSameAs(key);
-    assertThat(callbackEvent.getNewValue()).isNull();
-    assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
-    assertThat(callbackEvent.getEventId()).isSameAs(eventId);
-    assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
-    assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
-    assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
-    assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
-    assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
-    assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
+
+    // noinspection Duplicates
+    assertSoftly(softly -> {
+      softly.assertThat(callbackEvent.getRegion()).isSameAs(owner);
+      softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
+      softly.assertThat(callbackEvent.getKey()).isSameAs(key);
+      softly.assertThat(callbackEvent.getNewValue()).isNull();
+      softly.assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
+      softly.assertThat(callbackEvent.getEventId()).isSameAs(eventId);
+      softly.assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
+      softly.assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
+      softly.assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
+      softly.assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
+      softly.assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
+      softly.assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
+    });
   }
 
   @Test
@@ -165,18 +169,21 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
-    assertThat(callbackEvent.getOperation()).isSameAs(operation);
-    assertThat(callbackEvent.getKey()).isSameAs(key);
-    assertThat(callbackEvent.getNewValue()).isNull();
-    assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
-    assertThat(callbackEvent.getEventId()).isSameAs(eventId);
-    assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
-    assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
-    assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
-    assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
-    assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
-    assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
+    // noinspection Duplicates
+    assertSoftly(softly -> {
+      softly.assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
+      softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
+      softly.assertThat(callbackEvent.getKey()).isSameAs(key);
+      softly.assertThat(callbackEvent.getNewValue()).isNull();
+      softly.assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
+      softly.assertThat(callbackEvent.getEventId()).isSameAs(eventId);
+      softly.assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
+      softly.assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
+      softly.assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
+      softly.assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
+      softly.assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
+      softly.assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
+    });
   }
 
   @Test
@@ -1040,21 +1047,24 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
-    assertThat(callbackEvent.getRegion()).isSameAs(owner);
-    assertThat(callbackEvent.getOperation()).isSameAs(operation);
-    assertThat(callbackEvent.getKey()).isSameAs(key);
-    assertThat(callbackEvent.getNewValue()).isNull();
-    assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
-    assertThat(callbackEvent.getEventId()).isSameAs(eventId);
-    assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
-    assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
-    assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
-    assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
-    assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
-    assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
 
-    assertThat(callbackEvent.getRegionEntry()).isSameAs(oldRegionEntry);
-    assertThat(callbackEvent.getOldValue()).isNull();
+    // noinspection Duplicates
+    assertSoftly(softly -> {
+      softly.assertThat(callbackEvent.getRegion()).isSameAs(owner);
+      softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
+      softly.assertThat(callbackEvent.getKey()).isSameAs(key);
+      softly.assertThat(callbackEvent.getNewValue()).isNull();
+      softly.assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
+      softly.assertThat(callbackEvent.getEventId()).isSameAs(eventId);
+      softly.assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
+      softly.assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
+      softly.assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
+      softly.assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
+      softly.assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
+      softly.assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
+      softly.assertThat(callbackEvent.getRegionEntry()).isSameAs(oldRegionEntry);
+      softly.assertThat(callbackEvent.getOldValue()).isNull();
+    });
   }
 
   @Test
@@ -1183,15 +1193,35 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroySetsRegionOnEvent_givenOldRegionEntryAndBucket() {
+  public void addsCallbackEvent_givenOldRegionEntryAndBucket() {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
 
+    when(partitionedRegion.generateEventID()).thenReturn(true);
+    when(keyInfo.getCallbackArg()).thenReturn(aCallbackArgument);
+
     doTxApplyDestroy();
 
-    EntryEventImpl event = pendingCallbacks.get(0);
-    assertThat(event.getRegion()).isSameAs(partitionedRegion);
+    EntryEventImpl callbackEvent = pendingCallbacks.get(0);
+
+    // noinspection Duplicates
+    assertSoftly(softly -> {
+      softly.assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
+      softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
+      softly.assertThat(callbackEvent.getKey()).isSameAs(key);
+      softly.assertThat(callbackEvent.getNewValue()).isNull();
+      softly.assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
+      softly.assertThat(callbackEvent.getEventId()).isSameAs(eventId);
+      softly.assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
+      softly.assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
+      softly.assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
+      softly.assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
+      softly.assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
+      softly.assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
+      softly.assertThat(callbackEvent.getRegionEntry()).isSameAs(oldRegionEntry);
+      softly.assertThat(callbackEvent.getOldValue()).isNull();
+    });
   }
 
   @Test
