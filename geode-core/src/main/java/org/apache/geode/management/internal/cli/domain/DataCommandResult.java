@@ -36,6 +36,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 
 
@@ -702,13 +703,34 @@ public class DataCommandResult implements Serializable {
 
     private void resolvePdxToColumns(Map<String, String> columnData, PdxInstance pdx) {
       for (String field : pdx.getFieldNames()) {
-        columnData.put(field, pdx.getField(field).toString());
+        columnData.put(field, valueToJson(pdx.getField(field)));
       }
     }
 
     private void resolveStructToColumns(Map<String, String> columnData, StructImpl struct) {
       for (String field : struct.getFieldNames()) {
-        columnData.put(field, struct.get(field).toString());
+        columnData.put(field, valueToJson(struct.get(field)));
+      }
+    }
+
+    private String valueToJson(Object value) {
+      if (value == null) {
+        return "null";
+      }
+
+      if (value instanceof String) {
+        return (String) value;
+      }
+
+      if (value instanceof PdxInstance) {
+        return JSONFormatter.toJSON((PdxInstance) value);
+      }
+
+      ObjectMapper mapper = new ObjectMapper();
+      try {
+        return mapper.writeValueAsString(value);
+      } catch (JsonProcessingException jex) {
+        return jex.getMessage();
       }
     }
   }
