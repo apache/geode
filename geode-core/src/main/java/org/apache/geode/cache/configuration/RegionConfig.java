@@ -681,18 +681,24 @@ public class RegionConfig implements CacheElement {
     }
 
     /**
-     * Sets the value of the type property.
+     * Sets the value of the type property. Also sets the keyIndex property to true if the type
+     * being set is "key".
      *
      * allowed object is
      * {@link String }
      *
+     * @deprecated Index should only be a "key" or "range" type which is set using
+     *             {@link #setKeyIndex(Boolean)}
      */
     public void setType(String value) {
-      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)) {
+      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)
+          || "key".equalsIgnoreCase(value)) {
         this.type = value.toLowerCase();
       } else {
         throw new IllegalArgumentException("Invalid index type " + value);
       }
+
+      setKeyIndex("key".equalsIgnoreCase(value));
     }
 
     @Override
