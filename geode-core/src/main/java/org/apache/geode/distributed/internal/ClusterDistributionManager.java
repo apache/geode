@@ -455,7 +455,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    * @see org.apache.geode.distributed.ThreadMonitoring
    */
-  private ThreadMonitoring threadMonitor = null;
+  private final ThreadMonitoring threadMonitor;
 
   /** a map keyed on InternalDistributedMember, to direct channels to other systems */
   // protected final Map channelMap = CFactory.createCM();

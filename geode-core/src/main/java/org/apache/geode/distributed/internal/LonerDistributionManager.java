@@ -39,8 +39,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.admin.GemFireHealthConfig;
@@ -58,7 +56,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -78,7 +75,7 @@ public class LonerDistributionManager implements DistributionManager {
    *
    * @see org.apache.geode.distributed.ThreadMonitoring
    */
-  private ThreadMonitoring threadMonitor = null;
+  private final ThreadMonitoring threadMonitor;
 
   //////////////////////// Constructors ////////////////////////
 
@@ -95,13 +92,7 @@ public class LonerDistributionManager implements DistributionManager {
     this.allIds = Collections.singleton(localAddress);
     this.viewMembers = new ArrayList<InternalDistributedMember>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
-    startThreadMonitor();
-  }
 
-  ////////////////////// Instance Methods //////////////////////
-
-  private void startThreadMonitor() {
-    Logger logger = LogService.getLogger();
     Properties nonDefault = new Properties();
     DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
 
@@ -113,6 +104,8 @@ public class LonerDistributionManager implements DistributionManager {
       logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
     }
   }
+
+  ////////////////////// Instance Methods //////////////////////
 
   protected void startThreads() {
     // no threads needed
