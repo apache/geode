@@ -58,12 +58,11 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Test that using the magic byte to indicate intend to use ProtoBuf messages works
  */
-@Category({AcceptanceTest.class, FlakyTest.class}) // Flaky - GEODE-3733
+@Category({AcceptanceTest.class})
 public class CacheMaxConnectionJUnitTest {
   private static final String TEST_KEY = "testKey";
   private static final String TEST_VALUE = "testValue";
@@ -173,48 +172,52 @@ public class CacheMaxConnectionJUnitTest {
     final Socket[] sockets = new Socket[connections];
 
     ExecutorService executor = Executors.newFixedThreadPool(connections);
+    try {
 
-    // Used to assert the exception is non-null.
-    ArrayList<Callable<Exception>> callables = new ArrayList<>();
+      // Used to assert the exception is non-null.
+      ArrayList<Callable<Exception>> callables = new ArrayList<>();
 
-    for (int i = 0; i < connections; i++) {
-      final int j = i;
-      callables.add(() -> {
-        try {
-          Socket socket = new Socket("localhost", cacheServerPort);
-          sockets[j] = socket;
+      for (int i = 0; i < connections; i++) {
+        final int j = i;
+        callables.add(() -> {
+          try {
+            Socket socket = new Socket("localhost", cacheServerPort);
+            sockets[j] = socket;
 
-          Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-          OutputStream outputStream = socket.getOutputStream();
+            Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+            OutputStream outputStream = socket.getOutputStream();
 
-          performAndVerifyHandshake(socket);
+            performAndVerifyHandshake(socket);
 
-          ClientProtocol.Message putMessage = MessageUtil
-              .makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
-          protobufProtocolSerializer.serialize(putMessage, outputStream);
-          validatePutResponse(socket, protobufProtocolSerializer);
-        } catch (Exception e) {
-          return e;
-        }
-        return null;
-      });
-    }
-    List<Future<Exception>> futures = executor.invokeAll(callables);
+            ClientProtocol.Message putMessage = MessageUtil
+                .makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
+            protobufProtocolSerializer.serialize(putMessage, outputStream);
+            validatePutResponse(socket, protobufProtocolSerializer);
+          } catch (Exception e) {
+            return e;
+          }
+          return null;
+        });
+      }
+      List<Future<Exception>> futures = executor.invokeAll(callables);
 
-    for (Future<Exception> f : futures) {
-      assertNull(f.get());
-    }
+      for (Future<Exception> f : futures) {
+        assertNull(f.get());
+      }
 
-    // try to start a new socket, expecting it to be disconnected.
-    try (Socket socket = new Socket("localhost", cacheServerPort)) {
-      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-      socket.getOutputStream()
-          .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-      assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
-    }
+      // try to start a new socket, expecting it to be disconnected.
+      try (Socket socket = new Socket("localhost", cacheServerPort)) {
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
+        socket.getOutputStream()
+            .write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+        assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
+      }
 
-    for (Socket currentSocket : sockets) {
-      currentSocket.close();
+      for (Socket currentSocket : sockets) {
+        currentSocket.close();
+      }
+    } finally {
+      executor.shutdownNow();
     }
   }
 
