@@ -63,7 +63,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   private TXRmtEvent txEvent;
   private boolean inTokenMode;
   private boolean inRI;
-  private Operation op = Operation.DESTROY;
+  private Operation operation = Operation.DESTROY;
   private EventID eventId = mock(EventID.class);
   private Object aCallbackArgument = "aCallbackArgument";
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
@@ -84,7 +84,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   private final RegionEntry existingRegionEntry = mock(RegionEntry.class);
   private final RegionEntry factoryRegionEntry = mock(RegionEntry.class);
   private final RegionEntry oldRegionEntry = mock(RegionEntry.class);
-  private final PartitionedRegion pr = mock(PartitionedRegion.class);
+  private final PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
   private final VersionTag existingVersionTag = mock(VersionTag.class);
   private final CachePerfStats cachePerfStats = mock(CachePerfStats.class);
 
@@ -108,7 +108,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   // Each of these tests requires givenNotInTokenMode and givenNoConcurrencyChecks
 
   @Test
-  public void txApplyDestroySetCorrectPendingCallback_givenNoRegionEntryNotInTokenModeNoconcurrencyChecks() {
+  public void txApplyDestroySetCorrectPendingCallback_givenNoRegionEntryNotInTokenModeNoConcurrencyChecks() {
     givenLocalRegion();
     givenNoRegionEntry();
     givenNotInTokenMode();
@@ -121,7 +121,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
     assertThat(callbackEvent.getRegion()).isSameAs(owner);
-    assertThat(callbackEvent.getOperation()).isSameAs(op);
+    assertThat(callbackEvent.getOperation()).isSameAs(operation);
     assertThat(callbackEvent.getKey()).isSameAs(key);
     assertThat(callbackEvent.getNewValue()).isNull();
     assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
@@ -135,23 +135,39 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroySetCorrectPendingCallback_givenNoRegionEntryNotInTokenModeNoconcurrencyChecks_andBucket() {
+  public void addsCallbackEvent_givenNoRegionEntryNotInTokenModeNoConcurrencyChecks_andBucket() {
     givenBucketRegion();
     givenNoRegionEntry();
     givenNotInTokenMode();
     givenNoConcurrencyChecks();
 
+    when(partitionedRegion.generateEventID()).thenReturn(true);
+    when(keyInfo.getCallbackArg()).thenReturn(aCallbackArgument);
+
     doTxApplyDestroy();
 
-    EntryEventImpl expectedEvent = expectedEvent();
-    expectedEvent.setRegion(pr);
-    validatePendingCallbacks(expectedEvent);
     verify(owner, times(1)).handleWANEvent(any());
     verify(txEntryState, times(1)).setTailKey(tailKey);
+
+    assertThat(pendingCallbacks).hasSize(1);
+    EntryEventImpl callbackEvent = pendingCallbacks.get(0);
+
+    assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
+    assertThat(callbackEvent.getOperation()).isSameAs(operation);
+    assertThat(callbackEvent.getKey()).isSameAs(key);
+    assertThat(callbackEvent.getNewValue()).isNull();
+    assertThat(callbackEvent.getTransactionId()).isSameAs(txId);
+    assertThat(callbackEvent.getEventId()).isSameAs(eventId);
+    assertThat(callbackEvent.getCallbackArgument()).isSameAs(aCallbackArgument);
+    assertThat(callbackEvent.getLocalFilterInfo()).isSameAs(filterRoutingInfo);
+    assertThat(callbackEvent.getContext()).isSameAs(bridgeContext);
+    assertThat(callbackEvent.isOriginRemote()).isEqualTo(isOriginRemote);
+    assertThat(callbackEvent.getVersionTag()).isEqualTo(versionTag);
+    assertThat(callbackEvent.getTailKey()).isEqualTo(tailKey);
   }
 
   @Test
-  public void txApplyDestroyCallReleaseEvent_givenNoRegionEntryNotInTokenModeNoconcurrencyChecksAndBucket_whenHandleWANEventThrows() {
+  public void txApplyDestroyCallReleaseEvent_givenNoRegionEntryNotInTokenModeNoConcurrencyChecksAndBucket_whenHandleWANEventThrows() {
     givenBucketRegion();
     givenNoRegionEntry();
     givenNotInTokenMode();
@@ -696,7 +712,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
-    when(pr.getConcurrencyChecksEnabled()).thenReturn(false);
+    when(partitionedRegion.getConcurrencyChecksEnabled()).thenReturn(false);
 
     doTxApplyDestroy();
 
@@ -825,7 +841,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     EntryEventImpl event = pendingCallbacks.get(0);
-    assertThat(event.getRegion()).isSameAs(pr);
+    assertThat(event.getRegion()).isSameAs(partitionedRegion);
   }
 
   @Test
@@ -1018,7 +1034,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
-    when(pr.getConcurrencyChecksEnabled()).thenReturn(false);
+    when(partitionedRegion.getConcurrencyChecksEnabled()).thenReturn(false);
 
     doTxApplyDestroy();
 
@@ -1147,7 +1163,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     EntryEventImpl event = pendingCallbacks.get(0);
-    assertThat(event.getRegion()).isSameAs(pr);
+    assertThat(event.getRegion()).isSameAs(partitionedRegion);
   }
 
   @Test
@@ -1337,21 +1353,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).isEmpty();
   }
 
-  private void validatePendingCallbacks(EntryEventImpl expectedEvent) {
-    assertThat(pendingCallbacks).hasSize(1);
-    EntryEventImpl callbackEvent = pendingCallbacks.get(0);
-    if (!callbackEvent.checkEquality(expectedEvent)) {
-      assertThat(callbackEvent).isEqualTo(expectedEvent);
-    }
-  }
-
-  private EntryEventImpl expectedEvent() {
-    EntryEventImpl expectedEvent =
-        AbstractRegionMap.createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
-            aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
-    expectedEvent.setOriginRemote(isOriginRemote);
-    return expectedEvent;
-  }
 
   private void givenNoRegionEntry() {
     when(entryMap.get(eq(key))).thenReturn(null);
@@ -1378,7 +1379,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
   private void givenConcurrencyChecks() {
     when(owner.getConcurrencyChecksEnabled()).thenReturn(true);
-    when(pr.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(partitionedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
   }
 
   private void givenNoConcurrencyChecks() {
@@ -1394,7 +1395,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   private void givenBucketRegion() {
     BucketRegion bucketRegion = mock(BucketRegion.class);
     when(bucketRegion.isUsedForPartitionedRegionBucket()).thenReturn(true);
-    when(bucketRegion.getPartitionedRegion()).thenReturn(pr);
+    when(bucketRegion.getPartitionedRegion()).thenReturn(partitionedRegion);
     when(bucketRegion.getBucketAdvisor()).thenReturn(mock(BucketAdvisor.class));
     owner = bucketRegion;
     setupLocalRegion();
@@ -1409,9 +1410,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   private void doTxApplyDestroy() {
-    regionMap.txApplyDestroy(key, txId, txEvent, inTokenMode, inRI, op, eventId, aCallbackArgument,
-        pendingCallbacks, filterRoutingInfo, bridgeContext, isOriginRemote, txEntryState,
-        versionTag, tailKey);
+    regionMap.txApplyDestroy(key, txId, txEvent, inTokenMode, inRI, operation, eventId,
+        aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext, isOriginRemote,
+        txEntryState, versionTag, tailKey);
   }
 
   private class TestableAbstractRegionMap extends AbstractRegionMap {

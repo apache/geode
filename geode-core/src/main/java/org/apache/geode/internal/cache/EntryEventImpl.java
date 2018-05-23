@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.Objects.nonNull;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
@@ -23,8 +22,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
@@ -2084,29 +2081,6 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   protected String getShortClassName() {
     String cname = getClass().getName();
     return cname.substring(getClass().getPackage().getName().length() + 1);
-  }
-
-  public boolean checkEquality(EntryEventImpl other) {
-    return this == other || nonNull(other) && Objects.equals(getClass(), other.getClass())
-        && Arrays.equals(cachedSerializedNewValue, other.cachedSerializedNewValue)
-        && Objects.equals(causedByMessage, other.causedByMessage)
-        && Objects.equals(context, other.context) && Arrays.equals(deltaBytes, other.deltaBytes)
-        && Objects.equals(distributedMember, other.distributedMember)
-        && eventFlags == other.eventFlags && Objects.equals(eventID, other.eventID)
-        && Objects.equals(eventType, other.eventType)
-        && Objects.equals(filterInfo, other.filterInfo) && isEvicted == other.isEvicted
-        && isPendingSecondaryExpireDestroy == other.isPendingSecondaryExpireDestroy
-        && Objects.equals(keyInfo, other.keyInfo) && Objects.equals(newValue, other.newValue)
-        && newValueBucketSize == other.newValueBucketSize
-        && Arrays.equals(newValueBytes, other.newValueBytes)
-        && nextRegionVersion == other.nextRegionVersion && offHeapOk == other.offHeapOk
-        && Objects.equals(oldValue, other.oldValue)
-        && Arrays.equals(oldValueBytes, other.oldValueBytes) && Objects.equals(op, other.op)
-        && Objects.equals(putAllOp, other.putAllOp) && Objects.equals(re, other.re)
-        && readOldValueFromDisk == other.readOldValueFromDisk
-        && Objects.equals(region, other.region) && Objects.equals(removeAllOp, other.removeAllOp)
-        && Objects.equals(tailKey, other.tailKey) && Objects.equals(txId, other.txId)
-        && Objects.equals(versionTag, other.versionTag);
   }
 
   @Override
