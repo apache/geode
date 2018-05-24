@@ -23,11 +23,9 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction;
@@ -66,15 +64,10 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    ResultCollector<?, ?> rc = executeFunction(createDefinedIndexesFunction,
-        IndexDefinition.indexDefinitions, targetMembers);
-
-    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION,
-        (List<CliFunctionResult>) rc.getResult(), false);
-
-    if (result.getStatus() == Result.Status.OK) {
-      result.setConfigObject(IndexDefinition.indexDefinitions);
-    }
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+        createDefinedIndexesFunction, IndexDefinition.indexDefinitions, targetMembers);
+    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION, functionResults, false);
+    result.setConfigObject(IndexDefinition.indexDefinitions);
 
     return result;
   }
