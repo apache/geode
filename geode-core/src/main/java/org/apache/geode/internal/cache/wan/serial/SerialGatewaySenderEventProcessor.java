@@ -20,12 +20,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -901,5 +903,20 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   protected void registerEventDroppedInPrimaryQueue(EntryEventImpl droppedEvent) {
     this.getSender().setModifiedEventId(droppedEvent);
     sendBatchDestroyOperationForDroppedEvent(droppedEvent, -1);
+  }
+
+  private String printEventIdList(Set<EventID> eventIds) {
+    StringBuffer sb = new StringBuffer().append("[").append(
+        eventIds.stream().map(entry -> entry.expensiveToString()).collect(Collectors.joining(", ")))
+        .append("]");
+    return sb.toString();
+  }
+
+  public String printUnprocessedEvents() {
+    return printEventIdList(this.unprocessedEvents.keySet());
+  }
+
+  public String printUnprocessedTokens() {
+    return printEventIdList(this.unprocessedTokens.keySet());
   }
 }

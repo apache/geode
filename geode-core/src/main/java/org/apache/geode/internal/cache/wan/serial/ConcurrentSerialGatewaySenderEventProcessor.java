@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -395,5 +396,15 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       serialProcessor.enqueueEvent(event);
     }
+  }
+
+  public String printUnprocessedEvents() {
+    return this.processors.stream().map(processor -> processor.printUnprocessedEvents())
+        .collect(Collectors.joining(", "));
+  }
+
+  public String printUnprocessedTokens() {
+    return this.processors.stream().map(processor -> processor.printUnprocessedTokens())
+        .collect(Collectors.joining(", "));
   }
 }

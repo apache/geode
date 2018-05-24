@@ -37,6 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATO
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -71,6 +72,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.management.ObjectName;
 
@@ -1247,6 +1249,15 @@ public class WANTestBase extends DistributedTestCase {
     assertEquals(eventsReceived, statistics.getEventsReceived());
     assertEquals(eventsQueued, statistics.getEventsQueued());
     assert (statistics.getEventsDistributed() >= eventsDistributed);
+  }
+
+  public static void validateGatewaySenderQueueHasContent(String senderId, VM... targetVms) {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> Arrays.stream(targetVms).map(vm -> vm.invoke(() -> {
+          AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+          logger.info(displaySerialQueueContent(sender));
+          return sender.getEventQueueSize();
+        })).mapToInt(i -> i).sum(), greaterThan(0));
   }
 
   public static void checkGatewayReceiverStats(int processBatches, int eventsReceived,
@@ -3169,6 +3180,34 @@ public class WANTestBase extends DistributedTestCase {
       return pgsq.displayContent();
     }
     return null;
+  }
+
+  public static String displaySerialQueueContent(final AbstractGatewaySender sender) {
+    StringBuilder message = new StringBuilder();
+    message.append("Is Primary: ").append(sender.isPrimary()).append(", ").append("Queue Size: ")
+        .append(sender.getEventQueueSize());
+
+    if (sender.getQueues() != null) {
+      message.append(", ").append("Queue Count: ").append(sender.getQueues().size());
+      Stream<Object> stream = sender.getQueues().stream()
+          .map(regionQueue -> ((SerialGatewaySenderQueue) regionQueue).displayContent());
+
+      List<Object> list = stream.collect(Collectors.toList());
+      message.append(", ").append("Keys: ").append(list.toString());
+    }
+
+    AbstractGatewaySenderEventProcessor abstractProcessor = sender.getEventProcessor();
+    if (abstractProcessor == null) {
+      message.append(", ").append("Null Event Processor: ");
+    }
+    if (!sender.isPrimary()) {
+      message.append("\n").append("Unprocessed Events: ")
+          .append(abstractProcessor.printUnprocessedEvents()).append("\n");
+      message.append("\n").append("Unprocessed Tokens: ")
+          .append(abstractProcessor.printUnprocessedTokens()).append("\n");
+    }
+
+    return message.toString();
   }
 
   public static Integer getQueueContentSize(final String senderId) {
