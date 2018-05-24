@@ -1294,4 +1294,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     }
   }
+
+  public String displayContent() {
+    return this.region.keySet().toString();
+  }
 }

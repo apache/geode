@@ -1380,4 +1380,13 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
       return true;
     }
   }
+
+  public String printUnprocessedEvents() {
+    return null;
+  }
+
+  public String printUnprocessedTokens() {
+    return null;
+  }
+
 }
