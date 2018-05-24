@@ -140,7 +140,7 @@ public class CommandExecutor {
         try {
           gfshCommand.updateClusterConfig(group, cc, resultModel.getConfigObject());
           infoResultModel
-              .addLine("Changes to configuration for group '" + group + "' is persisted.");
+              .addLine("Changes to configuration for group '" + group + "' are persisted.");
         } catch (Exception e) {
           String message = "failed to update cluster config for " + group;
           logger.error(message, e);

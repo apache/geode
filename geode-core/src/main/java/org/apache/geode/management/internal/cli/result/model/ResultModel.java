@@ -214,6 +214,9 @@ public class ResultModel {
     boolean atLeastOneSuccess = false;
     section.setColumnHeader("Member", "Status", "Message");
     for (CliFunctionResult functionResult : functionResults) {
+      if (functionResult == null) {
+        continue;
+      }
       section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnored),
           functionResult.getStatusMessage());
       if (functionResult.isSuccessful()) {
