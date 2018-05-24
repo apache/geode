@@ -156,11 +156,13 @@ public class CreateDefinedIndexesFunctionTest {
 
     CliFunctionResult result2 = (CliFunctionResult) results.get(1);
     assertThat(result2.isSuccessful()).isFalse();
-    assertThat(result2.getStatusMessage()).isEqualTo("Failed to create index index1: Mock Failure.");
+    assertThat(result2.getStatusMessage())
+        .isEqualTo("Failed to create index index1: Mock Failure.");
 
     CliFunctionResult result3 = (CliFunctionResult) results.get(2);
     assertThat(result3.isSuccessful()).isFalse();
-    assertThat(result3.getStatusMessage()).isEqualTo("Failed to create index index3: Another Mock Failure.");
+    assertThat(result3.getStatusMessage())
+        .isEqualTo("Failed to create index index3: Another Mock Failure.");
   }
 
   @Test
