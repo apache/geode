@@ -15,8 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -27,12 +26,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.commands.DestroyAsyncEventQueueCommand;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -40,11 +38,10 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class DestroyAsyncEventQueueFunctionTest {
 
   private static final String TEST_AEQ_ID = "Test-AEQ";
-  private AsyncEventQueue mockAEQ;
-  private FunctionContext mockContext;
-  private DestroyAsyncEventQueueFunctionArgs mockArgs;
+  private AsyncEventQueueImpl mockAEQ;
+  private FunctionContext<String> mockContext;
   private GemFireCacheImpl cache;
-  private ResultSender resultSender;
+  private ResultSender<CliFunctionResult> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
   private DestroyAsyncEventQueueFunction function;
 
@@ -52,56 +49,61 @@ public class DestroyAsyncEventQueueFunctionTest {
   public void setUp() throws Exception {
     mockAEQ = mock(AsyncEventQueueImpl.class);
     mockContext = mock(FunctionContext.class);
-    mockArgs = mock(DestroyAsyncEventQueueFunctionArgs.class);
     cache = Fakes.cache();
     function = spy(DestroyAsyncEventQueueFunction.class);
     resultSender = mock(ResultSender.class);
 
     when(mockContext.getCache()).thenReturn(cache);
-    when(mockContext.getArguments()).thenReturn(mockArgs);
-    when(mockArgs.getId()).thenReturn(TEST_AEQ_ID);
+    when(mockContext.getArguments()).thenReturn(TEST_AEQ_ID);
     when(mockAEQ.getId()).thenReturn(TEST_AEQ_ID);
-    when(mockContext.getResultSender()).thenReturn(resultSender);
+    when(mockContext.<CliFunctionResult>getResultSender()).thenReturn(resultSender);
     resultCaptor = ArgumentCaptor.forClass(CliFunctionResult.class);
   }
 
   @Test
-  public void execute_validAeqId_OK() throws Throwable {
-    XmlEntity xmlEntity = mock(XmlEntity.class);
-    doReturn(xmlEntity).when(function).getAEQXmlEntity(anyString(), anyString());
+  public void validIdReturnsOK() {
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(mockAEQ);
 
     function.execute(mockContext);
+
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
 
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getXmlEntity()).isNotNull();
-    assertThat(result.getThrowable()).isNull();
+    assertThat(result.isIgnorableFailure()).isFalse();
+    assertThat(result.getStatusMessage()).containsPattern(String.format(
+        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, TEST_AEQ_ID));
+
   }
 
   @Test
-  public void execute_nonexistentAeqId_returnsError() throws Throwable {
+  public void nonexistentReturnsIgnorable() {
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(null);
 
     function.execute(mockContext);
+
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
 
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getMessage()).containsPattern(TEST_AEQ_ID + ".*not found");
+    assertThat(result.isIgnorableFailure()).isTrue();
+    assertThat(result.getStatusMessage()).containsPattern(String.format(
+        DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND, TEST_AEQ_ID));
   }
 
   @Test
-  public void execute_nonexistentAeqIdIfExists_returnsSuccess() throws Throwable {
-    when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(null);
-    when(mockArgs.isIfExists()).thenReturn(true);
+  public void functionErrorReturnsError() {
+    String mockExceptionMessage = "Some test error during shutdown occurred.";
+    when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(mockAEQ);
+    doThrow(new RuntimeException(mockExceptionMessage)).when(mockAEQ).stop();
 
     function.execute(mockContext);
+
     verify(resultSender).lastResult(resultCaptor.capture());
     CliFunctionResult result = resultCaptor.getValue();
 
-    assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMessage()).containsPattern("Skipping:.*" + TEST_AEQ_ID + ".*not found");
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.isIgnorableFailure()).isFalse();
+    assertThat(result.getStatusMessage()).contains(mockExceptionMessage);
   }
 }

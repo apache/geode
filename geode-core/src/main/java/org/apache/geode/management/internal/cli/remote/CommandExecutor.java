@@ -14,15 +14,23 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.UpdateAllConfigurationsByDefault;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
@@ -103,7 +111,6 @@ public class CommandExecutor {
     if (command == null) {
       command = parseResult.getInstance();
     }
-
     Object result =
         ReflectionUtils.invokeMethod(parseResult.getMethod(), command, parseResult.getArguments());
 
@@ -131,11 +138,9 @@ public class CommandExecutor {
     }
 
     String groupInput = parseResult.getParamValueAsString("group");
-    if (groupInput == null) {
-      groupInput = "cluster";
-    }
-    String[] groups = groupInput.split(",");
-    for (String group : groups) {
+    Set<String> groupConfigsToUpdate =
+        getConfigGroupsToUpdate(command, groupInput, resultModel, ccService);
+    for (String group : groupConfigsToUpdate) {
       ccService.updateCacheConfig(group, cc -> {
         try {
           gfshCommand.updateClusterConfig(group, cc, resultModel.getConfigObject());
@@ -153,5 +158,23 @@ public class CommandExecutor {
       });
     }
     return resultModel;
+  }
+
+  private Set<String> getConfigGroupsToUpdate(Object command, String groupInput,
+      ResultModel resultModel, ConfigurationPersistenceService ccService) {
+    if (groupInput != null) {
+      return new HashSet<>(Arrays.asList(groupInput.split(",")));
+    }
+
+    if (!(command instanceof UpdateAllConfigurationsByDefault)) {
+      return Collections.singleton("cluster");
+    }
+
+    Set<String> allGroupNames =
+        ((InternalConfigurationPersistenceService) ccService).getConfigurationGroupNames();
+    return allGroupNames.stream()
+        .filter(group -> ((UpdateAllConfigurationsByDefault) command).configurationFilter(group,
+            ccService.getCacheConfig(group), resultModel.getConfigObject()))
+        .collect(Collectors.toSet());
   }
 }

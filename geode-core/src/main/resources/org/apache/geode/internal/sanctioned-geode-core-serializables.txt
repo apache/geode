@@ -540,7 +540,6 @@ org/apache/geode/management/internal/cli/functions/DataCommandFunction,true,1,op
 org/apache/geode/management/internal/cli/functions/DeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/DescribeDiskStoreFunction,false
 org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunction,true,-7754359270344102817
-org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunctionArgs,true,1755045410754561928,id:java/lang/String,ifExists:boolean
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunction,true,1
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunctionArgs,true,2296397958405313306,id:java/lang/String,ifExists:boolean
 org/apache/geode/management/internal/cli/functions/DestroyGatewayReceiverFunction,true,1490927519860899562

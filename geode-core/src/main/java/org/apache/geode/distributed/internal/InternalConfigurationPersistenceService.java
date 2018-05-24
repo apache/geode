@@ -271,6 +271,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
   }
 
+  public Set<String> getConfigurationGroupNames() {
+    return getConfigurationRegion().keySet();
+  }
+
   /**
    * Deletes the xml entity from the shared configuration.
    */
