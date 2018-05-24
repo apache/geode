@@ -33,7 +33,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -59,75 +58,25 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
     ResultModel result = new ResultModel();
 
     if (IndexDefinition.indexDefinitions.isEmpty()) {
-      result.addInfo().addLine(CliStrings.DEFINE_INDEX__FAILURE__MSG);
-      return result;
+      return ResultModel.createInfo(CliStrings.DEFINE_INDEX__FAILURE__MSG);
     }
 
     Set<DistributedMember> targetMembers = findMembers(groups, memberNameOrID);
     if (targetMembers.isEmpty()) {
-      result.addInfo().addLine(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      result.setStatus(Result.Status.ERROR);
-      return result;
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    // This command is very horrible because there is no definitive correlation between where
-    // indexes might have been created and where errors occurred. Thus it may be very difficult to
-    // determine what to update for the cluster configuration. We try to alleviate this problem by
-    // applying changes iteratively.
-    // It may be better to limit this command to EITHER executing on a list of members OR
-    // to execute on a SINGLE group.
-
-    // First let's do the explicitly provided members. This implies changes to the whole cluster.
-    // However this is also not always a correct assumption as the user could be creating an index
-    // on a REPLICATED region on a single member. (Indexes created on PARTITIONED regions are
-    // automatically distributed).
-
-    Result.Status status;
-    TabularResultModel table = result.addTable(CREATE_DEFINED_INDEXES_SECTION);
     ResultCollector<?, ?> rc = executeFunction(createDefinedIndexesFunction,
         IndexDefinition.indexDefinitions, targetMembers);
 
-    status = accumulateResults(table, (List<CliFunctionResult>) rc.getResult());
-    if (status == Result.Status.ERROR) {
-      result.setStatus(status);
-    } else {
+    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION,
+        (List<CliFunctionResult>) rc.getResult(), false);
+
+    if (result.getStatus() == Result.Status.OK) {
       result.setConfigObject(IndexDefinition.indexDefinitions);
     }
 
     return result;
-  }
-
-  private Result.Status accumulateResults(TabularResultModel table,
-      List<CliFunctionResult> functionResults) {
-    Result.Status resultStatus = Result.Status.OK;
-
-    for (CliFunctionResult cliFunctionResult : functionResults) {
-      if (cliFunctionResult.getResultObject() instanceof List) {
-        for (Object singleResult : (List<?>) cliFunctionResult.getResultObject()) {
-          table.accumulate("member", cliFunctionResult.getMemberIdOrName());
-          table.accumulate("status", cliFunctionResult.getStatus());
-
-          if (singleResult instanceof String) {
-            table.accumulate("message", "Created index " + singleResult.toString());
-          } else {
-            table.accumulate("message", ((Throwable) singleResult).getMessage());
-          }
-        }
-      } else if (cliFunctionResult.getResultObject() instanceof Throwable) {
-        table.accumulate("member", cliFunctionResult.getMemberIdOrName());
-        table.accumulate("status", cliFunctionResult.getStatus());
-        table.accumulate("message", ((Throwable) cliFunctionResult.getResultObject()).getMessage());
-      } else {
-        throw new IllegalStateException("create defined indexes returned function result of "
-            + cliFunctionResult.getResultObject().getClass().getSimpleName());
-      }
-
-      if (!cliFunctionResult.isSuccessful()) {
-        resultStatus = Result.Status.ERROR;
-      }
-    }
-
-    return resultStatus;
   }
 
   @Override

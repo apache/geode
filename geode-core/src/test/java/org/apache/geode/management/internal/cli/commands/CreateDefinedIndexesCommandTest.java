@@ -148,6 +148,6 @@ public class CreateDefinedIndexesCommandTest {
 
     Map<String, List<String>> table =
         result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
-    assertThat(table.get("status")).contains("OK", "OK", "OK", "OK");
+    assertThat(table.get("Status")).contains("OK", "OK", "OK", "OK");
   }
 }

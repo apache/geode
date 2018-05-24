@@ -108,7 +108,7 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
+    assertThat(results.size()).isEqualTo(2);
     Object firstResult = results.get(0);
     assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
     assertThat(((CliFunctionResult) firstResult).isSuccessful()).isTrue();
@@ -126,7 +126,7 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
+    assertThat(results.size()).isEqualTo(2);
     Object firstResult = results.get(0);
     assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
     assertThat(((CliFunctionResult) firstResult).isSuccessful()).isTrue();
@@ -148,20 +148,19 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(2);
+    assertThat(results.size()).isEqualTo(4);
 
-    CliFunctionResult firstResult = (CliFunctionResult) results.get(0);
-    assertThat(firstResult).isNotNull();
-    assertThat(firstResult.isSuccessful()).isTrue();
+    CliFunctionResult result1 = (CliFunctionResult) results.get(0);
+    assertThat(result1.isSuccessful()).isTrue();
+    assertThat(result1.getStatusMessage()).isEqualTo("Created index index2");
 
-    List<?> indexesCreated = (List<?>) firstResult.getResultObject();
-    assertThat(indexesCreated.size()).isEqualTo(1);
-    assertThat((String) indexesCreated.get(0)).isEqualTo("index2");
+    CliFunctionResult result2 = (CliFunctionResult) results.get(1);
+    assertThat(result2.isSuccessful()).isFalse();
+    assertThat(result2.getStatusMessage()).isEqualTo("Failed to create index index1: Mock Failure.");
 
-    CliFunctionResult secondResult = (CliFunctionResult) results.get(1);
-    MultiIndexCreationException mex = (MultiIndexCreationException) secondResult.getResultObject();
-    assertThat(mex.getExceptionsMap().size()).isEqualTo(2);
-    assertThat(mex.getExceptionsMap().keySet()).contains("index1", "index3");
+    CliFunctionResult result3 = (CliFunctionResult) results.get(2);
+    assertThat(result3.isSuccessful()).isFalse();
+    assertThat(result3.getStatusMessage()).isEqualTo("Failed to create index index3: Another Mock Failure.");
   }
 
   @Test
@@ -174,15 +173,11 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
-    Object firstResult = results.get(0);
-    assertThat(firstResult).isNotNull();
-    assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
-    assertThat(((CliFunctionResult) firstResult).isSuccessful()).isFalse();
-    assertThat(((CliFunctionResult) firstResult).getSerializables().length).isEqualTo(1);
-    assertThat(((CliFunctionResult) firstResult).getSerializables()[0]).isNotNull();
-    assertThat(((CliFunctionResult) firstResult).getSerializables()[0].toString())
-        .contains("RuntimeException", "Mock Exception");
+    assertThat(results.size()).isEqualTo(2);
+    CliFunctionResult firstResult = (CliFunctionResult) results.get(0);
+
+    assertThat(firstResult.isSuccessful()).isFalse();
+    assertThat(firstResult.getStatusMessage()).isEqualTo("Mock Exception");
   }
 
   @Test
@@ -207,13 +202,12 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
+    assertThat(results.size()).isEqualTo(4);
 
     Object firstIndex = results.get(0);
     assertThat(firstIndex).isNotNull();
     assertThat(firstIndex).isInstanceOf(CliFunctionResult.class);
     assertThat(((CliFunctionResult) firstIndex).isSuccessful());
-    assertThat(((List<?>) ((CliFunctionResult) firstIndex).getResultObject()).size()).isEqualTo(3);
   }
 
   private static class TestResultSender implements ResultSender {

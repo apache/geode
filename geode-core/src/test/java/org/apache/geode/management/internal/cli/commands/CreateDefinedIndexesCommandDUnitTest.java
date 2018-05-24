@@ -100,7 +100,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     Map<String, List<String>> table =
         result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
-    assertThat(table.get("status")).contains("ERROR", "ERROR", "ERROR");
+    assertThat(table.get("Status")).contains("ERROR", "ERROR", "ERROR");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -147,7 +147,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     Map<String, List<String>> table =
         result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
-    assertThat(table.get("member").size()).isEqualTo(6);
+    assertThat(table.get("Member").size()).isEqualTo(6);
     assertThat(result.getMessageFromContent())
         .contains("Changes to configuration for group 'cluster' are persisted");
 
@@ -272,7 +272,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(
         result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
-            .get("status")).contains("ERROR", "ERROR", "ERROR");
+            .get("Status")).contains("ERROR", "ERROR", "ERROR");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();

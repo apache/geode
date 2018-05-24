@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,14 +42,10 @@ public class CreateDefinedIndexesFunction implements InternalFunction<Set<Region
 
   @Override
   public void execute(FunctionContext<Set<RegionConfig.Index>> context) {
-    Cache cache;
-    String memberId = null;
-
-    CliFunctionResult result;
-    cache = context.getCache();
+    Cache cache = context.getCache();
     QueryService queryService = cache.getQueryService();
     ResultSender<CliFunctionResult> sender = context.getResultSender();
-    memberId = cache.getDistributedSystem().getDistributedMember().getId();
+    String memberId = cache.getDistributedSystem().getDistributedMember().getId();
     Set<RegionConfig.Index> indexDefinitions = context.getArguments();
 
     try {
@@ -70,13 +67,13 @@ public class CreateDefinedIndexesFunction implements InternalFunction<Set<Region
       List<Index> indexes = queryService.createDefinedIndexes();
 
       if (!indexes.isEmpty()) {
-        // Build the results. We pass back a list of indexes that were successfully created
-        List<String> processedIndexes = new ArrayList<>();
-        indexes.forEach(i -> processedIndexes.add(i.getName()));
-
-        result = new CliFunctionResult(memberId, processedIndexes);
+        for (Index index : indexes) {
+          sender.sendResult(
+              new CliFunctionResult(memberId, true, "Created index " + index.getName()));
+        }
       } else {
-        result = new CliFunctionResult(memberId, true, CliStrings.DEFINE_INDEX__FAILURE__MSG);
+        sender.sendResult(
+            new CliFunctionResult(memberId, true, CliStrings.DEFINE_INDEX__FAILURE__MSG));
       }
 
     } catch (MultiIndexCreationException multiIndexCreationException) {
@@ -87,19 +84,21 @@ public class CreateDefinedIndexesFunction implements InternalFunction<Set<Region
           indexDefinitions.stream().filter(i -> !failedIndexes.contains(i.getName()))
               .map(RegionConfig.Index::getName).collect(Collectors.toList());
 
-      if (!createdIndexes.isEmpty()) {
-        sender.sendResult(new CliFunctionResult(memberId, createdIndexes));
+      for (String index : createdIndexes) {
+        sender.sendResult(new CliFunctionResult(memberId, true, "Created index " + index));
       }
 
-      result = new CliFunctionResult(memberId, multiIndexCreationException);
-    } catch (Exception exception) {
-      String exceptionMessage = CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE,
-          exception.getClass().getName(), exception.getMessage());
-      result = new CliFunctionResult(memberId, exception, exceptionMessage);
+      for (Map.Entry<String, Exception> ex : multiIndexCreationException.getExceptionsMap()
+          .entrySet()) {
+        sender.sendResult(new CliFunctionResult(memberId, false, String
+            .format("Failed to create index %s: %s", ex.getKey(), ex.getValue().getMessage())));
+      }
+    } catch (Exception ex) {
+      sender.sendResult(new CliFunctionResult(memberId, false, ex.getMessage()));
     } finally {
       queryService.clearDefinedIndexes();
     }
 
-    sender.lastResult(result);
+    sender.lastResult(null);
   }
 }

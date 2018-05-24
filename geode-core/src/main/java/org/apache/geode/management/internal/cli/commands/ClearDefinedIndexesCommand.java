@@ -30,9 +30,6 @@ public class ClearDefinedIndexesCommand extends InternalGfshCommand {
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
   public ResultModel clearDefinedIndexes() {
     IndexDefinition.indexDefinitions.clear();
-
-    ResultModel result = new ResultModel();
-    result.addInfo().addLine(CliStrings.CLEAR_DEFINED_INDEX__SUCCESS__MSG);
-    return result;
+    return ResultModel.createInfo(CliStrings.CLEAR_DEFINED_INDEX__SUCCESS__MSG);
   }
 }
