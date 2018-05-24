@@ -177,7 +177,7 @@ public class DiskUsageTest {
 
     assertThat(diskUsage.update(0.0f, 33.2f)).isEqualTo(DiskState.CRITICAL);
     assertThat(diskUsage.getNext()).isEqualTo(DiskState.CRITICAL);
-    // assertThat(diskUsage.getPct()).isEqualTo("33.3%");
+    assertThat(diskUsage.getPct()).isEqualTo("33.3%");
     assertThat(diskUsage.getCriticalMessage())
         .isEqualTo("the file system is 33.3% full, which reached the critical threshold of 33.2%.");
   }
