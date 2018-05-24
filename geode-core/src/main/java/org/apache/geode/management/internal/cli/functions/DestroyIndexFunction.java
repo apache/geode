@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -96,17 +96,16 @@ public class DestroyIndexFunction extends CliFunction {
    * @return true if the index was found and removed/false if the index was not found.
    */
   private boolean removeIndexByName(String name, QueryService queryService) {
-    List<Index> indexes = (List<Index>) queryService.getIndexes();
     boolean removed = false;
+    Collection<Index> indexes = queryService.getIndexes();
 
-    if (indexes != null) {
-      for (Index index : indexes) {
-        if (index.getName().equals(name)) {
-          queryService.removeIndex(index);
-          removed = true;
-        }
+    for (Index index : indexes) {
+      if (index.getName().equals(name)) {
+        queryService.removeIndex(index);
+        removed = true;
       }
     }
+
     return removed;
   }
 
