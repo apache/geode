@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -266,7 +267,8 @@ public class DiskStoreMonitor {
       double use = 100.0 * (total - remaining) / total;
       recordStats(total, remaining, elapsed);
 
-      String pct = Math.round(use) + "%";
+      final DecimalFormat decimalFormat = new DecimalFormat("#.#");
+      String pct = decimalFormat.format(use) + "%";
       if (logger.isTraceEnabled(LogMarker.DISK_STORE_MONITOR_VERBOSE)) {
         logger.trace(LogMarker.DISK_STORE_MONITOR_VERBOSE,
             "Directory {} has {} bytes free out of {} ({} usage)", dir().getAbsolutePath(),
@@ -289,8 +291,9 @@ public class DiskStoreMonitor {
           criticalMessage = "the file system only has " + remaining
               + " bytes free which is below the minimum of " + minBytes + ".";
         } else {
-          criticalMessage = "the file system is " + pct
-              + " full, which exceeds the critical threshold of " + critical + "%.";
+          criticalMessage =
+              "the file system is " + pct + " full, which reached the critical threshold of "
+                  + decimalFormat.format(critical) + "%.";
         }
       }
       handleStateChange(next, pct, criticalMessage);
