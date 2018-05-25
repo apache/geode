@@ -58,6 +58,7 @@ public class DiskStoreUpgrader {
           "Requires 3 arguments : <diskStoreName> <diskDirs> <maxOpLogSize>");
     }
 
+    boolean errored = false;
     try {
       diskStoreName = prop.getProperty(CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME);
       diskDirsStr = prop.getProperty(CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS);
@@ -67,6 +68,7 @@ public class DiskStoreUpgrader {
 
       upgrade(diskStoreName, diskDirs, maxOplogSize);
     } catch (GemFireIOException e) {
+      errored = true;
       Throwable cause = e.getCause();
       if (cause instanceof IllegalStateException) {
         String message = cause.getMessage();
@@ -101,6 +103,7 @@ public class DiskStoreUpgrader {
       }
       stackTraceString = ExceptionUtils.getStackTrace(e);
     } catch (IllegalArgumentException e) {
+      errored = true;
       errorString = e.getMessage();
       stackTraceString = ExceptionUtils.getStackTrace(e);
     } finally {
@@ -110,6 +113,10 @@ public class DiskStoreUpgrader {
       if (stackTraceString != null) {
         System.err.println(STACKTRACE_START);
         System.err.println(stackTraceString);
+      }
+
+      if (errored) {
+        System.exit(1);
       }
     }
   }

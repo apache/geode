@@ -27,29 +27,29 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class DiskStoreValidater {
   public static void main(String[] args) {
-    if (args.length < 2 || args.length > 2) {
-      throw new IllegalArgumentException("Requires only 2  arguments : <DiskStore> <Dirs>");
+    try {
+      if (args.length < 2 || args.length > 2) {
+        throw new IllegalArgumentException("Requires only 2  arguments : <DiskStore> <Dirs>");
+      }
+      validate(args[0], args[1]);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);
     }
-    validate((String) args[0], (String) args[1]);
   }
 
-  static void validate(String diskStoreName, String diskDirs) {
-    try {
-      File[] dirs = null;
-      String[] dirList = null;
-      dirList = diskDirs.split(";");
-      if (dirList != null && dirList.length > 0) {
-        dirs = new File[dirList.length];
-        for (int i = 0; i < dirList.length; ++i) {
-          dirs[i] = new File(dirList[i]);
-        }
-      } else {
-        System.out.println(CliStrings.VALIDATE_DISK_STORE__MSG__NO_DIRS);
+  static void validate(String diskStoreName, String diskDirs) throws Exception {
+    File[] dirs = null;
+    String[] dirList = null;
+    dirList = diskDirs.split(";");
+    if (dirList != null && dirList.length > 0) {
+      dirs = new File[dirList.length];
+      for (int i = 0; i < dirList.length; ++i) {
+        dirs[i] = new File(dirList[i]);
       }
-      DiskStoreImpl.validate(diskStoreName, dirs);
-    } catch (Exception e) {
-      System.out.println(CliStrings.format(CliStrings.VALIDATE_DISK_STORE__MSG__ERROR,
-          diskStoreName, e.getMessage()));
+    } else {
+      System.out.println(CliStrings.VALIDATE_DISK_STORE__MSG__NO_DIRS);
     }
+    DiskStoreImpl.validate(diskStoreName, dirs);
   }
 }

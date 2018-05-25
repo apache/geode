@@ -36,11 +36,10 @@ import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.messages.CompactRequest;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -50,18 +49,18 @@ public class CompactDiskStoreCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DISK)
-  public Result compactDiskStore(
+  public ResultModel compactDiskStore(
       @CliOption(key = CliStrings.COMPACT_DISK_STORE__NAME, mandatory = true,
           optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.COMPACT_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           help = CliStrings.COMPACT_DISK_STORE__GROUP__HELP) String[] groups) {
-    Result result;
+    ResultModel result = new ResultModel();
 
     try {
       // disk store exists validation
       if (!diskStoreExists(diskStoreName)) {
-        result = ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             CliStrings.format(CliStrings.COMPACT_DISK_STORE__DISKSTORE_0_DOES_NOT_EXIST,
                 new Object[] {diskStoreName}));
       } else {
@@ -97,7 +96,7 @@ public class CompactDiskStoreCommand extends InternalGfshCommand {
         // allMembers should not be empty when groups are not specified - it'll
         // have at least one member
         if (allMembers.isEmpty()) {
-          result = ResultBuilder.createUserErrorResult(
+          return ResultModel.createError(
               CliStrings.format(CliStrings.COMPACT_DISK_STORE__NO_MEMBERS_FOUND_IN_SPECIFED_GROUP,
                   new Object[] {Arrays.toString(groups)}));
         } else {
@@ -130,34 +129,30 @@ public class CompactDiskStoreCommand extends InternalGfshCommand {
 
           // If compaction happened at all, then prepare the summary
           if (overallCompactInfo != null && !overallCompactInfo.isEmpty()) {
-            CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-            CompositeResultData.SectionResultData section;
-
             Set<Map.Entry<DistributedMember, PersistentID>> entries = overallCompactInfo.entrySet();
 
             for (Map.Entry<DistributedMember, PersistentID> entry : entries) {
               String memberId = entry.getKey().getName();
-              section = compositeResultData.addSection(memberId);
-              section.setHeader("On Member: " + memberId);
+              DataResultModel summary = result.addData(memberId);
+              summary.setHeader("On Member: " + memberId);
 
               PersistentID persistentID = entry.getValue();
               if (persistentID != null) {
-                section.addData("UUID", persistentID.getUUID());
-                section.addData("Host", persistentID.getHost().getHostName());
-                section.addData("Directory", persistentID.getDirectory());
+                summary.addData("UUID", persistentID.getUUID());
+                summary.addData("Host", persistentID.getHost().getHostName());
+                summary.addData("Directory", persistentID.getDirectory());
               }
             }
-            compositeResultData.setHeader("Compacted " + diskStoreName + groupInfo);
-            result = ResultBuilder.buildResult(compositeResultData);
+            result.addInfo().addLine("Compacted " + diskStoreName + groupInfo);
           } else {
-            result = ResultBuilder.createInfoResult(
+            return ResultModel.createInfo(
                 CliStrings.COMPACT_DISK_STORE__COMPACTION_ATTEMPTED_BUT_NOTHING_TO_COMPACT);
           }
         } // all members' if
       } // disk store exists' if
     } catch (RuntimeException e) {
       LogWrapper.getInstance(getCache()).info(e.getMessage(), e);
-      result = ResultBuilder.createGemFireErrorResult(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.COMPACT_DISK_STORE__ERROR_WHILE_COMPACTING_REASON_0,
               new Object[] {e.getMessage()}));
     }

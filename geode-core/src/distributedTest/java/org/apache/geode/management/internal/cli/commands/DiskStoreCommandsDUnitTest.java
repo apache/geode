@@ -32,11 +32,14 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DiskStoreType;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -139,7 +142,7 @@ public class DiskStoreCommandsDUnitTest {
   }
 
   @Test
-  public void testDescribeOfflineDiskStoreCommand() throws Exception {
+  public void testValidateOfflineDiskStoreCommand() throws Exception {
     MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
@@ -198,9 +201,9 @@ public class DiskStoreCommandsDUnitTest {
     boolean result = jmxManager.invoke(() -> {
       InternalConfigurationPersistenceService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getConfigurationPersistenceService();
-      String xmlFromConfig;
-      xmlFromConfig = sharedConfig.getConfiguration(GROUP).getCacheXmlContent();
-      return xmlFromConfig.contains(DISKSTORE);
+      List<DiskStoreType> diskStores = sharedConfig.getCacheConfig(GROUP).getDiskStores();
+
+      return diskStores.size() == 1 && DISKSTORE.equals(diskStores.get(0).getName());
     });
 
     return result;
@@ -282,6 +285,14 @@ public class DiskStoreCommandsDUnitTest {
 
     gfsh.executeAndAssertThat(String.format("destroy disk-store --name=%s --if-exists", DISKSTORE))
         .statusIsSuccess();
+
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService cc =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig config = cc.getCacheConfig("cluster");
+      assertThat(config.getDiskStores().size()).isEqualTo(0);
+    });
+
     gfsh.executeAndAssertThat(String.format("destroy disk-store --name=%s --if-exists", DISKSTORE))
         .statusIsSuccess();
   }
@@ -318,5 +329,66 @@ public class DiskStoreCommandsDUnitTest {
         "Directory");
     assertThat(cmdResult.getMapFromSection("server-2").keySet()).contains("UUID", "Host",
         "Directory");
+  }
+
+  @Test
+  public void testDescribeDiskStoreCommand() throws Exception {
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+
+    gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+
+    createDiskStoreAndRegion(server1, 1);
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region r = cache.getRegion(REGION_1);
+      r.put("A", "B");
+    });
+
+    CommandResult result = gfsh.executeCommand(
+        String.format("describe disk-store --member=%s --name=%s", server1.getName(), DISKSTORE));
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    Map<String, String> data =
+        result.getMapFromSection(DescribeDiskStoreCommand.DISK_STORE_SECTION);
+    assertThat(data.keySet()).contains("Disk Store Name", "Member ID", "Member Name",
+        "Allow Force Compaction", "Auto Compaction", "Compaction Threshold", "Max Oplog Size",
+        "Queue Size", "Time Interval", "Write Buffer Size", "Disk Usage Warning Percentage",
+        "Disk Usage Critical Percentage", "PDX Serialization Meta-Data Stored");
+
+    Map<String, List<String>> directories =
+        result.getMapFromTableContent(DescribeDiskStoreCommand.DISK_DIR_SECTION);
+    assertThat(directories.get("Disk Directory").size()).isEqualTo(1);
+
+    Map<String, List<String>> regions =
+        result.getMapFromTableContent(DescribeDiskStoreCommand.REGION_SECTION);
+    assertThat(regions.get("Region Path").size()).isEqualTo(1);
+  }
+
+  @Test
+  public void testUpgradeOfflineDiskStoreCommandFailsAsExpected() throws Exception {
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+
+    gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+
+    createDiskStoreAndRegion(server1, 1);
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region r = cache.getRegion(REGION_1);
+      r.put("A", "B");
+    });
+
+    // Should not be able to do this on a running system
+    String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
+    gfsh.executeAndAssertThat(
+        String.format("upgrade offline-disk-store --name=%s --disk-dirs=%s", DISKSTORE, diskDirs))
+        .statusIsError().containsOutput("The disk is currently being used by another process");
+
+    server1.stopVM(false);
+
+    gfsh.executeAndAssertThat(
+        String.format("upgrade offline-disk-store --name=%s --disk-dirs=%s", DISKSTORE, diskDirs))
+        .statusIsError().containsOutput("This disk store is already at version");
   }
 }
