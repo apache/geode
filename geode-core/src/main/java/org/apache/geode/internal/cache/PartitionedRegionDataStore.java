@@ -265,6 +265,41 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     return numPrimaries.get();
   }
 
+  public boolean isPartitionedRegionReady(PartitionedRegion partitionedRegion, final int bucketId) {
+    List<PartitionedRegion> colocatedWithList = getColocatedChildRegions(partitionedRegion);
+    if (colocatedWithList.size() == 0) {
+      return partitionedRegion.isInitialized();
+    }
+    Iterator itr = colocatedWithList.iterator();
+    return areAllColocatedPartitionedRegionsReady(bucketId, itr);
+  }
+
+  private boolean areAllColocatedPartitionedRegionsReady(int bucketId, Iterator itr) {
+    while (itr.hasNext()) {
+      PartitionedRegion colocatedChildRegion = (PartitionedRegion) itr.next();
+      boolean success = isColocatedPartitionedRegionInitialized(colocatedChildRegion, bucketId);
+      if (!success) {
+        return success;
+      }
+    }
+    return true;
+  }
+
+  private boolean isColocatedPartitionedRegionInitialized(PartitionedRegion partitionedRegion,
+      final int bucketId) {
+    if (!partitionedRegion.isInitialized()
+        || !(partitionedRegion.getDataStore().isColocationComplete(bucketId))) {
+      return false;
+    }
+    List<PartitionedRegion> colocatedWithList = getColocatedChildRegions(partitionedRegion);
+    Iterator itr = colocatedWithList.iterator();
+    return areAllColocatedPartitionedRegionsReady(bucketId, itr);
+  }
+
+  List<PartitionedRegion> getColocatedChildRegions(PartitionedRegion partitionedRegion) {
+    return ColocationHelper.getColocatedChildRegions(partitionedRegion);
+  }
+
   /**
    * Try to grab buckets for all the colocated regions /* In case we can't grab buckets there is no
    * going back
@@ -621,7 +656,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     return true;
   }
 
-  private boolean isColocationComplete(int bucketId) {
+  boolean isColocationComplete(int bucketId) {
 
     if (!ColocationHelper.isColocationComplete(this.partitionedRegion)) {
       ProxyBucketRegion pb =

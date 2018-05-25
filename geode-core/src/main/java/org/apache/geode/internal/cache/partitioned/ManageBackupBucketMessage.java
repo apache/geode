@@ -64,12 +64,16 @@ public class ManageBackupBucketMessage extends PartitionMessage {
 
   private boolean forceCreation = true;
 
+  private enum ReplyType {
+    INITIALIZING, SUCCESS, FAIL;
+  }
+
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
    */
   public ManageBackupBucketMessage() {}
 
-  private ManageBackupBucketMessage(InternalDistributedMember recipient, int regionId,
+  ManageBackupBucketMessage(InternalDistributedMember recipient, int regionId,
       ReplyProcessor21 processor, int bucketId, boolean isRebalance, boolean replaceOfflineData,
       InternalDistributedMember moveSource, boolean forceCreation) {
     super(recipient, regionId, processor);
@@ -128,34 +132,51 @@ public class ManageBackupBucketMessage extends PartitionMessage {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
-      long startTime) {
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
+      PartitionedRegion partitionedRegion, long startTime) {
     if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
       logger.trace(LogMarker.DM_VERBOSE, "ManageBucketMessage operateOnRegion: {}",
-          r.getFullPath());
+          partitionedRegion.getFullPath());
     }
 
-    // This is to ensure that initialization is complete before bucket creation request is
-    // serviced. BUGFIX for 35888
-    if (!r.isInitialized()) {
+    partitionedRegion.checkReadiness(); // Don't allow closed PartitionedRegions that have
+                                        // datastores to host buckets
+    PartitionedRegionDataStore prDs = partitionedRegion.getDataStore();
+
+    // This is to ensure that initialization is complete for all colocated regions
+    // before bucket creation request is serviced. BUGFIX for 35888
+    // GEODE-5255
+    boolean isReady = prDs.isPartitionedRegionReady(partitionedRegion, bucketId);
+    if (!isReady) {
       // This VM is NOT ready to manage a new bucket, refuse operation
-      ManageBackupBucketReplyMessage.sendStillInitializing(getSender(), getProcessorId(), dm);
+      sendManageBackupBucketReplyMessage(dm, partitionedRegion, startTime, ReplyType.INITIALIZING);
       return false;
     }
 
-    r.checkReadiness(); // Don't allow closed PartitionedRegions that have datastores to host
-                        // buckets
-    PartitionedRegionDataStore prDs = r.getDataStore();
     boolean managingBucket = prDs.grabBucket(this.bucketId, this.moveSource, this.forceCreation,
         replaceOfflineData, this.isRebalance, null, false) == CreateBucketResult.CREATED;
 
-    r.getPrStats().endPartitionMessagesProcessing(startTime);
-    if (managingBucket) {
-      ManageBackupBucketReplyMessage.sendAcceptance(getSender(), getProcessorId(), dm);
-    } else {
-      ManageBackupBucketReplyMessage.sendRefusal(getSender(), getProcessorId(), dm);
-    }
+    sendManageBackupBucketReplyMessage(dm, partitionedRegion, startTime,
+        managingBucket ? ReplyType.SUCCESS : ReplyType.FAIL);
     return false;
+  }
+
+  private void sendManageBackupBucketReplyMessage(ClusterDistributionManager dm,
+      PartitionedRegion partitionedRegion, long startTime, ReplyType type) {
+    partitionedRegion.getPrStats().endPartitionMessagesProcessing(startTime);
+    switch (type) {
+      case INITIALIZING:
+        ManageBackupBucketReplyMessage.sendStillInitializing(getSender(), getProcessorId(), dm);
+        break;
+      case FAIL:
+        ManageBackupBucketReplyMessage.sendRefusal(getSender(), getProcessorId(), dm);
+        break;
+      case SUCCESS:
+        ManageBackupBucketReplyMessage.sendAcceptance(getSender(), getProcessorId(), dm);
+        break;
+      default:
+        throw new RuntimeException("unreachable");
+    }
   }
 
   public int getDSFID() {
@@ -219,6 +240,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
    */
   public static class ManageBackupBucketReplyMessage extends ReplyMessage {
 
+
     protected boolean acceptedBucket;
 
     /** true if the vm refused because it was still in initialization */
@@ -237,6 +259,14 @@ public class ManageBackupBucketMessage extends PartitionMessage {
       setProcessorId(processorId);
       this.acceptedBucket = accept;
       this.notYetInitialized = initializing;
+    }
+
+    boolean isAcceptedBucket() {
+      return acceptedBucket;
+    }
+
+    boolean isNotYetInitialized() {
+      return notYetInitialized;
     }
 
     /**
