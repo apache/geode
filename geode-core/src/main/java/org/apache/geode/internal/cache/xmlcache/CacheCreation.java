@@ -1933,7 +1933,8 @@ public class CacheCreation implements InternalCache {
 
     @Override
     public Collection<Index> getIndexes(Region<?, ?> region) {
-      return this.indexes.get(region.getFullPath());
+      Collection<Index> indexes = this.indexes.get(region.getFullPath());
+      return (indexes != null) ? indexes : Collections.emptyList();
     }
 
     @Override
