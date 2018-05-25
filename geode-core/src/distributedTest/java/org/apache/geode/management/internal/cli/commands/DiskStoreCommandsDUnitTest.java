@@ -246,7 +246,6 @@ public class DiskStoreCommandsDUnitTest {
     assertThat(diskStoreExistsInClusterConfig(locator)).isFalse();
   }
 
-
   @Test
   public void testBackupDiskStore() throws Exception {
     Properties props = new Properties();
@@ -390,5 +389,27 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat(
         String.format("upgrade offline-disk-store --name=%s --disk-dirs=%s", DISKSTORE, diskDirs))
         .statusIsError().containsOutput("This disk store is already at version");
+  }
+
+  @Test
+  public void revokingUnknownDiskStoreShowsErrorCorrectly() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("groups", GROUP);
+
+    MemberVM locator = rule.startLocatorVM(0);
+    MemberVM server1 = rule.startServerVM(1, props, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+
+    createDiskStoreAndRegion(locator, 1);
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region r = cache.getRegion(REGION_1);
+      r.put("A", "B");
+    });
+
+    gfsh.executeAndAssertThat("revoke missing-disk-store --id=unknown-diskstore")
+        .statusIsError().containsOutput("Unable to find missing disk store to revoke");
   }
 }
