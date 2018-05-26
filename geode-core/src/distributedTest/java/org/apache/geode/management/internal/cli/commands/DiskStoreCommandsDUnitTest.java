@@ -384,7 +384,7 @@ public class DiskStoreCommandsDUnitTest {
         String.format("upgrade offline-disk-store --name=%s --disk-dirs=%s", DISKSTORE, diskDirs))
         .statusIsError().containsOutput("The disk is currently being used by another process");
 
-    server1.stopVM(false);
+    server1.stop(false);
 
     gfsh.executeAndAssertThat(
         String.format("upgrade offline-disk-store --name=%s --disk-dirs=%s", DISKSTORE, diskDirs))
@@ -400,14 +400,6 @@ public class DiskStoreCommandsDUnitTest {
     MemberVM server1 = rule.startServerVM(1, props, locator.getPort());
 
     gfsh.connectAndVerify(locator);
-
-    createDiskStoreAndRegion(locator, 1);
-
-    server1.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      Region r = cache.getRegion(REGION_1);
-      r.put("A", "B");
-    });
 
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=unknown-diskstore")
         .statusIsError().containsOutput("Unable to find missing disk store to revoke");

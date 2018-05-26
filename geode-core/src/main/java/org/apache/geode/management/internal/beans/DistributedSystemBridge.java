@@ -877,6 +877,11 @@ public class DistributedSystemBridge {
   public PersistentMemberDetails[] listMissingDiskStores() {
     PersistentMemberDetails[] missingDiskStores = null;
 
+    // No need to try and send anything if we're a Loner
+    if (dm.isLoner()) {
+      return missingDiskStores;
+    }
+
     Set<PersistentID> persistentMemberSet = MissingPersistentIDsRequest.send(dm);
     if (persistentMemberSet != null && persistentMemberSet.size() > 0) {
       missingDiskStores = new PersistentMemberDetails[persistentMemberSet.size()];
