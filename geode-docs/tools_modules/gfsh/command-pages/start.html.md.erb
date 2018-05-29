@@ -605,8 +605,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-server-bind-address</span></td>
-<td>The IP address to which the server will be bound. Set this option in a multi-homed server environment to allow server communications on a distinct address. Setting a value of the empty string (&quot;&quot;) binds to all addresses.</td>
-<td>binds to all addresses</td>
+<td>Overrides the <code>bind-address</code> on which this server will listen for client connections. Set this option in a multi-homed server environment to distinguish communications from clients. Setting a value of the empty string (&quot;&quot;) uses the value of <code>bind-address</code>.</td>
+<td>value of <code>bind-address</code></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-server-port</span></td>
@@ -692,7 +692,7 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-hostname-for-clients</span></td>
-<td>Sets the IP address or host name that this server is to listen on for client connections. Set this value when clients use a different address to connect with the server than the <code>bind-address</code>, as it would in a multi-homed environment. Not specifying this option or setting this option to the empty string (&quot;&quot;) causes the <code>bind-address</code> to be given to clients.</td>
+<td>Sets the IP address or host name that a locator will provide to clients. Clients use the address to connect to a server. Set this value when clients use a different address to connect with the server than the <code>bind-address</code>, as those clients might with servers in a private cloud or multi-homed environment. Not specifying this option or setting this option to the empty string (&quot;&quot;) causes the <code>bind-address</code> to be given to clients.</td>
 <td> </td>
 </tr>
 <tr class="even">
