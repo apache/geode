@@ -50,7 +50,9 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.PoolCancelledException;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
@@ -324,7 +326,7 @@ public class PoolImpl implements InternalPool {
             result.setDaemon(true);
             return result;
           }
-        });
+        }, getThreadMonitorObj());
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
         .setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
@@ -1615,5 +1617,17 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getSubscriptionTimeoutMultiplier() {
     return subscriptionTimeoutMultiplier;
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+    if (ds == null)
+      return null;
+    DistributionManager distributionManager = ds.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

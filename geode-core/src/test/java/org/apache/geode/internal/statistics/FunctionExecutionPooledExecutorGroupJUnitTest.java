@@ -38,7 +38,7 @@ public class FunctionExecutionPooledExecutorGroupJUnitTest {
   @Test
   public void testVerifyGroupName() {
     AbstractExecutorGroup functionExecutionPooledExecutorGroup =
-        new FunctionExecutionPooledExecutorGroup();
+        new FunctionExecutionPooledExecutorGroup(null);
     assertTrue(functionExecutionPooledExecutorGroup.getGrpName().equals(GRPNAME));
   }
 }

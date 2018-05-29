@@ -42,17 +42,20 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  */
 public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
   protected final PoolStatHelper stats;
+  private final ThreadMonitoring threadMonitoring;
 
   /**
    * Create a new pool
    **/
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int maxPoolSize,
-      PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh) {
+      PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh,
+      ThreadMonitoring tMonitoring) {
     super(getCorePoolSize(maxPoolSize), maxPoolSize, msTimeout, TimeUnit.MILLISECONDS, q, tf, reh);
     // if (getCorePoolSize() != 0 && getCorePoolSize() == getMaximumPoolSize()) {
     // allowCoreThreadTimeOut(true); // deadcoded for 1.5
     // }
     this.stats = stats;
+    this.threadMonitoring = tMonitoring;
   }
 
   /**
@@ -121,8 +124,9 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
 
 
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int maxPoolSize,
-      PoolStatHelper stats, ThreadFactory tf, int msTimeout, final boolean forFnExec) {
-    this(initQ(q), maxPoolSize, stats, tf, msTimeout, initREH(q, forFnExec));
+      PoolStatHelper stats, ThreadFactory tf, int msTimeout, final boolean forFnExec,
+      ThreadMonitoring tMonitoring) {
+    this(initQ(q), maxPoolSize, stats, tf, msTimeout, initREH(q, forFnExec), tMonitoring);
     final int retryFor =
         Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RETRY_INTERVAL", 5000).intValue();
     if (!(q instanceof SynchronousQueue)) {
@@ -187,7 +191,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
    * Sets timeout to IDLE_THREAD_TIMEOUT
    */
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize,
-      PoolStatHelper stats, ThreadFactory tf) {
+      PoolStatHelper stats, ThreadFactory tf, ThreadMonitoring tMonitoring) {
     /**
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
@@ -195,11 +199,11 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
      */
     this(q, poolSize, stats, tf,
         Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "IDLE_THREAD_TIMEOUT", 30000 * 60),
-        false /* not for fn exec */);
+        false /* not for fn exec */, tMonitoring);
   }
 
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize,
-      PoolStatHelper stats, ThreadFactory tf, boolean forFnExec) {
+      PoolStatHelper stats, ThreadFactory tf, boolean forFnExec, ThreadMonitoring tMonitoring) {
     /**
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
@@ -207,15 +211,15 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
      */
     this(q, poolSize, stats, tf,
         Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "IDLE_THREAD_TIMEOUT", 30000 * 60),
-        forFnExec);
+        forFnExec, tMonitoring);
   }
 
   /**
    * Default timeout with no stats.
    */
-  public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize,
-      ThreadFactory tf) {
-    this(q, poolSize, null/* no stats */, tf);
+  public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize, ThreadFactory tf,
+      ThreadMonitoring tMonitoring) {
+    this(q, poolSize, null/* no stats */, tf, tMonitoring);
   }
 
   @Override
@@ -223,8 +227,9 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.startJob();
     }
-    ThreadMonitoringUtils.getThreadMonitorObj()
-        .startMonitor(ThreadMonitoring.Mode.FunctionExecutor);
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadMonitoring.Mode.FunctionExecutor);
+    }
   }
 
   @Override
@@ -232,7 +237,9 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.endJob();
     }
-    ThreadMonitoringUtils.getThreadMonitorObj().endMonitor();
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
+    }
   }
 
   private static int getCorePoolSize(int maxSize) {

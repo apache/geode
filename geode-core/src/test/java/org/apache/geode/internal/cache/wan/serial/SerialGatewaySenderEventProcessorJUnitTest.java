@@ -25,6 +25,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -43,7 +46,8 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
   @Before
   public void setUp() throws Exception {
     this.sender = mock(AbstractGatewaySender.class);
-    this.processor = new TestSerialGatewaySenderEventProcessor(this.sender, "ny");
+    this.processor =
+        new TestSerialGatewaySenderEventProcessor(this.sender, "ny", getThreadMonitorObj());
   }
 
   @Test
@@ -110,5 +114,18 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     when(gsei.getEventId()).thenReturn(id);
     this.processor.basicHandlePrimaryEvent(gsei);
     return id;
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

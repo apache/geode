@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.statistics;
 
+import org.apache.geode.distributed.ThreadMonitoring;
+
 public class FunctionExecutionPooledExecutorGroup extends AbstractExecutorGroup {
 
   public static final String GRPNAME = "FunctionExecutionPooledExecutor";
 
 
-  public FunctionExecutionPooledExecutorGroup() {
+  public FunctionExecutionPooledExecutorGroup(ThreadMonitoring tMonitoring) {
+    super(tMonitoring);
     super.setGrpName(GRPNAME);
   }
 

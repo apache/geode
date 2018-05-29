@@ -32,8 +32,6 @@ import org.apache.geode.internal.statistics.AbstractExecutorGroup;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Contains simple tests for the {@link
- * org.apache.geode.distributed.internal.ThreadMonitoringUtils}.
  *
  * @since Geode 1.5
  */
@@ -71,44 +69,49 @@ public class ThreadMonitoringIntegrationTest {
   @Test
   public void testThreadMonitoringWorkflow() {
 
-    DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
-    if (distributionConfigImpl.getThreadMonitorEnabled()) {
+    ThreadMonitoring threadMonitoring = null;
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem != null) {
+      DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+      if (distributionManager != null) {
+        threadMonitoring = distributionManager.getThreadMonitoring();
+      }
+    }
 
-      ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj()).getTimer().cancel();
+    DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+    if (distributionConfigImpl.getThreadMonitorEnabled() && threadMonitoring != null) {
+
+      ((ThreadMonitoringImpl) threadMonitoring).getTimer().cancel();
 
       // to initiate ResourceManagerStats
-      ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().run();
+      ((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess().run();
 
-      assertTrue(ThreadMonitoringUtils.getThreadMonitorObj() instanceof ThreadMonitoringImpl);
-      assertFalse(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().mapValidation());
-      ThreadMonitoringUtils.getThreadMonitorObj()
-          .startMonitor(ThreadMonitoring.Mode.FunctionExecutor);
-      assertFalse(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().mapValidation());
-      AbstractExecutorGroup abstractExecutorGroup =
-          ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj()).getMonitorMap()
-              .get(Thread.currentThread().getId());
+      assertTrue(threadMonitoring instanceof ThreadMonitoringImpl);
+      assertFalse(
+          ((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess().mapValidation());
+      threadMonitoring.startMonitor(ThreadMonitoring.Mode.FunctionExecutor);
+      assertFalse(
+          ((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess().mapValidation());
+      AbstractExecutorGroup abstractExecutorGroup = ((ThreadMonitoringImpl) threadMonitoring)
+          .getMonitorMap().get(Thread.currentThread().getId());
       abstractExecutorGroup.setStartTime(abstractExecutorGroup.getStartTime()
           - distributionConfigImpl.getThreadMonitorTimeLimit() - 1);
-      assertTrue(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().mapValidation());
-      assertTrue(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().getResourceManagerStats().getIsThreadStuck() == 1);
-      ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj()).getMonitorMap()
+      assertTrue(
+          ((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess().mapValidation());
+      assertTrue(((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess()
+          .getResourceManagerStats().getIsThreadStuck() == 1);
+      ((ThreadMonitoringImpl) threadMonitoring).getMonitorMap()
           .put(abstractExecutorGroup.getThreadID() + 1, abstractExecutorGroup);
-      ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj()).getMonitorMap()
+      ((ThreadMonitoringImpl) threadMonitoring).getMonitorMap()
           .put(abstractExecutorGroup.getThreadID() + 2, abstractExecutorGroup);
-      ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().mapValidation();
-      assertTrue(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().getResourceManagerStats().getIsThreadStuck() == 3);
-      ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj()).endMonitor();
-      ((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().mapValidation();
-      assertTrue(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-          .getThreadMonitoringProcess().getResourceManagerStats().getIsThreadStuck() == 2);
+      ((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess().mapValidation();
+      assertTrue(((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess()
+          .getResourceManagerStats().getIsThreadStuck() == 3);
+      ((ThreadMonitoringImpl) threadMonitoring).endMonitor();
+      ((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess().mapValidation();
+      assertTrue(((ThreadMonitoringImpl) threadMonitoring).getThreadMonitoringProcess()
+          .getResourceManagerStats().getIsThreadStuck() == 2);
 
     }
   }

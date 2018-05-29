@@ -69,6 +69,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -622,7 +623,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     };
     return new PooledExecutorWithDMStats(new SynchronousQueue(),
         CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(),
-        clientQueueThreadFactory, 60000);
+        clientQueueThreadFactory, 60000, getThreadMonitorObj());
   }
 
   private ThreadPoolExecutor initializeServerConnectionThreadPool() throws IOException {
@@ -655,7 +656,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     try {
       if (isSelector()) {
         return new PooledExecutorWithDMStats(new LinkedBlockingQueue(), this.maxThreads,
-            getStats().getCnxPoolHelper(), socketThreadFactory, Integer.MAX_VALUE);
+            getStats().getCnxPoolHelper(), socketThreadFactory, Integer.MAX_VALUE,
+            getThreadMonitorObj());
       } else {
         return new ThreadPoolExecutor(MINIMUM_MAX_CONNECTIONS, this.maxConnections, 0L,
             TimeUnit.MILLISECONDS, new SynchronousQueue(), socketThreadFactory);
@@ -664,6 +666,19 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       this.stats.close();
       this.serverSock.close();
       throw poolInitException;
+    }
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
     }
   }
 

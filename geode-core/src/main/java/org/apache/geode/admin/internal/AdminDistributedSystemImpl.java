@@ -71,7 +71,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Banner;
@@ -928,7 +927,6 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
           }
           this.gfManagerAgent.removeJoinLeaveListener(this);
           this.gfManagerAgent.disconnect();
-          ThreadMonitoringUtils.getThreadMonitorObj().close();
         }
         this.gfManagerAgent = null;
         if (this.config instanceof DistributedSystemConfigImpl) {

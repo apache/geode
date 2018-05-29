@@ -43,8 +43,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -161,7 +163,7 @@ public class PRHARedundancyProvider {
           public void taskDropped() {
             InternalResourceManager.getResourceObserver().recoveryConflated(region);
           }
-        });
+        }, getThreadMonitorObj());
   }
 
   /**
@@ -2307,5 +2309,18 @@ public class PRHARedundancyProvider {
 
   public CountDownLatch getAllBucketsRecoveredFromDiskLatch() {
     return allBucketsRecoveredFromDisk;
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

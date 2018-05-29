@@ -32,6 +32,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -51,7 +54,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testFuture() throws InterruptedException, ExecutionException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(5, 60, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     final AtomicBoolean done = new AtomicBoolean();
     Future f = ex.submit(new Runnable() {
       public void run() {
@@ -89,7 +92,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   public void testConcurrentExecutionAndExpiration()
       throws InterruptedException, ExecutionException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
 
     Runnable waitForABit = new Runnable() {
       public void run() {
@@ -124,7 +127,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testConcurrentRepeatedTasks() throws InterruptedException, ExecutionException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
 
     final AtomicInteger counter = new AtomicInteger();
     Runnable waitForABit = new Runnable() {
@@ -168,7 +171,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testDelayedExcecution() throws InterruptedException, ExecutionException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     long start = System.nanoTime();
     Future f = ex.schedule(new Runnable() {
       public void run() {}
@@ -182,7 +185,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testRepeatedExecution() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
 
     final AtomicInteger counter = new AtomicInteger();
     Runnable run = new Runnable() {
@@ -205,7 +208,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testShutdown() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     ex.schedule(new Runnable() {
       public void run() {
         try {
@@ -226,7 +229,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testShutdown2() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     ex.submit(new Runnable() {
       public void run() {
         try {
@@ -249,7 +252,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testShutdownNow() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     ex.schedule(new Runnable() {
       public void run() {
         try {
@@ -271,7 +274,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testShutdownNow2() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     ex.submit(new Runnable() {
       public void run() {
         try {
@@ -295,7 +298,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testShutdownDelayedTasks() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     ex.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     ex.schedule(new Runnable() {
       public void run() {
@@ -317,7 +320,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
   @Test
   public void testAllWorkersActive() throws InterruptedException {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(6, 1, TimeUnit.SECONDS,
-        Executors.defaultThreadFactory());
+        Executors.defaultThreadFactory(), getThreadMonitorObj());
     final AtomicInteger counter = new AtomicInteger();
 
     long start = System.nanoTime();
@@ -341,5 +344,18 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
 
     assertEquals(100, counter.get());
     assertEquals(6, ex.getMaximumPoolSize());
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

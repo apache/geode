@@ -16,22 +16,12 @@ package org.apache.geode.distributed.internal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.distributed.ThreadMonitoring.Mode;
-import org.apache.geode.internal.statistics.AbstractExecutorGroup;
-import org.apache.geode.internal.statistics.PooledExecutorGroup;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -41,9 +31,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @since Geode 1.5
  */
 @Category({UnitTest.class})
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest(ThreadMonitoringUtils.class)
 public class ThreadMonitoringImplJUnitTest {
 
   private ThreadMonitoringImpl threadMonitoringImpl;
@@ -54,45 +41,32 @@ public class ThreadMonitoringImplJUnitTest {
   }
 
   /**
-   * Tests that indeed thread is considered stuck when it should
+   * Tests "start monitor" modes
    */
   @Test
-  public void testThreadIsStuck() {
+  public void testStartMonitor() {
 
-    final Properties nonDefault = new Properties();
-    final DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
-    final long threadID = 123456;
+    assertTrue(threadMonitoringImpl.startMonitor(Mode.FunctionExecutor));
+    assertTrue(threadMonitoringImpl.startMonitor(Mode.PooledExecutor));
+    assertTrue(threadMonitoringImpl.startMonitor(Mode.SerialQueuedExecutor));
+    assertTrue(threadMonitoringImpl.startMonitor(Mode.OneTaskOnlyExecutor));
+    assertTrue(threadMonitoringImpl.startMonitor(Mode.ScheduledThreadExecutor));
+    assertTrue(threadMonitoringImpl.startMonitor(Mode.AGSExecutor));
 
-    mockStatic(ThreadMonitoringUtils.class);
-    when(ThreadMonitoringUtils.getThreadMonitorObj()).thenReturn(threadMonitoringImpl);
-
-    int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
-
-    AbstractExecutorGroup absExtgroup = new PooledExecutorGroup();
-    absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
-
-    ThreadMonitoringUtils.getThreadMonitorObj().getMonitorMap().put(threadID, absExtgroup);
-
-    assertTrue(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-        .getThreadMonitoringProcess().mapValidation());
-
-    ThreadMonitoringUtils.getThreadMonitorObj().close();
+    threadMonitoringImpl.close();
   }
 
   /**
-   * Tests that indeed thread is NOT considered stuck when it shouldn't
+   * Tests closure
    */
   @Test
-  public void testThreadIsNotStuck() {
+  public void testClosure() {
 
-    mockStatic(ThreadMonitoringUtils.class);
-    when(ThreadMonitoringUtils.getThreadMonitorObj()).thenReturn(threadMonitoringImpl);
+    assertTrue(threadMonitoringImpl.getThreadMonitoringProcess() != null);
+    assertFalse(threadMonitoringImpl.isClosed());
+    threadMonitoringImpl.close();
+    assertTrue(threadMonitoringImpl.isClosed());
+    assertFalse(threadMonitoringImpl.getThreadMonitoringProcess() != null);
 
-    ThreadMonitoringUtils.getThreadMonitorObj().startMonitor(Mode.PooledExecutor);
-
-    assertFalse(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-        .getThreadMonitoringProcess().mapValidation());
-
-    ThreadMonitoringUtils.getThreadMonitorObj().close();
   }
 }

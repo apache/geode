@@ -22,12 +22,13 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 import org.apache.geode.internal.logging.LogService;
 
 public abstract class AbstractExecutorGroup {
 
+  private final ThreadMonitoring threadMonitoring;
   private static final int THREAD_DUMP_DEPTH = 40;
   private static final Logger logger = LogService.getLogger();
   private long threadID;
@@ -39,10 +40,11 @@ public abstract class AbstractExecutorGroup {
   private static final DistributionConfigImpl distributionConfigImpl =
       new DistributionConfigImpl(nonDefault);
 
-  public AbstractExecutorGroup() {
+  public AbstractExecutorGroup(ThreadMonitoring tMonitoring) {
     this.startTime = System.currentTimeMillis();
     this.numIterationsStuck = 0;
     this.threadID = Thread.currentThread().getId();
+    this.threadMonitoring = tMonitoring;
   }
 
   public void handleExpiry(long stuckTime) {
@@ -61,7 +63,9 @@ public abstract class AbstractExecutorGroup {
             this.threadID, this.numIterationsStuck);
 
         t.stop();
-        ThreadMonitoringUtils.getThreadMonitorObj().getMonitorMap().remove(this.threadID);
+        if (this.threadMonitoring != null) {
+          threadMonitoring.getMonitorMap().remove(this.threadID);
+        }
 
         break;
       }

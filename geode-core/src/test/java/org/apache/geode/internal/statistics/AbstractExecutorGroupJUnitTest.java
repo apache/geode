@@ -19,7 +19,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -32,7 +31,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class AbstractExecutorGroupJUnitTest {
 
   private final AbstractExecutorGroup abstractExecutorGroup =
-      new FunctionExecutionPooledExecutorGroup();
+      new FunctionExecutionPooledExecutorGroup(null);
 
   @Test
   public void testInitializationValues() {

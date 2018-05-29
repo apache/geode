@@ -76,7 +76,7 @@ public class ThreadMonitoringImpl implements ThreadMonitoring {
 
   /** Starts a new {@link org.apache.geode.distributed.internal.ThreadMonitoringProcess} */
   public void setThreadMonitoringProcess() {
-    tmProcess = new ThreadMonitoringProcess();
+    tmProcess = new ThreadMonitoringProcess(this);
     timer.schedule(tmProcess, 0, distributionConfigImpl.getThreadMonitorInterval());
   }
 
@@ -89,22 +89,22 @@ public class ThreadMonitoringImpl implements ThreadMonitoring {
     AbstractExecutorGroup absExtgroup;
     switch (mode) {
       case FunctionExecutor:
-        absExtgroup = new FunctionExecutionPooledExecutorGroup();
+        absExtgroup = new FunctionExecutionPooledExecutorGroup(this);
         break;
       case PooledExecutor:
-        absExtgroup = new PooledExecutorGroup();
+        absExtgroup = new PooledExecutorGroup(this);
         break;
       case SerialQueuedExecutor:
-        absExtgroup = new SerialQueuedExecutorGroup();
+        absExtgroup = new SerialQueuedExecutorGroup(this);
         break;
       case OneTaskOnlyExecutor:
-        absExtgroup = new OneTaskOnlyExecutorGroup();
+        absExtgroup = new OneTaskOnlyExecutorGroup(this);
         break;
       case ScheduledThreadExecutor:
-        absExtgroup = new ScheduledThreadPoolExecutorWKAGroup();
+        absExtgroup = new ScheduledThreadPoolExecutorWKAGroup(this);
         break;
       case AGSExecutor:
-        absExtgroup = new GatewaySenderEventProcessorGroup();
+        absExtgroup = new GatewaySenderEventProcessorGroup(this);
         break;
       default:
         return false;

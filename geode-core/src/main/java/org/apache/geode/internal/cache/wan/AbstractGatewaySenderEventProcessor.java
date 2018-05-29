@@ -42,7 +42,6 @@ import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -117,6 +116,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   private Exception exception;
 
+  private final ThreadMonitoring threadMonitoring;
+
   /*
    * The batchIdToEventsMap contains a mapping between batch id and an array of events. The first
    * element of the array is the list of events peeked from the queue. The second element of the
@@ -148,10 +149,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   private int batchSize;
 
   public AbstractGatewaySenderEventProcessor(LoggingThreadGroup createThreadGroup, String string,
-      GatewaySender sender) {
+      GatewaySender sender, ThreadMonitoring tMonitoring) {
     super(createThreadGroup, string);
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
+    this.threadMonitoring = tMonitoring;
   }
 
   protected abstract void initializeMessageQueue(String id);
@@ -1344,11 +1346,15 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   }
 
   protected void beforeExecute() {
-    ThreadMonitoringUtils.getThreadMonitorObj().startMonitor(ThreadMonitoring.Mode.AGSExecutor);
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadMonitoring.Mode.AGSExecutor);
+    }
   }
 
   protected void afterExecute() {
-    ThreadMonitoringUtils.getThreadMonitorObj().endMonitor();
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
+    }
   }
 
   protected abstract void enqueueEvent(GatewayQueueEvent event);

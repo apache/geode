@@ -22,6 +22,7 @@ import java.util.TimerTask;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.logging.LogService;
@@ -30,6 +31,7 @@ import org.apache.geode.internal.statistics.AbstractExecutorGroup;
 
 public class ThreadMonitoringProcess extends TimerTask {
 
+  private final ThreadMonitoring threadMonitoring;
   private ResourceManagerStats resourceManagerStats = null;
   private static final Logger logger = LogService.getLogger();
   private int timeLimit;
@@ -37,15 +39,15 @@ public class ThreadMonitoringProcess extends TimerTask {
   private Properties nonDefault = new Properties();
   private DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
 
-  protected ThreadMonitoringProcess() {
+  protected ThreadMonitoringProcess(ThreadMonitoring tMonitoring) {
     timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
+    this.threadMonitoring = tMonitoring;
   }
 
   public boolean mapValidation() {
     boolean isStuck = false;
     int numOfStuck = 0;
-    for (Entry<Long, AbstractExecutorGroup> entry1 : ThreadMonitoringUtils.getThreadMonitorObj()
-        .getMonitorMap().entrySet()) {
+    for (Entry<Long, AbstractExecutorGroup> entry1 : threadMonitoring.getMonitorMap().entrySet()) {
       logger.trace("Checking Thread {}\n", entry1.getKey());
       long currentTime = System.currentTimeMillis();
       long delta = currentTime - entry1.getValue().getStartTime();

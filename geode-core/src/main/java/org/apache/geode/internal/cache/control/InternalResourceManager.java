@@ -39,8 +39,11 @@ import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ClassPathLoader;
@@ -158,7 +161,7 @@ public class InternalResourceManager implements ResourceManager {
     BlockingQueue<Runnable> threadQ =
         new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());
     this.notifyExecutor = new SerialQueuedExecutorWithDMStats(threadQ,
-        this.stats.getResourceEventPoolStatHelper(), eventProcessorFactory);
+        this.stats.getResourceEventPoolStatHelper(), eventProcessorFactory, getThreadMonitorObj());
 
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<ResourceType, ResourceMonitor>();
@@ -619,5 +622,18 @@ public class InternalResourceManager implements ResourceManager {
   @Override
   public float getEvictionHeapPercentage() {
     return getHeapMonitor().getEvictionThreshold();
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

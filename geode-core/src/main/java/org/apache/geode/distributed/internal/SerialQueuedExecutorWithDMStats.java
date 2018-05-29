@@ -27,11 +27,14 @@ import org.apache.geode.distributed.ThreadMonitoring;
  */
 public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
   final PoolStatHelper stats;
+  private final ThreadMonitoring threadMonitoring;
 
-  public SerialQueuedExecutorWithDMStats(BlockingQueue q, PoolStatHelper stats, ThreadFactory tf) {
+  public SerialQueuedExecutorWithDMStats(BlockingQueue q, PoolStatHelper stats, ThreadFactory tf,
+      ThreadMonitoring tMonitoring) {
     super(1, 1, 60, TimeUnit.SECONDS, q, tf, new PooledExecutorWithDMStats.BlockHandler());
     // allowCoreThreadTimeOut(true); // deadcoded for 1.5
     this.stats = stats;
+    this.threadMonitoring = tMonitoring;
   }
 
   @Override
@@ -39,8 +42,9 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.startJob();
     }
-    ThreadMonitoringUtils.getThreadMonitorObj()
-        .startMonitor(ThreadMonitoring.Mode.SerialQueuedExecutor);
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadMonitoring.Mode.SerialQueuedExecutor);
+    }
   }
 
   @Override
@@ -48,6 +52,8 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.endJob();
     }
-    ThreadMonitoringUtils.getThreadMonitorObj().endMonitor();
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
+    }
   }
 }

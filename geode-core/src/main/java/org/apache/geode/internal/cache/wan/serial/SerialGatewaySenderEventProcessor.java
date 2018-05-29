@@ -40,6 +40,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -107,9 +108,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   private int uncheckedCount = 0;
 
 
-  public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id) {
+  public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
+      ThreadMonitoring tMonitoring) {
     super(LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + id, logger),
-        "Event Processor for GatewaySender_" + id, sender);
+        "Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();

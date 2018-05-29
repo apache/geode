@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
+import org.apache.geode.distributed.ThreadMonitoring;
+
 public class PooledExecutorGroup extends AbstractExecutorGroup {
 
   public static final String GRPNAME = "PooledExecutorWithDMStats";
 
-  public PooledExecutorGroup() {
+  public PooledExecutorGroup(ThreadMonitoring tMonitoring) {
+    super(tMonitoring);
     super.setGrpName(GRPNAME);
   }
 

@@ -34,6 +34,9 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -69,10 +72,11 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   final int nDispatcher;
 
-  public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
+  public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadMonitoring tMonitoring) {
     super(
         LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + sender.getId()),
-        "Event Processor for GatewaySender_" + sender.getId(), sender);
+        "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     // initializeMessageQueue(sender.getId());
     logger.info("ConcurrentParallelGatewaySenderEventProcessor: dispatcher threads {}",
         sender.getDispatcherThreads());
@@ -115,7 +119,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors[i] = new ParallelGatewaySenderEventProcessor(sender, targetRs, i,
-          sender.getDispatcherThreads());
+          sender.getDispatcherThreads(), getThreadMonitorObj());
     }
   }
 
@@ -330,5 +334,18 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   protected void enqueueEvent(GatewayQueueEvent event) {
     int pId = ((GatewaySenderEventImpl) event).getBucketId() % this.nDispatcher;
     this.processors[pId].enqueueEvent(event);
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

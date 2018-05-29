@@ -37,7 +37,7 @@ public class PooledExecutorGroupJUnitTest {
    */
   @Test
   public void testVerifyGroupName() {
-    AbstractExecutorGroup pooledExecutorGroup = new PooledExecutorGroup();
+    AbstractExecutorGroup pooledExecutorGroup = new PooledExecutorGroup(null);
     assertTrue(pooledExecutorGroup.getGrpName().equals(GRPNAME));
   }
 }

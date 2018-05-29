@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.statistics;
 
+import org.apache.geode.distributed.ThreadMonitoring;
+
 public class ScheduledThreadPoolExecutorWKAGroup extends AbstractExecutorGroup {
 
   public static final String GRPNAME = "ScheduledThreadPoolExecutorWithKeepAlive";
 
 
-  public ScheduledThreadPoolExecutorWKAGroup() {
+  public ScheduledThreadPoolExecutorWKAGroup(ThreadMonitoring tMonitoring) {
+    super(tMonitoring);
     super.setGrpName(GRPNAME);
   }
 

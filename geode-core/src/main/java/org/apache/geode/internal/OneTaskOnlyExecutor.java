@@ -21,7 +21,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.distributed.ThreadMonitoring;
-import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 
 /**
  * A decorator for a ScheduledExecutorService which tries to make sure that there is only one task
@@ -47,17 +46,20 @@ import org.apache.geode.distributed.internal.ThreadMonitoringUtils;
 @SuppressWarnings("synthetic-access")
 public class OneTaskOnlyExecutor {
 
+  private final ThreadMonitoring threadMonitoring;
   private final ScheduledExecutorService ex;
   private ScheduledFuture<?> future = null;
   private ConflatedTaskListener listener;
 
-  public OneTaskOnlyExecutor(ScheduledExecutorService ex) {
-    this(ex, new ConflatedTaskListenerAdapter());
+  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ThreadMonitoring tMonitoring) {
+    this(ex, new ConflatedTaskListenerAdapter(), tMonitoring);
   }
 
-  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ConflatedTaskListener listener) {
+  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ConflatedTaskListener listener,
+      ThreadMonitoring tMonitoring) {
     this.ex = ex;
     this.listener = listener;
+    this.threadMonitoring = tMonitoring;
   }
 
   /**
@@ -169,11 +171,14 @@ public class OneTaskOnlyExecutor {
   }
 
   protected void beforeExecute() {
-    ThreadMonitoringUtils.getThreadMonitorObj()
-        .startMonitor(ThreadMonitoring.Mode.OneTaskOnlyExecutor);
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadMonitoring.Mode.OneTaskOnlyExecutor);
+    }
   }
 
   protected void afterExecute() {
-    ThreadMonitoringUtils.getThreadMonitorObj().endMonitor();
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
+    }
   }
 }

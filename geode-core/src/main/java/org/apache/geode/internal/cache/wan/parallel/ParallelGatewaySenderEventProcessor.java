@@ -25,6 +25,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -46,10 +47,11 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   final int index;
   final int nDispatcher;
 
-  protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
+  protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadMonitoring tMonitoring) {
     super(LoggingThreadGroup
         .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId(), sender);
+        "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.index = 0;
     this.nDispatcher = 1;
     initializeMessageQueue(sender.getId());
@@ -60,10 +62,11 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher) {
-    super(LoggingThreadGroup
-        .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender);
+      Set<Region> userRegions, int id, int nDispatcher, ThreadMonitoring tMonitoring) {
+    super(
+        LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + sender.getId(),
+            logger),
+        "Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender, tMonitoring);
     this.index = id;
     this.nDispatcher = nDispatcher;
     initializeMessageQueue(sender.getId());

@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
+import org.apache.geode.distributed.ThreadMonitoring;
+
 public class SerialQueuedExecutorGroup extends AbstractExecutorGroup {
 
   public static final String GRPNAME = "SerialQueuedExecutorWithDMStats";
 
-  public SerialQueuedExecutorGroup() {
+  public SerialQueuedExecutorGroup(ThreadMonitoring tMonitoring) {
+    super(tMonitoring);
     super.setGrpName(GRPNAME);
 
   }

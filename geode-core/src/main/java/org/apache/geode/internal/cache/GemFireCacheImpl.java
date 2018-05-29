@@ -154,6 +154,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.CacheTime;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -915,7 +916,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         };
         ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(EVENT_QUEUE_LIMIT);
         this.eventThreadPool = new PooledExecutorWithDMStats(queue, EVENT_THREAD_LIMIT,
-            this.cachePerfStats.getEventPoolHelper(), threadFactory, 1000);
+            this.cachePerfStats.getEventPoolHelper(), threadFactory, 1000, getThreadMonitorObj());
       } else {
         this.eventThreadPool = null;
       }
@@ -5359,6 +5360,19 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public InternalCache getCacheForProcessingClientRequests() {
     return cacheForClients;
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 
 }

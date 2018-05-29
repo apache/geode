@@ -756,7 +756,7 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         };
         SerialQueuedExecutorWithDMStats executor = new SerialQueuedExecutorWithDMStats(poolQueue,
-            this.stats.getSerialProcessorHelper(), tf);
+            this.stats.getSerialProcessorHelper(), tf, threadMonitor);
         this.serialThread = executor;
       }
       {
@@ -785,8 +785,8 @@ public class ClusterDistributionManager implements DistributionManager {
             return thread;
           }
         };
-        this.viewThread =
-            new SerialQueuedExecutorWithDMStats(q, this.stats.getViewProcessorHelper(), tf);
+        this.viewThread = new SerialQueuedExecutorWithDMStats(q,
+            this.stats.getViewProcessorHelper(), tf, threadMonitor);
       }
 
       {
@@ -825,7 +825,7 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         };
         ThreadPoolExecutor pool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
-            this.stats.getNormalPoolHelper(), tf);
+            this.stats.getNormalPoolHelper(), tf, threadMonitor);
         this.threadPool = pool;
       }
 
@@ -866,7 +866,7 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         };
         this.highPriorityPool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
-            this.stats.getHighPriorityPoolHelper(), tf);
+            this.stats.getHighPriorityPoolHelper(), tf, threadMonitor);
       }
 
 
@@ -906,7 +906,7 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats(this.stats.getWaitingQueueHelper());
         }
         this.waitingPool = new PooledExecutorWithDMStats(poolQueue, MAX_WAITING_THREADS,
-            this.stats.getWaitingPoolHelper(), tf);
+            this.stats.getWaitingPoolHelper(), tf, threadMonitor);
       }
 
       {
@@ -940,7 +940,7 @@ public class ClusterDistributionManager implements DistributionManager {
         BlockingQueue poolQueue;
         poolQueue = new OverflowQueueWithDMStats(this.stats.getWaitingQueueHelper());
         this.prMetaDataCleanupThreadPool = new PooledExecutorWithDMStats(poolQueue,
-            MAX_PR_META_DATA_CLEANUP_THREADS, this.stats.getWaitingPoolHelper(), tf);
+            MAX_PR_META_DATA_CLEANUP_THREADS, this.stats.getWaitingPoolHelper(), tf, threadMonitor);
       }
 
       {
@@ -978,10 +978,10 @@ public class ClusterDistributionManager implements DistributionManager {
         };
         if (MAX_PR_THREADS > 1) {
           this.partitionedRegionPool = new PooledExecutorWithDMStats(poolQueue, MAX_PR_THREADS,
-              this.stats.getPartitionedRegionPoolHelper(), tf);
+              this.stats.getPartitionedRegionPoolHelper(), tf, threadMonitor);
         } else {
           SerialQueuedExecutorWithDMStats executor = new SerialQueuedExecutorWithDMStats(poolQueue,
-              this.stats.getPartitionedRegionPoolHelper(), tf);
+              this.stats.getPartitionedRegionPoolHelper(), tf, threadMonitor);
           this.partitionedRegionThread = executor;
         }
 
@@ -1023,12 +1023,12 @@ public class ClusterDistributionManager implements DistributionManager {
         };
 
         if (MAX_FE_THREADS > 1) {
-          this.functionExecutionPool =
-              new FunctionExecutionPooledExecutor(poolQueue, MAX_FE_THREADS,
-                  this.stats.getFunctionExecutionPoolHelper(), tf, true /* for fn exec */);
+          this.functionExecutionPool = new FunctionExecutionPooledExecutor(poolQueue,
+              MAX_FE_THREADS, this.stats.getFunctionExecutionPoolHelper(), tf,
+              true /* for fn exec */, this.threadMonitor);
         } else {
           SerialQueuedExecutorWithDMStats executor = new SerialQueuedExecutorWithDMStats(poolQueue,
-              this.stats.getFunctionExecutionPoolHelper(), tf);
+              this.stats.getFunctionExecutionPoolHelper(), tf, threadMonitor);
           this.functionExecutionThread = executor;
         }
 
@@ -3955,7 +3955,7 @@ public class ClusterDistributionManager implements DistributionManager {
         }
       };
       return new SerialQueuedExecutorWithDMStats(poolQueue,
-          this.stats.getSerialPooledProcessorHelper(), tf);
+          this.stats.getSerialPooledProcessorHelper(), tf, getThreadMonitorObj());
     }
 
     /*
@@ -4013,6 +4013,18 @@ public class ClusterDistributionManager implements DistributionManager {
       for (Iterator iter = serialQueuedExecutorMap.values().iterator(); iter.hasNext();) {
         ExecutorService executor = (ExecutorService) iter.next();
         executor.shutdown();
+      }
+    }
+
+    private ThreadMonitoring getThreadMonitorObj() {
+      InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+      if (ds == null)
+        return null;
+      DistributionManager distributionManager = ds.getDistributionManager();
+      if (distributionManager != null) {
+        return distributionManager.getThreadMonitoring();
+      } else {
+        return null;
       }
     }
   }

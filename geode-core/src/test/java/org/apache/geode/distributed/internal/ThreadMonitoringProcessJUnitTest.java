@@ -16,18 +16,12 @@ package org.apache.geode.distributed.internal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.distributed.ThreadMonitoring.Mode;
 import org.apache.geode.internal.statistics.AbstractExecutorGroup;
@@ -41,12 +35,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @since Geode 1.5
  */
 @Category({UnitTest.class})
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest(ThreadMonitoringUtils.class)
 public class ThreadMonitoringProcessJUnitTest {
 
-  private ThreadMonitoringImpl threadMonitoringImpl = new ThreadMonitoringImpl();
+  private ThreadMonitoringImpl threadMonitoringImpl;
 
   @Before
   public void before() {
@@ -63,20 +54,16 @@ public class ThreadMonitoringProcessJUnitTest {
     final DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
     final long threadID = 123456;
 
-    mockStatic(ThreadMonitoringUtils.class);
-    when(ThreadMonitoringUtils.getThreadMonitorObj()).thenReturn(threadMonitoringImpl);
-
     int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
 
-    AbstractExecutorGroup absExtgroup = new PooledExecutorGroup();
+    AbstractExecutorGroup absExtgroup = new PooledExecutorGroup(threadMonitoringImpl);
     absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
 
-    ThreadMonitoringUtils.getThreadMonitorObj().getMonitorMap().put(threadID, absExtgroup);
+    threadMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
 
-    assertTrue(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-        .getThreadMonitoringProcess().mapValidation());
+    assertTrue(threadMonitoringImpl.getThreadMonitoringProcess().mapValidation());
 
-    ThreadMonitoringUtils.getThreadMonitorObj().close();
+    threadMonitoringImpl.close();
   }
 
   /**
@@ -85,14 +72,10 @@ public class ThreadMonitoringProcessJUnitTest {
   @Test
   public void testThreadIsNotStuck() {
 
-    mockStatic(ThreadMonitoringUtils.class);
-    when(ThreadMonitoringUtils.getThreadMonitorObj()).thenReturn(threadMonitoringImpl);
+    threadMonitoringImpl.startMonitor(Mode.PooledExecutor);
 
-    ThreadMonitoringUtils.getThreadMonitorObj().startMonitor(Mode.PooledExecutor);
+    assertFalse(threadMonitoringImpl.getThreadMonitoringProcess().mapValidation());
 
-    assertFalse(((ThreadMonitoringImpl) ThreadMonitoringUtils.getThreadMonitorObj())
-        .getThreadMonitoringProcess().mapValidation());
-
-    ThreadMonitoringUtils.getThreadMonitorObj().close();
+    threadMonitoringImpl.close();
   }
 }
