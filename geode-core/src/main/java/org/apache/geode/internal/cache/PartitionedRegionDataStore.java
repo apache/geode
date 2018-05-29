@@ -275,16 +275,16 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
   private boolean areAllColocatedPartitionedRegionsReady(int bucketId,
       List<PartitionedRegion> colocatedWithList) {
-    return !colocatedWithList.stream()
-        .filter(partitionedRegion -> isColocatedPartitionedRegionInitialized(partitionedRegion,
-            bucketId) == false)
-        .findFirst().isPresent();
+    return colocatedWithList.stream().allMatch(
+        partitionedRegion -> isColocatedPartitionedRegionInitialized(partitionedRegion, bucketId));
   }
 
   private boolean isColocatedPartitionedRegionInitialized(PartitionedRegion partitionedRegion,
       final int bucketId) {
-    if (!partitionedRegion.isInitialized()
-        || !(partitionedRegion.getDataStore().isColocationComplete(bucketId))) {
+    if (!partitionedRegion.isInitialized()) {
+      return false;
+    }
+    if (!partitionedRegion.getDataStore().isColocationComplete(bucketId)) {
       return false;
     }
     List<PartitionedRegion> colocatedWithList = getColocatedChildRegions(partitionedRegion);
