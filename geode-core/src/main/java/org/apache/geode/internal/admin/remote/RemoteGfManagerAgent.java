@@ -89,7 +89,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
    *
    * @since GemFire 4.0
    */
-  protected InternalDistributedSystem system;
+  protected volatile InternalDistributedSystem system;
+  private final Object systemLock = new Object();
 
   /** Is this agent connected to the distributed system */
   protected volatile boolean connected = false;
@@ -126,7 +127,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   /**
    * The known application VMs. Maps member id to RemoteApplicationVM instances
    */
-  private volatile Map membersMap = Collections.EMPTY_MAP;
+  protected volatile Map membersMap = Collections.EMPTY_MAP;
   private final Object membersLock = new Object();
 
   // LOG: used to log WARN for AuthenticationFailedException
@@ -403,12 +404,13 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           // ignore a forced disconnect and finish clean-up
         }
 
-        if (system != null && ClusterDistributionManager.isDedicatedAdminVM()
-            && system.isConnected()) {
-          system.disconnect();
+        synchronized (systemLock) {
+          if (system != null && ClusterDistributionManager.isDedicatedAdminVM()
+              && system.isConnected()) {
+            system.disconnect();
+          }
+          this.system = null;
         }
-
-        this.system = null;
         this.connected = false;
       }
 
@@ -705,7 +707,13 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     if (future != null) {
       future.cancel(true);
       for (;;) {
-        this.system.getCancelCriterion().checkCancelInProgress(null);
+        synchronized (systemLock) {
+          if (system == null) {
+            return null;
+          }
+          this.system.getCancelCriterion().checkCancelInProgress(null);
+        }
+
         boolean interrupted = Thread.interrupted();
         try {
           return (RemoteApplicationVM) future.get();
@@ -793,17 +801,19 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     if (!isListening()) {
       return;
     }
-
-    if (system != null) {
-      system.disconnect();
-      system = null;
-    }
-
     Properties props = this.transport.toDSProperties();
     if (this.displayName != null && this.displayName.length() > 0) {
       props.setProperty("name", this.displayName);
     }
-    this.system = (InternalDistributedSystem) InternalDistributedSystem.connectForAdmin(props);
+
+    synchronized (systemLock) {
+      if (system != null) {
+        system.disconnect();
+        system = null;
+      }
+      this.system = (InternalDistributedSystem) InternalDistributedSystem.connectForAdmin(props);
+    }
+
     DistributionManager dm = system.getDistributionManager();
     if (dm instanceof ClusterDistributionManager) {
       ((ClusterDistributionManager) dm).setAgent(this);
