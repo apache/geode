@@ -131,18 +131,19 @@ public class ConfigurePDXCommandTest {
   @Test
   public void executionShouldWorkCorrectlyWhenDefaultsAreUsed() {
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING).statusIsSuccess()
-        .hasNoFailToPersistError().containsOutput("persistent = false")
-        .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = false");
+        .containsOutput("persistent = false").containsOutput("read-serialized = false")
+        .containsOutput("ignore-unread-fields = false");
   }
 
   @Test
   public void executionShouldCorrectlyConfigurePersistenceWhenDefaultDiskStoreIsUsed() {
     // Default Disk Store
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING + "--disk-store")
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = true")
+        .statusIsSuccess().containsOutput("persistent = true")
         .containsOutput("disk-store = DEFAULT").containsOutput("read-serialized = false")
         .containsOutput("ignore-unread-fields = false");
 
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(0)).createReflectionBasedAutoSerializer(anyBoolean(), any());
   }
 
@@ -150,10 +151,11 @@ public class ConfigurePDXCommandTest {
   public void executionShouldCorrectlyConfigurePersistenceWhenCustomDiskStoreIsUsed() {
     // Custom Disk Store
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING + "--disk-store=myDiskStore")
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = true")
+        .statusIsSuccess().containsOutput("persistent = true")
         .containsOutput("disk-store = myDiskStore").containsOutput("read-serialized = false")
         .containsOutput("ignore-unread-fields = false");
 
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(0)).createReflectionBasedAutoSerializer(anyBoolean(), any());
   }
 
@@ -161,9 +163,10 @@ public class ConfigurePDXCommandTest {
   public void executionShouldCorrectlyConfigureReadSerializedWhenFlagIsSetAsTrue() {
     // Custom Configuration as True
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING + "--read-serialized=true")
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = false")
+        .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = true").containsOutput("ignore-unread-fields = false");
 
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(0)).createReflectionBasedAutoSerializer(anyBoolean(), any());
   }
 
@@ -171,9 +174,10 @@ public class ConfigurePDXCommandTest {
   public void executionShouldCorrectlyConfigureReadSerializedWhenFlagIsSetAsFalse() {
     // Custom Configuration as False
     gfshParserRule.executeAndAssertThat(command, BASE_COMMAND_STRING + "--read-serialized=false")
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = false")
+        .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = false");
 
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(0)).createReflectionBasedAutoSerializer(anyBoolean(), any());
   }
 
@@ -182,9 +186,10 @@ public class ConfigurePDXCommandTest {
     // Custom Configuration as True
     gfshParserRule
         .executeAndAssertThat(command, BASE_COMMAND_STRING + "--ignore-unread-fields=true")
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = false")
+        .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = true");
 
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(0)).createReflectionBasedAutoSerializer(anyBoolean(), any());
   }
 
@@ -193,9 +198,9 @@ public class ConfigurePDXCommandTest {
     // Custom Configuration as False
     gfshParserRule
         .executeAndAssertThat(command, BASE_COMMAND_STRING + "--ignore-unread-fields=false")
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = false")
+        .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = false");
-
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(0)).createReflectionBasedAutoSerializer(anyBoolean(), any());
   }
 
@@ -207,11 +212,12 @@ public class ConfigurePDXCommandTest {
     gfshParserRule
         .executeAndAssertThat(command,
             BASE_COMMAND_STRING + "--portable-auto-serializable-classes=" + patterns[0])
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = false")
+        .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = false")
         .containsOutput("Portable Classes = [com.company.DomainObject.*#identity=id]")
         .containsOutput("PDX Serializer = org.apache.geode.pdx.ReflectionBasedAutoSerializer");
 
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(1)).createReflectionBasedAutoSerializer(true, patterns);
   }
 
@@ -223,11 +229,12 @@ public class ConfigurePDXCommandTest {
     gfshParserRule
         .executeAndAssertThat(command,
             BASE_COMMAND_STRING + "--auto-serializable-classes=" + patterns[0])
-        .statusIsSuccess().hasNoFailToPersistError().containsOutput("persistent = false")
+        .statusIsSuccess().containsOutput("persistent = false")
         .containsOutput("read-serialized = false").containsOutput("ignore-unread-fields = false")
         .containsOutput("Non Portable Classes = [com.company.DomainObject.*#identity=id]")
         .containsOutput("PDX Serializer = org.apache.geode.pdx.ReflectionBasedAutoSerializer");
 
+    verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(1)).createReflectionBasedAutoSerializer(false, patterns);
   }
 }

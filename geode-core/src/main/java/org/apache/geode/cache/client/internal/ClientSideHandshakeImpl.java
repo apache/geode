@@ -340,7 +340,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         Integer id = (Integer) dataSerializer.getKey();
         InternalDataSerializer.register((String) dataSerializer.getValue(), false, null, null, id);
       }
-      HashMap<Integer, ArrayList<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
+      Map<Integer, List<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
       InternalDataSerializer.updateSupportedClassesMap(dsToSupportedClassNames);
 
       // the server's ping interval is only sent to subscription feeds so we can't read it as

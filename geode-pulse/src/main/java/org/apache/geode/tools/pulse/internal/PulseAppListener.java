@@ -45,6 +45,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 public class PulseAppListener implements ServletContextListener {
   private static final Logger logger = LogManager.getLogger();
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
+  private static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
 
   private Properties pulseProperties;
   private Properties pulseSecurityProperties;
@@ -88,11 +89,16 @@ public class PulseAppListener implements ServletContextListener {
       repository.setPort(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT,
           PulseConstants.GEMFIRE_DEFAULT_PORT));
 
-      // SSL, all the other system properties are already set in the embedded VM
       repository.setUseSSLManager(
           Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER)));
       repository.setUseSSLLocator(
           Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR)));
+
+      Object sslProperties =
+          event.getServletContext().getAttribute(GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM);
+      if (sslProperties instanceof Properties) {
+        repository.setJavaSslProperties((Properties) sslProperties);
+      }
     } else {
       // jmx connection parameters
       logger.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_NONEMBEDDED_MODE"));

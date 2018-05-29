@@ -15,32 +15,32 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateGatewayReceiverCommand extends InternalGfshCommand {
+public class CreateGatewayReceiverCommand extends SingleGfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER,
       help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
@@ -48,7 +48,7 @@ public class CreateGatewayReceiverCommand extends InternalGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateGatewayReceiverCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public Result createGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+  public ResultModel createGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       optionContext = ConverterHint.MEMBERGROUP,
       help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
 
@@ -80,12 +80,15 @@ public class CreateGatewayReceiverCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS,
           help = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP) String hostnameForSenders,
 
-      @CliOption(key = {CliStrings.IFNOTEXISTS}, help = CliStrings.PUT__PUTIFNOTEXISTS__HELP,
+      @CliOption(key = CliStrings.IFNOTEXISTS, help = CliStrings.IFNOTEXISTS_HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") Boolean ifNotExists) {
 
-    GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs = new GatewayReceiverFunctionArgs(
-        manualStart, startPort, endPort, bindAddress, socketBufferSize, maximumTimeBetweenPings,
-        gatewayTransportFilters, hostnameForSenders, ifNotExists);
+    CacheConfig.GatewayReceiver configuration =
+        buildConfiguration(manualStart, startPort, endPort, bindAddress, maximumTimeBetweenPings,
+            socketBufferSize, gatewayTransportFilters, hostnameForSenders);
+
+    GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs =
+        new GatewayReceiverFunctionArgs(configuration, ifNotExists);
 
     Set<DistributedMember> membersToCreateGatewayReceiverOn = getMembers(onGroups, onMember);
 
@@ -93,36 +96,51 @@ public class CreateGatewayReceiverCommand extends InternalGfshCommand {
         executeAndGetFunctionResult(GatewayReceiverCreateFunction.INSTANCE,
             gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
 
-    CommandResult result = ResultBuilder.buildResult(gatewayReceiverCreateResults);
-
-    XmlEntity xmlEntity = findXmlEntity(gatewayReceiverCreateResults);
-    // no xml needs to be updated, simply return
-    if (xmlEntity == null) {
-      return result;
-    }
-
-    boolean allSuccessful = gatewayReceiverCreateResults.stream()
-        .map(CliFunctionResult::isSuccessful).reduce(true, (x, y) -> x && y);
-    if (!allSuccessful) {
-      result.setStatus(Status.ERROR);
-      return result;
-    }
-
-    // has xml but unable to persist to cluster config, need to print warning message and return
-    if (onMember != null || getConfigurationPersistenceService() == null) {
-      result.setCommandPersisted(false);
-      return result;
-    }
-
-    // update cluster config
-    ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-        .addXmlEntity(xmlEntity, onGroups);
+    ResultModel result = ResultModel.createMemberStatusResult(gatewayReceiverCreateResults);
+    result.setConfigObject(configuration);
     return result;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+    config.setGatewayReceiver((CacheConfig.GatewayReceiver) configObject);
+  }
+
+  private CacheConfig.GatewayReceiver buildConfiguration(Boolean manualStart, Integer startPort,
+      Integer endPort, String bindAddress, Integer maximumTimeBetweenPings,
+      Integer socketBufferSize, String[] gatewayTransportFilters, String hostnameForSenders) {
+    CacheConfig.GatewayReceiver configuration = new CacheConfig.GatewayReceiver();
+
+    if (gatewayTransportFilters != null) {
+      List<DeclarableType> filters =
+          Arrays.stream(gatewayTransportFilters).map(fullyQualifiedClassName -> {
+            DeclarableType thisFilter = new DeclarableType();
+            thisFilter.setClassName(fullyQualifiedClassName);
+            return thisFilter;
+          }).collect(Collectors.toList());
+      configuration.getGatewayTransportFilters().addAll(filters);
+    }
+    if (startPort != null) {
+      configuration.setStartPort(String.valueOf(startPort));
+    }
+    if (endPort != null) {
+      configuration.setEndPort(String.valueOf(endPort));
+    }
+    configuration.setBindAddress(bindAddress);
+    if (maximumTimeBetweenPings != null) {
+      configuration.setMaximumTimeBetweenPings(String.valueOf(maximumTimeBetweenPings));
+    }
+    if (socketBufferSize != null) {
+      configuration.setSocketBufferSize(String.valueOf(socketBufferSize));
+    }
+    configuration.setHostnameForSenders(hostnameForSenders);
+    configuration.setManualStart(manualStart);
+    return configuration;
   }
 
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       Integer startPort = (Integer) parseResult.getParamValue("start-port");
       Integer endPort = (Integer) parseResult.getParamValue("end-port");
 
@@ -135,10 +153,10 @@ public class CreateGatewayReceiverCommand extends InternalGfshCommand {
       }
 
       if (startPort > endPort) {
-        return ResultBuilder.createUserErrorResult("start-port must be smaller than end-port.");
+        return ResultModel.createError("start-port must be smaller than end-port.");
       }
 
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     }
   }
 }

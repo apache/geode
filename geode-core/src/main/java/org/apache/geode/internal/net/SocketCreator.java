@@ -957,14 +957,15 @@ public class SocketCreator {
   }
 
   /**
-   * Will be a server socket... this one simply registers the listeners.
+   * Use this method to perform the SSL handshake on a newly accepted socket. Non-SSL
+   * sockets are ignored by this method.
    *
-   * @param timeout the socket's timeout will be set to this (in milliseconds).
+   * @param timeout the number of milliseconds allowed for the handshake to complete
    */
-  public void startHandshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
-    socket.setSoTimeout(timeout);
-
+  public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     if (socket instanceof SSLSocket) {
+      int oldTimeout = socket.getSoTimeout();
+      socket.setSoTimeout(timeout);
       SSLSocket sslSocket = (SSLSocket) socket;
       try {
         sslSocket.startHandshake();
@@ -985,6 +986,8 @@ public class SocketCreator {
           throw ex;
         }
         // else ignore
+      } finally {
+        socket.setSoTimeout(oldTimeout);
       }
     }
   }

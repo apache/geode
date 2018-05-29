@@ -42,12 +42,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TODO : Add more tests for error-catch, different type of results etc
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class HeadlessGfshIntegrationTest {
   private int port;
   private DistributedSystem ds;

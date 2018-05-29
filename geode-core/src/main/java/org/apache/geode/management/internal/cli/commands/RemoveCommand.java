@@ -16,8 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
-import static org.apache.geode.management.internal.cli.result.ResultBuilder.createUserErrorResult;
 
 import java.util.Set;
 
@@ -31,11 +29,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -44,7 +42,7 @@ public class RemoveCommand extends InternalGfshCommand {
 
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.REMOVE}, help = CliStrings.REMOVE__HELP)
-  public Result remove(
+  public ResultModel remove(
       @CliOption(key = {CliStrings.REMOVE__KEY}, help = CliStrings.REMOVE__KEY__HELP,
           specifiedDefaultValue = "") String key,
       @CliOption(key = {CliStrings.REMOVE__REGION}, mandatory = true,
@@ -57,7 +55,7 @@ public class RemoveCommand extends InternalGfshCommand {
     Cache cache = getCache();
 
     if (!removeAllKeys && (key == null)) {
-      return createUserErrorResult(CliStrings.REMOVE__MSG__KEY_EMPTY);
+      return new ResultModel().createError(CliStrings.REMOVE__MSG__KEY_EMPTY);
     }
 
     if (removeAllKeys) {
@@ -66,6 +64,8 @@ public class RemoveCommand extends InternalGfshCommand {
       authorize(Resource.DATA, Operation.WRITE, regionPath, key);
     }
 
+    key = DataCommandsUtils.makeBrokenJsonCompliant(key);
+
     Region region = cache.getRegion(regionPath);
     DataCommandFunction removefn = new DataCommandFunction();
     DataCommandResult dataResult;
@@ -73,7 +73,7 @@ public class RemoveCommand extends InternalGfshCommand {
       Set<DistributedMember> memberList = findAnyMembersForRegion(regionPath);
 
       if (CollectionUtils.isEmpty(memberList)) {
-        return createUserErrorResult(String.format(REGION_NOT_FOUND, regionPath));
+        return new ResultModel().createError(String.format(REGION_NOT_FOUND, regionPath));
       }
 
       DataCommandRequest request = new DataCommandRequest();
@@ -89,6 +89,7 @@ public class RemoveCommand extends InternalGfshCommand {
     }
 
     dataResult.setKeyClass(keyClass);
-    return makePresentationResult(dataResult);
+
+    return dataResult.toResultModel();
   }
 }

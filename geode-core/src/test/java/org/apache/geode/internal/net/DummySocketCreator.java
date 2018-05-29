@@ -35,7 +35,7 @@ public class DummySocketCreator extends SocketCreator {
   }
 
   @Override
-  public void startHandshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+  public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     this.socketSoTimeouts.add(timeout);
     throw new SSLException("This is a test SSLException");
   }

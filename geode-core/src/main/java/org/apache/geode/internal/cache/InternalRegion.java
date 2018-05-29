@@ -217,6 +217,14 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void handleCacheClose(Operation op);
 
+  /**
+   * Execute any validation required prior to initializing the region.
+   * This method should throw an exception whenever an invalid configuration is detected.
+   */
+  default void preInitialize() {
+    // Do nothing by default.
+  }
+
   void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException;
@@ -314,7 +322,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void setInUseByTransaction(boolean b);
 
-  void txLRUStart();
+  boolean txLRUStart();
 
   void txLRUEnd();
 
@@ -351,6 +359,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey);
 
+  void txApplyPutPart2(RegionEntry regionEntry, Object key, long lastModified, boolean isCreate,
+      boolean didDestroy, boolean clearConflict);
+
+  void txApplyPutHandleDidDestroy(Object key);
+
   void handleReliableDistribution(Set successfulRecipients);
 
   StoppableCountDownLatch getInitializationLatchBeforeGetInitialImage();
@@ -380,6 +393,16 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   RegionTTLExpiryTask getRegionTTLExpiryTask();
 
   RegionIdleExpiryTask getRegionIdleExpiryTask();
+
+  boolean isAllEvents();
+
+  boolean shouldDispatchListenerEvent();
+
+  boolean shouldNotifyBridgeClients();
+
+  default Set adviseNetWrite() {
+    return null;
+  }
 
   EvictionController getEvictionController();
 }

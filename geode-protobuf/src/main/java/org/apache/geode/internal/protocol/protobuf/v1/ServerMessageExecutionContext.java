@@ -22,38 +22,38 @@ import org.apache.shiro.subject.Subject;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.protobuf.security.NoSecurity;
+import org.apache.geode.internal.protocol.protobuf.security.NotLoggedInSecurity;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCacheImpl;
+import org.apache.geode.internal.protocol.protobuf.security.SecureLocator;
+import org.apache.geode.internal.protocol.protobuf.security.Security;
+import org.apache.geode.internal.protocol.protobuf.security.ShiroSecurity;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCacheImpl;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public class ServerMessageExecutionContext extends MessageExecutionContext {
   private final InternalCache cache;
-  private AuthorizingCache authorizingCache;
+  private SecureCache secureCache;
 
   public ServerMessageExecutionContext(InternalCache cache, ClientStatistics statistics,
       SecurityService securityService) {
     super(statistics, securityService);
     this.cache = cache;
-    Authorizer authorizer = securityService.isIntegratedSecurity() ? new NotLoggedInAuthorizer()
-        : new NoSecurityAuthorizer();
-    this.authorizingCache = new AuthorizingCacheImpl(cache, authorizer);
+    Security security =
+        securityService.isIntegratedSecurity() ? new NotLoggedInSecurity() : new NoSecurity();
+    this.secureCache = new SecureCacheImpl(cache, security);
   }
 
   @Override
-  public AuthorizingCache getAuthorizingCache() {
-    return this.authorizingCache;
+  public SecureCache getSecureCache() {
+    return this.secureCache;
   }
 
   @Override
-  public AuthorizingLocator getAuthorizingLocator() throws InvalidExecutionContextException {
+  public SecureLocator getSecureLocator() throws InvalidExecutionContextException {
     throw new InvalidExecutionContextException(
         "Operations on the server should not to try to operate on a locator");
   }
@@ -61,8 +61,7 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
   @Override
   public void authenticate(Properties properties) {
     Subject subject = securityService.login(properties);
-    this.authorizingCache =
-        new AuthorizingCacheImpl(cache, new ShiroAuthorizer(securityService, subject));
+    this.secureCache = new SecureCacheImpl(cache, new ShiroSecurity(securityService, subject));
   }
 
   @Override

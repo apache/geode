@@ -23,16 +23,18 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
+import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class, AEQTest.class})
 public class CreateAsyncEventQueueCommandDUnitTest {
 
 
@@ -50,21 +52,22 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
   @Test
   public void createQueueWithInvalidClass() throws Exception {
-    server = lsRule.startServerVM(0, x -> x.withJMXManager());
+    server = lsRule.startServerVM(0, MemberStarterRule::withJMXManager);
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    IgnoredException.addIgnoredException("java.lang.ClassNotFoundException: xyz");
-    gfsh.executeAndAssertThat(COMMAND + " --id=queue --listener=xyz").statusIsError()
-        .tableHasRowCount("Member", 1).tableHasRowWithValues("Member", "Status", "server-0",
-            "ERROR: java.lang.ClassNotFoundException: xyz");
+    IgnoredException
+        .addIgnoredException("java.lang.ClassNotFoundException: class.that.does.not.Exist");
+    gfsh.executeAndAssertThat(COMMAND + " --id=queue --listener=class.that.does.not.Exist")
+        .statusIsError().tableHasRowWithValues("Member", "Status", "Message", "server-0", "ERROR",
+            " java.lang.ClassNotFoundException: class.that.does.not.Exist");
   }
 
   @Test
   public void createQueueWithoutCC() throws Exception {
-    server = lsRule.startServerVM(0, x -> x.withJMXManager());
+    server = lsRule.startServerVM(0, MemberStarterRule::withJMXManager);
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()
-        .containsOutput("This change is not persisted in the cluster configuration")
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Success").tableHasRowCount("Member", 1);
+        .containsOutput(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED)
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK").tableHasRowCount("Member", 1);
   }
 
   @Test
@@ -76,16 +79,19 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     // verify a simple create aeq command
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()
         .tableHasRowCount("Member", 2)
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Success", "Success");
+        .tableHasRowWithValues("Member", "Status", "Message", "server-1", "OK", "Success")
+        .tableHasRowWithValues("Member", "Status", "Message", "server-2", "OK", "Success");
 
     IgnoredException
         .addIgnoredException("java.lang.IllegalStateException: A GatewaySender with id  "
             + "AsyncEventQueue_queue  is already defined in this cache.");
     // create a queue with the same id would result in failure
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsError()
-        .tableHasRowCount("Member", 2).tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR: java.lang.IllegalStateException: A GatewaySender with id  AsyncEventQueue_queue  is already defined in this cache.",
-            "ERROR: java.lang.IllegalStateException: A GatewaySender with id  AsyncEventQueue_queue  is already defined in this cache.");
+        .tableHasRowCount("Member", 2)
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "ERROR")
+        .tableHasColumnWithExactValuesInAnyOrder("Message",
+            " java.lang.IllegalStateException: A GatewaySender with id  AsyncEventQueue_queue  is already defined in this cache.",
+            " java.lang.IllegalStateException: A GatewaySender with id  AsyncEventQueue_queue  is already defined in this cache.");
 
     gfsh.executeAndAssertThat("create disk-store --name=diskStore2 --dir=diskstore");
     locator.waitTillDiskstoreIsReady("diskStore2", 2);
@@ -117,7 +123,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     });
 
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()
-        .tableHasRowCount("Member", 1).tableHasColumnWithExactValuesInAnyOrder("Status", "Success");
+        .tableHasRowCount("Member", 1)
+        .tableHasRowWithValues("Member", "Status", "Message", "server-1", "OK", "Success");
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService service =

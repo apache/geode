@@ -175,7 +175,8 @@ public class CacheRule extends AbstractDistributedTestRule {
   }
 
   public InternalCache getOrCreateCache() {
-    if (cache == null) {
+    if (cache == null || cache.isClosed()) {
+      cache = null;
       createCache();
       assertThat(cache).isNotNull();
     }

@@ -23,7 +23,12 @@ The <%=vars.product_name_long%> cluster configuration service persists cluster c
 
 ## Why Use the Cluster Configuration Service
 
-We highly recommend that you use the `gfsh` command line and the cluster configuration service as the primary mechanism to manage your distributed system configuration. Using a common cluster configuration reduces the amount of time you spend configuring individual members and enforces consistent configurations when bringing up new members in your cluster. You no longer need to reconfigure each new member that you add to the cluster. You no longer need to worry about validating your cache.xml file. It also becomes easier to propagate configuration changes across your cluster and deploy your configuration changes to different environments.
+We highly recommend that you use the `gfsh` command line 
+and the cluster configuration service as the primary mechanism
+to manage your distributed system configuration.
+Specify configuration within a `cache.xml` file for only those
+items that cannot be specified or altered using `gfsh`.
+Using a common cluster configuration reduces the amount of time you spend configuring individual members and enforces consistent configurations when bringing up new members in your cluster. You no longer need to reconfigure each new member that you add to the cluster. You no longer need to worry about validating your `cache.xml` file. It also becomes easier to propagate configuration changes across your cluster and deploy your configuration changes to different environments.
 
 You can use the cluster configuration service to:
 
@@ -73,25 +78,21 @@ The following `gfsh` commands cause the configuration to be written to all locat
 -   `create async-event-queue`
 -   `deploy jar`
 -   `undeploy jar`
-
-**\*** Note that the `configure pdx` command must be executed *before* starting your data members. This command does not affect any currently running members in the system. Data members (with cluster configuration enabled) that are started after running this command will pick up the new PDX configuration.
-
-The following gateway-related commands use the cluster configuration service, and their configuration is saved by locators:
-
 -   `create gateway-sender`
 -   `create gateway-receiver`
 
+**\*** Note that the `configure pdx` command must be executed *before* starting your data members. This command does not affect any currently running members in the system. Data members (with cluster configuration enabled) that are started after running this command will pick up the new PDX configuration.
+
 ## <a id="concept_r22_hyw_bl__section_bn3_23p_y4" class="no-quick-link"></a>gfsh Limitations
 
-There are some configurations that you cannot create using `gfsh`, and that you must configure using cache.xml or the API:
+These are the configurations that you cannot create or alter using `gfsh`.
+These configurations must be within a `cache.xml` file or be applied
+by using the API:
 
 -   Client cache configuration
 -   You cannot directly modify the attributes of the following objects:
     -   `function`
     -   `custom-load-probe`
-    -   `cache-listener`
-    -   `cache-loader`
-    -   `cache-writer`
     -   `compressor`
     -   `serializer`
     -   `instantiator`
@@ -100,9 +101,7 @@ There are some configurations that you cannot create using `gfsh`, and that you 
         **Note:**
         The `configure pdx` command always specifies the `org.apache.geode.pdx.ReflectionBasedAutoSerializer` class. You cannot specify a custom PDX serializer in gfsh.
 
-    -   `custom-expiry`
     -   `initializer`
-    -   `declarable`
     -   `lru-heap-percentage`
     -   `lru-memory-size`
     -   `partition-resolver`
@@ -110,11 +109,7 @@ There are some configurations that you cannot create using `gfsh`, and that you 
     -   `transaction-listener`
     -   `transaction-writer`
 -   Adding or removing a `TransactionListener`
--   Adding JNDI bindings
 -   Deleting an `AsyncEventQueue`
-
-In addition, there are some limitations on configuring gateways using `gfsh`. You must use cache.xml or the Java APIs to configure the following:
-
 -   Configuring a `GatewayConflictResolver`
 -   You cannot specify parameters and values for Java classes for the following:
     -   `gateway-listener`

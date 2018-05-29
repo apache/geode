@@ -23,10 +23,11 @@ import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class GfshParserParsingTest {
   @ClassRule
   public static GfshParserRule parser = new GfshParserRule();

@@ -27,15 +27,20 @@ subprojects {
 
       // As the method name suggests, bump this number if any of the below "custom" rules change.
       // Spotless will not run on unchanged files unless this number changes.
-      bumpThisNumberIfACustomStepChanges(2)
+      bumpThisNumberIfACustomStepChanges(3)
 
       removeUnusedImports()
 
       custom 'Remove commented-out import statements', {
         it.replaceAll(/\n\/\/ import .*?;.*/, '')
       }
-
-      // Enforce style import order
+      custom 'Refuse wildcard imports', {
+        // Wildcard imports can't be resolved by spotless itself.
+        // This will require the developer themselves to adhere to best practices.
+        if (it =~ /\nimport .*\*;/) {
+          throw new AssertionError("Do not use wildcard imports.  'spotlessApply' cannot resolve this issue.");
+        }
+      }
       importOrderFile "${project(':geode-core').projectDir}/../etc/eclipseOrganizeImports.importorder"
 
       custom 'Remove unhelpful javadoc stubs', {

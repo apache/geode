@@ -28,11 +28,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class})
 public class RemoveCommandDUnitTest {
   private static final String REPLICATE_REGION_NAME = "replicateRegion";
   private static final String PARTITIONED_REGION_NAME = "partitionedRegion";
@@ -112,12 +111,8 @@ public class RemoveCommandDUnitTest {
   public void removeKeyFromPartitionedRegion() {
     String command = "remove --key=key1 --region=" + PARTITIONED_REGION_NAME;
 
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
-
-    String output = gfsh.getGfshOutput();
-    assertThat(output).containsPattern("Result\\s+:\\s+true");
-    assertThat(output).containsPattern("Key Class\\s+:\\s+java.lang.String");
-    assertThat(output).containsPattern("Key\\s+:\\s+key1");
+    gfsh.executeAndAssertThat(command).statusIsSuccess().containsKeyValuePair("Result", "true")
+        .containsKeyValuePair("Key Class", "java.lang.String").containsKeyValuePair("Key", "key1");
 
     server1.invoke(() -> verifyKeyIsRemoved(PARTITIONED_REGION_NAME, "key1"));
     server2.invoke(() -> verifyKeyIsRemoved(PARTITIONED_REGION_NAME, "key1"));

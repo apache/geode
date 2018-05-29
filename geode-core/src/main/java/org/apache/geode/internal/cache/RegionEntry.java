@@ -461,4 +461,6 @@ public interface RegionEntry {
   @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
   Object prepareValueForCache(RegionEntryContext context, Object value, EntryEventImpl event,
       boolean isEntryUpdate);
+
+  boolean isEvicted();
 }

@@ -610,21 +610,21 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 
 <tr>
 <td>ssl-enabled-components</td>
-<td>Components for which to enable SSL. Comma-separated list of one or more of (cluster, gateway, http, jmx, locator, server) or "all". When defining this property, also set <code>security-udp-dhalgo</code> to secure UDP cluster communications.</td>
+<td>Components for which to enable SSL. Comma-separated list of one or more of (cluster, gateway, jmx, locator, server, web) or "all". When defining this property, also set <code>security-udp-dhalgo</code> to secure UDP cluster communications.</td>
 <td>S, L</td>
 <td>all</td>
 </tr>
 
 <tr>
 <td>ssl-require-authentication</td>
-<td>Boolean. Require two-way authentication for SSL-enabled components. Applies to all components except http.</td>
+<td>Boolean. Require two-way authentication for SSL-enabled components. Applies to all components except web.</td>
 <td>S, L</td>
 <td>true</td>
 </tr>
 
 <tr>
 <td>ssl-http-require-authentication</td>
-<td>Boolean. Require two-way authentication for http component.</td>
+<td>Boolean. Require two-way authentication for web component.</td>
 <td>S, L</td>
 <td>false</td>
 </tr>
@@ -638,7 +638,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 
 <tr>
 <td>ssl-<em>component</em>-alias</td>
-<td>String. Certificate name for specified <em>component</em>, which is one of: cluster, gateway, http, jmx, locator, or server.</td>
+<td>String. Certificate name for specified <em>component</em>, which is one of: cluster, gateway, jmx, locator, server, or web.</td>
 <td>S, L</td>
 <td></td>
 </tr>
@@ -758,7 +758,7 @@ See <a href="../../developing/distributed_regions/how_region_versioning_works.ht
 <tr class="even">
 <td>use-cluster-configuration</td>
 <td>This property is only applicable for data members (non-client and non-locator). A value of &quot;true&quot; causes a member to request and use the configuration from cluster configuration services running on dedicated locators. Setting this property to &quot;false&quot; causes a member to not request the configuration from the configuration services running on the locator(s).</td>
-<td>L</td>
+<td>S</td>
 <td>true</td>
 </tr>
 <tr class="odd">

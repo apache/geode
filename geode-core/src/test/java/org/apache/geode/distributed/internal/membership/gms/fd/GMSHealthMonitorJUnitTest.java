@@ -195,7 +195,6 @@ public class GMSHealthMonitorJUnitTest {
     assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
   }
 
-  // @Category(FlakyTest.class) // GEODE-2073
   @Test
   public void testHMNextNeighborAfterTimeout() throws Exception {
     System.out.println("testHMNextNeighborAfterTimeout starting");

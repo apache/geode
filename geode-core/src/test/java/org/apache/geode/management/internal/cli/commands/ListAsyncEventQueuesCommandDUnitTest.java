@@ -24,13 +24,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, AEQTest.class})
 public class ListAsyncEventQueuesCommandDUnitTest {
 
   @ClassRule
@@ -42,16 +44,16 @@ public class ListAsyncEventQueuesCommandDUnitTest {
   private static MemberVM locator;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     locator = lsRule.startLocatorVM(0);
     lsRule.startServerVM(1, "group1", locator.getPort());
     lsRule.startServerVM(2, "group2", locator.getPort());
   }
 
   @Test
-  public void list() throws Exception {
+  public void list() {
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
-        .containsOutput("No Async Event Queues Found");
+        .containsOutput(CliStrings.LIST_ASYNC_EVENT_QUEUES__NO_QUEUES_FOUND_MESSAGE);
 
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();

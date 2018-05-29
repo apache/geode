@@ -42,9 +42,10 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class ElidedPutAllDUnitTest extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = -184003583877999750L;

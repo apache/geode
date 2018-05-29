@@ -35,11 +35,12 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.PartitioningTest;
 
 /**
  * This Dunit test class have multiple tests to tests different validations of static partitioning
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, PartitioningTest.class})
 public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
   public FixedPartitioningDUnitTest() {

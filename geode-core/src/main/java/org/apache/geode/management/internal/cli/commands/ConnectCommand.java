@@ -74,6 +74,9 @@ public class ConnectCommand extends InternalGfshCommand {
   // millis that connect --locator will wait for a response from the locator.
   static final int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
 
+  private static final int VERSION_MAJOR = 0;
+  private static final int VERSION_MINOR = 1;
+
   private static final UserInputProperty[] USER_INPUT_PROPERTIES =
       {UserInputProperty.KEYSTORE, UserInputProperty.KEYSTORE_PASSWORD,
           UserInputProperty.KEYSTORE_TYPE, UserInputProperty.TRUSTSTORE,
@@ -169,7 +172,10 @@ public class ConnectCommand extends InternalGfshCommand {
     String remoteVersion = null;
     try {
       remoteVersion = invoker.getRemoteVersion();
-      if (remoteVersion.equalsIgnoreCase(gfshVersion)) {
+      if (versionComponent(remoteVersion, VERSION_MAJOR)
+          .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MAJOR))
+          && versionComponent(remoteVersion, VERSION_MINOR)
+              .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MINOR))) {
         return result;
       }
     } catch (Exception e) {
@@ -185,6 +191,11 @@ public class ConnectCommand extends InternalGfshCommand {
       return ResultBuilder.createUserErrorResult(String.format(
           "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
     }
+  }
+
+  private String versionComponent(String version, int component) {
+    String[] versionComponents = StringUtils.split(version, '.');
+    return versionComponents.length >= component + 1 ? versionComponents[component] : "";
   }
 
   /**

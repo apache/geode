@@ -1427,6 +1427,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * but igored at P. The deltaGII should send nothing to R since the RVVs are the same. So after
    * GII, P and R will have different tombstone number. But P's tombstones should be expired.
    */
+  @Category(FlakyTest.class)
   @Test
   public void testExpiredTombstoneSkippedAtProviderOnly() throws Throwable {
     prepareForEachTest();

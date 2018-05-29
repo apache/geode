@@ -33,10 +33,11 @@ import org.apache.geode.management.internal.cli.converters.DiskStoreNameConverte
 import org.apache.geode.management.internal.cli.converters.FilePathConverter;
 import org.apache.geode.management.internal.cli.converters.FilePathStringConverter;
 import org.apache.geode.management.internal.cli.converters.RegionPathConverter;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class GfshParserConverterTest {
 
   private GfshParserRule.CommandCandidate commandCandidate;

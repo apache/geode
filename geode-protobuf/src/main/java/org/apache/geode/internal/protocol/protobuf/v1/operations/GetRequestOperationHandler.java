@@ -18,6 +18,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
@@ -25,7 +26,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
@@ -45,8 +45,8 @@ public class GetRequestOperationHandler
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
     }
 
-    AuthorizingCache authorizingCache = messageExecutionContext.getAuthorizingCache();
-    Object resultValue = authorizingCache.get(regionName, decodedKey);
+    SecureCache secureCache = messageExecutionContext.getSecureCache();
+    Object resultValue = secureCache.get(regionName, decodedKey);
 
     BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
     return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());

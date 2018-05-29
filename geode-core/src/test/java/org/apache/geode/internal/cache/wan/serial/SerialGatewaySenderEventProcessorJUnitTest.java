@@ -14,15 +14,20 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.ThreadMonitoring;
@@ -31,9 +36,11 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -42,6 +49,8 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
   private AbstractGatewaySender sender;
 
   private TestSerialGatewaySenderEventProcessor processor;
+
+  private static final Logger logger = LogService.getLogger();
 
   @Before
   public void setUp() throws Exception {
@@ -106,6 +115,30 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     } finally {
       AbstractGatewaySender.TOKEN_TIMEOUT = originalTokenTimeout;
     }
+  }
+
+  @Test
+  public void validateUnProcessedEventsList() {
+    Map<EventID, AbstractGatewaySender.EventWrapper> unprocessedEvents =
+        (Map<EventID, AbstractGatewaySender.EventWrapper>) ReflectionTestUtils.getField(processor,
+            "unprocessedEvents");
+
+    long complexThreadId1 = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0, 1, 1);
+    long complexThreadId3 = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0, 3, 3);
+    unprocessedEvents.put(new EventID("mem1".getBytes(), complexThreadId1, 1L), null);
+    unprocessedEvents.put(new EventID("mem2".getBytes(), 2L, 2L), null);
+
+    String unProcessedEvents = this.processor.printUnprocessedEvents();
+    logger.info("UnprocessedEvents: " + unProcessedEvents);
+    assertThat(unProcessedEvents).contains("threadID=0x1010000|1;sequenceID=1");
+    assertThat(unProcessedEvents).contains("threadID=2;sequenceID=2");
+
+    processor.unprocessedTokens.put(new EventID("mem3".getBytes(), complexThreadId3, 3L), 3L);
+    processor.unprocessedTokens.put(new EventID("mem4".getBytes(), 4L, 4L), 4L);
+    String unProcessedTokens = this.processor.printUnprocessedTokens();
+    logger.info("UnprocessedTokens: " + unProcessedTokens);
+    assertThat(unProcessedTokens).contains("threadID=0x3010000|3;sequenceID=3");
+    assertThat(unProcessedTokens).contains("threadID=4;sequenceID=4");
   }
 
   private EventID handlePrimaryEvent() {

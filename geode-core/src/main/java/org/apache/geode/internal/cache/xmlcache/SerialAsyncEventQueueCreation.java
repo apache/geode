@@ -86,5 +86,5 @@ public class SerialAsyncEventQueueCreation extends AbstractGatewaySender impleme
   }
 
   @Override
-  protected void setModifiedEventId(EntryEventImpl clonedEvent) {}
+  public void setModifiedEventId(EntryEventImpl clonedEvent) {}
 }

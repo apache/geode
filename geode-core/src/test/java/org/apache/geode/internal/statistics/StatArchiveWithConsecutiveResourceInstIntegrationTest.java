@@ -38,6 +38,7 @@ import org.apache.geode.internal.SystemAdmin.StatSpec;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Confirms existence of GEODE-1782 and its fix.
@@ -48,7 +49,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since Geode 1.0
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class StatArchiveWithConsecutiveResourceInstIntegrationTest {
 
   private static final Logger logger = LogManager.getLogger();

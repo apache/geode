@@ -56,7 +56,7 @@ public class PulseSecurityWithSSLTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties securityProps = new Properties();
-    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.WEB);
+    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.ALL);
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     securityProps.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());

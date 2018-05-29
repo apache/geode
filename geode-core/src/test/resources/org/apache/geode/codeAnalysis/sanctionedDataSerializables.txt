@@ -186,13 +186,11 @@ org/apache/geode/distributed/internal/ShutdownMessage,2
 fromData,27
 toData,24
 
-org/apache/geode/distributed/internal/StartupMessage,3
-fromDataProblem,38
+org/apache/geode/distributed/internal/StartupMessage,2
 fromData,293
 toData,318
 
-org/apache/geode/distributed/internal/StartupResponseMessage,3
-fromDataProblem,43
+org/apache/geode/distributed/internal/StartupResponseMessage,2
 fromData,220
 toData,170
 
@@ -392,8 +390,7 @@ org/apache/geode/internal/InternalInstantiator$RegistrationContextMessage,2
 fromData,14
 toData,14
 
-org/apache/geode/internal/InternalInstantiator$RegistrationMessage,3
-fromDataProblem,38
+org/apache/geode/internal/InternalInstantiator$RegistrationMessage,2
 fromData,125
 toData,46
 
@@ -1823,9 +1820,8 @@ org/apache/geode/internal/cache/persistence/MembershipViewRequest$MembershipView
 fromData,36
 toData,38
 
-org/apache/geode/internal/cache/persistence/PersistentMemberID,3
+org/apache/geode/internal/cache/persistence/PersistentMemberID,2
 fromData,74
-fromData662,66
 toData,71
 
 org/apache/geode/internal/cache/persistence/PersistentMemberPattern,2
@@ -2068,10 +2064,12 @@ org/apache/geode/management/internal/cli/domain/DataCommandResult$KeyInfo,2
 fromData,41
 toData,41
 
-org/apache/geode/management/internal/cli/functions/CliFunctionResult,4
-fromData,58
+org/apache/geode/management/internal/cli/functions/CliFunctionResult,6
+fromData,19
+fromDataPre_GEODE_1_6_0_0,70
 fromDataPre_GFE_8_0_0_0,31
-toData,49
+toData,14
+toDataPre_GEODE_1_6_0_0,49
 toDataPre_GFE_8_0_0_0,25
 
 org/apache/geode/management/internal/configuration/domain/Configuration,2

@@ -52,6 +52,7 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
 
+  public static final String GROUP_STATUS_SECTION = "group-status";
   static final String COMMAND_NAME = "alter async-event-queue";
   static final String ID = "id";
   static final String BATCH_SIZE = "batch-size";
@@ -98,7 +99,7 @@ public class AlterAsyncEventQueueCommand extends InternalGfshCommand {
     }
 
     ResultModel result = new ResultModel();
-    TabularResultModel tableData = result.addTable();
+    TabularResultModel tableData = result.addTable(GROUP_STATUS_SECTION);
     boolean xmlUpdated = false;
     try {
       Region<String, Configuration> configRegion = service.getConfigurationRegion();

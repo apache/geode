@@ -12,21 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
-
-import java.util.List;
-import java.util.Set;
+package org.apache.geode.test.junit.categories;
 
 /**
- * Access layer for the function service that performs authorization checks
+ * Test Category that specifies a logging test
  */
-public interface AuthorizingFunctionService {
-  List<Object> executeFunctionOnRegion(String functionID, String regionName, Object arguments,
-      Set<?> keyFilter);
-
-  List<Object> executeFunctionOnMember(String functionID, Object arguments,
-      List<String> memberNameList);
-
-  List<Object> executeFunctionOnGroups(String functionID, Object arguments,
-      List<String> groupNameList);
+public interface LoggingTest {
 }

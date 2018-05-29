@@ -27,18 +27,15 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.PersistenceTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, PersistenceTest.class})
 public class PersistentRecoveryOrderOldConfigDUnitTest extends PersistentRecoveryOrderDUnitTest {
-
-  public PersistentRecoveryOrderOldConfigDUnitTest() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
 
   @Override
   protected AsyncInvocation createPersistentRegionAsync(final VM vm) {
     SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
+      @Override
       public void run() {
         Cache cache = getCache();
         File dir = getDiskDirForVM(vm);
@@ -57,5 +54,4 @@ public class PersistentRecoveryOrderOldConfigDUnitTest extends PersistentRecover
     };
     return vm.invokeAsync(createRegion);
   }
-
 }

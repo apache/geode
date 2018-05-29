@@ -16,7 +16,8 @@
 # limitations under the License.
 
 GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-")
 TARGET=geode
 
 set -x
-fly -t ${TARGET} set-pipeline -p meta-${GEODE_BRANCH} -c meta.yml --var geode-build-branch=${GEODE_BRANCH}
+fly -t ${TARGET} set-pipeline -p meta-${SANITIZED_GEODE_BRANCH} -c meta.yml --var geode-build-branch=${GEODE_BRANCH}

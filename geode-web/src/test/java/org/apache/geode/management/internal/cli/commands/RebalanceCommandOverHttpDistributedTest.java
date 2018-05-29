@@ -20,8 +20,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-3530
 @SuppressWarnings("serial")
 public class RebalanceCommandOverHttpDistributedTest extends RebalanceCommandDistributedTest {
 

@@ -28,20 +28,25 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.domain.Stock;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class DestroyIndexCommandsDUnitTest {
 
   private static final String REGION_1 = "REGION1";
   private static final String INDEX_1 = "INDEX1";
   private static final String INDEX_2 = "INDEX2";
+  private static final String GROUP_1 = "group1";
+  private static final String GROUP_2 = "group2";
 
   private MemberVM locator;
   private MemberVM server1;
@@ -59,18 +64,25 @@ public class DestroyIndexCommandsDUnitTest {
     props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
         "org.apache.geode.management.internal.cli.domain.Stock");
     locator = rule.startLocatorVM(0);
+
+    props.setProperty("groups", GROUP_1);
     server1 = rule.startServerVM(1, props, locator.getPort());
+    props.setProperty("groups", GROUP_2);
     server2 = rule.startServerVM(2, props, locator.getPort());
 
-    server1.invoke(() -> {
-      createRegionAndIndex();
-    });
-
-    server2.invoke(() -> {
-      createRegionAndIndex();
-    });
-
     gfsh.connectAndVerify(locator);
+
+    gfsh.executeAndAssertThat(String.format("create region --name=%s --type=REPLICATE", REGION_1))
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        String.format("create index --name=%s --expression=key --region=%s", INDEX_1, REGION_1))
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        String.format("create index --name=%s --expression=id --region=%s", INDEX_2, REGION_1))
+        .statusIsSuccess();
+
+    assertIndexCount(REGION_1, 2);
   }
 
   private static void createRegionAndIndex() throws Exception {
@@ -86,57 +98,45 @@ public class DestroyIndexCommandsDUnitTest {
   @Test
   public void testDestroyAllIndexesOnRegion() throws Exception {
     gfsh.executeAndAssertThat("destroy index --region=" + REGION_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status",
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message",
             "Destroyed all indexes on region REGION1", "Destroyed all indexes on region REGION1");
 
-    server1.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      assertThat(cache.getQueryService().getIndexes()).isEmpty();
-    });
-
-    server2.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      assertThat(cache.getQueryService().getIndexes()).isEmpty();
-    });
+    assertIndexCount(REGION_1, 0);
 
     // Check idempotency
     gfsh.executeAndAssertThat("destroy index --if-exists --region=" + REGION_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status",
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message",
             "Destroyed all indexes on region REGION1", "Destroyed all indexes on region REGION1");
   }
 
   @Test
   public void testDestroyOneIndexOnRegion() throws Exception {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --region=" + REGION_1)
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Status",
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Message",
             "Destroyed index INDEX1 on region REGION1", "Destroyed index INDEX1 on region REGION1");
-
-    server1.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
-    });
-
-    server2.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
-    });
+    assertIndexCount(REGION_1, 1);
 
     // Check idempotency
     gfsh.executeAndAssertThat(
         "destroy index --if-exists --name=" + INDEX_1 + " --region=" + REGION_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Index INDEX1 not found - skipped",
-            "Index INDEX1 not found - skipped");
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "IGNORED", "IGNORED")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found",
+            "Index named \"INDEX1\" not found");
+    assertIndexCount(REGION_1, 1);
 
     // Check error result is correct
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --region=" + REGION_1)
-        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR: Index named \"INDEX1\" not found", "ERROR: Index named \"INDEX1\" not found");
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "ERROR").statusIsError()
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found",
+            "Index named \"INDEX1\" not found");
   }
 
   @Test
   public void testDestroyAllIndexesOnOneMember() throws Exception {
     gfsh.executeAndAssertThat("destroy index --member=server-1").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed all indexes");
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed all indexes");
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -150,14 +150,14 @@ public class DestroyIndexCommandsDUnitTest {
 
     // Check idempotency
     gfsh.executeAndAssertThat("destroy index --if-exists --member=server-1").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed all indexes");
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed all indexes");
   }
 
   @Test
   public void testDestroyOneIndexOnOneMember() throws Exception {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
         .statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed index INDEX1");
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -171,20 +171,20 @@ public class DestroyIndexCommandsDUnitTest {
 
     // Check idempotency
     gfsh.executeAndAssertThat("destroy index --if-exists --name=" + INDEX_1 + " --member=server-1")
-        .statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Index INDEX1 not found - skipped");
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Status", "IGNORED")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found");
 
     // Check error result is correct
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
-        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR: Index named \"INDEX1\" not found");
+        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found");
   }
 
   @Test
-  public void testVariableResultDestroyOneIndex() throws Exception {
+  public void testPartialSuccessResultDestroyOneIndex() throws Exception {
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
-        .statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed index INDEX1");
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Status", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -198,8 +198,82 @@ public class DestroyIndexCommandsDUnitTest {
 
     // Check error on partial failure
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed index INDEX1",
-            "ERROR: Index named \"INDEX1\" not found");
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index named \"INDEX1\" not found",
+            "Destroyed index INDEX1");
 
+    assertIndexCount(REGION_1, 1);
+  }
+
+  @Test
+  public void destroyIndexOnOneGroupWithoutAssociatedClusterConfig() {
+    gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --group=" + GROUP_1)
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Member", "server-1")
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX1");
+
+    gfsh.executeAndAssertThat("destroy index --name=" + INDEX_2 + " --group=" + GROUP_2)
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Member", "server-2")
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Destroyed index INDEX2");
+
+    // The index count on each server and the cluster config will now have diverged because the
+    // index+region were not originally defined per group but at the cluster level.
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
+    });
+
+    server2.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(1);
+    });
+
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService svc =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      RegionConfig regionConfig = svc.getCacheConfig("cluster").findRegionConfiguration(REGION_1);
+      assertThat(regionConfig.getIndexes().size()).isEqualTo(2);
+    });
+  }
+
+  @Test
+  public void destroyIndexOnRegionNotInClusterConfig() {
+    IgnoredException.addIgnoredException("failed to update cluster config for cluster");
+    IgnoredException.addIgnoredException(
+        "org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException");
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      factory.create("REGION3");
+      cache.getQueryService().createIndex("INDEX3", "key", "/REGION3");
+    });
+
+    gfsh.executeAndAssertThat("destroy index --name=INDEX3" + " --region=REGION3").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "OK", "ERROR")
+        .tableHasColumnWithExactValuesInAnyOrder("Message",
+            "Destroyed index INDEX3 on region REGION3", "Region \"REGION3\" not found");
+
+    assertIndexCount(REGION_1, 2);
+  }
+
+  private void assertIndexCount(String region, int indexCount) {
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(indexCount);
+    });
+
+    server2.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      assertThat(cache.getQueryService().getIndexes().size()).isEqualTo(indexCount);
+    });
+
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService svc =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      RegionConfig regionConfig = svc.getCacheConfig("cluster").findRegionConfiguration(region);
+      assertThat(regionConfig.getIndexes().size()).isEqualTo(indexCount);
+    });
   }
 }

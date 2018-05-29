@@ -27,11 +27,12 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, AEQTest.class})
 public class AlterAsyncEventQueueCommandDUnitTest {
 
   @Rule

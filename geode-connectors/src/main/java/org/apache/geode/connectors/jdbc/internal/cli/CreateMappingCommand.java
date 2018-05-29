@@ -83,7 +83,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateMappingFunction(), mapping, targetMembers);
 
-    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null);
+    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false);
     result.setConfigObject(mapping);
     return result;
   }

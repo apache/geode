@@ -69,6 +69,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15, 240000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15, 240000));
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
+    vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }
 
   @Test
@@ -105,6 +107,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
+    vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
 
   }
 
@@ -142,6 +146,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
+    vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }
 
   @Test
@@ -178,6 +184,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
+    vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }
 
   @Test
@@ -215,6 +223,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 1000));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 800));
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
+    vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }
 
   @Test
@@ -247,6 +257,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 800));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 800));
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
+    vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }
 
   @Test
@@ -285,5 +297,7 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
     vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 1000));
     vm7.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 1000));
+    vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
+    vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }
 }

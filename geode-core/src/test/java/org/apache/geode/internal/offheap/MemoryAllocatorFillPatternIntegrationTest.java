@@ -32,11 +32,12 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OffHeapTest.class})
 public class MemoryAllocatorFillPatternIntegrationTest {
   private static Random random = ThreadLocalRandom.current();
 

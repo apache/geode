@@ -80,29 +80,29 @@ import org.apache.geode.annotations.Experimental;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "cache-transaction-manager-type",
     namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"transactionListener", "transactionWriter"})
+    propOrder = {"transactionListeners", "transactionWriter"})
 @Experimental
 public class CacheTransactionManagerType {
 
   @XmlElement(name = "transaction-listener", namespace = "http://geode.apache.org/schema/cache")
-  protected List<DeclarableType> transactionListener;
+  protected List<DeclarableType> transactionListeners;
   @XmlElement(name = "transaction-writer", namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType transactionWriter;
 
   /**
-   * Gets the value of the transactionListener property.
+   * Gets the value of the transactionListeners property.
    *
    * <p>
    * This accessor method returns a reference to the live list,
    * not a snapshot. Therefore any modification you make to the
    * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the transactionListener property.
+   * This is why there is not a <CODE>set</CODE> method for the transactionListeners property.
    *
    * <p>
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getTransactionListener().add(newItem);
+   * getTransactionListeners().add(newItem);
    * </pre>
    *
    *
@@ -112,11 +112,11 @@ public class CacheTransactionManagerType {
    *
    *
    */
-  public List<DeclarableType> getTransactionListener() {
-    if (transactionListener == null) {
-      transactionListener = new ArrayList<DeclarableType>();
+  public List<DeclarableType> getTransactionListeners() {
+    if (transactionListeners == null) {
+      transactionListeners = new ArrayList<DeclarableType>();
     }
-    return this.transactionListener;
+    return this.transactionListeners;
   }
 
   /**

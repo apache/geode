@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -36,6 +35,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.Index;
@@ -48,8 +48,6 @@ import org.apache.geode.cache.query.internal.index.CompactMapRangeIndex;
 import org.apache.geode.cache.query.internal.index.HashIndex;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -61,7 +59,7 @@ public class CreateDefinedIndexesFunctionTest {
   private FunctionContext context;
   private QueryService queryService;
   private TestResultSender resultSender;
-  private Set<IndexInfo> indexDefinitions;
+  private Set<RegionConfig.Index> indexDefinitions;
   private CreateDefinedIndexesFunction function;
 
   @Before
@@ -75,9 +73,30 @@ public class CreateDefinedIndexesFunctionTest {
     doReturn(queryService).when(cache).getQueryService();
 
     indexDefinitions = new HashSet<>();
-    indexDefinitions.add(new IndexInfo("index1", "value1", "/Region1", IndexType.HASH));
-    indexDefinitions.add(new IndexInfo("index2", "value2", "/Region2", IndexType.FUNCTIONAL));
-    indexDefinitions.add(new IndexInfo("index3", "value3", "/Region1", IndexType.PRIMARY_KEY));
+    indexDefinitions.add(new RegionConfig.Index() {
+      {
+        setName("index1");
+        setExpression("value1");
+        setFromClause("/Region1");
+        setType(IndexType.HASH.getName());
+      }
+    });
+    indexDefinitions.add(new RegionConfig.Index() {
+      {
+        setName("index2");
+        setExpression("value2");
+        setFromClause("/Region2");
+        setType(IndexType.FUNCTIONAL.getName());
+      }
+    });
+    indexDefinitions.add(new RegionConfig.Index() {
+      {
+        setName("index3");
+        setExpression("value3");
+        setFromClause("/Region1");
+        setType(IndexType.PRIMARY_KEY.getName());
+      }
+    });
   }
 
   @Test
@@ -89,7 +108,7 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
+    assertThat(results.size()).isEqualTo(2);
     Object firstResult = results.get(0);
     assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
     assertThat(((CliFunctionResult) firstResult).isSuccessful()).isTrue();
@@ -107,7 +126,7 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
+    assertThat(results.size()).isEqualTo(2);
     Object firstResult = results.get(0);
     assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
     assertThat(((CliFunctionResult) firstResult).isSuccessful()).isTrue();
@@ -129,16 +148,21 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
-    Object firstResult = results.get(0);
-    assertThat(firstResult).isNotNull();
-    assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
-    assertThat(((CliFunctionResult) firstResult).isSuccessful()).isFalse();
-    assertThat(((CliFunctionResult) firstResult).getSerializables().length).isEqualTo(1);
-    assertThat(((CliFunctionResult) firstResult).getSerializables()[0]).isNotNull();
-    assertThat(((CliFunctionResult) firstResult).getSerializables()[0].toString()).contains(
-        "Index creation failed for indexes", "index1", "Mock Failure", "index3",
-        "Another Mock Failure");
+    assertThat(results.size()).isEqualTo(4);
+
+    CliFunctionResult result1 = (CliFunctionResult) results.get(0);
+    assertThat(result1.isSuccessful()).isTrue();
+    assertThat(result1.getStatusMessage()).isEqualTo("Created index index2");
+
+    CliFunctionResult result2 = (CliFunctionResult) results.get(1);
+    assertThat(result2.isSuccessful()).isFalse();
+    assertThat(result2.getStatusMessage())
+        .isEqualTo("Failed to create index index1: Mock Failure.");
+
+    CliFunctionResult result3 = (CliFunctionResult) results.get(2);
+    assertThat(result3.isSuccessful()).isFalse();
+    assertThat(result3.getStatusMessage())
+        .isEqualTo("Failed to create index index3: Another Mock Failure.");
   }
 
   @Test
@@ -151,15 +175,11 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(1);
-    Object firstResult = results.get(0);
-    assertThat(firstResult).isNotNull();
-    assertThat(firstResult).isInstanceOf(CliFunctionResult.class);
-    assertThat(((CliFunctionResult) firstResult).isSuccessful()).isFalse();
-    assertThat(((CliFunctionResult) firstResult).getSerializables().length).isEqualTo(1);
-    assertThat(((CliFunctionResult) firstResult).getSerializables()[0]).isNotNull();
-    assertThat(((CliFunctionResult) firstResult).getSerializables()[0].toString())
-        .contains("RuntimeException", "Mock Exception");
+    assertThat(results.size()).isEqualTo(2);
+    CliFunctionResult firstResult = (CliFunctionResult) results.get(0);
+
+    assertThat(firstResult.isSuccessful()).isFalse();
+    assertThat(firstResult.getStatusMessage()).isEqualTo("Mock Exception");
   }
 
   @Test
@@ -176,7 +196,6 @@ public class CreateDefinedIndexesFunctionTest {
     when(index3.getName()).thenReturn("index3");
     when(index3.getRegion()).thenReturn(region1);
 
-    doReturn(mock(XmlEntity.class)).when(function).createXmlEntity(any());
     when(queryService.createDefinedIndexes()).thenReturn(Arrays.asList(index1, index2, index3));
     context = new FunctionContextImpl(cache, CreateDefinedIndexesFunction.class.getName(),
         indexDefinitions, resultSender);
@@ -185,18 +204,12 @@ public class CreateDefinedIndexesFunctionTest {
     List<?> results = resultSender.getResults();
 
     assertThat(results).isNotNull();
-    assertThat(results.size()).isEqualTo(2);
+    assertThat(results.size()).isEqualTo(4);
 
     Object firstIndex = results.get(0);
     assertThat(firstIndex).isNotNull();
     assertThat(firstIndex).isInstanceOf(CliFunctionResult.class);
     assertThat(((CliFunctionResult) firstIndex).isSuccessful());
-
-    Object secondIndex = results.get(0);
-    assertThat(secondIndex).isNotNull();
-    assertThat(secondIndex).isInstanceOf(CliFunctionResult.class);
-    assertThat(((CliFunctionResult) secondIndex).isSuccessful()).isTrue();
-    assertThat(((CliFunctionResult) secondIndex).getXmlEntity()).isNotNull();
   }
 
   private static class TestResultSender implements ResultSender {

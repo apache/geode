@@ -12,24 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.test.junit.categories;
 
-import org.apache.shiro.subject.Subject;
-
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.ResourcePermission;
-
-public class ShiroAuthorizer implements Authorizer {
-  private final Subject subject;
-  private final SecurityService securityService;
-
-  public ShiroAuthorizer(SecurityService securityService, Subject subject) {
-    this.securityService = securityService;
-    this.subject = subject;
-  }
-
-  @Override
-  public void authorize(ResourcePermission permission) {
-    securityService.authorize(permission, subject);
-  }
+/**
+ * JUnit Test Category that specifies a test involving the http session store.
+ */
+public interface HttpSessionTest {
 }

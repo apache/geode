@@ -14,11 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.management.cli.Result;
@@ -197,7 +195,7 @@ public class ResultBuilder {
     boolean success = false;
     for (CliFunctionResult result : functionResults) {
       tabularData.accumulate("Member", result.getMemberIdOrName());
-      tabularData.accumulate("Status", result.getStatus());
+      tabularData.accumulate("Status", result.getLegacyStatus());
       // if one member returns back successful results, the command results in success
       if (result.isSuccessful()) {
         success = true;
@@ -239,7 +237,7 @@ public class ResultBuilder {
       GfJsonObject jsonObject = new GfJsonObject(json);
 
       if (jsonObject.has("legacy") && !jsonObject.getBoolean("legacy")) {
-        return createModelBasedCommandResult(json);
+        return new ModelCommandResult(ResultModel.fromJson(json));
       }
 
       GfJsonObject data = jsonObject.getJSONObject("data");
@@ -279,19 +277,6 @@ public class ResultBuilder {
     }
 
     return result;
-  }
-
-  public static CommandResult createModelBasedCommandResult(String json) {
-    ObjectMapper mapper = new ObjectMapper();
-
-    ResultModel response;
-    try {
-      response = mapper.readValue(json, ResultModel.class);
-    } catch (IOException iox) {
-      throw new RuntimeException(iox);
-    }
-
-    return new ModelCommandResult(response);
   }
 
   public static String resultAsString(Result result) {

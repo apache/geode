@@ -3083,6 +3083,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       boolean success = false;
       try {
         setRegionByPath(region.getFullPath(), region);
+        region.preInitialize();
         region.initialize(snapshotInputStream, imageTarget, internalRegionArgs);
         success = true;
       } catch (CancelException | RedundancyAlreadyMetException e) {

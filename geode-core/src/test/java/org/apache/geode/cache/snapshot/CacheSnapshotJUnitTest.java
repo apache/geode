@@ -28,8 +28,9 @@ import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SnapshotTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SnapshotTest.class})
 public class CacheSnapshotJUnitTest extends SnapshotTestCase {
   @Test
   public void testExportAndImport() throws Exception {

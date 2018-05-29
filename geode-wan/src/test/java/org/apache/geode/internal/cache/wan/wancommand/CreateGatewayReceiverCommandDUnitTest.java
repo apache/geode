@@ -87,16 +87,17 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String command = CREATE_GATEWAYRECEIVER;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"");
     gfsh.executeAndAssertThat(command).statusIsError()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
-        .tableHasColumnWithValuesContaining("Status", "ERROR: java.lang.IllegalStateException: "
-            + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
+        .tableHasColumnWithValuesContaining("Status", "ERROR")
+        .tableHasColumnWithValuesContaining("Message",
+            "java.lang.IllegalStateException: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
   }
 
   @Test
-  public void commandFailsIfAnyReceiverFailsToCreateWithoutSkipOption() {
+  public void commandSucceedsIfAnyReceiverFailsToCreateEvenWithoutSkipOption() {
     // Create a receiver on one server (but not all) so that the command to create receivers on all
     // will fail on one (but not all). Such a failure should be reported as a failure to GFSH,
     // unless --skip-if-exists is present.
@@ -107,13 +108,13 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String createOnBoth = CREATE_GATEWAYRECEIVER;
     gfsh.executeAndAssertThat(createOnS1).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"");
-    gfsh.executeAndAssertThat(createOnBoth).statusIsError()
+    gfsh.executeAndAssertThat(createOnBoth).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
-        .tableHasColumnWithValuesContaining("Status",
-            "ERROR: java.lang.IllegalStateException: "
-                + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "OK")
+        .tableHasColumnWithValuesContaining("Message",
+            "java.lang.IllegalStateException: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
   }
 
@@ -129,11 +130,11 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String createOnBoth = CREATE_GATEWAYRECEIVER + " --if-not-exists";
     gfsh.executeAndAssertThat(createOnS1).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"");
     gfsh.executeAndAssertThat(createOnBoth).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "Skipping: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
   }
@@ -158,7 +159,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -171,12 +172,11 @@ public class CreateGatewayReceiverCommandDUnitTest {
     // This should fail as there's already a gateway receiver created on the member.
     gfsh.executeAndAssertThat(command).statusIsError()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR: java.lang.IllegalStateException: "
-                + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
-            "ERROR: java.lang.IllegalStateException: "
-                + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
-            "ERROR: java.lang.IllegalStateException: "
+        .tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR", "ERROR", "ERROR")
+        .tableHasColumnWithExactValuesInAnyOrder("Message",
+            " java.lang.IllegalStateException: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
+            " java.lang.IllegalStateException: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER,
+            " java.lang.IllegalStateException: "
                 + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
   }
 
@@ -194,7 +194,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String command = CliStrings.CREATE_GATEWAYRECEIVER;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -234,7 +234,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -264,7 +264,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -298,7 +298,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -335,7 +335,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -375,7 +375,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -421,7 +421,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -464,7 +464,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -498,7 +498,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -531,7 +531,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1,org.apache.geode.cache30.MyGatewayTransportFilter2";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -567,7 +567,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.MEMBER + "=" + server1Member.getId();
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"");
 
     invokeInEveryMember(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost",
@@ -602,7 +602,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + CliStrings.MEMBER + "=" + server1Member.getId() + "," + server2Member.getId();
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
 
@@ -636,7 +636,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + "=receiverGroup1";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");
@@ -669,7 +669,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + "=receiverGroup1";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"");
 
@@ -702,7 +702,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             + "=receiverGroup1,receiverGroup2";
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", SERVER_1, SERVER_2, SERVER_3)
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"" + SERVER_1 + "\"",
             "GatewayReceiver created on member \"" + SERVER_2 + "\"",
             "GatewayReceiver created on member \"" + SERVER_3 + "\"");

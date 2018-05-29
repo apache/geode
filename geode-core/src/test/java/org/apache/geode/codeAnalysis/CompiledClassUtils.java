@@ -26,18 +26,32 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledField;
 import org.apache.geode.codeAnalysis.decode.CompiledMethod;
+import org.apache.geode.internal.Version;
 
 public class CompiledClassUtils {
+
+  static Set<String> allowedDataSerializerMethods;
+
+  static {
+    allowedDataSerializerMethods = new HashSet<>();
+    Version.getAllVersions().iterator().forEachRemaining((version) -> {
+      allowedDataSerializerMethods.add("toDataPre_" + version.getMethodSuffix());
+      allowedDataSerializerMethods.add("fromDataPre_" + version.getMethodSuffix());
+    });
+  }
+
   /**
    * Parse the given class files and return a map of name->Dclass. Any IO exceptions are consumed by
    * this method and written to stderr.
@@ -191,14 +205,27 @@ public class CompiledClassUtils {
         ClassAndMethods nc = newclass;
         newclass = null;
         if (gold.methods.size() != nc.numMethods()) {
-          changedClassesSb.append(nc).append(": method count\n");
+          changedClassesSb.append(nc).append(": method count (expected " + gold.methods.size()
+              + " but found " + nc.numMethods() + ")\n");
           continue;
         }
         boolean comma = false;
         for (Map.Entry<String, CompiledMethod> entry : nc.methods.entrySet()) {
           CompiledMethod method = entry.getValue();
-          String name = method.name();
-          Integer goldCode = gold.methods.get(name);
+          String methodName = method.name();
+          if (!methodName.equals("toData") && !methodName.equals("fromData")
+              && !allowedDataSerializerMethods.contains(methodName)) {
+            if (comma) {
+              changedClassesSb.append(", and ");
+            } else {
+              changedClassesSb.append(nc).append(":  ");
+              comma = true;
+            }
+            changedClassesSb.append(methodName)
+                .append(" is not a valid method name - doesn't match any Version");
+            continue;
+          }
+          Integer goldCode = gold.methods.get(methodName);
           if (goldCode == null) {
             if (comma) {
               changedClassesSb.append(", and ");
@@ -206,7 +233,7 @@ public class CompiledClassUtils {
               changedClassesSb.append(nc).append(":  ");
               comma = true;
             }
-            changedClassesSb.append(name).append(" was added");
+            changedClassesSb.append(methodName).append(" was added");
             continue; // only report one diff per class
           }
           if (goldCode != method.getCode().code.length) {
@@ -216,7 +243,7 @@ public class CompiledClassUtils {
               changedClassesSb.append(nc).append(":  ");
               comma = true;
             }
-            changedClassesSb.append(name)
+            changedClassesSb.append(methodName)
                 .append(" (len=" + method.getCode().code.length + ",expected=" + goldCode + ")");
             continue;
           }

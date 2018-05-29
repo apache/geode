@@ -512,7 +512,6 @@ public class GMSJoinLeaveJUnitTest {
         view.getCrashedMembers().contains(mockMembers[0]));
   }
 
-  // @Category(FlakyTest.class) // GEODE-2074: timed out waiting for view #7
   @Test
   public void testDuplicateJoinRequestDoesNotCauseNewView() throws Exception {
     initMocks();

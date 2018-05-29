@@ -253,7 +253,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
     try {
       validateLuceneIndexProfile(region);
-    } catch (Exception e) {
+    } catch (IllegalStateException e) {
       region.removeCacheServiceProfile(luceneIndexCreationProfile.getId());
       throw new UnsupportedOperationException(
           LocalizedStrings.LuceneIndexCreation_INDEX_CANNOT_BE_CREATED_DUE_TO_PROFILE_VIOLATION

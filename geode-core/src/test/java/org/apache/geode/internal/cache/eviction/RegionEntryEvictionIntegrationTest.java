@@ -27,9 +27,10 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.test.junit.categories.EvictionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, EvictionTest.class})
 public class RegionEntryEvictionIntegrationTest {
   private Region<String, String> region;
 

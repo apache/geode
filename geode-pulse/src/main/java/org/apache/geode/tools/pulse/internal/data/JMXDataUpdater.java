@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -209,14 +210,25 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         Map<String, Object> env = new HashMap<String, Object>();
         env.put(JMXConnector.CREDENTIALS, creds);
 
-        if (repository.isUseSSLManager()) {
-          // use ssl to connect
-          env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
+        Properties originalProperties = System.getProperties();
+        try {
+          Properties updatedProperties = new Properties(originalProperties);
+          if (repository.isUseSSLManager()) {
+            for (String sslProperty : repository.getJavaSslProperties().stringPropertyNames()) {
+              updatedProperties.setProperty(sslProperty,
+                  repository.getJavaSslProperties().getProperty(sslProperty));
+            }
+
+            System.setProperties(updatedProperties);
+            env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
+          }
+          logger.info("Connecting to jmxURL : {}", jmxSerURL);
+          this.conn = JMXConnectorFactory.connect(url, env);
+          this.mbs = this.conn.getMBeanServerConnection();
+          cluster.setConnectedFlag(true);
+        } finally {
+          System.setProperties(originalProperties);
         }
-        logger.info("Connecting to jmxURL : {}", jmxSerURL);
-        this.conn = JMXConnectorFactory.connect(url, env);
-        this.mbs = this.conn.getMBeanServerConnection();
-        cluster.setConnectedFlag(true);
       }
     } catch (Exception e) {
       cluster.setConnectedFlag(false);

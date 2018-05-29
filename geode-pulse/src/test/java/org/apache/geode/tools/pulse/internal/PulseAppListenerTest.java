@@ -16,8 +16,11 @@
 
 package org.apache.geode.tools.pulse.internal;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import org.junit.After;
@@ -41,16 +44,23 @@ public class PulseAppListenerTest {
   @Rule
   public final TestRule restoreSystemProperties = new RestoreSystemProperties();
 
+  ServletContextEvent contextEvent;
+
   @Before
   public void setUp() {
     repository = Repository.get();
     appListener = new PulseAppListener();
+
+    contextEvent = mock(ServletContextEvent.class);
+    ServletContext context = mock(ServletContext.class);
+    when(context.getAttribute(anyString())).thenReturn(null);
+    when(contextEvent.getServletContext()).thenReturn(context);
   }
 
   @Test
   public void embeddedModeDefaultPropertiesRepositoryInitializationTest() {
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED, "true");
-    appListener.contextInitialized(mock(ServletContextEvent.class));
+    appListener.contextInitialized(contextEvent);
 
     Assert.assertEquals(false, repository.getJmxUseLocator());
     Assert.assertEquals(false, repository.isUseSSLManager());
@@ -70,7 +80,7 @@ public class PulseAppListenerTest {
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR,
         Boolean.TRUE.toString());
 
-    appListener.contextInitialized(mock(ServletContextEvent.class));
+    appListener.contextInitialized(contextEvent);
 
     Assert.assertEquals(false, repository.getJmxUseLocator());
     Assert.assertEquals(true, repository.isUseSSLManager());

@@ -16,6 +16,9 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
 
+import org.apache.geode.cache.configuration.CacheConfig.GatewayReceiver;
+import org.apache.geode.cache.configuration.DeclarableType;
+
 /**
  * This class stores the arguments provided in the create gateway-receiver command.
  */
@@ -40,17 +43,22 @@ public class GatewayReceiverFunctionArgs implements Serializable {
 
   private final Boolean ifNotExists;
 
-  public GatewayReceiverFunctionArgs(Boolean manualStart, Integer startPort, Integer endPort,
-      String bindAddress, Integer socketBufferSize, Integer maximumTimeBetweenPings,
-      String[] gatewayTransportFilters, String hostnameForSenders, Boolean ifNotExists) {
-    this.manualStart = manualStart;
-    this.startPort = startPort;
-    this.endPort = endPort;
-    this.bindAddress = bindAddress;
-    this.socketBufferSize = socketBufferSize;
-    this.maximumTimeBetweenPings = maximumTimeBetweenPings;
-    this.gatewayTransportFilters = gatewayTransportFilters;
-    this.hostnameForSenders = hostnameForSenders;
+  public GatewayReceiverFunctionArgs(GatewayReceiver configuration, Boolean ifNotExists) {
+    this.manualStart = configuration.isManualStart();
+    this.startPort =
+        configuration.getStartPort() != null ? Integer.valueOf(configuration.getStartPort()) : null;
+    this.endPort =
+        configuration.getEndPort() != null ? Integer.valueOf(configuration.getEndPort()) : null;
+    this.bindAddress = configuration.getBindAddress();
+    this.socketBufferSize = configuration.getSocketBufferSize() != null
+        ? Integer.valueOf(configuration.getSocketBufferSize()) : null;
+    this.maximumTimeBetweenPings = configuration.getMaximumTimeBetweenPings() != null
+        ? Integer.valueOf(configuration.getMaximumTimeBetweenPings()) : null;
+    this.gatewayTransportFilters = configuration.getGatewayTransportFilters() != null
+        ? configuration.getGatewayTransportFilters().stream().map(DeclarableType::getClassName)
+            .toArray(String[]::new)
+        : null;
+    this.hostnameForSenders = configuration.getHostnameForSenders();
     this.ifNotExists = ifNotExists;
   }
 

@@ -1221,7 +1221,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     @Override
-    protected boolean shouldNotifyBridgeClients() {
+    public boolean shouldNotifyBridgeClients() {
       return false;
     }
 
@@ -1293,5 +1293,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         GatewaySenderEventImpl.release(event.getRawOldValue());
       }
     }
+  }
+
+  public String displayContent() {
+    return this.region.keySet().toString();
   }
 }

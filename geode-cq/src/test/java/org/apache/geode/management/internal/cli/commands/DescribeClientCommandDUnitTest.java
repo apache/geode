@@ -50,9 +50,10 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, GfshTest.class})
 @SuppressWarnings("serial")
 public class DescribeClientCommandDUnitTest {
 
@@ -122,7 +123,7 @@ public class DescribeClientCommandDUnitTest {
   private void validateResults(boolean subscriptionEnabled) {
     CommandResult result = gfsh.executeCommand("list members");
     // list is always locator-0, server-1, server-2
-    String server1 = result.getTableColumnValues("0", "Id").get(1);
+    String server1 = result.getTableColumnValues("members", "Id").get(1);
 
     result = gfsh.executeCommand("list clients");
     String clientId = result.getColumnFromTableContent(CliStrings.LIST_CLIENT_COLUMN_Clients,

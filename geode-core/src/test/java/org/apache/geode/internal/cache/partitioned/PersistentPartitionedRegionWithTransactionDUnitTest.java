@@ -33,12 +33,13 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 
 /**
  * Tests the basic use cases for PR persistence.
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class PersistentPartitionedRegionWithTransactionDUnitTest
     extends PersistentPartitionedRegionTestBase {
 

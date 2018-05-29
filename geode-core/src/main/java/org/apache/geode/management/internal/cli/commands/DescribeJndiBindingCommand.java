@@ -34,8 +34,8 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeJndiBindingCommand extends InternalGfshCommand {
+  public static final String JNDI_PROPERTIES_SECTION = "jndi-properties";
   private static final Logger logger = LogService.getLogger();
-
   static final String DESCRIBE_JNDI_BINDING = "describe jndi-binding";
   private static final String DESCRIBE_JNDIBINDING__HELP =
       "Describe the configuration of the given jndi binding.";
@@ -49,7 +49,7 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
       help = "Name of the binding to describe") String bindingName) {
 
     ResultModel crm = new ResultModel();
-    TabularResultModel tabularData = crm.addTable();
+    TabularResultModel tabularData = crm.addTable(JNDI_PROPERTIES_SECTION);
 
     InternalConfigurationPersistenceService ccService =
         (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
@@ -93,7 +93,8 @@ public class DescribeJndiBindingCommand extends InternalGfshCommand {
             addTableRow(tabularData, "login-timeout-seconds", binding.getLoginTimeoutSeconds());
           }
 
-          for (JndiBindingsType.JndiBinding.ConfigProperty confProp : binding.getConfigProperty()) {
+          for (JndiBindingsType.JndiBinding.ConfigProperty confProp : binding
+              .getConfigProperties()) {
             addTableRow(tabularData, confProp.getName(), confProp.getValue());
           }
 

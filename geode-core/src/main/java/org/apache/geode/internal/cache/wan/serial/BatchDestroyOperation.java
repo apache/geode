@@ -102,7 +102,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         }
 
         // Optimized way
-        for (long k = (Long) this.key; k <= this.tailKey; k++) {
+        for (long k = (Long) this.key; k <= this.tailKey && this.tailKey != -1; k++) {
           try {
             for (GatewayEventFilter filter : rgn.getSerialGatewaySender()
                 .getGatewayEventFilters()) {
@@ -121,6 +121,34 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
           } catch (EntryNotFoundException e) {
             if (isDebugEnabled) {
               logger.debug("For key {} there is no entry in the region.", k);
+            }
+          }
+        }
+
+        // destroy dropped event from unprocessedKeys
+        if (this.tailKey == -1) {
+          SerialGatewaySenderEventProcessor ep = null;
+          int index = ((Long) this.key).intValue();
+          if (index == -1) {
+            // this is SerialGatewaySenderEventProcessor
+            ep = (SerialGatewaySenderEventProcessor) rgn.getSerialGatewaySender()
+                .getEventProcessor();
+          } else {
+            ConcurrentSerialGatewaySenderEventProcessor csgep =
+                (ConcurrentSerialGatewaySenderEventProcessor) rgn.getSerialGatewaySender()
+                    .getEventProcessor();
+            if (csgep != null && csgep.processors != null) {
+              ep = csgep.processors.get(index);
+            }
+          }
+          if (ep != null) {
+            // if sender is being shutdown, the ep could be null
+            boolean removed = ep.basicHandlePrimaryDestroy(ev.getEventId());
+            if (removed) {
+              if (isDebugEnabled) {
+                logger.debug("Removed a dropped event {} from unprocessedEvents.",
+                    (EntryEventImpl) event);
+              }
             }
           }
         }

@@ -28,16 +28,16 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ListConnectionCommand extends GfshCommand {
+  public static final String JDBC_CONNECTIONS_SECTION = "jdbc-connections";
   static final String LIST_JDBC_CONNECTION = "list jdbc-connections";
   static final String LIST_JDBC_CONNECTION__HELP =
       EXPERIMENTAL + "Display jdbc connections for all members.";
@@ -49,7 +49,7 @@ public class ListConnectionCommand extends GfshCommand {
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result listConnection() {
+  public ResultModel listConnection() {
 
     Collection<ConnectorService.Connection> connections = null;
 
@@ -78,21 +78,18 @@ public class ListConnectionCommand extends GfshCommand {
     }
 
     if (connections == null) {
-      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_CONNECTIONS_FOUND);
+      return ResultModel.createInfo(EXPERIMENTAL + "\n" + "No connections found");
     }
 
     // output
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean connectionsExist = fillTabularResultData(connections, tabularResultData);
-    return createResult(tabularResultData, connectionsExist);
-  }
-
-  private Result createResult(TabularResultData tabularResultData, boolean connectionsExist) {
+    ResultModel resultModel = new ResultModel();
+    boolean connectionsExist =
+        fillTabularResultData(connections, resultModel.addTable(JDBC_CONNECTIONS_SECTION));
     if (connectionsExist) {
-      tabularResultData.setHeader(EXPERIMENTAL);
-      return ResultBuilder.buildResult(tabularResultData);
+      resultModel.setHeader(EXPERIMENTAL);
+      return resultModel;
     } else {
-      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_CONNECTIONS_FOUND);
+      return ResultModel.createInfo(EXPERIMENTAL + "\n" + NO_CONNECTIONS_FOUND);
     }
   }
 
@@ -100,9 +97,9 @@ public class ListConnectionCommand extends GfshCommand {
    * Returns true if any connections exist
    */
   private boolean fillTabularResultData(Collection<ConnectorService.Connection> connections,
-      TabularResultData tabularResultData) {
+      TabularResultModel tableModel) {
     for (ConnectorService.Connection connectionConfig : connections) {
-      tabularResultData.accumulate(LIST_OF_CONNECTIONS, connectionConfig.getName());
+      tableModel.accumulate(LIST_OF_CONNECTIONS, connectionConfig.getName());
     }
     return !connections.isEmpty();
   }

@@ -54,8 +54,7 @@ public class OqlQueryRequestOperationHandler
     Object[] bindParameters = decodeBindParameters(serializationService, encodedParameters);
 
     try {
-      Object results =
-          messageExecutionContext.getAuthorizingCache().query(queryString, bindParameters);
+      Object results = messageExecutionContext.getSecureCache().query(queryString, bindParameters);
       return Success.of(encodeResults(serializationService, results));
     } catch (QueryException e) {
       logger.info("Query failed: " + queryString, e);

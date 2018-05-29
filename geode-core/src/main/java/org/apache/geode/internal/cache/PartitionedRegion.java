@@ -8139,7 +8139,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean shouldNotifyBridgeClients() {
+  public boolean shouldNotifyBridgeClients() {
     return true;
   }
 

@@ -14,15 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.domain;
 
+import java.io.Serializable;
+import java.util.Properties;
+
 /**
  * Used to transfer information about an AsyncEventQueue from a function being executed on a server
  * back to the manager that invoked the function.
  *
  * @since GemFire 8.0
  */
-import java.io.Serializable;
-import java.util.Properties;
-
 public class AsyncEventQueueDetails implements Serializable {
   private static final long serialVersionUID = 1L;
   private final String id;

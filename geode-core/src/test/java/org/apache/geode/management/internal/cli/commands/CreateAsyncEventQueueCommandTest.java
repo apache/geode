@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,7 +49,8 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
+import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -58,6 +60,7 @@ public class CreateAsyncEventQueueCommandTest {
 
   public static final String COMMAND = "create async-event-queue ";
   public static final String MINIUM_COMMAND = COMMAND + "--id=id --listener=xyz";
+
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
@@ -72,19 +75,19 @@ public class CreateAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void mandatoryId() throws Exception {
+  public void mandatoryId() {
     gfsh.executeAndAssertThat(command, COMMAND + "--listener=xyz").statusIsError()
         .containsOutput("Invalid command");
   }
 
   @Test
-  public void mandatoryListener() throws Exception {
+  public void mandatoryListener() {
     gfsh.executeAndAssertThat(command, COMMAND + "--id=id").statusIsError()
         .containsOutput("Invalid command");
   }
 
   @Test
-  public void cannotCreateAEQOnOneMember() throws Exception {
+  public void cannotCreateAEQOnOneMember() {
     // AEQ can not be created on one member since it needs to update CC.
     // This test is to make sure we don't add this option
     gfsh.executeAndAssertThat(command, COMMAND + "--id=id --listener=xyz --member=xyz")
@@ -92,7 +95,7 @@ public class CreateAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void defaultValues() throws Exception {
+  public void defaultValues() {
     GfshParseResult result = gfsh.parse(MINIUM_COMMAND);
     assertThat(result.getParamValue(CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL)).isEqualTo(5);
     assertThat(result.getParamValue(CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE)).isEqualTo(100);
@@ -113,39 +116,36 @@ public class CreateAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void noMemberFound() throws Exception {
+  public void noMemberFound() {
     doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError()
         .containsOutput("No Members Found");
   }
 
   @Test
-  public void buildResult_all_success() throws Exception {
+  public void buildResult_all_success() {
     List<CliFunctionResult> functionResults = new ArrayList<>();
-    XmlEntity xmlEntity = mock(XmlEntity.class);
-    functionResults.add(new CliFunctionResult("member1", xmlEntity, "SUCCESS"));
-    functionResults.add(new CliFunctionResult("member2", xmlEntity, "SUCCESS"));
+    functionResults.add(new CliFunctionResult("member1", StatusState.OK, "SUCCESS"));
+    functionResults.add(new CliFunctionResult("member2", StatusState.OK, "SUCCESS"));
 
     // this is only to make the code pass that member check
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().hasNoFailToPersistError()
-        .tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Status", "member1", "SUCCESS")
-        .tableHasRowWithValues("Member", "Status", "member2", "SUCCESS");
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess()
+        .tableHasRowWithValues("Member", "Status", "Message", "member1", "OK", "SUCCESS")
+        .tableHasRowWithValues("Member", "Status", "Message", "member1", "OK", "SUCCESS");
 
     // addXmlEntity should only be called once
-    verify(service).addXmlEntity(xmlEntity, null);
+    verify(service, times(1)).updateCacheConfig(any(), any());
   }
 
 
   @Test
-  public void buildResult_all_failure() throws Exception {
+  public void buildResult_all_failure() {
     List<CliFunctionResult> functionResults = new ArrayList<>();
-    XmlEntity xmlEntity = mock(XmlEntity.class);
-    functionResults.add(new CliFunctionResult("member1", false, "failed"));
+    functionResults.add(new CliFunctionResult("member1", StatusState.ERROR, "failed"));
     functionResults
         .add(new CliFunctionResult("member2", new RuntimeException("exception happened"), null));
 
@@ -154,21 +154,18 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError().hasNoFailToPersistError()
-        .tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Status", "member1", "ERROR: failed")
-        .tableHasRowWithValues("Member", "Status", "member2",
-            "ERROR: java.lang.RuntimeException: exception happened");
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError().tableHasRowCount("Member", 2)
+        .tableHasRowWithValues("Member", "Status", "Message", "member1", "ERROR", "failed")
+        .tableHasRowWithValues("Member", "Status", "Message", "member2", "ERROR",
+            " java.lang.RuntimeException: exception happened");
 
-    // addXmlEntity should not be called
-    verify(service, times(0)).addXmlEntity(xmlEntity, null);
+    verify(service, never()).updateCacheConfig(any(), any());
   }
 
   @Test
-  public void buildResult_one_failure_one_success() throws Exception {
+  public void buildResult_one_failure_one_success() {
     List<CliFunctionResult> functionResults = new ArrayList<>();
-    XmlEntity xmlEntity = mock(XmlEntity.class);
-    functionResults.add(new CliFunctionResult("member1", xmlEntity, "SUCCESS"));
+    functionResults.add(new CliFunctionResult("member1", StatusState.OK, "SUCCESS"));
     functionResults
         .add(new CliFunctionResult("member2", new RuntimeException("exception happened"), null));
 
@@ -177,29 +174,28 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().hasNoFailToPersistError()
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess()
         .tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Status", "member1", "SUCCESS").tableHasRowWithValues(
-            "Member", "Status", "member2", "ERROR: java.lang.RuntimeException: exception happened");
+        .tableHasRowWithValues("Member", "Status", "Message", "member1", "OK", "SUCCESS")
+        .tableHasRowWithValues("Member", "Status", "Message", "member2", "ERROR",
+            " java.lang.RuntimeException: exception happened");
 
-    // addXmlEntity should be called once
-    verify(service).addXmlEntity(xmlEntity, null);
+    verify(service, times(1)).updateCacheConfig(any(), any());
   }
 
   @Test
-  public void command_succeeded_but_no_cluster_config_service() throws Exception {
+  public void command_succeeded_but_no_cluster_config_service() {
     doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());
 
     List<CliFunctionResult> functionResults = new ArrayList<>();
-    XmlEntity xmlEntity = mock(XmlEntity.class);
-    functionResults.add(new CliFunctionResult("member1", xmlEntity, "SUCCESS"));
+    functionResults.add(new CliFunctionResult("member1", StatusState.OK, "SUCCESS"));
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().hasFailToPersistError();
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess()
+        .containsOutput(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
 
-    // addXmlEntity should not be called
-    verify(service, times(0)).addXmlEntity(xmlEntity, null);
+    verify(service, never()).updateCacheConfig(any(), any());
   }
 }

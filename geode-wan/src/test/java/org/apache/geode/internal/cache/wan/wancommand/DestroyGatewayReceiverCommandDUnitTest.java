@@ -124,7 +124,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -153,7 +153,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -188,7 +188,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -224,7 +224,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -258,7 +258,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false")).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"");
     verifyConfigHasGatewayReceiver("cluster");
 
@@ -295,7 +295,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("true")).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
@@ -328,7 +328,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     gfsh.executeAndAssertThat(
         createGatewayReceiverCommand("false", CliStrings.MEMBER + ":server-4,server-5"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4", "server-5")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
     VMProvider.invokeInEveryMember(WANCommandUtils::verifyReceiverDoesNotExist, server3);
@@ -354,7 +354,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
   }
 
   @Test
-  public void destroyIfExistsWithoutGatewayReceivers_isSkipping() {
+  public void destroyIfExistsWithoutGatewayReceivers_isIgnored() {
     Integer locator1Port = locatorSite1.getPort();
     server3 = clusterStartupRule.startServerVM(3, locator1Port);
     server4 = clusterStartupRule.startServerVM(4, locator1Port);
@@ -368,7 +368,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.IFEXISTS, "true").addOption(CliStrings.MEMBER, server3.getName());
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Status", "Skipping:");
+        .tableHasColumnWithValuesContaining("Status", "IGNORED");
   }
 
   @Test
@@ -380,7 +380,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp1");
@@ -412,11 +412,11 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"");
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp1");
     verifyConfigHasGatewayReceiver("Grp2");
@@ -449,11 +449,11 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp1"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"");
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp1");
     verifyConfigHasGatewayReceiver("Grp2");
@@ -488,7 +488,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp2");
@@ -503,7 +503,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
     CommandStringBuilder csb =
         new CommandStringBuilder(DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER)
             .addOption(CliStrings.GROUP, "Grp1,Grp2,Grp3");
-    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
     verifyConfigDoesNotHaveGatewayReceiver("Grp1");
@@ -513,7 +513,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
   }
 
   @Test
-  public void destroyGatewayReceiverDoesNotExistInMultipleGroups_ifExistsSkipsGroupsWithoutReceviers() {
+  public void destroyGatewayReceiverDoesNotExistInMultipleGroups_ifExistsIgnoresGroupsWithoutReceviers() {
     Integer locator1Port = locatorSite1.getPort();
     server3 = startServerWithGroups(3, "Grp1", locator1Port);
     server4 = startServerWithGroups(4, "Grp2", locator1Port);
@@ -521,7 +521,7 @@ public class DestroyGatewayReceiverCommandDUnitTest {
 
     gfsh.executeAndAssertThat(createGatewayReceiverCommand("false", CliStrings.GROUP + ":Grp2"))
         .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-4")
-        .tableHasColumnWithValuesContaining("Status",
+        .tableHasColumnWithValuesContaining("Message",
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
     verifyConfigHasGatewayReceiver("Grp2");
@@ -538,7 +538,9 @@ public class DestroyGatewayReceiverCommandDUnitTest {
             .addOption(CliStrings.IFEXISTS, "true").addOption(CliStrings.GROUP, "Grp1,Grp2,Grp3");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .doesNotContainOutput("change is not persisted")
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5");
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasRowWithValues("Member", "Status", "server-3", "IGNORED")
+        .tableHasRowWithValues("Member", "Status", "server-5", "IGNORED");
     verifyConfigDoesNotHaveGatewayReceiver("Grp1");
     verifyConfigDoesNotHaveGatewayReceiver("cluster");
 

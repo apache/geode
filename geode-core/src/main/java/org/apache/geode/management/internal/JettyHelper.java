@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal;
 
 import java.io.File;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang.StringUtils;
@@ -46,7 +47,6 @@ public class JettyHelper {
 
   private static final String FILE_PATH_SEPARATOR = System.getProperty("file.separator");
   private static final String USER_DIR = System.getProperty("user.dir");
-
   private static final String USER_NAME = System.getProperty("user.name");
 
   private static final String HTTPS = "https";
@@ -57,6 +57,8 @@ public class JettyHelper {
 
   public static final String SECURITY_SERVICE_SERVLET_CONTEXT_PARAM =
       "org.apache.geode.securityService";
+
+  private static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
 
   public static Server initJetty(final String bindAddress, final int port, SSLConfig sslConfig) {
 
@@ -117,6 +119,10 @@ public class JettyHelper {
         sslContextFactory.setTrustStorePassword(sslConfig.getTruststorePassword());
       }
 
+      if (StringUtils.isNotBlank(sslConfig.getTruststoreType())) {
+        sslContextFactory.setTrustStoreType(sslConfig.getTruststoreType());
+      }
+
       if (logger.isDebugEnabled()) {
         logger.debug(sslContextFactory.dump());
       }
@@ -159,13 +165,17 @@ public class JettyHelper {
   }
 
   public static Server addWebApplication(final Server jetty, final String webAppContext,
-      final String warFilePath, SecurityService securityService) {
+      final String warFilePath, SecurityService securityService, Properties sslConfig) {
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath);
     webapp.setParentLoaderPriority(false);
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
     webapp.setAttribute(SECURITY_SERVICE_SERVLET_CONTEXT_PARAM, securityService);
+
+    // This is only required for Pulse because in embedded mode, with SSL enabled, Pulse needs to
+    // know how to make SSL RMI connections.
+    webapp.setAttribute(GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM, sslConfig);
 
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));
     tmpPath.mkdirs();
@@ -175,7 +185,6 @@ public class JettyHelper {
 
     return jetty;
   }
-
 
   private static String getWebAppBaseDirectory(final String context) {
     String underscoredContext = context.replace("/", "_");

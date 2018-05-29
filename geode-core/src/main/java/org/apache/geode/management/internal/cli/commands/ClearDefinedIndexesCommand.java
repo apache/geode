@@ -18,10 +18,8 @@ package org.apache.geode.management.internal.cli.commands;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -30,11 +28,8 @@ public class ClearDefinedIndexesCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  // TODO : Add optionContext for indexName
-  public Result clearDefinedIndexes() {
+  public ResultModel clearDefinedIndexes() {
     IndexDefinition.indexDefinitions.clear();
-    InfoResultData infoResult = ResultBuilder.createInfoResultData();
-    infoResult.addLine(CliStrings.CLEAR_DEFINED_INDEX__SUCCESS__MSG);
-    return ResultBuilder.buildResult(infoResult);
+    return ResultModel.createInfo(CliStrings.CLEAR_DEFINED_INDEX__SUCCESS__MSG);
   }
 }

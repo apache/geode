@@ -44,11 +44,12 @@ import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Creates Locator and tests logging behavior at a high level.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LoggingTest.class})
 public class LocatorLogFileJUnitTest {
 
   protected static final int TIMEOUT_MILLISECONDS = 180 * 1000; // 2 minutes

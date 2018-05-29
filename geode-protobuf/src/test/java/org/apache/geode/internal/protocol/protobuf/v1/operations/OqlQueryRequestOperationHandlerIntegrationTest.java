@@ -41,6 +41,8 @@ import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.protobuf.security.NoSecurity;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCacheImpl;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.EncodedValue;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
@@ -48,8 +50,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCacheImpl;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -156,8 +156,8 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
       ProtobufSerializationService serializer) throws InvalidExecutionContextException,
       ConnectionStateException, EncodingException, DecodingException {
     final MessageExecutionContext context = mock(MessageExecutionContext.class);
-    when(context.getAuthorizingCache())
-        .thenReturn(new AuthorizingCacheImpl((InternalCache) cache, new NoSecurityAuthorizer()));
+    when(context.getSecureCache())
+        .thenReturn(new SecureCacheImpl((InternalCache) cache, new NoSecurity()));
     final OQLQueryRequest request = OQLQueryRequest.newBuilder().setQuery(query)
         .addAllBindParameter(Arrays.asList(bindParameters)).build();
     Result<OQLQueryResponse> result =

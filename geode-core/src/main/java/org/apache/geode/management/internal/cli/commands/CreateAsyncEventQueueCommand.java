@@ -15,34 +15,34 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.AsyncEventQueueFunctionArgs;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateAsyncEventQueueCommand extends InternalGfshCommand {
+public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.CREATE_ASYNC_EVENT_QUEUE,
       help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
-  public Result createAsyncEventQueue(
+  public ResultModel createAsyncEventQueue(
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, mandatory = true,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID__HELP) String id,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
@@ -108,27 +108,38 @@ public class CreateAsyncEventQueueCommand extends InternalGfshCommand {
     }
 
     Set<DistributedMember> targetMembers = getMembers(groups, null);
-
-    AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel,
-        enableBatchConflation, batchSize, batchTimeInterval, persistent, diskStore, diskSynchronous,
-        maxQueueMemory, dispatcherThreads, orderPolicy, gatewayEventFilters,
-        gatewaySubstitutionListener, listener, listenerProperties, forwardExpirationDestroy);
+    CacheConfig.AsyncEventQueue config = new CacheConfig.AsyncEventQueue();
+    config.setAsyncEventListener(new DeclarableType(listener, listenerProperties));
+    config.setBatchSize(String.valueOf(batchSize));
+    config.setBatchTimeInterval(String.valueOf(batchTimeInterval));
+    config.setDiskStoreName(diskStore);
+    config.setDiskSynchronous(diskSynchronous);
+    config.setDispatcherThreads(String.valueOf(dispatcherThreads));
+    config.setEnableBatchConflation(enableBatchConflation);
+    config.setForwardExpirationDestroy(forwardExpirationDestroy);
+    if (gatewayEventFilters != null) {
+      config.getGatewayEventFilters().addAll(Arrays.stream(gatewayEventFilters)
+          .map(classname -> new DeclarableType((classname))).collect(Collectors.toList()));
+    }
+    if (gatewaySubstitutionListener != null) {
+      config.setGatewayEventSubstitutionFilter(new DeclarableType(gatewaySubstitutionListener));
+    }
+    config.setId(id);
+    config.setMaximumQueueMemory(String.valueOf(maxQueueMemory));
+    config.setOrderPolicy(orderPolicy);
+    config.setParallel(parallel);
+    config.setPersistent(persistent);
 
     CreateAsyncEventQueueFunction function = new CreateAsyncEventQueueFunction();
-    List<CliFunctionResult> results = executeAndGetFunctionResult(function, aeqArgs, targetMembers);
+    List<CliFunctionResult> results = executeAndGetFunctionResult(function, config, targetMembers);
 
-    if (results.size() == 0) {
-      throw new RuntimeException("No results received.");
-    }
-
-    CommandResult commandResult = ResultBuilder.buildResult(results);
-    XmlEntity xmlEntity = findXmlEntity(results);
-    if (xmlEntity != null) {
-      persistClusterConfiguration(commandResult,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-              .addXmlEntity(xmlEntity, groups));
-    }
+    ResultModel commandResult = ResultModel.createMemberStatusResult(results);
+    commandResult.setConfigObject(config);
     return commandResult;
   }
 
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+    config.getAsyncEventQueues().add((CacheConfig.AsyncEventQueue) configObject);
+  }
 }

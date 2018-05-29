@@ -56,13 +56,13 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "disk-dirs-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"diskDir"})
+    propOrder = {"diskDirs"})
 @Experimental
 public class DiskDirsType {
 
   @XmlElement(name = "disk-dir", namespace = "http://geode.apache.org/schema/cache",
       required = true)
-  protected List<DiskDirType> diskDir;
+  protected List<DiskDirType> diskDirs;
 
   /**
    * Gets the value of the diskDir property.
@@ -77,7 +77,7 @@ public class DiskDirsType {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getDiskDir().add(newItem);
+   * getDiskDirs().add(newItem);
    * </pre>
    *
    *
@@ -87,11 +87,11 @@ public class DiskDirsType {
    *
    *
    */
-  public List<DiskDirType> getDiskDir() {
-    if (diskDir == null) {
-      diskDir = new ArrayList<DiskDirType>();
+  public List<DiskDirType> getDiskDirs() {
+    if (diskDirs == null) {
+      diskDirs = new ArrayList<DiskDirType>();
     }
-    return this.diskDir;
+    return this.diskDirs;
   }
 
 }

@@ -36,13 +36,14 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Test off-heap regions with indexes.
  *
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OffHeapTest.class})
 public class OffHeapIndexJUnitTest {
   private GemFireCacheImpl gfc;
 
