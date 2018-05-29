@@ -54,6 +54,7 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -63,7 +64,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * The test ensures that the EXPIRE_DESTROY events are propagated to the subscriber client and the
  * secondary server does process the QRMs for the EXPIRE_DESTROY events.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 @SuppressWarnings("serial")
 public class QueueRemovalMessageProcessingDistributedTest implements Serializable {
 

@@ -45,6 +45,8 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-")
+
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
 mkdir -p ${BIN_DIR} ${TMP_DIR}
@@ -75,10 +77,10 @@ ${SPRUCE} merge --prune metadata \
 TARGET="geode"
 
 TEAM="staging"
-if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^support/* ]]; then
+if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; then
   TEAM="main"
 fi
 
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
-fly -t ${TARGET} set-pipeline --non-interactive --pipeline ${GEODE_BRANCH} --config ${TMP_DIR}/final.yml
+fly -t ${TARGET} set-pipeline --non-interactive --pipeline ${SANITIZED_GEODE_BRANCH} --config ${TMP_DIR}/final.yml
 

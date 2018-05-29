@@ -22,14 +22,14 @@ import org.apache.shiro.subject.Subject;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.protobuf.security.NoSecurity;
+import org.apache.geode.internal.protocol.protobuf.security.NotLoggedInSecurity;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
+import org.apache.geode.internal.protocol.protobuf.security.SecureLocator;
+import org.apache.geode.internal.protocol.protobuf.security.SecureLocatorImpl;
+import org.apache.geode.internal.protocol.protobuf.security.Security;
+import org.apache.geode.internal.protocol.protobuf.security.ShiroSecurity;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.Authorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingCache;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocator;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingLocatorImpl;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NoSecurityAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.NotLoggedInAuthorizer;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.ShiroAuthorizer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.protocol.serialization.ValueSerializer;
@@ -37,34 +37,34 @@ import org.apache.geode.protocol.serialization.ValueSerializer;
 @Experimental
 public class LocatorMessageExecutionContext extends MessageExecutionContext {
   private final Locator locator;
-  private AuthorizingLocator authorizingLocator;
+  private SecureLocator secureLocator;
 
   public LocatorMessageExecutionContext(Locator locator, ClientStatistics statistics,
       SecurityService securityService) {
     super(statistics, securityService);
     this.locator = locator;
-    Authorizer authorizer = securityService.isIntegratedSecurity() ? new NotLoggedInAuthorizer()
-        : new NoSecurityAuthorizer();
-    this.authorizingLocator = new AuthorizingLocatorImpl(locator, authorizer);
+    Security security =
+        securityService.isIntegratedSecurity() ? new NotLoggedInSecurity() : new NoSecurity();
+    this.secureLocator = new SecureLocatorImpl(locator, security);
   }
 
   @Override
-  public AuthorizingCache getAuthorizingCache() throws InvalidExecutionContextException {
+  public SecureCache getSecureCache() throws InvalidExecutionContextException {
     setState(new TerminateConnection());
     throw new InvalidExecutionContextException(
         "Operations on the locator should not to try to operate on a server");
   }
 
   @Override
-  public AuthorizingLocator getAuthorizingLocator() throws InvalidExecutionContextException {
-    return authorizingLocator;
+  public SecureLocator getSecureLocator() throws InvalidExecutionContextException {
+    return secureLocator;
   }
 
   @Override
   public void authenticate(Properties properties) {
     Subject subject = securityService.login(properties);
-    this.authorizingLocator =
-        new AuthorizingLocatorImpl(locator, new ShiroAuthorizer(securityService, subject));
+    this.secureLocator =
+        new SecureLocatorImpl(locator, new ShiroSecurity(securityService, subject));
   }
 
   @Override

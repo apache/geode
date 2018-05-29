@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import static org.apache.geode.security.ResourcePermission.ALL;
 import static org.apache.geode.security.ResourcePermission.Operation.READ;
@@ -26,18 +26,18 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 
-public class AuthorizingLocatorImpl implements AuthorizingLocator {
+public class SecureLocatorImpl implements SecureLocator {
   private final Locator locator;
-  private final Authorizer authorizer;
+  private final Security security;
 
-  public AuthorizingLocatorImpl(Locator locator, Authorizer authorizer) {
+  public SecureLocatorImpl(Locator locator, Security security) {
     this.locator = locator;
-    this.authorizer = authorizer;
+    this.security = security;
   }
 
   @Override
   public ServerLocation findServer(Set<ServerLocation> excludedServers, String serverGroup) {
-    authorizer.authorize(CLUSTER, READ, ALL, ALL);
+    security.authorize(CLUSTER, READ, ALL, ALL);
     InternalLocator internalLocator = (InternalLocator) locator;
 
     // In order to ensure that proper checks are performed on the request we will use

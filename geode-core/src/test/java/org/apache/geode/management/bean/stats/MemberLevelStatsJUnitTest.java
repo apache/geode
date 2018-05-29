@@ -40,8 +40,9 @@ import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.MemberMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.JMXTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, JMXTest.class})
 public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
   @Rule
   public TestName name = new TestName();

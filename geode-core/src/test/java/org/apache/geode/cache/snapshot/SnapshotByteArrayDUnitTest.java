@@ -35,9 +35,10 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SnapshotTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, SnapshotTest.class})
 public class SnapshotByteArrayDUnitTest extends JUnit4CacheTestCase {
   @Rule
   public TemporaryFolder tempDir = new SerializableTemporaryFolder();

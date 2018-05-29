@@ -132,7 +132,7 @@ public class AlterMappingFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus()).contains(REGION_NAME);
+    assertThat(argument.getValue().getStatusMessage()).contains(REGION_NAME);
   }
 
   @Test

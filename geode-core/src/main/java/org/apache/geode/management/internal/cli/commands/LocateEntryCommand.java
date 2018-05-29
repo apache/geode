@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
 
 import java.util.Set;
 
@@ -27,18 +26,18 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 public class LocateEntryCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @CliCommand(value = {CliStrings.LOCATE_ENTRY}, help = CliStrings.LOCATE_ENTRY__HELP)
-  public Result locateEntry(
+  public ResultModel locateEntry(
       @CliOption(key = {CliStrings.LOCATE_ENTRY__KEY}, mandatory = true,
           help = CliStrings.LOCATE_ENTRY__KEY__HELP) String key,
       @CliOption(key = {CliStrings.LOCATE_ENTRY__REGIONNAME}, mandatory = true,
@@ -55,6 +54,8 @@ public class LocateEntryCommand extends InternalGfshCommand {
     authorize(Resource.DATA, Operation.READ, regionPath, key);
 
     DataCommandResult dataResult;
+
+    key = DataCommandsUtils.makeBrokenJsonCompliant(key);
 
     DataCommandFunction locateEntry = new DataCommandFunction();
     Set<DistributedMember> memberList = findMembersForRegion(regionPath);
@@ -76,6 +77,6 @@ public class LocateEntryCommand extends InternalGfshCommand {
       dataResult.setValueClass(valueClass);
     }
 
-    return makePresentationResult(dataResult);
+    return dataResult.toResultModel();
   }
 }

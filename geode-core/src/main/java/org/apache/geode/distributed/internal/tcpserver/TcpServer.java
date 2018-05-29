@@ -371,7 +371,8 @@ public class TcpServer {
       long startTime = DistributionStats.getStatTime();
       DataInputStream input = null;
       try {
-        getSocketCreator().startHandshakeIfSocketIsSSL(socket, READ_TIMEOUT);
+        socket.setSoTimeout(READ_TIMEOUT);
+        getSocketCreator().handshakeIfSocketIsSSL(socket, READ_TIMEOUT);
 
         try {
           input = new DataInputStream(socket.getInputStream());

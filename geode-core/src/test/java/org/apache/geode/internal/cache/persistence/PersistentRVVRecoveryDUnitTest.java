@@ -48,6 +48,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -80,8 +81,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.PersistenceTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, PersistenceTest.class})
 public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase {
 
   private static final int TEST_REPLICATED_TOMBSTONE_TIMEOUT = 1000;
@@ -92,7 +94,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
   @Override
   protected final void postTearDownPersistentReplicatedTestBase() throws Exception {
-    Invoke.invokeInEveryVM(PersistentRecoveryOrderDUnitTest.class, "resetAckWaitThreshold");
+    Invoke.invokeInEveryVM(() -> resetAckWaitThreshold());
   }
 
   @Test
@@ -1014,5 +1016,12 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     byte[] result = (byte[]) vm.invoke(createData);
     ByteArrayInputStream bais = new ByteArrayInputStream(result);
     return DataSerializer.readObject(new DataInputStream(bais));
+  }
+
+  private void resetAckWaitThreshold() {
+    if (SAVED_ACK_WAIT_THRESHOLD != null) {
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ack_wait_threshold",
+          SAVED_ACK_WAIT_THRESHOLD);
+    }
   }
 }

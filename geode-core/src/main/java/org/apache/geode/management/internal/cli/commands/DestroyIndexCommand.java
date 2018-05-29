@@ -22,29 +22,31 @@ import org.apache.commons.lang.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.domain.IndexInfo;
+import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyIndexCommand extends InternalGfshCommand {
+public class DestroyIndexCommand extends SingleGfshCommand {
   private static final DestroyIndexFunction destroyIndexFunction = new DestroyIndexFunction();
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  public Result destroyIndex(
+  public ResultModel destroyIndex(
       @CliOption(key = CliStrings.DESTROY_INDEX__NAME, unspecifiedDefaultValue = "",
           help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
       @CliOption(key = CliStrings.DESTROY_INDEX__REGION, optionContext = ConverterHint.REGION_PATH,
@@ -60,7 +62,7 @@ public class DestroyIndexCommand extends InternalGfshCommand {
 
     if (StringUtils.isBlank(indexName) && StringUtils.isBlank(regionPath)
         && ArrayUtils.isEmpty(group) && ArrayUtils.isEmpty(memberNameOrID)) {
-      return ResultBuilder.createUserErrorResult(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));
     }
 
@@ -68,24 +70,53 @@ public class DestroyIndexCommand extends InternalGfshCommand {
     if (regionPath != null) {
       regionName = regionPath.startsWith("/") ? regionPath.substring(1) : regionPath;
     }
-    IndexInfo indexInfo = new IndexInfo(indexName, regionName);
-    indexInfo.setIfExists(ifExists);
+
+    RegionConfig.Index indexInfo = new RegionConfig.Index();
+    indexInfo.setName(indexName);
+    indexInfo.setFromClause(regionName);
+
     Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 
     if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     List<CliFunctionResult> funcResults =
         executeAndGetFunctionResult(destroyIndexFunction, indexInfo, targetMembers);
-    Result result = ResultBuilder.buildResult(funcResults);
-    XmlEntity xmlEntity = findXmlEntity(funcResults);
+    ResultModel result = ResultModel.createMemberStatusResult(funcResults, ifExists);
 
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-              .deleteXmlEntity(xmlEntity, group));
-    }
+    result.setConfigObject(indexInfo);
+
     return result;
   }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+    RegionConfig.Index indexFromCommand = (RegionConfig.Index) element;
+    String indexName = indexFromCommand.getName();
+
+    String regionName = indexFromCommand.getFromClause();
+    if (regionName != null) {
+      RegionConfig regionConfig = config.findRegionConfiguration(regionName);
+      if (regionConfig == null) {
+        String errorMessage = "Region " + regionName + " not found";
+        if (!ConfigurationPersistenceService.CLUSTER_CONFIG.equals(group)) {
+          errorMessage += " in group " + group;
+        }
+        throw new EntityNotFoundException(errorMessage);
+      }
+
+      if (indexName.isEmpty()) {
+        regionConfig.getIndexes().clear();
+      } else {
+        CacheElement.removeElement(regionConfig.getIndexes(), indexName);
+      }
+    } else {
+      // Need to search for the index name as region was not specified
+      for (RegionConfig r : config.getRegions()) {
+        CacheElement.removeElement(r.getIndexes(), indexName);
+      }
+    }
+  }
+
 }

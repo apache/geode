@@ -83,17 +83,6 @@ public class TypeRegistry {
     }
   }
 
-  /*
-   * Test Hook to clear the type registry
-   */
-  public void testClearTypeRegistry() {
-    this.typeToId.clear();
-    this.idToType.clear();
-    this.idToEnum.clear();
-    this.enumInfoToId.clear();
-    this.distributedTypeRegistry.testClearRegistry();
-  }
-
   public void testClearLocalTypeRegistry() {
     this.localTypeIds.clear();
     this.localTypeIdMaps.clear();
@@ -250,17 +239,6 @@ public class TypeRegistry {
     }
 
     return newType;
-  }
-
-  /**
-   * Test hook that returns the most recently allocated type id
-   *
-   * Note that this method will not work on clients.
-   *
-   * @return the most recently allocated type id
-   */
-  public int getLastAllocatedTypeId() {
-    return this.distributedTypeRegistry.getLastAllocatedTypeId();
   }
 
   public TypeRegistration getTypeRegistration() {
@@ -536,7 +514,7 @@ public class TypeRegistry {
   /**
    * Get the size of the the type registry in this local member
    */
-  public int getLocalSize() {
+  int getLocalSize() {
     int result = this.distributedTypeRegistry.getLocalSize();
     if (result == 0) {
       // If this is the client, go ahead and return the number of cached types we have

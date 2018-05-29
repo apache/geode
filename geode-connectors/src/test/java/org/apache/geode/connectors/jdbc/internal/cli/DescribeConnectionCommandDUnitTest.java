@@ -41,9 +41,10 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, JDBCConnectorTest.class})
 public class DescribeConnectionCommandDUnitTest implements Serializable {
 
   private static final String CONNECTION_NAME = "connectionName";

@@ -47,6 +47,7 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -55,7 +56,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #43684: Register interest with policy KEYS_VALUES is inefficient
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 @SuppressWarnings("serial")
 public class RegisterInterestKeysValuesDistributedTest implements Serializable {
 

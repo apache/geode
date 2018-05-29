@@ -16,10 +16,18 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.After;
@@ -27,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
@@ -48,6 +57,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -117,6 +127,51 @@ public class HARegionQueueIntegrationTest {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     when(member.getVersionObject()).thenReturn(Version.CURRENT);
     return member;
+  }
+
+  @Test
+  public void verifyEndGiiQueueingPutsHAEventWrapperNotClientUpdateMessage() throws Exception {
+    // Create a HAContainerRegion
+    HAContainerWrapper haContainerWrapper = createHAContainerRegion();
+
+    // create message and HAEventWrapper
+    ClientUpdateMessage message = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
+        (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
+        new ClientProxyMembershipID(), new EventID(cache.getDistributedSystem()));
+    HAEventWrapper wrapper = new HAEventWrapper(message);
+    wrapper.setHAContainer(haContainerWrapper);
+
+    // Create and update HARegionQueues forcing one queue to startGiiQueueing
+    int numQueues = 10;
+    HARegionQueue targetQueue = createAndUpdateHARegionQueuesWithGiiQueueing(haContainerWrapper,
+        wrapper, message, numQueues);
+
+    // Verify HAContainerWrapper (1) and refCount (numQueues(10))
+    assertEquals(1, haContainerWrapper.size());
+
+    HAEventWrapper wrapperInContainer = (HAEventWrapper) haContainerWrapper.getKey(wrapper);
+    assertEquals(numQueues, wrapperInContainer.getReferenceCount());
+
+    // Verify that the HAEventWrapper in the giiQueue now has msg = null
+    // this gets set to null when wrapper is added to HAContainer (for non-gii queues)
+    Queue giiQueue = targetQueue.getGiiQueue();
+    assertEquals(1, giiQueue.size());
+
+    HAEventWrapper giiQueueEntry = (HAEventWrapper) giiQueue.peek();
+    assertNotNull(giiQueueEntry);
+    assertNull(giiQueueEntry.getClientUpdateMessage());
+
+    // endGiiQueueing and verify queue empty and putEventInHARegion invoked with HAEventWrapper
+    // not ClientUpdateMessageImpl
+    HARegionQueue spyTargetQueue = spy(targetQueue);
+    spyTargetQueue.endGiiQueueing();
+    assertEquals(0, giiQueue.size());
+
+    ArgumentCaptor<Conflatable> eventCaptor = ArgumentCaptor.forClass(Conflatable.class);
+    verify(spyTargetQueue).putEventInHARegion(eventCaptor.capture(), anyLong());
+    Conflatable capturedEvent = eventCaptor.getValue();
+    assertTrue(capturedEvent instanceof HAEventWrapper);
+    assertNotNull(((HAEventWrapper) capturedEvent).getClientUpdateMessage());
   }
 
   @Test
@@ -210,9 +265,23 @@ public class HARegionQueueIntegrationTest {
   }
 
   private HARegionQueue createHARegionQueue(Map haContainer, int index) throws Exception {
-    return new HARegionQueue("haRegion+" + index, mock(HARegion.class), (InternalCache) cache,
-        haContainer, null, (byte) 1, true, mock(HARegionQueueStats.class),
-        mock(StoppableReentrantReadWriteLock.class), mock(StoppableReentrantReadWriteLock.class),
+    StoppableReentrantReadWriteLock giiLock = Mockito.mock(StoppableReentrantReadWriteLock.class);
+    when(giiLock.writeLock())
+        .thenReturn(Mockito.mock(StoppableReentrantReadWriteLock.StoppableWriteLock.class));
+    when(giiLock.readLock())
+        .thenReturn(Mockito.mock(StoppableReentrantReadWriteLock.StoppableReadLock.class));
+
+    StoppableReentrantReadWriteLock rwLock = Mockito.mock(StoppableReentrantReadWriteLock.class);
+    when(rwLock.writeLock())
+        .thenReturn(Mockito.mock(StoppableReentrantReadWriteLock.StoppableWriteLock.class));
+    when(rwLock.readLock())
+        .thenReturn(Mockito.mock(StoppableReentrantReadWriteLock.StoppableReadLock.class));
+
+    HARegion haRegion = Mockito.mock(HARegion.class);
+    when(haRegion.getGemFireCache()).thenReturn((InternalCache) cache);
+
+    return new HARegionQueue("haRegion+" + index, haRegion, (InternalCache) cache, haContainer,
+        null, (byte) 1, true, mock(HARegionQueueStats.class), giiLock, rwLock,
         mock(CancelCriterion.class), false);
   }
 
@@ -242,6 +311,28 @@ public class HARegionQueueIntegrationTest {
       HARegionQueue haRegionQueue = createHARegionQueue(haContainerWrapper, i);
       haRegionQueue.updateHAEventWrapper(member, cd, "haRegion");
     }
+  }
+
+  private HARegionQueue createAndUpdateHARegionQueuesWithGiiQueueing(
+      HAContainerWrapper haContainerWrapper, HAEventWrapper wrapper, ClientUpdateMessage message,
+      int numQueues) throws Exception {
+
+    HARegionQueue targetQueue = null;
+    int startGiiQueueingIndex = numQueues / 2;
+
+    // create HARegionQueues and startGiiQueuing on a region about half way through
+    for (int i = 0; i < numQueues; i++) {
+      HARegionQueue haRegionQueue = createHARegionQueue(haContainerWrapper, i);
+
+      // start GII Queueing (targetRegionQueue)
+      if (i == startGiiQueueingIndex) {
+        targetQueue = haRegionQueue;
+        targetQueue.startGiiQueueing();
+      }
+
+      haRegionQueue.put(wrapper);
+    }
+    return targetQueue;
   }
 
   private void createAndUpdateHARegionQueuesSimultaneously(HAContainerWrapper haContainerWrapper,

@@ -302,13 +302,56 @@ public class ConnectCommandTest {
   }
 
   @Test
-  public void connectToManagerWithDifferentVersion() {
+  public void connectToManagerWithDifferentMajorVersion() {
+    when(gfsh.getVersion()).thenReturn("2.2");
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.2");
+    when(operationInvoker.isConnected()).thenReturn(true);
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsError()
+        .containsOutput("Cannot use a 2.2 gfsh client to connect to a 1.2 cluster.");
+  }
+
+  @Test
+  public void connectToManagerWithDifferentMinorVersion() {
     when(gfsh.getVersion()).thenReturn("1.2");
     when(operationInvoker.getRemoteVersion()).thenReturn("1.3");
     when(operationInvoker.isConnected()).thenReturn(true);
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
         .statusIsError()
         .containsOutput("Cannot use a 1.2 gfsh client to connect to a 1.3 cluster.");
+  }
+
+  @Test
+  public void connectToManagerWithGreaterPatchVersion() {
+    when(gfsh.getVersion()).thenReturn("1.5.1");
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.5.2");
+    when(operationInvoker.isConnected()).thenReturn(true);
+    when(result.getStatus()).thenReturn(Result.Status.OK);
+
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void connectToManagerWithNoPatchVersion() {
+    when(gfsh.getVersion()).thenReturn("1.5.1");
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.5");
+    when(operationInvoker.isConnected()).thenReturn(true);
+    when(result.getStatus()).thenReturn(Result.Status.OK);
+
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void connectToManagerWithLessorPatchVersion() {
+    when(gfsh.getVersion()).thenReturn("1.5.1");
+    when(operationInvoker.getRemoteVersion()).thenReturn("1.5.0");
+    when(operationInvoker.isConnected()).thenReturn(true);
+    when(result.getStatus()).thenReturn(Result.Status.OK);
+
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
+        .statusIsSuccess();
   }
 
   @Test

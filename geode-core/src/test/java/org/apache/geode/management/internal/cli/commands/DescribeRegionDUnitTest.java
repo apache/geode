@@ -44,10 +44,11 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class DescribeRegionDUnitTest {
   private static final String REGION1 = "region1";
   private static final String REGION2 = "region2";

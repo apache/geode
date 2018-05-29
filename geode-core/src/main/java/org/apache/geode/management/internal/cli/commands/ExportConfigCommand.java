@@ -34,11 +34,10 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ExportConfigFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultData;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -69,7 +68,7 @@ public class ExportConfigCommand extends InternalGfshCommand {
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
 
     ResultModel crm = new ResultModel();
-    InfoResultModel infoData = crm.addInfo();
+    InfoResultModel infoData = crm.addInfo(ResultModel.INFO_SECTION);
 
     Set<DistributedMember> targetMembers = findMembers(group, member);
     if (targetMembers.isEmpty()) {
@@ -90,9 +89,9 @@ public class ExportConfigCommand extends InternalGfshCommand {
         String propsFileName = result.getMemberIdOrName() + "-gf.properties";
         String[] fileContent = (String[]) result.getSerializables();
         crm.addFile(cacheFileName, fileContent[0].getBytes(), ResultData.FILE_TYPE_TEXT,
-            "Downloading Cache XML file: ", false);
+            "Downloading Cache XML file: ");
         crm.addFile(propsFileName, fileContent[1].getBytes(), ResultData.FILE_TYPE_TEXT,
-            "Downloading properties file: ", false);
+            "Downloading properties file: ");
       }
     }
 
@@ -140,14 +139,10 @@ public class ExportConfigCommand extends InternalGfshCommand {
     }
 
     @Override
-    public CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
-        Path tempFile) {
-      if (commandResult.hasIncomingFiles()) {
-        try {
-          commandResult.saveIncomingFiles(saveDirString);
-        } catch (IOException ioex) {
-          Gfsh.getCurrentInstance().logSevere("Unable to export config", ioex);
-        }
+    public ResultModel postExecution(GfshParseResult parseResult, ResultModel commandResult,
+        Path tempFile) throws Exception {
+      for (FileResultModel file : commandResult.getFiles().values()) {
+        file.writeFile(saveDirString);
       }
       return commandResult;
     }

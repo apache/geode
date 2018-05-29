@@ -58,11 +58,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.JMXTest;
 
 /**
  * Tests the off-heap additions to the RegionMXBean and MemberMXBean JMX interfaces.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, JMXTest.class})
 @SuppressWarnings("serial")
 public class OffHeapManagementDUnitTest extends CacheTestCase {
 

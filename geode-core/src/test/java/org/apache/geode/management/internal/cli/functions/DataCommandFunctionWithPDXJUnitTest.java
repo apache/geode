@@ -17,6 +17,9 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.apache.geode.management.internal.cli.domain.DataCommandResult.MISSING_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+import java.util.Map;
+
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,11 +31,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
@@ -72,94 +72,91 @@ public class DataCommandFunctionWithPDXJUnitTest {
   // GEODE-2662: building a table where early values are missing keys causes the data to shift
   // upward during reporting.
   @Test
-  public void testTableIsRectangular() throws GfJsonException {
-    TabularResultData rawTable = getTableFromQuery("select * from /" + PARTITIONED_REGION);
+  public void testTableIsRectangular() {
+    TabularResultModel rawTable = getTableFromQuery("select * from /" + PARTITIONED_REGION);
     // Verify any table built
-    assertThat(rawTable.getGfJsonObject()).isNotNull();
-    assertThat(rawTable.getGfJsonObject().getJSONObject("content")).isNotNull();
-    GfJsonObject tableJson = rawTable.getGfJsonObject().getJSONObject("content");
+    Map<String, List<String>> content = rawTable.getContent();
+    assertThat(content).isNotEmpty();
+
     // Verify table is rectangular
     SoftAssertions softly = new SoftAssertions();
     for (String k : new String[] {"id", "phone", "firstName", "lastName"}) {
-      softly.assertThat(tableJson.getJSONArray(k).size()).isEqualTo(4);
+      softly.assertThat(content.get(k).size()).isEqualTo(4);
     }
     softly.assertAll();
   }
 
   @Test
-  public void testVerifyDataDoesNotShift() throws Exception {
-    TabularResultData rawTable =
+  public void testVerifyDataDoesNotShift() {
+    TabularResultModel rawTable =
         getTableFromQuery("select * from /" + PARTITIONED_REGION + " order by id");
     // Verify any table built
-    assertThat(rawTable.getGfJsonObject()).isNotNull();
-    assertThat(rawTable.getGfJsonObject().getJSONObject("content")).isNotNull();
-    GfJsonObject tableJson = rawTable.getGfJsonObject().getJSONObject("content");
+    Map<String, List<String>> content = rawTable.getContent();
+    assertThat(content).isNotEmpty();
+
     // Table only contains correct keys
-    assertThat(tableJson.getJSONArray("missingKey")).isNull();
+    assertThat(content.get("missingKey")).isNull();
 
     // Table contains correct data
-    assertThatRowIsBuiltCorrectly(tableJson, 0, alice);
-    assertThatRowIsBuiltCorrectly(tableJson, 1, bob);
-    assertThatRowIsBuiltCorrectly(tableJson, 2, charlie);
-    assertThatRowIsBuiltCorrectly(tableJson, 3, dan);
+    assertThatRowIsBuiltCorrectly(content, 0, alice);
+    assertThatRowIsBuiltCorrectly(content, 1, bob);
+    assertThatRowIsBuiltCorrectly(content, 2, charlie);
+    assertThatRowIsBuiltCorrectly(content, 3, dan);
   }
 
   @Test
-  public void testFilteredQueryWithPhone() throws Exception {
-    TabularResultData rawTable = getTableFromQuery(
+  public void testFilteredQueryWithPhone() {
+    TabularResultModel rawTable = getTableFromQuery(
         "select * from /" + PARTITIONED_REGION + " c where IS_DEFINED ( c.phone ) order by id");
-    assertThat(rawTable.getGfJsonObject()).isNotNull();
-    assertThat(rawTable.getGfJsonObject().getJSONObject("content")).isNotNull();
-    GfJsonObject tableJson = rawTable.getGfJsonObject().getJSONObject("content");
-    for (String k : new String[] {"id", "phone", "firstName", "lastName"}) {
-      assertThat(tableJson.getJSONArray(k).size()).isEqualTo(2);
-    }
-    assertThatRowIsBuiltCorrectly(tableJson, 0, charlie);
-    assertThatRowIsBuiltCorrectly(tableJson, 1, dan);
-  }
+    Map<String, List<String>> content = rawTable.getContent();
+    assertThat(content).isNotEmpty();
 
+    for (String k : new String[] {"id", "phone", "firstName", "lastName"}) {
+      assertThat(content.get(k).size()).isEqualTo(2);
+    }
+    assertThatRowIsBuiltCorrectly(content, 0, charlie);
+    assertThatRowIsBuiltCorrectly(content, 1, dan);
+  }
 
   @Test
-  public void testFilteredQueryWithoutPhone() throws Exception {
-    TabularResultData rawTable = getTableFromQuery(
+  public void testFilteredQueryWithoutPhone() {
+    TabularResultModel rawTable = getTableFromQuery(
         "select * from /" + PARTITIONED_REGION + " c where IS_UNDEFINED ( c.phone ) order by id");
-    assertThat(rawTable.getGfJsonObject()).isNotNull();
-    assertThat(rawTable.getGfJsonObject().getJSONObject("content")).isNotNull();
-    GfJsonObject tableJson = rawTable.getGfJsonObject().getJSONObject("content");
+    Map<String, List<String>> content = rawTable.getContent();
+    assertThat(content).isNotNull();
     for (String k : new String[] {"id", "firstName", "lastName"}) {
-      assertThat(tableJson.getJSONArray(k).size()).isEqualTo(2);
+      assertThat(content.get(k).size()).isEqualTo(2);
     }
-    assertThatRowIsBuiltCorrectly(tableJson, 0, alice);
-    assertThatRowIsBuiltCorrectly(tableJson, 1, bob);
+    assertThatRowIsBuiltCorrectly(content, 0, alice);
+    assertThatRowIsBuiltCorrectly(content, 1, bob);
   }
 
-  private TabularResultData getTableFromQuery(String query) {
+  private TabularResultModel getTableFromQuery(String query) {
     DataCommandRequest request = new DataCommandRequest();
     request.setQuery(query);
     DataCommandResult result = new DataCommandFunction().select(request, cache);
-    CompositeResultData r = result.toSelectCommandResult();
-    return r.retrieveSectionByIndex(0).retrieveTableByIndex(0);
+    ResultModel m = result.toSelectCommandResult();
+    return m.getTableSection(DataCommandResult.QUERY_SECTION);
   }
 
-
-  private void assertThatRowIsBuiltCorrectly(GfJsonObject table, int rowNum, Customer customer)
-      throws Exception {
+  private void assertThatRowIsBuiltCorrectly(Map<String, List<String>> table, int rowNum,
+      Customer customer) {
     SoftAssertions softly = new SoftAssertions();
-    String id = (String) table.getJSONArray("id").get(rowNum);
-    String firstName = (String) table.getJSONArray("firstName").get(rowNum);
-    String lastName = (String) table.getJSONArray("lastName").get(rowNum);
+    String id = table.get("id").get(rowNum);
+    String firstName = table.get("firstName").get(rowNum);
+    String lastName = table.get("lastName").get(rowNum);
 
     softly.assertThat(id).describedAs("Customer ID").isEqualTo(customer.id);
     softly.assertThat(firstName).describedAs("First name").isEqualTo(customer.firstName);
     softly.assertThat(lastName).describedAs("Last name").isEqualTo(customer.lastName);
 
-    GfJsonArray phoneArray = table.getJSONArray("phone");
+    List<String> phoneArray = table.get("phone");
 
     if (phoneArray == null) {
       softly.assertThat(customer).describedAs("No phone data")
           .isNotInstanceOf(CustomerWithPhone.class);
     } else {
-      String phone = (String) phoneArray.get(rowNum);
+      String phone = phoneArray.get(rowNum);
 
       if (customer instanceof CustomerWithPhone) {
         softly.assertThat(phone).describedAs("Phone")

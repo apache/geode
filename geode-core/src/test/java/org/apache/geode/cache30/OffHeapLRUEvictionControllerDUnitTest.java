@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Tests the basic functionality of the lru eviction controller and its statistics using off-heap
@@ -34,7 +35,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since Geode 1.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class OffHeapLRUEvictionControllerDUnitTest extends LRUEvictionControllerDUnitTest {
 
   public OffHeapLRUEvictionControllerDUnitTest() {

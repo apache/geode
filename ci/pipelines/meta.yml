@@ -61,18 +61,18 @@ resources:
     repository: gcr.io/apachegeode-ci/apachegeode-build-concourse
 
 jobs:
-- name: set-develop-pipeline
+- name: set-pipeline
   serial: true
   public: true
   plan:
-  - get: geode-develop-pipeline
+  - get: geode-pipeline
     trigger: true
   - get: apachegeode-build-concourse-docker-image
   - task: deploy-build
     image: apachegeode-build-concourse-docker-image
     config:
       inputs:
-      - name: geode-develop-pipeline
+      - name: geode-pipeline
       outputs:
       - name: results
       platform: linux
@@ -82,7 +82,7 @@ jobs:
         CONCOURSE_USERNAME: ((!concourse-username))
         CONCOURSE_PASSWORD: ((!concourse-password))
       run:
-        path: geode-develop-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
+        path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
 
 - name: set-docker-images-pipeline
   serial: true

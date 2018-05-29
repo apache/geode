@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.test.dunit.rules;
 
 import java.io.File;
@@ -110,7 +109,7 @@ public class MemberVM extends VMProvider implements Member {
         .waitTillAsyncEventQueuesAreReadyOnServers(queueId, serverCount));
   }
 
-  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) throws Exception {
+  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
         .waitTilGatewaySendersAreReady(expectedGatewayObjectCount));
   }

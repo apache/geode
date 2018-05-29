@@ -37,6 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATO
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -71,6 +72,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.management.ObjectName;
 
@@ -178,9 +180,10 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, WanTest.class})
 public class WANTestBase extends DistributedTestCase {
 
   protected static Cache cache;
@@ -1246,6 +1249,15 @@ public class WANTestBase extends DistributedTestCase {
     assertEquals(eventsReceived, statistics.getEventsReceived());
     assertEquals(eventsQueued, statistics.getEventsQueued());
     assert (statistics.getEventsDistributed() >= eventsDistributed);
+  }
+
+  public static void validateGatewaySenderQueueHasContent(String senderId, VM... targetVms) {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> Arrays.stream(targetVms).map(vm -> vm.invoke(() -> {
+          AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+          logger.info(displaySerialQueueContent(sender));
+          return sender.getEventQueueSize();
+        })).mapToInt(i -> i).sum(), greaterThan(0));
   }
 
   public static void checkGatewayReceiverStats(int processBatches, int eventsReceived,
@@ -3113,7 +3125,7 @@ public class WANTestBase extends DistributedTestCase {
     }
     final Set<RegionQueue> regionQueue;
     if (sender instanceof AbstractGatewaySender) {
-      regionQueue = ((AbstractGatewaySender) sender).getQueuesForConcurrentSerialGatewaySender();
+      regionQueue = ((AbstractGatewaySender) sender).getQueues();
     } else {
       regionQueue = null;
     }
@@ -3132,7 +3144,7 @@ public class WANTestBase extends DistributedTestCase {
     }
     final Set<RegionQueue> regionQueue;
     if (!sender.isParallel()) {
-      regionQueue = ((AbstractGatewaySender) sender).getQueuesForConcurrentSerialGatewaySender();
+      regionQueue = ((AbstractGatewaySender) sender).getQueues();
     } else {
       regionQueue = null;
     }
@@ -3168,6 +3180,34 @@ public class WANTestBase extends DistributedTestCase {
       return pgsq.displayContent();
     }
     return null;
+  }
+
+  public static String displaySerialQueueContent(final AbstractGatewaySender sender) {
+    StringBuilder message = new StringBuilder();
+    message.append("Is Primary: ").append(sender.isPrimary()).append(", ").append("Queue Size: ")
+        .append(sender.getEventQueueSize());
+
+    if (sender.getQueues() != null) {
+      message.append(", ").append("Queue Count: ").append(sender.getQueues().size());
+      Stream<Object> stream = sender.getQueues().stream()
+          .map(regionQueue -> ((SerialGatewaySenderQueue) regionQueue).displayContent());
+
+      List<Object> list = stream.collect(Collectors.toList());
+      message.append(", ").append("Keys: ").append(list.toString());
+    }
+
+    AbstractGatewaySenderEventProcessor abstractProcessor = sender.getEventProcessor();
+    if (abstractProcessor == null) {
+      message.append(", ").append("Null Event Processor: ");
+    }
+    if (!sender.isPrimary()) {
+      message.append("\n").append("Unprocessed Events: ")
+          .append(abstractProcessor.printUnprocessedEvents()).append("\n");
+      message.append("\n").append("Unprocessed Tokens: ")
+          .append(abstractProcessor.printUnprocessedTokens()).append("\n");
+    }
+
+    return message.toString();
   }
 
   public static Integer getQueueContentSize(final String senderId) {
@@ -3397,8 +3437,7 @@ public class WANTestBase extends DistributedTestCase {
         senders.stream().filter(s -> s.getId().equals(senderId)).findFirst().get();
 
     Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
-      Set<RegionQueue> queues =
-          ((AbstractGatewaySender) sender).getQueuesForConcurrentSerialGatewaySender();
+      Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
       for (RegionQueue q : queues) {
         assertEquals(0, q.size());
       }

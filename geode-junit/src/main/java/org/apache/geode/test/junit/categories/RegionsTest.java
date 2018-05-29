@@ -12,19 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.test.junit.categories;
 
-import org.apache.geode.security.ResourcePermission;
+/**
+ * JUnit Test Category that specifies a test that tests regions.
+ */
+public interface RegionsTest {
 
-public class NoSecurityAuthorizer implements Authorizer {
-  @Override
-  public void authorize(ResourcePermission.Resource data, ResourcePermission.Operation read,
-      String regionName, Object key) {
-
-  }
-
-  @Override
-  public void authorize(ResourcePermission resourcePermission) {
-
-  }
 }

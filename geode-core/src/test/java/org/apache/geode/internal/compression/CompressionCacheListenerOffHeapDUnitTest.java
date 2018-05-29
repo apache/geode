@@ -25,9 +25,10 @@ import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class CompressionCacheListenerOffHeapDUnitTest extends CompressionCacheListenerDUnitTest {
 
   @Override

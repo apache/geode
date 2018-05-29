@@ -28,6 +28,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
 
 /**
@@ -36,7 +37,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  * @since Geode 1.0
  */
 @SuppressWarnings({"deprecation", "serial"})
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OffHeapTest.class})
 public class DistributedAckPersistentRegionCCEOffHeapDUnitTest
     extends DistributedAckPersistentRegionCCEDUnitTest {
 

@@ -54,7 +54,7 @@ public class LegacyVsResultModelComparisonTest {
 
     // Create the new model results
     ResultModel newCrm = new ResultModel();
-    TabularResultModel modelTable = newCrm.addTable();
+    TabularResultModel modelTable = newCrm.addTable("0");
     modelTable.setHeader("Heads");
     modelTable.accumulate("Name", "server1");
     modelTable.accumulate("Name", "server2");
@@ -112,13 +112,13 @@ public class LegacyVsResultModelComparisonTest {
     newCrm.setHeader("Heads");
     newCrm.setFooter("Tails");
 
-    TabularResultModel newTable1 = newCrm.addTable();
+    TabularResultModel newTable1 = newCrm.addTable("0");
     newTable1.setHeader("section-0 table-1 header");
     newTable1.accumulate("Parameter", "param1");
     newTable1.accumulate("Value", "value1");
     newTable1.setFooter("section-0 table-1 footer");
 
-    DataResultModel newSection1 = newCrm.addData();
+    DataResultModel newSection1 = newCrm.addData("1");
     newSection1.setHeader("section 0 header");
     newSection1.addData("param-1", "value-1");
     newSection1.addData("param-3", "value-3");

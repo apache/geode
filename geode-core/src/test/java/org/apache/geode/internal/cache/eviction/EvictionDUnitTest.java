@@ -32,8 +32,9 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.EvictionTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, EvictionTest.class})
 public class EvictionDUnitTest extends EvictionTestBase {
 
   @Test

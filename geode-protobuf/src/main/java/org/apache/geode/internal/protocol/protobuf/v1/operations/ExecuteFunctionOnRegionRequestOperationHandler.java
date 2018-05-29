@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.security.SecureFunctionService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionResponse;
@@ -30,7 +31,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.authentication.AuthorizingFunctionService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -50,8 +50,8 @@ public class ExecuteFunctionOnRegionRequestOperationHandler implements
     Object arguments = getFunctionArguments(request, serializationService);
     Set<?> filter = parseFilter(serializationService, request);
 
-    AuthorizingFunctionService functionService =
-        messageExecutionContext.getAuthorizingCache().getFunctionService();
+    SecureFunctionService functionService =
+        messageExecutionContext.getSecureCache().getFunctionService();
 
     List<Object> results =
         functionService.executeFunctionOnRegion(functionID, regionName, arguments, filter);

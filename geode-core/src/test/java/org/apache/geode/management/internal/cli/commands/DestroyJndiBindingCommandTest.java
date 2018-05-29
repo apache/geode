@@ -134,7 +134,7 @@ public class DestroyJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput("No members found.")
-        .containsOutput("Changes to configuration for group 'cluster' is persisted.");
+        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(ccService).updateCacheConfig(any(), any());
     verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
@@ -156,7 +156,8 @@ public class DestroyJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server1")
-        .tableHasColumnOnlyWithValues("Status", "Jndi binding \"name\" destroyed on \"server1\"");
+        .tableHasColumnOnlyWithValues("Status", "OK")
+        .tableHasColumnOnlyWithValues("Message", "Jndi binding \"name\" destroyed on \"server1\"");
 
     verify(ccService, times(0)).updateCacheConfig(any(), any());
 
@@ -194,7 +195,8 @@ public class DestroyJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server1")
-        .tableHasColumnOnlyWithValues("Status", "Jndi binding \"name\" destroyed on \"server1\"");
+        .tableHasColumnOnlyWithValues("Status", "OK")
+        .tableHasColumnOnlyWithValues("Message", "Jndi binding \"name\" destroyed on \"server1\"");
 
     assertThat(cacheConfig.getJndiBindings().isEmpty()).isTrue();
     verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());

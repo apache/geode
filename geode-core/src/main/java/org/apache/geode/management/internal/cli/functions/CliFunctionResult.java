@@ -32,9 +32,13 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   private String memberIdOrName;
   private Serializable[] serializables = new String[0];
   private Object resultObject;
-  private boolean successful;
   private XmlEntity xmlEntity;
   private byte[] byteData = new byte[0];
+  private StatusState state;
+
+  public enum StatusState {
+    OK, ERROR, IGNORABLE
+  }
 
   @Deprecated
   public CliFunctionResult() {}
@@ -42,21 +46,21 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   @Deprecated
   public CliFunctionResult(final String memberIdOrName) {
     this.memberIdOrName = memberIdOrName;
-    this.successful = true;
+    this.state = StatusState.OK;
   }
 
   @Deprecated
   public CliFunctionResult(final String memberIdOrName, final Serializable[] serializables) {
     this.memberIdOrName = memberIdOrName;
     this.serializables = serializables;
-    this.successful = true;
+    this.state = StatusState.OK;
   }
 
   @Deprecated
   public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
-    this.successful = true;
+    this.state = StatusState.OK;
   }
 
   @Deprecated
@@ -65,7 +69,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;
     this.serializables = serializables;
-    this.successful = true;
+    this.state = StatusState.OK;
   }
 
   @Deprecated
@@ -75,13 +79,22 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     if (message != null) {
       this.serializables = new String[] {message};
     }
-    this.successful = true;
+    this.state = StatusState.OK;
   }
 
+  /**
+   * @deprecated Use {@code CliFunctionResult(String, StatusState, String)} instead
+   */
+  @Deprecated
   public CliFunctionResult(final String memberIdOrName, final boolean successful,
       final String message) {
+    this(memberIdOrName, successful ? StatusState.OK : StatusState.ERROR, message);
+  }
+
+  public CliFunctionResult(final String memberIdOrName, final StatusState state,
+      final String message) {
     this.memberIdOrName = memberIdOrName;
-    this.successful = successful;
+    this.state = state;
     if (message != null) {
       this.serializables = new String[] {message};
     }
@@ -95,9 +108,9 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
       this.serializables = new String[] {message};
     }
     if (resultObject instanceof Throwable) {
-      this.successful = false;
+      this.state = StatusState.ERROR;
     } else {
-      this.successful = true;
+      this.state = StatusState.OK;
     }
   }
 
@@ -118,10 +131,47 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     return (String) this.serializables[0];
   }
 
+  public String getStatus(boolean skipIgnore) {
+    if (state == StatusState.IGNORABLE) {
+      return skipIgnore ? "IGNORED" : "ERROR";
+    }
+
+    return state.name();
+  }
+
   public String getStatus() {
+    return getStatus(true);
+  }
+
+  public String getStatusMessage() {
     String message = getMessage();
 
-    if (successful) {
+    if (isSuccessful()) {
+      return message;
+    }
+
+    String errorMessage = "";
+    if (message != null
+        && (resultObject == null || !((Throwable) resultObject).getMessage().contains(message))) {
+      errorMessage = message;
+    }
+
+    if (resultObject != null) {
+      errorMessage = errorMessage.trim() + " " + ((Throwable) resultObject).getClass().getName()
+          + ": " + ((Throwable) resultObject).getMessage();
+    }
+
+    return errorMessage;
+  }
+
+  /**
+   * This can be removed once all commands are using ResultModel.
+   */
+  @Deprecated
+  public String getLegacyStatus() {
+    String message = getMessage();
+
+    if (isSuccessful()) {
       return message;
     }
 
@@ -146,7 +196,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Deprecated
   public Throwable getThrowable() {
-    if (successful) {
+    if (isSuccessful()) {
       return null;
     }
     return ((Throwable) resultObject);
@@ -163,8 +213,13 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_1_6_0_0(out);
+    DataSerializer.writeEnum(this.state, out);
+  }
+
+  public void toDataPre_GEODE_1_6_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
-    DataSerializer.writePrimitiveBoolean(this.successful, out);
+    DataSerializer.writePrimitiveBoolean(this.isSuccessful(), out);
     DataSerializer.writeObject(this.xmlEntity, out);
     DataSerializer.writeObjectArray(this.serializables, out);
     DataSerializer.writeObject(this.resultObject, out);
@@ -179,8 +234,13 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_6_0_0(in);
+    this.state = DataSerializer.readEnum(StatusState.class, in);
+  }
+
+  public void fromDataPre_GEODE_1_6_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
-    this.successful = DataSerializer.readPrimitiveBoolean(in);
+    this.state = DataSerializer.readPrimitiveBoolean(in) ? StatusState.OK : StatusState.ERROR;
     this.xmlEntity = DataSerializer.readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
     this.resultObject = DataSerializer.readObject(in);
@@ -194,7 +254,11 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   }
 
   public boolean isSuccessful() {
-    return this.successful;
+    return this.state == StatusState.OK;
+  }
+
+  public boolean isIgnorableFailure() {
+    return this.state == StatusState.IGNORABLE;
   }
 
   @Deprecated
@@ -248,9 +312,10 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public String toString() {
-    return "CliFunctionResult [memberId=" + this.memberIdOrName + ", successful=" + this.successful
-        + ", xmlEntity=" + this.xmlEntity + ", serializables=" + Arrays.toString(this.serializables)
-        + ", throwable=" + this.resultObject + ", byteData=" + Arrays.toString(this.byteData) + "]";
+    return "CliFunctionResult [memberId=" + this.memberIdOrName + ", successful="
+        + this.isSuccessful() + ", xmlEntity=" + this.xmlEntity + ", serializables="
+        + Arrays.toString(this.serializables) + ", throwable=" + this.resultObject + ", byteData="
+        + Arrays.toString(this.byteData) + "]";
   }
 
   /**

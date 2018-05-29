@@ -32,10 +32,11 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, OQLIndexTest.class})
 public class CreateIndexCommandDUnitTest {
 
   @ClassRule
@@ -63,7 +64,8 @@ public class CreateIndexCommandDUnitTest {
   @Test
   public void regionNotExist() {
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=/noExist")
-        .statusIsError().containsOutput("ERROR: Region not found : \"/noExist\"");
+        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Region not found : \"/noExist\"");
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
@@ -91,7 +93,8 @@ public class CreateIndexCommandDUnitTest {
     });
 
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionA")
-        .statusIsSuccess().containsOutput("Index successfully created");
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Status", "OK")
+        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index successfully created");
 
     // after index is created, the cluster config is not udpated with regionA or index
     locator.invoke(() -> {

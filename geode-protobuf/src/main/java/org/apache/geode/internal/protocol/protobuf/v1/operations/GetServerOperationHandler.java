@@ -57,7 +57,7 @@ public class GetServerOperationHandler
     messageExecutionContext.setState(new TerminateConnection());
 
     ServerLocation serverLocation =
-        messageExecutionContext.getAuthorizingLocator().findServer(excludedServers, serverGroup);
+        messageExecutionContext.getSecureLocator().findServer(excludedServers, serverGroup);
 
     if (serverLocation == null) {
       StringBuilder builder = new StringBuilder("Unable to find a server");

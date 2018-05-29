@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +44,7 @@ public class Repository {
   private String port;
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
+  private Properties javaSslProperties;
 
   Locale locale =
       new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
@@ -104,6 +106,13 @@ public class Repository {
     return this.pulseConfig;
   }
 
+  public Properties getJavaSslProperties() {
+    return javaSslProperties;
+  }
+
+  public void setJavaSslProperties(Properties javaSslProperties) {
+    this.javaSslProperties = javaSslProperties;
+  }
 
   /**
    * this will return a cluster already connected to the geode jmx manager for the user in the

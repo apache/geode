@@ -60,15 +60,17 @@ import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.util.test.TestUtil;
+
 
 /**
  * All the non-ssl enabled locators need to be in a different VM than the ssl enabled locators in
  * these tests, otherwise, some tests would fail. Seems like dunit vm tear down did not clean up the
  * ssl settings cleanly.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, JMXTest.class})
 @SuppressWarnings("serial")
 public class JMXMBeanDUnitTest implements Serializable {
 

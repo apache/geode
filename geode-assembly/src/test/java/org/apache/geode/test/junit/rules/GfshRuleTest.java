@@ -17,6 +17,8 @@ package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Paths;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,13 +40,13 @@ public class GfshRuleTest {
   @Test
   public void checkGfshDefault() {
     assertThat(gfshDefault.getGfshPath().toString())
-        .contains("geode-assembly/build/install/apache-geode/bin/gfsh");
+        .contains(Paths.get("geode-assembly/build/install/apache-geode/bin/gfsh").toString());
   }
 
   @Test
   public void checkGfsh130() {
     assertThat(gfsh130.getGfshPath().toString())
-        .contains("geode-old-versions/build/apache-geode-1.3.0/bin/gfsh");
+        .contains(Paths.get("geode-old-versions/build/apache-geode-1.3.0/bin/gfsh").toString());
   }
 
 }

@@ -132,7 +132,7 @@ public class AlterConnectionFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus()).contains(CONNECTION_NAME);
+    assertThat(argument.getValue().getStatusMessage()).contains(CONNECTION_NAME);
   }
 
   @Test

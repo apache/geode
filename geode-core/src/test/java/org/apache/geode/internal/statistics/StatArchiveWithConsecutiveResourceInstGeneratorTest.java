@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Compares the output results of {@link StatArchiveWithConsecutiveResourceInstGenerator} against
@@ -33,7 +34,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since Geode 1.0
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class StatArchiveWithConsecutiveResourceInstGeneratorTest
     extends StatArchiveWithConsecutiveResourceInstGenerator {
 

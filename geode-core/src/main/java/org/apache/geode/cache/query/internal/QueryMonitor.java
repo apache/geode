@@ -213,7 +213,10 @@ public class QueryMonitor implements Runnable {
         boolean[] queryCompleted =
             ((DefaultQuery) queryTask.query).getQueryCompletedForMonitoring();
         synchronized (queryCompleted) {
-          if (!queryCompleted[0]) { // Check if the query is already completed.
+          if (!queryCompleted[0] && !((DefaultQuery) queryTask.query).isCqQuery()) { // Check if the
+                                                                                     // query is
+                                                                                     // already
+                                                                                     // completed.
             ((DefaultQuery) queryTask.query).setCanceled(true,
                 new QueryExecutionTimeoutException(
                     LocalizedStrings.QueryMonitor_LONG_RUNNING_QUERY_CANCELED

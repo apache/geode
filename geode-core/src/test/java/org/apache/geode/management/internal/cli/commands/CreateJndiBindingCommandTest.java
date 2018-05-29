@@ -204,7 +204,7 @@ public class CreateJndiBindingCommandTest {
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
         .statusIsSuccess().containsOutput("No members found.")
-        .containsOutput("Changes to configuration for group 'cluster' is persisted.");
+        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
     verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
@@ -228,7 +228,7 @@ public class CreateJndiBindingCommandTest {
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
-        .tableHasColumnOnlyWithValues("Status",
+        .tableHasColumnOnlyWithValues("Status", "OK").tableHasColumnOnlyWithValues("Message",
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
@@ -242,7 +242,7 @@ public class CreateJndiBindingCommandTest {
     assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
     assertThat(jndiConfig.getValue()).isNotNull();
     assertThat(jndiConfig.getValue().getJndiName()).isEqualTo("name");
-    assertThat(jndiConfig.getValue().getConfigProperty().get(0).getName()).isEqualTo("name1");
+    assertThat(jndiConfig.getValue().getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 
@@ -273,7 +273,7 @@ public class CreateJndiBindingCommandTest {
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
-        .tableHasColumnOnlyWithValues("Status",
+        .tableHasColumnOnlyWithValues("Status", "OK").tableHasColumnOnlyWithValues("Message",
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
@@ -290,7 +290,7 @@ public class CreateJndiBindingCommandTest {
     assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
     assertThat(jndiConfig.getValue()).isNotNull();
     assertThat(jndiConfig.getValue().getJndiName()).isEqualTo("name");
-    assertThat(jndiConfig.getValue().getConfigProperty().get(0).getName()).isEqualTo("name1");
+    assertThat(jndiConfig.getValue().getConfigProperties().get(0).getName()).isEqualTo("name1");
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 }

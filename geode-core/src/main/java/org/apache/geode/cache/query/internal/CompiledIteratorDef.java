@@ -121,6 +121,8 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
         throw re;
       } catch (NotAuthorizedException e) {
         throw e;
+      } catch (QueryExecutionCanceledException e) {
+        throw e;
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
           logger.debug("Exception while getting runtime iterator.", e);

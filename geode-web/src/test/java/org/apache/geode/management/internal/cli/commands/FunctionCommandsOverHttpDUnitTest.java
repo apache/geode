@@ -18,9 +18,10 @@ package org.apache.geode.management.internal.cli.commands;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, GfshTest.class})
 public class FunctionCommandsOverHttpDUnitTest extends FunctionCommandsDUnitTest {
   @Override
   public void connectGfsh() throws Exception {

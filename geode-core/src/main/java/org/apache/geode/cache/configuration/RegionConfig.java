@@ -148,20 +148,20 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"regionAttributes", "index", "entry", "regionElements", "region"})
+    propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
 public class RegionConfig implements CacheElement {
 
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionAttributesType> regionAttributes;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig.Index> index;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig.Entry> entry;
+  @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig.Index> indexes;
+  @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig.Entry> entries;
   @XmlAnyElement(lax = true)
   protected List<CacheElement> regionElements;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig> region;
+  @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
+  protected List<RegionConfig> regions;
   @XmlAttribute(name = "name", required = true)
   protected String name;
   @XmlAttribute(name = "refid")
@@ -217,7 +217,7 @@ public class RegionConfig implements CacheElement {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getIndex().add(newItem);
+   * getIndexes().add(newItem);
    * </pre>
    *
    *
@@ -227,11 +227,11 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig.Index> getIndex() {
-    if (index == null) {
-      index = new ArrayList<RegionConfig.Index>();
+  public List<RegionConfig.Index> getIndexes() {
+    if (indexes == null) {
+      indexes = new ArrayList<RegionConfig.Index>();
     }
-    return this.index;
+    return this.indexes;
   }
 
   /**
@@ -247,7 +247,7 @@ public class RegionConfig implements CacheElement {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getEntry().add(newItem);
+   * getEntries().add(newItem);
    * </pre>
    *
    *
@@ -257,11 +257,11 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig.Entry> getEntry() {
-    if (entry == null) {
-      entry = new ArrayList<RegionConfig.Entry>();
+  public List<RegionConfig.Entry> getEntries() {
+    if (entries == null) {
+      entries = new ArrayList<RegionConfig.Entry>();
     }
-    return this.entry;
+    return this.entries;
   }
 
   /**
@@ -308,7 +308,7 @@ public class RegionConfig implements CacheElement {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getRegion().add(newItem);
+   * getRegions().add(newItem);
    * </pre>
    *
    *
@@ -318,11 +318,11 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig> getRegion() {
-    if (region == null) {
-      region = new ArrayList<RegionConfig>();
+  public List<RegionConfig> getRegions() {
+    if (regions == null) {
+      regions = new ArrayList<RegionConfig>();
     }
-    return this.region;
+    return this.regions;
   }
 
   /**
@@ -681,18 +681,24 @@ public class RegionConfig implements CacheElement {
     }
 
     /**
-     * Sets the value of the type property.
+     * Sets the value of the type property. Also sets the keyIndex property to true if the type
+     * being set is "key".
      *
      * allowed object is
      * {@link String }
      *
+     * @deprecated Index should only be a "key" or "range" type which is set using
+     *             {@link #setKeyIndex(Boolean)}
      */
     public void setType(String value) {
-      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)) {
+      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)
+          || "key".equalsIgnoreCase(value)) {
         this.type = value.toLowerCase();
       } else {
         throw new IllegalArgumentException("Invalid index type " + value);
       }
+
+      setKeyIndex("key".equalsIgnoreCase(value));
     }
 
     @Override

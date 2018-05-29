@@ -18,6 +18,7 @@ import java.nio.file.Path;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 
 /**
@@ -43,8 +44,13 @@ public interface CliAroundInterceptor {
    *        after the http response is processed.
    */
   default CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
-      Path tempFile) {
+      Path tempFile) throws Exception {
     return commandResult;
+  }
+
+  default ResultModel postExecution(GfshParseResult parseResult, ResultModel resultModel,
+      Path tempFile) throws Exception {
+    return resultModel;
   }
 
 }

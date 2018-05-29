@@ -19,10 +19,11 @@ import java.io.File;
 
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, GfshTest.class})
 public class ExportLogsOverHttpIntegrationTest extends ExportLogsIntegrationTest {
 
   @Override

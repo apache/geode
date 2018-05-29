@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
@@ -28,10 +26,8 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  * The function to a create GatewayReceiver using given configuration parameters.
@@ -80,8 +76,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
       GatewayReceiver createdGatewayReceiver =
           createGatewayReceiver(cache, gatewayReceiverCreateArgs);
 
-      XmlEntity xmlEntity = getXmlEntity(gatewayReceiverCreateArgs);
-      resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
+      resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,
           CliStrings.format(
               CliStrings.CREATE_GATEWAYRECEIVER__MSG__GATEWAYRECEIVER_CREATED_ON_0_ONPORT_1,
               memberNameOrId, Integer.toString(createdGatewayReceiver.getPort()))));
@@ -93,21 +88,6 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, e.getMessage()));
     }
 
-  }
-
-  XmlEntity getXmlEntity(GatewayReceiverFunctionArgs gatewayReceiverCreateArgs) {
-    Map<String, String> attributes = new HashMap<>();
-    if (gatewayReceiverCreateArgs.getStartPort() != null) {
-      attributes.put("start-port", gatewayReceiverCreateArgs.getStartPort().toString());
-    }
-    if (gatewayReceiverCreateArgs.getEndPort() != null) {
-      attributes.put("end-port", gatewayReceiverCreateArgs.getEndPort().toString());
-    }
-    if (gatewayReceiverCreateArgs.getBindAddress() != null) {
-      attributes.put("bind-address", gatewayReceiverCreateArgs.getBindAddress());
-    }
-    return XmlEntity.builder().withType(CacheXml.GATEWAY_RECEIVER).withAttributes(attributes)
-        .build();
   }
 
   /** GatewayReceiver creation happens here. */

@@ -44,13 +44,14 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Integration tests for statistics sampling.
  *
  * @since GemFire 7.0
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, StatisticsTest.class})
 public class StatSamplerIntegrationTest {
 
   private static final Logger logger = LogService.getLogger();

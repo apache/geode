@@ -97,14 +97,14 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "pool-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"locator", "server"})
+    propOrder = {"locators", "servers"})
 @Experimental
 public class PoolType {
 
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType.Locator> locator;
-  @XmlElement(namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType.Server> server;
+  @XmlElement(name = "locator", namespace = "http://geode.apache.org/schema/cache")
+  protected List<PoolType.Locator> locators;
+  @XmlElement(name = "server", namespace = "http://geode.apache.org/schema/cache")
+  protected List<PoolType.Server> servers;
   @XmlAttribute(name = "subscription-timeout-multiplier")
   protected String subscriptionTimeoutMultiplier;
   @XmlAttribute(name = "socket-connect-timeout")
@@ -161,7 +161,7 @@ public class PoolType {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getLocator().add(newItem);
+   * getLocators().add(newItem);
    * </pre>
    *
    *
@@ -171,11 +171,11 @@ public class PoolType {
    *
    *
    */
-  public List<PoolType.Locator> getLocator() {
-    if (locator == null) {
-      locator = new ArrayList<PoolType.Locator>();
+  public List<PoolType.Locator> getLocators() {
+    if (locators == null) {
+      locators = new ArrayList<PoolType.Locator>();
     }
-    return this.locator;
+    return this.locators;
   }
 
   /**
@@ -191,7 +191,7 @@ public class PoolType {
    * For example, to add a new item, do as follows:
    *
    * <pre>
-   * getServer().add(newItem);
+   * getServers().add(newItem);
    * </pre>
    *
    *
@@ -201,11 +201,11 @@ public class PoolType {
    *
    *
    */
-  public List<PoolType.Server> getServer() {
-    if (server == null) {
-      server = new ArrayList<PoolType.Server>();
+  public List<PoolType.Server> getServers() {
+    if (servers == null) {
+      servers = new ArrayList<PoolType.Server>();
     }
-    return this.server;
+    return this.servers;
   }
 
   /**

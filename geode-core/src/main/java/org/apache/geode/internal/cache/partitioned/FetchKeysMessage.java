@@ -44,6 +44,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -57,10 +59,14 @@ public class FetchKeysMessage extends PartitionMessage {
 
   private Integer bucketId;
 
-  /** the interest policy to use in processing the keys */
+  /**
+   * the interest policy to use in processing the keys
+   */
   private int interestType;
 
-  /** the argument for the interest type (regex string, className, list of keys) */
+  /**
+   * the argument for the interest type (regex string, className, list of keys)
+   */
   private Object interestArg;
 
   private boolean allowTombstones;
@@ -93,24 +99,42 @@ public class FetchKeysMessage extends PartitionMessage {
   public static FetchKeysResponse send(InternalDistributedMember recipient, PartitionedRegion r,
       Integer bucketId, boolean allowTombstones) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchKeysMessage NULL recipient");
-    FetchKeysMessage tmp = new FetchKeysMessage();
-    FetchKeysResponse p =
-        (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
-    FetchKeysMessage m = new FetchKeysMessage(recipient, r.getPRId(), p, bucketId,
-        InterestType.REGULAR_EXPRESSION, ".*", allowTombstones);
-    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
-
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
-      throw new ForceReattemptException(
-          LocalizedStrings.FetchKeysMessage_FAILED_SENDING_0.toLocalizedString(m));
+    TXManagerImpl txManager = r.getCache().getTxManager();
+    boolean resetTxState = isTransactionInternalSuspendNeeded(txManager);
+    TXStateProxy txStateProxy = null;
+    if (resetTxState) {
+      txStateProxy = txManager.pauseTransaction();
     }
 
-    return p;
+    try {
+      FetchKeysMessage tmp = new FetchKeysMessage();
+
+      FetchKeysResponse p =
+          (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
+      FetchKeysMessage m = new FetchKeysMessage(recipient, r.getPRId(), p, bucketId,
+          InterestType.REGULAR_EXPRESSION, ".*", allowTombstones);
+      m.setTransactionDistributed(txManager.isDistributed());
+
+      Set failures = r.getDistributionManager().putOutgoing(m);
+      if (failures != null && failures.size() > 0) {
+        throw new ForceReattemptException(
+            LocalizedStrings.FetchKeysMessage_FAILED_SENDING_0.toLocalizedString(m));
+      }
+      return p;
+    } finally {
+      if (resetTxState) {
+        txManager.unpauseTransaction(txStateProxy);
+      }
+    }
+  }
+
+  private static boolean isTransactionInternalSuspendNeeded(TXManagerImpl txManager) {
+    TXStateProxy txState = txManager.getTXState();
+    // handle distributed transaction when needed.
+    return txState != null && txState.isRealDealLocal() && !txState.isDistTx();
   }
 
   /**
-   *
    * @return the FetchKeysResponse
    * @throws ForceReattemptException if the peer is no longer available
    */
@@ -216,17 +240,29 @@ public class FetchKeysMessage extends PartitionMessage {
   }
 
   public static class FetchKeysReplyMessage extends ReplyMessage {
-    /** The number of the series */
+    /**
+     * The number of the series
+     */
     int seriesNum;
-    /** The message number in the series */
+    /**
+     * The message number in the series
+     */
     int msgNum;
-    /** The total number of series */
+    /**
+     * The total number of series
+     */
     int numSeries;
-    /** Whether this is the last of a series */
+    /**
+     * Whether this is the last of a series
+     */
     boolean lastInSeries;
-    /** the stream holding the chunk to send */
+    /**
+     * the stream holding the chunk to send
+     */
     transient HeapDataOutputStream chunkStream;
-    /** the array holding data received */
+    /**
+     * the array holding data received
+     */
     transient byte[] chunk;
 
     /**
@@ -440,6 +476,7 @@ public class FetchKeysMessage extends PartitionMessage {
       return sb.toString();
     }
   }
+
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
@@ -452,16 +489,24 @@ public class FetchKeysMessage extends PartitionMessage {
 
     private final Set returnValue;
 
-    /** lock used to synchronize chunk processing */
+    /**
+     * lock used to synchronize chunk processing
+     */
     private final Object endLock = new Object();
 
-    /** number of chunks processed */
+    /**
+     * number of chunks processed
+     */
     private volatile int chunksProcessed;
 
-    /** chunks expected (set when last chunk has been processed */
+    /**
+     * chunks expected (set when last chunk has been processed
+     */
     private volatile int chunksExpected;
 
-    /** whether the last chunk has been processed */
+    /**
+     * whether the last chunk has been processed
+     */
     private volatile boolean lastChunkReceived;
 
     public FetchKeysResponse(InternalDistributedSystem ds, PartitionedRegion pr, Set recipients) {

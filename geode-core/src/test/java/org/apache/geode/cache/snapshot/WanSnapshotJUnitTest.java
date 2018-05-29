@@ -33,8 +33,9 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SnapshotTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SnapshotTest.class})
 public class WanSnapshotJUnitTest extends SnapshotTestCase {
   private Region<Integer, MyObject> region;
   private WanListener wan;

@@ -39,6 +39,14 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeConfigCommand extends InternalGfshCommand {
+  public static final String API_PROPERTIES_SECTION = "api-properties";
+  public static final String RUNTIME_PROPERTIES_SECTION = "runtime-properties";
+  public static final String FILE_PROPERTIES_SECTION = "file-properties";
+  public static final String DEFAULT_PROPERTIES_SECTION = "default-properties";
+  public static final String CACHE_ATTRIBUTES_SECTION = "cache-attributes";
+  public static final String CACHESERVER_ATTRIBUTES_SECTION = "cacheserver-attributes";
+  public static final String JVM_ARGS_SECTION = "jvm-args";
+
   private final GetMemberConfigInformationFunction getMemberConfigFunction =
       new GetMemberConfigInformationFunction();
 
@@ -73,7 +81,7 @@ public class DescribeConfigCommand extends InternalGfshCommand {
             .setHeader(CliStrings.format(CliStrings.DESCRIBE_CONFIG__HEADER__TEXT, memberNameOrId));
 
         List<String> jvmArgsList = memberConfigInfo.getJvmInputArguments();
-        TabularResultModel jvmInputArgs = result.addTable();
+        TabularResultModel jvmInputArgs = result.addTable(JVM_ARGS_SECTION);
 
         for (String jvmArg : jvmArgsList) {
           // This redaction should be redundant, since jvmArgs should have already been redacted in
@@ -81,22 +89,25 @@ public class DescribeConfigCommand extends InternalGfshCommand {
           jvmInputArgs.accumulate("JVM command line arguments", ArgumentRedactor.redact(jvmArg));
         }
 
-        addSection(result, memberConfigInfo.getGfePropsSetUsingApi(),
+        addSection(API_PROPERTIES_SECTION, result, memberConfigInfo.getGfePropsSetUsingApi(),
             "GemFire properties defined using the API");
-        addSection(result, memberConfigInfo.getGfePropsRuntime(),
+        addSection(RUNTIME_PROPERTIES_SECTION, result, memberConfigInfo.getGfePropsRuntime(),
             "GemFire properties defined at the runtime");
-        addSection(result, memberConfigInfo.getGfePropsSetFromFile(),
+        addSection(FILE_PROPERTIES_SECTION, result, memberConfigInfo.getGfePropsSetFromFile(),
             "GemFire properties defined with the property file");
-        addSection(result, memberConfigInfo.getGfePropsSetWithDefaults(),
+        addSection(DEFAULT_PROPERTIES_SECTION, result,
+            memberConfigInfo.getGfePropsSetWithDefaults(),
             "GemFire properties using default values");
-        addSection(result, memberConfigInfo.getCacheAttributes(), "Cache attributes");
+        addSection(CACHE_ATTRIBUTES_SECTION, result, memberConfigInfo.getCacheAttributes(),
+            "Cache attributes");
 
         List<Map<String, String>> cacheServerAttributesList =
             memberConfigInfo.getCacheServerAttributes();
 
         if (cacheServerAttributesList != null && !cacheServerAttributesList.isEmpty()) {
           for (Map<String, String> cacheServerAttributes : cacheServerAttributesList) {
-            addSection(result, cacheServerAttributes, "Cache-server attributes");
+            addSection(CACHESERVER_ATTRIBUTES_SECTION, result, cacheServerAttributes,
+                "Cache-server attributes");
           }
         }
       }
@@ -110,9 +121,10 @@ public class DescribeConfigCommand extends InternalGfshCommand {
     return result;
   }
 
-  private void addSection(ResultModel model, Map<String, String> attrMap, String headerText) {
+  private void addSection(String namedSection, ResultModel model, Map<String, String> attrMap,
+      String headerText) {
     if (attrMap != null && !attrMap.isEmpty()) {
-      DataResultModel dataSection = model.addData();
+      DataResultModel dataSection = model.addData(namedSection);
       dataSection.setHeader(headerText);
       Set<String> attributes = new TreeSet<>(attrMap.keySet());
 

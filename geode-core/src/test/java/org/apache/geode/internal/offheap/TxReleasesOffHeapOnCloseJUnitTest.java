@@ -30,8 +30,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.OffHeapTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, OffHeapTest.class})
 public class TxReleasesOffHeapOnCloseJUnitTest {
 
   protected Cache cache;

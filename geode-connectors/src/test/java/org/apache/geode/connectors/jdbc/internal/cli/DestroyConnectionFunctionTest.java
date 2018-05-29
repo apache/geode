@@ -119,7 +119,7 @@ public class DestroyConnectionFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus())
+    assertThat(argument.getValue().getStatusMessage())
         .contains("Connection named \"" + connectionName + "\" not found");
   }
 }

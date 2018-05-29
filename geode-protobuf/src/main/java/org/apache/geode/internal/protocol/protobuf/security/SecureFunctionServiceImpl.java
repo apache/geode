@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
+package org.apache.geode.internal.protocol.protobuf.security;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,13 +30,13 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-public class AuthorizingFunctionServiceImpl implements AuthorizingFunctionService {
+public class SecureFunctionServiceImpl implements SecureFunctionService {
 
-  private final Authorizer authorizer;
+  private final Security security;
   private final InternalCache internalCache;
 
-  public AuthorizingFunctionServiceImpl(InternalCache internalCache, Authorizer authorizer) {
-    this.authorizer = authorizer;
+  public SecureFunctionServiceImpl(InternalCache internalCache, Security security) {
+    this.security = security;
     this.internalCache = internalCache;
   }
 
@@ -74,7 +74,7 @@ public class AuthorizingFunctionServiceImpl implements AuthorizingFunctionServic
               .toLocalizedString(functionID));
     }
 
-    function.getRequiredPermissions(regionName).forEach(authorizer::authorize);
+    function.getRequiredPermissions(regionName).forEach(security::authorize);
     return function;
   }
 

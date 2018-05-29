@@ -12,15 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.authentication;
-
-import java.util.Set;
-
-import org.apache.geode.distributed.internal.ServerLocation;
+package org.apache.geode.test.junit.categories;
 
 /**
- * Access layer for locator that performs authorization checks
+ * JUnit Test Category that specifies a test focused on configuration.
  */
-public interface AuthorizingLocator {
-  ServerLocation findServer(Set<ServerLocation> excludedServers, String serverGroup);
+public interface ConfigurationTest {
 }

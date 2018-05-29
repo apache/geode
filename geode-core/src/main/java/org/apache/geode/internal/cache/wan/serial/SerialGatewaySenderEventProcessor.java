@@ -20,12 +20,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -46,6 +48,7 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender.EventWrapper;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
@@ -612,7 +615,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       }
       my_executor.execute(new Runnable() {
         public void run() {
-          basicHandlePrimaryDestroy(gatewayEvent);
+          basicHandlePrimaryDestroy(gatewayEvent.getEventId());
         }
       });
     }
@@ -622,23 +625,25 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Just remove the event from the unprocessed events map if it is present. This method added to
    * fix bug 37603
    */
-  protected void basicHandlePrimaryDestroy(final GatewaySenderEventImpl gatewayEvent) {
+  protected boolean basicHandlePrimaryDestroy(final EventID eventId) {
     if (this.sender.isPrimary()) {
       // no need to do anything if we have become the primary
-      return;
+      return false;
     }
     GatewaySenderStats statistics = this.sender.getStatistics();
     // Get the event from the map
     synchronized (unprocessedEventsLock) {
       if (this.unprocessedEvents == null)
-        return;
+        return false;
       // now we can safely use the unprocessedEvents field
-      EventWrapper ew = this.unprocessedEvents.remove(gatewayEvent.getEventId());
+      EventWrapper ew = this.unprocessedEvents.remove(eventId);
       if (ew != null) {
         ew.event.release();
         statistics.incUnprocessedEventsRemovedByPrimary();
+        return true;
       }
     }
+    return false;
   }
 
   protected void basicHandlePrimaryEvent(final GatewaySenderEventImpl gatewayEvent) {
@@ -866,5 +871,54 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   protected void enqueueEvent(GatewayQueueEvent event) {
     // @TODO This API hasn't been implemented yet
     throw new UnsupportedOperationException();
+  }
+
+  public void sendBatchDestroyOperationForDroppedEvent(EntryEventImpl dropEvent, int index) {
+    EntryEventImpl destroyEvent =
+        EntryEventImpl.create((LocalRegion) this.queue.getRegion(), Operation.DESTROY, (long) index,
+            null/* newValue */, null, false, sender.getCache().getMyId());
+    destroyEvent.setEventId(dropEvent.getEventId());
+    destroyEvent.disallowOffHeapValues();
+    destroyEvent.setTailKey(-1L);
+    if (logger.isDebugEnabled()) {
+      logger.debug(
+          "SerialGatewaySenderEventProcessor sends BatchDestroyOperation to secondary for event {}",
+          destroyEvent);
+    }
+
+    try {
+      BatchDestroyOperation op = new BatchDestroyOperation(destroyEvent);
+      op.distribute();
+      if (logger.isDebugEnabled()) {
+        logger.debug("BatchRemovalThread completed destroy of dropped event {}", dropEvent);
+      }
+    } catch (Exception ignore) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Exception in sending dropped event could be ignored in order not to interrupt sender starting",
+            ignore);
+      }
+    }
+  }
+
+  @Override
+  protected void registerEventDroppedInPrimaryQueue(EntryEventImpl droppedEvent) {
+    this.getSender().setModifiedEventId(droppedEvent);
+    sendBatchDestroyOperationForDroppedEvent(droppedEvent, -1);
+  }
+
+  private String printEventIdList(Set<EventID> eventIds) {
+    StringBuffer sb = new StringBuffer().append("[").append(
+        eventIds.stream().map(entry -> entry.expensiveToString()).collect(Collectors.joining(", ")))
+        .append("]");
+    return sb.toString();
+  }
+
+  public String printUnprocessedEvents() {
+    return printEventIdList(this.unprocessedEvents.keySet());
+  }
+
+  public String printUnprocessedTokens() {
+    return printEventIdList(this.unprocessedTokens.keySet());
   }
 }

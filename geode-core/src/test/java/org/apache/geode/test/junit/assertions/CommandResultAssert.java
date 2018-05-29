@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
@@ -217,7 +218,10 @@ public class CommandResultAssert
     }
 
     // did not find any matching rows, then this would pass only if we do not pass in any values
-    assertThat(headersThenValues.length).describedAs("No matching row found.").isEqualTo(0);
+    assertThat(headersThenValues.length)
+        .describedAs("No matching row found containing expected values: "
+            + StringUtils.join(expectedValues, ","))
+        .isEqualTo(0);
     return this;
   }
 

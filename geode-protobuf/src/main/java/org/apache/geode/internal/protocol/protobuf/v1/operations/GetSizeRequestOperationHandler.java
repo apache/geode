@@ -37,7 +37,7 @@ public class GetSizeRequestOperationHandler
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
 
-    int size = messageExecutionContext.getAuthorizingCache().getSize(regionName);
+    int size = messageExecutionContext.getSecureCache().getSize(regionName);
 
     return Success.of(RegionAPI.GetSizeResponse.newBuilder().setSize(size).build());
   }

@@ -50,13 +50,14 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.RegionsTest;
 
 /**
  * Verifies that the {@link org.apache.geode.cache.PartitionResolver} is called only once on a node,
  * and not called while local iteration.
  *
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, RegionsTest.class})
 public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
   private static final String CUSTOMER = "custRegion";

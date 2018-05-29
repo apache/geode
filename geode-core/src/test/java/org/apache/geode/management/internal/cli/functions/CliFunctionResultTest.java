@@ -31,26 +31,26 @@ public class CliFunctionResultTest {
   @Test
   public void getStatusWithSuccessMessage() throws Exception {
     result = new CliFunctionResult("memberName", true, "message");
-    assertThat(result.getStatus()).isEqualTo("message");
+    assertThat(result.getLegacyStatus()).isEqualTo("message");
   }
 
   @Test
   public void getStatusWithErrorMessage() throws Exception {
     result = new CliFunctionResult("memberName", false, "message");
-    assertThat(result.getStatus()).isEqualTo("ERROR: message");
+    assertThat(result.getLegacyStatus()).isEqualTo("ERROR: message");
   }
 
   @Test
   public void getStatusWithExceptionOnly() throws Exception {
     result = new CliFunctionResult("memberName", new Exception("exception message"), null);
-    assertThat(result.getStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
+    assertThat(result.getLegacyStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
   }
 
   @Test
   public void getStatusWithExceptionAndSameErrorMessage() throws Exception {
     result = new CliFunctionResult("memberName", new Exception("exception message"),
         "exception message");
-    assertThat(result.getStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
+    assertThat(result.getLegacyStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
 
   }
 
@@ -58,7 +58,7 @@ public class CliFunctionResultTest {
   public void getStatusWithExceptionAndDifferentErrorMessage() throws Exception {
     result = new CliFunctionResult("memberName", new Exception("exception message"),
         "some other message");
-    assertThat(result.getStatus())
+    assertThat(result.getLegacyStatus())
         .isEqualTo("ERROR: some other message java.lang.Exception: exception message");
   }
 }

@@ -34,7 +34,7 @@ public class GetRegionNamesRequestOperationHandler implements
       ProtobufSerializationService serializationService, RegionAPI.GetRegionNamesRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
-    Collection<String> regions = messageExecutionContext.getAuthorizingCache().getRegionNames();
+    Collection<String> regions = messageExecutionContext.getSecureCache().getRegionNames();
 
     RegionAPI.GetRegionNamesResponse.Builder builder =
         RegionAPI.GetRegionNamesResponse.newBuilder();

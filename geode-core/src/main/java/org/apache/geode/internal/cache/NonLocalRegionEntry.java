@@ -608,4 +608,9 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
       boolean isEntryUpdate) {
     throw new IllegalStateException("Should never be called");
   }
+
+  @Override
+  public boolean isEvicted() {
+    return false;
+  }
 }

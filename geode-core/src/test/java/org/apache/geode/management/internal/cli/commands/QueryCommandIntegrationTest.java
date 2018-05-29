@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -35,6 +36,9 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.domain.DataCommandResult;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -68,7 +72,7 @@ public class QueryCommandIntegrationTest {
       String key = "key" + i;
 
       simpleRegion.put(key, "value" + i);
-      complexRegion.put(key, new Customer("name" + i, "address" + i));
+      complexRegion.put(key, new Customer("name" + i, "Main Street " + i, "Hometown"));
     }
   }
 
@@ -144,17 +148,18 @@ public class QueryCommandIntegrationTest {
     File outputFile = temporaryFolder.newFile("queryOutput.txt");
     FileUtils.deleteQuietly(outputFile);
 
-    gfsh.executeAndAssertThat(
-        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath())
-        .statusIsSuccess().containsOutput(outputFile.getAbsolutePath());
+    CommandResult result = gfsh.executeCommand(
+        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    // .statusIsSuccess().containsOutput(outputFile.getAbsolutePath());
 
     assertThat(outputFile).exists();
 
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
-    assertThat(lines.get(0)).isEqualTo("Result");
-    assertThat(lines.get(1)).isEqualTo("--------");
-    lines.subList(2, lines.size()).forEach(line -> assertThat(line).matches("value\\d+"));
+    assertThat(lines.get(4)).isEqualTo("Result");
+    assertThat(lines.get(5)).isEqualTo("--------");
+    lines.subList(6, lines.size()).forEach(line -> assertThat(line).matches("value\\d+"));
   }
 
   @Test
@@ -170,9 +175,9 @@ public class QueryCommandIntegrationTest {
     assertThat(outputFile).exists();
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
-    assertThat(lines.get(0)).containsPattern("name\\s+\\|\\s+address");
-    lines.subList(2, lines.size())
-        .forEach(line -> assertThat(line).matches("name\\d+\\s+\\|\\s+address\\d+"));
+    assertThat(lines.get(4)).containsPattern("name\\s+\\|\\s+address");
+    lines.subList(6, lines.size())
+        .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*"));
   }
 
   @Test
@@ -186,7 +191,19 @@ public class QueryCommandIntegrationTest {
     assertThat(resultLines[2]).containsPattern("Rows\\s+:\\s+100");
     assertThat(resultLines[3]).containsPattern("name\\s+\\|\\s+address");
     Arrays.asList(resultLines).subList(5, resultLines.length)
-        .forEach(line -> assertThat(line).matches("name\\d+\\s+\\|\\s+address\\d+"));
+        .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*"));
+  }
+
+  @Test
+  public void queryWithGfshEnvVariables() {
+    gfsh.executeAndAssertThat("set variable --name=DATA_REGION --value=/complexRegion")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("set variable --name=QUERY_LIMIT --value=10").statusIsSuccess();
+    CommandResult result = gfsh.executeCommand(
+        "query --query='select c.name, c.address from ${DATA_REGION} c limit ${QUERY_LIMIT}'");
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+
+    assertThat(data.get("Rows")).isEqualTo("10");
   }
 
   @Test
@@ -197,16 +214,43 @@ public class QueryCommandIntegrationTest {
   }
 
   @Test
-  public void invalidQueryGivesDescriptiveErrorMessage() throws Exception {
-    gfsh.executeAndAssertThat("query --query='this is not a valid query'")
-        .containsKeyValuePair("Result", "false")
-        .containsOutput("Query is invalid due for error : <Syntax error in query:");
+  public void invalidQueryGivesDescriptiveErrorMessage() {
+    CommandResult result = gfsh.executeCommand("query --query='this is not a valid query'");
+
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    assertThat(data.get("Result")).isEqualTo("false");
+    assertThat(data.get("Message"))
+        .startsWith("Query is invalid due to error : <Syntax error in query:");
   }
 
   @Test
-  public void queryGivesDescriptiveErrorMessageIfNoQueryIsSpecified() throws Exception {
+  public void queryGivesDescriptiveErrorMessageIfNoQueryIsSpecified() {
     gfsh.executeAndAssertThat("query").containsOutput(
         "You should specify option (--query, --file, --interactive) for this command");
+  }
+
+  @Test
+  public void queryReturnsUndefinedQueryResult() {
+    CommandResult result =
+        gfsh.executeCommand("query --query='select c.unknown from /complexRegion c limit 10'");
+
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(DataCommandResult.QUERY_SECTION);
+    assertThat(table.get("Value").size()).isEqualTo(10);
+    assertThat(table.get("Value").get(0)).isEqualTo("UNDEFINED");
+  }
+
+  @Test
+  public void queryReturnsNonSelectResult() {
+    CommandResult result = gfsh.executeCommand(
+        "query --query=\"(select c.address from /complexRegion c where c.name = 'name1' limit 1).size\"");
+
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    assertThat(data.get("Rows")).isEqualTo("1");
+
+    Map<String, List<String>> table =
+        result.getMapFromTableContent(DataCommandResult.QUERY_SECTION);
+    assertThat(table.get("Result")).contains("1");
   }
 
   private String[] splitOnLineBreaks(String multilineString) {
@@ -215,15 +259,26 @@ public class QueryCommandIntegrationTest {
 
   public static class Customer implements Serializable {
     public String name;
-    public String address;
+    public Address address;
 
-    public Customer(String name, String address) {
+    public Customer(String name, String street, String city) {
       this.name = name;
-      this.address = address;
+      this.address = new Address(street, city);
     }
 
     public String toString() {
       return name + address;
     }
   }
+
+  public static class Address implements Serializable {
+    public String street;
+    public String city;
+
+    public Address(String street, String city) {
+      this.street = street;
+      this.city = city;
+    }
+  }
+
 }

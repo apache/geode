@@ -62,7 +62,7 @@ public class CacheConfigTest {
     declarableWithParam = new DeclarableType("my.className");
     ParameterType param = new ParameterType("key");
     param.setDeclarable(declarableWithString);
-    declarableWithParam.getParameter().add(param);
+    declarableWithParam.getParameters().add(param);
     declarableWithParamXml = classNameTypeXml + "<parameter name=\"key\"><declarable>"
         + declarableWithStringXml + "</declarable></parameter>";
   }
@@ -80,7 +80,7 @@ public class CacheConfigTest {
         + "</region></cache>";
 
     cacheConfig = service.unMarshall(xml);
-    RegionConfig.Index index = cacheConfig.getRegion().get(0).getIndex().get(0);
+    RegionConfig.Index index = cacheConfig.getRegions().get(0).getIndexes().get(0);
     assertThat(index.isKeyIndex()).isTrue();
     assertThat(index.getName()).isEqualTo("indexName");
     assertThat(index.getExpression()).isEqualTo("expression");
@@ -96,11 +96,11 @@ public class CacheConfigTest {
         + declarableWithParamXml + "</declarable></value>" + "</entry>" + "</region></cache>";
 
     cacheConfig = service.unMarshall(xml);
-    RegionConfig.Entry entry = cacheConfig.getRegion().get(0).getEntry().get(0);
+    RegionConfig.Entry entry = cacheConfig.getRegions().get(0).getEntries().get(0);
     assertThat(entry.getKey().toString()).isEqualTo("key1");
     assertThat(entry.getValue().getDeclarable()).isEqualTo(declarableWithString);
 
-    entry = cacheConfig.getRegion().get(0).getEntry().get(1);
+    entry = cacheConfig.getRegions().get(0).getEntries().get(1);
     assertThat(entry.getKey().toString()).isEqualTo("key2");
     assertThat(entry.getValue().getDeclarable()).isEqualTo(declarableWithParam);
   }
@@ -115,7 +115,7 @@ public class CacheConfigTest {
     cacheConfig = service.unMarshall(xml);
     assertThat(cacheConfig.getCacheTransactionManager().getTransactionWriter())
         .isEqualTo(declarableWithString);
-    assertThat(cacheConfig.getCacheTransactionManager().getTransactionListener().get(0))
+    assertThat(cacheConfig.getCacheTransactionManager().getTransactionListeners().get(0))
         .isEqualTo(declarableWithString);
   }
 
@@ -145,24 +145,24 @@ public class CacheConfigTest {
     cacheConfig = service.unMarshall(xml);
 
     assertThat(cacheConfig.getInitializer()).isEqualTo(declarableWithString);
-    assertThat(cacheConfig.getFunctionService().getFunction().get(0))
+    assertThat(cacheConfig.getFunctionService().getFunctions().get(0))
         .isEqualTo(declarableWithString);
     assertThat(cacheConfig.getPdx().getPdxSerializer()).isEqualTo(declarableWithString);
-    assertThat(cacheConfig.getCacheServer().get(0).getCustomLoadProbe())
+    assertThat(cacheConfig.getCacheServers().get(0).getCustomLoadProbe())
         .isEqualTo(declarableWithString);
     assertThat(cacheConfig.getGatewayConflictResolver()).isEqualTo(declarableWithString);
-    assertThat(cacheConfig.getGatewayReceiver().getGatewayTransportFilter().get(0))
+    assertThat(cacheConfig.getGatewayReceiver().getGatewayTransportFilters().get(0))
         .isEqualTo(declarableWithString);
-    assertThat(cacheConfig.getGatewayHub().get(0).getGateway().get(0).getGatewayListener().get(0))
+    assertThat(cacheConfig.getGatewayHubs().get(0).getGateway().get(0).getGatewayListeners().get(0))
         .isEqualTo(declarableWithString);
 
-    CacheConfig.AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueue().get(0);
+    CacheConfig.AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().get(0);
     assertThat(asyncEventQueue.getAsyncEventListener()).isEqualTo(declarableWithString);
-    assertThat(asyncEventQueue.getGatewayEventFilter().get(0)).isEqualTo(declarableWithString);
+    assertThat(asyncEventQueue.getGatewayEventFilters().get(0)).isEqualTo(declarableWithString);
     assertThat(asyncEventQueue.getGatewayEventSubstitutionFilter()).isEqualTo(declarableWithString);
 
     RegionAttributesType regionAttributes = cacheConfig.getRegionAttributes().get(0);
-    assertThat(regionAttributes.getCacheListener().get(0)).isEqualTo(declarableWithString);
+    assertThat(regionAttributes.getCacheListeners().get(0)).isEqualTo(declarableWithString);
     assertThat(regionAttributes.getCompressor().toString()).isEqualTo("my.className");
     assertThat(regionAttributes.getCacheLoader()).isEqualTo(declarableWithString);
     assertThat(regionAttributes.getCacheWriter()).isEqualTo(declarableWithString);

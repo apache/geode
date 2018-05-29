@@ -532,6 +532,11 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
         EntryEventImpl event, boolean isEntryUpdate) {
       throw new IllegalStateException("Should never be called");
     }
+
+    @Override
+    public boolean isEvicted() {
+      return false;
+    }
   }
 
 

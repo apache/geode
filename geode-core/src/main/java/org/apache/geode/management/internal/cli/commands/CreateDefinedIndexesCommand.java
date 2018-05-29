@@ -15,33 +15,27 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateDefinedIndexesCommand extends InternalGfshCommand {
+public class CreateDefinedIndexesCommand extends SingleGfshCommand {
+  public static final String CREATE_DEFINED_INDEXES_SECTION = "create-defined-indexes";
   private static final CreateDefinedIndexesFunction createDefinedIndexesFunction =
       new CreateDefinedIndexesFunction();
 
@@ -49,8 +43,7 @@ public class CreateDefinedIndexesCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
-  // TODO : Add optionContext for indexName
-  public Result createDefinedIndexes(
+  public ResultModel createDefinedIndexes(
 
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
@@ -58,106 +51,41 @@ public class CreateDefinedIndexesCommand extends InternalGfshCommand {
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
+          help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] groups) {
 
-    Result result;
-    List<XmlEntity> xmlEntities = new ArrayList<>();
+    ResultModel result = new ResultModel();
 
     if (IndexDefinition.indexDefinitions.isEmpty()) {
-      final InfoResultData infoResult = ResultBuilder.createInfoResultData();
-      infoResult.addLine(CliStrings.DEFINE_INDEX__FAILURE__MSG);
-      return ResultBuilder.buildResult(infoResult);
+      return ResultModel.createInfo(CliStrings.DEFINE_INDEX__FAILURE__MSG);
     }
 
-    try {
-      final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
-
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      final ResultCollector<?, ?> rc = executeFunction(createDefinedIndexesFunction,
-          IndexDefinition.indexDefinitions, targetMembers);
-
-      final List<Object> funcResults = (List<Object>) rc.getResult();
-      final Set<String> successfulMembers = new TreeSet<>();
-      final Map<String, Set<String>> indexOpFailMap = new HashMap<>();
-
-      for (final Object funcResult : funcResults) {
-        if (funcResult instanceof CliFunctionResult) {
-          final CliFunctionResult cliFunctionResult = (CliFunctionResult) funcResult;
-
-          if (cliFunctionResult.isSuccessful()) {
-            successfulMembers.add(cliFunctionResult.getMemberIdOrName());
-
-            // Only add the XmlEntity if it wasn't previously added from the result of another
-            // successful member.
-            XmlEntity resultEntity = cliFunctionResult.getXmlEntity();
-            if ((null != resultEntity) && (!xmlEntities.contains(resultEntity))) {
-              xmlEntities.add(cliFunctionResult.getXmlEntity());
-            }
-          } else {
-            final String exceptionMessage = cliFunctionResult.getMessage();
-            Set<String> failedMembers = indexOpFailMap.get(exceptionMessage);
-
-            if (failedMembers == null) {
-              failedMembers = new TreeSet<>();
-            }
-
-            failedMembers.add(cliFunctionResult.getMemberIdOrName());
-            indexOpFailMap.put(exceptionMessage, failedMembers);
-          }
-        }
-      }
-
-      // TODO: GEODE-3916.
-      // The index creation might succeed in some members and fail in others, the current logic only
-      // reports to the user the members on which the operation was successful, giving no details
-      // about the failures. We should report the exact details of what failed/succeeded, and
-      // where/why.
-      if (!successfulMembers.isEmpty()) {
-        final InfoResultData infoResult = ResultBuilder.createInfoResultData();
-        infoResult.addLine(CliStrings.CREATE_DEFINED_INDEXES__SUCCESS__MSG);
-
-        int num = 0;
-
-        for (final String memberId : successfulMembers) {
-          ++num;
-          infoResult.addLine(CliStrings
-              .format(CliStrings.CREATE_DEFINED_INDEXES__NUMBER__AND__MEMBER, num, memberId));
-        }
-        result = ResultBuilder.buildResult(infoResult);
-
-      } else {
-        // Group members by the exception thrown.
-        final ErrorResultData erd = ResultBuilder.createErrorResultData();
-
-        final Set<String> exceptionMessages = indexOpFailMap.keySet();
-
-        for (final String exceptionMessage : exceptionMessages) {
-          erd.addLine(exceptionMessage);
-          erd.addLine(CliStrings.CREATE_INDEX__EXCEPTION__OCCURRED__ON);
-          final Set<String> memberIds = indexOpFailMap.get(exceptionMessage);
-
-          int num = 0;
-          for (final String memberId : memberIds) {
-            ++num;
-            erd.addLine(CliStrings.format(CliStrings.CREATE_DEFINED_INDEXES__NUMBER__AND__MEMBER,
-                num, memberId));
-          }
-        }
-        result = ResultBuilder.buildResult(erd);
-      }
-    } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+    Set<DistributedMember> targetMembers = findMembers(groups, memberNameOrID);
+    if (targetMembers.isEmpty()) {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    for (XmlEntity xmlEntity : xmlEntities) {
-      persistClusterConfiguration(result,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-              .addXmlEntity(xmlEntity, group));
-    }
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+        createDefinedIndexesFunction, IndexDefinition.indexDefinitions, targetMembers);
+    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION, functionResults, false);
+    result.setConfigObject(IndexDefinition.indexDefinitions);
 
     return result;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+    Set<RegionConfig.Index> updatedIndexes = (Set<RegionConfig.Index>) configObject;
+    if (updatedIndexes == null) {
+      return;
+    }
+
+    for (RegionConfig.Index index : updatedIndexes) {
+      RegionConfig region = config.findRegionConfiguration(index.getFromClause());
+      if (region == null) {
+        throw new IllegalStateException("RegionConfig is null");
+      }
+
+      region.getIndexes().add(index);
+    }
   }
 }

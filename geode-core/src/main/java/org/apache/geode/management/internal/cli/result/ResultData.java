@@ -29,6 +29,7 @@ public interface ResultData {
   String TYPE_ERROR = "error";
   String TYPE_INFO = "info";
   String TYPE_TABULAR = "table";
+  String TYPE_MODEL = "model";
 
   String SECTION_DATA_ACCESSOR = "__sections__";
   String TABLE_DATA_ACCESSOR = "__tables__";

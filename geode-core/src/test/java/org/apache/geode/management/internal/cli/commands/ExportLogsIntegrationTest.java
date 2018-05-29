@@ -28,10 +28,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, LoggingTest.class})
 public class ExportLogsIntegrationTest {
   @ClassRule
   public static LocatorStarterRule locator =

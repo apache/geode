@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -23,15 +26,18 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.dto.Key;
 import org.apache.geode.management.internal.cli.dto.Value;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class})
 public class LocateEntryDUnitTest {
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -75,20 +81,30 @@ public class LocateEntryDUnitTest {
 
   @Test
   public void locateEntryForPartitionedRegion() throws Exception {
-    gfsh.executeAndAssertThat("locate entry --region=regionA --key=key").statusIsSuccess()
-        .containsKeyValuePair("Locations Found", "1");
+    CommandResult result = gfsh.executeCommand("locate entry --region=regionA --key=key");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    assertThat(data.get("Locations Found")).isEqualTo("1");
   }
 
   @Test
   public void locateEntryForReplicateRegion() throws Exception {
-    gfsh.executeAndAssertThat("locate entry --region=regionB --key=key").statusIsSuccess()
-        .containsKeyValuePair("Locations Found", "2");
+    CommandResult result = gfsh.executeCommand("locate entry --region=regionB --key=key");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    assertThat(data.get("Locations Found")).isEqualTo("2");
   }
 
   @Test
   public void recursiveLocate() throws Exception {
-    gfsh.executeAndAssertThat("locate entry --region=regionB --key=key  --recursive=true")
-        .statusIsSuccess().containsKeyValuePair("Locations Found", "4");
+    CommandResult result =
+        gfsh.executeCommand("locate entry --region=regionB --key=key --recursive=true");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    assertThat(data.get("Locations Found")).isEqualTo("4");
   }
 
   @Test
@@ -97,8 +113,12 @@ public class LocateEntryDUnitTest {
         "put --region=regionA --key=('key':'1') --value=('value':'1') " + "--key-class="
             + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName())
         .statusIsSuccess();
-    gfsh.executeAndAssertThat("locate entry --region=regionA --key=('key':'1') " + "--key-class="
-        + Key.class.getCanonicalName()).statusIsSuccess()
-        .containsKeyValuePair("Locations Found", "1");
+    CommandResult result =
+        gfsh.executeCommand("locate entry --region=regionA --key=('key':'1') " + "--key-class="
+            + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName());
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    assertThat(data.get("Locations Found")).isEqualTo("1");
   }
 }

@@ -35,28 +35,45 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.
  * <br/>
- * The following different types of 'models' can be added to an instance of {@code ResultModel}.
- * <ol>
+ * The following different types of 'models' (or sections in the older terminology) can be added to
+ * an instance of {@code ResultModel}.
+ * <ul>
  * <li>{@code InfoResultModel}</li>
  * This model holds multiple lines of text.
  * <li>{@code TabularResultModel}</li>
  * This model holds a table of named columns and associated row values.
  * <li>{@code DataResultModel}</li>
  * This model holds a map of key/value pairs
- * </ol>
+ * </ul>
  * The order in which models are added is maintained and will be presented to the user in the same
  * order.
  * <br/>
  * Errors should just be added as {@code InfoResultModel}s and then the status should be set
- * appropriately to indicate an error.
+ * appropriately to indicate an error. Once a {@code ResultModel}s status has been set to ERROR, it
+ * cannot be reset to OK.
+ * <br/>
+ * Each added section should be given a descriptive name. This name will eventually become part of
+ * the API when the JSON results are displayable via gfsh. So pick carefully :).
+ * <br/>
+ * A few common and generic names are already defined:
+ * <ul>
+ * <li>{@code INFO_SECTION}</li>
+ * Used for sections created by the {@code addInfo()} and {@code createInfo} methods.
+ * <li>{@code ERROR_SECTION}</li>
+ * Used for sections created by the {@code createError()} method.
+ * <li>{@code MEMBER_STATUS_SECTION}</li>
+ * Used for sections created by the various {@code createMemberStatusResult()} methods.
+ * </ul>
  *
  */
 public class ResultModel {
 
+  public static final String INFO_SECTION = "info";
+  public static final String MEMBER_STATUS_SECTION = "member-status";
+
   private String header;
   private String footer;
   private Map<String, AbstractResultModel> sections = new LinkedHashMap<>();
-  private int sectionCount = 0;
   private Result.Status status = Result.Status.OK;
   private Object configObject;
   private Map<String, FileResultModel> files = new LinkedHashMap<>();
@@ -83,6 +100,10 @@ public class ResultModel {
     return status == Result.Status.OK;
   }
 
+  /**
+   * Set the status of this {@code ResultModel}. Effectively, the only option is to set it to
+   * ERROR. Once the state is set to ERROR it cannot be unset again.
+   */
   public void setStatus(Result.Status status) {
     if (this.status == Result.Status.ERROR && status != this.status) {
       throw new IllegalStateException("Can't change the error state of the result.");
@@ -126,8 +147,7 @@ public class ResultModel {
     this.files = files;
   }
 
-  public void addFile(String fileName, byte[] data, int fileType, String message,
-      boolean addTimestampToName) {
+  public void addFile(String fileName, byte[] data, int fileType, String message) {
     if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
       throw new IllegalArgumentException("Unsupported file type is specified.");
     }
@@ -136,11 +156,24 @@ public class ResultModel {
     files.put(fileName, fileModel);
   }
 
+  /**
+   * Overloaded method to create an {@code InfoResultModel} section called "info".
+   */
   public InfoResultModel addInfo() {
-    return addInfo(Integer.toString(sectionCount++));
+    return addInfo(INFO_SECTION);
   }
 
   public InfoResultModel addInfo(String namedSection) {
+    Object model = sections.get(namedSection);
+    if (model != null) {
+      if (model instanceof InfoResultModel) {
+        return (InfoResultModel) model;
+      } else {
+        throw new IllegalStateException(String.format(
+            "Section requested is %s, not InfoResultModel", model.getClass().getSimpleName()));
+      }
+    }
+
     InfoResultModel section = new InfoResultModel();
     sections.put(namedSection, section);
 
@@ -153,14 +186,46 @@ public class ResultModel {
         .map(InfoResultModel.class::cast).collect(Collectors.toList());
   }
 
-  public TabularResultModel addTable() {
-    return addTable(Integer.toString(sectionCount++));
-  }
-
   public TabularResultModel addTable(String namedSection) {
+    Object model = sections.get(namedSection);
+    if (model != null) {
+      if (model instanceof TabularResultModel) {
+        return (TabularResultModel) model;
+      } else {
+        throw new IllegalStateException(String.format(
+            "Section requested is %s, not TabularResultModel", model.getClass().getSimpleName()));
+      }
+    }
+
     TabularResultModel section = new TabularResultModel();
     sections.put(namedSection, section);
 
+    return section;
+  }
+
+  public TabularResultModel addTableAndSetStatus(String namedSection,
+      List<CliFunctionResult> functionResults, boolean skipIgnored) {
+    Object model = sections.get(namedSection);
+    if (model != null) {
+      throw new IllegalStateException(
+          "Section already exists. Can't overwrite it with this new content.");
+    }
+    TabularResultModel section = this.addTable(namedSection);
+    boolean atLeastOneSuccess = false;
+    section.setColumnHeader("Member", "Status", "Message");
+    for (CliFunctionResult functionResult : functionResults) {
+      if (functionResult == null) {
+        continue;
+      }
+      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnored),
+          functionResult.getStatusMessage());
+      if (functionResult.isSuccessful()) {
+        atLeastOneSuccess = true;
+      } else if (functionResult.isIgnorableFailure() && skipIgnored) {
+        atLeastOneSuccess = true;
+      }
+    }
+    setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
     return section;
   }
 
@@ -174,11 +239,17 @@ public class ResultModel {
     return (TabularResultModel) sections.get(name);
   }
 
-  public DataResultModel addData() {
-    return addData(Integer.toString(sectionCount++));
-  }
-
   public DataResultModel addData(String namedSection) {
+    Object model = sections.get(namedSection);
+    if (model != null) {
+      if (model instanceof DataResultModel) {
+        return (DataResultModel) model;
+      } else {
+        throw new IllegalStateException(String.format(
+            "Section requested is %s, not DataResultModel", model.getClass().getSimpleName()));
+      }
+    }
+
     DataResultModel section = new DataResultModel();
     sections.put(namedSection, section);
 
@@ -211,50 +282,67 @@ public class ResultModel {
     return toJson();
   }
 
-
   // ********************************************
   // static convenience methods
   // ********************************************
+
+  public static ResultModel fromJson(String json) {
+    ObjectMapper mapper = new ObjectMapper();
+
+    ResultModel response;
+    try {
+      response = mapper.readValue(json, ResultModel.class);
+    } catch (IOException iox) {
+      throw new RuntimeException(iox);
+    }
+    return response;
+  }
 
   public static ResultModel createCommandProcessingError(String message) {
     return createError("Error processing command: " + message);
   }
 
+  /**
+   * Helper method to create an {@code InfoResultModel} named "info". This method will also set
+   * the status to ERROR.
+   */
   public static ResultModel createError(String message) {
-    ResultModel result = new ResultModel();
-    result.addInfo().addLine(message);
+    ResultModel result = createInfo(message);
     result.setStatus(Result.Status.ERROR);
     return result;
   }
 
+  /**
+   * Helper method to create an {@code InfoResultModel} named "info".
+   */
   public static ResultModel createInfo(String message) {
     ResultModel result = new ResultModel();
-    result.addInfo().addLine(message);
+    result.addInfo(INFO_SECTION).addLine(message);
     result.setStatus(Result.Status.OK);
     return result;
   }
 
-  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults) {
-    return createMemberStatusResult(functionResults, null, null);
+  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
+      boolean ignoreIfFailed) {
+    return createMemberStatusResult(functionResults, null, null, ignoreIfFailed);
   }
 
+  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults) {
+    return createMemberStatusResult(functionResults, null, null, false);
+  }
+
+  /**
+   * Helper method to create an {@code TabularResultModel} named "member-status". Typically used
+   * to tabulate the status from calls to a number of members.
+   */
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
-      String header, String footer) {
+      String header, String footer, boolean ignoreIfFailed) {
     ResultModel result = new ResultModel();
-    boolean atLeastOneSuccess = false;
-    TabularResultModel tabularResultModel = result.addTable();
+
+    TabularResultModel tabularResultModel =
+        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
-    tabularResultModel.setColumnHeader("Member", "Status");
-    for (CliFunctionResult functionResult : functionResults) {
-      tabularResultModel.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus());
-      if (functionResult.isSuccessful()) {
-        atLeastOneSuccess = true;
-      }
-    }
-    if (!atLeastOneSuccess) {
-      result.setStatus(Result.Status.ERROR);
-    }
     return result;
   }
 }

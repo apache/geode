@@ -37,7 +37,7 @@ public class KeySetOperationHandler
       throws InvalidExecutionContextException, EncodingException, DecodingException {
     String regionName = request.getRegionName();
 
-    Set<Object> keySet = messageExecutionContext.getAuthorizingCache().keySet(regionName);
+    Set<Object> keySet = messageExecutionContext.getSecureCache().keySet(regionName);
 
     RegionAPI.KeySetResponse.Builder builder = RegionAPI.KeySetResponse.newBuilder();
     keySet.stream().map(serializationService::encode).forEach(builder::addKeys);

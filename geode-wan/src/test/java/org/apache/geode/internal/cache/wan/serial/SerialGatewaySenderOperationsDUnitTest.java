@@ -50,7 +50,6 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -266,7 +265,6 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
   }
 
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-5056
   @Test
   public void testRestartSerialGatewaySendersWhilePutting() throws Throwable {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
@@ -312,6 +310,40 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
     vm4.invoke(() -> WANTestBase.validateSecondaryQueueSizeStat("ln", 0));
     vm5.invoke(() -> WANTestBase.validateSecondaryQueueSizeStat("ln", 0));
+  }
+
+  @Test
+  public void testSerialGatewaySendersPrintQueueContents() throws Throwable {
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createSenderCaches(lnPort);
+
+    createSenderVM4();
+    createSenderVM5();
+
+    createReceiverRegions();
+
+    createSenderRegions();
+
+    startSenderInVMs("ln", vm4, vm5);
+    vm4.invoke(() -> pauseSender("ln"));
+    vm5.invoke(() -> pauseSender("ln"));
+
+    vm7.invoke(() -> doPuts(getTestMethodName() + "_RR", 20));
+
+    validateGatewaySenderQueueHasContent("ln", vm4, vm5);
+
+    vm4.invokeAsync(() -> resumeSender("ln"));
+    vm5.invokeAsync(() -> resumeSender("ln"));
+
+    vm4.invoke(() -> validateQueueSizeStat("ln", 0));
+    vm5.invoke(() -> validateQueueSizeStat("ln", 0));
+    vm4.invoke(() -> validateSecondaryQueueSizeStat("ln", 0));
+    vm5.invoke(() -> validateSecondaryQueueSizeStat("ln", 0));
   }
 
   @Test
