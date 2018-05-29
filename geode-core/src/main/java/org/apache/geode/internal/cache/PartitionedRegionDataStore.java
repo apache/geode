@@ -270,19 +270,15 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     if (colocatedWithList.size() == 0) {
       return partitionedRegion.isInitialized();
     }
-    Iterator itr = colocatedWithList.iterator();
-    return areAllColocatedPartitionedRegionsReady(bucketId, itr);
+    return areAllColocatedPartitionedRegionsReady(bucketId, colocatedWithList);
   }
 
-  private boolean areAllColocatedPartitionedRegionsReady(int bucketId, Iterator itr) {
-    while (itr.hasNext()) {
-      PartitionedRegion colocatedChildRegion = (PartitionedRegion) itr.next();
-      boolean success = isColocatedPartitionedRegionInitialized(colocatedChildRegion, bucketId);
-      if (!success) {
-        return success;
-      }
-    }
-    return true;
+  private boolean areAllColocatedPartitionedRegionsReady(int bucketId,
+      List<PartitionedRegion> colocatedWithList) {
+    return !colocatedWithList.stream()
+        .filter(partitionedRegion -> isColocatedPartitionedRegionInitialized(partitionedRegion,
+            bucketId) == false)
+        .findFirst().isPresent();
   }
 
   private boolean isColocatedPartitionedRegionInitialized(PartitionedRegion partitionedRegion,
@@ -292,8 +288,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       return false;
     }
     List<PartitionedRegion> colocatedWithList = getColocatedChildRegions(partitionedRegion);
-    Iterator itr = colocatedWithList.iterator();
-    return areAllColocatedPartitionedRegionsReady(bucketId, itr);
+    return areAllColocatedPartitionedRegionsReady(bucketId, colocatedWithList);
   }
 
   List<PartitionedRegion> getColocatedChildRegions(PartitionedRegion partitionedRegion) {
