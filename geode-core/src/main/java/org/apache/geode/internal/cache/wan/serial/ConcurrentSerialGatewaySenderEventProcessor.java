@@ -415,7 +415,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       return null;
     }
   }
-    
+
   public String printUnprocessedEvents() {
     return this.processors.stream().map(processor -> processor.printUnprocessedEvents())
         .collect(Collectors.joining(", "));
