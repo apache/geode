@@ -18,6 +18,9 @@ package org.apache.geode.internal.cache.wan.parallel;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -29,8 +32,9 @@ import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 public class RemoteConcurrentParallelGatewaySenderEventProcessor
     extends ConcurrentParallelGatewaySenderEventProcessor {
 
-  public RemoteConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
-    super(sender);
+  public RemoteConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadMonitoring tMonitoring) {
+    super(sender, tMonitoring);
   }
 
   @Override
@@ -41,7 +45,7 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors[i] = new RemoteParallelGatewaySenderEventProcessor(sender, targetRs, i,
-          sender.getDispatcherThreads());
+          sender.getDispatcherThreads(), getThreadMonitorObj());
     }
   }
 
@@ -60,6 +64,19 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
       }
     } finally {
       statistics.endLoadBalance(startTime);
+    }
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
     }
   }
 }

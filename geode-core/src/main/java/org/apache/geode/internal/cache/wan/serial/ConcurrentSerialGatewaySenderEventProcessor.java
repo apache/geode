@@ -386,7 +386,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     }
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  protected ThreadMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

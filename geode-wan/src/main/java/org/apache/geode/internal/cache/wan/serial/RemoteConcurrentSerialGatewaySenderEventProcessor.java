@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.logging.LogService;
 
@@ -24,18 +25,19 @@ public class RemoteConcurrentSerialGatewaySenderEventProcessor
 
   private static final Logger logger = LogService.getLogger();
 
-  public RemoteConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender) {
-    super(sender);
+  public RemoteConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadMonitoring tMonitoring) {
+    super(sender, tMonitoring);
   }
 
   @Override
   protected void initializeMessageQueue(String id) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      processors.add(new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i));
+      processors.add(new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i,
+          getThreadMonitorObj()));
       if (logger.isDebugEnabled()) {
         logger.debug("Created the RemoteSerialGatewayEventProcessor_{}->{}", i, processors.get(i));
       }
     }
   }
-
 }

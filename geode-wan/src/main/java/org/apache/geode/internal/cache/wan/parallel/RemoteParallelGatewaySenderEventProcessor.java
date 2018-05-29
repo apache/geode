@@ -23,6 +23,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
@@ -35,16 +36,17 @@ import org.apache.geode.internal.logging.LogService;
 public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySenderEventProcessor {
   private static final Logger logger = LogService.getLogger();
 
-  protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
-    super(sender);
+  protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadMonitoring tMonitoring) {
+    super(sender, tMonitoring);
   }
 
   /**
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher) {
-    super(sender, userRegions, id, nDispatcher);
+      Set<Region> userRegions, int id, int nDispatcher, ThreadMonitoring tMonitoring) {
+    super(sender, userRegions, id, nDispatcher, tMonitoring);
   }
 
   @Override

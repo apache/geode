@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.serial;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
@@ -26,8 +27,9 @@ public class RemoteSerialGatewaySenderEventProcessor extends SerialGatewaySender
 
   private static final Logger logger = LogService.getLogger();
 
-  public RemoteSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id) {
-    super(sender, id);
+  public RemoteSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
+      ThreadMonitoring tMonitoring) {
+    super(sender, id, tMonitoring);
   }
 
   public void initializeEventDispatcher() {

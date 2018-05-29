@@ -21,7 +21,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -79,11 +81,11 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         }
       }
       if (getDispatcherThreads() > 1) {
-        eventProcessor =
-            new RemoteConcurrentSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this);
+        eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
+            SerialGatewaySenderImpl.this, getThreadMonitorObj());
       } else {
-        eventProcessor =
-            new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this, getId());
+        eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
+            getId(), getThreadMonitorObj());
       }
       eventProcessor.start();
       waitForRunningStatus();
@@ -229,5 +231,18 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
           this, clonedEvent.getKey(), originalEventId, originalThreadId, newEventId, newThreadId);
     }
     clonedEvent.setEventId(newEventId);
+  }
+
+  private ThreadMonitoring getThreadMonitorObj() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem.getAnyInstance();
+    if (internalDistributedSystem == null)
+      return null;
+    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }
