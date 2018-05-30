@@ -783,7 +783,9 @@ public abstract class AbstractRegionMap
                                            // value for the cache
           if (re.isTombstone()) {
             _getOwner().scheduleTombstone(re, re.getVersionStamp().asVersionTag());
-            _getOwner().updateSizeOnRemove(key, oldSize);
+            if (!oldValueWasTombstone) {
+              _getOwner().updateSizeOnRemove(key, oldSize);
+            }
           } else if (oldValueWasTombstone) {
             _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(re));
           } else {

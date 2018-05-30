@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -45,12 +46,14 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
@@ -711,6 +714,34 @@ public class AbstractRegionMapTest {
     }
   }
 
+  @Test
+  public void updateRecoveredEntry_givenExistingTombstoneAndSettingToTombstone_neverCallsUpdateSizeOnRemove() {
+    Object key = "key";
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(true);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.updateRecoveredEntry(key, recoveredEntry);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void updateRecoveredEntry_givenExistingNonTombstoneAndSettingToTombstone_callsUpdateSizeOnRemove() {
+    Object key = "key";
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(false).thenReturn(true);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.updateRecoveredEntry(key, recoveredEntry);
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(key), anyInt());
+  }
+
   private EntryEventImpl createEventForInvalidate(LocalRegion lr) {
     when(lr.getKeyInfo(KEY)).thenReturn(new KeyInfo(KEY, null, null));
     return EntryEventImpl.create(lr, Operation.INVALIDATE, KEY, false, null, true, false);
@@ -743,6 +774,7 @@ public class AbstractRegionMapTest {
    * TestableAbstractRegionMap
    */
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
+    private final RegionEntry regionEntryForGetEntry;
 
     protected TestableAbstractRegionMap() {
       this(false);
@@ -754,7 +786,14 @@ public class AbstractRegionMapTest {
 
     protected TestableAbstractRegionMap(boolean withConcurrencyChecks,
         ConcurrentMapWithReusableEntries map, RegionEntryFactory factory) {
+      this(withConcurrencyChecks, map, factory, null);
+    }
+
+    protected TestableAbstractRegionMap(boolean withConcurrencyChecks,
+        ConcurrentMapWithReusableEntries map, RegionEntryFactory factory,
+        RegionEntry regionEntryForGetEntry) {
       super(null);
+      this.regionEntryForGetEntry = regionEntryForGetEntry;
       LocalRegion owner = mock(LocalRegion.class);
       CachePerfStats cachePerfStats = mock(CachePerfStats.class);
       when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
@@ -769,6 +808,15 @@ public class AbstractRegionMapTest {
       }
       if (factory != null) {
         setEntryFactory(factory);
+      }
+    }
+
+    @Override
+    public RegionEntry getEntry(Object key) {
+      if (this.regionEntryForGetEntry != null) {
+        return this.regionEntryForGetEntry;
+      } else {
+        return super.getEntry(key);
       }
     }
   }
