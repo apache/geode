@@ -191,7 +191,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   static final int OK = 0x7B;
   static final int ERROR = 0x00;
   private volatile int socketPort;
-  private volatile ServerSocket serverSocket;
+  private ServerSocket serverSocket;
 
   /**
    * Statistics about health monitor
@@ -731,7 +731,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (!ssocket.isClosed()) {
           try {
             ssocket.close();
-            serverSocket = null;
             logger.info("GMSHealthMonitor server socket closed.");
           } catch (IOException e) {
             logger.debug("Unexpected exception", e);
@@ -976,14 +975,17 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     if (serverSocketExecutor != null) {
-      if (serverSocket != null && !serverSocket.isClosed()) {
-        try {
-          serverSocket.close();
-          serverSocket = null;
-          logger.info("GMSHealthMonitor server socket is closed in stopServices().");
-        } catch (IOException e) {
-          logger.trace("Unexpected exception", e);
+      if (serverSocket != null) {
+        if (!serverSocket.isClosed()) {
+          try {
+            serverSocket.close();
+            serverSocket = null;
+            logger.info("GMSHealthMonitor server socket is closed in stopServices().");
+          } catch (IOException e) {
+            logger.trace("Unexpected exception", e);
+          }
         }
+        serverSocket = null;
       }
       serverSocketExecutor.shutdownNow();
       try {
@@ -994,10 +996,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       logger.info("GMSHealthMonitor serverSocketExecutor is "
           + (serverSocketExecutor.isTerminated() ? "terminated" : "not terminated"));
     }
-
-    // if (suspectRequestCollectorThread != null) {
-    // suspectRequestCollectorThread.shutdown();
-    // }
   }
 
   /***
