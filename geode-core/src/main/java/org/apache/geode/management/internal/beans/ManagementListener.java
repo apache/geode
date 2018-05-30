@@ -103,10 +103,10 @@ public class ManagementListener implements ResourceEventsListener {
    * @param resource the GFE resource type
    */
   public void handleEvent(ResourceEvent event, Object resource) {
+    if (!shouldProceed(event)) {
+      return;
+    }
     try {
-      if (!shouldProceed(event)) {
-        return;
-      }
       if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
         readWriteLock.writeLock().lock();
       } else {
