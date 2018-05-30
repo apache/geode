@@ -132,7 +132,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       }
       testFailedConnectionToServer = true;
     } finally {
-      if (!initialized) {
+      if (!initialized && connection != null) {
         connection.destroy();
         failureTracker.addFailure();
         connection = null;
