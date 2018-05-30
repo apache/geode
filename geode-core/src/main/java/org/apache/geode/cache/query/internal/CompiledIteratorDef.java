@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -113,29 +114,37 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
         && !this.isDependentOnAnyIteratorOfScopeLessThanItsOwn(context)) {
       // The current Iterator definition is independent , so lets evaluate
       // the collection
-      try {
-        rIter.evaluateCollection(context);
-      } catch (QueryExecutionTimeoutException qet) {
-        throw qet;
-      } catch (RegionNotFoundException re) {
-        throw re;
-      } catch (NotAuthorizedException e) {
-        throw e;
-      } catch (QueryExecutionCanceledException e) {
-        throw e;
-      } catch (Exception e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Exception while getting runtime iterator.", e);
-        }
-        throw new TypeMismatchException(
-            LocalizedStrings.CompiledIteratorDef_EXCEPTION_IN_EVALUATING_THE_COLLECTION_EXPRESSION_IN_GETRUNTIMEITERATOR_EVEN_THOUGH_THE_COLLECTION_IS_INDEPENDENT_OF_ANY_RUNTIMEITERATOR
-                .toLocalizedString(),
-            e);
-      }
+      evaluateCollectionForIndependentIterator(context, rIter);
     }
     // cache in context
     context.cachePut(this, rIter);
     return rIter;
+  }
+
+  protected void evaluateCollectionForIndependentIterator(ExecutionContext context,
+      RuntimeIterator rIter)
+      throws RegionNotFoundException, TypeMismatchException {
+    try {
+      rIter.evaluateCollection(context);
+    } catch (QueryExecutionTimeoutException qet) {
+      throw qet;
+    } catch (RegionNotFoundException re) {
+      throw re;
+    } catch (NotAuthorizedException e) {
+      throw e;
+    } catch (QueryExecutionCanceledException e) {
+      throw e;
+    } catch (CacheClosedException e) {
+      throw e;
+    } catch (Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Exception while getting runtime iterator.", e);
+      }
+      throw new TypeMismatchException(
+          LocalizedStrings.CompiledIteratorDef_EXCEPTION_IN_EVALUATING_THE_COLLECTION_EXPRESSION_IN_GETRUNTIMEITERATOR_EVEN_THOUGH_THE_COLLECTION_IS_INDEPENDENT_OF_ANY_RUNTIMEITERATOR
+              .toLocalizedString(),
+          e);
+    }
   }
 
   ObjectType getCollectionElementTypeCast() throws TypeMismatchException {
