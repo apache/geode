@@ -25,7 +25,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,14 +39,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class RemoteGfManagerAgentTest {
 
-  private InternalDistributedMember member;
-  private GfManagerAgentConfig config;
-
-  @Before
-  public void setUp() throws Exception {
-
-  }
-
   private RemoteGfManagerAgent mockConnectedAgent(GfManagerAgentConfig config) {
     RemoteGfManagerAgent agent = spy(new RemoteGfManagerAgent(config));
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
@@ -61,7 +52,11 @@ public class RemoteGfManagerAgentTest {
   @Test
   public void removeAgentAndDisconnectWouldNotThrowNPE()
       throws InterruptedException, ExecutionException {
-    config = mock(GfManagerAgentConfig.class);
+    InternalDistributedMember member;
+    member = mock(InternalDistributedMember.class);
+    Future future = mock(Future.class);
+
+    GfManagerAgentConfig config = mock(GfManagerAgentConfig.class);
     when(config.getTransport()).thenReturn(mock(RemoteTransportConfig.class));
     when(config.getLogWriter()).thenReturn(mock(InternalLogWriter.class));
 
@@ -69,15 +64,13 @@ public class RemoteGfManagerAgentTest {
 
     for (int i = 0; i < count; i++) {
       RemoteGfManagerAgent agent = mockConnectedAgent(config);
+      Map membersMap = new HashMap();
+      membersMap.put(member, future);
+      agent.membersMap = membersMap;
       ExecutorService es = Executors.newFixedThreadPool(2);
 
       // removeMember accesses the InternalDistributedSystem
       Future<?> future1 = es.submit(() -> {
-        Map membersMap = new HashMap();
-        member = mock(InternalDistributedMember.class);
-        Future future = mock(Future.class);
-        membersMap.put(member, future);
-        agent.membersMap = membersMap;
         agent.removeMember(member);
       });
 
