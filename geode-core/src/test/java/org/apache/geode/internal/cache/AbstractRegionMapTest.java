@@ -716,30 +716,51 @@ public class AbstractRegionMapTest {
 
   @Test
   public void updateRecoveredEntry_givenExistingTombstoneAndSettingToTombstone_neverCallsUpdateSizeOnRemove() {
-    Object key = "key";
     RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
     RegionEntry regionEntry = mock(RegionEntry.class);
     when(regionEntry.isTombstone()).thenReturn(true);
     when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
 
-    arm.updateRecoveredEntry(key, recoveredEntry);
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void updateRecoveredEntry_givenExistingRemovedNonTombstone_neverCallsUpdateSizeOnRemove() {
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isRemoved()).thenReturn(true);
+    when(regionEntry.isTombstone()).thenReturn(false);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void updateRecoveredEntry_givenNoExistingEntry_neverCallsUpdateSizeOnRemove() {
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, null);
+
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
 
   @Test
   public void updateRecoveredEntry_givenExistingNonTombstoneAndSettingToTombstone_callsUpdateSizeOnRemove() {
-    Object key = "key";
     RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
     RegionEntry regionEntry = mock(RegionEntry.class);
     when(regionEntry.isTombstone()).thenReturn(false).thenReturn(true);
     when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
 
-    arm.updateRecoveredEntry(key, recoveredEntry);
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
 
-    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(key), anyInt());
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
   }
 
   private EntryEventImpl createEventForInvalidate(LocalRegion lr) {
