@@ -886,7 +886,9 @@ public abstract class AbstractRegionMap
                         }
                       }
                       if (newValue == Token.TOMBSTONE) {
-                        owner.updateSizeOnRemove(key, oldSize);
+                        if (!oldIsTombstone) {
+                          owner.updateSizeOnRemove(key, oldSize);
+                        }
                         if (owner.getServerProxy() == null
                             && owner.getVersionVector().isTombstoneTooOld(
                                 entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
