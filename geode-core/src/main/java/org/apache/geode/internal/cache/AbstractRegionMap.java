@@ -1069,6 +1069,7 @@ public abstract class AbstractRegionMap
             if (!re.isRemoved() || re.isTombstone()) {
               Object oldValue = re.getValueInVM(owner);
               final int oldSize = owner.calculateRegionEntryValueSize(re);
+              final boolean wasTombstone = re.isTombstone();
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
@@ -1117,7 +1118,9 @@ public abstract class AbstractRegionMap
                     }
                   }
                   EntryLogger.logTXDestroy(_getOwnerObject(), key);
-                  owner.updateSizeOnRemove(key, oldSize);
+                  if (!wasTombstone) {
+                    owner.updateSizeOnRemove(key, oldSize);
+                  }
                 } catch (RegionClearedException rce) {
                   clearOccured = true;
                 }
@@ -1200,8 +1203,9 @@ public abstract class AbstractRegionMap
                       EntryLogger.logTXDestroy(_getOwnerObject(), key);
                       if (wasTombstone) {
                         owner.unscheduleTombstone(oldRe);
+                      } else {
+                        owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
                       }
-                      owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
                       owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
                           false /* Clear Conflicting with the operation */);
                       lruEntryDestroy(oldRe);
@@ -1249,7 +1253,6 @@ public abstract class AbstractRegionMap
                   callbackEventAddedToPending = true;
                 }
                 EntryLogger.logTXDestroy(_getOwnerObject(), key);
-                owner.updateSizeOnCreate(newRe.getKey(), 0);
                 if (shouldPerformConcurrencyChecks(owner, callbackEvent)
                     && callbackEvent.getVersionTag() != null) {
                   newRe.makeTombstone(owner, callbackEvent.getVersionTag());

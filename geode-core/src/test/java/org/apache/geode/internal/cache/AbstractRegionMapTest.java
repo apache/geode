@@ -811,6 +811,97 @@ public class AbstractRegionMapTest {
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
   }
 
+  @Test
+  public void txApplyDestroy_givenExistingTombstone_neverCallsUpdateSizeOnRemove() {
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(true);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenExistingNonTombstone_callsUpdateSizeOnRemove() {
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(false);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenPutIfAbsentReturningTombstone_neverCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry).thenReturn(null);
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenPutIfAbsentReturningNonTombstone_callsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.getKey()).thenReturn(KEY);
+    when(entry.isTombstone()).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry).thenReturn(null);
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenFactory_neverCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(entry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), never()).updateSizeOnCreate(any(), anyInt());
+  }
+
   private EntryEventImpl createEventForInvalidate(LocalRegion lr) {
     when(lr.getKeyInfo(KEY)).thenReturn(new KeyInfo(KEY, null, null));
     return EntryEventImpl.create(lr, Operation.INVALIDATE, KEY, false, null, true, false);
