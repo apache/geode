@@ -38,6 +38,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -1460,6 +1461,10 @@ public class TXEntryState implements Releasable {
       }
     } catch (CacheRuntimeException ex) {
       r.getCancelCriterion().checkCancelInProgress(null);
+      if (ex instanceof RegionDestroyedException && r.isUsedForPartitionedRegionBucket()) {
+        throw new TransactionDataRebalancedException(
+            "Bucket rebalanced during commit: " + r.getFullPath(), ex);
+      }
       throw new CommitConflictException(
           LocalizedStrings.TXEntryState_CONFLICT_CAUSED_BY_CACHE_EXCEPTION.toLocalizedString(), ex);
     }

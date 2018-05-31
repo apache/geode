@@ -708,7 +708,7 @@ public class TXState implements TXStateInterface {
                   r.getFullPath(), rde);
             }
             throw new TransactionDataRebalancedException(
-                "Bucket rebalanced during commit: " + r.getFullPath());
+                "Bucket rebalanced during commit: " + r.getFullPath(), rde);
           } finally {
             if (!lockObtained) {
               // fix for bug #41708 - unlock operation-locks already obtained
