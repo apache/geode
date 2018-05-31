@@ -1071,7 +1071,7 @@ public abstract class AbstractRegionMap
             if (!re.isRemoved() || re.isTombstone()) {
               Object oldValue = re.getValueInVM(owner);
               final int oldSize = owner.calculateRegionEntryValueSize(re);
-              final boolean wasTombstone = re.isTombstone();
+              final boolean wasDestroyedOrRemoved = re.isDestroyedOrRemoved();
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
@@ -1120,7 +1120,7 @@ public abstract class AbstractRegionMap
                     }
                   }
                   EntryLogger.logTXDestroy(_getOwnerObject(), key);
-                  if (!wasTombstone) {
+                  if (!wasDestroyedOrRemoved) {
                     owner.updateSizeOnRemove(key, oldSize);
                   }
                 } catch (RegionClearedException rce) {
@@ -1196,6 +1196,7 @@ public abstract class AbstractRegionMap
                       }
                       int oldSize = 0;
                       boolean wasTombstone = oldRe.isTombstone();
+                      boolean wasDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
                       {
                         if (!wasTombstone) {
                           oldSize = owner.calculateRegionEntryValueSize(oldRe);
@@ -1205,7 +1206,8 @@ public abstract class AbstractRegionMap
                       EntryLogger.logTXDestroy(_getOwnerObject(), key);
                       if (wasTombstone) {
                         owner.unscheduleTombstone(oldRe);
-                      } else {
+                      }
+                      if (!wasDestroyedOrRemoved) {
                         owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
                       }
                       owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,

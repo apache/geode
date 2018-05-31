@@ -814,9 +814,10 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void txApplyDestroy_givenExistingTombstone_neverCallsUpdateSizeOnRemove() {
+  public void txApplyDestroy_givenExistingDestroyedOrRemovedEntry_neverCallsUpdateSizeOnRemove() {
     RegionEntry regionEntry = mock(RegionEntry.class);
-    when(regionEntry.isTombstone()).thenReturn(true);
+    when(regionEntry.isTombstone()).thenReturn(false);
+    when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
     when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     TXId txId = mock(TXId.class);
     when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
@@ -844,11 +845,12 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void txApplyDestroy_givenPutIfAbsentReturningTombstone_neverCallsUpdateSizeOnRemove()
+  public void txApplyDestroy_givenPutIfAbsentReturningDestroyedOrRemovedEntry_neverCallsUpdateSizeOnRemove()
       throws RegionClearedException {
     ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
     RegionEntry entry = mock(RegionEntry.class);
-    when(entry.isTombstone()).thenReturn(true);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.isDestroyedOrRemoved()).thenReturn(true);
     VersionStamp versionStamp = mock(VersionStamp.class);
     when(entry.getVersionStamp()).thenReturn(versionStamp);
     when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
