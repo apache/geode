@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -248,6 +249,18 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWithEmptyRegionInTokenModeNeverCallsUpdateSizeOnRemove() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenInTokenMode();
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
   public void destroyWithEmptyRegionInTokenModeWithRegionClearedExceptionDoesDestroy()
       throws Exception {
     givenConcurrencyChecks(false);
@@ -286,6 +299,19 @@ public class RegionMapDestroyTest {
 
     validateMapContainsTokenValue(Token.DESTROYED);
     validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void evictDestroyWithExistingTombstoneInTokenModeNeverCallsUpdateSizeOnRemove() {
+    givenConcurrencyChecks(true);
+    givenEviction();
+    givenExistingEntry(Token.TOMBSTONE);
+    givenInTokenMode();
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
 
   @Test
@@ -336,6 +362,22 @@ public class RegionMapDestroyTest {
     validateInvokedDestroyMethodsOnRegion(false);
   }
 
+
+  @Test
+  public void destroyWithConcurrentChangeFromNullToValidRetriesAndCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
+  }
+
   @Test
   public void destroyInTokenModeWithConcurrentChangeFromNullToRemovePhase2RetriesAndDoesDestroy()
       throws RegionClearedException {
@@ -363,6 +405,29 @@ public class RegionMapDestroyTest {
     validateInvokedDestroyMethodsOnRegion(false);
   }
 
+
+  @Test
+  public void destroyInTokenModeWithConcurrentChangeFromNullToRemovePhase2RetriesAndNeverCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenInTokenMode();
+
+    when(evictableEntry.isRemovedPhase2()).thenReturn(true);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(null);
+    when(entryMap.putIfAbsent(eq(KEY), any())).thenReturn(evictableEntry).thenReturn(null);
+
+    // isEviction is false despite having eviction enabled
+    isEviction = false;
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
   @Test
   public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndDoesDestroy()
       throws RegionClearedException {
@@ -380,6 +445,21 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntryWithMockedIsTombstone();
+
+    isEviction = false;
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
   public void destroyOfExistingEntryInTokenModeAddsAToken() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();
@@ -391,6 +471,19 @@ public class RegionMapDestroyTest {
 
     validateMapContainsTokenValue(Token.DESTROYED);
     validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyOfExistingEntryInTokenModeCallsUpdateSizeOnRemove() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    givenInTokenMode();
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
 
   @Test
@@ -406,6 +499,19 @@ public class RegionMapDestroyTest {
     // why not DESTROY token? since it was already destroyed why do we do the parts?
     validateMapContainsTokenValue(Token.TOMBSTONE);
     validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksNeverCallsUpdateSizeOnRemove() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+    givenInTokenMode();
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
 
   @Test
@@ -433,6 +539,19 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingTombstoneWithConcurrencyChecksAndRemoveRecoveredEntryNeverCallsUpdateSizeOnRemove() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+    givenRemoveRecoveredEntry();
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
   public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndRemoveRecoveredEntryDoesRetryAndThrowsEntryNotFound() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
@@ -454,6 +573,18 @@ public class RegionMapDestroyTest {
 
     validateMapDoesNotContainKey(event.getKey());
     validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyOfExistingEntryCallsUpdateSizeOnRemove() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
 
   /**
