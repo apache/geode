@@ -191,7 +191,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   static final int OK = 0x7B;
   static final int ERROR = 0x00;
   private volatile int socketPort;
-  private ServerSocket serverSocket;
+  private volatile ServerSocket serverSocket;
 
   /**
    * Statistics about health monitor
@@ -979,7 +979,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (!serverSocket.isClosed()) {
           try {
             serverSocket.close();
-            serverSocket = null;
             logger.info("GMSHealthMonitor server socket is closed in stopServices().");
           } catch (IOException e) {
             logger.trace("Unexpected exception", e);
