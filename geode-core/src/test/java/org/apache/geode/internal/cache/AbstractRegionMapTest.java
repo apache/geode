@@ -717,10 +717,11 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void updateRecoveredEntry_givenExistingTombstoneAndSettingToTombstone_neverCallsUpdateSizeOnRemove() {
+  public void updateRecoveredEntry_givenExistingDestroyedOrRemovedAndSettingToTombstone_neverCallsUpdateSizeOnRemove() {
     RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
     RegionEntry regionEntry = mock(RegionEntry.class);
-    when(regionEntry.isTombstone()).thenReturn(true);
+    when(regionEntry.isTombstone()).thenReturn(false).thenReturn(true);
+    when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
     when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
 

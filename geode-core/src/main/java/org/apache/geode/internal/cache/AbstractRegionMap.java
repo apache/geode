@@ -767,6 +767,7 @@ public abstract class AbstractRegionMap
       try {
         if (_isOwnerALocalRegion()) {
           boolean oldValueWasTombstone = re.isTombstone();
+          boolean oldIsDestroyedOrRemoved = re.isDestroyedOrRemoved();
           if (oldValueWasTombstone) {
             // when a tombstone is to be overwritten, unschedule it first
             _getOwner().unscheduleTombstone(re);
@@ -783,10 +784,10 @@ public abstract class AbstractRegionMap
                                            // value for the cache
           if (re.isTombstone()) {
             _getOwner().scheduleTombstone(re, re.getVersionStamp().asVersionTag());
-            if (!oldValueWasTombstone) {
+            if (!oldIsDestroyedOrRemoved) {
               _getOwner().updateSizeOnRemove(key, oldSize);
             }
-          } else if (oldValueWasTombstone) {
+          } else if (oldIsDestroyedOrRemoved) {
             _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(re));
           } else {
             _getOwner().updateSizeOnPut(key, oldSize,
