@@ -121,7 +121,7 @@ public class CommitCommand extends BaseCommand {
       if ((txException instanceof TransactionInDoubtException)
           && (txException.getCause() instanceof CancelException)) {
         logger.info(
-            "BRUCE: waiting for departure of {} before throwing TransactionInDoubtException",
+            "Waiting for departure of {} before throwing TransactionInDoubtException.",
             target);
         try {
           serverConnection.getCache().getDistributionManager().getMembershipManager()
@@ -131,7 +131,7 @@ public class CommitCommand extends BaseCommand {
         } catch (InterruptedException e) {
           return;
         }
-        logger.info("BRUCE: done waiting.  Transaction host {} in the cluster",
+        logger.info("Done waiting.  Transaction host {} in the cluster.",
             serverConnection.getCache().getDistributionManager().isCurrentMember(target)
                 ? "is still"
                 : "is no longer");
