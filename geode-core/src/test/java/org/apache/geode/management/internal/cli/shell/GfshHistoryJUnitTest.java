@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.shell;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -92,6 +91,5 @@ public class GfshHistoryJUnitTest {
     // clear the history
     gfsh.clearHistory();
     assertEquals(gfsh.getGfshHistory().size(), 0);
-    assertFalse(gfshHistoryFile.exists());
   }
 }
