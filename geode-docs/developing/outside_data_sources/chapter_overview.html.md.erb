@@ -29,6 +29,6 @@ The application plug-ins:
     -   `CacheWriter` is run synchronously. Before performing any operation on a region entry, if any cache writers are defined for the region in the distributed system, the system invokes the most convenient writer. In partitioned and distributed regions, cache writers are usually defined in only a subset of the caches holding the region - often in only one cache. The cache writer can abort the region entry operation.
     -   `CacheListener` is run synchronously after the cache is updated. This listener works only on local cache events, so install your listener in every cache where you want it to handle events. You can install multiple cache listeners in any of your caches.
 
-In addition to using application plug-ins, you can also configure external JNDI database sources in your cache.xml and use these data sources in transactions. See [Configuring Database Connections Using JNDI](../transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) for more information.
+In addition to using application plug-ins, you can also configure external JNDI database sources in your cache.xml and use these data sources in transactions. See [Configuring Database Connections Using JNDI](configuring_db_connections_using_JNDI.html) for more information.
 
 

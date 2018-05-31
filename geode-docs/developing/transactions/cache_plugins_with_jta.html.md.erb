@@ -19,7 +19,13 @@ limitations under the License.
 
 When <%=vars.product_name%> participates in a global transactions, you can still have <%=vars.product_name%> cache writers and cache loaders operating in the usual way.
 
-For example, in addition to the transactional connection to the database, the region could also have a cache writer and cache loader configured to exchange data with that same database. As long as the data source is transactional, which means that it can detect the transaction manager, the cache writer and cache loader participate in the transaction. If the JTA rolls back its transaction, the changes made by the cache loader and the cache writer are rolled back. For more on transactional data sources, see the discussion of XAPooledDataSource and ManagedDataSource in[Configuring Database Connections Using JNDI](configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494).
+For example, in addition to the transactional connection to the database, the region could also have
+a cache writer and cache loader configured to exchange data with that same database. As long as the
+data source is transactional, which means that it can detect the transaction manager, the cache
+writer and cache loader participate in the transaction. If the JTA rolls back its transaction, the
+changes made by the cache loader and the cache writer are rolled back. For more on transactional
+data sources, see the discussion of XAPooledDataSource and ManagedDataSource in 
+[Configuring Database Connections Using JNDI](../outside_data_sources/configuring_db_connections_using_JNDI.html).
 
 If you are using a <%=vars.product_name%> cache or transaction listener with global transactions, be aware that the EntryEvent returned by a transaction has the <%=vars.product_name%> transaction ID, not the JTA transaction ID.
 
