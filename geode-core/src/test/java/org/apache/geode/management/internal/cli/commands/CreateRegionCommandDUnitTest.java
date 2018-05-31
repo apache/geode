@@ -184,6 +184,35 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  public void cannotSetRegionExpirationForPartitionedTemplate() {
+    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create region --name=/COPY --template-region=/TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        .statusIsError()
+        .containsOutput(
+            "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
+
+    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+  }
+
+  @Test
+  public void cannotCreateTemplateWithInconsistentPersistence() {
+    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_PERSISTENT")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create region --name=/COPY --template-region=/TEMPLATE --enable-statistics=true --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        .statusIsError()
+        .containsOutput(
+            "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
+
+    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+  }
+
+
+  @Test
   public void ensureOverridingCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
     final File prJarFile = new File(tmpDir.getRoot(), "myCacheListener.jar");
     new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyCallback"),
