@@ -32,7 +32,7 @@ How to install your cache loader depends on the type of region.
 
 Because of the huge amounts of data they can handle, partitioned regions support partitioned loading. Each cache loader loads only the data entries in the member where the loader is defined. If data redundancy is configured, data is loaded only if the member holds the primary copy. So you must install a cache loader in every member where the partitioned attributes `local-max-memory` is not zero.
 
-If you depend on a JDBC connection, every data store must have a connection to the data source, as shown in the following figure. Here the three members require three connections. See [Configuring Database Connections Using JNDI](../transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) for information on how to configure data sources.
+If you depend on a JDBC connection, every data store must have a connection to the data source, as shown in the following figure. Here the three members require three connections. See [Configuring Database Connections Using JNDI](configuring_db_connections_using_JNDI.html) for information on how to configure data sources.
 
 **Note:**
 Partitioned regions generally require more JDBC connections than distributed regions.
