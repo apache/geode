@@ -872,6 +872,7 @@ public abstract class AbstractRegionMap
                     }
                   }
                   final boolean oldIsTombstone = oldRe.isTombstone();
+                  final boolean oldIsDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
                   final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
                   try {
                     result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered,
@@ -886,7 +887,7 @@ public abstract class AbstractRegionMap
                         }
                       }
                       if (newValue == Token.TOMBSTONE) {
-                        if (!oldIsTombstone) {
+                        if (!oldIsDestroyedOrRemoved) {
                           owner.updateSizeOnRemove(key, oldSize);
                         }
                         if (owner.getServerProxy() == null

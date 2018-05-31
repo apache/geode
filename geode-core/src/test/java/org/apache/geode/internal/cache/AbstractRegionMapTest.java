@@ -766,11 +766,11 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void initialImagePut_givenPutIfAbsentReturningTombstone_neverCallsUpdateSizeOnRemove()
+  public void initialImagePut_givenPutIfAbsentReturningDestroyedOrRemovedEntry_neverCallsUpdateSizeOnRemove()
       throws RegionClearedException {
     ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
     RegionEntry entry = mock(RegionEntry.class);
-    when(entry.isTombstone()).thenReturn(true);
+    when(entry.isDestroyedOrRemoved()).thenReturn(true);
     when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
         .thenReturn(true);
     VersionStamp versionStamp = mock(VersionStamp.class);
@@ -794,6 +794,7 @@ public class AbstractRegionMapTest {
     ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
     RegionEntry entry = mock(RegionEntry.class);
     when(entry.isTombstone()).thenReturn(false);
+    when(entry.isDestroyedOrRemoved()).thenReturn(false);
     when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
         .thenReturn(true);
     VersionStamp versionStamp = mock(VersionStamp.class);
