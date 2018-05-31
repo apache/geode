@@ -975,16 +975,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     if (serverSocketExecutor != null) {
-      if (serverSocket != null) {
-        if (!serverSocket.isClosed()) {
-          try {
-            serverSocket.close();
-            logger.info("GMSHealthMonitor server socket is closed in stopServices().");
-          } catch (IOException e) {
-            logger.trace("Unexpected exception", e);
-          }
+      if (serverSocket != null && !serverSocket.isClosed()) {
+        try {
+          serverSocket.close();
+          logger.info("GMSHealthMonitor server socket is closed in stopServices().");
+        } catch (IOException e) {
+          logger.trace("Unexpected exception", e);
         }
-        serverSocket = null;
       }
       serverSocketExecutor.shutdownNow();
       try {
