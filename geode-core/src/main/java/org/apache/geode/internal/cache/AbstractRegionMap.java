@@ -767,7 +767,6 @@ public abstract class AbstractRegionMap
       try {
         if (_isOwnerALocalRegion()) {
           boolean oldValueWasTombstone = re.isTombstone();
-          boolean oldIsDestroyedOrRemoved = re.isDestroyedOrRemoved();
           if (oldValueWasTombstone) {
             // when a tombstone is to be overwritten, unschedule it first
             _getOwner().unscheduleTombstone(re);
@@ -784,10 +783,8 @@ public abstract class AbstractRegionMap
                                            // value for the cache
           if (re.isTombstone()) {
             _getOwner().scheduleTombstone(re, re.getVersionStamp().asVersionTag());
-            if (!oldIsDestroyedOrRemoved) {
-              _getOwner().updateSizeOnRemove(key, oldSize);
-            }
-          } else if (oldIsDestroyedOrRemoved) {
+            _getOwner().updateSizeOnRemove(key, oldSize);
+          } else if (oldValueWasTombstone) {
             _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(re));
           } else {
             _getOwner().updateSizeOnPut(key, oldSize,
@@ -873,7 +870,6 @@ public abstract class AbstractRegionMap
                     }
                   }
                   final boolean oldIsTombstone = oldRe.isTombstone();
-                  final boolean oldIsDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
                   final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
                   try {
                     result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered,
@@ -888,9 +884,7 @@ public abstract class AbstractRegionMap
                         }
                       }
                       if (newValue == Token.TOMBSTONE) {
-                        if (!oldIsDestroyedOrRemoved) {
-                          owner.updateSizeOnRemove(key, oldSize);
-                        }
+                        owner.updateSizeOnRemove(key, oldSize);
                         if (owner.getServerProxy() == null
                             && owner.getVersionVector().isTombstoneTooOld(
                                 entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
@@ -1071,7 +1065,6 @@ public abstract class AbstractRegionMap
             if (!re.isRemoved() || re.isTombstone()) {
               Object oldValue = re.getValueInVM(owner);
               final int oldSize = owner.calculateRegionEntryValueSize(re);
-              final boolean wasDestroyedOrRemoved = re.isDestroyedOrRemoved();
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
@@ -1119,9 +1112,7 @@ public abstract class AbstractRegionMap
                     }
                   }
                   EntryLogger.logTXDestroy(_getOwnerObject(), key);
-                  if (!wasDestroyedOrRemoved) {
-                    owner.updateSizeOnRemove(key, oldSize);
-                  }
+                  owner.updateSizeOnRemove(key, oldSize);
                 } catch (RegionClearedException rce) {
                   clearOccured = true;
                 }
@@ -1194,7 +1185,6 @@ public abstract class AbstractRegionMap
                       }
                       int oldSize = 0;
                       boolean wasTombstone = oldRe.isTombstone();
-                      boolean wasDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
                       {
                         if (!wasTombstone) {
                           oldSize = owner.calculateRegionEntryValueSize(oldRe);
@@ -1207,9 +1197,7 @@ public abstract class AbstractRegionMap
                       if (wasTombstone) {
                         owner.unscheduleTombstone(oldRe);
                       }
-                      if (!wasDestroyedOrRemoved) {
-                        owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
-                      }
+                      owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
                       owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
                           false /* Clear Conflicting with the operation */);
                       lruEntryDestroy(oldRe);
@@ -1257,6 +1245,7 @@ public abstract class AbstractRegionMap
                   callbackEventAddedToPending = true;
                 }
                 EntryLogger.logTXDestroy(_getOwnerObject(), key);
+                owner.updateSizeOnCreate(newRe.getKey(), 0);
                 if (owner.getConcurrencyChecksEnabled() && callbackEvent.getVersionTag() != null) {
                   newRe.makeTombstone(owner, callbackEvent.getVersionTag());
                 } else if (!inTokenMode) {
