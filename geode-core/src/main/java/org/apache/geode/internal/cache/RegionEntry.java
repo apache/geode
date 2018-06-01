@@ -146,7 +146,7 @@ public interface RegionEntry {
 
   /**
    * Returns true if this entry does not exist. This is true if removal has started (value ==
-   * Token.REMOVED_PHASE1) or has completed (value == Token.REMOVED_PHASE2).
+   * Token.REMOVED_PHASE1) or has completed (value == Token.REMOVED_PHASE2) or is a TOMBSTONE.
    */
   boolean isRemoved();
 

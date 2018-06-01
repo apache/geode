@@ -569,6 +569,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return eventSeqNum.get();
   }
 
+  @Override
   public void handleWANEvent(EntryEventImpl event) {
     if (this.eventSeqNum == null) {
       if (logger.isDebugEnabled()) {
