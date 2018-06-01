@@ -790,7 +790,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
     }
 
-    protected void shutDownAckReaderConnection(Connection connection) {
+    private void shutDownAckReaderConnection(Connection connection) {
       Connection conn = connection;
       // attempt to unblock the ackReader thread by shutting down the inputStream, if it was stuck
       // on a read
@@ -825,7 +825,6 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
   public void shutDownAckReaderConnection() {
     if (ackReaderThread != null) {
       ackReaderThread.shutDownAckReaderConnection(connection);
-      ackReaderThread.shutdown();
     }
   }
 
