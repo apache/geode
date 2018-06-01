@@ -578,45 +578,97 @@ public class CacheServerLauncher {
     }
   }
 
-  private static Integer serverPort;
+  /**
+   * GEODE-5256: Parameters containing startup options specified by the user.
+   * Shared from ServerLauncher and available to all classes through static accessors.
+   */
+  public static class Parameters {
+    private final Integer serverPort;
+    private final Integer maxThreads;
+    private final Integer maxConnections;
+    private final Integer maxMessageCount;
+    private final Integer socketBufferSize;
+    private final String serverBindAddress;
+    private final Integer messageTimeToLive;
+    private final String hostnameForClients;
+    private final Boolean disableDefaultServer;
 
-  private static String serverBindAddress;
+    public Integer getServerPort() {
+      return serverPort;
+    }
 
-  public static void setServerPort(Integer serverPort) {
-    CacheServerLauncher.serverPort = serverPort;
+    public Integer getMaxThreads() {
+      return maxThreads;
+    }
+
+    public Integer getMaxConnections() {
+      return maxConnections;
+    }
+
+    public Integer getMaxMessageCount() {
+      return maxMessageCount;
+    }
+
+    public Integer getSocketBufferSize() {
+      return socketBufferSize;
+    }
+
+    public String getServerBindAddress() {
+      return serverBindAddress;
+    }
+
+    public Integer getMessageTimeToLive() {
+      return messageTimeToLive;
+    }
+
+    public String getHostnameForClients() {
+      return hostnameForClients;
+    }
+
+    public Boolean isDisableDefaultServer() {
+      return disableDefaultServer;
+    }
+
+    public Parameters(Integer serverPort, String serverBindAddress, Boolean disableDefaultServer) {
+      this.maxThreads = null;
+      this.maxConnections = null;
+      this.maxMessageCount = null;
+      this.socketBufferSize = null;
+      this.messageTimeToLive = null;
+      this.hostnameForClients = null;
+      this.serverPort = serverPort;
+      this.serverBindAddress = serverBindAddress;
+      this.disableDefaultServer = disableDefaultServer;
+    }
+
+    public Parameters(Integer serverPort, Integer maxThreads, Integer maxConnections,
+        Integer maxMessageCount, Integer socketBufferSize, String serverBindAddress,
+        Integer messageTimeToLive, String hostnameForClients, Boolean disableDefaultServer) {
+      this.serverPort = serverPort;
+      this.maxThreads = maxThreads;
+      this.maxConnections = maxConnections;
+      this.maxMessageCount = maxMessageCount;
+      this.socketBufferSize = socketBufferSize;
+      this.serverBindAddress = serverBindAddress;
+      this.messageTimeToLive = messageTimeToLive;
+      this.hostnameForClients = hostnameForClients;
+      this.disableDefaultServer = disableDefaultServer;
+    }
   }
 
-  public static void setServerBindAddress(String serverBindAddress) {
-    CacheServerLauncher.serverBindAddress = serverBindAddress;
+  private static Parameters parameters;
+
+  public static Parameters getParameters() {
+    return CacheServerLauncher.parameters;
   }
 
-  public static void setDisableDefaultServer(Boolean disableDefaultServer) {
-    CacheServerLauncher.disableDefaultServer = disableDefaultServer;
+  public static void setParameters(Parameters parameters) {
+    CacheServerLauncher.parameters = parameters;
   }
-
-  public static Boolean disableDefaultServer;
-
-
-
-  public static Integer getServerPort() {
-    return serverPort;
-  }
-
-  public static String getServerBindAddress() {
-    return serverBindAddress;
-  }
-
-  public static Boolean getDisableDefaultServer() {
-    return disableDefaultServer;
-  }
-
 
   public static void clearStatics() {
-    disableDefaultServer = null;
-    serverPort = null;
-    serverBindAddress = null;
+    CacheServerLauncher.parameters = null;
   }
-
 
   /**
    * The method that does the work of being a cache server. It is invoked in the VM spawned by the
@@ -636,20 +688,17 @@ public class CacheServerLauncher {
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void server(final String[] args) throws Exception {
+    Integer serverPort = null;
     isDedicatedCacheServer = true;
     SystemFailure.setExitOK(true);
-
-    final Map<String, Object> options = getServerOptions(args);
-
-    final String serverPortString = (String) options.get(SERVER_PORT);
-
-    if (serverPortString != null) {
-      serverPort = Integer.parseInt(serverPortString);
-    }
-
-    serverBindAddress = (String) options.get(SERVER_BIND_ADDRESS_NAME);
-    disableDefaultServer = (Boolean) options.get(DISABLE_DEFAULT_SERVER);
     workingDir = new File(System.getProperty("user.dir"));
+    final Map<String, Object> options = getServerOptions(args);
+    final String serverPortString = (String) options.get(SERVER_PORT);
+    if (serverPortString != null)
+      serverPort = Integer.parseInt(serverPortString);
+    CacheServerLauncher
+        .setParameters(new Parameters(serverPort, (String) options.get(SERVER_BIND_ADDRESS_NAME),
+            (Boolean) options.get(DISABLE_DEFAULT_SERVER)));
 
     // Say that we're starting...
     Status originalStatus = createStatus(this.baseName, STARTING, OSProcess.getId());
@@ -859,11 +908,10 @@ public class CacheServerLauncher {
       cache.getResourceManager().setEvictionOffHeapPercentage(threshold);
     }
 
-
     // Create and start a default cache server
     // If (disableDefaultServer is not set or it is set but false) AND (the number of cacheservers
     // is 0)
-    Boolean disable = disableDefaultServer;
+    Boolean disable = CacheServerLauncher.getParameters().isDisableDefaultServer();
     if ((disable == null || !disable) && cache.getCacheServers().size() == 0) {
       // Create and add a cache server
       CacheServer server = cache.addCacheServer();
@@ -871,13 +919,13 @@ public class CacheServerLauncher {
       CacheServerHelper.setIsDefaultServer(server);
 
       // Set its port if necessary
-      Integer serverPort = CacheServerLauncher.getServerPort();
+      Integer serverPort = CacheServerLauncher.getParameters().getServerPort();
       if (serverPort != null) {
         server.setPort(serverPort);
       }
 
       // Set its bind address if necessary
-      String serverBindAddress = getServerBindAddress();
+      String serverBindAddress = CacheServerLauncher.getParameters().getServerBindAddress();
       if (serverBindAddress != null) {
         server.setBindAddress(serverBindAddress.trim());
       }

@@ -184,7 +184,8 @@ public class CacheCreationJUnitTest {
     String configuredServerBindAddress = null;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
+            disableDefaultCacheServer));
 
     verify(this.cache, never()).addCacheServer();
   }
@@ -204,7 +205,8 @@ public class CacheCreationJUnitTest {
     String configuredServerBindAddress = null;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
+            disableDefaultCacheServer));
 
     verify(this.cache, never()).addCacheServer();
   }
@@ -224,7 +226,8 @@ public class CacheCreationJUnitTest {
     String configuredServerBindAddress = null;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
+            disableDefaultCacheServer));
 
     verify(this.cache, times(1)).addCacheServer();
     verify(mockServer).setPort(9999);
@@ -245,7 +248,8 @@ public class CacheCreationJUnitTest {
     Boolean disableDefaultCacheServer = false;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
+            disableDefaultCacheServer));
 
     verify(this.cache, times(1)).addCacheServer();
     verify(mockServer).setPort(configuredServerPort);
@@ -272,7 +276,8 @@ public class CacheCreationJUnitTest {
     Boolean disableDefaultCacheServer = false;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
+            disableDefaultCacheServer));
 
     verify(this.cache, never()).addCacheServer();
   }
@@ -295,7 +300,8 @@ public class CacheCreationJUnitTest {
     Boolean disableDefaultCacheServer = false;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
+            disableDefaultCacheServer));
 
     verify(this.cache, times(2)).addCacheServer();
     verify(mockServer).configureFrom(br1);
@@ -313,7 +319,8 @@ public class CacheCreationJUnitTest {
     Boolean disableDefaultCacheServer = false;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        configuredServerPort, configuredServerBindAddress, disableDefaultCacheServer);
+        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
+            disableDefaultCacheServer));
   }
 
   @Test
@@ -333,5 +340,38 @@ public class CacheCreationJUnitTest {
     // inOrder.verify(cache).basicCreateRegion(eq("region"), any());
     inOrder.verify(internalCache).createGatewayReceiverFactory();
     inOrder.verify(receiverFactory).create();
+  }
+
+  @Test
+  public void cacheServerLauncherParametersShouldOverrideDefaultSettings() {
+    CacheCreation cacheCreation = new CacheCreation();
+    CacheServerCreation br1 = new CacheServerCreation(cacheCreation, false);
+    cacheCreation.getCacheServers().add(br1);
+    CacheServerImpl mockServer = mock(CacheServerImpl.class);
+    when(this.cache.addCacheServer()).thenReturn(mockServer);
+    Integer serverPort = 4444;
+    Integer maxThreads = 5000;
+    Integer maxConnections = 300;
+    Integer maxMessageCount = 100;
+    Integer socketBufferSize = 1024;
+    String serverBindAddress = null;
+    Integer messageTimeToLive = 500;
+    String hostnameForClients = "hostnameForClients";
+    Boolean disableDefaultServer = false;
+
+    CacheServerLauncher.Parameters parameters = new CacheServerLauncher.Parameters(serverPort,
+        maxThreads, maxConnections, maxMessageCount, socketBufferSize, serverBindAddress,
+        messageTimeToLive, hostnameForClients, disableDefaultServer);
+    cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache, parameters);
+
+    verify(this.cache, times(1)).addCacheServer();
+    verify(mockServer, times(1)).setPort(serverPort);
+    verify(mockServer, times(1)).setMaxThreads(maxThreads);
+    verify(mockServer, times(1)).setMaxConnections(maxConnections);
+    verify(mockServer, times(1)).setMaximumMessageCount(maxMessageCount);
+    verify(mockServer, times(1)).setSocketBufferSize(socketBufferSize);
+    verify(mockServer, times(0)).setBindAddress(serverBindAddress);
+    verify(mockServer, times(1)).setMessageTimeToLive(messageTimeToLive);
+    verify(mockServer, times(1)).setHostnameForClients(hostnameForClients);
   }
 }

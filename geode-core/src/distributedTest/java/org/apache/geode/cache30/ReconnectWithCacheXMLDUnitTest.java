@@ -85,9 +85,9 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testCacheServerLauncherPortRetained() throws Exception {
-    CacheServerLauncher.setDisableDefaultServer(true);
-    CacheServerLauncher.setServerPort(AvailablePortHelper.getRandomAvailableTCPPort());
+  public void testCacheServerLauncherPortRetained() {
+    CacheServerLauncher.setParameters(new CacheServerLauncher.Parameters(
+        AvailablePortHelper.getRandomAvailableTCPPort(), null, true));
     Cache cache = getCache();
 
     final AtomicBoolean membershipFailed = new AtomicBoolean();
@@ -119,7 +119,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
 
     Cache newCache = cache.getReconnectedCache();
     CacheServer server = newCache.getCacheServers().iterator().next();
-    assertEquals(CacheServerLauncher.getServerPort().intValue(), server.getPort());
+    assertEquals(CacheServerLauncher.getParameters().getServerPort().intValue(), server.getPort());
     assertEquals(20, server.getMaxConnections()); // this setting is in the XML file
   }
 

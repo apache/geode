@@ -26,14 +26,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.internal.GemFireVersion;
@@ -48,33 +52,33 @@ import org.apache.geode.internal.process.ProcessType;
 public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalIntegrationTestCase {
 
   @Before
-  public void setUpServerLauncherLocalIntegrationTest() throws Exception {
+  public void setUpServerLauncherLocalIntegrationTest() {
     disconnectFromDS();
     System.setProperty(ProcessType.PROPERTY_TEST_PREFIX, getUniqueName() + "-");
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isTrue();
   }
 
   @After
-  public void tearDownServerLauncherLocalIntegrationTest() throws Exception {
+  public void tearDownServerLauncherLocalIntegrationTest() {
     disconnectFromDS();
   }
 
   @Test
-  public void usesLocatorPortAsDefaultPort() throws Exception {
+  public void usesLocatorPortAsDefaultPort() {
     launcher = givenServerLauncher();
 
     assertThat(launcher.getServerPort()).isEqualTo(defaultServerPort);
   }
 
   @Test
-  public void startReturnsOnline() throws Exception {
+  public void startReturnsOnline() {
     launcher = givenServerLauncher();
 
     assertThat(launcher.start().getStatus()).isEqualTo(ONLINE);
   }
 
   @Test
-  public void startWithPortUsesPort() throws Exception {
+  public void startWithPortUsesPort() {
     ServerLauncher launcher =
         startServer(newBuilder().setDisableDefaultServer(false).setServerPort(defaultServerPort));
 
@@ -82,7 +86,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithPortZeroUsesAnEphemeralPort() throws Exception {
+  public void startWithPortZeroUsesAnEphemeralPort() {
     ServerLauncher launcher =
         startServer(newBuilder().setDisableDefaultServer(false).setServerPort(0));
 
@@ -90,7 +94,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startUsesBuilderValues() throws Exception {
+  public void startUsesBuilderValues() {
     ServerLauncher launcher = startServer(newBuilder().set(DISABLE_AUTO_RECONNECT, "true"));
 
     Cache cache = launcher.getCache();
@@ -105,21 +109,21 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startCreatesPidFile() throws Exception {
+  public void startCreatesPidFile() {
     startServer();
 
     assertThat(getPidFile()).exists();
   }
 
   @Test
-  public void pidFileContainsServerPid() throws Exception {
+  public void pidFileContainsServerPid() {
     startServer();
 
     assertThat(getServerPid()).isEqualTo(localPid);
   }
 
   @Test
-  public void startDeletesStaleControlFiles() throws Exception {
+  public void startDeletesStaleControlFiles() {
     File stopRequestFile = givenControlFile(getProcessType().getStopRequestFileName());
     File statusRequestFile = givenControlFile(getProcessType().getStatusRequestFileName());
     File statusFile = givenControlFile(getProcessType().getStatusFileName());
@@ -132,7 +136,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startOverwritesStalePidFile() throws Exception {
+  public void startOverwritesStalePidFile() {
     givenPidFile(fakePid);
 
     startServer();
@@ -141,7 +145,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithDisableDefaultServerDoesNotUseDefaultPort() throws Exception {
+  public void startWithDisableDefaultServerDoesNotUseDefaultPort() {
     givenServerPortIsFree(defaultServerPort);
 
     startServer(withDisableDefaultServer());
@@ -150,7 +154,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithDisableDefaultServerSucceedsWhenDefaultPortInUse() throws Exception {
+  public void startWithDisableDefaultServerSucceedsWhenDefaultPortInUse() {
     givenServerPortInUse(defaultServerPort);
 
     startServer(withDisableDefaultServer());
@@ -159,7 +163,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithServerPortOverridesPortInCacheXml() throws Exception {
+  public void startWithServerPortOverridesPortInCacheXml() {
     int[] freePorts = getRandomAvailableTCPPorts(2);
     int cacheXmlPort = freePorts[0];
     int startPort = freePorts[1];
@@ -174,7 +178,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithServerPortOverridesDefaultWithCacheXml() throws Exception {
+  public void startWithServerPortOverridesDefaultWithCacheXml() {
     givenCacheXmlFile();
 
     launcher = awaitStart(new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
@@ -187,7 +191,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithDefaultPortInUseFailsWithBindException() throws Exception {
+  public void startWithDefaultPortInUseFailsWithBindException() {
     givenServerPortInUse(defaultServerPort);
 
     launcher = new Builder().build();
@@ -197,7 +201,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithServerPortInUseFailsWithBindException() throws Exception {
+  public void startWithServerPortInUseFailsWithBindException() {
     givenServerPortInUse(nonDefaultServerPort);
 
     launcher = new Builder().setServerPort(nonDefaultServerPort).build();
@@ -207,7 +211,46 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void statusForDisableDefaultServerHasEmptyPort() throws Exception {
+  public void startWithParametersOverridesCacheXmlConfiguration() throws IOException {
+    int[] freePorts = getRandomAvailableTCPPorts(2);
+    int xmlPort = freePorts[0];
+    int serverPort = freePorts[1];
+    Integer maxThreads = 100;
+    Integer maxConnections = 1200;
+    Integer maxMessageCount = 500000;
+    Integer socketBufferSize = 342768;
+    Integer messageTimeToLive = 120;
+    String hostnameForClients = "hostName4Clients";
+    String serverBindAddress = "127.0.0.1";
+
+    ServerLauncher.Builder launcherBuilder = new Builder().setServerBindAddress(serverBindAddress)
+        .setServerPort(serverPort).setMaxThreads(maxThreads).setMaxConnections(maxConnections)
+        .setMaxMessageCount(maxMessageCount).setMessageTimeToLive(messageTimeToLive)
+        .setSocketBufferSize(socketBufferSize).setHostNameForClients(hostnameForClients);
+    givenCacheXmlFileWithServerProperties(xmlPort, CacheServer.DEFAULT_BIND_ADDRESS,
+        CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS, CacheServer.DEFAULT_MAX_CONNECTIONS,
+        CacheServer.DEFAULT_MAX_THREADS, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
+        CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE);
+
+    launcher = startServer(launcherBuilder);
+
+    assertThatServerPortIsInUse(serverPort);
+    assertThatServerPortIsFree(xmlPort);
+    assertThat(Integer.valueOf(launcher.status().getPort())).isEqualTo(serverPort);
+    List<CacheServer> servers = launcher.getCache().getCacheServers();
+    assertThat(servers.size()).isEqualTo(1);
+    CacheServer server = servers.get(0);
+    assertThat(server.getMaxThreads()).isEqualTo(maxThreads);
+    assertThat(server.getMaxConnections()).isEqualTo(maxConnections);
+    assertThat(server.getMaximumMessageCount()).isEqualTo(maxMessageCount);
+    assertThat(server.getSocketBufferSize()).isEqualTo(socketBufferSize);
+    assertThat(server.getMessageTimeToLive()).isEqualTo(messageTimeToLive);
+    assertThat(server.getHostnameForClients()).isEqualTo(hostnameForClients);
+    assertThat(server.getBindAddress()).isEqualTo(serverBindAddress);
+  }
+
+  @Test
+  public void statusForDisableDefaultServerHasEmptyPort() {
     givenServerPortIsFree(defaultServerPort);
 
     ServerState serverState = startServer(newBuilder().setDisableDefaultServer(true)).status();
@@ -216,7 +259,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void statusWithPidReturnsOnlineWithDetails() throws Exception {
+  public void statusWithPidReturnsOnlineWithDetails() throws UnknownHostException {
     givenRunningServer();
 
     ServerState serverState = new Builder().setPid(localPid).build().status();
@@ -235,7 +278,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws Exception {
+  public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws UnknownHostException {
     givenRunningServer();
 
     ServerState serverState =
@@ -255,7 +298,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void statusWithEmptyPidFileThrowsIllegalArgumentException() throws Exception {
+  public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
     givenEmptyPidFile();
 
     ServerLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
@@ -265,7 +308,8 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws Exception {
+  public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails()
+      throws UnknownHostException {
     givenEmptyWorkingDirectory();
 
     ServerState serverState =
@@ -288,7 +332,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
    * This test takes > 1 minute to run in {@link ServerLauncherLocalFileIntegrationTest}.
    */
   @Test
-  public void statusWithStalePidFileReturnsNotResponding() throws Exception {
+  public void statusWithStalePidFileReturnsNotResponding() {
     givenPidFile(fakePid);
 
     ServerState serverState =
@@ -298,7 +342,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void stopWithPidReturnsStopped() throws Exception {
+  public void stopWithPidReturnsStopped() {
     givenRunningServer();
 
     ServerState serverState = new Builder().setPid(localPid).build().stop();
@@ -307,7 +351,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void stopWithPidDeletesPidFile() throws Exception {
+  public void stopWithPidDeletesPidFile() {
     givenRunningServer(newBuilder().setDeletePidFileOnStop(true));
 
     new Builder().setPid(localPid).build().stop();
@@ -316,7 +360,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void stopWithWorkingDirectoryReturnsStopped() throws Exception {
+  public void stopWithWorkingDirectoryReturnsStopped() {
     givenRunningServer();
 
     ServerState serverState =
@@ -326,7 +370,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void stopWithWorkingDirectoryDeletesPidFile() throws Exception {
+  public void stopWithWorkingDirectoryDeletesPidFile() {
     givenRunningServer(newBuilder().setDeletePidFileOnStop(true));
 
     new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();

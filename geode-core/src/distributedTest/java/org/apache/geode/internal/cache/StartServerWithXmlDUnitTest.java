@@ -54,8 +54,8 @@ public class StartServerWithXmlDUnitTest {
     server = cluster.getVM(1);
 
     server.invoke(() -> {
-      CacheServerLauncher.setServerBindAddress("localhost");
-      CacheServerLauncher.setDisableDefaultServer(false);
+      CacheServerLauncher
+          .setParameters(new CacheServerLauncher.Parameters(null, "localhost", false));
       CacheFactory cf = new CacheFactory(props);
       Cache cache = cf.create();
     });
