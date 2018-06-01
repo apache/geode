@@ -92,6 +92,7 @@ class PooledConnection implements Connection {
   public void internalClose(boolean keepAlive) throws Exception {
     try {
       Connection con = this.connection;
+      con.getInputStream().close();
       if (con != null) {
         con.close(keepAlive);
       }
