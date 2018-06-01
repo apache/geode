@@ -44,11 +44,15 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.awaitility.Awaitility;
 import org.jgroups.util.UUID;
@@ -184,6 +188,16 @@ public class GMSHealthMonitorJUnitTest {
     verify(messenger, atLeastOnce()).send(any(HeartbeatMessage.class));
     assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatRequestsReceived());
     assertEquals(1, gmsHealthMonitor.getStats().getHeartbeatsSent());
+  }
+
+  @Test
+  public void testHMServiceHandlesShutdownRace() throws IOException {
+    // The health monitor starts a thread to monitor the tcp socket, both that thread and the
+    // stopServices call will attempt to shut down the socket during a normal close. This test tries
+    // to create a problematic ordering to make sure we still shutdown properly.
+    ((GMSHealthMonitorTest) gmsHealthMonitor).useBlockingSocket = true;
+    gmsHealthMonitor.started();
+    gmsHealthMonitor.stop();
   }
 
   /**
@@ -799,6 +813,8 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   public class GMSHealthMonitorTest extends GMSHealthMonitor {
+    public boolean useBlockingSocket = false;
+
     @Override
     boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
       if (useGMSHealthMonitorTestClass) {
@@ -808,6 +824,85 @@ public class GMSHealthMonitorJUnitTest {
         return false;
       }
       return super.doTCPCheckMember(suspectMember, port);
+    }
+
+    @Override
+    ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
+      final ServerSocket serverSocket = super.createServerSocket(socketAddress, portRange);
+      if (useBlockingSocket) {
+        try {
+          return new TrickySocket(serverSocket);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      } else {
+        return serverSocket;
+      }
+    }
+  }
+
+  public class TrickySocket extends ServerSocket {
+    ServerSocket wrappedSocket;
+    final Lock lock = new ReentrantLock();
+    boolean firstWait = true;
+    final Condition block = lock.newCondition();
+
+    public TrickySocket(ServerSocket wrappee) throws IOException {
+      wrappedSocket = wrappee;
+    }
+
+    @Override
+    public void bind(SocketAddress endpoint) throws IOException {
+      wrappedSocket.bind(endpoint);
+    }
+
+    @Override
+    public void bind(SocketAddress endpoint, int backlog) throws IOException {
+      wrappedSocket.bind(endpoint, backlog);
+    }
+
+    @Override
+    public InetAddress getInetAddress() {
+      return wrappedSocket.getInetAddress();
+    }
+
+    @Override
+    public int getLocalPort() {
+      return wrappedSocket.getLocalPort();
+    }
+
+    @Override
+    public SocketAddress getLocalSocketAddress() {
+      return wrappedSocket.getLocalSocketAddress();
+    }
+
+    @Override
+    public Socket accept() throws IOException {
+      return wrappedSocket.accept();
+    }
+
+    @Override
+    public void close() throws IOException {
+      wrappedSocket.close();
+      lock.lock();
+      block.signal();
+      lock.unlock();
+    }
+
+    @Override
+    public boolean isClosed() {
+      final boolean closed = wrappedSocket.isClosed();
+      lock.lock();
+      if (firstWait) {
+        firstWait = false;
+        try {
+          block.await();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      lock.unlock();
+      return closed;
     }
   }
 }
