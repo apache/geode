@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -861,14 +862,14 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallUpdateSizeOnCreate_givenFactoryRegionEntry() {
+  public void txApplyDestroyNeverCallsUpdateSizeOnCreate_givenFactoryRegionEntry() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
 
     doTxApplyDestroy();
 
-    verify(owner, times(1)).updateSizeOnCreate(eq(key), eq(0));
+    verify(owner, never()).updateSizeOnCreate(any(), anyInt());
   }
 
   @Test
