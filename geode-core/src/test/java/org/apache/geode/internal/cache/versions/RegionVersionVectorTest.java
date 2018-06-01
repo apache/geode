@@ -61,6 +61,49 @@ public class RegionVersionVectorTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
+  /**
+   * server1 will simulate doing a sync with another server for operations performed
+   * by server2. server3 is another server in the cluster that we don't care about
+   */
+  @Test
+  public void testSynchronizationVectorContainsAllVersionsForOwnerAndNonTarget() {
+    final String local = NetworkUtils.getIPLiteral();
+    InternalDistributedMember server1 = new InternalDistributedMember(local, 101);
+    InternalDistributedMember server2 = new InternalDistributedMember(local, 102);
+    InternalDistributedMember server3 = new InternalDistributedMember(local, 103);
+
+    RegionVersionVector rv1 = new VMRegionVersionVector(server1);
+    rv1.updateLocalVersion(10);
+    rv1.recordVersion(server2, 1);
+    rv1.recordVersion(server2, 5);
+    rv1.recordVersion(server2, 8);
+    rv1.recordVersion(server3, 1);
+    rv1.recordVersion(server3, 3);
+    RegionVersionVector singletonRVV = rv1.getCloneForTransmission(server2);
+    assertTrue(singletonRVV.isForSynchronization());
+    assertEquals(singletonRVV.getOwnerId(), server1);
+    assertTrue(singletonRVV.getMemberToVersion().containsKey(server2));
+    assertFalse(singletonRVV.getMemberToVersion().containsKey(server3));
+
+    assertTrue(singletonRVV.contains(server1, 1));
+    assertTrue(singletonRVV.contains(server1, 11));
+
+    assertTrue(singletonRVV.contains(server3, 1));
+    assertTrue(singletonRVV.contains(server3, 11));
+
+    assertTrue(singletonRVV.contains(server2, 1));
+    assertTrue(singletonRVV.contains(server2, 5));
+    assertTrue(singletonRVV.contains(server2, 8));
+
+    assertFalse(singletonRVV.contains(server2, 2));
+    assertFalse(singletonRVV.contains(server2, 3));
+    assertFalse(singletonRVV.contains(server2, 4));
+    assertFalse(singletonRVV.contains(server2, 6));
+    assertFalse(singletonRVV.contains(server2, 7));
+    assertFalse(singletonRVV.contains(server2, 9));
+
+  }
+
   @Test
   public void testExceptionsWithContains() {
     DiskStoreID ownerId = new DiskStoreID(0, 0);

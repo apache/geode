@@ -806,6 +806,10 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    */
   public boolean contains(T id, long version) {
     if (id.equals(this.myId)) {
+      if (isForSynchronization()) {
+        // a sync vector only has one holder & no valid version for the vector's owner
+        return true;
+      }
       if (getCurrentVersion() < version) {
         return false;
       } else {
