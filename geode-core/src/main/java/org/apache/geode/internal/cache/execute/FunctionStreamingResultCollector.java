@@ -446,7 +446,8 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
       } else if (t instanceof RegionDestroyedException) {
         throw (RegionDestroyedException) t;
       } else if (t instanceof ForceReattemptException) {
-        throw new ForceReattemptException("Peer requests reattempt", t);
+        logger.info("Peer requests reattempt");
+        throw (ForceReattemptException) t;
       } else if (t instanceof PrimaryBucketException) {
         throw new PrimaryBucketException("Peer failed primary test", t);
       }
