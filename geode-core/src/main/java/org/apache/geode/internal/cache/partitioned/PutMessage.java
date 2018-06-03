@@ -309,10 +309,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
         processor);
   }
 
-
-  private PutMessage(Set recipients, boolean notifyOnly, int regionId,
-      DirectReplyProcessor processor, EntryEventImpl event, final long lastModified, boolean ifNew,
-      boolean ifOld, Object expectedOldValue, boolean requireOldValue) {
+  PutMessage(Set recipients, boolean notifyOnly, int regionId, DirectReplyProcessor processor,
+      EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue) {
     super(recipients, regionId, processor, event);
     this.processor = processor;
     this.notificationOnly = notifyOnly;
@@ -389,15 +388,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     }
     return processor;
   }
-
-  // public final boolean needsDirectAck()
-  // {
-  // return this.directAck;
-  // }
-
-  // public final int getProcessorType() {
-  // return DistributionManager.PARTITIONED_REGION_EXECUTOR;
-  // }
 
 
   /**
@@ -558,13 +548,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     return this.eventId;
   }
 
-  /*
-   * @Override public String toString() { StringBuilder buff = new StringBuilder(super.toString());
-   * buff.append("; has old value="+this.hasOldValue);
-   * buff.append("; isOldValueSerialized ="+this.oldValueIsSerialized);
-   * buff.append("; oldvalue bytes="+this.oldValBytes);
-   * buff.append("; oldvalue object="+this.oldValObj); buff.toString(); return buff.toString(); }
-   */
   @Override
   public void toData(DataOutput out) throws IOException {
     PartitionedRegion region = null;
@@ -615,6 +598,10 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
         region = PartitionedRegion.getPRFromId(this.regionId);
       } catch (PRLocallyDestroyedException e) {
         throw new IOException("Delta can not be extracted as region is locally destroyed");
+      }
+      if (region == null || region.getCachePerfStats() == null) {
+        throw new IOException(
+            "Delta can not be extracted as region can't be found or is in an invalid state");
       }
       DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
       region.getCachePerfStats().incDeltasSent();

@@ -731,7 +731,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (!ssocket.isClosed()) {
           try {
             ssocket.close();
-            serverSocket = null;
             logger.info("GMSHealthMonitor server socket closed.");
           } catch (IOException e) {
             logger.debug("Unexpected exception", e);
@@ -979,7 +978,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       if (serverSocket != null && !serverSocket.isClosed()) {
         try {
           serverSocket.close();
-          serverSocket = null;
           logger.info("GMSHealthMonitor server socket is closed in stopServices().");
         } catch (IOException e) {
           logger.trace("Unexpected exception", e);
@@ -994,10 +992,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       logger.info("GMSHealthMonitor serverSocketExecutor is "
           + (serverSocketExecutor.isTerminated() ? "terminated" : "not terminated"));
     }
-
-    // if (suspectRequestCollectorThread != null) {
-    // suspectRequestCollectorThread.shutdown();
-    // }
   }
 
   /***

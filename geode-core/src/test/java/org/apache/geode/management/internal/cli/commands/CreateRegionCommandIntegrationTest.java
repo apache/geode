@@ -516,6 +516,15 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
+  public void cannotSetRegionExpirationForPartitionedRegion() {
+    gfsh.executeAndAssertThat(
+        "create region --enable-statistics=true --name=/FOO --type=PARTITION --region-idle-time-expiration=1 --region-time-to-live-expiration=1")
+        .statusIsError()
+        .containsOutput(
+            "ExpirationAction INVALIDATE or LOCAL_INVALIDATE for region is not supported for Partitioned Region");
+  }
+
+  @Test
   public void testEvictionAttributesForLRUHeap() throws Exception {
     gfsh.executeAndAssertThat(
         "create region --name=FOO --type=REPLICATE --eviction-action=local-destroy")

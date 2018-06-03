@@ -129,7 +129,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate.getForObject(
         String.format(PORT_AND_ONE_STRING_FORMAT, port, region.getName()), String.class);
-    assertTrue(result.contains("{\n" + "  \"Region\" : [ "));
+    assertTrue(result.replaceAll("\r", "").contains("{\n" + "  \"Region\" : [ "));
   }
 
   @Test
@@ -137,7 +137,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate.getForObject(
         String.format(PORT_AND_TWO_STRINGS_FORMAT, port, region.getName(), "keys"), String.class);
-    assertTrue(result.contains("{\n  \"keys\" : [ "));
+    assertTrue(result.replaceAll("\r", "").contains("{\n  \"keys\" : [ "));
   }
 
   @Test
@@ -176,7 +176,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate
         .getForObject(String.format(PORT_AND_ONE_STRING_FORMAT, port, "queries"), String.class);
-    assertEquals("{\n  \"queries\" : [ ]\n}", result);
+    assertEquals("{\n  \"queries\" : [ ]\n}", result.replaceAll("\r", ""));
   }
 
   @Test
@@ -184,7 +184,7 @@ public class PdxBasedCrudControllerIntegrationTest {
     final RestTemplate restTemplate = new RestTemplate();
     final String result = restTemplate
         .getForObject(String.format(PORT_AND_ONE_STRING_FORMAT, port, "functions"), String.class);
-    assertEquals("{\n  \"functions\" : [ ]\n}", result);
+    assertEquals("{\n  \"functions\" : [ ]\n}", result.replaceAll("\r", ""));
   }
 
   @Test

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -44,13 +45,17 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TransactionId;
+import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
@@ -711,6 +716,196 @@ public class AbstractRegionMapTest {
     }
   }
 
+  @Test
+  public void updateRecoveredEntry_givenExistingDestroyedOrRemovedAndSettingToTombstone_neverCallsUpdateSizeOnRemove() {
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(false).thenReturn(true);
+    when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void updateRecoveredEntry_givenExistingRemovedNonTombstone_neverCallsUpdateSizeOnRemove() {
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isRemoved()).thenReturn(true);
+    when(regionEntry.isTombstone()).thenReturn(false);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void updateRecoveredEntry_givenNoExistingEntry_neverCallsUpdateSizeOnRemove() {
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, null);
+
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void updateRecoveredEntry_givenExistingNonTombstoneAndSettingToTombstone_callsUpdateSizeOnRemove() {
+    RecoveredEntry recoveredEntry = mock(RecoveredEntry.class);
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(false).thenReturn(true);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.updateRecoveredEntry(KEY, recoveredEntry);
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
+  }
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturningDestroyedOrRemovedEntry_neverCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isDestroyedOrRemoved()).thenReturn(true);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry).thenReturn(null);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturningNonTombstone_callsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.isDestroyedOrRemoved()).thenReturn(false);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry).thenReturn(null);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenExistingDestroyedOrRemovedEntry_neverCallsUpdateSizeOnRemove() {
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(false);
+    when(regionEntry.isDestroyedOrRemoved()).thenReturn(true);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenExistingNonTombstone_callsUpdateSizeOnRemove() {
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(regionEntry.isTombstone()).thenReturn(false);
+    when(regionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, null, null, regionEntry);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenPutIfAbsentReturningDestroyedOrRemovedEntry_neverCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.isDestroyedOrRemoved()).thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry).thenReturn(null);
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenPutIfAbsentReturningNonTombstone_callsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.getKey()).thenReturn(KEY);
+    when(entry.isTombstone()).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry).thenReturn(null);
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), times(1)).updateSizeOnRemove(eq(KEY), anyInt());
+  }
+
+  @Test
+  public void txApplyDestroy_givenFactory_neverCallsUpdateSizeOnRemove()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    TXId txId = mock(TXId.class);
+    when(txId.getMemberId()).thenReturn(mock(InternalDistributedMember.class));
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(entry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, false, null, null, 0);
+
+    verify(arm._getOwner(), never()).updateSizeOnCreate(any(), anyInt());
+  }
+
   private EntryEventImpl createEventForInvalidate(LocalRegion lr) {
     when(lr.getKeyInfo(KEY)).thenReturn(new KeyInfo(KEY, null, null));
     return EntryEventImpl.create(lr, Operation.INVALIDATE, KEY, false, null, true, false);
@@ -743,6 +938,7 @@ public class AbstractRegionMapTest {
    * TestableAbstractRegionMap
    */
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
+    private final RegionEntry regionEntryForGetEntry;
 
     protected TestableAbstractRegionMap() {
       this(false);
@@ -754,7 +950,14 @@ public class AbstractRegionMapTest {
 
     protected TestableAbstractRegionMap(boolean withConcurrencyChecks,
         ConcurrentMapWithReusableEntries map, RegionEntryFactory factory) {
+      this(withConcurrencyChecks, map, factory, null);
+    }
+
+    protected TestableAbstractRegionMap(boolean withConcurrencyChecks,
+        ConcurrentMapWithReusableEntries map, RegionEntryFactory factory,
+        RegionEntry regionEntryForGetEntry) {
       super(null);
+      this.regionEntryForGetEntry = regionEntryForGetEntry;
       LocalRegion owner = mock(LocalRegion.class);
       CachePerfStats cachePerfStats = mock(CachePerfStats.class);
       when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
@@ -769,6 +972,15 @@ public class AbstractRegionMapTest {
       }
       if (factory != null) {
         setEntryFactory(factory);
+      }
+    }
+
+    @Override
+    public RegionEntry getEntry(Object key) {
+      if (this.regionEntryForGetEntry != null) {
+        return this.regionEntryForGetEntry;
+      } else {
+        return super.getEntry(key);
       }
     }
   }

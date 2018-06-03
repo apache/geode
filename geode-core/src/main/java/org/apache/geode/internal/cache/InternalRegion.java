@@ -405,4 +405,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   }
 
   EvictionController getEvictionController();
+
+  default void handleWANEvent(EntryEventImpl event) {}
+
 }

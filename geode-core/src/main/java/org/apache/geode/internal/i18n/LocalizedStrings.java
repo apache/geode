@@ -7716,6 +7716,7 @@ public class LocalizedStrings {
   public static final StringId LuceneIndexCreation_INDEX_CANNOT_BE_CREATED_DUE_TO_PROFILE_VIOLATION =
       new StringId(6667,
           "Lucene index {0} cannot be created because its parameters are incompatible with another Lucene index");
+  
   public static final StringId AbstractDistributionConfig_THREAD_MONITOR_INTERVAL = new StringId(
       6668,
       "Defines the time interval (in milliseconds) with which thread monitoring is scheduled to run.");
@@ -7731,6 +7732,10 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_LIMIT = new StringId(
       6673,
       "Defines the number of thread monitoring attempts after which the stuck thread will be automatically killed (only applicable when <thread-monitor-auto-enabled> is set to Y).");
+
+  public static final StringId cq_CACHE_CLIENT_PROXY_IS_NULL =
+      new StringId(6674,
+          "No Cache Client Proxy found while executing CQ.");
 
   /** Testing strings, messageId 90000-99999 **/
 

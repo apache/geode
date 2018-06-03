@@ -67,8 +67,8 @@ public class HelperIntegrationTest {
     String testNoInput = helper.getHelp(null, -1);
     String[] helpLines = testNoInput.split("\n");
     assertThat(helpLines).hasSize(2);
-    assertThat(helpLines[0]).isEqualTo("help (Available)");
-    assertThat(helpLines[1]).isEqualTo(CliStrings.HELP__HELP);
+    assertThat(helpLines[0].trim()).isEqualTo("help (Available)");
+    assertThat(helpLines[1].trim()).isEqualTo(CliStrings.HELP__HELP);
   }
 
   @Test
@@ -77,8 +77,8 @@ public class HelperIntegrationTest {
     String testInput = helper.getHelp("help", -1);
     String[] helpLines = testInput.split("\n");
     assertThat(helpLines).hasSize(12);
-    assertThat(helpLines[0]).isEqualTo("NAME");
-    assertThat(helpLines[1]).isEqualTo("help");
+    assertThat(helpLines[0].trim()).isEqualTo("NAME");
+    assertThat(helpLines[1].trim()).isEqualTo("help");
   }
 
   @Test
@@ -94,7 +94,7 @@ public class HelperIntegrationTest {
     String testNoInput = helper.getHint(null);
     String[] hintLines = testNoInput.split("\n");
     assertThat(hintLines).hasSize(21);
-    assertThat(hintLines[0]).isEqualTo(HINT__MSG__TOPICS_AVAILABLE);
+    assertThat(hintLines[0].trim()).isEqualTo(HINT__MSG__TOPICS_AVAILABLE);
   }
 
   @Test

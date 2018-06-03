@@ -29,16 +29,11 @@ import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.tier.ClientSideHandshake;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
@@ -54,19 +49,11 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   // TODO - GEODE-1746, the handshake holds state. It seems like the code depends
   // on all of the handshake operations happening in a single thread. I don't think we
   // want that, need to refactor.
-  private final ClientSideHandshakeImpl handshake;
-  private final int socketBufferSize;
-  private final int handshakeTimeout;
-  private final boolean usedByGateway;
   private final ServerBlackList blackList;
-  private final CancelCriterion cancelCriterion;
-  private final SocketCreator socketCreator;
   private ConnectionSource source;
-  private int readTimeout;
-  private InternalDistributedSystem ds;
-  private EndpointManager endpointManager;
-  private GatewaySender gatewaySender;
   private PoolImpl pool;
+  private final CancelCriterion cancelCriterion;
+  private final ConnectionConnector connectionConnector;
 
   /**
    * Test hook for client version support
@@ -80,45 +67,23 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout, int readTimeout,
       ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion, boolean usedByGateway,
       GatewaySender sender, long pingInterval, boolean multiuserSecureMode, PoolImpl pool) {
-    this.handshake =
-        new ClientSideHandshakeImpl(proxyId, sys, sys.getSecurityService(), multiuserSecureMode);
-    this.handshake.setClientReadTimeout(readTimeout);
+    this(
+        new ConnectionConnector(endpointManager, sys, socketBufferSize, handshakeTimeout,
+            readTimeout, proxyId, cancelCriterion, usedByGateway, sender, multiuserSecureMode),
+        source, pingInterval, pool, cancelCriterion);
+  }
+
+  public ConnectionFactoryImpl(ConnectionConnector connectionConnector, ConnectionSource source,
+      long pingInterval, PoolImpl pool, CancelCriterion cancelCriterion) {
     this.source = source;
-    this.endpointManager = endpointManager;
-    this.ds = sys;
-    this.socketBufferSize = socketBufferSize;
-    this.handshakeTimeout = handshakeTimeout;
-    this.readTimeout = readTimeout;
-    this.usedByGateway = usedByGateway;
-    this.gatewaySender = sender;
     this.blackList = new ServerBlackList(pingInterval);
-    this.cancelCriterion = cancelCriterion;
     this.pool = pool;
-    if (this.usedByGateway || (this.gatewaySender != null)) {
-      this.socketCreator =
-          SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY);
-      if (sender != null && !sender.getGatewayTransportFilters().isEmpty()) {
-        this.socketCreator.initializeTransportFilterClientSocketFactory(sender);
-      }
-    } else {
-      // If configured use SSL properties for cache-server
-      this.socketCreator =
-          SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER);
-    }
+    this.cancelCriterion = cancelCriterion;
+    this.connectionConnector = connectionConnector;
   }
 
   public void start(ScheduledExecutorService background) {
     blackList.start(background);
-  }
-
-  private CommunicationMode getCommMode(boolean forQueue) {
-    if (this.usedByGateway || (this.gatewaySender != null)) {
-      return CommunicationMode.GatewayToGateway;
-    } else if (forQueue) {
-      return CommunicationMode.ClientToServerForQueue;
-    } else {
-      return CommunicationMode.ClientToServer;
-    }
   }
 
   public ServerBlackList getBlackList() {
@@ -127,20 +92,15 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
   public Connection createClientToServerConnection(ServerLocation location, boolean forQueue)
       throws GemFireSecurityException {
-    ConnectionImpl connection = new ConnectionImpl(this.ds, this.cancelCriterion);
     FailureTracker failureTracker = blackList.getFailureTracker(location);
 
     boolean initialized = false;
-
+    Connection connection = null;
     try {
-      ClientSideHandshake connHandShake = new ClientSideHandshakeImpl(handshake);
-      connection.connect(endpointManager, location, connHandShake, socketBufferSize,
-          handshakeTimeout, readTimeout, getCommMode(forQueue), this.gatewaySender,
-          this.socketCreator);
-      failureTracker.reset();
-      connection.setHandshake(connHandShake);
-      authenticateIfRequired(connection);
+      connection = connectionConnector.connectClientToServer(location, forQueue);
       initialized = true;
+      failureTracker.reset();
+      authenticateIfRequired(connection);
     } catch (GemFireConfigException e) {
       throw e;
     } catch (CancelException e) {
@@ -172,7 +132,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       }
       testFailedConnectionToServer = true;
     } finally {
-      if (!initialized) {
+      if (!initialized && connection != null) {
         connection.destroy();
         failureTracker.addFailure();
         connection = null;
@@ -291,16 +251,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       logger.debug("Establishing: {}", clientUpdateName);
     }
     // Launch the thread
-    CacheClientUpdater updater = new CacheClientUpdater(clientUpdateName, endpoint.getLocation(),
-        isPrimary, ds, new ClientSideHandshakeImpl(this.handshake), qManager, endpointManager,
-        endpoint, handshakeTimeout, this.socketCreator);
-
-    if (!updater.isConnected()) {
-      return null;
-    }
-
-    updater.setFailedUpdater(failedUpdater);
-    updater.start();
+    CacheClientUpdater updater = connectionConnector.connectServerToClient(endpoint, qManager,
+        isPrimary, failedUpdater, clientUpdateName);
 
     return updater;
   }
