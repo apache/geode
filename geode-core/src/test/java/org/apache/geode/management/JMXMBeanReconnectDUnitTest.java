@@ -78,7 +78,7 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Before
   public void before() throws Exception {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(locator2VMIndex);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     jmxPort1 = ports[0];
     jmxPort2 = ports[1];
 
