@@ -38,7 +38,7 @@ resources:
 - name: geode
   type: git
   source:
-    uri: https://github.com/apache/geode.git
+    uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
     branch: (( grab metadata.geode-build-branch ))
     ignore_paths:
     - ci/*
@@ -46,7 +46,7 @@ resources:
   type: git
   source:
     depth: 1
-    uri: https://github.com/apache/geode.git
+    uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
     branch: (( grab metadata.geode-build-branch ))
     paths:
     - ci/*
@@ -194,3 +194,124 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
         run:
           path: geode-ci/ci/scripts/update-passing-ref.sh
+
+- name: DistributedTest
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode
+        passed: [Build]
+        trigger: true
+      - get: geode-ci
+      - get: geode-build-version
+        passed: [Build]
+      - get: docker-geode-build-image
+        params:
+          rootfs: true
+    - aggregate:
+      - task: run-distributed-core
+        image: docker-geode-build-image
+        tags: [large]
+        privileged: true
+        timeout: 8h
+        config:
+          inputs:
+            - name: geode
+            - name: geode-ci
+            - name: docker-geode-build-image
+            - name: geode-build-version
+          platform: linux
+          outputs:
+            - name: built-geode
+          params:
+            MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+            SERVICE_ACCOUNT: ((!concourse-gcp-account))
+            PUBLIC_BUCKET: ((!public-bucket))
+            PARALLEL_DUNIT: true
+            DUNIT_PARALLEL_FORKS: 7
+            CALL_STACK_TIMEOUT: 25200
+          run:
+            args:
+            - geode-core:distributedTest
+            - distributedtestcore
+            path: geode-ci/ci/scripts/test-run.sh
+        on_failure:
+          aggregate:
+            - put: send-notification-email
+              params:
+                subject: built-geode/subject
+                body: built-geode/body
+        ensure:
+          aggregate:
+          - task: archive-results-core
+            image: docker-geode-build-image
+            config:
+              inputs:
+                - name: geode
+                - name: geode-ci
+                - name: geode-build-version
+                - name: built-geode
+              platform: linux
+              params:
+                MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                PUBLIC_BUCKET: ((!public-bucket))
+              run:
+                args:
+                - geode-core:distributedTest
+                - distributedtestcore
+                path: geode-ci/ci/scripts/test-archive.sh
+      - task: run-distributed-everything-else
+        image: docker-geode-build-image
+        tags: [large]
+        privileged: true
+        timeout: 8h
+        config:
+          inputs:
+            - name: geode
+            - name: geode-ci
+            - name: docker-geode-build-image
+            - name: geode-build-version
+          platform: linux
+          outputs:
+            - name: built-geode
+          params:
+            MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+            SERVICE_ACCOUNT: ((!concourse-gcp-account))
+            PUBLIC_BUCKET: ((!public-bucket))
+            PARALLEL_DUNIT: true
+            DUNIT_PARALLEL_FORKS: 7
+            CALL_STACK_TIMEOUT: 25200
+            GRADLE_TASK_OPTIONS: -x geode-core:distributedTest
+          run:
+            args:
+            - distributedTest
+            - distributedtesteverythingelse
+            path: geode-ci/ci/scripts/test-run.sh
+        on_failure:
+          aggregate:
+            - put: send-notification-email
+              params:
+                subject: built-geode/subject
+                body: built-geode/body
+        ensure:
+          aggregate:
+          - task: archive-results-everythingelse
+            image: docker-geode-build-image
+            config:
+              inputs:
+                - name: geode
+                - name: geode-ci
+                - name: geode-build-version
+                - name: built-geode
+              platform: linux
+              params:
+                MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                PUBLIC_BUCKET: ((!public-bucket))
+              run:
+                args:
+                - disitributedTest
+                - distributedtesteverythingelse
+                path: geode-ci/ci/scripts/test-archive.sh
