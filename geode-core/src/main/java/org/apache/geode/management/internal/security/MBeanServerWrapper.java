@@ -61,7 +61,6 @@ import org.apache.geode.security.ResourcePermission.Target;
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
 
-  // TODO: make volatile or verify this is thread-safe
   private MBeanServer mbs;
 
   private final SecurityService securityService;

@@ -173,7 +173,9 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     DistributionConfig config =
         ((InternalDistributedSystem) cache.getDistributedSystem()).getConfig();
     server = cache.addCacheServer();
-    server.setPort(0);
+    // memberPort is by default zero, which translates to "randomly select an available port,"
+    // which is why it is updated after this try block
+    server.setPort(memberPort);
     try {
       server.start();
     } catch (IOException e) {

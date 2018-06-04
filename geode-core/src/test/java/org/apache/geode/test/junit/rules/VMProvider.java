@@ -35,7 +35,7 @@ public abstract class VMProvider {
       ClusterStartupRule.stopElementInsideVM();
       MemberStarterRule.disconnectDSIfAny();
     });
-  };
+  }
 
   public boolean isClient() {
     return getVM().invoke(() -> {
