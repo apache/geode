@@ -306,11 +306,8 @@ public interface DistributionManager extends ReplySender {
   /** Returns a set of all roles currently in the distributed system. */
   Set getAllRoles();
 
-  /**
-   * Returns true if id is a current member of the distributed system
-   *
-   */
-  boolean isCurrentMember(DistributedMember id);
+  /** Returns true if id is a current member of the distributed system */
+  boolean isCurrentMember(InternalDistributedMember id);
 
   /**
    * Remove given member from list of members who are pending a startup reply

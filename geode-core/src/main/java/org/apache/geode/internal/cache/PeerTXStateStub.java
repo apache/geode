@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -132,14 +131,14 @@ public class PeerTXStateStub extends TXStateStub {
       }
     } catch (Exception e) {
       this.getCache().getCancelCriterion().checkCancelInProgress(e);
-      Throwable eCause = e.getCause();
-      if (eCause != null) {
-        if (eCause instanceof ForceReattemptException) {
-          if (eCause.getCause() instanceof PrimaryBucketException) {
+      if (e.getCause() != null) {
+        if (e.getCause() instanceof ForceReattemptException) {
+          Throwable e2 = e.getCause();
+          if (e2.getCause() != null && e2.getCause() instanceof PrimaryBucketException) {
             // data rebalanced
             TransactionDataRebalancedException tdnce =
-                new TransactionDataRebalancedException(eCause.getCause().getMessage());
-            tdnce.initCause(eCause.getCause());
+                new TransactionDataRebalancedException(e2.getCause().getMessage());
+            tdnce.initCause(e2.getCause());
             throw tdnce;
           } else {
             // We cannot be sure that the member departed starting to process commit request,
@@ -147,11 +146,11 @@ public class PeerTXStateStub extends TXStateStub {
             // fixes 44939
             TransactionInDoubtException tdnce =
                 new TransactionInDoubtException(e.getCause().getMessage());
-            tdnce.initCause(eCause);
+            tdnce.initCause(e.getCause());
             throw tdnce;
           }
         }
-        throw new TransactionInDoubtException(eCause);
+        throw new TransactionInDoubtException(e.getCause());
       } else {
         throw new TransactionInDoubtException(e);
       }

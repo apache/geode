@@ -2856,7 +2856,7 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public boolean isCurrentMember(DistributedMember id) {
+  public boolean isCurrentMember(InternalDistributedMember id) {
     Set m;
     synchronized (this.membersLock) {
       // access to members synchronized under membersLock in order to
