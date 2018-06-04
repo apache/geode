@@ -239,7 +239,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         } else {
           // don't pass arbitrary runtime exceptions and errors back if this
           // cache/vm is closing
-          thr = new RemoteOperationException("cache is closing");
+          thr = new RemoteOperationException("cache is closing", new CacheClosedException());
         }
       }
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {

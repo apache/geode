@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -420,10 +421,15 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     @SuppressWarnings("rawtypes")
-    public Set waitForKeys() {
+    public Set waitForKeys(ReplyProcessor21 responseProcessor) {
       try {
-        waitForRepliesUninterruptibly();
+        responseProcessor.waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
+        if (e.getCause() instanceof RemoteOperationException) {
+          if (e.getCause().getCause() instanceof CancelException) {
+            throw new TransactionDataNodeHasDepartedException("Node departed while fetching keys");
+          }
+        }
         e.handleCause();
         if (!this.lastChunkReceived) {
           throw new TransactionException(e);
