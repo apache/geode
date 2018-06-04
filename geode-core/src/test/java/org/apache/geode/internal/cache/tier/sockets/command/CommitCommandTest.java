@@ -14,14 +14,31 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.net.InetAddress;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.TransactionInDoubtException;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -49,5 +66,50 @@ public class CommitCommandTest {
     when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
     CommitCommand.writeCommitResponse(null, origMsg, servConn);
+  }
+
+  /**
+   * GEODE-5269 CommitConflictException after TransactionInDoubtException
+   * CommitCommand needs to stall waiting for the host of a transaction to
+   * finish shutting down before sending a TransactionInDoubtException to
+   * the client.
+   */
+  @Test
+  public void testTransactionInDoubtWaitsForTargetDeparture() throws Exception {
+    CommitCommand command = (CommitCommand) CommitCommand.getCommand();
+    Message clientMessage = mock(Message.class);
+    ServerConnection serverConnection = mock(ServerConnection.class);
+    TXManagerImpl txMgr = mock(TXManagerImpl.class);
+    TXStateProxy txProxy = mock(TXStateProxy.class);
+    InternalCache cache = mock(InternalCache.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    MembershipManager membershipManager = mock(MembershipManager.class);
+    ServerSideHandshake handshake = mock(ServerSideHandshake.class);
+    boolean wasInProgress = false;
+
+    doReturn(cache).when(serverConnection).getCache();
+    doReturn(distributionManager).when(cache).getDistributionManager();
+    doReturn(membershipManager).when(distributionManager).getMembershipManager();
+    doReturn(false).when(distributionManager).isCurrentMember(isA(
+        InternalDistributedMember.class));
+
+    doReturn(mock(Message.class)).when(serverConnection).getErrorResponseMessage();
+    doReturn(handshake).when(serverConnection).getHandshake();
+    doReturn(1000).when(handshake).getClientReadTimeout();
+
+    doReturn(new InternalDistributedMember(InetAddress.getLocalHost(), 1234)).when(txProxy)
+        .getTarget();
+
+    TransactionInDoubtException transactionInDoubtException =
+        new TransactionInDoubtException("tx in doubt");
+    transactionInDoubtException.initCause(new CacheClosedException("testing"));
+    doThrow(transactionInDoubtException).when(txMgr).commit();
+
+    command.commitTransaction(
+        clientMessage, serverConnection, txMgr, wasInProgress, txProxy);
+
+    verify(txMgr, atLeastOnce()).commit();
+    verify(membershipManager, times(1)).waitForDeparture(isA(DistributedMember.class),
+        isA(Integer.class));
   }
 }

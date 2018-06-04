@@ -1256,7 +1256,7 @@ public class LonerDistributionManager implements DistributionManager {
     this.getId().setPort(this.lonerPort);
   }
 
-  public boolean isCurrentMember(InternalDistributedMember p_id) {
+  public boolean isCurrentMember(DistributedMember p_id) {
     return getId().equals(p_id);
   }
 

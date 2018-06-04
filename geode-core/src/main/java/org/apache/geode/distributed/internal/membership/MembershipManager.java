@@ -187,6 +187,19 @@ public interface MembershipManager {
   boolean waitForDeparture(DistributedMember mbr) throws TimeoutException, InterruptedException;
 
   /**
+   * Wait for the given member to not be in the membership view and for all direct-channel receivers
+   * for this member to be closed.
+   *
+   * @param mbr the member
+   * @param timeoutMS amount of time to wait before giving up
+   * @return for testing purposes this returns true if the serial queue for the member was flushed
+   * @throws InterruptedException if interrupted by another thread
+   * @throws TimeoutException if we wait too long for the member to go away
+   */
+  boolean waitForDeparture(DistributedMember mbr, int timeoutMS)
+      throws TimeoutException, InterruptedException;
+
+  /**
    * Returns true if remoteId is an existing member, otherwise waits till timeout. Returns false if
    * remoteId is not confirmed to be a member.
    *

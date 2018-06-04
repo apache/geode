@@ -41,7 +41,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -263,8 +262,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     }
   }
 
-  public final InternalClientCache getClientCache() {
-    return (InternalClientCache) cache;
+  public final ClientCache getClientCache() {
+    return (ClientCache) cache;
   }
 
   /**
