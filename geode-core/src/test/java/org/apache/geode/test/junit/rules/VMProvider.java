@@ -44,7 +44,7 @@ public abstract class VMProvider {
       ClusterStartupRule.stopElementInsideVM();
       MemberStarterRule.disconnectDSIfAny();
     });
-  };
+  }
 
   public void invoke(final SerializableRunnableIF runnable) {
     getVM().invoke(runnable);

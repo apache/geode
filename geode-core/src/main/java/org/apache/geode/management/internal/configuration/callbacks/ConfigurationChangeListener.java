@@ -92,6 +92,10 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
     }
 
     String triggerMemberId = (String) event.getCallbackArgument();
+    if (triggerMemberId == null || newJars.isEmpty()) {
+      return;
+    }
+
     DistributedMember locator = getDistributedMember(triggerMemberId);
     for (String jarAdded : newJars) {
       try {
