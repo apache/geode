@@ -432,8 +432,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         updateLargestQueuedKey((Long) key);
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("Put successfully in the queue : {} was initialized: {}",
-            event.getRawNewValue(), this.initialized);
+        if (event != null) {
+          logger.debug("Put successfully in the queue : {} was initialized: {}",
+              event.getRawNewValue(), this.initialized);
+        }
       }
     }
     if (this.getBucketAdvisor().isPrimary()) {
