@@ -68,6 +68,15 @@ public class MemberStarterRuleTest {
   }
 
   @Test
+  public void testWithPort() {
+    int targetPort = 12345;
+    locator = new LocatorStarterRule().withPort(targetPort);
+    locator.before();
+
+    assertThat(locator.getPort()).isEqualTo(targetPort);
+  }
+
+  @Test
   public void testUseRandomPortByDefault() {
     locator = new LocatorStarterRule();
     locator.before();
