@@ -130,7 +130,7 @@ pushd ${GEODE_BUILD}
   set -x
 #    ./gradlew --no-daemon -x javadoc -x spotlessCheck :geode-assembly:acceptanceTest --tests org.apache.geode.management.internal.cli.commands.PutCommandWithJsonTest
   ./gradlew ${PARALLEL_DUNIT} ${DUNIT_PARALLEL_FORKS} ${DUNIT_DOCKER_IMAGE} \
-      --system-prop "java.io.tmpdir=${TMPDIR}" ${DEFAULT_GRADLE_TASK_OPTIONS} ${GRADLE_TASK}
+      --system-prop "java.io.tmpdir=${TMPDIR}" ${DEFAULT_GRADLE_TASK_OPTIONS} ${GRADLE_TASK_OPTIONS} ${GRADLE_TASK}
   export GRADLE_EXIT_STATUS=$?
   set +x
 popd

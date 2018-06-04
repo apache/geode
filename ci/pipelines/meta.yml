@@ -32,24 +32,24 @@ resources:
     - name: main
       username: ((!concourse-username))
       password: ((!concourse-password))
-- name: geode-develop-pipeline
+- name: geode-pipeline
   type: git
   source:
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
     - ci/*
 - name: geode-docker-images-pipeline
   type: git
   source:
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/docker-images.yml
 - name: geode-metrics-pipeline
   type: git
   source:
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/metrics.yml
@@ -79,6 +79,7 @@ jobs:
       params:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
+        GEODE_FORK: ((!geode-fork))
         CONCOURSE_USERNAME: ((!concourse-username))
         CONCOURSE_PASSWORD: ((!concourse-password))
       run:
