@@ -53,7 +53,7 @@ public class FunctionCommandsDUnitTest {
 
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
-  private static final String RESULT_HEADER = "Function Execution Result";
+  private static final String RESULT_HEADER = "Message";
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -139,7 +139,7 @@ public class FunctionCommandsDUnitTest {
   public void testExecuteFunctionOnRegion() throws Exception {
     gfsh.executeAndAssertThat(
         "execute function --id=" + TEST_FUNCTION1 + " --region=/" + REGION_ONE).statusIsSuccess()
-        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName());
+        .tableHasColumnWithValuesContaining("Member", server1.getName(), server2.getName());
   }
 
   @Test
@@ -167,7 +167,7 @@ public class FunctionCommandsDUnitTest {
   public void testExecuteFunctionOnMember() {
     gfsh.executeAndAssertThat(
         "execute function --id=" + TEST_FUNCTION1 + " --member=" + server1.getMember().getName())
-        .statusIsSuccess().tableHasColumnWithValuesContaining("Member ID/Name", server1.getName());
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Member", server1.getName());
   }
 
   @Test
@@ -179,7 +179,7 @@ public class FunctionCommandsDUnitTest {
   @Test
   public void testExecuteFunctionOnAllMembers() {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1).statusIsSuccess()
-        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName())
+        .tableHasColumnWithValuesContaining("Member", server1.getName(), server2.getName())
         .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[false]", "[false]");
   }
 
@@ -187,7 +187,7 @@ public class FunctionCommandsDUnitTest {
   public void testExecuteFunctionOnMultipleMembers() {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --member="
         + Strings.join(server1.getName(), server2.getName()).with(",")).statusIsSuccess()
-        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName())
+        .tableHasColumnWithValuesContaining("Member", server1.getName(), server2.getName())
         .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[false]", "[false]");
   }
 
@@ -196,7 +196,7 @@ public class FunctionCommandsDUnitTest {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION_RETURN_ARGS
         + " --arguments=arg1" + " --result-collector=" + ToUpperResultCollector.class.getName())
         .statusIsSuccess()
-        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName())
+        .tableHasColumnWithValuesContaining("Member", server1.getName(), server2.getName())
         .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[ARG1]", "[ARG1]");
   }
 
@@ -211,7 +211,7 @@ public class FunctionCommandsDUnitTest {
   @Test
   public void testExecuteFunctionOnGroup() {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --groups=group-1")
-        .statusIsSuccess().tableHasColumnWithValuesContaining("Member ID/Name", server1.getName())
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Member", server1.getName())
         .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER, "[false]");
   }
 

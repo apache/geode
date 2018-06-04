@@ -86,7 +86,8 @@ public class CreateConnectionCommand extends SingleGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new CreateConnectionFunction(), connection, targetMembers);
 
-    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false);
+    ResultModel result =
+        ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
     result.setConfigObject(connection);
     return result;
   }
