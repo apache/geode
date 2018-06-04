@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit.rules.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,6 +34,16 @@ public class MemberStarterRuleIntegrationTest {
 
   private LocatorStarterRule locator;
   private ServerStarterRule server;
+
+  @After
+  public void cleanupAnyStartedMembers() {
+    if (locator != null) {
+      locator.after();
+    }
+    if (server != null) {
+      server.after();
+    }
+  }
 
   @Test
   public void testWithPortOnLocator() {
