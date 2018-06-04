@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -44,6 +46,10 @@ public class ManagementListener implements ResourceEventsListener {
   private ManagementAdapter adapter;
 
   private LogWriterI18n logger;
+
+  // having a readwrite lock to synchronize between handling cache creation/removal vs handling
+  // other notifications
+  private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
   /**
    * Constructor
@@ -100,118 +106,131 @@ public class ManagementListener implements ResourceEventsListener {
     if (!shouldProceed(event)) {
       return;
     }
-    switch (event) {
-      case CACHE_CREATE:
-        InternalCache createdCache = (InternalCache) resource;
-        adapter.handleCacheCreation(createdCache);
-        break;
-      case CACHE_REMOVE:
-        InternalCache removedCache = (InternalCache) resource;
-        adapter.handleCacheRemoval(removedCache);
-        break;
-      case REGION_CREATE:
-        Region createdRegion = (Region) resource;
-        adapter.handleRegionCreation(createdRegion);
-        break;
-      case REGION_REMOVE:
-        Region removedRegion = (Region) resource;
-        adapter.handleRegionRemoval(removedRegion);
-        break;
-      case DISKSTORE_CREATE:
-        DiskStore createdDisk = (DiskStore) resource;
-        adapter.handleDiskCreation(createdDisk);
-        break;
-      case DISKSTORE_REMOVE:
-        DiskStore removedDisk = (DiskStore) resource;
-        adapter.handleDiskRemoval(removedDisk);
-        break;
-      case GATEWAYRECEIVER_CREATE:
-        GatewayReceiver createdRecv = (GatewayReceiver) resource;
-        adapter.handleGatewayReceiverCreate(createdRecv);
-        break;
-      case GATEWAYRECEIVER_DESTROY:
-        GatewayReceiver destroyedRecv = (GatewayReceiver) resource;
-        adapter.handleGatewayReceiverDestroy(destroyedRecv);
-        break;
-      case GATEWAYRECEIVER_START:
-        GatewayReceiver startedRecv = (GatewayReceiver) resource;
-        adapter.handleGatewayReceiverStart(startedRecv);
-        break;
-      case GATEWAYRECEIVER_STOP:
-        GatewayReceiver stoppededRecv = (GatewayReceiver) resource;
-        adapter.handleGatewayReceiverStop(stoppededRecv);
-        break;
-      case GATEWAYSENDER_CREATE:
-        GatewaySender sender = (GatewaySender) resource;
-        adapter.handleGatewaySenderCreation(sender);
-        break;
-      case GATEWAYSENDER_START:
-        GatewaySender startedSender = (GatewaySender) resource;
-        adapter.handleGatewaySenderStart(startedSender);
-        break;
-      case GATEWAYSENDER_STOP:
-        GatewaySender stoppedSender = (GatewaySender) resource;
-        adapter.handleGatewaySenderStop(stoppedSender);
-        break;
-      case GATEWAYSENDER_PAUSE:
-        GatewaySender pausedSender = (GatewaySender) resource;
-        adapter.handleGatewaySenderPaused(pausedSender);
-        break;
-      case GATEWAYSENDER_RESUME:
-        GatewaySender resumedSender = (GatewaySender) resource;
-        adapter.handleGatewaySenderResumed(resumedSender);
-        break;
-      case GATEWAYSENDER_REMOVE:
-        GatewaySender removedSender = (GatewaySender) resource;
-        adapter.handleGatewaySenderRemoved(removedSender);
-        break;
-      case LOCKSERVICE_CREATE:
-        DLockService createdLockService = (DLockService) resource;
-        adapter.handleLockServiceCreation(createdLockService);
-        break;
-      case LOCKSERVICE_REMOVE:
-        DLockService removedLockService = (DLockService) resource;
-        adapter.handleLockServiceRemoval(removedLockService);
-        break;
-      case MANAGER_CREATE:
-        adapter.handleManagerCreation();
-        break;
-      case MANAGER_START:
-        adapter.handleManagerStart();
-        break;
-      case MANAGER_STOP:
-        adapter.handleManagerStop();
-        break;
-      case ASYNCEVENTQUEUE_CREATE:
-        AsyncEventQueue queue = (AsyncEventQueue) resource;
-        adapter.handleAsyncEventQueueCreation(queue);
-        break;
-      case ASYNCEVENTQUEUE_REMOVE:
-        AsyncEventQueue removedQueue = (AsyncEventQueue) resource;
-        adapter.handleAsyncEventQueueRemoval(removedQueue);
-        break;
-      case SYSTEM_ALERT:
-        AlertDetails details = (AlertDetails) resource;
-        adapter.handleSystemNotification(details);
-        break;
-      case CACHE_SERVER_START:
-        CacheServer startedServer = (CacheServer) resource;
-        adapter.handleCacheServerStart(startedServer);
-        break;
-      case CACHE_SERVER_STOP:
-        CacheServer stoppedServer = (CacheServer) resource;
-        adapter.handleCacheServerStop(stoppedServer);
-        break;
-      case LOCATOR_START:
-        Locator loc = (Locator) resource;
-        adapter.handleLocatorStart(loc);
-        break;
-      case CACHE_SERVICE_CREATE:
-        CacheService service = (CacheService) resource;
-        adapter.handleCacheServiceCreation(service);
-        break;
-      default:
-        break;
+    try {
+      if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
+        readWriteLock.writeLock().lock();
+      } else {
+        readWriteLock.readLock().lock();
+      }
+      switch (event) {
+        case CACHE_CREATE:
+          InternalCache createdCache = (InternalCache) resource;
+          adapter.handleCacheCreation(createdCache);
+          break;
+        case CACHE_REMOVE:
+          InternalCache removedCache = (InternalCache) resource;
+          adapter.handleCacheRemoval(removedCache);
+          break;
+        case REGION_CREATE:
+          Region createdRegion = (Region) resource;
+          adapter.handleRegionCreation(createdRegion);
+          break;
+        case REGION_REMOVE:
+          Region removedRegion = (Region) resource;
+          adapter.handleRegionRemoval(removedRegion);
+          break;
+        case DISKSTORE_CREATE:
+          DiskStore createdDisk = (DiskStore) resource;
+          adapter.handleDiskCreation(createdDisk);
+          break;
+        case DISKSTORE_REMOVE:
+          DiskStore removedDisk = (DiskStore) resource;
+          adapter.handleDiskRemoval(removedDisk);
+          break;
+        case GATEWAYRECEIVER_CREATE:
+          GatewayReceiver createdRecv = (GatewayReceiver) resource;
+          adapter.handleGatewayReceiverCreate(createdRecv);
+          break;
+        case GATEWAYRECEIVER_DESTROY:
+          GatewayReceiver destroyedRecv = (GatewayReceiver) resource;
+          adapter.handleGatewayReceiverDestroy(destroyedRecv);
+          break;
+        case GATEWAYRECEIVER_START:
+          GatewayReceiver startedRecv = (GatewayReceiver) resource;
+          adapter.handleGatewayReceiverStart(startedRecv);
+          break;
+        case GATEWAYRECEIVER_STOP:
+          GatewayReceiver stoppededRecv = (GatewayReceiver) resource;
+          adapter.handleGatewayReceiverStop(stoppededRecv);
+          break;
+        case GATEWAYSENDER_CREATE:
+          GatewaySender sender = (GatewaySender) resource;
+          adapter.handleGatewaySenderCreation(sender);
+          break;
+        case GATEWAYSENDER_START:
+          GatewaySender startedSender = (GatewaySender) resource;
+          adapter.handleGatewaySenderStart(startedSender);
+          break;
+        case GATEWAYSENDER_STOP:
+          GatewaySender stoppedSender = (GatewaySender) resource;
+          adapter.handleGatewaySenderStop(stoppedSender);
+          break;
+        case GATEWAYSENDER_PAUSE:
+          GatewaySender pausedSender = (GatewaySender) resource;
+          adapter.handleGatewaySenderPaused(pausedSender);
+          break;
+        case GATEWAYSENDER_RESUME:
+          GatewaySender resumedSender = (GatewaySender) resource;
+          adapter.handleGatewaySenderResumed(resumedSender);
+          break;
+        case GATEWAYSENDER_REMOVE:
+          GatewaySender removedSender = (GatewaySender) resource;
+          adapter.handleGatewaySenderRemoved(removedSender);
+          break;
+        case LOCKSERVICE_CREATE:
+          DLockService createdLockService = (DLockService) resource;
+          adapter.handleLockServiceCreation(createdLockService);
+          break;
+        case LOCKSERVICE_REMOVE:
+          DLockService removedLockService = (DLockService) resource;
+          adapter.handleLockServiceRemoval(removedLockService);
+          break;
+        case MANAGER_CREATE:
+          adapter.handleManagerCreation();
+          break;
+        case MANAGER_START:
+          adapter.handleManagerStart();
+          break;
+        case MANAGER_STOP:
+          adapter.handleManagerStop();
+          break;
+        case ASYNCEVENTQUEUE_CREATE:
+          AsyncEventQueue queue = (AsyncEventQueue) resource;
+          adapter.handleAsyncEventQueueCreation(queue);
+          break;
+        case ASYNCEVENTQUEUE_REMOVE:
+          AsyncEventQueue removedQueue = (AsyncEventQueue) resource;
+          adapter.handleAsyncEventQueueRemoval(removedQueue);
+          break;
+        case SYSTEM_ALERT:
+          AlertDetails details = (AlertDetails) resource;
+          adapter.handleSystemNotification(details);
+          break;
+        case CACHE_SERVER_START:
+          CacheServer startedServer = (CacheServer) resource;
+          adapter.handleCacheServerStart(startedServer);
+          break;
+        case CACHE_SERVER_STOP:
+          CacheServer stoppedServer = (CacheServer) resource;
+          adapter.handleCacheServerStop(stoppedServer);
+          break;
+        case LOCATOR_START:
+          Locator loc = (Locator) resource;
+          adapter.handleLocatorStart(loc);
+          break;
+        case CACHE_SERVICE_CREATE:
+          CacheService service = (CacheService) resource;
+          adapter.handleCacheServiceCreation(service);
+          break;
+        default:
+          break;
+      }
+    } finally {
+      if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
+        readWriteLock.writeLock().unlock();
+      } else {
+        readWriteLock.readLock().unlock();
+      }
     }
   }
 
