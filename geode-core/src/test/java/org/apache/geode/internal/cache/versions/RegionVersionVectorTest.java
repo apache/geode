@@ -72,25 +72,35 @@ public class RegionVersionVectorTest {
     InternalDistributedMember server2 = new InternalDistributedMember(local, 102);
     InternalDistributedMember server3 = new InternalDistributedMember(local, 103);
 
+    // simulate server1 requesting a sync for server2, which has crashed
     RegionVersionVector rv1 = new VMRegionVersionVector(server1);
     rv1.updateLocalVersion(10);
+    // we have seen server2's operations with versions 1, 5 and 8
     rv1.recordVersion(server2, 1);
     rv1.recordVersion(server2, 5);
     rv1.recordVersion(server2, 8);
+    // we have seen server3's operations with versions 1 and 3
     rv1.recordVersion(server3, 1);
     rv1.recordVersion(server3, 3);
+
+    // clone the RVV with only server2's information
     RegionVersionVector singletonRVV = rv1.getCloneForTransmission(server2);
     assertTrue(singletonRVV.isForSynchronization());
     assertEquals(singletonRVV.getOwnerId(), server1);
+    // the clone should hold server2's information but nothing else
     assertTrue(singletonRVV.getMemberToVersion().containsKey(server2));
     assertFalse(singletonRVV.getMemberToVersion().containsKey(server3));
 
+    // the clone should respond _true_ when asked if it contains anything from anyone but server2
     assertTrue(singletonRVV.contains(server1, 1));
     assertTrue(singletonRVV.contains(server1, 11));
 
     assertTrue(singletonRVV.contains(server3, 1));
     assertTrue(singletonRVV.contains(server3, 11));
 
+    // the clone should hold information about server2 and respond whether it contains
+    // a spefic version. Since we recroded 1, 5 and 8 it should respond true for those
+    // versions and false for anything else
     assertTrue(singletonRVV.contains(server2, 1));
     assertTrue(singletonRVV.contains(server2, 5));
     assertTrue(singletonRVV.contains(server2, 8));
