@@ -266,6 +266,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (region.getServerProxy() == null && region.getVersionVector()
         .isTombstoneTooOld(version.getMemberID(), version.getRegionVersion())) {
       // distributed gc with higher vector version preempts this operation
+      logger.info("Debug - makeTombstone when tombstone is too old");
       if (!isTombstone()) {
         basicMakeTombstone(region);
         region.getCachePerfStats().incTombstoneCount(1);
@@ -278,11 +279,16 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       }
       setRecentlyUsed(region);
       boolean newEntry = getValueAsToken() == Token.REMOVED_PHASE1;
+      boolean missNewEntry = isDestroyedOrRemoved() && !newEntry && !isTombstone();
       basicMakeTombstone(region);
       region.scheduleTombstone(this, version);
       if (newEntry) {
         // bug #46631 - entry count is decremented by scheduleTombstone but this is a new entry
         region.getCachePerfStats().incEntryCount(1);
+      } else {
+        if(missNewEntry) {
+          logger.info("Debug.....in makeTombstone not incremented");
+        }
       }
     }
   }
