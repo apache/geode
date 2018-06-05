@@ -58,6 +58,7 @@ public class IntegratedSecurityService implements SecurityService {
 
   private final PostProcessor postProcessor;
   private final SecurityManager securityManager;
+  private final org.apache.shiro.mgt.SecurityManager shiroSecurityManager;
 
   /**
    * this creates a security service using a SecurityManager
@@ -68,9 +69,8 @@ public class IntegratedSecurityService implements SecurityService {
   IntegratedSecurityService(SecurityManagerProvider provider, PostProcessor postProcessor) {
     // provider must provide a shiro security manager, otherwise, this is not integrated security
     // service at all.
-    assert provider.getShiroSecurityManager() != null;
-    SecurityUtils.setSecurityManager(provider.getShiroSecurityManager());
-
+    this.shiroSecurityManager = provider.getShiroSecurityManager();
+    assert this.shiroSecurityManager != null;
     this.securityManager = provider.getSecurityManager();
     this.postProcessor = postProcessor;
   }
@@ -131,6 +131,7 @@ public class IntegratedSecurityService implements SecurityService {
 
     // this makes sure it starts with a clean user object
     ThreadContext.remove();
+    ThreadContext.bind(this.shiroSecurityManager);
 
     Subject currentUser = SecurityUtils.getSubject();
     GeodeAuthenticationToken token = new GeodeAuthenticationToken(credentials);
@@ -266,7 +267,6 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     ThreadContext.remove();
-    SecurityUtils.setSecurityManager(null);
   }
 
   /**
