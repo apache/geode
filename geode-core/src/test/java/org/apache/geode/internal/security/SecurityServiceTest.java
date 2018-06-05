@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.util.ThreadContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -121,7 +121,7 @@ public class SecurityServiceTest {
 
   @Test
   public void testInitWithOutsideShiroSecurityManager() {
-    SecurityUtils.setSecurityManager(new DefaultSecurityManager());
+    ThreadContext.bind(new DefaultSecurityManager());
     this.securityService = SecurityServiceFactory.create(properties);
 
     assertThat(this.securityService.isIntegratedSecurity()).isTrue();

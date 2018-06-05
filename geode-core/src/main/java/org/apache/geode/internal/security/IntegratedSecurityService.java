@@ -71,6 +71,7 @@ public class IntegratedSecurityService implements SecurityService {
     // service at all.
     this.shiroSecurityManager = provider.getShiroSecurityManager();
     assert this.shiroSecurityManager != null;
+    ThreadContext.bind(this.shiroSecurityManager);
     this.securityManager = provider.getSecurityManager();
     this.postProcessor = postProcessor;
   }
