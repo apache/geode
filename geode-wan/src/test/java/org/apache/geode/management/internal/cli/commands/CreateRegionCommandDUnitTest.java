@@ -60,7 +60,7 @@ public class CreateRegionCommandDUnitTest {
         "create async-event-queue --parallel=true --listener=org.apache.geode.internal.cache.wan.MyAsyncEventListener --id="
             + asyncQueueName)
         .statusIsSuccess();
-    locator.waitTillAsyncEventQueuesAreReadyOnServers(asyncQueueName, 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(asyncQueueName, 2);
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE  --name=" + regionName
         + " --async-event-queue-id=" + asyncQueueName)
@@ -86,7 +86,7 @@ public class CreateRegionCommandDUnitTest {
         "create gateway-sender --parallel=true --remote-distributed-system-id=2 --id="
             + gatewaySenderName)
         .statusIsSuccess();
-    locator.waitTilGatewaySendersAreReady(1);
+    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE  --name=" + regionName
         + " --gateway-sender-id=" + gatewaySenderName)

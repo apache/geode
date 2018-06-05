@@ -24,17 +24,21 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
+import org.awaitility.core.Predicate;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedSystem;
@@ -249,35 +253,92 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public abstract InternalCache getCache();
 
-  public void waitTillRegionIsReadyOnServers(String regionName, int serverCount) {
-    await().atMost(30, TimeUnit.SECONDS).until(() -> getRegionMBean(regionName) != null);
-    await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> getRegionMBean(regionName).getMembers().length == serverCount);
+  public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionName,
+      int exactServerCount) throws Exception {
+    String predicateDescription = String.format(
+        "Expecting region '%s' to be found on exactly %d servers",
+        regionName, exactServerCount);
+    waitUntilSatisfied(
+        () -> getRegionMBean(regionName).getMembers(),
+        members -> members != null && members.length == exactServerCount,
+        predicateDescription,
+        30, TimeUnit.SECONDS);
   }
 
-  private long getDiskStoreCount(String diskStoreName) {
+  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(int exactGatewaySenderCount)
+      throws Exception {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    Map<String, String[]> diskstores = dsMXBean.listMemberDiskstore();
-    long count =
-        diskstores.values().stream().filter(x -> ArrayUtils.contains(x, diskStoreName)).count();
-
-    return count;
+    String predicateDescription = String.format(
+        "Expecting to find exactly %d gateway sender beans.", exactGatewaySenderCount);
+    waitUntilSatisfied(() -> dsMXBean.listGatewaySenderObjectNames().length, x -> x.equals(
+        exactGatewaySenderCount),
+        predicateDescription,
+        30, TimeUnit.SECONDS);
   }
 
-  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) throws Exception {
-    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> dsMXBean.listGatewaySenderObjectNames().length == expectedGatewayObjectCount);
+  public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskStoreName,
+      int exactServerCount) throws Exception {
+
+    Callable<List<String[]>> diskStoreBeanCounter = () -> {
+      DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
+      Map<String, String[]> diskStores = dsMXBean.listMemberDiskstore();
+      return diskStores.values().stream().filter(x -> ArrayUtils.contains(x, diskStoreName))
+          .collect(Collectors.toList());
+    };
+    String predicateDescription = String.format(
+        "Expecting exactly %d servers to present mbeans for a disk store with name %s.",
+        exactServerCount, diskStoreName);
+
+    waitUntilSatisfied(diskStoreBeanCounter,
+        x -> x.size() == exactServerCount,
+        predicateDescription,
+        30, TimeUnit.SECONDS);
   }
 
-  public void waitTillDiskStoreIsReady(String diskstoreName, int serverCount) {
-    await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> getDiskStoreCount(diskstoreName) == serverCount);
+  public void waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(String queueId,
+      int exactServerCount)
+      throws Exception {
+    String predicateDescription = String.format(
+        "Expecting exactly %d servers to have an AEQ with id '%s'.", exactServerCount, queueId);
+    waitUntilSatisfied(
+        () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId),
+        membersWithAEQ -> membersWithAEQ.size() == exactServerCount,
+        predicateDescription,
+        30, TimeUnit.SECONDS);
   }
 
-  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
-    await().atMost(30, TimeUnit.SECONDS).until(
-        () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId).size() == serverCount);
+
+  /**
+   * This method wraps an {@link org.awaitility.Awaitility#await} call for more meaningful error
+   * reporting.
+   *
+   * @param provider Method to retrieve the result to be tested, e.g.,
+   *        get a list of visible region mbeans
+   * @param predicate Method to test the result provided by {@code provider}.
+   *        When {@code predicate} returns {@code true}, this {@link #waitUntilSatisfied} call will
+   *        exit. If {@code provider} can return {@code null}, this {@code predicate} must handle
+   *        the {@code null} case in its testing to avoid a {@code NullPointerException}.
+   * @param predicateDescription A description of the {@code predicate} method,
+   *        for display should this wait time out.
+   * @param timeout With {@code unit}, the maximum time to wait before raising an exception.
+   * @param unit With {@code timeout}, the maximum time to wait before raising an exception.
+   * @throws org.awaitility.core.ConditionTimeoutException The timeout has been reached
+   * @throws Exception Any exception produced by {@code provider.call()}
+   */
+  public <K> void waitUntilSatisfied(Callable<K> provider, Predicate<K> predicate,
+      String predicateDescription, long timeout, TimeUnit unit)
+      throws Exception {
+    try {
+      Awaitility.await(predicateDescription)
+          .atMost(timeout, unit)
+          .until(() -> predicate.matches(provider.call()));
+    } catch (ConditionTimeoutException e) {
+      // There is a very slight race condition here, where the above could conceivably time out,
+      // and become satisfied before the next provider.call()
+      throw new ConditionTimeoutException(
+          "The observed result '" + String.valueOf(provider.call())
+              + "' does not satisfy the required predicate.  " + e.getMessage());
+    }
   }
 
   abstract void stopMember();

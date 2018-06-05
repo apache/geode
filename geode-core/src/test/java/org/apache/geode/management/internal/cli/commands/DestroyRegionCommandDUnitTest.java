@@ -67,8 +67,8 @@ public class DestroyRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create region --name=Order --type=PARTITION --colocated-with=Customer").statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/Customer", 3);
-    locator.waitTillRegionsAreReadyOnServers("/Order", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/Customer", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/Order", 3);
 
     // Test unable to destroy with co-location
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
@@ -92,7 +92,7 @@ public class DestroyRegionCommandDUnitTest {
   public void testDestroyLocalRegions() {
     gfsh.executeAndAssertThat("create region --name=region1 --type=LOCAL").statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/region1", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region1", 3);
 
     gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()
         .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
@@ -110,7 +110,7 @@ public class DestroyRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE --group=group2")
         .statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/region1", 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region1", 3);
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService service =

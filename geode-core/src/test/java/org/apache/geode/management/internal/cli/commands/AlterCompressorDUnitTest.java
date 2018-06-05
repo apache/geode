@@ -70,7 +70,7 @@ public class AlterCompressorDUnitTest {
     gfsh.executeAndAssertThat(
         "create disk-store --name=diskStore --groups=dataStore --dir=diskStore").statusIsSuccess();
 
-    locator.waitTillDiskstoreIsReady("diskStore", 2);
+    locator.waitUntilDiskStoreIsReadyOnExactlyThisManyServers("diskStore", 2);
     // create regions
     gfsh.executeAndAssertThat(
         "create region --name=testRegion --type=REPLICATE_PERSISTENT --group=dataStore --disk-store=diskStore")

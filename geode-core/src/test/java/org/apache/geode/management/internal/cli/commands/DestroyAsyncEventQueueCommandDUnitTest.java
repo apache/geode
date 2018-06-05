@@ -59,7 +59,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
         "create async-event-queue --id=queue1 --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 2);
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
     locator.invoke(() -> {
@@ -88,7 +88,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
         "create async-event-queue --id=queue1 --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 2);
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1 ").statusIsSuccess();
@@ -103,7 +103,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
         "create async-event-queue --id=queue1 --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 2);
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1 ").statusIsSuccess();
@@ -126,7 +126,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1 --group=group1")
         .statusIsSuccess();
@@ -147,7 +147,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1 --group=group2")
         .statusIsError().containsOutput(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
@@ -168,7 +168,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1").statusIsSuccess()
@@ -193,8 +193,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue3 --group=group3 --listener="
         + MyAsyncEventListener.class.getName())/* .statusIsSuccess() */;
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue3", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue3", 1);
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess();
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1 --group=group1")
