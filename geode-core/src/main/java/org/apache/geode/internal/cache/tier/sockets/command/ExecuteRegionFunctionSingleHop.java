@@ -307,9 +307,11 @@ public class ExecuteRegionFunctionSingleHop extends BaseCommand {
           resultSender.setException(fe);
         }
       } else {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-            function), fe);
+        if (logger.isDebugEnabled()) {
+          logger.debug(LocalizedMessage.create(
+              LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
+              function), fe);
+        }
         sendException(hasResult, clientMessage, message, serverConnection, fe);
       }
     } catch (Exception e) {
