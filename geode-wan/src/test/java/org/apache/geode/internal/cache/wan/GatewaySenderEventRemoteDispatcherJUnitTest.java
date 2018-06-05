@@ -43,4 +43,18 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     assertNull(dispatcher.getConnection(false));
     assertTrue(ackReaderThread.isShutdown());
   }
+
+  @Test
+  public void shuttingDownAckThreadReaderConnectionShouldshutdownTheAckThreadReader() {
+    AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    AbstractGatewaySenderEventProcessor eventProcessor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    GatewaySenderEventRemoteDispatcher dispatcher =
+        new GatewaySenderEventRemoteDispatcher(eventProcessor, null);
+    GatewaySenderEventRemoteDispatcher.AckReaderThread ackReaderThread =
+        dispatcher.new AckReaderThread(sender, "AckReaderThread");
+    dispatcher.setAckReaderThread(ackReaderThread);
+    dispatcher.shutDownAckReaderConnection();
+    assertTrue(ackReaderThread.isShutdown());
+  }
 }
