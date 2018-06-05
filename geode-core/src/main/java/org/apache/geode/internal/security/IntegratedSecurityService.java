@@ -112,6 +112,7 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     // in other cases like rest call, client operations, we get it from the current thread
+    ThreadContext.bind(this.shiroSecurityManager);
     currentUser = SecurityUtils.getSubject();
 
     if (currentUser == null || currentUser.getPrincipal() == null) {
@@ -130,7 +131,7 @@ public class IntegratedSecurityService implements SecurityService {
       throw new AuthenticationRequiredException("credentials are null");
     }
 
-    // this makes sure it starts with a clean user object
+    // clear current subject and bind the security manager to this thread
     ThreadContext.remove();
     ThreadContext.bind(this.shiroSecurityManager);
 
