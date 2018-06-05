@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
@@ -38,7 +39,6 @@ import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
@@ -168,10 +168,6 @@ public class AbstractPeerTXRegionStubTest {
   public void getRegionKeysForIterationTranslatesRemoteOperationException() {
     expectedException.expect(TransactionDataNodeHasDepartedException.class);
 
-    ReplyProcessor21 replyProcessor = mock(ReplyProcessor21.class);
-    Exception replyException = new ReplyException("testing",
-        new RemoteOperationException("The cache is closing", new CacheClosedException()));
-    doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     ClusterDistributionManager manager = mock(ClusterDistributionManager.class);
@@ -181,7 +177,13 @@ public class AbstractPeerTXRegionStubTest {
 
     RemoteFetchKeysMessage.FetchKeysResponse responseProcessor =
         new RemoteFetchKeysMessage.FetchKeysResponse(system, target);
-    responseProcessor.waitForKeys(replyProcessor);
+    RemoteFetchKeysMessage.FetchKeysResponse spy = Mockito.spy(responseProcessor);
+
+    Exception replyException = new ReplyException("testing",
+        new RemoteOperationException("The cache is closing", new CacheClosedException()));
+    doThrow(replyException).when(spy).waitForRepliesUninterruptibly();
+
+    spy.waitForKeys();
 
     fail(
         "Expected to transalate RemoteOperationException.CacheClosedException to TransactionDataNodeHasDepartedException ");

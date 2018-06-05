@@ -421,9 +421,9 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     @SuppressWarnings("rawtypes")
-    public Set waitForKeys(ReplyProcessor21 responseProcessor) {
+    public Set waitForKeys() {
       try {
-        responseProcessor.waitForRepliesUninterruptibly();
+        waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
         if (e.getCause() instanceof RemoteOperationException) {
           if (e.getCause().getCause() instanceof CancelException) {

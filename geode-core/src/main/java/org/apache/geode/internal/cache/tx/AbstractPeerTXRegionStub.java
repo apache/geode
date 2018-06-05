@@ -41,7 +41,7 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
     try {
       RemoteFetchKeysMessage.FetchKeysResponse response =
           RemoteFetchKeysMessage.send((LocalRegion) getRegion(), state.getTarget());
-      return response.waitForKeys(response);
+      return response.waitForKeys();
     } catch (RegionDestroyedException e) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
