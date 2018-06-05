@@ -3555,4 +3555,55 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
     this.closeClient(vm1);
     this.closeClient(vm0);
   }
+
+  /**
+   * Test Aggregate queries on Pdx instances
+   */
+
+  @Test
+  public void testAggregateQueries() {
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    VM vm2 = VM.getVM(2);
+
+    final int port0 = vm0.invoke(() -> {
+      configAndStartBridgeServer();
+      Region region = getRootRegion().getSubregion(regionName);
+      for (int i = 0; i < 10; i++) {
+        region.put("key-" + i, new TestObject(i, "val-" + i));
+      }
+      return getCacheServerPort();
+    });
+
+    final int port1 = vm1.invoke(() -> {
+      configAndStartBridgeServer();
+      return getCacheServerPort();
+    });
+
+    final String host0 = NetworkUtils.getServerHostName();
+
+    final String poolName = "testClientServerQueryPool";
+    createPool(vm2, poolName, new String[] {host0}, new int[] {port1}, true);
+
+    vm2.invoke(() -> {
+      QueryService queryService = PoolManager.find(poolName).getQueryService();
+      Query query = queryService.newQuery("select SUM(price) from " + regName + " where id > 0");
+      SelectResults<Object> selectResults = (SelectResults) query.execute();
+      assertEquals(1, selectResults.size());
+      assertEquals(45, selectResults.asList().get(0));
+    });
+
+    vm2.invoke(() -> {
+      QueryService queryService = PoolManager.find(poolName).getQueryService();
+      Query query = queryService.newQuery("select SUM(price) from " + regName + " where id > 9");
+      SelectResults<Long> selectResults = (SelectResults) query.execute();
+      assertEquals(0, selectResults.size());
+      assertEquals(0, selectResults.asList().size());
+    });
+
+    this.closeClient(vm0);
+    this.closeClient(vm1);
+    this.closeClient(vm2);
+  }
+
 }
