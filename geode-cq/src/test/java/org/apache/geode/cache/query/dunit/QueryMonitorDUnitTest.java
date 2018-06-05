@@ -276,7 +276,7 @@ public class QueryMonitorDUnitTest implements Serializable {
 
     // Start server
     int serverPort = server.invoke("Create BridgeServer",
-        () -> configServer(20, "testQueryMonitorClientServer")); // All the queries taking more than
+        () -> configServer(10, "testQueryMonitorClientServer")); // All the queries taking more than
                                                                  // 20ms should be canceled by Query
                                                                  // monitor.
     server.invoke("createExampleRegion", () -> createExampleRegion());
@@ -295,9 +295,9 @@ public class QueryMonitorDUnitTest implements Serializable {
 
     // Execute client queries
 
-    client1.invoke("execute Queries", () -> executeQueriesFromClient(20));
-    client2.invoke("execute Queries", () -> executeQueriesFromClient(20));
-    client3.invoke("execute Queries", () -> executeQueriesFromClient(20));
+    client1.invoke("execute Queries", () -> executeQueriesFromClient(10));
+    client2.invoke("execute Queries", () -> executeQueriesFromClient(10));
+    client3.invoke("execute Queries", () -> executeQueriesFromClient(10));
 
     stopServer(server);
   }
