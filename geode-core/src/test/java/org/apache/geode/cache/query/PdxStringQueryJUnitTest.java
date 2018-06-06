@@ -16,6 +16,7 @@ package org.apache.geode.cache.query;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -34,6 +35,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.QueryObserver;
+import org.apache.geode.cache.query.internal.ResultsCollectionPdxDeserializerWrapper;
+import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
 import org.apache.geode.cache.query.internal.index.IndexStore.IndexStoreEntry;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
@@ -260,6 +263,17 @@ public class PdxStringQueryJUnitTest {
       validateStringResult("IBM", res.iterator().next());
     }
     region.clear();
+  }
+
+  @Test
+  public void testPdxResultsCollector() {
+    SelectResults<Struct> sr1 = new ResultsCollectionPdxDeserializerWrapper();
+    assertNotNull(sr1.asList());
+
+    SelectResults<Struct> sr2 =
+        new ResultsCollectionPdxDeserializerWrapper(new ResultsSet(), false);
+    assertNotNull(sr2.asList());
+
   }
 
   private void putPdxInstances() throws Exception {

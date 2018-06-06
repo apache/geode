@@ -20,6 +20,7 @@ import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -314,6 +315,10 @@ public class DirectChannel {
     if (!directReply && directMsg != null) {
       directMsg.registerProcessor();
     }
+    if (logger.isDebugEnabled()) {
+      logger.debug("Sending ({}) to {} peers ({}) via tcp/ip",
+          msg, p_destinations.length, Arrays.toString(p_destinations));
+    }
 
     try {
       do {
@@ -375,9 +380,9 @@ public class DirectChannel {
         }
 
         try {
-          if (logger.isDebugEnabled()) {
-            logger.debug("{}{}) to {} peers ({}) via tcp/ip",
-                (retry ? "Retrying send (" : "Sending ("), msg, cons.size(), cons);
+          if (retry && logger.isDebugEnabled()) {
+            logger.debug("Retrying send ({}{}) to {} peers ({}) via tcp/ip",
+                msg, cons.size(), cons);
           }
           DMStats stats = getDMStats();
           List<?> sentCons; // used for cons we sent to this time

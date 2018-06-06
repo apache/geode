@@ -15,10 +15,12 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import java.io.Serializable;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,10 +31,12 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({DistributedTest.class, SecurityTest.class})
+// flaky: GEODE-3692
+@Category({DistributedTest.class, SecurityTest.class, FlakyTest.class})
 public class ClientAuthDUnitTest {
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -41,9 +45,14 @@ public class ClientAuthDUnitTest {
   public ServerStarterRule server = new ServerStarterRule()
       .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
 
+  @After
+  public void tearDown() throws Exception {
+    disconnectAllFromDS();
+  }
+
   @Test
   public void authWithCorrectPasswordShouldPass() throws Exception {
-    lsRule.startClientVM(0, "test", "test", true, server.getPort());
+    lsRule.startClientVM(0, "test", "test", true, server.getPort(), new ClientCacheHook(lsRule));
   }
 
   @Test

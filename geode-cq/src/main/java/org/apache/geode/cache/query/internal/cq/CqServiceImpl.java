@@ -284,8 +284,10 @@ public class CqServiceImpl implements CqService {
           if (emptyRegionsMap != null && emptyRegionsMap.containsKey(cQuery.getBaseRegionName())) {
             regionDataPolicy = 0;
           }
+
+          CacheClientProxy proxy = getCacheClientProxy(clientProxyId, ccn);
           ccn.updateMapOfEmptyRegions(
-              ccn.getClientProxy(clientProxyId, true).getRegionsWithEmptyDataPolicy(),
+              proxy.getRegionsWithEmptyDataPolicy(),
               cQuery.getBaseRegionName(), regionDataPolicy);
         }
       } catch (CqException cqe) {
@@ -305,6 +307,15 @@ public class CqServiceImpl implements CqService {
       logger.debug("Successfully created CQ on the server. CqName : {}", cQuery.getName());
     }
     return cQuery;
+  }
+
+  protected CacheClientProxy getCacheClientProxy(ClientProxyMembershipID clientProxyId,
+      CacheClientNotifier ccn) throws CqException {
+    CacheClientProxy proxy = ccn.getClientProxy(clientProxyId, true);
+    if (proxy == null) {
+      throw new CqException(LocalizedStrings.cq_CACHE_CLIENT_PROXY_IS_NULL.toLocalizedString());
+    }
+    return proxy;
   }
 
   @Override

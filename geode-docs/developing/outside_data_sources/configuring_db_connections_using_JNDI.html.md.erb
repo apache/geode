@@ -19,12 +19,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<a id="topic_A5E3A67C808D48C08E1F0DC167C5C494"></a>
+To connect to external databases, for example when using JTA transactions, you can configure
+database JNDI data sources in `cache.xml`. The `DataSource` object points to either a JDBC
+connection or, more commonly, a JDBC connection pool. The connection pool is usually preferred,
+because a program can use and reuse a connection as long as necessary and then free it for another
+thread to use.
 
-
-When using JTA transactions, you can configure database JNDI data sources in `cache.xml`. The `DataSource` object points to either a JDBC connection or, more commonly, a JDBC connection pool. The connection pool is usually preferred, because a program can use and reuse a connection as long as necessary and then free it for another thread to use.
-
-The following are a list of `DataSource` connection types used in JTA transactions.
+The following list shows `DataSource` connection types used in JTA transactions:
 
 -   **XAPooledDataSource**. Pooled SQL connections.
 -   **ManagedDataSource**. JNDI binding type for the J2EE Connector Architecture (JCA) ManagedConnectionFactory.

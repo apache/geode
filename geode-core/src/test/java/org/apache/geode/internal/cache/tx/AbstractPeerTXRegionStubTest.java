@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.tx;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,18 +28,25 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
@@ -154,6 +162,31 @@ public class AbstractPeerTXRegionStubTest {
     txrStub.getRegionKeysForIteration();
     fail(
         "AbstractPeerTXRegionStub expected to transalate CacheClosedException to TransactionDataNodeHasDepartedException ");
+  }
+
+  @Test
+  public void getRegionKeysForIterationTranslatesRemoteOperationException() {
+    expectedException.expect(TransactionDataNodeHasDepartedException.class);
+
+
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    ClusterDistributionManager manager = mock(ClusterDistributionManager.class);
+    when(system.getDistributionManager()).thenReturn(manager);
+    when(manager.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    InternalDistributedMember target = new InternalDistributedMember("localhost", 1234);
+
+    RemoteFetchKeysMessage.FetchKeysResponse responseProcessor =
+        new RemoteFetchKeysMessage.FetchKeysResponse(system, target);
+    RemoteFetchKeysMessage.FetchKeysResponse spy = Mockito.spy(responseProcessor);
+
+    Exception replyException = new ReplyException("testing",
+        new RemoteOperationException("The cache is closing", new CacheClosedException()));
+    doThrow(replyException).when(spy).waitForRepliesUninterruptibly();
+
+    spy.waitForKeys();
+
+    fail(
+        "Expected to transalate RemoteOperationException.CacheClosedException to TransactionDataNodeHasDepartedException ");
   }
 
   @Test

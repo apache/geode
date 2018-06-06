@@ -913,10 +913,14 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   }
 
   public String printUnprocessedEvents() {
-    return printEventIdList(this.unprocessedEvents.keySet());
+    synchronized (this.unprocessedEventsLock) {
+      return printEventIdList(this.unprocessedEvents.keySet());
+    }
   }
 
   public String printUnprocessedTokens() {
-    return printEventIdList(this.unprocessedTokens.keySet());
+    synchronized (this.unprocessedEventsLock) {
+      return printEventIdList(this.unprocessedTokens.keySet());
+    }
   }
 }

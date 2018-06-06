@@ -1126,7 +1126,8 @@ public abstract class AbstractRegionMap
                   clearOccured = true;
                 }
                 owner.txApplyDestroyPart2(re, re.getKey(), inTokenMode,
-                    clearOccured /* Clear Conflciting with the operation */);
+                    clearOccured /* Clear Conflciting with the operation */,
+                    wasDestroyedOrRemoved);
                 boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
@@ -1209,7 +1210,7 @@ public abstract class AbstractRegionMap
                         owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
                       }
                       owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
-                          false /* Clear Conflicting with the operation */);
+                          false /* Clear Conflicting with the operation */, wasDestroyedOrRemoved);
                       lruEntryDestroy(oldRe);
                     } finally {
                       if (!callbackEventAddedToPending)
@@ -1217,7 +1218,7 @@ public abstract class AbstractRegionMap
                     }
                   } catch (RegionClearedException rce) {
                     owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
-                        true /* Clear Conflicting with the operation */);
+                        true /* Clear Conflicting with the operation */, true);
                   }
                   if (owner.getConcurrencyChecksEnabled()
                       && callbackEvent.getVersionTag() != null) {
@@ -1265,7 +1266,7 @@ public abstract class AbstractRegionMap
                   newRe.setValue(owner, Token.DESTROYED);
                 }
                 owner.txApplyDestroyPart2(newRe, newRe.getKey(), inTokenMode,
-                    false /* clearConflict */);
+                    false /* clearConflict */, true);
                 // Note no need for LRU work since the entry is destroyed
                 // and will be removed when gii completes
               } finally {
