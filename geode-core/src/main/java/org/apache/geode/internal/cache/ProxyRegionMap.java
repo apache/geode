@@ -266,7 +266,7 @@ class ProxyRegionMap implements RegionMap {
       ClientProxyMembershipID bridgeContext, boolean isOperationRemote, TXEntryState txEntryState,
       VersionTag versionTag, long tailKey) {
     this.owner.txApplyDestroyPart2(markerEntry, key, inTokenMode,
-        false /* Clear conflict occurred */, false);
+        false /* Clear conflict occurred */);
     if (!inTokenMode) {
       if (event != null) {
         event.addDestroy(this.owner, markerEntry, key, aCallbackArgument);

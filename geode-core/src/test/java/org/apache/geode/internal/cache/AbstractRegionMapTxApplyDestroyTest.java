@@ -251,7 +251,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).isEmpty();
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
-        eq(this.inTokenMode), eq(false), eq(false));
+        eq(this.inTokenMode), eq(false));
   }
 
   @Test
@@ -374,7 +374,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(true), anyBoolean());
+    verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(true));
     verify(regionMap, never()).lruEntryDestroy(any());
   }
 
@@ -387,8 +387,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(false),
-        anyBoolean());
+    verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(false));
     verify(regionMap, times(1)).lruEntryDestroy(any());
   }
 
@@ -485,23 +484,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).hasSize(1);
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-
-  }
-
-  @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRemovedRegionEntryWithoutInTokenModeAndNotInRI() {
-    givenLocalRegion();
-    givenConcurrencyChecks();
-    givenExistingRemovedRegionEntry();
-    inTokenMode = false;
-    inRI = false;
-
-    doTxApplyDestroy();
-
-    assertThat(pendingCallbacks).hasSize(1);
-    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
 
   }
 
@@ -517,22 +500,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).hasSize(1);
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-  }
-
-  @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRemovedRegionEntryWithoutInTokenModeAndWithInRI() {
-    givenLocalRegion();
-    givenConcurrencyChecks();
-    givenExistingRemovedRegionEntry();
-    inTokenMode = false;
-    inRI = true;
-
-    doTxApplyDestroy();
-
-    assertThat(pendingCallbacks).hasSize(1);
-    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   @Test
@@ -547,22 +515,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).hasSize(1);
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-  }
-
-  @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRemovedRegionEntryWithInTokenModeAndInRI() {
-    givenLocalRegion();
-    givenConcurrencyChecks();
-    givenExistingRemovedRegionEntry();
-    inTokenMode = true;
-    inRI = true;
-
-    doTxApplyDestroy();
-
-    assertThat(pendingCallbacks).hasSize(1);
-    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   @Test
@@ -574,19 +527,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).isEmpty();
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-  }
-
-  @Test
-  public void txApplyDestroyHasNoPendingCallback_givenExistingRemovedRegionEntryWithPartitionedRegion() {
-    givenBucketRegion();
-    givenExistingRemovedRegionEntry();
-
-    doTxApplyDestroy();
-
-    assertThat(pendingCallbacks).isEmpty();
-    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   @Test
@@ -648,20 +589,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).isEmpty();
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-  }
-
-  @Test
-  public void txApplyDestroyHasNoPendingCallback_givenExistingRemovedRegionEntryWithoutConcurrencyChecks() {
-    givenLocalRegion();
-    givenExistingRemovedRegionEntry();
-    givenNoConcurrencyChecks();
-
-    doTxApplyDestroy();
-
-    assertThat(pendingCallbacks).isEmpty();
-    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   @Test
@@ -674,20 +602,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).hasSize(1);
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-  }
-
-  @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRemovedRegionEntryWithShouldDispatchListenerEvent() {
-    givenLocalRegion();
-    givenExistingRemovedRegionEntry();
-    when(owner.shouldDispatchListenerEvent()).thenReturn(true);
-
-    doTxApplyDestroy();
-
-    assertThat(pendingCallbacks).hasSize(1);
-    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   @Test
@@ -700,24 +615,11 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     assertThat(pendingCallbacks).hasSize(1);
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
+        eq(false));
   }
 
   @Test
-  public void txApplyDestroyHasPendingCallback_givenExistingRemovedRegionEntryWithshouldNotifyBridgeClients() {
-    givenLocalRegion();
-    givenExistingRemovedRegionEntry();
-    when(owner.shouldNotifyBridgeClients()).thenReturn(true);
-
-    doTxApplyDestroy();
-
-    assertThat(pendingCallbacks).hasSize(1);
-    verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
-  }
-
-  @Test
-  public void txApplyDestroyDoesCallTxApplyDestroyPart2_givenFactoryRegionEntry() {
+  public void txApplyDestroyDoesNotCallsTxApplyDestroyPart2_givenExistingRegionEntry() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
@@ -726,7 +628,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(owner, times(1)).txApplyDestroyPart2(same(factoryRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   // tests for "factoryRegionEntry" (that is, no existing region entry and no oldRegionEntry).
@@ -1083,8 +985,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(owner, never()).txApplyDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
-        anyBoolean());
+    verify(owner, never()).txApplyDestroyPart2(any(), any(), anyBoolean(), anyBoolean());
   }
 
   // tests for "oldRegionEntry" (that is, an existing region entry found by putIfAbsent).
@@ -1407,19 +1308,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(owner, times(1)).txApplyDestroyPart2(same(oldRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-  }
-
-  @Test
-  public void txApplyDestroyCallsTxApplyDestroyPart2_givenOldRemovedRegionEntry() {
-    givenLocalRegion();
-    givenConcurrencyChecks();
-    givenOldRemovedRegionEntry();
-
-    doTxApplyDestroy();
-
-    verify(owner, times(1)).txApplyDestroyPart2(same(oldRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   @Test
@@ -1432,20 +1321,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(owner, times(1)).txApplyDestroyPart2(same(oldRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(false));
-  }
-
-  @Test
-  public void txApplyDestroyCallsTxApplyDestroyPart2_givenOldRemovedRegionEntryWithInTokenMode() {
-    givenLocalRegion();
-    givenConcurrencyChecks();
-    givenOldRemovedRegionEntry();
-    inTokenMode = true;
-
-    doTxApplyDestroy();
-
-    verify(owner, times(1)).txApplyDestroyPart2(same(oldRegionEntry), eq(key), eq(inTokenMode),
-        eq(false), eq(true));
+        eq(false));
   }
 
   @Test
@@ -1482,7 +1358,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(owner, times(1)).txApplyDestroyPart2(same(oldRegionEntry), eq(key), eq(inTokenMode),
-        eq(true), eq(true));
+        eq(true));
   }
 
   @Test
@@ -1551,11 +1427,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     when(entryMap.get(eq(key))).thenReturn(existingRegionEntry);
   }
 
-  private void givenExistingRemovedRegionEntry() {
-    givenExistingRegionEntry();
-    when(existingRegionEntry.isDestroyedOrRemoved()).thenReturn(true);
-  }
-
   private void givenFactoryRegionEntry() {
     when(entryMap.get(eq(key))).thenReturn(null);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(factoryRegionEntry);
@@ -1565,11 +1436,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     when(entryMap.get(eq(key))).thenReturn(null);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(factoryRegionEntry);
     when(entryMap.putIfAbsent(eq(key), same(factoryRegionEntry))).thenReturn(oldRegionEntry);
-  }
-
-  private void givenOldRemovedRegionEntry() {
-    givenOldRegionEntry();
-    when(oldRegionEntry.isDestroyedOrRemoved()).thenReturn(true);
   }
 
   private void givenNotInTokenMode() {
