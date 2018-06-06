@@ -204,7 +204,8 @@ public class ResultModel {
   }
 
   public TabularResultModel addTableAndSetStatus(String namedSection,
-      List<CliFunctionResult> functionResults, boolean skipIgnored) {
+      List<CliFunctionResult> functionResults, boolean ignoreIgnorable,
+      boolean ignorePartialFailure) {
     Object model = sections.get(namedSection);
     if (model != null) {
       throw new IllegalStateException(
@@ -212,20 +213,29 @@ public class ResultModel {
     }
     TabularResultModel section = this.addTable(namedSection);
     boolean atLeastOneSuccess = false;
+    boolean atLeastOneFailure = false;
     section.setColumnHeader("Member", "Status", "Message");
     for (CliFunctionResult functionResult : functionResults) {
       if (functionResult == null) {
         continue;
       }
-      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnored),
+      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(ignoreIgnorable),
           functionResult.getStatusMessage());
       if (functionResult.isSuccessful()) {
         atLeastOneSuccess = true;
-      } else if (functionResult.isIgnorableFailure() && skipIgnored) {
+      } else if (functionResult.isIgnorableFailure() && ignoreIgnorable) {
         atLeastOneSuccess = true;
+      } else if (functionResult.isIgnorableFailure() && !ignoreIgnorable) {
+        atLeastOneFailure = true;
+      } else if (!functionResult.isSuccessful()) {
+        atLeastOneFailure = true;
       }
     }
-    setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
+    if (ignorePartialFailure) {
+      setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
+    } else {
+      setStatus(atLeastOneFailure ? Result.Status.ERROR : Result.Status.OK);
+    }
     return section;
   }
 
@@ -322,25 +332,29 @@ public class ResultModel {
     return result;
   }
 
-  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
-      boolean ignoreIfFailed) {
-    return createMemberStatusResult(functionResults, null, null, ignoreIfFailed);
-  }
-
+  // any failure will be considered failure
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults) {
     return createMemberStatusResult(functionResults, null, null, false);
   }
+
+  // any non-ignorable failure will be considered failure
+  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
+      boolean ignoreIgnorable) {
+    return createMemberStatusResult(functionResults, null, null, ignoreIgnorable);
+  }
+
 
   /**
    * Helper method to create an {@code TabularResultModel} named "member-status". Typically used
    * to tabulate the status from calls to a number of members.
    */
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
-      String header, String footer, boolean ignoreIfFailed) {
+      String header, String footer, boolean ignoreIgnorable) {
     ResultModel result = new ResultModel();
 
     TabularResultModel tabularResultModel =
-        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
+        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIgnorable,
+            false);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
     return result;
