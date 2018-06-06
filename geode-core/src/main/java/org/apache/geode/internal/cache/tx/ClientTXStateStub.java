@@ -109,13 +109,17 @@ public class ClientTXStateStub extends TXStateStub {
   public void commit() throws CommitConflictException {
     obtainLocalLocks();
     try {
-      TXCommitMessage txcm = firstProxy.commit(proxy.getTxId().getUniqId());
+      TXCommitMessage txcm = null;
+      try {
+        txcm = firstProxy.commit(proxy.getTxId().getUniqId());
+      } finally {
+        this.firstProxy.getPool().releaseServerAffinity();
+      }
       afterServerCommit(txcm);
     } catch (TransactionDataNodeHasDepartedException e) {
       throw new TransactionInDoubtException(e);
     } finally {
       lockReq.releaseLocal();
-      this.firstProxy.getPool().releaseServerAffinity();
     }
   }
 
