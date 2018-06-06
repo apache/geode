@@ -769,8 +769,6 @@ public class DiskRegion extends AbstractDiskRegion {
         DiskId id = de.getDiskId();
         if (id != null) {
           synchronized (id) {
-            regionEntry.setValueToNull(); // TODO why call _setValue twice in a row?
-            regionEntry.removePhase2();
             id.unmarkForWriting();
             if (EntryBits.isNeedsValue(id.getUserBits())) {
               long oplogId = id.getOplogId();
