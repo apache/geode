@@ -33,8 +33,6 @@ All the regions in a <%=vars.product_name%> member cache can participate in a tr
 
 -   **[Comparing Transactional and Non-Transactional Operations](transactional_and_nontransactional_ops.html#transactional_and_nontransactional_ops)**
 
--   **[<%=vars.product_name%> Cache Transaction Semantics](transaction_semantics.html)**
-
 ## Transaction View
 
 A transaction is isolated from changes made concurrently to the cache. Each transaction has its own private view of the cache, including the entries it has read and the changes it has made. The first time the transaction touches an entry in the cache, either to read or write, it produces a snapshot of that entry’s state in the transaction’s view. The transaction maintains its current view of the entry, which reflects only the changes made within the transaction. The transaction remembers the entry’s original state and uses it at commit time to discover write conflicts.
