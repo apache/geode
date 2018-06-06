@@ -741,7 +741,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(regionEntryFactory, times(1)).createEntry(same(owner), eq(key), eq(Token.REMOVED_PHASE1));
+    verify(regionEntryFactory, times(1)).createEntry(same(owner), eq(key),
+        eq(Token.REMOVED_PHASE1));
   }
 
   @Test
@@ -752,7 +753,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(regionEntryFactory, times(1)).createEntry(same(owner), eq(key), eq(Token.REMOVED_PHASE1));
+    verify(regionEntryFactory, times(1)).createEntry(same(owner), eq(key),
+        eq(Token.REMOVED_PHASE1));
   }
 
   @Test
@@ -1036,7 +1038,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsSetValueWithDestroyedToken_givenFactoryRegionEntryWithoutConcurrencyChecksInTokenMode() throws RegionClearedException {
+  public void txApplyDestroyCallsSetValueWithDestroyedToken_givenFactoryRegionEntryWithoutConcurrencyChecksInTokenMode()
+      throws RegionClearedException {
     givenLocalRegion();
     givenFactoryRegionEntry();
     givenNoConcurrencyChecks();
