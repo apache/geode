@@ -1101,7 +1101,7 @@ public abstract class AbstractRegionMap
                     if (oldValue == Token.TOMBSTONE) {
                       owner.unscheduleTombstone(re);
                     }
-                    re.setValue(owner, Token.DESTROYED); // TODO when does this dec the entries stat?
+                    re.setValue(owner, Token.DESTROYED);
                   } else {
                     if (!re.isTombstone()) {
                       {
@@ -1111,7 +1111,7 @@ public abstract class AbstractRegionMap
                         } else {
                           re.removePhase1(owner, false); // fix for bug 43063
                           re.removePhase2();
-                          removeEntry(key, re, false); // TODO pass "true" to dec entries stat
+                          removeEntry(key, re, false);
                         }
                       }
                     } else {
@@ -1203,7 +1203,7 @@ public abstract class AbstractRegionMap
                       oldRe.setValue(owner, Token.DESTROYED);
                       EntryLogger.logTXDestroy(_getOwnerObject(), key);
                       if (wasTombstone) {
-                        owner.unscheduleTombstone(oldRe); // TODO this incs the entry count
+                        owner.unscheduleTombstone(oldRe);
                       }
                       if (!wasDestroyedOrRemoved) {
                         owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
@@ -1221,12 +1221,12 @@ public abstract class AbstractRegionMap
                   }
                   if (owner.getConcurrencyChecksEnabled()
                       && callbackEvent.getVersionTag() != null) {
-                    oldRe.makeTombstone(owner, callbackEvent.getVersionTag()); //TODO why not reschedule if wasTombstone?
+                    oldRe.makeTombstone(owner, callbackEvent.getVersionTag());
                   } else if (!inTokenMode) {
                     // only remove for NORMAL regions if they do not generate versions see 51781
                     oldRe.removePhase1(owner, false); // fix for bug 43063
                     oldRe.removePhase2();
-                    removeEntry(key, oldRe, false); // TODO change "false" to "!wasDestroyedOrRemoved"?
+                    removeEntry(key, oldRe, false);
                   }
                   opCompleted = true;
                 }
