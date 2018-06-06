@@ -58,6 +58,7 @@ public class IntegratedSecurityService implements SecurityService {
 
   private final PostProcessor postProcessor;
   private final SecurityManager securityManager;
+  private final org.apache.shiro.mgt.SecurityManager shiroSecurityManager;
 
   /**
    * this creates a security service using a SecurityManager
@@ -68,9 +69,9 @@ public class IntegratedSecurityService implements SecurityService {
   IntegratedSecurityService(SecurityManagerProvider provider, PostProcessor postProcessor) {
     // provider must provide a shiro security manager, otherwise, this is not integrated security
     // service at all.
-    assert provider.getShiroSecurityManager() != null;
-    SecurityUtils.setSecurityManager(provider.getShiroSecurityManager());
-
+    this.shiroSecurityManager = provider.getShiroSecurityManager();
+    assert this.shiroSecurityManager != null;
+    ThreadContext.bind(this.shiroSecurityManager);
     this.securityManager = provider.getSecurityManager();
     this.postProcessor = postProcessor;
   }
@@ -111,6 +112,7 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     // in other cases like rest call, client operations, we get it from the current thread
+    ThreadContext.bind(this.shiroSecurityManager);
     currentUser = SecurityUtils.getSubject();
 
     if (currentUser == null || currentUser.getPrincipal() == null) {
@@ -129,8 +131,9 @@ public class IntegratedSecurityService implements SecurityService {
       throw new AuthenticationRequiredException("credentials are null");
     }
 
-    // this makes sure it starts with a clean user object
+    // clear current subject and bind the security manager to this thread
     ThreadContext.remove();
+    ThreadContext.bind(this.shiroSecurityManager);
 
     Subject currentUser = SecurityUtils.getSubject();
     GeodeAuthenticationToken token = new GeodeAuthenticationToken(credentials);
@@ -266,7 +269,6 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     ThreadContext.remove();
-    SecurityUtils.setSecurityManager(null);
   }
 
   /**
