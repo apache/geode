@@ -101,7 +101,15 @@ public class GfshRule extends ExternalResource {
       geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
     }
 
-    return geodeHome.resolve("bin/gfsh");
+    if (isWindows()) {
+      return geodeHome.resolve("bin/gfsh.bat");
+    } else {
+      return geodeHome.resolve("bin/gfsh");
+    }
+  }
+
+  private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().contains("win");
   }
 
   public TemporaryFolder getTemporaryFolder() {
