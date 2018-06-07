@@ -86,7 +86,7 @@ public class CreateRegionCommandDUnitTest {
         "create gateway-sender --parallel=true --remote-distributed-system-id=2 --id="
             + gatewaySenderName)
         .statusIsSuccess();
-    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
+    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(2);
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE  --name=" + regionName
         + " --gateway-sender-id=" + gatewaySenderName)
