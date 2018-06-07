@@ -33,7 +33,6 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
@@ -47,7 +46,6 @@ public class ConcurrentRegionOperationIntegrationTest {
 
   @Before
   public void createCache() {
-    LogService.getLogger().error("*** In Test.createCache()");
     cache = new CacheFactory().set(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "100m").create();
     offHeapStore = MemoryAllocatorImpl.getAllocator();
 
@@ -56,7 +54,6 @@ public class ConcurrentRegionOperationIntegrationTest {
 
   @After
   public void closeCache() {
-    LogService.getLogger().error("*** In Test.closeCache()");
     cache.close();
   }
 
