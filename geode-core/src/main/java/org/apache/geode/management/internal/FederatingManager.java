@@ -26,12 +26,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
@@ -80,6 +82,8 @@ public class FederatingManager extends Manager {
   private MemberMessenger messenger;
 
   private SystemManagementService service;
+
+  private AtomicReference<Exception> latestException = new AtomicReference<>(null);
 
   /**
    * @param jmxAdapter JMX Adapter
@@ -164,10 +168,12 @@ public class FederatingManager extends Manager {
    */
   public void addMember(DistributedMember member) {
     GIITask giiTask = new GIITask(member);
-    executeTask(new Runnable() {
-      @Override
-      public void run() {
+    executeTask(() -> {
+      try {
         giiTask.call();
+      } catch (Exception e) {
+        logger.warn("Error federating new member {}: {}", member.getId(), e.getMessage());
+        latestException.set(e);
       }
     });
   }
@@ -348,136 +354,144 @@ public class FederatingManager extends Manager {
     }
 
     public DistributedMember call() {
-      Region<String, Object> proxyMonitoringRegion;
-      Region<NotificationKey, Notification> proxyNotificationRegion;
-      try {
+      synchronized (member) {
+        Region<String, Object> proxyMonitoringRegion;
+        Region<NotificationKey, Notification> proxyNotificationRegion;
+        String appender = MBeanJMXAdapter.getUniqueIDForMember(member);
+        String monitoringRegionName = ManagementConstants.MONITORING_REGION + "_" + appender;
+        String notificationRegionName = ManagementConstants.NOTIFICATION_REGION + "_" + appender;
 
-        // GII wont start at all if its interrupted
-        if (!Thread.currentThread().isInterrupted()) {
-
-          // as the regions will be internal regions
-          InternalRegionArguments internalArgs = new InternalRegionArguments();
-          internalArgs.setIsUsedForMetaRegion(true);
-
-          // Create anonymous stats holder for Management Regions
-          final HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
-            public CachePerfStats getCachePerfStats() {
-              return new CachePerfStats(cache.getDistributedSystem(), "managementRegionStats");
-            }
-          };
-
-          internalArgs.setCachePerfStatsHolder(monitoringRegionStats);
-
-          // Monitoring region for member is created
-          AttributesFactory<String, Object> monitorAttrFactory = new AttributesFactory<>();
-          monitorAttrFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-          monitorAttrFactory.setDataPolicy(DataPolicy.REPLICATE);
-          monitorAttrFactory.setConcurrencyChecksEnabled(false);
-          ManagementCacheListener mgmtCacheListener = new ManagementCacheListener(proxyFactory);
-          monitorAttrFactory.addCacheListener(mgmtCacheListener);
-
-          RegionAttributes<String, Object> monitoringRegionAttrs = monitorAttrFactory.create();
-
-          // Notification region for member is created
-          AttributesFactory<NotificationKey, Notification> notifAttrFactory =
-              new AttributesFactory<>();
-          notifAttrFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-          notifAttrFactory.setDataPolicy(DataPolicy.REPLICATE);
-          notifAttrFactory.setConcurrencyChecksEnabled(false);
-
-          // Fix for issue #49638, evict the internal region _notificationRegion
-          notifAttrFactory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
-              ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
-
-          NotificationCacheListener notifListener = new NotificationCacheListener(proxyFactory);
-          notifAttrFactory.addCacheListener(notifListener);
-
-          RegionAttributes<NotificationKey, Notification> notifRegionAttrs =
-              notifAttrFactory.create();
-
-          boolean proxyMonitoringRegionCreated = false;
-          boolean proxyNotifRegionCreated = false;
-
-          String appender = MBeanJMXAdapter.getUniqueIDForMember(member);
-
-          try {
-            if (!running) {
-              return null;
-            }
-            proxyMonitoringRegion =
-                cache.createVMRegion(ManagementConstants.MONITORING_REGION + "_" + appender,
-                    monitoringRegionAttrs, internalArgs);
-            proxyMonitoringRegionCreated = true;
-
-          } catch (TimeoutException | RegionExistsException | IOException
-              | ClassNotFoundException e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
-            }
-            throw new ManagementException(e);
-          }
-
-          try {
-            if (!running) {
-              return null;
-            }
-            proxyNotificationRegion =
-                cache.createVMRegion(ManagementConstants.NOTIFICATION_REGION + "_" + appender,
-                    notifRegionAttrs, internalArgs);
-            proxyNotifRegionCreated = true;
-          } catch (TimeoutException | RegionExistsException | IOException
-              | ClassNotFoundException e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
-            }
-            throw new ManagementException(e);
-          } finally {
-            if (!proxyNotifRegionCreated && proxyMonitoringRegionCreated) {
-              // Destroy the proxy region if proxy notification
-              // region is not created
-              proxyMonitoringRegion.localDestroyRegion();
-            }
-          }
-
-          if (logger.isDebugEnabled()) {
-            logger.debug("Management Region created with Name : {}",
-                proxyMonitoringRegion.getName());
-            logger.debug("Notification Region created with Name : {}",
-                proxyNotificationRegion.getName());
-          }
-
-          // Only the exception case would have destroyed the proxy
-          // regions. We can safely proceed here.
-          repo.putEntryInMonitoringRegionMap(member, proxyMonitoringRegion);
-          repo.putEntryInNotifRegionMap(member, proxyNotificationRegion);
-          try {
-            if (!running) {
-              return null;
-            }
-            proxyFactory.createAllProxies(member, proxyMonitoringRegion);
-
-            mgmtCacheListener.markReady();
-            notifListener.markReady();
-          } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Error During GII Proxy creation {}", e.getMessage(), e);
-            }
-
-            throw new ManagementException(e);
-          }
+        if (cache.getRegion(monitoringRegionName) != null
+            && cache.getRegion(notificationRegionName) != null) {
+          return member;
         }
 
-      } catch (Exception e) {
-        throw new ManagementException(e);
+        try {
+
+          // GII wont start at all if its interrupted
+          if (!Thread.currentThread().isInterrupted()) {
+
+            // as the regions will be internal regions
+            InternalRegionArguments internalArgs = new InternalRegionArguments();
+            internalArgs.setIsUsedForMetaRegion(true);
+
+            // Create anonymous stats holder for Management Regions
+            final HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
+              public CachePerfStats getCachePerfStats() {
+                return new CachePerfStats(cache.getDistributedSystem(), "managementRegionStats");
+              }
+            };
+
+            internalArgs.setCachePerfStatsHolder(monitoringRegionStats);
+
+            // Monitoring region for member is created
+            AttributesFactory<String, Object> monitorAttrFactory = new AttributesFactory<>();
+            monitorAttrFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+            monitorAttrFactory.setDataPolicy(DataPolicy.REPLICATE);
+            monitorAttrFactory.setConcurrencyChecksEnabled(false);
+            ManagementCacheListener mgmtCacheListener = new ManagementCacheListener(proxyFactory);
+            monitorAttrFactory.addCacheListener(mgmtCacheListener);
+
+            RegionAttributes<String, Object> monitoringRegionAttrs = monitorAttrFactory.create();
+
+            // Notification region for member is created
+            AttributesFactory<NotificationKey, Notification> notifAttrFactory =
+                new AttributesFactory<>();
+            notifAttrFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+            notifAttrFactory.setDataPolicy(DataPolicy.REPLICATE);
+            notifAttrFactory.setConcurrencyChecksEnabled(false);
+
+            // Fix for issue #49638, evict the internal region _notificationRegion
+            notifAttrFactory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
+                ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
+
+            NotificationCacheListener notifListener = new NotificationCacheListener(proxyFactory);
+            notifAttrFactory.addCacheListener(notifListener);
+
+            RegionAttributes<NotificationKey, Notification> notifRegionAttrs =
+                notifAttrFactory.create();
+
+            boolean proxyMonitoringRegionCreated = false;
+            boolean proxyNotifRegionCreated = false;
+
+            try {
+              if (!running) {
+                return null;
+              }
+              proxyMonitoringRegion =
+                  cache.createVMRegion(monitoringRegionName, monitoringRegionAttrs, internalArgs);
+              proxyMonitoringRegionCreated = true;
+
+            } catch (TimeoutException | RegionExistsException | IOException
+                | ClassNotFoundException e) {
+              if (logger.isDebugEnabled()) {
+                logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
+              }
+              throw new ManagementException(e);
+            }
+
+            try {
+              if (!running) {
+                return null;
+              }
+              proxyNotificationRegion =
+                  cache.createVMRegion(notificationRegionName, notifRegionAttrs, internalArgs);
+              proxyNotifRegionCreated = true;
+            } catch (TimeoutException | RegionExistsException | IOException
+                | ClassNotFoundException e) {
+              if (logger.isDebugEnabled()) {
+                logger.debug("Error During Internal Region creation {}", e.getMessage(), e);
+              }
+              throw new ManagementException(e);
+            } finally {
+              if (!proxyNotifRegionCreated && proxyMonitoringRegionCreated) {
+                // Destroy the proxy region if proxy notification
+                // region is not created
+                proxyMonitoringRegion.localDestroyRegion();
+              }
+            }
+
+            if (logger.isDebugEnabled()) {
+              logger.debug("Management Region created with Name : {}",
+                  proxyMonitoringRegion.getName());
+              logger.debug("Notification Region created with Name : {}",
+                  proxyNotificationRegion.getName());
+            }
+
+            // Only the exception case would have destroyed the proxy
+            // regions. We can safely proceed here.
+            repo.putEntryInMonitoringRegionMap(member, proxyMonitoringRegion);
+            repo.putEntryInNotifRegionMap(member, proxyNotificationRegion);
+            try {
+              if (!running) {
+                return null;
+              }
+              proxyFactory.createAllProxies(member, proxyMonitoringRegion);
+
+              mgmtCacheListener.markReady();
+              notifListener.markReady();
+            } catch (Exception e) {
+              if (logger.isDebugEnabled()) {
+                logger.debug("Error During GII Proxy creation {}", e.getMessage(), e);
+              }
+
+              throw new ManagementException(e);
+            }
+          }
+
+        } catch (Exception e) {
+          throw new ManagementException(e);
+        }
+
+        // Before completing task intimate all listening ProxyListener which might send
+        // notifications.
+        service.memberJoined((InternalDistributedMember) member);
+
+        // Send manager info to the added member
+        messenger.sendManagerInfo(member);
+
+        return member;
       }
-
-      // Before completing task intimate all listening ProxyListener which might send notifications.
-      service.memberJoined((InternalDistributedMember) member);
-
-      // Send manager info to the added member
-      messenger.sendManagerInfo(member);
-
-      return member;
     }
   }
 
@@ -526,4 +540,13 @@ public class FederatingManager extends Manager {
     return messenger;
   }
 
+  @TestingOnly
+  public void setMessenger(MemberMessenger messenger) {
+    this.messenger = messenger;
+  }
+
+  @TestingOnly
+  public synchronized Exception getAndResetLatestException() {
+    return latestException.getAndSet(null);
+  }
 }

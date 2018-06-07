@@ -54,7 +54,8 @@ public class DestroyConnectionCommand extends SingleGfshCommand {
     // action
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new DestroyConnectionFunction(), name, targetMembers);
-    ResultModel result = ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false);
+    ResultModel result =
+        ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
     result.setConfigObject(name);
     return result;
   }

@@ -88,7 +88,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
 public class CoreFunctionSecurityTest {
-  private static final String RESULT_HEADER = "Function Execution Result";
+  private static final String RESULT_HEADER = "Message";
 
   @ClassRule
   public static ServerStarterRule server =

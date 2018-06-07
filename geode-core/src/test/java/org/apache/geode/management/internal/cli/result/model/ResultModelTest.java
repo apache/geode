@@ -48,11 +48,11 @@ public class ResultModelTest {
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(new CliFunctionResult("member1", OK, "success"));
     results.add(new CliFunctionResult("member2", OK, "success"));
-    table = result.addTableAndSetStatus("table1", results, true);
+    table = result.addTableAndSetStatus("table1", results, true, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, OK]");
 
-    table = result.addTableAndSetStatus("table2", results, false);
+    table = result.addTableAndSetStatus("table2", results, false, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, OK]");
   }
@@ -63,11 +63,11 @@ public class ResultModelTest {
     results.add(new CliFunctionResult("member1", ERROR, "failed"));
     results.add(new CliFunctionResult("member2", ERROR, "failed"));
 
-    table = result.addTableAndSetStatus("table1", results, true);
+    table = result.addTableAndSetStatus("table1", results, true, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
 
-    table = result.addTableAndSetStatus("table2", results, false);
+    table = result.addTableAndSetStatus("table2", results, false, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
   }
@@ -78,11 +78,11 @@ public class ResultModelTest {
     results.add(new CliFunctionResult("member1", IGNORABLE, "can be ignored"));
     results.add(new CliFunctionResult("member2", IGNORABLE, "can be ignored"));
 
-    table = result.addTableAndSetStatus("table1", results, true);
+    table = result.addTableAndSetStatus("table1", results, true, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[IGNORED, IGNORED]");
 
-    table = result.addTableAndSetStatus("table2", results, false);
+    table = result.addTableAndSetStatus("table2", results, false, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
   }
@@ -93,12 +93,20 @@ public class ResultModelTest {
     results.add(new CliFunctionResult("member1", OK, "success"));
     results.add(new CliFunctionResult("member2", ERROR, "failed"));
 
-    table = result.addTableAndSetStatus("table1", results, true);
+    table = result.addTableAndSetStatus("table1", results, true, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
 
-    table = result.addTableAndSetStatus("table2", results, false);
+    table = result.addTableAndSetStatus("table2", results, false, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
+
+    table = result.addTableAndSetStatus("table3", results, true, false);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
+
+    table = result.addTableAndSetStatus("table4", results, false, false);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
   }
 
@@ -107,12 +115,20 @@ public class ResultModelTest {
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(new CliFunctionResult("member1", OK, "success"));
     results.add(new CliFunctionResult("member2", IGNORABLE, "can be ignored"));
-    table = result.addTableAndSetStatus("table1", results, true);
+    table = result.addTableAndSetStatus("table1", results, true, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, IGNORED]");
 
-    table = result.addTableAndSetStatus("table2", results, false);
+    table = result.addTableAndSetStatus("table2", results, false, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
+
+    table = result.addTableAndSetStatus("table3", results, true, false);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, IGNORED]");
+
+    table = result.addTableAndSetStatus("table4", results, false, false);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[OK, ERROR]");
   }
 
@@ -122,11 +138,19 @@ public class ResultModelTest {
     results.add(new CliFunctionResult("member1", ERROR, "failed"));
     results.add(new CliFunctionResult("member2", IGNORABLE, "can be ignored"));
 
-    table = result.addTableAndSetStatus("table1", results, true);
+    table = result.addTableAndSetStatus("table1", results, true, true);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, IGNORED]");
 
-    table = result.addTableAndSetStatus("table2", results, false);
+    table = result.addTableAndSetStatus("table2", results, false, true);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
+
+    table = result.addTableAndSetStatus("table3", results, true, false);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, IGNORED]");
+
+    table = result.addTableAndSetStatus("table4", results, false, false);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
   }

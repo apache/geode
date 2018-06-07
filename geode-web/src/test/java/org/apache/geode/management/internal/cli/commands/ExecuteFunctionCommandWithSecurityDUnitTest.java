@@ -102,7 +102,7 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
 
   private void executeWriteFunctionThrowsError() {
     gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
-        .tableHasColumnWithExactValuesInAnyOrder("Function Execution Result",
+        .tableHasColumnWithExactValuesInAnyOrder("Message",
             "Exception: dataRead not authorized for DATA:WRITE")
         .statusIsError();
   }

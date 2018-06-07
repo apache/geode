@@ -39,10 +39,23 @@ public class ExecuteFunctionCommandTest {
   }
 
   @Test
-  public void conflictingExecutionLocations() {
+  public void regionAndMember() {
     gfsh.executeAndAssertThat(command, "execute function --id=foo --region=bar --member=baz")
         .statusIsError().containsOutput("Provide Only one of region/member/groups");
   }
+
+  @Test
+  public void regionAndGroup() {
+    gfsh.executeAndAssertThat(command, "execute function --id=foo --region=bar --group=group1")
+        .statusIsError().containsOutput("Provide Only one of region/member/groups");
+  }
+
+  @Test
+  public void memberAndGroup() {
+    gfsh.executeAndAssertThat(command, "execute function --id=foo --member=bar --group=group1")
+        .statusIsError().containsOutput("Provide Only one of region/member/groups");
+  }
+
 
   @Test
   public void filterWithoutRegion() {

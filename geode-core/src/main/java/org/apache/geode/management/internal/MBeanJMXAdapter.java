@@ -149,6 +149,9 @@ public class MBeanJMXAdapter implements ManagementConstants {
   public void registerMBeanProxy(Object object, ObjectName objectName) {
 
     try {
+      if (isRegistered(objectName)) {
+        return;
+      }
 
       mbeanServer.registerMBean(object, objectName);
 

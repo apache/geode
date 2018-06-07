@@ -79,8 +79,8 @@ public class JDBCConnectorFunctionsSecurityTest {
       Function function = entry.getKey();
       String permission = entry.getValue();
       gfsh.executeAndAssertThat("execute function --id=" + function.getId())
-          .tableHasRowCount("Function Execution Result", 1)
-          .tableHasRowWithValues("Function Execution Result",
+          .tableHasRowCount("Message", 1)
+          .tableHasRowWithValues("Message",
               "Exception: user not authorized for " + permission)
           .statusIsError();
     });
