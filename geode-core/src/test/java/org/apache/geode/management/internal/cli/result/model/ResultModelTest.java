@@ -154,4 +154,15 @@ public class ResultModelTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(table.getContent().get("Status").toString()).isEqualTo("[ERROR, ERROR]");
   }
+
+  @Test
+  public void getSectionName() {
+    result.addInfo("Section1");
+    result.addInfo("Section2");
+    result.addTable("Section3");
+    result.addData("Section4");
+
+    List<String> sectionNames = result.getSectionNames();
+    assertThat(sectionNames).containsExactly("Section1", "Section2", "Section3", "Section4");
+  }
 }
