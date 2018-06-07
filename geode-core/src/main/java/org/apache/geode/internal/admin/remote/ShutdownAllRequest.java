@@ -261,9 +261,10 @@ public class ShutdownAllRequest extends AdminRequest {
       if (msg instanceof ShutdownAllResponse) {
         if (((ShutdownAllResponse) msg).isToShutDown()) {
           if (logger.isDebugEnabled()) {
-            Set<DistributedMember> copySet = new TreeSet<>(results);
-            logger.debug("{} adding {} to result set {}", this, msg.getSender(),
-                copySet);
+            synchronized (results) {
+              logger.debug("{} adding {} to result set {}", this, msg.getSender(),
+                  results);
+            }
           }
           this.results.add(msg.getSender());
         } else {
