@@ -1156,9 +1156,7 @@ public abstract class AbstractRegionMap
         // generate versions and Tombstones for destroys
         boolean dispatchListenerEvent = inTokenMode;
         boolean opCompleted = false;
-        // TODO: if inTokenMode then Token.DESTROYED is ok but what about !inTokenMode because
-        // owner.concurrencyChecksEnabled? In that case we do not want a DESTROYED token.
-        RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.DESTROYED);
+        RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
         if (oqlIndexManager != null) {
           oqlIndexManager.waitForIndexInit();
         }
@@ -1236,7 +1234,6 @@ public abstract class AbstractRegionMap
               }
             }
             if (!opCompleted) {
-              // already has value set to Token.DESTROYED
               opCompleted = true;
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
               callbackEvent = createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
@@ -1265,6 +1262,8 @@ public abstract class AbstractRegionMap
                   newRe.removePhase1(owner, false); // fix for bug 43063
                   newRe.removePhase2();
                   removeEntry(key, newRe, false);
+                } else {
+                  newRe.setValue(owner, Token.DESTROYED);
                 }
                 owner.txApplyDestroyPart2(newRe, newRe.getKey(), inTokenMode,
                     false /* clearConflict */, true);
