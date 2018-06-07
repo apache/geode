@@ -14,13 +14,17 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.ERROR;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
@@ -59,7 +63,7 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
     String[] functionArgs = null;
     Object[] args = context.getArguments();
     if (args == null) {
-      context.getResultSender().lastResult(new CliFunctionResult(member.getId(), false,
+      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
           CliStrings.EXECUTE_FUNCTION__MSG__COULD_NOT_RETRIEVE_ARGUMENTS));
       return;
     }
@@ -99,13 +103,13 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
             .forName(resultCollectorName).newInstance();
       }
       if (filterString != null && filterString.length() > 0) {
-        filters.add(filterString);
+        filters = Arrays.stream(filterString.split(",")).collect(Collectors.toSet());
       }
 
       Function<?> function = FunctionService.getFunction(functionId);
       if (function == null) {
         context.getResultSender()
-            .lastResult(new CliFunctionResult(member.getId(), false,
+            .lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
                 (CliStrings.format(
                     CliStrings.EXECUTE_FUNCTION__MSG__DOES_NOT_HAVE_FUNCTION_0_REGISTERED,
                     functionId))));
@@ -120,7 +124,7 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
         Region region = cache.getRegion(onRegion);
         if (region == null) {
           context.getResultSender().lastResult(
-              new CliFunctionResult(member.getId(), false, onRegion + " does not exist"));
+              new CliFunctionResult(context.getMemberName(), ERROR, onRegion + " does not exist"));
           return;
         }
         execution = FunctionService.onRegion(region);
@@ -130,7 +134,7 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
 
       if (execution == null) {
         context.getResultSender()
-            .lastResult(new CliFunctionResult(member.getId(), false,
+            .lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
                 CliStrings.format(
                     CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_EXECUTING_0_ON_MEMBER_1_ON_REGION_2_DETAILS_3,
                     functionId, member.getId(), onRegion,
@@ -165,19 +169,19 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
           }
         }
       }
-      context.getResultSender().lastResult(
-          new CliFunctionResult(member.getId(), functionSuccess, resultMessage.toString()));
+      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(),
+          functionSuccess, resultMessage.toString()));
 
     } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
       context.getResultSender()
-          .lastResult(new CliFunctionResult(member.getId(), false,
+          .lastResult(new CliFunctionResult(context.getMemberName(), false,
               CliStrings.format(
                   CliStrings.EXECUTE_FUNCTION__MSG__RESULT_COLLECTOR_0_NOT_FOUND_ERROR_1,
                   resultCollectorName, e.getMessage())));
     } catch (Exception e) {
       logger.error("error executing function " + functionId, e);
-      context.getResultSender()
-          .lastResult(new CliFunctionResult(member.getId(), false, "Exception: " + e.getMessage()));
+      context.getResultSender().lastResult(
+          new CliFunctionResult(context.getMemberName(), false, "Exception: " + e.getMessage()));
     } finally {
       if (loginSuccessful) {
         securityService.logout();

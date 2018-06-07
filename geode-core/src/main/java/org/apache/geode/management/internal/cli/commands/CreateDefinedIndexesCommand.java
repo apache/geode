@@ -66,7 +66,7 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         createDefinedIndexesFunction, IndexDefinition.indexDefinitions, targetMembers);
-    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION, functionResults, false);
+    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION, functionResults, false, true);
     result.setConfigObject(IndexDefinition.indexDefinitions);
 
     return result;

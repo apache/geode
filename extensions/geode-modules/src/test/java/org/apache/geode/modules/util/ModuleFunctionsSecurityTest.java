@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({IntegrationTest.class, SecurityTest.class})
 public class ModuleFunctionsSecurityTest {
 
-  private static final String RESULT_HEADER = "Function Execution Result";
+  private static final String RESULT_HEADER = "Message";
 
   @ClassRule
   public static ServerStarterRule server =

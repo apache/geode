@@ -132,8 +132,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
     gfsh.executeAndAssertThat(
         "execute function --id=" + new WriteFunction().getId() + " --region=" + REPLICATED_REGION)
-        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Function Execution Result",
-            "Exception: dataRead not authorized for DATA:WRITE",
+        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Message",
             "Exception: dataRead not authorized for DATA:WRITE");
   }
 
@@ -147,8 +146,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
     gfsh.executeAndAssertThat(
         "execute function --id=" + new WriteFunction().getId() + " --region=" + PARTITIONED_REGION)
-        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Function Execution Result",
-            "Exception: dataRead not authorized for DATA:WRITE",
+        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Message",
             "Exception: dataRead not authorized for DATA:WRITE");
   }
 
