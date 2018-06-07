@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -237,7 +238,7 @@ public class ShutdownAllRequest extends AdminRequest {
   }
 
   private static class ShutDownAllReplyProcessor extends AdminMultipleReplyProcessor {
-    Set results = Collections.synchronizedSet(new TreeSet());
+    Set<DistributedMember> results = Collections.synchronizedSet(new TreeSet<>());
 
     ShutDownAllReplyProcessor(DistributionManager dm, Collection initMembers) {
       super(dm, initMembers);
@@ -259,7 +260,12 @@ public class ShutdownAllRequest extends AdminRequest {
       }
       if (msg instanceof ShutdownAllResponse) {
         if (((ShutdownAllResponse) msg).isToShutDown()) {
-          logger.debug("{} adding {} to result set {}", this, msg.getSender(), this.results);
+          if (logger.isDebugEnabled()) {
+            synchronized (results) {
+              logger.debug("{} adding {} to result set {}", this, msg.getSender(),
+                  results);
+            }
+          }
           this.results.add(msg.getSender());
         } else {
           // for member without cache, we will not wait for its result
