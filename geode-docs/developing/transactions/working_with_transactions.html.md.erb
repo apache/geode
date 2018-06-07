@@ -62,7 +62,7 @@ Cache c = CacheFactory.getInstance(system);
 
 The copy-on-read attribute and the operations affected by the attribute setting are discussed in detail in [Managing Data Entries](../../basic_config/data_entries_custom_classes/managing_data_entries.html).
 
-## Making a Safe Change Within a Transaction Using CopyHelper.copy
+## <a id="concept_fdr_wht_vk" class="no-quick-link"></a>Making a Safe Change Within a Transaction Using CopyHelper.copy
 
 If `copy-on-read` is *not* globally set, and the cache uses replicated regions, explicitly make copies of the cache objects that are to be modified within a transaction. The `CopyHelper.copy` method makes copies:
 
@@ -76,37 +76,41 @@ r.put("stringBuf", s);
 cTxMgr.commit();
 ```
 
-## Transactions and Functions
+## <a id="concept_ihn_zmt_vk" class="no-quick-link"></a>Transactions and Functions
 
-You can run a function from inside a transaction and you can nest a transaction within a function, as long as your combination of functions and transactions does not result in nested transactions. See [Function Execution](../function_exec/chapter_overview.html) for more about functions.
+A function may contain a transaction, and a single transaction may contain one or more functions, as long as you observe these restrictions:
 
-A single transaction may contain multiple functions.
+  - Your combination of functions and transactions must not result in nested transactions. 
+  - A function within a transaction must not specify execution on a particular server or member, because <%=vars.product_name%> hosts
+transactions only where the primary bucket for the transaction resides. In other words, the
+`FunctionService` must not call `onMember()`, `onServer()`, or similar methods. 
+The function can request a particular region, that is, the `onRegion()` method is permitted.
 
-If you are suspending and resuming a transaction with multiple function calls, all functions in the transaction must execute on the same member.
+See [Function Execution](../function_exec/chapter_overview.html) for more about functions.
 
 See [Transaction Embedded within a Function Example](transactional_function_example.html#concept_22331B3DBFAB4C0BA95EF103BFB71257) for an example.
 
-## Using Queries and Indexes with Transactions
+## <a id="concept_ty1_vnt_vk" class="no-quick-link"></a>Using Queries and Indexes with Transactions
 
 Queries and indexes reflect the cache contents and ignore the changes made by ongoing transactions. If you do a query from inside a transaction, the query does not reflect the changes made inside that transaction.
 
-## Collections and Region.Entry Instances in Transactions
+## <a id="concept_ksh_twz_vk" class="no-quick-link"></a>Collections and Region.Entry Instances in Transactions
 
 Collections and region entries used in a transaction must be created inside the transaction. After the transaction has completed, the application can no longer use any region entry or collection or associated iterator created within the transaction. An attempted use outside of the transaction will throw an `IllegalStateException` exception.
 
 Region collection operations include `Region.keySet`, `Region.entrySet`, and `Region.values`. You can create instances of `Region.Entry` through the `Region.getEntry` operation or by looking at the contents of the result returned by a `Region.entrySet` operation.
 
-## Using Eviction and Expiration Operations
+## <a id="concept_vyt_txz_vk" class="no-quick-link"></a>Using Eviction and Expiration Operations
 
 Entry expiration and LRU eviction affect the committed state. They are not part of a transaction, and therefore they cannot be rolled back.
 
-## About Eviction
+### About Eviction
 
 LRU eviction operations do not cause write conflicts with existing transactions, despite destroying or invalidating entries. LRU eviction is deferred on entries modified by the transaction until the commit completes. Because anything touched by the transaction has had its LRU clock reset, eviction of those entries is not likely to happen immediately after the commit.
 
 When a transaction commits its changes in a region with distributed scope, the operation can invoke eviction controllers in the remote caches, as well as in the local cache.
 
-## Configure Expiration
+### Configure Expiration
 
 Local expiration actions do not cause write conflicts, but distributed expiration can cause conflicts and prevent transactions from committing in the members receiving the distributed operation.
 
@@ -128,7 +132,7 @@ Local expiration actions do not cause write conflicts, but distributed expiratio
 
     -   Run the transactions from the member in which expiration is configured.
 
-## Transactions and Consistent Regions
+## <a id="transactions_and_consistency" class="no-quick-link"></a>Transactions and Consistent Regions
 
 A transaction that modifies a region in which consistency checking is enabled generates all necessary version information for region updates when the transaction commits.
 
@@ -136,7 +140,7 @@ If a transaction modifies a normal, preloaded or empty region, the transaction i
 
 The limitation for transactions with a normal, preloaded or empty region is that, when consistency checking is enabled, a transaction cannot perform a `localDestroy` or `localInvalidate` operation against the region. <%=vars.product_name%> throws an `UnsupportedOperationInTransactionException` exception in such cases. An application should use a `Destroy` or `Invalidate` operation in place of a `localDestroy` or `localInvalidate` when consistency checks are enabled.
 
-## Suspending and Resuming Transactions
+## <a id="concept_u5b_ryz_vk" class="no-quick-link"></a>Suspending and Resuming Transactions
 
 The <%=vars.product_name%> `CacheTransactionManager` API provides the ability to suspend and resume transactions with the `suspend` and `resume` methods. The ability to suspend and resume is useful when a thread must perform some operations that should not be part of the transaction before the transaction can complete. A complex use case of suspend and resume implements a transaction that spans clients in which only one client at a time will not be suspended.
 
@@ -152,7 +156,7 @@ If a suspended transaction is not touched for a period of time, <%=vars.product_
 
 See [Basic Suspend and Resume Transaction Example](transaction_suspend_resume_example.html) for a sample code fragment that suspends and resumes a transaction.
 
-## Using Cache Writer and Cache Listener Plug-Ins
+## <a id="concept_ysx_nf1_wk" class="no-quick-link"></a>Using Cache Writer and Cache Listener Plug-Ins
 
 All standard <%=vars.product_name%> application plug-ins work with transactions. In addition, the transaction interface offers specialized plug-ins that support transactional operation.
 
@@ -175,7 +179,7 @@ Like JTA global transactions, you can use transaction plug-in event handlers to 
 **Note:**
 You can also use transaction plug-in event handlers when running JTA global transactions.
 
-## TransactionWriter
+### TransactionWriter
 
 When you commit a transaction, if a transaction writer is installed in the cache where the data updates were performed, it is called. The writer can do whatever work you need, including aborting the transaction.
 
@@ -183,7 +187,7 @@ The transaction writer is the last place that an application can rollback a tran
 
 A typical usage scenario would be to use the transaction writer to prepare the commit on the external database. Then in a transaction listener, you can apply the commit on the database.
 
-## Transaction Listeners
+### Transaction Listeners
 
 When the transaction ends, its thread calls the transaction listener to perform the appropriate follow-up for successful commits, failed commits, or voluntary rollbacks. The transaction that caused the listener to be called no longer exists by the time the listener code executes.
 
