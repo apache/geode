@@ -26,12 +26,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
@@ -80,6 +82,8 @@ public class FederatingManager extends Manager {
   private MemberMessenger messenger;
 
   private SystemManagementService service;
+
+  private AtomicReference<Exception> latestException = new AtomicReference<>(null);
 
   /**
    * @param jmxAdapter JMX Adapter
@@ -164,10 +168,12 @@ public class FederatingManager extends Manager {
    */
   public void addMember(DistributedMember member) {
     GIITask giiTask = new GIITask(member);
-    executeTask(new Runnable() {
-      @Override
-      public void run() {
+    executeTask(() -> {
+      try {
         giiTask.call();
+      } catch (Exception e) {
+        logger.warn("Error federating new member {}: {}", member.getId(), e.getMessage());
+        latestException.set(e);
       }
     });
   }
@@ -534,4 +540,13 @@ public class FederatingManager extends Manager {
     return messenger;
   }
 
+  @TestingOnly
+  public void setMessenger(MemberMessenger messenger) {
+    this.messenger = messenger;
+  }
+
+  @TestingOnly
+  public synchronized Exception getAndResetLatestException() {
+    return latestException.getAndSet(null);
+  }
 }
