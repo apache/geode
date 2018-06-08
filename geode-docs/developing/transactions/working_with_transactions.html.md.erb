@@ -82,7 +82,6 @@ A function may contain transactions, and a transaction may contain functions, as
 
   - **Your combination of functions and transactions must not result in nested transactions.**
 
-  - **When a function contains multiple transactions,** the transactions must be sequential, not nested.
   - **When a transaction contains a function,** the function must operate only on keys that are colocated with the keys in the transaction,
 as described in [Data Location for Cache Transactions](data_location_cache_transactions.html). This implies:
 
