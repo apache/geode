@@ -17,6 +17,9 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.concurrent.TimeUnit;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.PartitionedRegionStorageException;
+import org.apache.geode.cache.execute.EmptyRegionFunctionException;
 import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -55,7 +60,91 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     LuceneIndexFactoryImpl indexFactory =
         (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text");
     indexFactory.create(INDEX_NAME, REGION_NAME, true);
-  };
+  }
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void luceneQueryExecutedWithReindexWhenAllBucketsAreLostShouldNotCauseAHang(
+      RegionTestableType regionTestType) throws Exception {
+    dataStore1.invoke(() -> createDataStore(regionTestType));
+    dataStore2.invoke(() -> createDataStore(regionTestType));
+    accessor.invoke(() -> createAccessor(regionTestType));
+
+
+    putDataInRegion(accessor);
+    dataStore1.invoke(() -> Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> assertTrue(getCache().getRegion(REGION_NAME).size() == 3)));
+
+    // re-index stored data
+    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+      recreateIndex();
+    });
+
+    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+      recreateIndex();
+    });
+    AsyncInvocation ai3 = accessor.invokeAsync(() -> {
+      recreateIndex();
+    });
+
+    ai1.join();
+    ai2.join();
+    ai3.join();
+
+    ai1.checkException();
+    ai2.checkException();
+    ai3.checkException();
+
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
+    executeTextSearch(accessor);
+
+    dataStore1.invoke(() -> closeCache());
+    dataStore2.invoke(() -> closeCache());
+    executeQueryAndValidateNoHang(regionTestType);
+  }
+
+  private void executeQueryAndValidateNoHang(RegionTestableType regionTestType) {
+    try {
+      executeTextSearch(accessor);
+      fail();
+    } catch (Exception exception) {
+      // Should not be expecting a hang
+      if (regionTestType == RegionTestableType.FIXED_PARTITION
+          && !(exception.getCause() instanceof EmptyRegionFunctionException)) {
+        fail();
+      } else if (regionTestType != RegionTestableType.FIXED_PARTITION
+          && !(exception.getCause() instanceof PartitionedRegionStorageException)) {
+        fail();
+      }
+    }
+  }
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void luceneQueryExecutedWhenAllBucketsAreLostShouldNotCauseAHang(
+      RegionTestableType regionTestType) throws Exception {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+
+
+    putDataInRegion(accessor);
+    dataStore1.invoke(() -> Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> assertTrue(getCache().getRegion(REGION_NAME).size() == 3)));
+
+
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
+    executeTextSearch(accessor);
+
+    dataStore1.invoke(() -> closeCache());
+    dataStore2.invoke(() -> closeCache());
+    executeQueryAndValidateNoHang(regionTestType);
+  }
+
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
