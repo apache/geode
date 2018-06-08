@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.configuration.callbacks;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -110,8 +109,9 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
     Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
 
-    Optional<DistributedMember> locator =
-        locators.stream().filter(x -> x.getId().equals(memberName)).findFirst();
-    return locator.get();
+    return locators.stream()
+        .filter(x -> x.getId().equals(memberName))
+        .findFirst()
+        .orElse(null);
   }
 }

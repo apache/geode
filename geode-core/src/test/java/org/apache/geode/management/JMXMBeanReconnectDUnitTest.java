@@ -15,15 +15,18 @@
 
 package org.apache.geode.management;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.awaitility.Awaitility.waitAtMost;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -31,7 +34,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,17 +51,21 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 
 @Category({DistributedTest.class, JMXTest.class})
-
 public class JMXMBeanReconnectDUnitTest {
+  private static final String LOCATOR_1_NAME = "locator-one";
+  private static final String LOCATOR_2_NAME = "locator-two";
+  private static final String REGION_PATH = "/test-region-1";
+  private static final int LOCATOR_1_VM_INDEX = 0;
+  private static final int LOCATOR_2_VM_INDEX = 1;
+  private static final int LOCATOR_COUNT = 2;
+  private static final int SERVER_1_VM_INDEX = 2;
+  private static final int SERVER_2_VM_INDEX = 3;
+  private static final int SERVER_COUNT = 2;
+  private static final int RESTORED_MEMBER_VM_INDEX = 4;
+
+  private int locator1JmxPort, locator2JmxPort;
+
   private MemberVM locator1, locator2, server1, server2;
-
-  private int jmxPort1;
-  private String locator1Name = "locator-one";
-
-  private int jmxPort2;
-  private String locator2Name = "locator-two";
-
-  private String regionName1 = "test-region-1";
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -70,196 +76,184 @@ public class JMXMBeanReconnectDUnitTest {
   @Rule
   public MBeanServerConnectionRule jmxConnectionRule = new MBeanServerConnectionRule();
 
-  private int locator1VMIndex = 0;
-  private int locator2VMIndex = 1;
-  private int server1VMIndex = 2;
-  private int server2VMIndex = 3;
-  private int restoredMemberVMIndex = 4;
-
   @Before
   public void before() throws Exception {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    jmxPort1 = ports[0];
-    jmxPort2 = ports[1];
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(LOCATOR_COUNT);
+    locator1JmxPort = ports[0];
+    locator2JmxPort = ports[1];
 
-    // Start a locator1, a server1, another locator1, and a region
-    locator1 = lsRule.startLocatorVM(locator1VMIndex, getLocator1Properties());
-    locator2 = lsRule.startLocatorVM(locator2VMIndex, getLocator2Properties(), locator1.getPort());
+    locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
+    locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
 
-    server1 = lsRule.startServerVM(server1VMIndex, locator1.getPort());
-    server2 = lsRule.startServerVM(server2VMIndex, locator1.getPort());
+    server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, locator1.getPort());
+    server2 = lsRule.startServerVM(SERVER_2_VM_INDEX, locator1.getPort());
 
     gfsh.connectAndVerify(locator1);
-    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=/" + regionName1)
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + REGION_PATH)
         .statusIsSuccess();
 
-    // Avoid a minor race condition if locators haven't come to terms yet.
-    Awaitility.waitAtMost(1, TimeUnit.MINUTES)
-        .until(
-            () -> getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator1.getJmxPort())
-                .size() == getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(
-                    locator2.getJmxPort())
-                        .size());
-    locator1.waitTillRegionsAreReadyOnServers("/" + regionName1, 2);
+    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    waitForLocatorsToAgreeOnMembership();
   }
 
   @Test
   public void testLocalBeans_MaintainServerAndCrashLocator() {
-    List<String> initialServerBeans = server1.invoke(
-        JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
+    List<String> initialServerBeans = canonicalBeanNamesFor(server1);
 
     int portOfCrashedMember = locator1.getPort();
-    lsRule.stopVM(locator1VMIndex);
+    lsRule.stopVM(LOCATOR_1_VM_INDEX);
 
-    List<String> intermediateServerBeans = server1.invoke(
-        JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
+    List<String> intermediateServerBeans = canonicalBeanNamesFor(server1);
 
-    Properties newLocator1Props = getLocator1Properties();
-    newLocator1Props.setProperty(ConfigurationProperties.LOCATORS,
-        "localhost[" + locator2.getPort() + "]");
+    assertThat(intermediateServerBeans)
+        .containsExactlyElementsOf(initialServerBeans);
 
-    locator1 = lsRule.startLocatorVM(restoredMemberVMIndex,
-        member -> member.withPort(portOfCrashedMember).withProperties(newLocator1Props));
-    locator1.waitTillRegionsAreReadyOnServers("/" + regionName1, 2);
+    Properties properties = crashedLocatorProperties();
+    locator1 = lsRule.startLocatorVM(RESTORED_MEMBER_VM_INDEX,
+        member -> member.withPort(portOfCrashedMember).withProperties(properties));
 
-    List<String> finalServerBeans = server1.invoke(
-        JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
+    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
 
-    assertThat(initialServerBeans)
-        .containsExactlyElementsOf(intermediateServerBeans)
-        .containsExactlyElementsOf(finalServerBeans);
+    List<String> finalServerBeans = canonicalBeanNamesFor(server1);
+
+    assertThat(finalServerBeans)
+        .containsExactlyElementsOf(initialServerBeans);
   }
 
   @Test
   public void testLocalBeans_MaintainLocatorAndCrashServer() {
-    List<String> initialLocatorBeans = locator1.invoke(
-        JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
+    List<String> initialLocatorBeans = canonicalBeanNamesFor(locator1);
 
     int portOfCrashedMember = server1.getPort();
-    lsRule.stopVM(server1VMIndex);
+    lsRule.stopVM(SERVER_1_VM_INDEX);
 
-    List<String> intermediateLocatorBeans = locator1.invoke(
-        JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
+    List<String> intermediateLocatorBeans = canonicalBeanNamesFor(locator1);
+
+    assertThat(intermediateLocatorBeans)
+        .containsExactlyElementsOf(initialLocatorBeans);
 
     int locator1Port = locator1.getPort();
-    server1 = lsRule.startServerVM(restoredMemberVMIndex,
+    server1 = lsRule.startServerVM(RESTORED_MEMBER_VM_INDEX,
         member -> member.withPort(portOfCrashedMember).withConnectionToLocator(locator1Port));
-    locator1.waitTillRegionsAreReadyOnServers("/" + regionName1, 2);
 
-    List<String> finalLocatorBeans = locator1.invoke(
-        JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
+    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
 
-    assertThat(initialLocatorBeans)
-        .containsExactlyElementsOf(intermediateLocatorBeans)
-        .containsExactlyElementsOf(finalLocatorBeans);
+    List<String> finalLocatorBeans = canonicalBeanNamesFor(locator1);
+
+    assertThat(finalLocatorBeans)
+        .containsExactlyElementsOf(initialLocatorBeans);
   }
 
   @Test
   public void testRemoteBeanKnowledge_MaintainServerAndCrashLocator() throws IOException {
-    List<ObjectName> initialLocator1GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator1.getJmxPort());
-    List<ObjectName> initialLocator2GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator2.getJmxPort());
+    List<ObjectName> initialLocator1GemfireBeans =
+        getFederatedGemfireBeansFrom(locator1);
+    List<ObjectName> initialLocator2GemfireBeans =
+        getFederatedGemfireBeansFrom(locator2);
 
-    assertThat(initialLocator1GemfireBeanList)
-        .containsExactlyElementsOf(initialLocator2GemfireBeanList);
+    assertThat(initialLocator1GemfireBeans)
+        .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
     int portOfCrashedMember = locator1.getPort();
-    lsRule.stopVM(locator1VMIndex);
+    lsRule.stopVM(LOCATOR_1_VM_INDEX);
 
-    List<ObjectName> intermediateLocator2GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator2.getJmxPort());
+    List<ObjectName> intermediateLocator2GemfireBeans =
+        getFederatedGemfireBeansFrom(locator2);
 
-    // We expect all the same beans, excepting those of the recently-crashed member.
-    assertThat(intermediateLocator2GemfireBeanList)
-        .containsExactlyElementsOf(
-            initialLocator2GemfireBeanList.stream()
-                .filter(b -> !b.getCanonicalName().contains(locator1Name))
-                .collect(Collectors.toList()));
+    List<ObjectName> locatorBeansExcludingStoppedMember = initialLocator2GemfireBeans.stream()
+        .filter(excludingBeansFor(LOCATOR_1_NAME)).collect(toList());
 
-    Properties newLocator1Props = getLocator1Properties();
-    newLocator1Props.setProperty(ConfigurationProperties.LOCATORS,
-        "localhost[" + locator2.getPort() + "]");
+    assertThat(intermediateLocator2GemfireBeans)
+        .containsExactlyElementsOf(locatorBeansExcludingStoppedMember);
 
-    locator1 = lsRule.startLocatorVM(restoredMemberVMIndex,
-        member -> member.withProperties(newLocator1Props).withPort(portOfCrashedMember));
-    locator1.waitTillRegionsAreReadyOnServers("/" + regionName1, 2);
+    Properties properties = crashedLocatorProperties();
+    locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX,
+        member -> member.withProperties(properties).withPort(portOfCrashedMember));
 
-    // Give the locators time to communicate membership.
-    Awaitility.waitAtMost(1, TimeUnit.MINUTES)
-        .until(
-            () -> getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator1.getJmxPort())
-                .size() == getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(
-                    locator2.getJmxPort())
-                        .size());
+    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    waitForLocatorsToAgreeOnMembership();
 
-    List<ObjectName> finalLocator1GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator1.getJmxPort());
-    List<ObjectName> finalLocator2GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator2.getJmxPort());
+    List<ObjectName> finalLocator1GemfireBeans =
+        getFederatedGemfireBeansFrom(locator1);
+    List<ObjectName> finalLocator2GemfireBeans =
+        getFederatedGemfireBeansFrom(locator2);
 
-    assertThat(finalLocator1GemfireBeanList)
-        .containsExactlyElementsOf(finalLocator2GemfireBeanList)
-        .containsExactlyElementsOf(initialLocator2GemfireBeanList);
+    assertSoftly(softly -> {
+      softly.assertThat(finalLocator1GemfireBeans)
+          .containsExactlyElementsOf(finalLocator2GemfireBeans);
+      softly.assertThat(finalLocator1GemfireBeans)
+          .containsExactlyElementsOf(initialLocator2GemfireBeans);
+    });
   }
 
   @Test
-  public void testRemoteBeanKnowledge_MaintainLocatorAndCrashServer() throws IOException {
-    List<ObjectName> initialLocator1GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator1.getJmxPort());
-    List<ObjectName> initialLocator2GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator2.getJmxPort());
+  public void testRemoteBeanKnowledge_MaintainLocatorAndCrashServer()
+      throws IOException {
+    List<ObjectName> initialLocator1GemfireBeans =
+        getFederatedGemfireBeansFrom(locator1);
+    List<ObjectName> initialLocator2GemfireBeans =
+        getFederatedGemfireBeansFrom(locator2);
 
-    assertThat(initialLocator1GemfireBeanList)
-        .containsExactlyElementsOf(initialLocator2GemfireBeanList);
+    assertThat(initialLocator1GemfireBeans)
+        .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
     int portOfCrashedMember = server1.getPort();
-    lsRule.stopVM(server1VMIndex);
 
-    List<ObjectName> intermediateLocator1GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator1.getJmxPort());
-    List<ObjectName> intermediateLocator2GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator2.getJmxPort());
+    lsRule.stopVM(SERVER_1_VM_INDEX);
 
-    assertThat(intermediateLocator2GemfireBeanList)
-        .containsExactlyElementsOf(intermediateLocator1GemfireBeanList)
-        .containsExactlyElementsOf(
-            initialLocator2GemfireBeanList.stream()
-                .filter(b -> !b.getCanonicalName().contains("member=server-1"))
-                .collect(Collectors.toList()))
-        .containsExactlyElementsOf(
-            initialLocator1GemfireBeanList.stream()
-                .filter(b -> !b.getCanonicalName().contains("member=server-1"))
-                .collect(Collectors.toList()));
+    List<ObjectName> intermediateLocator1GemfireBeans =
+        getFederatedGemfireBeansFrom(locator1);
+    List<ObjectName> intermediateLocator2GemfireBeans =
+        getFederatedGemfireBeansFrom(locator2);
 
+    List<ObjectName> locatorBeansExcludingStoppedMember = initialLocator1GemfireBeans.stream()
+        .filter(excludingBeansFor("server-" + SERVER_1_VM_INDEX))
+        .collect(toList());
 
-    Properties spoofServer1Properties = new Properties();
-    spoofServer1Properties.setProperty("name", "server-1");
+    assertSoftly(softly -> {
+      softly.assertThat(intermediateLocator2GemfireBeans)
+          .containsExactlyElementsOf(intermediateLocator1GemfireBeans);
+      softly.assertThat(intermediateLocator2GemfireBeans)
+          .containsExactlyElementsOf(locatorBeansExcludingStoppedMember);
+    });
 
     int locator1Port = locator1.getPort();
-    server1 = lsRule.startServerVM(restoredMemberVMIndex,
-        member -> member.withPort(portOfCrashedMember).withProperties(spoofServer1Properties)
+    Properties properties = crashedServerProperties();
+    server1 = lsRule.startServerVM(RESTORED_MEMBER_VM_INDEX,
+        member -> member.withPort(portOfCrashedMember).withProperties(properties)
             .withConnectionToLocator(locator1Port));
 
-    locator1.waitTillRegionsAreReadyOnServers("/" + regionName1, 2);
+    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    waitForLocatorsToAgreeOnMembership();
 
-    List<ObjectName> finalLocator1GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator1.getJmxPort());
-    List<ObjectName> finalLocator2GemfireBeanList =
-        getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(locator2.getJmxPort());
+    List<ObjectName> finalLocator1GemfireBeans =
+        getFederatedGemfireBeansFrom(locator1);
+    List<ObjectName> finalLocator2GemfireBeans =
+        getFederatedGemfireBeansFrom(locator2);
 
-    assertThat(finalLocator1GemfireBeanList)
-        .containsExactlyElementsOf(finalLocator2GemfireBeanList)
-        .containsExactlyElementsOf(initialLocator2GemfireBeanList);
+    assertSoftly(softly -> {
+      softly.assertThat(finalLocator1GemfireBeans)
+          .containsExactlyElementsOf(finalLocator2GemfireBeans);
+      softly.assertThat(finalLocator1GemfireBeans)
+          .containsExactlyElementsOf(initialLocator2GemfireBeans);
+    });
   }
 
-  private MBeanServerConnection getmBeanServerConnection(String url) throws IOException {
+  private static List<ObjectName> getFederatedGemfireBeansFrom(MemberVM member)
+      throws IOException {
+    String url = jmxBeanLocalhostUrlString(member.getJmxPort());
+    MBeanServerConnection remoteMBS = connectToMBeanServer(url);
+    return getFederatedGemfireBeanObjectNames(remoteMBS);
+  }
+
+  private static MBeanServerConnection connectToMBeanServer(String url) throws IOException {
     final JMXServiceURL serviceURL = new JMXServiceURL(url);
     JMXConnector conn = JMXConnectorFactory.connect(serviceURL);
     return conn.getMBeanServerConnection();
   }
 
-  private List<ObjectName> getFederatedGemfireBeanObjectNames(MBeanServerConnection remoteMBS)
+  private static List<ObjectName> getFederatedGemfireBeanObjectNames(
+      MBeanServerConnection remoteMBS)
       throws IOException {
     Set<ObjectName> allBeans = remoteMBS.queryNames(null, null);
     // Each locator will have a "Manager" bean that is a part of the above query,
@@ -271,14 +265,11 @@ public class JMXMBeanReconnectDUnitTest {
         .filter(b -> b.toString().contains("GemFire"))
         .filter(b -> !b.toString().contains("service=Manager,type=Member,member=locator"))
         .sorted()
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
-  private List<ObjectName> getAllFederatedGemfireBeanObjectNamesFromRemoteBeanServer(int port)
-      throws IOException {
-    String url = getJmxBeanLocalhostUrlString(port);
-    MBeanServerConnection remoteMBS = getmBeanServerConnection(url);
-    return getFederatedGemfireBeanObjectNames(remoteMBS);
+  private static List<String> canonicalBeanNamesFor(MemberVM member) {
+    return member.invoke(JMXMBeanReconnectDUnitTest::getLocalCanonicalBeanNames);
   }
 
   private static List<String> getLocalCanonicalBeanNames() {
@@ -286,29 +277,63 @@ public class JMXMBeanReconnectDUnitTest {
     SystemManagementService service =
         (SystemManagementService) ManagementService.getExistingManagementService(cache);
     Map<ObjectName, Object> gfBeanMap = service.getJMXAdapter().getLocalGemFireMBean();
-    return gfBeanMap.keySet().stream().map(ObjectName::getCanonicalName).sorted()
-        .collect(Collectors.toList());
+    return gfBeanMap.keySet().stream()
+        .map(ObjectName::getCanonicalName)
+        .sorted()
+        .collect(toList());
   }
 
-  private String getJmxBeanLocalhostUrlString(int port) {
+  private void waitForLocatorsToAgreeOnMembership() {
+    waitAtMost(1, MINUTES)
+        .until(
+            () -> {
+              int locator1BeanCount =
+                  getFederatedGemfireBeansFrom(locator1)
+                      .size();
+              int locator2BeanCount =
+                  getFederatedGemfireBeansFrom(locator2)
+                      .size();
+              return locator1BeanCount == locator2BeanCount;
+            });
+  }
+
+  private static Predicate<ObjectName> excludingBeansFor(String memberName) {
+    return b -> !b.getCanonicalName().contains("member=" + memberName);
+  }
+
+  private static String jmxBeanLocalhostUrlString(int port) {
     return "service:jmx:rmi:///jndi/rmi://localhost"
         + ":" + port + "/jmxrmi";
   }
 
-  private Properties getLocator1Properties() {
+  private Properties locator1Properties() {
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + jmxPort1);
-    props.setProperty(ConfigurationProperties.NAME, locator1Name);
+    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + locator1JmxPort);
+    props.setProperty(ConfigurationProperties.NAME, LOCATOR_1_NAME);
+    props.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "5000");
     return props;
   }
 
-  private Properties getLocator2Properties() {
+  private Properties locator2Properties() {
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + jmxPort2);
-    props.setProperty(ConfigurationProperties.NAME, locator2Name);
+    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + locator2JmxPort);
+    props.setProperty(ConfigurationProperties.NAME, LOCATOR_2_NAME);
     props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locator1.getPort() + "]");
     return props;
+  }
+
+  private Properties crashedServerProperties() {
+    Properties spoofServer1Properties = new Properties();
+    spoofServer1Properties.setProperty("name", "server-" + SERVER_1_VM_INDEX);
+    return spoofServer1Properties;
+  }
+
+  private Properties crashedLocatorProperties() {
+    Properties newLocator1Props = locator1Properties();
+    newLocator1Props.setProperty(ConfigurationProperties.LOCATORS,
+        "localhost[" + locator2.getPort() + "]");
+    return newLocator1Props;
   }
 }
