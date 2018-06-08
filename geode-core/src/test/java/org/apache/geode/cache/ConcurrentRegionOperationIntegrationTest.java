@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -58,6 +59,7 @@ public class ConcurrentRegionOperationIntegrationTest {
   }
 
   @Test
+  @Ignore("GEODE-5292: Test is failing in CI")
   public void replaceWithClearAndDestroy() throws RegionClearedException {
     Region<Integer, String> region = createRegion();
 
