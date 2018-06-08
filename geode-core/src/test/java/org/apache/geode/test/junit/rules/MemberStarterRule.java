@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -255,9 +256,14 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionName,
       int exactServerCount) throws Exception {
+    waitUntilSatisfied(
+        () -> getRegionMBean(regionName),
+        Objects::nonNull,
+        String.format("Expecting to find an mbean for region '%s', regionName"),
+        30, TimeUnit.SECONDS);
+
     String predicateDescription = String.format(
-        "Expecting region '%s' to be found on exactly %d servers",
-        regionName, exactServerCount);
+        "Expecting region '%s' to be found on exactly %d servers", regionName, exactServerCount);
     waitUntilSatisfied(
         () -> getRegionMBean(regionName).getMembers(),
         members -> members != null && members.length == exactServerCount,
