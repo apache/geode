@@ -230,15 +230,15 @@ public class ProxyBucketRegion implements Bucket {
    * @param br the real bucket which will be the target for this proxy
    */
   public void setBucketRegion(BucketRegion br) {
-    Assert.assertTrue(this.realBucket == null);
-    Assert.assertTrue(!this.advisor.isHosting());
-    this.realBucket = br;
     // fix several bugs including 36881... creation of BR may be occurring
     // at same time another thread is destroying the PR and now that this
     // BR is visible to the destroy thread we want to prevent sending bogus
     // CreateRegion or profile update messages
     this.partitionedRegion.checkReadiness();
     this.partitionedRegion.checkClosed();
+    Assert.assertTrue(this.realBucket == null);
+    Assert.assertTrue(!this.advisor.isHosting());
+    this.realBucket = br;
   }
 
   public void clearBucketRegion(BucketRegion br) {
