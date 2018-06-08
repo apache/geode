@@ -33,6 +33,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -60,12 +61,18 @@ public class TxCommitMessageTest {
     mockContext = null;
   }
 
+  public interface VersionedDataOutput extends DataOutput, VersionedDataStream {
+
+  }
+
   @Test
-  public void toDataWithShadowKey() throws IOException {
+  public void toDataWithShadowKeyPre180Server() throws IOException {
     final Sequence toData = mockContext.sequence("toData");
-    final DataOutput mockDataOutput = mockContext.mock(DataOutput.class);
+    final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
     mockContext.checking(new Expectations() {
       {
+        allowing(mockDataOutput).getVersion();
+        will(returnValue(Version.GEODE_170));
         // processor id
         oneOf(mockDataOutput).writeInt(with(any(int.class)));
         inSequence(toData);
@@ -170,11 +177,13 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void toDataWithoutShadowKey() throws IOException {
+  public void toDataWithoutShadowKeyPre180Client() throws IOException {
     final Sequence toData = mockContext.sequence("toData");
-    final DataOutput mockDataOutput = mockContext.mock(DataOutput.class);
+    final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
     mockContext.checking(new Expectations() {
       {
+        allowing(mockDataOutput).getVersion();
+        will(returnValue(Version.GEODE_170));
         // processor id
         oneOf(mockDataOutput).writeInt(with(any(int.class)));
         inSequence(toData);
@@ -197,6 +206,233 @@ public class TxCommitMessageTest {
         oneOf(mockDataOutput).writeLong(with(any(long.class)));
         inSequence(toData);
         // txState.needsLargeModCount
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+        // regionsSize
+        oneOf(mockDataOutput).writeInt(1);
+        inSequence(toData);
+
+        // regionPath: "/r"
+        oneOf(mockDataOutput).writeByte(87);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeShort(2);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeBytes("/r");
+        inSequence(toData);
+        // parentRegionPath: null string
+        oneOf(mockDataOutput).writeByte(69);
+        inSequence(toData);
+        // opKeys size
+        oneOf(mockDataOutput).writeInt(1);
+        inSequence(toData);
+        // needsLargeModCount
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+        // versionMember
+        oneOf(mockDataOutput).writeByte(1);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(1);
+        inSequence(toData);
+        // opKeys[0]
+        oneOf(mockDataOutput).writeByte(87);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeShort(3);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeBytes("key");
+        inSequence(toData);
+        // farSideData[0]
+        oneOf(mockDataOutput).writeByte(17);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(0);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        // no shadowkey
+        // offset
+        oneOf(mockDataOutput).writeInt(with(any(int.class)));
+        inSequence(toData);
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+
+        // bridgeContext
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        // farSiders
+        oneOf(mockDataOutput).writeByte(-1);
+        inSequence(toData);
+      }
+    });
+
+    final InternalDistributedMember mockInternalDistributedMember =
+        createInternalDistributedMember();
+
+    final TXId txId = new TXId(mockInternalDistributedMember, 0);
+    final TXState txState = new TXState(null, false);
+    final TXCommitMessage txCommitMessage = new TXCommitMessage(txId, null, txState);
+    txCommitMessage.setClientVersion(Version.GEODE_170);
+
+    final InternalRegion mockInternalRegion =
+        createMockInternalRegion(mockInternalDistributedMember);
+    txCommitMessage.startRegion(mockInternalRegion, 0);
+    final EntryEventImpl mockEntryEventImpl = createMockEntryEvent(mockInternalRegion);
+    final TXEntryState txEntryState = createTxEntryState(mockInternalRegion, mockEntryEventImpl);
+    txCommitMessage.addOp(null, "key", txEntryState, null);
+    txCommitMessage.finishRegionComplete();
+
+    txCommitMessage.toData(mockDataOutput);
+  }
+
+  @Test
+  public void toDataWithShadowKeyPost180Server() throws IOException {
+    final Sequence toData = mockContext.sequence("toData");
+    final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
+    mockContext.checking(new Expectations() {
+      {
+        allowing(mockDataOutput).getVersion();
+        will(returnValue(Version.CURRENT));
+        // processor id
+        oneOf(mockDataOutput).writeInt(with(any(int.class)));
+        inSequence(toData);
+        // txId.uniqId
+        oneOf(mockDataOutput).writeInt(0);
+        inSequence(toData);
+        // lockId
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+        // totalMaxSize
+        oneOf(mockDataOutput).writeInt(0);
+        inSequence(toData);
+        // txState.membershipId
+        oneOf(mockDataOutput).writeByte(-1);
+        inSequence(toData);
+        // txState.baseThreadId
+        oneOf(mockDataOutput).writeLong(with(any(long.class)));
+        inSequence(toData);
+        // txState.baseSequenceId
+        oneOf(mockDataOutput).writeLong(with(any(long.class)));
+        inSequence(toData);
+        // txState.needsLargeModCount
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+        // hasShadowKeys
+        oneOf(mockDataOutput).writeBoolean(true);
+        inSequence(toData);
+        // regionsSize
+        oneOf(mockDataOutput).writeInt(1);
+        inSequence(toData);
+
+        // regionPath: "/r"
+        oneOf(mockDataOutput).writeByte(87);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeShort(2);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeBytes("/r");
+        inSequence(toData);
+        // parentRegionPath: null string
+        oneOf(mockDataOutput).writeByte(69);
+        inSequence(toData);
+        // opKeys size
+        oneOf(mockDataOutput).writeInt(1);
+        inSequence(toData);
+        // needsLargeModCount
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+        // versionMember
+        oneOf(mockDataOutput).writeByte(1);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(1);
+        inSequence(toData);
+        // opKeys[0]
+        oneOf(mockDataOutput).writeByte(87);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeShort(3);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeBytes("key");
+        inSequence(toData);
+        // farSideData[0]
+        oneOf(mockDataOutput).writeByte(17);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(0);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        // shadowkey
+        oneOf(mockDataOutput).writeLong(-1L);
+        inSequence(toData);
+        // offset
+        oneOf(mockDataOutput).writeInt(with(any(int.class)));
+        inSequence(toData);
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+
+        // bridgeContext
+        oneOf(mockDataOutput).writeByte(41);
+        inSequence(toData);
+        // farSiders
+        oneOf(mockDataOutput).writeByte(-1);
+        inSequence(toData);
+      }
+    });
+
+    final InternalDistributedMember mockInternalDistributedMember =
+        createInternalDistributedMember();
+
+    final TXId txId = new TXId(mockInternalDistributedMember, 0);
+    final TXState txState = new TXState(null, false);
+    final TXCommitMessage txCommitMessage = new TXCommitMessage(txId, null, txState);
+
+    final InternalRegion mockInternalRegion =
+        createMockInternalRegion(mockInternalDistributedMember);
+    txCommitMessage.startRegion(mockInternalRegion, 0);
+    final EntryEventImpl mockEntryEventImpl = createMockEntryEvent(mockInternalRegion);
+    final TXEntryState txEntryState = createTxEntryState(mockInternalRegion, mockEntryEventImpl);
+    txCommitMessage.addOp(null, "key", txEntryState, null);
+    txCommitMessage.finishRegionComplete();
+
+    txCommitMessage.toData(mockDataOutput);
+  }
+
+  @Test
+  public void toDataWithoutShadowKeyPost180Client() throws IOException {
+    final Sequence toData = mockContext.sequence("toData");
+    final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
+    mockContext.checking(new Expectations() {
+      {
+        allowing(mockDataOutput).getVersion();
+        will(returnValue(Version.CURRENT));
+        // processor id
+        oneOf(mockDataOutput).writeInt(with(any(int.class)));
+        inSequence(toData);
+        // txId.uniqId
+        oneOf(mockDataOutput).writeInt(0);
+        inSequence(toData);
+        // lockId
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+        // totalMaxSize
+        oneOf(mockDataOutput).writeInt(0);
+        inSequence(toData);
+        // txState.membershipId
+        oneOf(mockDataOutput).writeByte(-1);
+        inSequence(toData);
+        // txState.baseThreadId
+        oneOf(mockDataOutput).writeLong(with(any(long.class)));
+        inSequence(toData);
+        // txState.baseSequenceId
+        oneOf(mockDataOutput).writeLong(with(any(long.class)));
+        inSequence(toData);
+        // txState.needsLargeModCount
+        oneOf(mockDataOutput).writeBoolean(false);
+        inSequence(toData);
+        // hasShadowKeys
         oneOf(mockDataOutput).writeBoolean(false);
         inSequence(toData);
         // regionsSize
@@ -370,6 +606,12 @@ public class TxCommitMessageTest {
         oneOf(mockDataInput).readBoolean();
         will(returnValue(false));
         inSequence(fromData);
+
+        // hasShadowKeys
+        oneOf(mockDataInput).readBoolean();
+        will(returnValue(true));
+        inSequence(fromData);
+
         // regionsSize
         oneOf(mockDataInput).readInt();
         will(returnValue(1));
@@ -559,6 +801,12 @@ public class TxCommitMessageTest {
         oneOf(mockDataInput).readBoolean();
         will(returnValue(false));
         inSequence(fromData);
+
+        // hasShadowKeys
+        oneOf(mockDataInput).readBoolean();
+        will(returnValue(false));
+        inSequence(fromData);
+
         // regionsSize
         oneOf(mockDataInput).readInt();
         will(returnValue(1));
@@ -660,6 +908,8 @@ public class TxCommitMessageTest {
         allowing(mockInternalDistributedMember).getDSFID();
         will(returnValue(1));
         allowing(mockInternalDistributedMember).toData(with(any(DataOutput.class)));
+        allowing(mockInternalDistributedMember).getSerializationVersions();
+        will(returnValue(null));
       }
     });
     return mockInternalDistributedMember;

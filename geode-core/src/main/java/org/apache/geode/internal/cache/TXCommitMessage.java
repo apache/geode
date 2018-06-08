@@ -115,10 +115,14 @@ public class TXCommitMessage extends PooledDistributionMessage
   private transient long farsideBaseThreadId; // only available on farside
   private transient long farsideBaseSequenceId; // only available on farside
 
-  /** (Nearside) true of any regions in this TX have required roles */
+  /**
+   * (Nearside) true of any regions in this TX have required roles
+   */
   private transient boolean hasReliableRegions = false;
 
-  /** Set of all caching exceptions produced hile processing this tx */
+  /**
+   * Set of all caching exceptions produced hile processing this tx
+   */
   private transient Set processingExceptions = Collections.emptySet();
 
   private transient ClientProxyMembershipID bridgeContext = null;
@@ -136,7 +140,8 @@ public class TXCommitMessage extends PooledDistributionMessage
   public static final TXCommitMessage CMT_CONFLICT_MSG = new TXCommitMessage();
   /**
    * A token to be put in TXManagerImpl#failoverMap to represent a
-   * TransactionDataNodeHasDepartedException while committing a transaction
+   * TransactionDataNodeHasDepartedException
+   * while committing a transaction
    */
   public static final TXCommitMessage REBALANCE_MSG = new TXCommitMessage();
   /**
@@ -279,7 +284,9 @@ public class TXCommitMessage extends PooledDistributionMessage
 
   private transient boolean disableListeners = false;
 
-  /** record CacheDistributionAdvisor.startOperation versions for later cleanup */
+  /**
+   * record CacheDistributionAdvisor.startOperation versions for later cleanup
+   */
   protected void addViewVersion(DistributedRegion dr, long version) {
     viewVersions.put(dr, version);
   }
@@ -323,7 +330,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     updateLockMembers();
 
     IdentityHashMap distMap = new IdentityHashMap(); // Map of RegionCommitList keys to Sets of
-                                                     // receivers
+    // receivers
     HashSet ackReceivers = null;
     {
       Iterator it = this.msgMap.entrySet().iterator();
@@ -576,14 +583,6 @@ public class TXCommitMessage extends PooledDistributionMessage
     this.dm = dm;
   }
 
-  public DistributionManager getDM() {
-    if (this.dm == null) {
-      InternalCache cache = GemFireCacheImpl.getExisting("Applying TXCommit");
-      this.dm = cache.getDistributionManager();
-    }
-    return this.dm;
-  }
-
   public void basicProcess() {
     final DistributionManager dm = this.dm;
 
@@ -813,8 +812,9 @@ public class TXCommitMessage extends PooledDistributionMessage
     this.farsideBaseThreadId = in.readLong();
     this.farsideBaseSequenceId = in.readLong();
 
-
     this.needsLargeModCount = in.readBoolean();
+
+    boolean hasShadowKeys = in.readBoolean();
 
     int regionsSize = in.readInt();
     this.regions = new ArrayList(regionsSize);
@@ -822,7 +822,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     for (int i = 0; i < regionsSize; i++) {
       RegionCommit rc = new RegionCommit(this);
       try {
-        rc.fromData(in);
+        rc.fromData(in, hasShadowKeys);
       } catch (CacheClosedException cce) {
         addProcessingException(cce);
         // return to avoid serialization error being sent in reply
@@ -898,13 +898,17 @@ public class TXCommitMessage extends PooledDistributionMessage
       DataSerializer.writeBoolean(this.needsLargeModCount, out);
     }
 
+    final boolean useShadowKey = useShadowKey();
+    if (hasFlagsField(out)) {
+      out.writeBoolean(useShadowKey);
+    }
 
     out.writeInt(regionsSize);
     {
       if (regionsSize > 0) {
         for (int i = 0; i < this.regions.size(); i++) {
           RegionCommit rc = (RegionCommit) this.regions.get(i);
-          rc.toData(out);
+          rc.toData(out, useShadowKey);
         }
       }
     }
@@ -914,6 +918,14 @@ public class TXCommitMessage extends PooledDistributionMessage
     DataSerializer.writeHashSet(this.farSiders, out);
   }
 
+  private boolean hasFlagsField(final DataOutput out) {
+    Version v = InternalDataSerializer.getVersionForDataStream(out);
+    return v.compareTo(Version.GEODE_180) >= 0;
+  }
+
+  private boolean useShadowKey() {
+    return null == clientVersion;
+  }
 
   @Override
   public String toString() {
@@ -946,7 +958,8 @@ public class TXCommitMessage extends PooledDistributionMessage
   /**
    * Combines a set of small TXCommitMessages that belong to one transaction into a txCommitMessage
    * that represents an entire transaction. At commit time the txCommitMessage sent to each node can
-   * be a subset of the transaction, this method will combine those subsets into a complete message.
+   * be a subset of the transaction, this method will combine those subsets into a complete
+   * message.
    *
    * @return the complete txCommitMessage
    */
@@ -1378,7 +1391,8 @@ public class TXCommitMessage extends PooledDistributionMessage
       return true;
     }
 
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in, boolean hasShadowKey)
+        throws IOException, ClassNotFoundException {
       this.regionPath = DataSerializer.readString(in);
       this.parentRegionPath = DataSerializer.readString(in);
 
@@ -1391,7 +1405,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         for (int i = 0; i < size; i++) {
           FarSideEntryOp entryOp = new FarSideEntryOp();
           // shadowkey is not being sent to clients
-          entryOp.fromData(in, largeModCount, hasShadowKey(regionPath, parentRegionPath));
+          entryOp.fromData(in, largeModCount, hasShadowKey);
           if (entryOp.versionTag != null && this.memberId != null) {
             entryOp.versionTag.setMemberID(this.memberId);
           }
@@ -1400,20 +1414,6 @@ public class TXCommitMessage extends PooledDistributionMessage
           this.opEntries.add(entryOp);
         }
       }
-    }
-
-    private boolean hasShadowKey(String regionPath, String parentRegionPath) {
-      // in bucket region, regionPath is bucket name, use parentRegionPath
-      String path = parentRegionPath != null ? parentRegionPath : regionPath;
-      LocalRegion region = getRegionByPath(msg.getDM(), path);
-
-      // default value is whether loner or not, region is null if destroyRegion executed
-      boolean readShadowKey = !msg.getDM().isLoner();
-      if (region != null) {
-        // shadowkey is not being sent to clients
-        readShadowKey = region.getPoolName() == null;
-      }
-      return readShadowKey;
     }
 
     @Override
@@ -1430,7 +1430,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       return result.toString();
     }
 
-    private void basicToData(DataOutput out) throws IOException {
+    private void basicToData(DataOutput out, boolean useShadowKey) throws IOException {
       if (this.internalRegion != null) {
         DataSerializer.writeString(this.internalRegion.getFullPath(), out);
         if (this.internalRegion instanceof BucketRegion) {
@@ -1476,28 +1476,28 @@ public class TXCommitMessage extends PooledDistributionMessage
           if (this.msg.txState != null) {
             /* we are still on tx node and have the entry state */
             ((TXEntryState) this.opEntries.get(i)).toFarSideData(out, largeModCount,
-                sendVersionTags, this.msg.clientVersion == null);
+                sendVersionTags, useShadowKey);
           } else {
             ((FarSideEntryOp) this.opEntries.get(i)).toData(out, largeModCount, sendVersionTags,
-                this.msg.clientVersion == null);
+                useShadowKey);
           }
         }
       }
     }
 
 
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out, boolean useShadowKey) throws IOException {
       if (this.preserializedBuffer != null) {
         this.preserializedBuffer.rewind();
         this.preserializedBuffer.sendTo(out);
       } else if (this.refCount > 1) {
         Version v = InternalDataSerializer.getVersionForDataStream(out);
         HeapDataOutputStream hdos = new HeapDataOutputStream(1024, v);
-        basicToData(hdos);
+        basicToData(hdos, useShadowKey);
         this.preserializedBuffer = hdos;
         this.preserializedBuffer.sendTo(out);
       } else {
-        basicToData(out);
+        basicToData(out, useShadowKey);
       }
     }
 
@@ -1629,8 +1629,9 @@ public class TXCommitMessage extends PooledDistributionMessage
 
       @Override
       public boolean equals(Object o) {
-        if (o == null || !(o instanceof FarSideEntryOp))
+        if (o == null || !(o instanceof FarSideEntryOp)) {
           return false;
+        }
         return compareTo(o) == 0;
       }
 
@@ -1949,9 +1950,12 @@ public class TXCommitMessage extends PooledDistributionMessage
 
   @Override
   public void quorumLost(DistributionManager distributionManager,
-      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
+      Set<InternalDistributedMember> failures,
+      List<InternalDistributedMember> remaining) {}
 
-  /** return true if the member initiating this transaction has left the cluster */
+  /**
+   * return true if the member initiating this transaction has left the cluster
+   */
   public boolean isDepartureNoticed() {
     return departureNoticed;
   }
@@ -2180,11 +2184,17 @@ public class TXCommitMessage extends PooledDistributionMessage
    */
   public static class CommitExceptionCollectingException extends ReplyException {
     private static final long serialVersionUID = 589384721273797822L;
-    /** Set of members that threw CacheClosedExceptions */
+    /**
+     * Set of members that threw CacheClosedExceptions
+     */
     private final Set<InternalDistributedMember> cacheExceptions;
-    /** key=region path, value=Set of members */
+    /**
+     * key=region path, value=Set of members
+     */
     private final Map<String, Set<InternalDistributedMember>> regionExceptions;
-    /** List of exceptions that were unexpected and caused the tx to fail */
+    /**
+     * List of exceptions that were unexpected and caused the tx to fail
+     */
     private final Map fatalExceptions;
 
     private final TXId id;
