@@ -216,16 +216,16 @@ public class Oplog implements CompactableOplog, Flushable {
    * Written to CRF, and DRF.
    */
   private static final byte OPLOG_EOF_ID = 0;
-  private static final byte END_OF_RECORD_ID = 21;
 
+  private static final byte END_OF_RECORD_ID = 21;
   /**
    * Written to CRF and DRF. Followed by 16 bytes which is the leastSigBits and mostSigBits of a
    * UUID for the disk store we belong to. 1: EndOfRecord Is written once at the beginning of every
    * oplog file.
    */
   private static final byte OPLOG_DISK_STORE_ID = 62;
-  static final int OPLOG_DISK_STORE_REC_SIZE = 1 + 16 + 1;
 
+  static final int OPLOG_DISK_STORE_REC_SIZE = 1 + 16 + 1;
   /**
    * Written to CRF. Followed by 8 bytes which is the BASE_ID to use for any NEW_ENTRY records. 1:
    * EndOfRecord Only needs to be written once per oplog and must preceed any OPLOG_NEW_ENTRY_0ID
@@ -413,6 +413,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_1ID = 81;
+
   /**
    * Written to DRF. The OplogEntryId is relative to the previous del_entry OplogEntryId. The signed
    * difference is encoded in 2 bytes. Byte Format: 2: OplogEntryId 1: EndOfRecord
@@ -420,7 +421,6 @@ public class Oplog implements CompactableOplog, Flushable {
    * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_2ID = 82;
-
   /**
    * Written to DRF. The OplogEntryId is relative to the previous del_entry OplogEntryId. The signed
    * difference is encoded in 3 bytes. Byte Format: 3: OplogEntryId 1: EndOfRecord
@@ -5854,14 +5854,14 @@ public class Oplog implements CompactableOplog, Flushable {
 
   private static final ThreadLocal isCompactorThread = new ThreadLocal();
 
-  private boolean calledByCompactorThread() {
+  boolean calledByCompactorThread() {
     if (!this.compacting)
       return false;
     Object v = isCompactorThread.get();
     return v != null && v == Boolean.TRUE;
   }
 
-  private void handleNoLiveValues() {
+  void handleNoLiveValues() {
     if (!this.doneAppending)
       return;
     if (hasNoLiveValues()) {
@@ -6062,14 +6062,7 @@ public class Oplog implements CompactableOplog, Flushable {
           }
         }
 
-        if (!compactFailed) {
-          // Need to still remove the oplog even if it had nothing to compact.
-          handleNoLiveValues();
-
-          // We can't assert hasNoLiveValues() because a race condition exists
-          // in which our liveEntries list is empty but the liveCount has not
-          // yet been decremented.
-        }
+        cleanupAfterCompaction(compactFailed);
         return totalCount;
       } finally {
         unlockCompactor();
@@ -6079,6 +6072,19 @@ public class Oplog implements CompactableOplog, Flushable {
       assert calledByCompactorThread();
       isCompactorThread.remove();
     }
+  }
+
+  void cleanupAfterCompaction(boolean compactFailed) {
+    if (!compactFailed) {
+      // all data has been copied forward to new oplog so no live entries remain
+      getTotalLiveCount().set(0);
+      // Need to still remove the oplog even if it had nothing to compact.
+      handleNoLiveValues();
+    }
+  }
+
+  AtomicLong getTotalLiveCount() {
+    return totalLiveCount;
   }
 
   public static boolean isCRFFile(String filename) {
