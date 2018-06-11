@@ -21,7 +21,7 @@ limitations under the License.
 <a id="topic_nlq_sk1_wk"></a>
 
 
-A transaction is managed on a per-cache basis, so multiple regions in the cache can participate in a single transaction. The data scope of a <%=vars.product_name%> cache transaction is the cache that hosts the transactional data. For partitioned regions, this may be a remote host to the one running the transaction application. Any transaction that includes one or more partitioned regions is run on the member storing the primary copy of the partitioned region data. Otherwise, the transaction host is the same one running the application.
+A transaction is managed on a per-cache basis, so multiple regions in the cache can participate in a single transaction. The data scope of a <%=vars.product_name%> transaction is the cache that hosts the transactional data. For partitioned regions, this may be a remote host to the one running the transaction application. Any transaction that includes one or more partitioned regions is run on the member storing the primary copy of the partitioned region data. Otherwise, the transaction host is the same one running the application.
 
 -   The client executing the transaction code is called the transaction initiator.
 

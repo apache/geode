@@ -19,17 +19,17 @@ limitations under the License.
 
 
 The Java Transaction API, JTA, is a standard Java interface you can use to coordinate
-<%=vars.product_name%> cache transactions and JDBC transactions globally under one umbrella. 
+<%=vars.product_name%> transactions and JDBC transactions globally under one umbrella. 
 
-You can use JTA global transactions to coordinate <%=vars.product_name%> cache transactions and JDBC transactions.
+You can use JTA global transactions to coordinate <%=vars.product_name%> transactions and JDBC transactions.
 
 JTA provides direct coordination between the <%=vars.product_name%> cache and another transactional
 resource, such as a database. The parties involved in a JTA transaction include:
 
 -   The Java application, responsible for starting the global transaction
 -   The JTA transaction manager, responsible for opening, committing, and rolling back transactions
-- The transaction resource managers, including the <%=vars.product_name%> cache transaction manager
-and the JDBC resource manager, responsible for managing operations in the cache and database, respectively
+- The transaction resource managers, including the <%=vars.product_name%> transaction manager
+and the JDBC resource manager, responsible for managing operations in the <%=vars.product_name%> cache and database, respectively
 
 Using JTA, your application controls all transactions in the same standard way, whether the
 transactions act on the <%=vars.product_name%> cache, a JDBC resource, or both together. When a JTA
@@ -44,7 +44,7 @@ When using JTA global transactions with <%=vars.product_name%>, you have two opt
 An application creates a global transaction by using `javax.transaction.UserTransaction` bound to
 the JNDI context `java:/UserTransaction` to start and terminate transactions. During the
 transaction, cache operations are done through <%=vars.product_name%> as usual as described in
-[<%=vars.product_name%> Cache Transactions](cache_transactions.html#topic_e15_mr3_5k).
+[<%=vars.product_name%> Transactions](cache_transactions.html).
 
 **Note:**
 See the Java documentation for more information on topics such as JTA, `javax.transaction`, committing and rolling back global transactions, and the related exceptions.
