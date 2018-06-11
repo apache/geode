@@ -1,4 +1,4 @@
-<% set_title("How to Run a", product_name, "Cache Transaction") %>
+<% set_title("How to Run a", product_name, "Transaction") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,9 +19,9 @@ limitations under the License.
 <a id="task_f15_mr3_5k"></a>
 
 
-This topic describes how to run a <%=vars.product_name%> cache transaction.
+This topic describes how to run a <%=vars.product_name%> transaction.
 
-Applications manage transactions on a per-cache basis. A <%=vars.product_name%> cache transaction starts with a `CacheTransactionManager.begin` method and continues with a series of operations, which are typically region operations such as region create, update, clear and destroy. The begin, commit, and rollback are directly controlled by the application. A commit, failed commit, or voluntary rollback by the transaction manager ends the transaction.
+Applications manage transactions on a per-cache basis. A <%=vars.product_name%> transaction starts with a `CacheTransactionManager.begin` method and continues with a series of operations, which are typically region operations such as region create, update, clear and destroy. The begin, commit, and rollback are directly controlled by the application. A commit, failed commit, or voluntary rollback by the transaction manager ends the transaction.
 
 You can run transactions on any type of cache region except regions with **global** scope. An operation attempted on a region with global scope throws an `UnsupportedOperationException` exception.
 
@@ -39,7 +39,7 @@ This discussion centers on transactions on replicated and partitioned regions. I
     | **persistent regions**                                                                      | Configure <%=vars.product_name%> to allow transactions on persistent regions. By default, the configuration does not allow transactions on persistent regions. Enable the use of transactions on persistent regions by setting the property `gemfire.ALLOW_PERSISTENT_TRANSACTIONS` to true.                                                                                              |
     | **a mix of partitioned and replicated regions**                                             | Make sure any replicated region involved in the transaction is hosted on every member that hosts the partitioned region data. All data for a single transaction must reside within a single host.                                                                                                                                                                                                             |
     | **delta propagation**                                                                       | Set the region attribute `cloning-enabled` to true. This lets <%=vars.product_name%> do conflict checks at commit time. Without this, the transaction will throw an `UnsupportedOperationInTransactionException ` exception.                                                                                                                                                                      |
-    | **global JTA transactions with only <%=vars.product_name%> cache transactions** | Set the region attribute `ignore-jta` to true for all regions that you do *not* want to participate in JTA global transactions. It is false by default. For instructions on how to run a JTA global transaction, see [JTA Global Transactions with <%=vars.product_name%>](JTA_transactions.html).   |
+    | **global JTA transactions with only <%=vars.product_name%> transactions** | Set the region attribute `ignore-jta` to true for all regions that you do *not* want to participate in JTA global transactions. It is false by default. For instructions on how to run a JTA global transaction, see [JTA Global Transactions with <%=vars.product_name%>](JTA_transactions.html).   |
 
 3. **Update your cache event handler and transaction event handler implementations to handle your transactions.** 
     Cache event handlers may be used with transactions. Cache listeners are called after the commit, instead of after each cache operation, and the cache listeners receive conflated transaction events. Cache writers and loaders are called as usual, at the time of the operation.
