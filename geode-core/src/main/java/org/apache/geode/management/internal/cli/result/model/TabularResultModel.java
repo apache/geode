@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang.ArrayUtils;
 
 public class TabularResultModel extends AbstractResultModel {
 
@@ -29,9 +28,6 @@ public class TabularResultModel extends AbstractResultModel {
    * Table data mapped by column name. The map needs to be able to maintain insertion order.
    */
   private Map<String, List<String>> table = new LinkedHashMap<>();
-
-  @JsonIgnore
-  private String[] columnHeaders = new String[0];
 
   TabularResultModel() {}
 
@@ -42,7 +38,6 @@ public class TabularResultModel extends AbstractResultModel {
       List<String> list = new ArrayList<>();
       list.add(value);
       table.put(column, list);
-      columnHeaders = (String[]) ArrayUtils.add(columnHeaders, column);
     }
 
     return this;
@@ -54,18 +49,59 @@ public class TabularResultModel extends AbstractResultModel {
   }
 
   public void setColumnHeader(String... columnHeaders) {
-    this.columnHeaders = columnHeaders;
     for (String columnHeader : columnHeaders) {
       table.put(columnHeader, new ArrayList<>());
     }
   }
 
   public void addRow(String... values) {
-    if (values.length != columnHeaders.length) {
+    if (values.length != table.size()) {
       throw new IllegalStateException("row size is different than the column header size.");
     }
+    List<String> columnHeaders = getHeaders();
     for (int i = 0; i < values.length; i++) {
-      table.get(columnHeaders[i]).add(values[i]);
+      table.get(columnHeaders.get(i)).add(values[i]);
     }
+  }
+
+  @JsonIgnore
+  public List<String> getHeaders() {
+    // this should maintain the original insertion order
+    List<String> headers = new ArrayList<>();
+    headers.addAll(table.keySet());
+    return headers;
+  }
+
+  @JsonIgnore
+  public String getValue(String columnName, int rowIndex) {
+    return table.get(columnName).get(rowIndex);
+  }
+
+  @JsonIgnore
+  public int getColumnSize() {
+    return table.size();
+  }
+
+  @JsonIgnore
+  public int getRowSize() {
+    if (table.size() == 0) {
+      return 0;
+    }
+    return table.values().iterator().next().size();
+  }
+
+  @JsonIgnore
+  public List<String> getValuesInColumn(String header) {
+    return table.get(header);
+  }
+
+  @JsonIgnore
+  public List<String> getValuesInRow(int index) {
+    List<String> headers = getHeaders();
+    List<String> values = new ArrayList<>();
+    for (String header : headers) {
+      values.add(table.get(header).get(index));
+    }
+    return values;
   }
 }

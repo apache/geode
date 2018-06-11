@@ -61,10 +61,10 @@ public class CreateIndexCommandTest {
 
   @Test
   public void missingName() throws Exception {
-    result = gfshParser.executeCommandWithInstance(command,
-        "create index --expression=abc --region=abc");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    gfshParser.executeAndAssertThat(command,
+        "create index --expression=abc --region=abc")
+        .statusIsError()
+        .containsOutput("Invalid command");
   }
 
   @Test
