@@ -1017,13 +1017,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public void unmasquerade(TXStateProxy tx) {
     if (tx != null) {
-      cleanupTransactionIfNotExist(tx);
+      cleanupTransactionIfNoLongerHost(tx);
       setTXState(null);
       tx.getLock().unlock();
     }
   }
 
-  private void cleanupTransactionIfNotExist(TXStateProxy tx) {
+  private void cleanupTransactionIfNoLongerHost(TXStateProxy tx) {
     synchronized (hostedTXStates) {
       if (!hostedTXStates.containsKey(tx.getTxId())) {
         // clean up the transaction if no longer the host of the transaction

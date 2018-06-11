@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CountDownLatch;
@@ -341,30 +340,28 @@ public class TXManagerImplTest {
 
   @Test
   public void txStateNotCleanedupIfNotRemovedFromHostedTxStatesMap() {
-    TXManagerImpl txManager = spy(txMgr);
-    tx1 = txManager.getOrSetHostedTXState(txid, msg);
+    tx1 = txMgr.getOrSetHostedTXState(txid, msg);
     TXStateProxyImpl txStateProxy = (TXStateProxyImpl) tx1;
     assertNotNull(txStateProxy);
     assertFalse(txStateProxy.getLocalRealDeal().isClosed());
 
-    txManager.masqueradeAs(tx1);
-    txManager.unmasquerade(tx1);
+    txMgr.masqueradeAs(tx1);
+    txMgr.unmasquerade(tx1);
     assertFalse(txStateProxy.getLocalRealDeal().isClosed());
 
   }
 
   @Test
   public void txStateCleanedupIfRemovedFromHostedTxStatesMap() {
-    TXManagerImpl txManager = spy(txMgr);
-    tx1 = txManager.getOrSetHostedTXState(txid, msg);
+    tx1 = txMgr.getOrSetHostedTXState(txid, msg);
     TXStateProxyImpl txStateProxy = (TXStateProxyImpl) tx1;
     assertNotNull(txStateProxy);
     assertFalse(txStateProxy.getLocalRealDeal().isClosed());
 
-    txManager.masqueradeAs(tx1);
+    txMgr.masqueradeAs(tx1);
     // during TX failover, tx can be removed from the hostedTXStates map by FindRemoteTXMessage
-    txManager.getHostedTXStates().remove(txid);
-    txManager.unmasquerade(tx1);
+    txMgr.getHostedTXStates().remove(txid);
+    txMgr.unmasquerade(tx1);
     assertTrue(txStateProxy.getLocalRealDeal().isClosed());
   }
 }
