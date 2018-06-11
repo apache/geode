@@ -814,7 +814,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     this.needsLargeModCount = in.readBoolean();
 
-    boolean hasShadowKeys = in.readBoolean();
+    final boolean hasShadowKeys = hasFlagsField(in) ? in.readBoolean() : useShadowKey();
 
     int regionsSize = in.readInt();
     this.regions = new ArrayList(regionsSize);
@@ -919,6 +919,11 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   private boolean hasFlagsField(final DataOutput out) {
+    Version v = InternalDataSerializer.getVersionForDataStream(out);
+    return v.compareTo(Version.GEODE_180) >= 0;
+  }
+
+  private boolean hasFlagsField(final DataInput out) {
     Version v = InternalDataSerializer.getVersionForDataStream(out);
     return v.compareTo(Version.GEODE_180) >= 0;
   }

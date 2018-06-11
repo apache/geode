@@ -65,6 +65,10 @@ public class TxCommitMessageTest {
 
   }
 
+  public interface VersionedDataInput extends DataInput, VersionedDataStream {
+
+  }
+
   @Test
   public void toDataWithShadowKeyPre180Server() throws IOException {
     final Sequence toData = mockContext.sequence("toData");
@@ -514,7 +518,199 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithShadowKey() throws Exception {
+  public void fromDataWithShadowKeyPre180Server() throws Exception {
+    final Sequence fromData = mockContext.sequence("fromData");
+    final VersionedDataInput mockDataInput = mockContext.mock(VersionedDataInput.class);
+    mockContext.checking(new Expectations() {
+      {
+        allowing(mockDataInput).getVersion();
+        will(returnValue(Version.GEODE_170));
+        // processor id
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        // txId.uniqId
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        // member version
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) -1));
+        inSequence(fromData);
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 69));
+        inSequence(fromData);
+        oneOf(mockDataInput).readUnsignedByte();
+        will(returnValue(0));
+        inSequence(fromData);
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        oneOf(mockDataInput).readUnsignedByte();
+        will(returnValue(1));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) -1));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 69));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 69));
+        inSequence(fromData);
+        // durableId
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 87));
+        inSequence(fromData);
+        oneOf(mockDataInput).readUnsignedShort();
+        will(returnValue(0));
+        inSequence(fromData);
+        oneOf(mockDataInput)
+            .readFully(with(any(byte[].class)), with(any(int.class)), with(any(int.class)));
+        inSequence(fromData);
+
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        oneOf(mockDataInput).readLong();
+        will(returnValue(0L));
+        inSequence(fromData);
+        oneOf(mockDataInput).readLong();
+        will(returnValue(0L));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 0));
+        inSequence(fromData);
+
+        // lockId
+        oneOf(mockDataInput).readBoolean();
+        will(returnValue(false));
+        inSequence(fromData);
+        // totalMaxSize
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        // txState.membershipId
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) -1));
+        inSequence(fromData);
+        // txState.baseThreadId
+        oneOf(mockDataInput).readLong();
+        will(returnValue(0L));
+        inSequence(fromData);
+        // txState.baseSequenceId
+        oneOf(mockDataInput).readLong();
+        will(returnValue(0L));
+        inSequence(fromData);
+        // txState.needsLargeModCount
+        oneOf(mockDataInput).readBoolean();
+        will(returnValue(false));
+        inSequence(fromData);
+
+        // regionsSize
+        oneOf(mockDataInput).readInt();
+        will(returnValue(1));
+        inSequence(fromData);
+
+        // regionPath: "/r"
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 87));
+        inSequence(fromData);
+        oneOf(mockDataInput).readUnsignedShort();
+        will(returnValue(2));
+        inSequence(fromData);
+        oneOf(mockDataInput)
+            .readFully(with(any(byte[].class)), with(any(int.class)), with(any(int.class)));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 69));
+        inSequence(fromData);
+        // opKeys size
+        oneOf(mockDataInput).readInt();
+        will(returnValue(1));
+        inSequence(fromData);
+        // needsLargeModCount
+        oneOf(mockDataInput).readBoolean();
+        will(returnValue(false));
+        inSequence(fromData);
+        // versionMember
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 41));
+        inSequence(fromData);
+
+        // opKeys[0]
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 87));
+        inSequence(fromData);
+        oneOf(mockDataInput).readUnsignedShort();
+        will(returnValue(3));
+        inSequence(fromData);
+        oneOf(mockDataInput)
+            .readFully(with(any(byte[].class)), with(any(int.class)), with(any(int.class)));
+        inSequence(fromData);
+        // farSideData[0]
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 17));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 0));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 41));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 41));
+        inSequence(fromData);
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 41));
+        inSequence(fromData);
+        // shadowkey
+        oneOf(mockDataInput).readLong();
+        will(returnValue(-1L));
+        inSequence(fromData);
+        // offset
+        oneOf(mockDataInput).readInt();
+        will(returnValue(0));
+        inSequence(fromData);
+        oneOf(mockDataInput).readBoolean();
+        will(returnValue(false));
+        inSequence(fromData);
+
+        // bridgeContext
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) 41));
+        inSequence(fromData);
+        // farSiders
+        oneOf(mockDataInput).readByte();
+        will(returnValue((byte) -1));
+        inSequence(fromData);
+      }
+    });
+
+    final DistributionManager mockDistributionManager =
+        mockContext.mock(DistributionManager.class);
+    mockContext.checking(new Expectations() {
+      {
+        allowing(mockDistributionManager).getCache();
+        will(returnValue(null));
+        allowing(mockDistributionManager).isLoner();
+        will(returnValue(false));
+      }
+    });
+
+    final TXCommitMessage txCommitMessage = new TXCommitMessage();
+    txCommitMessage.setDM(mockDistributionManager);
+    txCommitMessage.fromData(mockDataInput);
+  }
+
+  @Test
+  public void fromDataWithShadowKeyPost180Server() throws Exception {
     final Sequence fromData = mockContext.sequence("fromData");
     final DataInput mockDataInput = mockContext.mock(DataInput.class);
     mockContext.checking(new Expectations() {
@@ -709,7 +905,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithoutShadowKey() throws Exception {
+  public void fromDataWithoutShadowKeyPost180Client() throws Exception {
     final Sequence fromData = mockContext.sequence("fromData");
     final DataInput mockDataInput = mockContext.mock(DataInput.class);
     mockContext.checking(new Expectations() {
