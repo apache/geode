@@ -493,7 +493,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   public void checkForLostPrimaryElector(Profile profile) {
     // If the member that went away was in the middle of creating
     // the bucket, finish the bucket creation.
-    if (this.primaryElector != null && this.primaryElector.equals(profile.getDistributedMember())) {
+    ProfileId elector = this.primaryElector;
+    if (elector != null && elector.equals(profile.getDistributedMember())) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Bucket {} lost the member responsible for electing the primary. Finishing bucket creation",
@@ -1002,9 +1003,14 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * an executor (waiting pool) and returns early.
    */
   public void volunteerForPrimary() {
-    if (primaryElector != null) {
+    InternalDistributedMember elector = primaryElector;
+    if (elector != null && regionAdvisor.hasPartitionedRegion(elector)) {
+      // another server will determine the primary node
       return;
     }
+
+    primaryElector = null;
+
     initializationGate();
 
     synchronized (this) {
@@ -1012,11 +1018,17 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         // only one thread should be attempting to volunteer at one time
         return;
       }
+
       if (this.volunteeringDelegate == null) {
-        this.volunteeringDelegate = new VolunteeringDelegate();
+        setVolunteeringDelegate(new VolunteeringDelegate());
       }
       this.volunteeringDelegate.volunteerForPrimary();
+
     }
+  }
+
+  protected void setVolunteeringDelegate(VolunteeringDelegate delegate) {
+    this.volunteeringDelegate = delegate;
   }
 
   /**
@@ -1520,29 +1532,35 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  public void clearPrimaryElector() {
-    synchronized (this) {
-      primaryElector = null;
-    }
+  public synchronized void clearPrimaryElector() {
+    primaryElector = null;
   }
 
-  public void setPrimaryElector(InternalDistributedMember newPrimaryElector) {
-    synchronized (this) {
-      // Only set the new primary elector if we have not yet seen
-      // a primary for this bucket.
-      if (primaryElector != null) {
+  public synchronized void setPrimaryElector(InternalDistributedMember newPrimaryElector) {
+    // Only set the new primary elector if we have not yet seen
+    // a primary for this bucket.
+    if (this.primaryElector != null) {
+      if (newPrimaryElector != null && !regionAdvisor.hasPartitionedRegion(newPrimaryElector)) {
+        // no longer a participant - don't use it
+        this.primaryElector = null;
+      } else {
         this.primaryElector = newPrimaryElector;
       }
     }
   }
 
 
-  public synchronized void initializePrimaryElector(InternalDistributedMember primaryElector) {
+  public synchronized void initializePrimaryElector(InternalDistributedMember newPrimaryElector) {
     // For child buckets, we want the parent bucket to take care'
     // of finishing an incomplete bucket creation, so only set the elector for
     // the leader region.
     if (parentAdvisor == null) {
-      this.primaryElector = primaryElector;
+      if (newPrimaryElector != null && !regionAdvisor.hasPartitionedRegion(newPrimaryElector)) {
+        // no longer a participant - don't use it
+        this.primaryElector = null;
+      } else {
+        this.primaryElector = newPrimaryElector;
+      }
     }
   }
 
@@ -1605,9 +1623,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
      * if (needToNotPrimarySelf) { notPrimary(getAdvisee().getDistributionManager().getId()); }
      */
     if (needToVolunteerForPrimary) {
-      if (this.primaryElector == null) {
-        volunteerForPrimary();
-      }
+      volunteerForPrimary();
     }
 
     sendProfileUpdate();
