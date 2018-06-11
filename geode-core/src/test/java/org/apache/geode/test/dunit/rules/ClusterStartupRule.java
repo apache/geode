@@ -22,12 +22,15 @@ import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.ExternalResource;
@@ -35,6 +38,7 @@ import org.junit.rules.ExternalResource;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
@@ -73,10 +77,16 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public static InternalLocator getLocator() {
+    if (memberStarter == null || !(memberStarter instanceof LocatorStarterRule)) {
+      return null;
+    }
     return ((LocatorStarterRule) memberStarter).getLocator();
   }
 
   public static CacheServer getServer() {
+    if (memberStarter == null || !(memberStarter instanceof ServerStarterRule)) {
+      return null;
+    }
     return ((ServerStarterRule) memberStarter).getServer();
   }
 
@@ -126,9 +136,15 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     } finally {
       MemberStarterRule.disconnectDSIfAny();
 
-      // stop all the clientsVM before stop all the memberVM
-      occupiedVMs.values().forEach(x -> x.stopVMIfNotLocator(true));
-      occupiedVMs.values().forEach(x -> x.stopVM(true));
+      // stop all the members in the order of clients, servers and locators
+      List<VMProvider> vms = new ArrayList<>();
+      vms.addAll(
+          occupiedVMs.values().stream().filter(x -> x.isClient()).collect(Collectors.toSet()));
+      vms.addAll(
+          occupiedVMs.values().stream().filter(x -> x.isServer()).collect(Collectors.toSet()));
+      vms.addAll(
+          occupiedVMs.values().stream().filter(x -> x.isLocator()).collect(Collectors.toSet()));
+      vms.forEach(x -> x.stopMember(true));
 
       // delete any file under root dir
       Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
@@ -304,18 +320,54 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return getHost(0).getVM(index);
   }
 
-  public void stopVM(int index) {
-    stopVM(index, true);
+  /**
+   * gracefully stop the member inside this vm
+   *
+   * @param index vm index
+   */
+  public void stopMember(int index) {
+    stopMember(index, true);
   }
 
-  public void stopVM(int index, boolean cleanWorkingDir) {
+  /**
+   * gracefully stop the member inside this vm
+   */
+  public void stopMember(int index, boolean cleanWorkingDir) {
     VMProvider member = occupiedVMs.get(index);
 
     if (member == null)
       return;
 
-    member.stopVM(cleanWorkingDir);
+    member.stopMember(cleanWorkingDir);
   }
+
+  /**
+   * this disconnects the distributed system of the member. The member will automatically try to
+   * reconnect after 5 seconds.
+   *
+   * will throw a ClassCastException if this method is called on a client VM.
+   */
+  public void disconnectMember(int index) {
+    MemberVM member = getMember(index);
+    if (member == null)
+      return;
+    member.disConnectMember();
+  }
+
+  /**
+   * this crashes the VM hosting the member/client. It removes the VM from the occupied VM list
+   * so that we can ignore it at cleanup.
+   */
+  public void crashVM(int index) {
+    VMProvider member = occupiedVMs.remove(index);
+    member.invokeAsync(() -> {
+      if (InternalDistributedSystem.shutdownHook != null) {
+        Runtime.getRuntime().removeShutdownHook(InternalDistributedSystem.shutdownHook);
+      }
+      System.exit(1);
+    });
+  }
+
 
   public File getWorkingDirRoot() {
     // return the dunit folder

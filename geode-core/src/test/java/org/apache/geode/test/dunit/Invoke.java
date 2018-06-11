@@ -17,6 +17,10 @@ package org.apache.geode.test.dunit;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
+
 /**
  * <code>Invoke</code> provides static utility methods that allow a <code>DistributedTest</code> to
  * invoke a <code>SerializableRunnable</code> or <code>SerializableCallable</code> in a remote test
@@ -35,6 +39,8 @@ import java.util.Map;
  */
 public class Invoke {
 
+  private static Logger logger = LogService.getLogger();
+
   protected Invoke() {}
 
   /**
@@ -49,14 +55,26 @@ public class Invoke {
   }
 
   public static void invokeInEveryVM(String name, final SerializableRunnableIF runnable) {
+    invokeInEveryVM(name, runnable, false);
+  }
+
+  public static void invokeInEveryVM(String name, final SerializableRunnableIF runnable,
+      boolean skipCrashedVM) {
     for (int hostIndex = 0; hostIndex < Host.getHostCount(); hostIndex++) {
       Host host = Host.getHost(hostIndex);
-
       for (VM vm : host.getAllVMs()) {
-        if (name != null)
-          vm.invoke(name, runnable);
-        else
-          vm.invoke(runnable);
+        try {
+          if (name != null)
+            vm.invoke(name, runnable);
+          else
+            vm.invoke(runnable);
+        } catch (RMIException e) {
+          if (skipCrashedVM) {
+            logger.info("vm" + vm.getId() + " not reachable. " + e.getCause().getMessage());
+          } else {
+            throw e;
+          }
+        }
       }
     }
   }

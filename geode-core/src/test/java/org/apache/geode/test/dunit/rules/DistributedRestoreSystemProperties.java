@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
 
 /**
@@ -36,7 +37,8 @@ public class DistributedRestoreSystemProperties extends AbstractDistributedTestR
 
   @Override
   public void after() {
-    invoker().invokeInEveryVMAndController(() -> invokeAfter());
+    invokeAfter();
+    Invoke.invokeInEveryVM("DistributedRestoreSystemProperties after", () -> invokeAfter(), true);
   }
 
   private void invokeBefore() throws Exception {

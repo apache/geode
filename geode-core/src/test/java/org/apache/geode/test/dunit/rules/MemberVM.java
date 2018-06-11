@@ -78,9 +78,12 @@ public class MemberVM extends VMProvider implements Member {
     return ((Server) member).getEmbeddedLocatorPort();
   }
 
+  /**
+   * this gracefully shutdown the member inside this vm
+   */
   @Override
-  public void stopVM(boolean cleanWorkingDir) {
-    super.stopVM(cleanWorkingDir);
+  public void stopMember(boolean cleanWorkingDir) {
+    super.stopMember(cleanWorkingDir);
 
     if (!cleanWorkingDir) {
       return;
@@ -89,6 +92,14 @@ public class MemberVM extends VMProvider implements Member {
     // if using the dunit/vm dir as the preset working dir, need to cleanup dir
     // so that regions/indexes won't get persisted across tests
     Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
+  }
+
+  /**
+   * this disconnects the distributed system of the member. The member will automatically try to
+   * reconnect after 5 seconds.
+   */
+  public void disConnectMember() {
+    vm.invokeAsync(() -> ClusterStartupRule.memberStarter.disconnectMember());
   }
 
   /**
@@ -113,4 +124,5 @@ public class MemberVM extends VMProvider implements Member {
     vm.invoke(() -> ClusterStartupRule.memberStarter
         .waitTilGatewaySendersAreReady(expectedGatewayObjectCount));
   }
+
 }

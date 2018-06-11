@@ -106,7 +106,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     });
 
     // Restart the data member cache to make sure that the index is destroyed.
-    startupRule.stopVM(1);
+    startupRule.stopMember(1);
     serverVM = startupRule.startServerVM(1, groupName, locator.getPort());
 
     serverVM.invoke(() -> {

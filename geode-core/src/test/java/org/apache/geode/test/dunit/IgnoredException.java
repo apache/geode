@@ -110,7 +110,7 @@ public class IgnoredException implements Serializable, AutoCloseable {
     if (this.vm != null) {
       vm.invoke(removeRunnable);
     } else {
-      Invoke.invokeInEveryVM(removeRunnable);
+      Invoke.invokeInEveryVM(null, removeRunnable, true);
     }
   }
 

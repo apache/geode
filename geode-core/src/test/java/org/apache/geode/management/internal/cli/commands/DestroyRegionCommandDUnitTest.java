@@ -170,7 +170,7 @@ public class DestroyRegionCommandDUnitTest {
     });
 
     // restart one server to make sure the region does not exist anymore
-    lsRule.stopVM(1);
+    lsRule.stopMember(1);
     lsRule.startServerVM(1, locator.getPort());
 
     // make sure region does not exist
