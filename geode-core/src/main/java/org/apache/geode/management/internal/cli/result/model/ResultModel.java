@@ -20,6 +20,7 @@ import static org.apache.geode.management.internal.cli.result.AbstractResultData
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +157,8 @@ public class ResultModel {
     files.put(fileName, fileModel);
   }
 
+
+
   /**
    * Overloaded method to create an {@code InfoResultModel} section called "info".
    */
@@ -184,6 +187,10 @@ public class ResultModel {
   public List<InfoResultModel> getInfoSections() {
     return sections.values().stream().filter(InfoResultModel.class::isInstance)
         .map(InfoResultModel.class::cast).collect(Collectors.toList());
+  }
+
+  public InfoResultModel getInfoSection(String name) {
+    return (InfoResultModel) sections.get(name);
   }
 
   public TabularResultModel addTable(String namedSection) {
@@ -275,6 +282,13 @@ public class ResultModel {
   public DataResultModel getDataSection(String name) {
     return (DataResultModel) sections.get(name);
   }
+
+  public List<String> getSectionNames() {
+    List<String> sectionNames = new ArrayList<>();
+    sections.forEach((k, v) -> sectionNames.add(k));
+    return sectionNames;
+  }
+
 
   public String toJson() {
     ObjectMapper mapper = new ObjectMapper();

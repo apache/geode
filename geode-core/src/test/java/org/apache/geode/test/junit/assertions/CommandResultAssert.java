@@ -15,6 +15,7 @@
 package org.apache.geode.test.junit.assertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,10 +25,14 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
-import org.json.JSONArray;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 
 public class CommandResultAssert
@@ -183,7 +188,6 @@ public class CommandResultAssert
   }
 
 
-
   public CommandResultAssert tableHasRowWithValues(String... headersThenValues) {
     assertThat(headersThenValues.length % 2)
         .describedAs("You need to pass even number of parameters.").isEqualTo(0);
@@ -276,13 +280,64 @@ public class CommandResultAssert
     return this;
   }
 
-  private Object[] toArray(JSONArray array) {
-    Object[] values = new Object[array.length()];
+  /*
+   * methods that are only applicable to ModelCommandResult
+   */
 
-    for (int i = 0; i < array.length(); i++) {
-      values[i] = array.get(i);
+  // Will throw error unless this is a ModelCommand Result
+  public ResultModel getResultModel() {
+    ModelCommandResult modelCommandResult = (ModelCommandResult) actual.getCommandResult();
+    return modelCommandResult.getResultData();
+  }
+
+  public CommandResultAssert hasSection(String... sectionName) {
+    ResultModel resultModel = getResultModel();
+    assertThat(resultModel.getSectionNames()).contains(sectionName);
+    return this;
+  }
+
+  // convenience method to get the first info section. if more than one info section
+  // use the sectionName to get it
+  public InfoResultModelAssert hasInfoSection() {
+    return new InfoResultModelAssert(getResultModel().getInfoSections().get(0));
+  }
+
+  public InfoResultModelAssert hasInfoSection(String sectionName) {
+    ResultModel resultModel = getResultModel();
+    InfoResultModel section = resultModel.getInfoSection(sectionName);
+    if (section == null) {
+      fail(sectionName + " section not found");
     }
+    return new InfoResultModelAssert(section);
+  }
 
-    return values;
+  // convenience method to get the first table section. if more than one table section
+  // use the sectionName to get it
+  public TabularResultModelAssert hasTableSection() {
+    return new TabularResultModelAssert(getResultModel().getTableSections().get(0));
+  }
+
+  public TabularResultModelAssert hasTableSection(String sectionName) {
+    ResultModel resultModel = getResultModel();
+    TabularResultModel section = resultModel.getTableSection(sectionName);
+    if (section == null) {
+      fail(sectionName + " section not found");
+    }
+    return new TabularResultModelAssert(section);
+  }
+
+  // convenience method to get the first data section. if more than one data section
+  // use the sectionName to get it
+  public DataResultModelAssert hasDataSection() {
+    return new DataResultModelAssert(getResultModel().getDataSections().get(0));
+  }
+
+  public DataResultModelAssert hasDataSection(String sectionName) {
+    ResultModel resultModel = getResultModel();
+    DataResultModel section = resultModel.getDataSection(sectionName);
+    if (section == null) {
+      fail(sectionName + " section not found");
+    }
+    return new DataResultModelAssert(section);
   }
 }

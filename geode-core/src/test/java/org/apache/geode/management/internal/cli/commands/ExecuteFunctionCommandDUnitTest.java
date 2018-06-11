@@ -32,11 +32,10 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
+import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -68,7 +67,9 @@ public class ExecuteFunctionCommandDUnitTest {
 
     // create a partitioned region on only group1
     gfsh.executeAndAssertThat(
-        "create region --name=regionA --type=PARTITION --group=group1 --redundant-copies=0 --total-num-buckets=2 --partition-resolver=org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommandDUnitTest$MyPartitionResolver");
+        "create region --name=regionA --type=PARTITION --group=group1 --redundant-copies=0 --total-num-buckets=2 --partition-resolver=org.apache.geode.management.internal.cli.commands.ExecuteFunctionCommandDUnitTest$MyPartitionResolver")
+        .statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 2);
 
@@ -79,51 +80,70 @@ public class ExecuteFunctionCommandDUnitTest {
     });
 
     // this makes sure entry a and entry b are on different member
-    CommandResultAssert locate1 =
-        gfsh.executeAndAssertThat("locate entry --key=a --region=/regionA").statusIsSuccess();
-    CommandResultAssert locate2 =
-        gfsh.executeAndAssertThat("locate entry --key=b --region=/regionA").statusIsSuccess();
+    CommandResultAssert locateACommand =
+        gfsh.executeAndAssertThat("locate entry --key=a --region=/regionA").statusIsSuccess()
+            .hasSection("location", "data-info");
+    locateACommand.hasDataSection().hasContent().containsEntry("Locations Found", "1");
+    locateACommand.hasTableSection().hasColumnSize(4).hasColumn("MemberName").hasSize(1)
+        .isSubsetOf("server-1", "server-2");
 
-    TabularResultModel section1 =
-        ((ModelCommandResult) locate1.getCommandResult()).getResultData()
-            .getTableSection("location");
-    String member1 = section1.getContent().get("MemberName").get(0);
-    TabularResultModel section2 =
-        ((ModelCommandResult) locate2.getCommandResult()).getResultData()
-            .getTableSection("location");
-    String member2 = section2.getContent().get("MemberName").get(0);
+    CommandResultAssert locateBCommand =
+        gfsh.executeAndAssertThat("locate entry --key=b --region=/regionA").statusIsSuccess()
+            .hasSection("location", "data-info");
+    locateBCommand.hasDataSection().hasContent().containsEntry("Locations Found", "1");
+    locateBCommand.hasTableSection().hasColumnSize(4).hasColumn("MemberName").hasSize(1)
+        .isSubsetOf("server-1", "server-2");
+
+    String member1 =
+        locateACommand.getResultModel().getTableSection("location").getValue("MemberName", 0);
+    String member2 =
+        locateBCommand.getResultModel().getTableSection("location").getValue("MemberName", 0);
+
     assertThat(member1).isNotEqualToIgnoringCase(member2);
   }
 
   @Test
   public void noExtraArgument() {
-    gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-1", "server-2", "server-3")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[genericFunctionId]",
-            "[genericFunctionId]", "[genericFunctionId]");
+    TabularResultModelAssert tableAssert =
+        gfsh.executeAndAssertThat(command).statusIsSuccess()
+            .hasTableSection()
+            .hasRowSize(3)
+            .hasColumnSize(3);
+    tableAssert.hasColumn("Member").containsExactlyInAnyOrder("server-1", "server-2", "server-3");
+    tableAssert.hasColumn("Message").containsExactlyInAnyOrder("[genericFunctionId]",
+        "[genericFunctionId]", "[genericFunctionId]");
   }
 
   @Test
   public void withMemberOnly() {
     gfsh.executeAndAssertThat(command + "--member=server-1").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-1")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[genericFunctionId]");
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0).containsExactly("server-1", "OK", "[genericFunctionId]");
   }
 
   @Test
   public void withGroupOnly() {
-    gfsh.executeAndAssertThat(command + "--group=group1").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-1", "server-2")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[genericFunctionId]",
-            "[genericFunctionId]");
+    TabularResultModelAssert tableAssert =
+        gfsh.executeAndAssertThat(command + "--group=group1").statusIsSuccess()
+            .hasTableSection()
+            .hasRowSize(2)
+            .hasColumnSize(3);
+    tableAssert.hasColumn("Member").containsExactlyInAnyOrder("server-1", "server-2");
+    tableAssert.hasColumn("Message").containsExactly("[genericFunctionId]", "[genericFunctionId]");
   }
 
   @Test
   public void withArgumentsOnly() {
-    gfsh.executeAndAssertThat(command + "--arguments=arguments").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-1", "server-2", "server-3")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[genericFunctionId-arguments]",
-            "[genericFunctionId-arguments]", "[genericFunctionId-arguments]");
+    TabularResultModelAssert tableAssert =
+        gfsh.executeAndAssertThat(command + "--arguments=arguments").statusIsSuccess()
+            .hasTableSection()
+            .hasRowSize(3)
+            .hasColumnSize(3);
+    tableAssert.hasColumn("Member").containsExactlyInAnyOrder("server-1", "server-2", "server-3");
+    tableAssert.hasColumn("Message").containsExactlyInAnyOrder("[genericFunctionId-arguments]",
+        "[genericFunctionId-arguments]", "[genericFunctionId-arguments]");
   }
 
 
@@ -132,9 +152,11 @@ public class ExecuteFunctionCommandDUnitTest {
     // function is only executed on one member, but the returned message is repeated twice
     // i.e. that member will execute the function on other members
     gfsh.executeAndAssertThat(command + "--region=/regionA").statusIsSuccess()
-        .tableHasRowCount("Member", 1)
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
-            "[genericFunctionId, genericFunctionId]");
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .containsExactly("server-2", "OK", "[genericFunctionId, genericFunctionId]");
   }
 
   @Test
@@ -144,31 +166,43 @@ public class ExecuteFunctionCommandDUnitTest {
     // or "[genericFunctionId-b, genericFunctionId-a]" depending which server's function gets
     // executed first
     gfsh.executeAndAssertThat(command + "--region=/regionA --filter=a,b").statusIsSuccess()
-        .tableHasRowCount("Member", 1)
-        .tableHasColumnWithValuesContaining("Message", "[genericFunctionId-a, genericFunctionId-b]",
-            "[genericFunctionId-b, genericFunctionId-a]");
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .isSubsetOf("server1", "server-2", "OK", "[genericFunctionId-b, genericFunctionId-a]",
+            "[genericFunctionId-a, genericFunctionId-b]");
   }
 
   @Test
   public void withRegionAndFilterMatchingOnlyOneMember() {
     gfsh.executeAndAssertThat(command + "--region=/regionA --filter=a").statusIsSuccess()
-        .tableHasRowCount("Member", 1)
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[genericFunctionId-a]");
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .isSubsetOf("server-1", "server-2", "OK", "[genericFunctionId-a]");
   }
 
   @Test
   public void withRegionAndArguments() {
     gfsh.executeAndAssertThat(command + "--region=/regionA --arguments=arguments").statusIsSuccess()
-        .tableHasRowCount("Member", 1)
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .isSubsetOf("server-1", "server-2", "OK",
             "[genericFunctionId-arguments, genericFunctionId-arguments]");
   }
 
   @Test
   public void withRegionAndFilterAndArgument() {
     gfsh.executeAndAssertThat(command + "--region=/regionA --filter=b --arguments=arguments")
-        .tableHasRowCount("Member", 1)
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[genericFunctionId-b-arguments]");
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .isSubsetOf("server-1", "server-2", "OK", "[genericFunctionId-b-arguments]");
   }
 
   @Test
@@ -176,8 +210,11 @@ public class ExecuteFunctionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         command + "--region=/regionA --filter=a --arguments=arguments --result-collector="
             + ToUpperResultCollector.class.getName())
-        .tableHasRowCount("Member", 1)
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[GENERICFUNCTIONID-A-ARGUMENTS]");
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .isSubsetOf("server-1", "server-2", "OK", "[GENERICFUNCTIONID-A-ARGUMENTS]");
   }
 
   @Test
@@ -185,16 +222,22 @@ public class ExecuteFunctionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         command + "--region=/regionA --arguments=arguments --result-collector="
             + ToUpperResultCollector.class.getName())
-        .tableHasRowCount("Member", 1)
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .isSubsetOf("server-1", "server-2", "OK",
             "[GENERICFUNCTIONID-ARGUMENTS, GENERICFUNCTIONID-ARGUMENTS]");
   }
 
   @Test
   public void withMemberAndArgument() {
     gfsh.executeAndAssertThat(command + "--member=server-3 --arguments=arguments").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[genericFunctionId-arguments]");
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .containsExactly("server-3", "OK", "[genericFunctionId-arguments]");
   }
 
   @Test
@@ -202,17 +245,27 @@ public class ExecuteFunctionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         command + "--member=server-1 --arguments=arguments  --result-collector="
             + ToUpperResultCollector.class.getName())
-        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Member", "server-1")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[GENERICFUNCTIONID-ARGUMENTS]");
+        .statusIsSuccess()
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasColumnSize(3)
+        .hasRow(0)
+        .containsExactly("server-1", "OK", "[GENERICFUNCTIONID-ARGUMENTS]");
   }
 
   @Test
   public void withArgumentAndResultCollector() {
-    gfsh.executeAndAssertThat(command + "--arguments=arguments  --result-collector="
-        + ToUpperResultCollector.class.getName()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-1", "server-2", "server-3")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "[GENERICFUNCTIONID-ARGUMENTS]",
-            "[GENERICFUNCTIONID-ARGUMENTS]", "[GENERICFUNCTIONID-ARGUMENTS]");
+
+    TabularResultModelAssert tableAssert =
+        gfsh.executeAndAssertThat(command + "--arguments=arguments  --result-collector="
+            + ToUpperResultCollector.class.getName()).statusIsSuccess()
+            .hasTableSection()
+            .hasRowSize(3)
+            .hasColumnSize(3);
+
+    tableAssert.hasColumn("Member").containsExactlyInAnyOrder("server-1", "server-2", "server-3");
+    tableAssert.hasColumn("Message").containsExactlyInAnyOrder("[GENERICFUNCTIONID-ARGUMENTS]",
+        "[GENERICFUNCTIONID-ARGUMENTS]", "[GENERICFUNCTIONID-ARGUMENTS]");
   }
 
 
