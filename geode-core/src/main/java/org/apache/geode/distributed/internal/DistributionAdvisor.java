@@ -1129,7 +1129,7 @@ public class DistributionAdvisor {
   }
 
   /** exchange profiles to initialize this advisor */
-  private void exchangeProfiles() {
+  public void exchangeProfiles() {
     Assert.assertHoldsLock(this, false); // causes deadlock
     Assert.assertHoldsLock(this.initializeLock, true);
     new UpdateAttributesProcessor(getAdvisee()).distribute(true);
