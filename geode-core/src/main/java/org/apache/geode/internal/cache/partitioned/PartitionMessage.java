@@ -310,7 +310,7 @@ public abstract class PartitionMessage extends DistributionMessage
         return;
       }
       pr = getPartitionedRegion();
-      if (pr == null && failIfRegionMissing()) {
+      if ((pr == null || !pr.getDistributionAdvisor().isInitialized()) && failIfRegionMissing()) {
         // if the distributed system is disconnecting, don't send a reply saying
         // the partitioned region can't be found (bug 36585)
         thr = new ForceReattemptException(
