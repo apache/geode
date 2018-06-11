@@ -259,7 +259,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     waitUntilSatisfied(
         () -> getRegionMBean(regionName),
         Objects::nonNull,
-        String.format("Expecting to find an mbean for region '%s', regionName"),
+        String.format("Expecting to find an mbean for region '%s'", regionName),
         30, TimeUnit.SECONDS);
 
     String predicateDescription = String.format(
