@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -26,8 +25,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
-import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.Bucket;
@@ -65,19 +64,18 @@ public class BucketAdvisorTest {
     when(partitionedRegion.getRedundancyTracker())
         .thenReturn(mock(PartitionedRegionRedundancyTracker.class));
 
-    InternalDistributedMember memberId = new InternalDistributedMember("localhost", 123);
-    DistributionAdvisor.Profile profile = new BucketAdvisor.BucketProfile(
-        memberId, 1, bucket);
+    InternalDistributedMember missingElectorId = new InternalDistributedMember("localhost", 123);
 
     RegionAdvisor regionAdvisor = mock(RegionAdvisor.class);
     when(regionAdvisor.getPartitionedRegion()).thenReturn(partitionedRegion);
-    // getProfile() is invoked twice - once in initializePrimaryElector() and then in
-    // volunteerForPrimary(). Returning a profile first simulates a elector being
+    // hasPartitionedRegion() is invoked twice - once in initializePrimaryElector() and then in
+    // volunteerForPrimary(). Returning true first simulates a elector being
     // there when createBucketAtomically() initiates creation of a bucket. Returning
-    // null the second time simulates the elector closing its region/cache before
+    // false the second time simulates the elector closing its region/cache before
     // we get to the point of volunteering for primary
-    when(regionAdvisor.getProfile(isA(DistributionAdvisor.ProfileId.class))).thenReturn(profile,
-        null);
+    when(regionAdvisor.hasPartitionedRegion(Mockito.any(InternalDistributedMember.class)))
+        .thenReturn(true,
+            false);
 
     BucketAdvisor advisor = BucketAdvisor.createBucketAdvisor(bucket, regionAdvisor);
     BucketAdvisor advisorSpy = spy(advisor);
@@ -89,8 +87,8 @@ public class BucketAdvisorTest {
     BucketAdvisor.VolunteeringDelegate volunteeringDelegate =
         mock(BucketAdvisor.VolunteeringDelegate.class);
     advisorSpy.setVolunteeringDelegate(volunteeringDelegate);
-    advisorSpy.initializePrimaryElector(memberId);
-    assertEquals(memberId, advisorSpy.getPrimaryElector());
+    advisorSpy.initializePrimaryElector(missingElectorId);
+    assertEquals(missingElectorId, advisorSpy.getPrimaryElector());
     advisorSpy.volunteerForPrimary();
     verify(volunteeringDelegate).volunteerForPrimary();
   }

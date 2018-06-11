@@ -1003,8 +1003,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * an executor (waiting pool) and returns early.
    */
   public void volunteerForPrimary() {
-    ProfileId elector = primaryElector;
-    if (elector != null && regionAdvisor.getProfile(elector) != null) {
+    InternalDistributedMember elector = primaryElector;
+    if (elector != null && regionAdvisor.hasPartitionedRegion(elector)) {
       // another server will determine the primary node
       return;
     }
@@ -1177,6 +1177,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                   getBucket().getId(), regionAdvisor.getPartitionedRegion().getFullPath());
             }
             setPrimaryMember(getDistributionManager().getId());
+            logger.info(
+                "This server is now primary for " + regionAdvisor.getPartitionedRegion().getName()
+                    + " bucket #" + getBucket().getId());
             changedStateToIsPrimary = true;
             if (hasPrimary() && isPrimary()) {
               shouldInvokeListeners = true;
@@ -1540,7 +1543,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     // Only set the new primary elector if we have not yet seen
     // a primary for this bucket.
     if (this.primaryElector != null) {
-      if (newPrimaryElector != null && regionAdvisor.getProfile(newPrimaryElector) == null) {
+      if (newPrimaryElector != null && !regionAdvisor.hasPartitionedRegion(newPrimaryElector)) {
         // no longer a participant - don't use it
         this.primaryElector = null;
       } else {
@@ -1555,7 +1558,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     // of finishing an incomplete bucket creation, so only set the elector for
     // the leader region.
     if (parentAdvisor == null) {
-      if (newPrimaryElector != null && regionAdvisor.getProfile(newPrimaryElector) == null) {
+      if (newPrimaryElector != null && !regionAdvisor.hasPartitionedRegion(newPrimaryElector)) {
         // no longer a participant - don't use it
         this.primaryElector = null;
       } else {
