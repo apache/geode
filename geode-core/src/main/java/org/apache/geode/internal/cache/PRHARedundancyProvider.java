@@ -571,7 +571,7 @@ public class PRHARedundancyProvider {
 
         observer = new BucketMembershipObserver(toCreate).beginMonitoring();
         boolean loggedInsufficentStores = false; // track if insufficient data stores have been
-                                                 // detected
+        // detected
         for (;;) {
           this.prRegion.checkReadiness();
           if (this.prRegion.getCache().isCacheAtShutdownAll()) {

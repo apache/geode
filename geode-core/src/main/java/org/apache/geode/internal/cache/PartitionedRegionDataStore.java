@@ -2902,7 +2902,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       // Assert.assertTrue(nList.contains(partitionedRegion.getNode().getMemberId()) ,
       // " grab returned false and b2n does not contains this member.");
     } else {
-      // try grabbing bucekts for all the PR which are colocated with it
+      // try grabbing buckets for all the PR which are colocated with it
       List colocatedWithList = ColocationHelper.getColocatedChildRegions(partitionedRegion);
       Iterator itr = colocatedWithList.iterator();
       while (itr.hasNext()) {
