@@ -1017,8 +1017,21 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   public void unmasquerade(TXStateProxy tx) {
     if (tx != null) {
+      cleanupTransactionIfNoLongerHost(tx);
       setTXState(null);
       tx.getLock().unlock();
+    }
+  }
+
+  private void cleanupTransactionIfNoLongerHost(TXStateProxy tx) {
+    synchronized (hostedTXStates) {
+      if (!hostedTXStates.containsKey(tx.getTxId())) {
+        // clean up the transaction if no longer the host of the transaction
+        // this could occur when a failover command removed the transaction.
+        if (tx.isRealDealLocal()) {
+          ((TXStateProxyImpl) tx).getLocalRealDeal().cleanup();
+        }
+      }
     }
   }
 
@@ -1856,6 +1869,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     } else {
       return value;
     }
+  }
+
+  Map<TXId, TXStateProxy> getHostedTXStates() {
+    return hostedTXStates;
   }
 
 }
