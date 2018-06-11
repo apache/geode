@@ -919,13 +919,15 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   private boolean hasFlagsField(final DataOutput out) {
-    Version v = InternalDataSerializer.getVersionForDataStream(out);
-    return v.compareTo(Version.GEODE_180) >= 0;
+    return hasFlagsField(InternalDataSerializer.getVersionForDataStream(out));
   }
 
-  private boolean hasFlagsField(final DataInput out) {
-    Version v = InternalDataSerializer.getVersionForDataStream(out);
-    return v.compareTo(Version.GEODE_180) >= 0;
+  private boolean hasFlagsField(final DataInput in) {
+    return hasFlagsField(InternalDataSerializer.getVersionForDataStream(in));
+  }
+
+  private boolean hasFlagsField(final Version version) {
+    return version.compareTo(Version.GEODE_180) >= 0;
   }
 
   private boolean useShadowKey() {
