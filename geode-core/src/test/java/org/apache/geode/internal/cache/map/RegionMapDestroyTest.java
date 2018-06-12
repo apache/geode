@@ -226,13 +226,17 @@ public class RegionMapDestroyTest {
     event.setOriginRemote(true);
   }
 
+  private boolean doDestroy() {
+    return arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry);
+  }
+
   @Test
   public void destroyWithEmptyRegionThrowsException() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
@@ -241,8 +245,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapContainsTokenValue(Token.DESTROYED);
     validateInvokedDestroyMethodsOnRegion(false);
@@ -254,8 +257,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
@@ -268,8 +270,7 @@ public class RegionMapDestroyTest {
     givenDestroyThrowsRegionClearedException();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateInvokedDestroyMethodsOnRegion(true);
   }
@@ -280,8 +281,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
     validateMapDoesNotContainKey(event.getKey());
     validateNoDestroyInvocationsOnRegion();
@@ -294,8 +294,7 @@ public class RegionMapDestroyTest {
     givenExistingEntry(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapContainsTokenValue(Token.DESTROYED);
     validateInvokedDestroyMethodsOnRegion(false);
@@ -308,8 +307,7 @@ public class RegionMapDestroyTest {
     givenExistingEntry(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
@@ -323,8 +321,7 @@ public class RegionMapDestroyTest {
     givenEvictableEntryIsInUseByTransaction();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
     validateNoDestroyInvocationsOnEvictableEntry();
     validateNoDestroyInvocationsOnRegion();
@@ -339,8 +336,7 @@ public class RegionMapDestroyTest {
     givenEvictableEntryIsInUseByTransaction();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
     validateNoDestroyInvocationsOnEvictableEntry();
     validateNoDestroyInvocationsOnRegion();
@@ -355,8 +351,7 @@ public class RegionMapDestroyTest {
 
     when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateInvokedDestroyMethodOnEvictableEntry();
     validateInvokedDestroyMethodsOnRegion(false);
@@ -372,8 +367,7 @@ public class RegionMapDestroyTest {
 
     when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
@@ -394,8 +388,7 @@ public class RegionMapDestroyTest {
     // isEviction is false despite having eviction enabled
     isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(entryMap).remove(eq(KEY), eq(evictableEntry));
     verify(entryMap, times(2)).putIfAbsent(eq(KEY), any());
@@ -422,8 +415,7 @@ public class RegionMapDestroyTest {
     // isEviction is false despite having eviction enabled
     isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
@@ -437,8 +429,7 @@ public class RegionMapDestroyTest {
 
     isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateInvokedDestroyMethodOnEvictableEntry();
     validateInvokedDestroyMethodsOnRegion(false);
@@ -453,8 +444,7 @@ public class RegionMapDestroyTest {
 
     isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
@@ -466,8 +456,7 @@ public class RegionMapDestroyTest {
     givenExistingEntry();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapContainsTokenValue(Token.DESTROYED);
     validateInvokedDestroyMethodsOnRegion(false);
@@ -480,8 +469,7 @@ public class RegionMapDestroyTest {
     givenExistingEntry();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
@@ -493,8 +481,7 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     // why not DESTROY token? since it was already destroyed why do we do the parts?
     validateMapContainsTokenValue(Token.TOMBSTONE);
@@ -508,8 +495,7 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
@@ -520,8 +506,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
@@ -531,8 +516,7 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenRemoveRecoveredEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapDoesNotContainKey(event.getKey());
     validateInvokedDestroyMethodsOnRegion(false);
@@ -545,8 +529,7 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenRemoveRecoveredEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
@@ -558,8 +541,7 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
     givenRemoveRecoveredEntry();
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
@@ -568,8 +550,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapDoesNotContainKey(event.getKey());
     validateInvokedDestroyMethodsOnRegion(false);
@@ -581,8 +562,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
@@ -597,8 +577,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapDoesNotContainKey(event.getKey());
     validateInvokedDestroyMethodsOnRegion(false);
@@ -610,8 +589,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntryWithVersionTag();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapContainsTokenValue(Token.TOMBSTONE);
     validateInvokedDestroyMethodsOnRegion(false);
@@ -623,8 +601,7 @@ public class RegionMapDestroyTest {
     givenEviction();
     givenExistingEntryWithVersionTag();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapContainsTokenValue(Token.TOMBSTONE);
     validateInvokedDestroyMethodsOnRegion(false);
@@ -635,8 +612,7 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
   }
 
   /**
@@ -648,8 +624,7 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEviction();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
     validateMapContainsTokenValue(Token.REMOVED_PHASE1);
     validateNoDestroyInvocationsOnRegion();
@@ -660,8 +635,7 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(false);
     givenEviction();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
     validateMapDoesNotContainKey(event.getKey());
     validateNoDestroyInvocationsOnRegion();
@@ -673,8 +647,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenRemoteEventWithVersionTag();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapContainsTokenValue(Token.TOMBSTONE);
     validateInvokedDestroyMethodsOnRegion(false);
@@ -692,8 +665,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenOriginIsRemote();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     validateMapContainsKey(event.getKey());
     validateMapContainsTokenValue(Token.REMOVED_PHASE1);
