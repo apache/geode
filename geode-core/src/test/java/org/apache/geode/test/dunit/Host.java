@@ -30,9 +30,7 @@ import org.apache.geode.test.dunit.standalone.VersionManager;
  * RMI registry is only started on the host on which Hydra's Master VM runs. RMI registries may be
  * started on other hosts via additional Hydra configuration.
  *
- * @deprecated Please use similar static APIs on {@link VM} instead.
  */
-@Deprecated
 @SuppressWarnings("serial")
 public abstract class Host implements Serializable {
 
@@ -131,6 +129,7 @@ public abstract class Host implements Serializable {
    * @param n A zero-based identifier of the VM
    *
    * @throws IllegalArgumentException {@code n} is more than the number of VMs
+   * @deprecated use the static methods in VM instead
    */
   public VM getVM(int n) {
     int size = vms.size();

@@ -337,4 +337,31 @@ public class TXManagerImplTest {
       txMgr.unmasquerade(existingTx);
     }
   }
+
+  @Test
+  public void txStateNotCleanedupIfNotRemovedFromHostedTxStatesMap() {
+    tx1 = txMgr.getOrSetHostedTXState(txid, msg);
+    TXStateProxyImpl txStateProxy = (TXStateProxyImpl) tx1;
+    assertNotNull(txStateProxy);
+    assertFalse(txStateProxy.getLocalRealDeal().isClosed());
+
+    txMgr.masqueradeAs(tx1);
+    txMgr.unmasquerade(tx1);
+    assertFalse(txStateProxy.getLocalRealDeal().isClosed());
+
+  }
+
+  @Test
+  public void txStateCleanedupIfRemovedFromHostedTxStatesMap() {
+    tx1 = txMgr.getOrSetHostedTXState(txid, msg);
+    TXStateProxyImpl txStateProxy = (TXStateProxyImpl) tx1;
+    assertNotNull(txStateProxy);
+    assertFalse(txStateProxy.getLocalRealDeal().isClosed());
+
+    txMgr.masqueradeAs(tx1);
+    // during TX failover, tx can be removed from the hostedTXStates map by FindRemoteTXMessage
+    txMgr.getHostedTXStates().remove(txid);
+    txMgr.unmasquerade(tx1);
+    assertTrue(txStateProxy.getLocalRealDeal().isClosed());
+  }
 }

@@ -156,7 +156,7 @@ public class ExecuteFunctionCommandDUnitTest {
         .hasRowSize(1)
         .hasColumnSize(3)
         .hasRow(0)
-        .containsExactly("server-2", "OK", "[genericFunctionId, genericFunctionId]");
+        .isSubsetOf("server-1", "server-2", "OK", "[genericFunctionId, genericFunctionId]");
   }
 
   @Test
@@ -170,7 +170,7 @@ public class ExecuteFunctionCommandDUnitTest {
         .hasRowSize(1)
         .hasColumnSize(3)
         .hasRow(0)
-        .isSubsetOf("server1", "server-2", "OK", "[genericFunctionId-b, genericFunctionId-a]",
+        .isSubsetOf("server-1", "server-2", "OK", "[genericFunctionId-b, genericFunctionId-a]",
             "[genericFunctionId-a, genericFunctionId-b]");
   }
 
