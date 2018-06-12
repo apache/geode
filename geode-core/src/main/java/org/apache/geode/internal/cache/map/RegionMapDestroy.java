@@ -95,14 +95,10 @@ public class RegionMapDestroy {
     cacheWrite = cacheWriteArg;
     isEviction = isEvictionArg;
     expectedOldValue = expectedOldValueArg;
-    removeRecoveredEntry = removeRecoveredEntryArg;
-
-    if (event.isFromRILocalDestroy()) {
-      // for RI local-destroy we don't want to keep tombstones.
-      // In order to simplify things we just set this recovery
-      // flag to true to force the entry to be removed
-      removeRecoveredEntry = true;
-    }
+    // for RI local-destroy we don't want to keep tombstones.
+    // In order to simplify things we just set this recovery
+    // flag to true to force the entry to be removed
+    removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
 
     cacheModificationLock.lockForCacheModification(internalRegion, event);
     try {

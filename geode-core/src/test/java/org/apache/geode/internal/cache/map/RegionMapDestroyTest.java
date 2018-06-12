@@ -80,6 +80,7 @@ public class RegionMapDestroyTest {
   private boolean isEviction;
   private boolean removeRecoveredEntry;
   private boolean invokeCallbacks;
+  private boolean fromRILocalDestroy;
 
   @Before
   public void setUp() {
@@ -523,6 +524,19 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingTombstoneWithConcurrencyChecksAndFromRILocalDestroyDoesRemove() {
+    givenConcurrencyChecks(true);
+    fromRILocalDestroy = true;
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapDoesNotContainKey(event.getKey());
+    validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
   public void destroyOfExistingTombstoneWithConcurrencyChecksAndRemoveRecoveredEntryNeverCallsUpdateSizeOnRemove() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
@@ -713,7 +727,7 @@ public class RegionMapDestroyTest {
 
   private EntryEventImpl createEventForDestroy(LocalRegion lr) {
     when(lr.getKeyInfo(KEY)).thenReturn(new KeyInfo(KEY, null, null));
-    return EntryEventImpl.create(lr, Operation.DESTROY, KEY, false, null, true, false);
+    return EntryEventImpl.create(lr, Operation.DESTROY, KEY, false, null, true, fromRILocalDestroy);
   }
 
   /**
