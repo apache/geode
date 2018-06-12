@@ -89,15 +89,19 @@ public class LonerTypeRegistration implements TypeRegistration {
     if (delegate != null) {
       return;
     }
-    TypeRegistration delegateTmp;
+    final TypeRegistration delegateTmp = createTypeRegistration(client);
+    delegateTmp.initialize();
+    delegate = delegateTmp;
+  }
 
+  protected TypeRegistration createTypeRegistration(boolean client) {
+    TypeRegistration delegateTmp;
     if (client) {
       delegateTmp = new ClientTypeRegistration(cache);
     } else {
       delegateTmp = new PeerTypeRegistration(cache);
     }
-    delegateTmp.initialize();
-    delegate = delegateTmp;
+    return delegateTmp;
   }
 
   /**
