@@ -203,7 +203,7 @@ public class RegionMapDestroy {
             return;
           }
           event.setRegionEntry(regionEntry);
-          if (isEntryReadyForEviction(regionEntry)) {
+          if (!isEntryReadyForEviction(regionEntry)) {
             return;
           }
           destroyExistingEntry();
@@ -310,10 +310,10 @@ public class RegionMapDestroy {
       if (!focusedRegionMap.confirmEvictionDestroy(entry)) {
         opCompleted = false;
         abortDestroyAndReturnFalse = true;
-        return true;
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   private boolean isEntryIsInUseByTransaction() {
@@ -630,17 +630,8 @@ public class RegionMapDestroy {
           oldRegionEntry = focusedRegionMap.putEntryIfAbsent(event.getKey(), newRegionEntry);
         } else {
           event.setRegionEntry(oldRegionEntry);
-
-          // Last transaction related eviction check. This should
-          // prevent
-          // transaction conflict (caused by eviction) when the entry
-          // is being added to transaction state.
-          if (isEviction) {
-            if (!focusedRegionMap.confirmEvictionDestroy(oldRegionEntry)) {
-              opCompleted = false;
-              abortDestroyAndReturnFalse = true;
-              return;
-            }
+          if (!isEntryReadyForEviction(oldRegionEntry)) {
+            return;
           }
           try {
             // if concurrency checks are enabled, destroy will set the version tag
