@@ -1311,7 +1311,7 @@ fromData,20
 toData,9
 
 org/apache/geode/internal/cache/TXCommitMessage,2
-fromData,235
+fromData,236
 toData,316
 
 org/apache/geode/internal/cache/TXCommitMessage$CommitProcessForLockIdMessage,2
