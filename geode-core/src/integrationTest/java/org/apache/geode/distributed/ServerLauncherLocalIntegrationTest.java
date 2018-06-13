@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -211,7 +210,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   }
 
   @Test
-  public void startWithParametersOverridesCacheXmlConfiguration() throws IOException {
+  public void startWithParametersOverridesCacheXmlConfiguration() {
     int[] freePorts = getRandomAvailableTCPPorts(2);
     int xmlPort = freePorts[0];
     int serverPort = freePorts[1];

@@ -97,6 +97,7 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -107,7 +108,6 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.DiskStoreFactoryImpl;
@@ -574,7 +574,7 @@ public class CacheCreation implements InternalCache {
     // before region initialization to after it to fix bug 33587.
     // Create and start the CacheServers after the gateways have been initialized
     // to fix bug 39736.
-    startCacheServers(getCacheServers(), cache, CacheServerLauncher.getParameters());
+    startCacheServers(getCacheServers(), cache, ServerLauncherParameters.INSTANCE);
 
     for (GatewayReceiver receiverCreation : this.getGatewayReceivers()) {
       GatewayReceiverFactory factory = cache.createGatewayReceiverFactory();
@@ -634,13 +634,13 @@ public class CacheCreation implements InternalCache {
    * @param serverImpl CacheServer implementation.
    * @param parameters Parameters to reconfigure the server.
    */
-  void reconfigureServer(CacheServerImpl serverImpl, CacheServerLauncher.Parameters parameters) {
+  void reconfigureServer(CacheServerImpl serverImpl, ServerLauncherParameters parameters) {
     if (parameters == null)
       return;
 
-    if (parameters.getServerPort() != null
-        && parameters.getServerPort() != CacheServer.DEFAULT_PORT)
-      serverImpl.setPort(parameters.getServerPort());
+    if (parameters.getPort() != null
+        && parameters.getPort() != CacheServer.DEFAULT_PORT)
+      serverImpl.setPort(parameters.getPort());
     if (parameters.getMaxThreads() != null
         && parameters.getMaxThreads() != CacheServer.DEFAULT_MAX_THREADS)
       serverImpl.setMaxThreads(parameters.getMaxThreads());
@@ -653,9 +653,9 @@ public class CacheCreation implements InternalCache {
     if (parameters.getSocketBufferSize() != null
         && parameters.getSocketBufferSize() != CacheServer.DEFAULT_SOCKET_BUFFER_SIZE)
       serverImpl.setSocketBufferSize(parameters.getSocketBufferSize());
-    if (parameters.getServerBindAddress() != null
-        && parameters.getServerBindAddress() != CacheServer.DEFAULT_BIND_ADDRESS)
-      serverImpl.setBindAddress(parameters.getServerBindAddress().trim());
+    if (parameters.getBindAddress() != null
+        && parameters.getBindAddress() != CacheServer.DEFAULT_BIND_ADDRESS)
+      serverImpl.setBindAddress(parameters.getBindAddress().trim());
     if (parameters.getMessageTimeToLive() != null
         && parameters.getMessageTimeToLive() != CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE)
       serverImpl.setMessageTimeToLive(parameters.getMessageTimeToLive());
@@ -669,14 +669,14 @@ public class CacheCreation implements InternalCache {
    * default server to the param declarativeCacheServers if a serverPort is specified.
    */
   void startCacheServers(List<CacheServer> declarativeCacheServers, Cache cache,
-      CacheServerLauncher.Parameters parameters) {
+      ServerLauncherParameters parameters) {
     Integer serverPort = null;
     String serverBindAdd = null;
     Boolean disableDefaultServer = null;
 
     if (parameters != null) {
-      serverPort = parameters.getServerPort();
-      serverBindAdd = parameters.getServerBindAddress();
+      serverPort = parameters.getPort();
+      serverBindAdd = parameters.getBindAddress();
       disableDefaultServer = parameters.isDisableDefaultServer();
     }
 

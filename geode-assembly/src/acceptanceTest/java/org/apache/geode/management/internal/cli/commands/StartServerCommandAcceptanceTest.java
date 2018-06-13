@@ -16,16 +16,15 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
@@ -33,7 +32,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -43,7 +41,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * Start server parameters should take precedence over cache.xml file and cluster configuration
  * service. See GEODE-5256.
  */
-@Category(AcceptanceTest.class)
 public class StartServerCommandAcceptanceTest {
 
   @Rule
@@ -76,35 +73,33 @@ public class StartServerCommandAcceptanceTest {
     pw.close();
 
     Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    StringBuilder startServerCommandBuilder = new StringBuilder("start server");
-    startServerCommandBuilder.append(" --max-threads=100");
-    startServerCommandBuilder.append(" --max-connections=1200");
-    startServerCommandBuilder.append(" --max-message-count=5000");
-    startServerCommandBuilder.append(" --message-time-to-live=360");
-    startServerCommandBuilder.append(" --socket-buffer-size=16384");
-    startServerCommandBuilder.append(" --server-port=" + serverPort);
-    startServerCommandBuilder.append(" --name=" + testName.getMethodName());
-    startServerCommandBuilder.append(" --cache-xml-file=" + cacheXmlFile.getAbsolutePath());
-    startServerCommandBuilder.append(" --J=-Dgemfire.log-file=" + logFile.getAbsolutePath());
+    String startServerCommand =
+        "start server --max-threads=100 --max-connections=1200 --max-message-count=5000 --message-time-to-live=360 --socket-buffer-size=16384 --server-port="
+            + serverPort + " --name=" + testName.getMethodName() + " --cache-xml-file="
+            + cacheXmlFile.getAbsolutePath() + " --J=-Dgemfire.log-file=" + logFile
+                .getAbsolutePath();
 
-    GfshExecution execution = GfshScript.of(startServerCommandBuilder.toString()).execute(gfshRule);
+    GfshExecution execution = GfshScript.of(startServerCommand).execute(gfshRule);
     assertThat(execution.getOutputText())
         .containsPattern("Server .* " + testName.getMethodName() + " is currently online.");
 
     // Assert Server Properties.
-    try (BufferedReader br = new BufferedReader(new FileReader(logFile))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        if (line.contains("CacheServer Configuration:")) {
-          assertThat(line.contains("max-threads=100")).isTrue();
-          assertThat(line.contains("port=" + serverPort)).isTrue();
-          assertThat(line.contains("max-connections=1200")).isTrue();
-          assertThat(line.contains("message-time-to-live=360")).isTrue();
-          assertThat(line.contains("socket-buffer-size=16384")).isTrue();
-          assertThat(line.contains("maximum-message-count=5000")).isTrue();
-        }
+    Boolean configurationLineFound = Boolean.FALSE;
+    LineIterator lineIterator = FileUtils.lineIterator(logFile);
+    while (lineIterator.hasNext()) {
+      String line = lineIterator.nextLine();
+      if (line.contains("CacheServer Configuration:")) {
+        configurationLineFound = Boolean.TRUE;
+        assertThat(line.contains("max-threads=100")).isTrue();
+        assertThat(line.contains("port=" + serverPort)).isTrue();
+        assertThat(line.contains("max-connections=1200")).isTrue();
+        assertThat(line.contains("message-time-to-live=360")).isTrue();
+        assertThat(line.contains("socket-buffer-size=16384")).isTrue();
+        assertThat(line.contains("maximum-message-count=5000")).isTrue();
       }
     }
+
+    assertThat(configurationLineFound).isTrue();
   }
 
 
@@ -114,22 +109,16 @@ public class StartServerCommandAcceptanceTest {
     Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     File logFile = temporaryFolder.newFile(testName.getMethodName() + ".log");
 
-    StringBuilder startServerCommandBuilder = new StringBuilder("start server");
-    startServerCommandBuilder.append(" --max-threads=50");
-    startServerCommandBuilder.append(" --max-connections=200");
-    startServerCommandBuilder.append(" --max-message-count=500");
-    startServerCommandBuilder.append(" --message-time-to-live=120");
-    startServerCommandBuilder.append(" --socket-buffer-size=8192");
-    startServerCommandBuilder.append(" --server-port=" + serverPort);
-    startServerCommandBuilder.append(" --use-cluster-configuration=true");
-    startServerCommandBuilder.append(" --name=" + testName.getMethodName());
-    startServerCommandBuilder.append(" --J=-Dgemfire.log-file=" + logFile.getAbsolutePath());
+    String startServerCommand =
+        "start server --max-threads=50 --max-connections=200 --max-message-count=500 --message-time-to-live=120 --socket-buffer-size=8192 --server-port="
+            + serverPort + " --use-cluster-configuration=true --name=" + testName.getMethodName()
+            + " --J=-Dgemfire.log-file=" + logFile.getAbsolutePath();
 
     // Start Locator, configure PDX (just to have a non-empty cluster-configuration) and start
     // server.
     GfshExecution startClusterExecution = GfshScript
         .of("start locator --name=locator1 --connect=true --enable-cluster-configuration=true",
-            "configure pdx --read-serialized=true", startServerCommandBuilder.toString())
+            "configure pdx --read-serialized=true", startServerCommand)
         .execute(gfshRule);
 
     assertThat(startClusterExecution.getOutputText())
@@ -138,18 +127,21 @@ public class StartServerCommandAcceptanceTest {
         .containsPattern("Server .* " + testName.getMethodName() + " is currently online.");
 
     // Assert Server Properties.
-    try (BufferedReader br = new BufferedReader(new FileReader(logFile))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        if (line.contains("CacheServer Configuration:")) {
-          assertThat(line.contains("max-threads=50")).isTrue();
-          assertThat(line.contains("port=" + serverPort)).isTrue();
-          assertThat(line.contains("max-connections=200")).isTrue();
-          assertThat(line.contains("message-time-to-live=120")).isTrue();
-          assertThat(line.contains("socket-buffer-size=8192")).isTrue();
-          assertThat(line.contains("maximum-message-count=500")).isTrue();
-        }
+    Boolean configurationLineFound = Boolean.FALSE;
+    LineIterator lineIterator = FileUtils.lineIterator(logFile);
+    while (lineIterator.hasNext()) {
+      String line = lineIterator.nextLine();
+      if (line.contains("CacheServer Configuration:")) {
+        configurationLineFound = Boolean.TRUE;
+        assertThat(line.contains("max-threads=50")).isTrue();
+        assertThat(line.contains("port=" + serverPort)).isTrue();
+        assertThat(line.contains("max-connections=200")).isTrue();
+        assertThat(line.contains("message-time-to-live=120")).isTrue();
+        assertThat(line.contains("socket-buffer-size=8192")).isTrue();
+        assertThat(line.contains("maximum-message-count=500")).isTrue();
       }
     }
+
+    assertThat(configurationLineFound).isTrue();
   }
 }

@@ -77,7 +77,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
   }
 
   @After
-  public void tearDownAbstractServerLauncherIntegrationTestCase() throws Exception {
+  public void tearDownAbstractServerLauncherIntegrationTestCase() {
     if (launcher != null) {
       launcher.stop();
     }
@@ -136,7 +136,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
   protected File givenCacheXmlFileWithServerProperties(final int serverPort,
       final String bindAddress, final String hostnameForClients, final int maxConnections,
       final int maxThreads, final int maximumMessageCount, final int messageTimeToLive,
-      final int socketBufferSize) throws IOException {
+      final int socketBufferSize) {
     try {
       cacheXmlFile = writeCacheXml(serverPort, bindAddress, hostnameForClients, maxConnections,
           maxThreads, maximumMessageCount, messageTimeToLive, socketBufferSize);

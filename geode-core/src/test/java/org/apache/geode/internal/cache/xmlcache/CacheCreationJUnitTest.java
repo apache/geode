@@ -45,8 +45,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.InternalCache;
 
 public class CacheCreationJUnitTest {
@@ -57,7 +57,7 @@ public class CacheCreationJUnitTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    CacheServerLauncher.clearStatics();
+    ServerLauncherParameters.INSTANCE.clear();
   }
 
   @SuppressWarnings("deprecation")
@@ -179,14 +179,8 @@ public class CacheCreationJUnitTest {
     List<CacheServer> cacheServers = new ArrayList<>();
     when(this.cache.getCacheServers()).thenReturn(cacheServers);
 
-    Boolean disableDefaultCacheServer = false;
-    Integer configuredServerPort = null;
-    String configuredServerBindAddress = null;
-
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
-            disableDefaultCacheServer));
-
+        ServerLauncherParameters.INSTANCE.withDisableDefaultServer(false));
     verify(this.cache, never()).addCacheServer();
   }
 
@@ -200,14 +194,8 @@ public class CacheCreationJUnitTest {
     List<CacheServer> cacheServers = new ArrayList<>();
     when(this.cache.getCacheServers()).thenReturn(cacheServers);
 
-    Boolean disableDefaultCacheServer = true;
-    Integer configuredServerPort = null;
-    String configuredServerBindAddress = null;
-
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
-            disableDefaultCacheServer));
-
+        ServerLauncherParameters.INSTANCE.withDisableDefaultServer(false));
     verify(this.cache, never()).addCacheServer();
   }
 
@@ -223,12 +211,10 @@ public class CacheCreationJUnitTest {
 
     Boolean disableDefaultCacheServer = false;
     Integer configuredServerPort = 9999;
-    String configuredServerBindAddress = null;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
-            disableDefaultCacheServer));
-
+        ServerLauncherParameters.INSTANCE.withPort(configuredServerPort)
+            .withDisableDefaultServer(disableDefaultCacheServer));
     verify(this.cache, times(1)).addCacheServer();
     verify(mockServer).setPort(9999);
   }
@@ -244,13 +230,11 @@ public class CacheCreationJUnitTest {
     when(this.cache.addCacheServer()).thenReturn(mockServer);
 
     Integer configuredServerPort = 9999;
-    String configuredServerBindAddress = null;
     Boolean disableDefaultCacheServer = false;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
-            disableDefaultCacheServer));
-
+        ServerLauncherParameters.INSTANCE.withPort(configuredServerPort)
+            .withDisableDefaultServer(disableDefaultCacheServer));
     verify(this.cache, times(1)).addCacheServer();
     verify(mockServer).setPort(configuredServerPort);
   }
@@ -271,14 +255,8 @@ public class CacheCreationJUnitTest {
 
     when(this.cache.getCacheServers()).thenReturn(cacheServers);
 
-    Integer configuredServerPort = null;
-    String configuredServerBindAddress = null;
-    Boolean disableDefaultCacheServer = false;
-
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
-            disableDefaultCacheServer));
-
+        ServerLauncherParameters.INSTANCE.withDisableDefaultServer(false));
     verify(this.cache, never()).addCacheServer();
   }
 
@@ -295,14 +273,8 @@ public class CacheCreationJUnitTest {
     CacheServerImpl mockServer = mock(CacheServerImpl.class);
     when(this.cache.addCacheServer()).thenReturn(mockServer);
 
-    Integer configuredServerPort = null;
-    String configuredServerBindAddress = null;
-    Boolean disableDefaultCacheServer = false;
-
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
-            disableDefaultCacheServer));
-
+        ServerLauncherParameters.INSTANCE.withDisableDefaultServer(false));
     verify(this.cache, times(2)).addCacheServer();
     verify(mockServer).configureFrom(br1);
     verify(mockServer).configureFrom(br2);
@@ -319,8 +291,9 @@ public class CacheCreationJUnitTest {
     Boolean disableDefaultCacheServer = false;
 
     cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
-        new CacheServerLauncher.Parameters(configuredServerPort, configuredServerBindAddress,
-            disableDefaultCacheServer));
+        ServerLauncherParameters.INSTANCE.withPort(configuredServerPort)
+            .withBindAddress(configuredServerBindAddress)
+            .withDisableDefaultServer(disableDefaultCacheServer));
   }
 
   @Test
@@ -343,7 +316,7 @@ public class CacheCreationJUnitTest {
   }
 
   @Test
-  public void cacheServerLauncherParametersShouldOverrideDefaultSettings() {
+  public void serverLauncherParametersShouldOverrideDefaultSettings() {
     CacheCreation cacheCreation = new CacheCreation();
     CacheServerCreation br1 = new CacheServerCreation(cacheCreation, false);
     cacheCreation.getCacheServers().add(br1);
@@ -359,10 +332,18 @@ public class CacheCreationJUnitTest {
     String hostnameForClients = "hostnameForClients";
     Boolean disableDefaultServer = false;
 
-    CacheServerLauncher.Parameters parameters = new CacheServerLauncher.Parameters(serverPort,
-        maxThreads, maxConnections, maxMessageCount, socketBufferSize, serverBindAddress,
-        messageTimeToLive, hostnameForClients, disableDefaultServer);
-    cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache, parameters);
+    ServerLauncherParameters.INSTANCE
+        .withPort(serverPort)
+        .withMaxThreads(maxThreads)
+        .withBindAddress(serverBindAddress)
+        .withMaxConnections(maxConnections)
+        .withMaxMessageCount(maxMessageCount)
+        .withSocketBufferSize(socketBufferSize)
+        .withMessageTimeToLive(messageTimeToLive)
+        .withHostnameForClients(hostnameForClients)
+        .withDisableDefaultServer(disableDefaultServer);
+    cacheCreation.startCacheServers(cacheCreation.getCacheServers(), this.cache,
+        ServerLauncherParameters.INSTANCE);
 
     verify(this.cache, times(1)).addCacheServer();
     verify(mockServer, times(1)).setPort(serverPort);

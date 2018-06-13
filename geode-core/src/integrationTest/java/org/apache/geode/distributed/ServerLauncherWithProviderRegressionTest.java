@@ -51,7 +51,7 @@ public class ServerLauncherWithProviderRegressionTest extends ServerLauncherInte
   }
 
   @Test
-  public void startGetsCacheFromServerLauncherCacheProvider() throws Exception {
+  public void startGetsCacheFromServerLauncherCacheProvider() {
     startServer(newBuilder().setDisableDefaultServer(true).setSpringXmlLocation(springXml()));
 
     Cache cache = launcher.getCache();

@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -316,11 +315,17 @@ public class ServerLauncher extends AbstractLauncher<String> {
     String serverBindAddress =
         (builder.isServerBindAddressSetByUser() && this.serverBindAddress != null)
             ? this.serverBindAddress.getHostAddress() : null;
-    CacheServerLauncher.Parameters parameters =
-        new CacheServerLauncher.Parameters(serverPort, this.maxThreads, this.maxConnections,
-            this.maxMessageCount, this.socketBufferSize, serverBindAddress, this.messageTimeToLive,
-            this.hostNameForClients, this.disableDefaultServer);
-    CacheServerLauncher.setParameters(parameters);
+
+    ServerLauncherParameters.INSTANCE
+        .withPort(serverPort)
+        .withMaxThreads(this.maxThreads)
+        .withBindAddress(serverBindAddress)
+        .withMaxConnections(this.maxConnections)
+        .withMaxMessageCount(this.maxMessageCount)
+        .withSocketBufferSize(this.socketBufferSize)
+        .withMessageTimeToLive(this.messageTimeToLive)
+        .withHostnameForClients(this.hostNameForClients)
+        .withDisableDefaultServer(this.disableDefaultServer);
   }
 
   /**

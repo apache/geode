@@ -50,7 +50,7 @@ public class ServerLauncherWaitOnServerMultiThreadedTest {
   }
 
   @Test
-  public void waitOnServer() throws Exception {
+  public void waitOnServer() {
     runTest(new ServerWaitMultiThreadedTestCase());
   }
 

@@ -36,7 +36,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 
 /**
  * Unit tests for {@link ServerLauncher}.
@@ -58,17 +57,17 @@ public class ServerLauncherTest {
         .setDisableDefaultServer(Boolean.FALSE).build();
 
     assertThat(launcher).isNotNull();
-    assertThat(CacheServerLauncher.getParameters()).isNotNull();
-    assertThat(CacheServerLauncher.getParameters().getServerPort()).isEqualTo(11235);
-    assertThat(CacheServerLauncher.getParameters().getMaxThreads()).isEqualTo(10);
-    assertThat(CacheServerLauncher.getParameters().getMaxConnections()).isEqualTo(100);
-    assertThat(CacheServerLauncher.getParameters().getMaxMessageCount()).isEqualTo(5);
-    assertThat(CacheServerLauncher.getParameters().getSocketBufferSize()).isEqualTo(2048);
-    assertThat(CacheServerLauncher.getParameters().getServerBindAddress()).isEqualTo(null);
-    assertThat(CacheServerLauncher.getParameters().getMessageTimeToLive()).isEqualTo(10000);
-    assertThat(CacheServerLauncher.getParameters().getHostnameForClients())
+    assertThat(ServerLauncherParameters.INSTANCE).isNotNull();
+    assertThat(ServerLauncherParameters.INSTANCE.getPort()).isEqualTo(11235);
+    assertThat(ServerLauncherParameters.INSTANCE.getMaxThreads()).isEqualTo(10);
+    assertThat(ServerLauncherParameters.INSTANCE.getBindAddress()).isEqualTo(null);
+    assertThat(ServerLauncherParameters.INSTANCE.getMaxConnections()).isEqualTo(100);
+    assertThat(ServerLauncherParameters.INSTANCE.getMaxMessageCount()).isEqualTo(5);
+    assertThat(ServerLauncherParameters.INSTANCE.getSocketBufferSize()).isEqualTo(2048);
+    assertThat(ServerLauncherParameters.INSTANCE.getMessageTimeToLive()).isEqualTo(10000);
+    assertThat(ServerLauncherParameters.INSTANCE.getHostnameForClients())
         .isEqualTo("hostName4Clients");
-    assertThat(CacheServerLauncher.getParameters().isDisableDefaultServer()).isFalse();
+    assertThat(ServerLauncherParameters.INSTANCE.isDisableDefaultServer()).isFalse();
   }
 
   @Test

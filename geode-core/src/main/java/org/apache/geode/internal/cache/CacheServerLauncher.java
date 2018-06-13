@@ -43,6 +43,8 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -62,7 +64,9 @@ import org.apache.geode.internal.util.JavaCommandBuilder;
  * Launcher program to start a cache server.
  *
  * @since GemFire 2.0.2
+ * @deprecated Since Geode 1.7.0. Use {@link ServerLauncher} instead.
  */
+@Deprecated
 public class CacheServerLauncher {
 
   /** Is this VM a dedicated Cache Server? This value is used mainly by the admin API. */
@@ -579,98 +583,6 @@ public class CacheServerLauncher {
   }
 
   /**
-   * GEODE-5256: Parameters containing startup options specified by the user.
-   * Shared from ServerLauncher and available to all classes through static accessors.
-   */
-  public static class Parameters {
-    private final Integer serverPort;
-    private final Integer maxThreads;
-    private final Integer maxConnections;
-    private final Integer maxMessageCount;
-    private final Integer socketBufferSize;
-    private final String serverBindAddress;
-    private final Integer messageTimeToLive;
-    private final String hostnameForClients;
-    private final Boolean disableDefaultServer;
-
-    public Integer getServerPort() {
-      return serverPort;
-    }
-
-    public Integer getMaxThreads() {
-      return maxThreads;
-    }
-
-    public Integer getMaxConnections() {
-      return maxConnections;
-    }
-
-    public Integer getMaxMessageCount() {
-      return maxMessageCount;
-    }
-
-    public Integer getSocketBufferSize() {
-      return socketBufferSize;
-    }
-
-    public String getServerBindAddress() {
-      return serverBindAddress;
-    }
-
-    public Integer getMessageTimeToLive() {
-      return messageTimeToLive;
-    }
-
-    public String getHostnameForClients() {
-      return hostnameForClients;
-    }
-
-    public Boolean isDisableDefaultServer() {
-      return disableDefaultServer;
-    }
-
-    public Parameters(Integer serverPort, String serverBindAddress, Boolean disableDefaultServer) {
-      this.maxThreads = null;
-      this.maxConnections = null;
-      this.maxMessageCount = null;
-      this.socketBufferSize = null;
-      this.messageTimeToLive = null;
-      this.hostnameForClients = null;
-      this.serverPort = serverPort;
-      this.serverBindAddress = serverBindAddress;
-      this.disableDefaultServer = disableDefaultServer;
-    }
-
-    public Parameters(Integer serverPort, Integer maxThreads, Integer maxConnections,
-        Integer maxMessageCount, Integer socketBufferSize, String serverBindAddress,
-        Integer messageTimeToLive, String hostnameForClients, Boolean disableDefaultServer) {
-      this.serverPort = serverPort;
-      this.maxThreads = maxThreads;
-      this.maxConnections = maxConnections;
-      this.maxMessageCount = maxMessageCount;
-      this.socketBufferSize = socketBufferSize;
-      this.serverBindAddress = serverBindAddress;
-      this.messageTimeToLive = messageTimeToLive;
-      this.hostnameForClients = hostnameForClients;
-      this.disableDefaultServer = disableDefaultServer;
-    }
-  }
-
-  private static Parameters parameters;
-
-  public static Parameters getParameters() {
-    return CacheServerLauncher.parameters;
-  }
-
-  public static void setParameters(Parameters parameters) {
-    CacheServerLauncher.parameters = parameters;
-  }
-
-  public static void clearStatics() {
-    CacheServerLauncher.parameters = null;
-  }
-
-  /**
    * The method that does the work of being a cache server. It is invoked in the VM spawned by the
    * {@link #start} method. Basically, it creates a GemFire {@link Cache} based on configuration
    * passed in from the command line. (It will also take <code>gemfire.properties</code>, etc. into
@@ -696,9 +608,11 @@ public class CacheServerLauncher {
     final String serverPortString = (String) options.get(SERVER_PORT);
     if (serverPortString != null)
       serverPort = Integer.parseInt(serverPortString);
-    CacheServerLauncher
-        .setParameters(new Parameters(serverPort, (String) options.get(SERVER_BIND_ADDRESS_NAME),
-            (Boolean) options.get(DISABLE_DEFAULT_SERVER)));
+
+    ServerLauncherParameters.INSTANCE
+        .withPort(serverPort)
+        .withBindAddress((String) options.get(SERVER_BIND_ADDRESS_NAME))
+        .withDisableDefaultServer((Boolean) options.get(DISABLE_DEFAULT_SERVER));
 
     // Say that we're starting...
     Status originalStatus = createStatus(this.baseName, STARTING, OSProcess.getId());
@@ -911,7 +825,7 @@ public class CacheServerLauncher {
     // Create and start a default cache server
     // If (disableDefaultServer is not set or it is set but false) AND (the number of cacheservers
     // is 0)
-    Boolean disable = CacheServerLauncher.getParameters().isDisableDefaultServer();
+    Boolean disable = ServerLauncherParameters.INSTANCE.isDisableDefaultServer();
     if ((disable == null || !disable) && cache.getCacheServers().size() == 0) {
       // Create and add a cache server
       CacheServer server = cache.addCacheServer();
@@ -919,13 +833,13 @@ public class CacheServerLauncher {
       CacheServerHelper.setIsDefaultServer(server);
 
       // Set its port if necessary
-      Integer serverPort = CacheServerLauncher.getParameters().getServerPort();
+      Integer serverPort = ServerLauncherParameters.INSTANCE.getPort();
       if (serverPort != null) {
         server.setPort(serverPort);
       }
 
       // Set its bind address if necessary
-      String serverBindAddress = CacheServerLauncher.getParameters().getServerBindAddress();
+      String serverBindAddress = ServerLauncherParameters.INSTANCE.getBindAddress();
       if (serverBindAddress != null) {
         server.setBindAddress(serverBindAddress.trim());
       }
