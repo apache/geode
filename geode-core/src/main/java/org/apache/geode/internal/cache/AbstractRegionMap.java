@@ -1037,9 +1037,10 @@ public abstract class AbstractRegionMap
   public boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
       boolean cacheWrite, boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
-    RegionMapDestroy regionMapDestroy = new RegionMapDestroy((InternalRegion) owner, this, this);
-    return regionMapDestroy.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
+    RegionMapDestroy regionMapDestroy = new RegionMapDestroy((InternalRegion) owner, this, this,
+        event, inTokenMode, duringRI, cacheWrite, isEviction,
         expectedOldValue, removeRecoveredEntry);
+    return regionMapDestroy.destroy();
   }
 
   @Override

@@ -51,13 +51,13 @@ public class RegionMapDestroy {
   private final FocusedRegionMap focusedRegionMap;
   private final CacheModificationLock cacheModificationLock;
 
-  private EntryEventImpl event;
-  private boolean inTokenMode;
-  private boolean duringRI;
-  private boolean cacheWrite;
-  private boolean isEviction;
-  private Object expectedOldValue;
-  private boolean removeRecoveredEntry;
+  private final EntryEventImpl event;
+  private final boolean inTokenMode;
+  private final boolean duringRI;
+  private final boolean cacheWrite;
+  private final boolean isEviction;
+  private final Object expectedOldValue;
+  private final boolean removeRecoveredEntry;
 
   private boolean retry = true;
   private boolean opCompleted = false;
@@ -73,33 +73,27 @@ public class RegionMapDestroy {
   private boolean doContinue;
 
   public RegionMapDestroy(InternalRegion internalRegion, FocusedRegionMap focusedRegionMap,
-      CacheModificationLock cacheModificationLock) {
+      CacheModificationLock cacheModificationLock, final EntryEventImpl eventArg,
+      final boolean inTokenModeArg,
+      final boolean duringRIArg, final boolean cacheWriteArg, final boolean isEvictionArg,
+      final Object expectedOldValueArg, final boolean removeRecoveredEntryArg) {
     this.internalRegion = internalRegion;
     this.focusedRegionMap = focusedRegionMap;
     this.cacheModificationLock = cacheModificationLock;
-  }
-
-  public boolean destroy(final EntryEventImpl eventArg, final boolean inTokenModeArg,
-      final boolean duringRIArg, final boolean cacheWriteArg, final boolean isEvictionArg,
-      final Object expectedOldValueArg, final boolean removeRecoveredEntryArg)
-      throws CacheWriterException, EntryNotFoundException, TimeoutException {
-
-    if (internalRegion == null) {
-      Assert.assertTrue(false, "The internalRegion for RegionMap " + this // "fix" for bug 32440
-          + " is null for event " + event);
-    }
-
-    event = eventArg;
-    inTokenMode = inTokenModeArg;
-    duringRI = duringRIArg;
-    cacheWrite = cacheWriteArg;
-    isEviction = isEvictionArg;
-    expectedOldValue = expectedOldValueArg;
+    this.event = eventArg;
+    this.inTokenMode = inTokenModeArg;
+    this.duringRI = duringRIArg;
+    this.cacheWrite = cacheWriteArg;
+    this.isEviction = isEvictionArg;
+    this.expectedOldValue = expectedOldValueArg;
     // for RI local-destroy we don't want to keep tombstones.
     // In order to simplify things we just set this recovery
     // flag to true to force the entry to be removed
-    removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
+    this.removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
+  }
 
+  public boolean destroy()
+      throws CacheWriterException, EntryNotFoundException, TimeoutException {
     cacheModificationLock.lockForCacheModification(internalRegion, event);
     try {
       while (retry) {
@@ -185,7 +179,8 @@ public class RegionMapDestroy {
     // a destroy from a peer or WAN gateway and we need to retain version
     // information for concurrency checks
     retainForConcurrency = (!haveTombstone
-        && (internalRegion.getDataPolicy().withReplication() || event.isFromServer())
+        && (internalRegion.getDataPolicy().withReplication()
+            || event.isFromServer())
         && internalRegion.getConcurrencyChecksEnabled()
         && (event.isOriginRemote() // remote event must create a tombstone
             || event.isFromWANAndVersioned() // wan event must create a tombstone
