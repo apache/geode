@@ -530,26 +530,22 @@ public class RegionMapDestroy {
     }
     if (throwException) {
       if (!event.isOriginRemote() && !event.getOperation().isLocal()
-          && (event.isFromBridgeAndVersioned() || // if this is a replayed client
-          // event that already has a
-          // version
-              event.isFromWANAndVersioned())) { // or if this is a WAN event that
-        // has been applied in another
-        // system
-        // we must distribute these since they will update the version information
-        // in peers
+      // this is a replayed client event with a version
+          && (event.isFromBridgeAndVersioned()
+              // or this is a WAN event with a version
+              || event.isFromWANAndVersioned())) {
+        // we must distribute these since they will update the version information in peers
         if (logger.isDebugEnabled()) {
           logger.debug("ARM.destroy is allowing wan/client destroy of {} to continue",
               event.getKey());
         }
         throwException = false;
         event.setIsRedestroyedEntry(true);
-        // Distribution of this op happens on re and re might me null here before
-        // distributing this destroy op.
+        doPart3 = true;
+        // Distribution of this op happens on regionEntry in part 3 so ensure it is not null
         if (regionEntry == null) {
           regionEntry = newRegionEntry;
         }
-        doPart3 = true;
       }
     }
     if (throwException) {
