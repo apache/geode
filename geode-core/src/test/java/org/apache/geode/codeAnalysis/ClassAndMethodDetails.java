@@ -95,11 +95,7 @@ public class ClassAndMethodDetails implements Comparable {
     for (CompiledMethod method : methods) {
       CompiledCode c = method.getCode();
       if (c != null) {
-        sb.append(method.name()).append(',').append(c.code.length).append(',');
-        for (int i = 0; i < c.code.length; i++) {
-          sb.append(hexChars[(c.code[i] & 0xff)]);
-        }
-        sb.append("\n");
+        sb.append(method.name()).append(',').append(c.code.length).append("\n");
       }
     }
     return sb.toString();
