@@ -82,4 +82,8 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
     }
     return Collections.singleton(doc);
   }
+
+  public Field[] getFields() {
+    return fields;
+  }
 }

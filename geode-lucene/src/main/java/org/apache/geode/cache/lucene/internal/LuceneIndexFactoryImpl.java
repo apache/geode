@@ -22,11 +22,12 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 
 public class LuceneIndexFactoryImpl implements LuceneIndexFactory {
   private final LuceneServiceImpl service;
   private final Map<String, Analyzer> fields = new LinkedHashMap<String, Analyzer>();
-  private LuceneSerializer serializer;
+  private LuceneSerializer serializer = new HeterogeneousLuceneSerializer();
 
 
   public LuceneIndexFactoryImpl(final LuceneServiceImpl luceneService) {

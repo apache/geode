@@ -14,12 +14,16 @@
  */
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
+import java.lang.reflect.Field;
+import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queryparser.flexible.standard.config.PointsConfig;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
@@ -44,6 +48,8 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
    */
   private Map<Class<?>, LuceneSerializer> mappers =
       new CopyOnWriteWeakHashMap<Class<?>, LuceneSerializer>();
+
+  private Map<String, PointsConfig> pointsConfigMap = new HashMap();
 
   private static final Logger logger = LogService.getLogger();
 
@@ -87,6 +93,33 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
       }
       return mapper;
     }
+  }
+
+  // TODO need a compute method to recalculate pointsConfigMap
+  public Map<String, PointsConfig> getPointsConfigMap() {
+    for (LuceneSerializer serializer : mappers.values()) {
+      if (serializer instanceof ReflectionLuceneSerializer) {
+        ReflectionLuceneSerializer reflectionSerializer = (ReflectionLuceneSerializer) serializer;
+        Field[] fields = reflectionSerializer.getFields();
+        for (Field field : fields) {
+          Class<?> type = field.getType();
+          if (type == int.class || type == Integer.class) {
+            pointsConfigMap.put(field.getName(),
+                new PointsConfig(NumberFormat.getInstance(), Integer.class));
+          } else if (type == float.class || type == Float.class) {
+            pointsConfigMap.put(field.getName(),
+                new PointsConfig(NumberFormat.getInstance(), Float.class));
+          } else if (type == long.class || type == Long.class) {
+            pointsConfigMap.put(field.getName(),
+                new PointsConfig(NumberFormat.getInstance(), Long.class));
+          } else if (type == double.class || type == Double.class) {
+            pointsConfigMap.put(field.getName(),
+                new PointsConfig(NumberFormat.getInstance(), Double.class));
+          }
+        }
+      }
+    }
+    return pointsConfigMap;
   }
 
 }
