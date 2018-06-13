@@ -126,6 +126,7 @@ public class RegionMapDestroy {
           return opCompleted;
         } finally {
           try {
+            disablePart3IfGatewayConflict();
             triggerDistributionAndListenerNotification();
           } finally {
             cancelExpiryTaskIfRegionEntryExisted();
@@ -277,7 +278,6 @@ public class RegionMapDestroy {
   }
 
   private void triggerDistributionAndListenerNotification() {
-    disablePart3IfGatewayConflict();
     // distribution and listener notification
     if (doPart3) {
       internalRegion.basicDestroyPart3(regionEntry, event, inTokenMode, duringRI, true,
