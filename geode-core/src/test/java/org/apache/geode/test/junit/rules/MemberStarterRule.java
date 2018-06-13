@@ -287,7 +287,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   abstract void stopMember();
 
-  public void disconnectMember() {
+  public void forceDisconnectMember() {
     MembershipManagerHelper
         .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance());
   }

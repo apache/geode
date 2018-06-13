@@ -98,8 +98,8 @@ public class MemberVM extends VMProvider implements Member {
    * this disconnects the distributed system of the member. The member will automatically try to
    * reconnect after 5 seconds.
    */
-  public void disConnectMember() {
-    vm.invokeAsync(() -> ClusterStartupRule.memberStarter.disconnectMember());
+  public void forceDisconnectMember() {
+    vm.invoke(() -> ClusterStartupRule.memberStarter.forceDisconnectMember());
   }
 
   /**

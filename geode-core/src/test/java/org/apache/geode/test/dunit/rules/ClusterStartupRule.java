@@ -33,6 +33,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.client.ClientCache;
@@ -43,6 +44,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -342,16 +344,16 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   /**
-   * this disconnects the distributed system of the member. The member will automatically try to
-   * reconnect after 5 seconds.
+   * this forces a disconnect of the distributed system of the member.
+   * The member will automatically try to reconnect after 5 seconds.
    *
    * will throw a ClassCastException if this method is called on a client VM.
    */
-  public void disconnectMember(int index) {
+  public void forceDisconnectMember(int index) {
     MemberVM member = getMember(index);
     if (member == null)
       return;
-    member.disConnectMember();
+    member.forceDisconnectMember();
   }
 
   /**
@@ -366,8 +368,18 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
       }
       System.exit(1);
     });
-  }
 
+    // wait till member is not reachable anymore.
+    Awaitility.await().until(() -> {
+      try {
+        member.invoke(() -> {
+        });
+      } catch (RMIException e) {
+        return true;
+      }
+      return false;
+    });
+  }
 
   public File getWorkingDirRoot() {
     // return the dunit folder

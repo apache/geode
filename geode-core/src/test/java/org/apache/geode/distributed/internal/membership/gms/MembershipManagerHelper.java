@@ -14,6 +14,10 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -125,14 +129,8 @@ public class MembershipManagerHelper {
     MembershipManagerHelper.playDead(msys);
     GMSMembershipManager mgr = ((GMSMembershipManager) getMembershipManager(msys));
     mgr.forceDisconnect("for testing");
-    while (msys.isConnected()) {
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return;
-      }
-    }
+    // wait at most 10 seconds for system to be disconnected
+    Awaitility.await().pollInterval(1, TimeUnit.SECONDS).until(() -> !msys.isConnected());
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
 
