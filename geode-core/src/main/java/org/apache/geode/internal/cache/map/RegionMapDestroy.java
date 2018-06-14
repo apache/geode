@@ -206,20 +206,28 @@ public class RegionMapDestroy {
         internalRegion.checkReadiness();
         if (!regionEntry.isRemoved() || createTombstoneForConflictChecks()) {
           destroyExistingEntry();
-        } else { // already removed
-          updateVersionTagOnEntryWithTombstone();
-          if (isOldValueExpected()) {
-            return;
-          }
-          if (!inTokenMode && !isEviction) {
-            throwEntryNotFound();
-          }
+        } else {
+          handleEntryAlreadyRemoved();
         }
-      } // synchronized re
+      }
     } catch (ConcurrentCacheModificationException e) {
       handleConcurrentModificationException();
       throw e;
     }
+  }
+
+  private void handleEntryAlreadyRemoved() {
+    updateVersionTagOnEntryWithTombstone();
+    if (isOldValueExpected()) {
+      return;
+    }
+    if (inTokenMode) {
+      return;
+    }
+    if (isEviction) {
+      return;
+    }
+    throwEntryNotFound();
   }
 
   private boolean destroyShouldContinue() {
