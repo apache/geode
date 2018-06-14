@@ -2840,7 +2840,9 @@ public class InternalDistributedSystem extends DistributedSystem
       } // while()
 
       if (isReconnectCancelled()) {
-        reconnectDS.disconnect();
+        if (reconnectDS != null) {
+          reconnectDS.disconnect();
+        }
       } else {
         reconnectDS.isReconnectingDS = false;
         notifyReconnectListeners(this, this.reconnectDS, false);
