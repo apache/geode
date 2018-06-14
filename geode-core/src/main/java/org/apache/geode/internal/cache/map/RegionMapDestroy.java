@@ -205,16 +205,6 @@ public class RegionMapDestroy {
       synchronized (regionEntry) {
         internalRegion.checkReadiness();
         if (!regionEntry.isRemoved() || createTombstoneForConflictChecks()) {
-          if (isRemovedPhase2()) {
-            return;
-          }
-          if (isEntryInUseByTransaction()) {
-            return;
-          }
-          event.setRegionEntry(regionEntry);
-          if (!isEntryReadyForEviction(regionEntry)) {
-            return;
-          }
           destroyExistingEntry();
         } else { // already removed
           updateVersionTagOnEntryWithTombstone();
@@ -230,6 +220,19 @@ public class RegionMapDestroy {
       handleConcurrentModificationException();
       throw e;
     }
+  }
+
+  private boolean destroyShouldContinue() {
+    if (isRemovedPhase2()) {
+      return false;
+    }
+    if (isEntryInUseByTransaction()) {
+      return false;
+    }
+    if (!isEntryReadyForEviction(regionEntry)) {
+      return false;
+    }
+    return true;
   }
 
   private void throwEntryNotFound() {
@@ -392,6 +395,10 @@ public class RegionMapDestroy {
   }
 
   private void destroyExistingEntry() {
+    if (!destroyShouldContinue()) {
+      return;
+    }
+    event.setRegionEntry(regionEntry);
     boolean removed = false;
     try {
       opCompleted = destroyEntry(regionEntry, event, inTokenMode, cacheWrite, expectedOldValue,
