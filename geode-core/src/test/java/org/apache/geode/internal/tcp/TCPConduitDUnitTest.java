@@ -22,7 +22,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -37,9 +36,9 @@ import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.util.test.TestUtil;
 
 
 @Category(DistributedTest.class)
@@ -48,10 +47,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 public class TCPConduitDUnitTest extends DistributedTestCase {
   public static final String TEST_REGION = "testRegion";
   private final Properties properties;
-
-  @Rule
-  public DistributedRestoreSystemProperties distributedRestoreSystemProperties =
-      new DistributedRestoreSystemProperties();
 
   @Parameterized.Parameters
   public static Collection<Properties> data() {
@@ -62,12 +57,13 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
     Properties SSL = new Properties();
     SSL.putAll(nonSSL);
 
+    final String keystorePath = TestUtil.getResourcePath(TCPConduitDUnitTest.class,
+        "/org/apache/geode/cache/client/internal/default.keystore");
+
     SSL.setProperty(ConfigurationProperties.SSL_ENABLED_COMPONENTS, "cluster");
-    SSL.setProperty(ConfigurationProperties.SSL_KEYSTORE,
-        "/Users/gosullivan/src/geode/geode-core/src/test/resources/org/apache/geode/cache/client/internal/default.keystore");
+    SSL.setProperty(ConfigurationProperties.SSL_KEYSTORE, keystorePath);
     SSL.setProperty(ConfigurationProperties.SSL_KEYSTORE_PASSWORD, "password");
-    SSL.setProperty(ConfigurationProperties.SSL_TRUSTSTORE,
-        "/Users/gosullivan/src/geode/geode-core/src/test/resources/org/apache/geode/cache/client/internal/default.keystore");
+    SSL.setProperty(ConfigurationProperties.SSL_TRUSTSTORE, keystorePath);
     SSL.setProperty(ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD, "password");
 
     return Arrays.asList(nonSSL, SSL);
