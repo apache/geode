@@ -1389,12 +1389,7 @@ public class TXState implements TXStateInterface {
         true/* create txEntry is absent */);
     assert tx != null;
     if (tx.existsLocally()) {
-      final boolean invalidatingInvalidEntry =
-          op.isInvalidate() && Token.isInvalid(tx.getValueInVM(entryKey));
-      // Ignore invalidating an invalid entry
-      if (!invalidatingInvalidEntry) {
-        tx.updateForWrite(nextModSerialNum());
-      }
+      tx.updateForWrite(nextModSerialNum());
     } else if (region.isProxy() && !op.isLocal() && !tx.hasOp()) {
       // Distributed operations on proxy regions need to be done
       // even if the entry does not exist locally.
