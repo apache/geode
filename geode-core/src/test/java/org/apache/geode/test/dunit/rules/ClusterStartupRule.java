@@ -58,10 +58,11 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 /**
- * A rule to help you start locators and servers inside of a
+ * A rule to help you start locators and servers or clients inside of a
  * <a href="https://cwiki.apache.org/confluence/display/GEODE/Distributed-Unit-Tests">DUnit
  * test</a>. This rule will start Servers and Locators inside of the four remote {@link VM}s created
- * by the DUnit framework.
+ * by the DUnit framework. Using this rule will eliminate the need to extends
+ * JUnit4DistributedTestCase when writing a Dunit test
  *
  * <p>
  * If you use this Rule in any test that uses more than the default of 4 VMs in DUnit, then
@@ -379,6 +380,12 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
       }
       return false;
     });
+
+    // delete the lingering files under this vm
+    Arrays.stream(member.getVM().getWorkingDirectory().listFiles())
+        .forEach(FileUtils::deleteQuietly);
+
+    member.getVM().bounce();
   }
 
   public File getWorkingDirRoot() {
