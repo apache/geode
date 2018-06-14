@@ -46,9 +46,10 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import org.apache.geode.test.junit.rules.HttpResponseAssert;
 
 public class GeodeRestClient {
   public static final String CONTEXT = "/geode/v1";
@@ -90,54 +91,66 @@ public class GeodeRestClient {
     return response.getStatusLine().getStatusCode();
   }
 
-  public static JSONObject getJsonObject(HttpResponse response) throws IOException, JSONException {
-    JSONTokener tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
+  public static JSONObject getJsonObject(HttpResponse response) {
+    JSONTokener tokener = null;
+    try {
+      tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
+    } catch (IOException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
     return new JSONObject(tokener);
   }
 
-  public static JSONArray getJsonArray(HttpResponse response) throws IOException, JSONException {
-    JSONTokener tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
+  public static JSONArray getJsonArray(HttpResponse response) {
+    JSONTokener tokener = null;
+    try {
+      tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
+    } catch (IOException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
     return new JSONArray(tokener);
   }
 
-  public HttpResponse doHEAD(String query, String username, String password) throws Exception {
+  public HttpResponse doHEAD(String query, String username, String password) {
     HttpHead httpHead = new HttpHead(CONTEXT + query);
     return doRequest(httpHead, username, password);
   }
 
-  public HttpResponse doPost(String query, String username, String password, String body)
-      throws Exception {
+  public HttpResponse doPost(String query, String username, String password, String body) {
     HttpPost httpPost = new HttpPost(CONTEXT + query);
     httpPost.addHeader("content-type", "application/json");
     httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPost, username, password);
   }
 
-  public HttpResponse doPut(String query, String username, String password, String body)
-      throws Exception {
+  public HttpResponse doPut(String query, String username, String password, String body) {
     HttpPut httpPut = new HttpPut(CONTEXT + query);
     httpPut.addHeader("content-type", "application/json");
     httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPut, username, password);
   }
 
-  public HttpResponse doGet(String uri, String username, String password) throws Exception {
+  public HttpResponse doGet(String uri, String username, String password) {
     HttpGet getRequest = new HttpGet(CONTEXT + uri);
     return doRequest(getRequest, username, password);
   }
 
-  public HttpResponse doGetRequest(String url) throws Exception {
+
+  public HttpResponseAssert doGetAndAssertThat(String uri) {
+    return new HttpResponseAssert("Get " + uri, doGet(uri, null, null));
+  }
+
+  public HttpResponse doGetRequest(String url) {
     HttpGet getRequest = new HttpGet(url);
     return doRequest(getRequest, null, null);
   }
 
-  public HttpResponse doDelete(String uri, String username, String password) throws Exception {
+  public HttpResponse doDelete(String uri, String username, String password) {
     HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
     return doRequest(httpDelete, username, password);
   }
 
-  public HttpResponse doRequest(HttpRequestBase request, String username, String password)
-      throws Exception {
+  public HttpResponse doRequest(HttpRequestBase request, String username, String password) {
     HttpHost targetHost = new HttpHost(bindAddress, restPort, protocol);
 
     HttpClientBuilder clientBuilder = HttpClients.custom();
@@ -151,15 +164,31 @@ public class GeodeRestClient {
       clientBuilder.setDefaultCredentialsProvider(credsProvider);
     }
 
-    if (useHttps) {
-      SSLContext ctx = SSLContext.getInstance("TLS");
-      ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()},
-          new SecureRandom());
-      clientBuilder.setSSLContext(ctx);
-      clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
-    }
+    try {
+      if (useHttps) {
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()},
+            new SecureRandom());
+        clientBuilder.setSSLContext(ctx);
+        clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+      }
 
-    return clientBuilder.build().execute(targetHost, request, clientContext);
+      return clientBuilder.build().execute(targetHost, request, clientContext);
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  public HttpResponseAssert doPutAndAssert(String uri, String body) {
+    return new HttpResponseAssert("Put " + uri, doPut(uri, null, null, body));
+  }
+
+  public HttpResponseAssert doPostAndAssert(String uri, String body) {
+    return new HttpResponseAssert("Post " + uri, doPost(uri, null, null, body));
+  }
+
+  public HttpResponseAssert doDeleteAndAssert(String uri) {
+    return new HttpResponseAssert("Delete " + uri, doDelete(uri, null, null));
   }
 
   private static class DefaultTrustManager implements X509TrustManager {
