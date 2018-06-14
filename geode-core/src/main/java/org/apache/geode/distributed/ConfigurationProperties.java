@@ -1706,7 +1706,7 @@ public interface ConfigurationProperties {
    * <U>Description</U>: The number of milliseconds a thread can keep exclusive access to a socket
    * that it is not actively using. Once a thread loses its lease to a socket it will need to
    * re-acquire a socket the next time it sends a message. A value of zero causes socket leases to
-   * never expire. This property is ignored if "conserve-sockets" is true. <U>Default</U>: "15000"
+   * never expire. This property is ignored if "conserve-sockets" is true. <U>Default</U>: "60000"
    * </p>
    * <U>Allowed values</U>: 0..600000
    * </p>
