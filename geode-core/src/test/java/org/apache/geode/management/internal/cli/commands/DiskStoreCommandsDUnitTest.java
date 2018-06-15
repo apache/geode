@@ -100,7 +100,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.stopVM(false);
+    server1.stopMember(false);
 
     server2.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -108,7 +108,7 @@ public class DiskStoreCommandsDUnitTest {
       r.put("A", "C");
     });
 
-    server2.stopVM(false);
+    server2.stopMember(false);
 
     int locatorPort = locator.getPort();
     server1.invokeAsync(() -> {
@@ -156,7 +156,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.stopVM(false);
+    server1.stopMember(false);
 
     String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     gfsh.executeAndAssertThat(
@@ -182,7 +182,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.stopVM(false);
+    server1.stopMember(false);
 
     String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     File exportDir = tempDir.newFolder();

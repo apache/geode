@@ -73,7 +73,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
-    lsRule.stopVM(1);
+    lsRule.stopMember(1);
     lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
   }
@@ -91,7 +91,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DEFINED_INDEXES);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
-    lsRule.stopVM(1);
+    lsRule.stopMember(1);
     lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
 
@@ -110,7 +110,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DEFINED_INDEXES);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
-    lsRule.stopVM(1);
+    lsRule.stopMember(1);
     lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
 

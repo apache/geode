@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.configuration;
 
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -23,11 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -61,19 +57,15 @@ public class ClusterConfigLocatorRestartDUnitTest {
   public void serverRestartsAfterLocatorReconnects() throws Exception {
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
 
-    Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "5000");
-    MemberVM locator0 = rule.startLocatorVM(0, props);
+    MemberVM locator0 = rule.startLocatorVM(0);
 
-    rule.startServerVM(1, props, locator0.getPort());
-    MemberVM server2 = rule.startServerVM(2, props, locator0.getPort());
+    rule.startServerVM(1, locator0.getPort());
+    MemberVM server2 = rule.startServerVM(2, locator0.getPort());
 
     addDisconnectListener(locator0);
 
-    server2.invokeAsync(() -> MembershipManagerHelper
-        .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
-    locator0.invokeAsync(() -> MembershipManagerHelper
-        .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
+    server2.forceDisconnectMember();
+    locator0.forceDisconnectMember();
 
     waitForLocatorToReconnect(locator0);
 
@@ -92,29 +84,17 @@ public class ClusterConfigLocatorRestartDUnitTest {
     IgnoredException.addIgnoredException("This node is no longer in the membership view");
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
 
-    // Otherwise we get a graceful shutdown...
-    Host.getHost(0).getVM(0).invoke(() -> {
-      if (InternalDistributedSystem.shutdownHook != null) {
-        Runtime.getRuntime().removeShutdownHook(InternalDistributedSystem.shutdownHook);
-      }
-    });
 
-    Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "5000");
-    MemberVM locator0 = rule.startLocatorVM(0, props);
-    MemberVM locator1 = rule.startLocatorVM(1, props, locator0.getPort());
+    MemberVM locator0 = rule.startLocatorVM(0);
+    MemberVM locator1 = rule.startLocatorVM(1, locator0.getPort());
 
-    MemberVM server2 = rule.startServerVM(2, props, locator0.getPort(), locator1.getPort());
-    MemberVM server3 = rule.startServerVM(3, props, locator0.getPort(), locator1.getPort());
+    MemberVM server2 = rule.startServerVM(2, locator0.getPort(), locator1.getPort());
+    MemberVM server3 = rule.startServerVM(3, locator0.getPort(), locator1.getPort());
 
     // Shut down hard
-    locator0.invokeAsync(() -> System.exit(1));
+    rule.crashVM(0);
 
-    // Recover the VM so that subsequent rule cleanup works
-    locator0.getVM().bounce();
-
-    server3.invokeAsync(() -> MembershipManagerHelper
-        .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance()));
+    server3.forceDisconnectMember();
 
     rule.startServerVM(4, locator1.getPort(), locator0.getPort());
 

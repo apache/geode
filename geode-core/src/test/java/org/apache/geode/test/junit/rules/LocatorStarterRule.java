@@ -72,6 +72,8 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     }
   }
 
+
+
   public void startLocator() {
     try {
       // this will start a jmx manager and admin rest service by default
