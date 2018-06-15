@@ -82,13 +82,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   private File workingDir;
   private CommandResult commandResult;
 
-  public GfshCommandRule() {
-    try {
-      temporaryFolder.create();
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
+  public GfshCommandRule() {}
 
   public GfshCommandRule(Supplier<Integer> portSupplier, PortType portType) {
     this();
@@ -99,6 +93,11 @@ public class GfshCommandRule extends DescribedExternalResource {
   @Override
   protected void before(Description description) throws Throwable {
     LogWrapper.close();
+    try {
+      temporaryFolder.create();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
     workingDir = temporaryFolder.newFolder("gfsh_files");
     this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
     ignoredException =
