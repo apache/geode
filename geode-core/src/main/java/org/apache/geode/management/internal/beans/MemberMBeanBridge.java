@@ -928,7 +928,7 @@ public class MemberMBeanBridge {
         }
       } else {
         Assert.assertTrue(false,
-            "TailLogRequest/Response processed in application vm with shared logging.");
+            "TailLogRequest/Response processed in application vm with shared logging. This would occur if there is no 'log-file' defined.");
       }
     } catch (IOException e) {
       logger.warn(LocalizedMessage
