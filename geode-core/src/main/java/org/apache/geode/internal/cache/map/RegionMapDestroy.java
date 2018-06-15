@@ -87,36 +87,43 @@ public class RegionMapDestroy {
     this.removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
   }
 
-  public boolean destroy()
-      throws CacheWriterException, EntryNotFoundException, TimeoutException {
-    runWhileLockedForCacheModification(this::retryDestroy);
+  public boolean destroy() {
+    runWhileLockedForCacheModification(this::destroyWhileLocked);
     return opCompleted;
   }
 
-  private void retryDestroy() {
+  private void destroyWhileLocked() {
+    try {
+      destroyWIthRetry();
+    } finally {
+      afterDestroyActions();
+    }
+  }
+
+  private void destroyWIthRetry() {
     do {
       initializeState();
       regionEntry = focusedRegionMap.getEntry(event);
       invokeTestHookForConcurrentOperation();
-      try {
-        logDestroy();
-        ifTombstoneSetRegionEntryToNull();
-        if (regionEntry == null) {
-          handleNullRegionEntry();
-        } else {
-          handleExistingRegionEntryWhileInUpdateMode();
-        }
-      } finally {
-        try {
-          disablePart3IfGatewayConflict();
-          triggerDistributionAndListenerNotification();
-        } finally {
-          cancelExpiryTaskIfRegionEntryExisted();
-        }
+      logDestroy();
+      ifTombstoneSetRegionEntryToNull();
+      if (regionEntry == null) {
+        handleNullRegionEntry();
+      } else {
+        handleExistingRegionEntryWhileInUpdateMode();
       }
     } while (retry);
-    if (opCompleted) {
-      EntryLogger.logDestroy(event);
+  }
+
+  private void afterDestroyActions() {
+    try {
+      disablePart3IfGatewayConflict();
+      triggerDistributionAndListenerNotification();
+    } finally {
+      if (opCompleted) {
+        EntryLogger.logDestroy(event);
+        cancelExpiryTaskIfRegionEntryExisted();
+      }
     }
   }
 
@@ -139,9 +146,9 @@ public class RegionMapDestroy {
   }
 
   private void handleNullRegionEntry() {
-    retainForConcurrency = calculateRetainForConcurrency();
+    retainForConcurrency = isConcurrentNonTombstoneRemoteOpOnReplicaOrFromServer();
     if (inTokenMode || retainForConcurrency) {
-      destroyExistingOrAddDestroyedEntryWhileInUpdateMode();
+      destroyExistingOrAddDestroyedEntryWithIndexInUpdateMode();
     } else {
       retryRemoveWithTombstone();
     }
@@ -176,10 +183,7 @@ public class RegionMapDestroy {
     }
   }
 
-  private boolean calculateRetainForConcurrency() {
-    // we need to create an entry if in token mode or if we've received
-    // a destroy from a peer or WAN gateway and we need to retain version
-    // information for concurrency checks
+  private boolean isConcurrentNonTombstoneRemoteOpOnReplicaOrFromServer() {
     if (hasTombstone()) {
       return false;
     }
@@ -223,7 +227,7 @@ public class RegionMapDestroy {
   }
 
   private void handleExistingRegionEntryWhileInUpdateMode() {
-    doWithIndexInUpdateMode(this::handleExistingRegionEntry);
+    runWithIndexInUpdateMode(this::handleExistingRegionEntry);
     // No need to call lruUpdateCallback since the only lru action
     // we may have taken was lruEntryDestroy. This fixes bug 31759.
   }
@@ -667,7 +671,7 @@ public class RegionMapDestroy {
     return false;
   }
 
-  private void doWithIndexInUpdateMode(Runnable r) {
+  private void runWithIndexInUpdateMode(Runnable r) {
     final IndexManager oqlIndexManager = getInitializedIndexManager();
     if (oqlIndexManager != null) {
       try {
@@ -688,11 +692,11 @@ public class RegionMapDestroy {
     return oqlIndexManager;
   }
 
-  private void destroyExistingOrAddDestroyedEntryWhileInUpdateMode() {
-    doWithIndexInUpdateMode(this::destroyExistingOrAddDestroyedEntry);
+  private void destroyExistingOrAddDestroyedEntryWithIndexInUpdateMode() {
+    runWithIndexInUpdateMode(this::destroyExistingOrAddDestroyedEntryWhileInIndexUpdateMode);
   }
 
-  private void destroyExistingOrAddDestroyedEntry() {
+  private void destroyExistingOrAddDestroyedEntryWhileInIndexUpdateMode() {
     // removeRecoveredEntry should be false in this case
     newRegionEntry = createNewRegionEntry();
     synchronized (newRegionEntry) {
