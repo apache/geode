@@ -65,7 +65,7 @@ public class RegionMapDestroy {
 
   private RegionEntry newRegionEntry;
   private RegionEntry regionEntry;
-  private RegionEntry tombstone;
+  private RegionEntry tombstoneRegionEntry;
 
   public RegionMapDestroy(InternalRegion internalRegion, FocusedRegionMap focusedRegionMap,
       CacheModificationLock cacheModificationLock, final EntryEventImpl eventArg,
@@ -134,7 +134,7 @@ public class RegionMapDestroy {
     opCompleted = false;
     doPart3 = false;
     retainForConcurrency = false;
-    tombstone = null;
+    tombstoneRegionEntry = null;
     newRegionEntry = null;
   }
 
@@ -160,7 +160,7 @@ public class RegionMapDestroy {
     if (!regionEntry.isTombstone()) {
       return;
     }
-    tombstone = regionEntry;
+    tombstoneRegionEntry = regionEntry;
     regionEntry = null;
   }
 
@@ -219,7 +219,7 @@ public class RegionMapDestroy {
   }
 
   private boolean hasTombstone() {
-    return this.tombstone != null;
+    return this.tombstoneRegionEntry != null;
   }
 
   private void handleExistingRegionEntryWhileInUpdateMode() {
@@ -413,18 +413,18 @@ public class RegionMapDestroy {
     // on the entry and leaves behind a tombstone if concurrencyChecksEnabled.
     // It fixes bug #32467 by propagating the destroy to the server even though
     // the entry isn't in the client
-    newRegionEntry = tombstone;
+    newRegionEntry = tombstoneRegionEntry;
     if (newRegionEntry == null) {
       newRegionEntry = createNewRegionEntry();
     }
     synchronized (newRegionEntry) {
-      if (hasTombstone() && !tombstone.isTombstone()) {
+      if (hasTombstone() && !tombstoneRegionEntry.isTombstone()) {
         // tombstone was changed to no longer be one so retry
         retry = true;
         return;
       }
       regionEntry = getExistingOrAddEntry(newRegionEntry);
-      if (regionEntry != null && regionEntry != tombstone) {
+      if (regionEntry != null && regionEntry != tombstoneRegionEntry) {
         // concurrent change - try again
         retry = true;
         return;
@@ -556,7 +556,7 @@ public class RegionMapDestroy {
 
   private void removeNewEntry() {
     try {
-      assert newRegionEntry != tombstone;
+      assert newRegionEntry != tombstoneRegionEntry;
       newRegionEntry.setValue(internalRegion, Token.REMOVED_PHASE2);
       removeNewRegionEntryFromMap();
     } catch (RegionClearedException e) {
@@ -570,27 +570,27 @@ public class RegionMapDestroy {
 
   private void setEventVersionTagFromTombstone() {
     Assert.assertTrue(event.getVersionTag() == null);
-    Assert.assertTrue(newRegionEntry == tombstone);
-    event.setVersionTag(getVersionTagFromStamp(tombstone.getVersionStamp()));
+    Assert.assertTrue(newRegionEntry == tombstoneRegionEntry);
+    event.setVersionTag(getVersionTagFromStamp(tombstoneRegionEntry.getVersionStamp()));
   }
 
   private void updateTombstoneVersionTag() {
     // hasTombstone with versionTag - update the tombstone version info
-    focusedRegionMap.processVersionTag(tombstone, event);
+    focusedRegionMap.processVersionTag(tombstoneRegionEntry, event);
     if (doPart3) {
       internalRegion.generateAndSetVersionTag(event, newRegionEntry);
     }
     // This is not conflict, we need to persist the tombstone again with new
     // version tag
     try {
-      tombstone.setValue(internalRegion, Token.TOMBSTONE);
+      tombstoneRegionEntry.setValue(internalRegion, Token.TOMBSTONE);
     } catch (RegionClearedException e) {
       // that's okay - when writing a tombstone into a disk, the
       // region has been cleared (including this tombstone)
     }
     internalRegion.recordEvent(event);
-    internalRegion.rescheduleTombstone(tombstone, event.getVersionTag());
-    internalRegion.basicDestroyPart2(tombstone, event, inTokenMode,
+    internalRegion.rescheduleTombstone(tombstoneRegionEntry, event.getVersionTag());
+    internalRegion.basicDestroyPart2(tombstoneRegionEntry, event, inTokenMode,
         true /* conflict with clear */, duringRI, true);
     opCompleted = true;
   }
