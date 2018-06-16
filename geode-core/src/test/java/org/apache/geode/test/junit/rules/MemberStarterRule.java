@@ -26,6 +26,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -272,7 +274,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) throws Exception {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
     await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> dsMXBean.listGatewaySenderObjectNames().length == expectedGatewayObjectCount);
+        .until(() -> assertThat(dsMXBean.listGatewaySenderObjectNames().length,
+            is(expectedGatewayObjectCount)));
   }
 
   public void waitTillDiskStoreIsReady(String diskstoreName, int serverCount) {
