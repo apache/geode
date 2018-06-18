@@ -87,8 +87,8 @@ public class RegionMapDestroy {
     this.removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
   }
 
-  public boolean destroy() {
-    runWhileLockedForCacheModification(this::destroyWhileLocked);
+  public boolean destroyWithCacheModificationLock() {
+    runWithCacheModificationLock(this::destroyWhileLocked);
     return opCompleted;
   }
 
@@ -110,7 +110,7 @@ public class RegionMapDestroy {
       if (regionEntry == null) {
         handleNullRegionEntry();
       } else {
-        handleExistingRegionEntryWhileInUpdateMode();
+        handleExistingRegionEntryWithIndexInUpdateMode();
       }
     } while (retry);
   }
@@ -127,7 +127,7 @@ public class RegionMapDestroy {
     }
   }
 
-  private void runWhileLockedForCacheModification(Runnable r) {
+  private void runWithCacheModificationLock(Runnable r) {
     cacheModificationLock.lockForCacheModification(internalRegion, event);
     try {
       r.run();
@@ -226,13 +226,13 @@ public class RegionMapDestroy {
     return this.tombstoneRegionEntry != null;
   }
 
-  private void handleExistingRegionEntryWhileInUpdateMode() {
-    runWithIndexInUpdateMode(this::handleExistingRegionEntry);
+  private void handleExistingRegionEntryWithIndexInUpdateMode() {
+    runWithIndexInUpdateMode(this::handleExistingRegionEntryWhileInUpdateMode);
     // No need to call lruUpdateCallback since the only lru action
     // we may have taken was lruEntryDestroy. This fixes bug 31759.
   }
 
-  private void handleExistingRegionEntry() {
+  private void handleExistingRegionEntryWhileInUpdateMode() {
     try {
       synchronized (regionEntry) {
         internalRegion.checkReadiness();

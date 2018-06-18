@@ -1040,7 +1040,7 @@ public abstract class AbstractRegionMap
     RegionMapDestroy regionMapDestroy = new RegionMapDestroy((InternalRegion) owner, this, this,
         event, inTokenMode, duringRI, cacheWrite, isEviction,
         expectedOldValue, removeRecoveredEntry);
-    return regionMapDestroy.destroy();
+    return regionMapDestroy.destroyWithCacheModificationLock();
   }
 
   @Override
