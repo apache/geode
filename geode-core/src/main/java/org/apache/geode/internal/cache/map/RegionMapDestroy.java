@@ -146,7 +146,7 @@ public class RegionMapDestroy {
   }
 
   private void handleNullRegionEntry() {
-    retainForConcurrency = isConcurrentNonTombstoneRemoteOpOnReplicaOrFromServer();
+    retainForConcurrency = isConcurrentNonTombstoneFromRemoteOnReplicaOrFromServer();
     if (inTokenMode || retainForConcurrency) {
       destroyExistingOrAddDestroyedEntryWithIndexInUpdateMode();
     } else {
@@ -183,11 +183,11 @@ public class RegionMapDestroy {
     }
   }
 
-  private boolean isConcurrentNonTombstoneRemoteOpOnReplicaOrFromServer() {
-    if (hasTombstone()) {
+  private boolean isConcurrentNonTombstoneFromRemoteOnReplicaOrFromServer() {
+    if (!internalRegion.getConcurrencyChecksEnabled()) {
       return false;
     }
-    if (!internalRegion.getConcurrencyChecksEnabled()) {
+    if (hasTombstone()) {
       return false;
     }
     if (!isReplicaOrFromServer()) {
