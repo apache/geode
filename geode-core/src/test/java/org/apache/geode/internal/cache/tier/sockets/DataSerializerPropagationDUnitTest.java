@@ -82,7 +82,11 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
   protected static EventID eventId;
 
-  private static boolean testEventIDResult = false;
+  private static volatile EventID observedEventID;
+
+  private static EventID getObservedEventID() {
+    return observedEventID;
+  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -123,20 +127,28 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     return server.invoke(DataSerializerPropagationDUnitTest::createServerCache);
   }
 
+  private void tearDownForVM() {
+    eventId = null;
+    observedEventID = null;
+    PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
+    DataSerializerPropagationDUnitTest.closeCache();
+  }
+
   @Override
   public final void preTearDown() throws Exception {
     try {
       // close the clients first
-      client1.invoke(() -> DataSerializerPropagationDUnitTest.closeCache());
-      client2.invoke(() -> DataSerializerPropagationDUnitTest.closeCache());
-      closeCache();
+      client1.invoke(this::tearDownForVM);
+      client2.invoke(this::tearDownForVM);
+      tearDownForVM();
 
-      server1.invoke(() -> DataSerializerPropagationDUnitTest.closeCache());
-      server2.invoke(() -> DataSerializerPropagationDUnitTest.closeCache());
+      server1.invoke(this::tearDownForVM);
+      server2.invoke(this::tearDownForVM);
 
       client1 = null;
       client2 = null;
       server1 = null;
+      server2 = null;
 
     } finally {
       TestDataSerializer.successfullyInstantiated = false;
@@ -386,12 +398,8 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     }
   }
 
-  /**
-   * Test's same eventId being same for the dataserializers at all clients & servers
-   *
-   */
   @Test
-  public void testDataSerializersEventIdVerificationClientsAndServers() throws Exception {
+  public void registerDataSerializerGetsPropagatedToAnotherClient() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
@@ -404,10 +412,9 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
     registerDataSerializer(DSObject1.class);
 
-    Boolean pass = client2.invoke(DataSerializerPropagationDUnitTest::verifyResult);
-    assertTrue("EventId found Different", pass);
-
-    PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
+    assertNotNull(eventId);
+    Awaitility.await("event propagates to client 2").until(() -> assertEquals(eventId,
+        client2.invoke(DataSerializerPropagationDUnitTest::getObservedEventID)));
   }
 
   @Test
@@ -520,12 +527,6 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     assertEquals(expected, actual);
   }
 
-  private static Boolean verifyResult() {
-    boolean temp = testEventIDResult;
-    testEventIDResult = false;
-    return new Boolean(temp);
-  }
-
   private static Integer createServerCache() throws Exception {
     new DataSerializerPropagationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
@@ -549,17 +550,8 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
       @Override
       public void beforeSendingToServer(EventID eventID) {
         eventId = eventID;
-        client2.invoke(() -> DataSerializerPropagationDUnitTest.setEventId(eventID));
       }
     });
-  }
-
-  /**
-   * sets the EventId value in the VM
-   *
-   */
-  public static void setEventId(EventID eventID) {
-    eventId = eventID;
   }
 
   private static void setClientServerObserver2() {
@@ -567,7 +559,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
       public void afterReceivingFromServer(EventID eventID) {
-        testEventIDResult = eventID.equals(eventId);
+        observedEventID = eventID;
       }
     });
   }
