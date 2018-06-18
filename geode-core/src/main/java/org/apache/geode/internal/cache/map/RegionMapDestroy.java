@@ -87,20 +87,20 @@ public class RegionMapDestroy {
     this.removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
   }
 
-  public boolean destroyWithCacheModificationLock() {
+  public boolean destroy() {
     runWithCacheModificationLock(this::destroyWhileLocked);
     return opCompleted;
   }
 
   private void destroyWhileLocked() {
     try {
-      destroyWIthRetry();
+      destroyWithRetry();
     } finally {
       afterDestroyActions();
     }
   }
 
-  private void destroyWIthRetry() {
+  private void destroyWithRetry() {
     do {
       initializeState();
       regionEntry = focusedRegionMap.getEntry(event);
@@ -236,7 +236,7 @@ public class RegionMapDestroy {
     try {
       synchronized (regionEntry) {
         internalRegion.checkReadiness();
-        if (!regionEntry.isRemoved() || createTombstoneForConflictChecks()) {
+        if (isNotRemovedOrNeedTombstone()) {
           destroyExistingEntry();
         } else {
           handleEntryAlreadyRemoved();
@@ -249,7 +249,7 @@ public class RegionMapDestroy {
   }
 
   private void handleEntryAlreadyRemoved() {
-    updateVersionTagOnEntryWithTombstone();
+    updateVersionTagOnTombstoneEntry();
     if (isOldValueExpected()) {
       return;
     }
@@ -299,7 +299,10 @@ public class RegionMapDestroy {
     internalRegion.notifyTimestampsToGateways(event);
   }
 
-  private boolean createTombstoneForConflictChecks() {
+  private boolean isNotRemovedOrNeedTombstone() {
+    if (!regionEntry.isRemoved()) {
+      return true;
+    }
     if (!internalRegion.getConcurrencyChecksEnabled()) {
       return false;
     }
@@ -348,7 +351,7 @@ public class RegionMapDestroy {
     doPart3 = false;
   }
 
-  private void updateVersionTagOnEntryWithTombstone() {
+  private void updateVersionTagOnTombstoneEntry() {
     if (!regionEntry.isTombstone()) {
       return;
     }
