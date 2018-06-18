@@ -82,7 +82,9 @@ public class GfshCommandRule extends DescribedExternalResource {
   private File workingDir;
   private CommandResult commandResult;
 
-  public GfshCommandRule() {}
+  public GfshCommandRule() {
+    createTempFolder();
+  }
 
   public GfshCommandRule(Supplier<Integer> portSupplier, PortType portType) {
     this();
@@ -93,11 +95,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   @Override
   protected void before(Description description) throws Throwable {
     LogWrapper.close();
-    try {
-      temporaryFolder.create();
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
+    createTempFolder();
     workingDir = temporaryFolder.newFolder("gfsh_files");
     this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
     ignoredException =
@@ -115,6 +113,14 @@ public class GfshCommandRule extends DescribedExternalResource {
       // when config is not null, developer may deliberately pass in a wrong
       // password so that the test will verify the connection itself. So do not verify here.
       secureConnect(portSupplier.get(), portType, config.user(), config.password());
+    }
+  }
+
+  private void createTempFolder() {
+    try {
+      temporaryFolder.create();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 
