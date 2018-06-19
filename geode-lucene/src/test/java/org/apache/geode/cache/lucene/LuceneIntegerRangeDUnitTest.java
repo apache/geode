@@ -39,7 +39,6 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -73,7 +72,11 @@ public class LuceneIntegerRangeDUnitTest {
 
     gfshCommandRule.connect(locator);
 
-    client1 = clusterStartupRule.startClientVM(2, new Properties(), (Consumer<ClientCacheFactory> & Serializable) (x-> x.set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.lucene.**").addPoolLocator("localhost", locatorPort)));
+    client1 =
+        clusterStartupRule.startClientVM(2, new Properties(),
+            (Consumer<ClientCacheFactory> & Serializable) (x -> x
+                .set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.lucene.**")
+                .addPoolLocator("localhost", locatorPort)));
   }
 
 
@@ -119,10 +122,10 @@ public class LuceneIntegerRangeDUnitTest {
       LuceneService luceneService = LuceneServiceProvider.get(clientCache);
 
       LuceneQuery luceneQuery1 = luceneService.createLuceneQueryFactory()
-          .create("idx1", "/sampleregion", "+name=person* +height:[100 TO 150]", "name");
+          .create("idx1", "/sampleregion", "+name=person* +height:[120 TO 130]", "name");
 
       assertThat(luceneQuery1.findKeys())
-          .containsExactlyInAnyOrder("person1", "person2", "person3");
+          .containsExactlyInAnyOrder("person2", "person3");
     });
 
 
