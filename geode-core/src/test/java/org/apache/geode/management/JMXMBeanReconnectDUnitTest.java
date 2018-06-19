@@ -15,35 +15,8 @@
 
 package org.apache.geode.management;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.awaitility.Awaitility.waitAtMost;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
-import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -52,6 +25,28 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.awaitility.Awaitility.waitAtMost;
 
 @Category({DistributedTest.class, JMXTest.class})
 public class JMXMBeanReconnectDUnitTest {
@@ -64,7 +59,6 @@ public class JMXMBeanReconnectDUnitTest {
   private static final int SERVER_1_VM_INDEX = 2;
   private static final int SERVER_2_VM_INDEX = 3;
   private static final int SERVER_COUNT = 2;
-  private static final int RESTORED_MEMBER_VM_INDEX = 4;
 
   private int locator1JmxPort, locator2JmxPort;
 
@@ -92,7 +86,7 @@ public class JMXMBeanReconnectDUnitTest {
     server2 = lsRule.startServerVM(SERVER_2_VM_INDEX, locator1.getPort());
 
     gfsh.connectAndVerify(locator1);
-    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + REGION_PATH)
+    gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + REGION_PATH + " --enable-statistics=true")
         .statusIsSuccess();
 
     locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
@@ -110,10 +104,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(intermediateServerBeans)
         .containsExactlyElementsOf(initialServerBeans);
 
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> locator1.invoke(() -> {
-      InternalLocator intLocator = InternalLocator.getLocator();
-      return intLocator != null && intLocator.isSharedConfigurationRunning();
-    }));
+    locator1.waitTilLocatorFullyReconnected();
 
     List<String> finalServerBeans = canonicalBeanNamesFor(server1);
 
@@ -132,6 +123,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(intermediateLocatorBeans)
         .containsExactlyElementsOf(initialLocatorBeans);
 
+    server1.waitTilServerFullyReconnected();
     locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
 
     List<String> finalLocatorBeans = canonicalBeanNamesFor(locator1);
@@ -150,8 +142,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    int portOfCrashedMember = locator1.getPort();
-    lsRule.stopMember(LOCATOR_1_VM_INDEX);
+    locator1.forceDisconnectMember();
 
     List<ObjectName> intermediateLocator2GemfireBeans =
         getFederatedGemfireBeansFrom(locator2);
@@ -162,11 +153,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(intermediateLocator2GemfireBeans)
         .containsExactlyElementsOf(locatorBeansExcludingStoppedMember);
 
-    Properties properties = crashedLocatorProperties();
-    locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX,
-        member -> member.withProperties(properties).withPort(portOfCrashedMember));
-
-    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    locator1.waitTilLocatorFullyReconnected();
     waitForLocatorsToAgreeOnMembership();
 
     List<ObjectName> finalLocator1GemfireBeans =
@@ -193,8 +180,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    int portOfCrashedMember = server1.getPort();
-    lsRule.stopMember(SERVER_1_VM_INDEX);
+    server1.forceDisconnectMember();
 
     List<ObjectName> intermediateLocator1GemfireBeans =
         getFederatedGemfireBeansFrom(locator1);
@@ -212,12 +198,7 @@ public class JMXMBeanReconnectDUnitTest {
           .containsExactlyElementsOf(locatorBeansExcludingStoppedMember);
     });
 
-    int locator1Port = locator1.getPort();
-    Properties properties = crashedServerProperties();
-    server1 = lsRule.startServerVM(RESTORED_MEMBER_VM_INDEX,
-        member -> member.withPort(portOfCrashedMember).withProperties(properties)
-            .withConnectionToLocator(locator1Port));
-
+    server1.waitTilServerFullyReconnected();
     locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
     waitForLocatorsToAgreeOnMembership();
 
@@ -317,18 +298,5 @@ public class JMXMBeanReconnectDUnitTest {
     props.setProperty(ConfigurationProperties.NAME, LOCATOR_2_NAME);
     props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locator1.getPort() + "]");
     return props;
-  }
-
-  private Properties crashedServerProperties() {
-    Properties spoofServer1Properties = new Properties();
-    spoofServer1Properties.setProperty("name", "server-" + SERVER_1_VM_INDEX);
-    return spoofServer1Properties;
-  }
-
-  private Properties crashedLocatorProperties() {
-    Properties newLocator1Props = locator1Properties();
-    newLocator1Props.setProperty(ConfigurationProperties.LOCATORS,
-        "localhost[" + locator2.getPort() + "]");
-    return newLocator1Props;
   }
 }
