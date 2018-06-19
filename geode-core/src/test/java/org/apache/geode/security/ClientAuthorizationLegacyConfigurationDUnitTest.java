@@ -20,12 +20,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,6 +42,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -120,7 +119,7 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
         UserPasswordAuthInit.class.getCanonicalName() + ".create");
 
     int locatorPort = locator.getPort();
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolLocator("localhost", locatorPort);
 
     ClientVM client = csRule.startClientVM(2, clientProps, cacheSetup, clientVersion);
@@ -182,7 +181,7 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
         UserPasswordAuthInit.class.getCanonicalName() + ".create");
 
     int locatorPort = locator.getPort();
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolLocator("localhost", locatorPort);
 
     ClientVM client = csRule.startClientVM(2, clientProps, cacheSetup, clientVersion);

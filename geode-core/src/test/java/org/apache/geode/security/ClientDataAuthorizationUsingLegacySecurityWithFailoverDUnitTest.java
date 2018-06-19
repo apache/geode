@@ -23,12 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -55,6 +53,7 @@ import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.security.templates.UsernamePrincipal;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -330,7 +329,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     int server1Port = this.server1.getPort();
     int server2Port = this.server2.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
         .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2);
     ClientVM client1 = csRule.startClientVM(3, props, cacheSetup, clientVersion);
@@ -389,7 +388,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
         .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2);
     ClientVM client = csRule.startClientVM(3, props, cacheSetup, clientVersion);

@@ -52,7 +52,8 @@ public class ClientAuthDUnitTest {
 
   @Test
   public void authWithCorrectPasswordShouldPass() throws Exception {
-    lsRule.startClientVM(0, "test", "test", true, server.getPort(), new ClientCacheHook(lsRule));
+    lsRule.startClientVM(0, "test", "test", true, server.getPort(),
+        () -> new ClientCacheHook(lsRule));
   }
 
   @Test
@@ -60,7 +61,7 @@ public class ClientAuthDUnitTest {
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
 
     assertThatThrownBy(() -> lsRule.startClientVM(0, "test", "invalidPassword", true,
-        server.getPort(), new ClientCacheHook(lsRule)))
+        server.getPort(), () -> new ClientCacheHook(lsRule)))
             .isInstanceOf(AuthenticationFailedException.class);
   }
 

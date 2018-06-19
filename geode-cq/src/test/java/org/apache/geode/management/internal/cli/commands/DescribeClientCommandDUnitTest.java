@@ -17,12 +17,10 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.awaitility.Awaitility;
@@ -46,6 +44,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -188,7 +187,7 @@ public class DescribeClientCommandDUnitTest {
 
   private ClientVM createClient(int vmId, boolean subscriptionEnabled) throws Exception {
     int server1Port = server1Vm1.getPort();
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> {
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> {
       cf.addPoolServer("localhost", server1Port);
       cf.setPoolSubscriptionEnabled(subscriptionEnabled);
       cf.setPoolPingInterval(100);
