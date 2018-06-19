@@ -320,9 +320,6 @@ public class RegionMapDestroy {
   }
 
   private void cancelExpiryTaskIfRegionEntryExisted() {
-    if (!opCompleted) {
-      return;
-    }
     if (regionEntry == null) {
       return;
     }
