@@ -150,7 +150,7 @@ public class RegionMapDestroy {
     if (inTokenMode || retainForConcurrency) {
       destroyExistingOrAddDestroyedEntryWithIndexInUpdateMode();
     } else {
-      retryRemoveWithTombstone();
+      finishTombstoneOrEntryNotFound();
     }
   }
 
@@ -412,7 +412,7 @@ public class RegionMapDestroy {
     return true;
   }
 
-  private void retryRemoveWithTombstone() {
+  private void finishTombstoneOrEntryNotFound() {
     if (isEviction && !internalRegion.getConcurrencyChecksEnabled()) {
       return;
     }
@@ -420,29 +420,66 @@ public class RegionMapDestroy {
     // on the entry and leaves behind a tombstone if concurrencyChecksEnabled.
     // It fixes bug #32467 by propagating the destroy to the server even though
     // the entry isn't in the client
-    newRegionEntry = tombstoneRegionEntry;
-    if (newRegionEntry == null) {
-      newRegionEntry = createNewRegionEntry();
+    if (hasTombstone()) {
+      finishTombstone();
+    } else {
+      finishEntryNotFound();
     }
+  }
+
+  private void finishEntryNotFound() {
+    newRegionEntry = createNewRegionEntry();
     synchronized (newRegionEntry) {
-      if (hasTombstone() && !tombstoneRegionEntry.isTombstone()) {
+      if (getExistingOrAddEntry(newRegionEntry) != null) {
+        // concurrent change - try again
+        retry = true;
+        return;
+      }
+      if (isEviction) {
+        // TODO: BUG? why leave a REMOVE_PHASE1 in the map when evicting?
+        // Move this check to before createNewRegionEntry?
+        return;
+      }
+      try {
+        handleEntryNotFound(newRegionEntry);
+      } finally {
+        removeEntryOrLeaveTombstone();
+      }
+    }
+  }
+
+  private void finishTombstone() {
+    synchronized (tombstoneRegionEntry) {
+      if (!tombstoneRegionEntry.isTombstone()) {
         // tombstone was changed to no longer be one so retry
         retry = true;
         return;
       }
-      regionEntry = getExistingOrAddEntry(newRegionEntry);
-      if (regionEntry != null && regionEntry != tombstoneRegionEntry) {
-        // concurrent change - try again
-        retry = true;
-        return;
-      } else if (!isEviction) {
+      // tombstoneRegionEntry came from doing a get on the map.
+      // If it was updated or removed then it would no longer be
+      // a tombstone (which we checked above).
+      // So at this point we know it is still in the map.
+      if (!isEviction) {
         try {
-          handleEntryNotFound();
+          handleEntryNotFound(tombstoneRegionEntry);
         } finally {
-          removeEntryOrLeaveTombstone();
+          handleTombstoneVersionTag();
         }
       }
-    } // synchronized(newRegionEntry)
+    }
+  }
+
+  private void handleTombstoneVersionTag() {
+    if (event.getVersionTag() != null) {
+      try {
+        updateTombstoneVersionTag();
+      } catch (ConcurrentCacheModificationException e) {
+        handleConcurrentModificationException();
+        throw e;
+      }
+    } else {
+      setEventVersionTagFromTombstone();
+    }
   }
 
   private RegionEntry createNewRegionEntry() {
@@ -532,19 +569,10 @@ public class RegionMapDestroy {
   }
 
   private void removeEntryOrLeaveTombstone() {
-    try {
-      if (destroyUsingTombstone()) {
-        makeNewRegionEntryTombstone();
-      } else if (!hasTombstone()) {
-        removeNewEntry();
-      } else if (event.getVersionTag() != null) {
-        updateTombstoneVersionTag();
-      } else {
-        setEventVersionTagFromTombstone();
-      }
-    } catch (ConcurrentCacheModificationException e) {
-      handleConcurrentModificationException();
-      throw e;
+    if (destroyUsingTombstone()) {
+      makeNewRegionEntryTombstone();
+    } else {
+      removeNewEntry();
     }
   }
 
@@ -605,7 +633,12 @@ public class RegionMapDestroy {
   private void makeNewRegionEntryTombstone() {
     // this shouldn't fail since we just created the entry.
     // it will either generate a tag or apply a server's version tag
-    focusedRegionMap.processVersionTag(newRegionEntry, event);
+    try {
+      focusedRegionMap.processVersionTag(newRegionEntry, event);
+    } catch (ConcurrentCacheModificationException e) {
+      handleConcurrentModificationException();
+      throw e;
+    }
     if (doPart3) {
       internalRegion.generateAndSetVersionTag(event, newRegionEntry);
     }
@@ -620,7 +653,7 @@ public class RegionMapDestroy {
     // lruEntryCreate(newRegionEntry);
   }
 
-  private void handleEntryNotFound() {
+  private void handleEntryNotFound(RegionEntry entryForDistribution) {
     boolean throwException = false;
     EntryNotFoundException entryNotFoundException = null;
 
@@ -646,7 +679,7 @@ public class RegionMapDestroy {
         doPart3 = true;
         // Distribution of this op happens on regionEntry in part 3 so ensure it is not null
         if (regionEntry == null) {
-          regionEntry = newRegionEntry;
+          regionEntry = entryForDistribution;
         }
       }
     }
