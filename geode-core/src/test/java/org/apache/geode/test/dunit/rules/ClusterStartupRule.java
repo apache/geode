@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -45,6 +44,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -242,15 +243,16 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
    * Consumer
    */
   public ClientVM startClientVM(int index, Properties properties,
-      Consumer<ClientCacheFactory> cacheFactorySetup, String clientVersion) throws Exception {
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup, String clientVersion)
+      throws Exception {
     return startClientVM(index, properties, cacheFactorySetup, clientVersion,
-        (Runnable & Serializable) () -> {
+        () -> {
         });
   }
 
   public ClientVM startClientVM(int index, Properties properties,
-      Consumer<ClientCacheFactory> cacheFactorySetup, String clientVersion,
-      Runnable clientCacheHook) throws Exception {
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup, String clientVersion,
+      SerializableRunnableIF clientCacheHook) throws Exception {
     VM client = getVM(index, clientVersion);
     Exception error = client.invoke(() -> {
       clientCacheRule =
@@ -272,7 +274,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public ClientVM startClientVM(int index, Properties properties,
-      Consumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
     return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
   }
 
@@ -283,8 +285,8 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
 
-    Consumer<ClientCacheFactory> consumer =
-        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
+    SerializableConsumerIF<ClientCacheFactory> consumer =
+        ((cacheFactory) -> {
           cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
           for (int serverPort : serverPorts) {
             cacheFactory.addPoolServer("localhost", serverPort);
@@ -294,14 +296,15 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public ClientVM startClientVM(int index, String username, String password,
-      boolean subscriptionEnabled, int serverPort, Runnable clientCacheHook) throws Exception {
+      boolean subscriptionEnabled, int serverPort, SerializableRunnableIF clientCacheHook)
+      throws Exception {
     Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, username);
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
 
-    Consumer<ClientCacheFactory> consumer =
-        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
+    SerializableConsumerIF<ClientCacheFactory> consumer =
+        ((cacheFactory) -> {
           cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
           cacheFactory.addPoolServer("localhost", serverPort);
         });

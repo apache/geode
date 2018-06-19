@@ -29,7 +29,6 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import org.awaitility.Awaitility;
 import org.junit.After;
@@ -45,6 +44,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -593,7 +593,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private ClientVM getClientVM() throws Exception {
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> {
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> {
       System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
       cf.addPoolLocator("localhost", locator.getPort());
       cf.setPdxSerializer(

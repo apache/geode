@@ -21,12 +21,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,6 +46,7 @@ import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.security.templates.UsernamePrincipal;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -123,7 +122,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataWrite");
     int locatorPort = locator.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolLocator("localhost", locatorPort);
     ClientVM clientVM = csRule.startClientVM(2, props, cacheSetup, clientVersion);
 
@@ -157,7 +156,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
     int locatorPort = locator.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolLocator("localhost", locatorPort);
     ClientVM client = csRule.startClientVM(2, props, cacheSetup, clientVersion);
 
@@ -184,7 +183,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataRead");
     int locatorPort = locator.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolLocator("localhost", locatorPort);
     ClientVM client = csRule.startClientVM(2, props, cacheSetup, clientVersion);
 
@@ -220,7 +219,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
 
     int locatorPort = locator.getPort();
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
         .addPoolLocator("localhost", locatorPort);
 
     ClientVM clientVM = csRule.startClientVM(2, props, cacheSetup, clientVersion);
