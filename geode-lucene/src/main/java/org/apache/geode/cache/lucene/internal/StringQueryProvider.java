@@ -80,7 +80,7 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
         pointsConfigMap = heteroSerializer.getPointsConfigMap();
       }
       logger.info(serializer + ":" + Arrays.toString(indexImpl.getFieldNames()) + ":"
-              + parser.getDateResolution());
+          + parser.getDateResolution());
       // pointsConfigMap.put("revenue", new PointsConfig(NumberFormat.getInstance(),
       // Integer.class));
       parser.setPointsConfigMap(pointsConfigMap);
