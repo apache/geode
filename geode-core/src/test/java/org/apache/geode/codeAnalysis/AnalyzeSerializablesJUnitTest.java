@@ -41,6 +41,7 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -428,10 +429,9 @@ public class AnalyzeSerializablesJUnitTest {
     System.out.println("java classpath is " + classpath);
 
     String[] entries = classpath.split(File.pathSeparator);
-    String gradleBuildDirName = getModuleName() + File.separatorChar + "build" + File.separatorChar
-        + "classes" + File.separatorChar + "main";
-    String ideaBuildDirName = getModuleName() + File.separatorChar + "out" + File.separatorChar
-        + "production" + File.separatorChar + "classes";
+    String gradleBuildDirName =
+        Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
+    String ideaBuildDirName = Paths.get(getModuleName(), "out", "production", "classes").toString();
     String buildDir = null;
 
     for (String entry : entries) {

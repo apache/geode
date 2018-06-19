@@ -26,15 +26,14 @@ buildscript {
   dependencies {
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.0.1'
+    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.3.1"
-    classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6-SNAPSHOT"
+    classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6.2-SNAPSHOT"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
+    classpath "com.gradle:build-scan-plugin:1.13.4"
   }
 }
-
-apply plugin: 'wrapper'
 
 wrapper {
   gradleVersion = minimumGradleVersion
