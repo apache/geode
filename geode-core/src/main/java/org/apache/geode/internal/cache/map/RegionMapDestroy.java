@@ -263,7 +263,8 @@ public class RegionMapDestroy {
   }
 
   private boolean destroyShouldContinue() {
-    if (isRemovedPhase2()) {
+    if (isRemovedPhase2(regionEntry)) {
+      retry = true;
       return false;
     }
     if (isEntryInUseByTransaction()) {
@@ -402,13 +403,12 @@ public class RegionMapDestroy {
     return true;
   }
 
-  private boolean isRemovedPhase2() {
-    if (!regionEntry.isRemovedPhase2()) {
+  private boolean isRemovedPhase2(RegionEntry entry) {
+    if (!entry.isRemovedPhase2()) {
       return false;
     }
-    focusedRegionMap.getEntryMap().remove(event.getKey(), regionEntry);
+    focusedRegionMap.getEntryMap().remove(event.getKey(), entry);
     internalRegion.getCachePerfStats().incRetries();
-    retry = true;
     return true;
   }
 
@@ -784,9 +784,7 @@ public class RegionMapDestroy {
     RegionEntry existingRegionEntry = getExistingOrAddEntry(newRegionEntry);
     while (!opCompleted && existingRegionEntry != null) {
       synchronized (existingRegionEntry) {
-        if (existingRegionEntry.isRemovedPhase2()) {
-          internalRegion.getCachePerfStats().incRetries();
-          focusedRegionMap.getEntryMap().remove(event.getKey(), existingRegionEntry);
+        if (isRemovedPhase2(existingRegionEntry)) {
           existingRegionEntry = getExistingOrAddEntry(newRegionEntry);
         } else {
           event.setRegionEntry(existingRegionEntry);
