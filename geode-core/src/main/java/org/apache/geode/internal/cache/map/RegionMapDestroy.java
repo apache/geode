@@ -455,16 +455,17 @@ public class RegionMapDestroy {
         retry = true;
         return;
       }
+      if (isEviction) {
+        return;
+      }
       // tombstoneRegionEntry came from doing a get on the map.
       // If it was updated or removed then it would no longer be
       // a tombstone (which we checked above).
       // So at this point we know it is still in the map.
-      if (!isEviction) {
-        try {
-          handleEntryNotFound(tombstoneRegionEntry);
-        } finally {
-          handleTombstoneVersionTag();
-        }
+      try {
+        handleEntryNotFound(tombstoneRegionEntry);
+      } finally {
+        handleTombstoneVersionTag();
       }
     }
   }
