@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -30,10 +32,15 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -50,6 +57,7 @@ public class LuceneIntegerRangeDUnitTest {
 
   private static MemberVM locator;
   private static MemberVM server1;
+  private static ClientVM client1;
 
 
   @BeforeClass
@@ -61,14 +69,16 @@ public class LuceneIntegerRangeDUnitTest {
             r -> r.withPDXPersistent()
                 .withPDXReadSerialized()
                 .withConnectionToLocator(locatorPort)
-                .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.lucene.*"));
+                .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.lucene.**"));
 
     gfshCommandRule.connect(locator);
+
+    client1 = clusterStartupRule.startClientVM(2, new Properties(), (Consumer<ClientCacheFactory> & Serializable) (x-> x.set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.lucene.**").addPoolLocator("localhost", locatorPort)));
   }
 
 
   @Test
-  public void testByIntegerRange() throws Exception {
+  public void testByIntegerRange() {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       LuceneService luceneService = LuceneServiceProvider.get(cache);
@@ -78,7 +88,10 @@ public class LuceneIntegerRangeDUnitTest {
       Region<String, Person> region =
           cache.<String, Person>createRegionFactory(RegionShortcut.PARTITION)
               .create("sampleregion");
-
+    });
+    
+    client1.invoke(() -> {
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
       Person person1 =
           new Person("person1", 110,
               Date.from(LocalDateTime.parse("2001-01-01T00:00:00").toInstant(ZoneOffset.UTC)));
@@ -90,19 +103,20 @@ public class LuceneIntegerRangeDUnitTest {
           new Person("person3", 130,
               Date.from(LocalDateTime.parse("2003-01-01T00:00:00").toInstant(ZoneOffset.UTC)));
 
+      Region<String, Person> region = clientCache.<String, Person>createClientRegionFactory(ClientRegionShortcut.PROXY)
+          .create("sampleregion");
+
       region.put(person1.name, person1);
       region.put(person2.name, person2);
       region.put(person3.name, person3);
 
-      QueryService queryService = cache.getQueryService();
+      QueryService queryService = clientCache.getQueryService();
 
       Query query = queryService.newQuery("select * from /sampleregion");
       SelectResults results = (SelectResults) query.execute();
-      assertThat(results).hasSize(3);
-    });
+      assertThat(results).hasSize(3);      
 
-    server1.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(clientCache);
 
       LuceneQuery luceneQuery1 = luceneService.createLuceneQueryFactory()
           .create("idx1", "/sampleregion", "+name=person* +height:[100 TO 150]", "name");
