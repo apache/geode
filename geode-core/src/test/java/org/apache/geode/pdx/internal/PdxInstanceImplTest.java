@@ -15,10 +15,14 @@
 package org.apache.geode.pdx.internal;
 
 import static org.apache.commons.lang.StringUtils.substringAfter;
-import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.locks.GrantorRequestProcessor.GrantorRequestContext;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.doNothing;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,55 +31,140 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({IntegrationTest.class, SerializationTest.class})
+@Category({UnitTest.class, SerializationTest.class})
 public class PdxInstanceImplTest {
-  private GemFireCacheImpl cache;
+  protected TypeRegistry pdxRegistry;
 
   @Before
-  public void setUp() {
-    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-        .set(DISTRIBUTED_SYSTEM_ID, "255").setPdxReadSerialized(true).create();
+  public void setUp() throws IOException, ClassNotFoundException {
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    doNothing().when(cancelCriterion).checkCancelInProgress(any());
+
+    InternalDistributedMember distributedMember = mock(InternalDistributedMember.class);
+
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    when(distributionManager.getDistributedSystemId()).thenReturn(-1);
+    when(distributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(distributionManager.getId()).thenReturn(distributedMember);
+    when(distributionManager.getElderId()).thenReturn(distributedMember);
+
+    GrantorRequestContext grantorRequestContext = new GrantorRequestContext(cancelCriterion);
+
+    InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);
+    when(distributedSystem.isLoner()).thenReturn(true);
+    when(distributedSystem.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(distributedSystem.getGrantorRequestContext()).thenReturn(grantorRequestContext);
+
+    // Cyclical dependency...
+    when(distributedSystem.getDistributionManager()).thenReturn(distributionManager);
+    when(distributionManager.getSystem()).thenReturn(distributedSystem);
+
+    InternalCache internalCache = mock(InternalCache.class);
+    when(internalCache.getInternalDistributedSystem()).thenReturn(distributedSystem);
+    when(internalCache.getPdxPersistent()).thenReturn(false);
+
+    Region<Object, Object> region = mock(Region.class);
+    when(internalCache.createVMRegion(any(), any(), any())).thenReturn(region);
+
+    DistributedLockService distributedLockService = mock(DistributedLockService.class);
+
+    PeerTypeRegistration testTypeRegistration = mock(PeerTypeRegistration.class);
+    when(testTypeRegistration.getLockService()).thenReturn(distributedLockService);
+
+    TypeRegistration typeRegistration =
+        new TestLonerTypeRegistration(internalCache, testTypeRegistration);
+
+    pdxRegistry = new TypeRegistry(internalCache, typeRegistration);
+    pdxRegistry.initialize();
   }
 
   @After
   public void tearDown() {
-    cache.close();
+    // Do nothing.
   }
 
   @Test
-  public void testToStringForEmpty() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForEmpty", false, cache).create();
-    assertEquals("testToStringForEmpty]{}", substringAfter(instance.toString(), ","));
+  public void testToStringForEmpty() throws Exception {
+    final String name = "testToStringForEmpty";
+    final PdxType pdxType = new PdxType(name, false);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream());
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
+    assertEquals(name + "]{}", substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForInteger() {
-    PdxInstance instance = PdxInstanceFactoryImpl.newCreator("testToStringForInteger", false, cache)
-        .writeInt("intField", 37).create();
-    assertEquals("testToStringForInteger]{intField=37}", substringAfter(instance.toString(), ","));
+    final String name = "testToStringForInteger";
+    final PdxType pdxType = new PdxType(name, false);
+
+    int index = 0;
+    PdxField intField = new PdxField("intField", index++, 0, FieldType.INT, false);
+    pdxType.addField(intField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeInt(37);
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
+    assertEquals(name + "]{intField=37}", substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForString() {
-    PdxInstance instance = PdxInstanceFactoryImpl.newCreator("testToStringForString", false, cache)
-        .writeString("stringField", "MOOF!").create();
+    final String name = "testToStringForString";
+    final PdxType pdxType = new PdxType(name, false);
+
+    int index = 0;
+    PdxField stringField = new PdxField("stringField", index++, 0, FieldType.STRING, false);
+    pdxType.addField(stringField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeString("MOOF!");
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForString]{stringField=MOOF!}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForBooleanLongDoubleAndString() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForBooleanLongDoubleAndString", false, cache)
-            .writeBoolean("booleanField", Boolean.TRUE).writeLong("longField", 37L)
-            .writeDouble("doubleField", 3.1415).writeString("stringField", "MOOF!").create();
+    final String name = "testToStringForBooleanLongDoubleAndString";
+    final PdxType pdxType = new PdxType(name, false);
+
+    int index = 0;
+    PdxField booleanField = new PdxField("booleanField", index++, 0, FieldType.BOOLEAN, false);
+    pdxType.addField(booleanField);
+    PdxField doubleField = new PdxField("doubleField", index++, 0, FieldType.DOUBLE, false);
+    pdxType.addField(doubleField);
+    PdxField longField = new PdxField("longField", index++, 0, FieldType.LONG, false);
+    pdxType.addField(longField);
+    PdxField stringField = new PdxField("stringField", index++, 0, FieldType.STRING, false);
+    pdxType.addField(stringField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeBoolean(true);
+    writer.writeDouble(3.1415);
+    writer.writeLong(37);
+    writer.writeString("MOOF!");
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals(
         "testToStringForBooleanLongDoubleAndString]{booleanField=true, doubleField=3.1415, longField=37, stringField=MOOF!}",
         substringAfter(instance.toString(), ","));
@@ -83,102 +172,208 @@ public class PdxInstanceImplTest {
 
   @Test
   public void testToStringForObject() {
-    PdxInstance instance = PdxInstanceFactoryImpl.newCreator("testToStringForObject", false, cache)
-        .writeObject("objectField", new SerializableObject("Dave")).create();
+    final String name = "testToStringForObject";
+    final PdxType pdxType = new PdxType(name, false);
+
+    int index = 0;
+    PdxField objectField = new PdxField("objectField", index++, 0, FieldType.OBJECT, false);
+    pdxType.addField(objectField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeObject(new SerializableObject("Dave"));
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForObject]{objectField=Dave}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForByteArray() {
-    PdxInstance instance = PdxInstanceFactoryImpl
-        .newCreator("testToStringForByteArray", false, cache).writeByteArray("byteArrayField",
-            new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xBE, (byte) 0xEF})
-        .create();
+    final String name = "testToStringForByteArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    int index = 0;
+    PdxField byteArrayField =
+        new PdxField("byteArrayField", index++, 0, FieldType.BYTE_ARRAY, false);
+    pdxType.addField(byteArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeByteArray(new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xBE, (byte) 0xEF});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForByteArray]{byteArrayField=DEADBEEF}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForObjectArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForObjectArray", false, cache)
-            .writeObjectArray("objectArrayField",
-                new Object[] {new SerializableObject("Dave"), new SerializableObject("Stewart")})
-            .create();
+    final String name = "testToStringForObjectArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    int index = 0;
+    PdxField objectArrayField =
+        new PdxField("objectArrayField", index++, 0, FieldType.OBJECT_ARRAY, false);
+    pdxType.addField(objectArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeObjectArray(
+        new Object[] {new SerializableObject("Dave"), new SerializableObject("Stewart")});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForObjectArray]{objectArrayField=[Dave, Stewart]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForIntegerArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForIntegerArray", false, cache)
-            .writeObjectArray("integerArrayField", new Integer[] {new Integer(37), new Integer(42)})
-            .create();
+    final String name = "testToStringForIntegerArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    int index = 0;
+    PdxField integerArrayField =
+        new PdxField("integerArrayField", index++, 0, FieldType.OBJECT_ARRAY, false);
+    pdxType.addField(integerArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeObjectArray(new Integer[] {new Integer(37), new Integer(42)});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForIntegerArray]{integerArrayField=[37, 42]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForShortArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForShortArray", false, cache)
-            .writeShortArray("shortArrayField", new short[] {37, 42}).create();
+    final String name = "testToStringForShortArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    short index = 0;
+    PdxField shortArrayField =
+        new PdxField("shortArrayField", index++, 0, FieldType.SHORT_ARRAY, false);
+    pdxType.addField(shortArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeShortArray(new short[] {(short) 37, (short) 42});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForShortArray]{shortArrayField=[37, 42]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForIntArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForIntArray", false, cache)
-            .writeIntArray("intArrayField", new int[] {37, 42}).create();
+    final String name = "testToStringForIntArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    short index = 0;
+    PdxField intArrayField = new PdxField("intArrayField", index++, 0, FieldType.INT_ARRAY, false);
+    pdxType.addField(intArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeIntArray(new int[] {37, 42});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForIntArray]{intArrayField=[37, 42]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForLongArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForLongArray", false, cache)
-            .writeLongArray("longArrayField", new long[] {37L, 42L}).create();
+    final String name = "testToStringForLongArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    short index = 0;
+    PdxField longArrayField =
+        new PdxField("longArrayField", index++, 0, FieldType.LONG_ARRAY, false);
+    pdxType.addField(longArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeLongArray(new long[] {37L, 42L});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForLongArray]{longArrayField=[37, 42]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForCharArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForCharArray", false, cache)
-            .writeCharArray("charArrayField", new char[] {'o', 'k'}).create();
+    final String name = "testToStringForCharArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    short index = 0;
+    PdxField charArrayField =
+        new PdxField("charArrayField", index++, 0, FieldType.CHAR_ARRAY, false);
+    pdxType.addField(charArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeCharArray(new char[] {'o', 'k'});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForCharArray]{charArrayField=[o, k]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForFloatArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForFloatArray", false, cache)
-            .writeFloatArray("floatArrayField", new float[] {3.14159F, 2.71828F}).create();
+    final String name = "testToStringForFloatArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    short index = 0;
+    PdxField floatArrayField =
+        new PdxField("floatArrayField", index++, 0, FieldType.FLOAT_ARRAY, false);
+    pdxType.addField(floatArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeFloatArray(new float[] {3.14159F, 2.71828F});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForFloatArray]{floatArrayField=[3.14159, 2.71828]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForDoubleArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForDoubleArray", false, cache)
-            .writeDoubleArray("doubleArrayField", new double[] {3.14159, 2.71828}).create();
+    final String name = "testToStringForDoubleArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    short index = 0;
+    PdxField doubleArrayField =
+        new PdxField("doubleArrayField", index++, 0, FieldType.DOUBLE_ARRAY, false);
+    pdxType.addField(doubleArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeDoubleArray(new double[] {3.14159, 2.71828});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForDoubleArray]{doubleArrayField=[3.14159, 2.71828]}",
         substringAfter(instance.toString(), ","));
   }
 
   @Test
   public void testToStringForBooleanArray() {
-    PdxInstance instance =
-        PdxInstanceFactoryImpl.newCreator("testToStringForBooleanArray", false, cache)
-            .writeBooleanArray("booleanArrayField", new boolean[] {false, true}).create();
+    final String name = "testToStringForBooleanArray";
+    final PdxType pdxType = new PdxType(name, false);
+
+    short index = 0;
+    PdxField booleanArrayField =
+        new PdxField("booleanArrayField", index++, 0, FieldType.BOOLEAN_ARRAY, false);
+    pdxType.addField(booleanArrayField);
+
+    final PdxWriterImpl writer = new PdxWriterImpl(pdxType, pdxRegistry, new PdxOutputStream(1024));
+    writer.writeBooleanArray(new boolean[] {false, true});
+    writer.completeByteStreamGeneration();
+
+    final PdxInstance instance = writer.makePdxInstance();
     assertEquals("testToStringForBooleanArray]{booleanArrayField=[false, true]}",
         substringAfter(instance.toString(), ","));
   }
@@ -197,6 +392,20 @@ public class PdxInstanceImplTest {
     @Override
     public String toString() {
       return StringUtils.trimToEmpty(name);
+    }
+  }
+
+  private static final class TestLonerTypeRegistration extends LonerTypeRegistration {
+    TypeRegistration testTypeRegistration;
+
+    public TestLonerTypeRegistration(InternalCache cache, TypeRegistration testTypeRegistration) {
+      super(cache);
+      this.testTypeRegistration = testTypeRegistration;
+    }
+
+    @Override
+    protected TypeRegistration createTypeRegistration(boolean client) {
+      return testTypeRegistration;
     }
   }
 }
