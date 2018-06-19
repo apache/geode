@@ -124,10 +124,11 @@ public class MembershipManagerHelper {
 
   public static void crashDistributedSystem(final DistributedSystem msys) {
     msys.getLogWriter().info("crashing distributed system: " + msys);
+    GMSMembershipManager mgr = ((GMSMembershipManager) getMembershipManager(msys));
+    mgr.saveCacheXmlForReconnect(false);
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);
-    GMSMembershipManager mgr = ((GMSMembershipManager) getMembershipManager(msys));
     mgr.forceDisconnect("for testing");
     // wait at most 10 seconds for system to be disconnected
     Awaitility.await().pollInterval(1, TimeUnit.SECONDS).until(() -> !msys.isConnected());

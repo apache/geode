@@ -63,7 +63,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   protected transient TemporaryFolder temporaryFolder;
   protected File workingDir;
-  protected int memberPort = -1;
+  protected int memberPort = 0;
   protected int jmxPort = -1;
   protected int httpPort = -1;
 
@@ -103,6 +103,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     } else {
       System.setProperty("user.dir", oldUserDir);
     }
+  }
+
+  public T withPort(int memberPort) {
+    this.memberPort = memberPort;
+    return (T) this;
   }
 
   public T withWorkingDir(File workingDir) {
