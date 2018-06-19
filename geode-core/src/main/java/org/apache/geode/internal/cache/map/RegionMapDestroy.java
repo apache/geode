@@ -267,10 +267,12 @@ public class RegionMapDestroy {
       retry = true;
       return false;
     }
-    if (isEntryInUseByTransaction()) {
+    if (!isEntryReadyForExpiration()) {
+      cancelDestroy();
       return false;
     }
     if (!isEntryReadyForEviction(regionEntry)) {
+      cancelDestroy();
       return false;
     }
     return true;
@@ -369,6 +371,9 @@ public class RegionMapDestroy {
     }
   }
 
+  /**
+   * @return false if op is an eviction and entry is not ready to be evicted; otherwise true
+   */
   private boolean isEntryReadyForEviction(RegionEntry entry) {
     if (!isEviction) {
       return true;
@@ -376,7 +381,6 @@ public class RegionMapDestroy {
     if (focusedRegionMap.confirmEvictionDestroy(entry)) {
       return true;
     }
-    cancelDestroy();
     return false;
   }
 
@@ -385,19 +389,21 @@ public class RegionMapDestroy {
     retry = false;
   }
 
-  private boolean isEntryInUseByTransaction() {
+  /**
+   * @return false if op is an expiration of local origin and the entry is in use by a transaction;
+   *         otherwise true
+   */
+  private boolean isEntryReadyForExpiration() {
     if (!event.getOperation().isExpiration()) {
-      return false;
+      return true;
     }
     if (event.isOriginRemote()) {
-      return false;
+      return true;
     }
     if (!regionEntry.isInUseByTransaction()) {
-      return false;
+      return true;
     }
-    // If this expiration started locally then only do it if the entry is not being used by a tx.
-    cancelDestroy();
-    return true;
+    return false;
   }
 
   private boolean isRemovedPhase2(RegionEntry entry) {
@@ -788,6 +794,7 @@ public class RegionMapDestroy {
           if (!isEntryReadyForEviction(existingRegionEntry)) {
             // An entry existed but could not be destroyed by eviction.
             // So return true to let caller know to do no further work.
+            cancelDestroy();
             return true;
           }
           destroyExisting(existingRegionEntry);
