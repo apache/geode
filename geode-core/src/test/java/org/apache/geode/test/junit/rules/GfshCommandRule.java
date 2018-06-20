@@ -96,7 +96,11 @@ public class GfshCommandRule extends DescribedExternalResource {
   protected void before(Description description) throws Throwable {
     LogWrapper.close();
     createTempFolder();
-    workingDir = temporaryFolder.newFolder("gfsh_files");
+    try {
+      workingDir = temporaryFolder.newFolder("gfsh_files");
+    } catch (IOException e) {
+      workingDir = temporaryFolder.getRoot();
+    }
     this.gfsh = new HeadlessGfsh(getClass().getName(), gfshTimeout, workingDir.getAbsolutePath());
     ignoredException =
         addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
@@ -116,20 +120,26 @@ public class GfshCommandRule extends DescribedExternalResource {
     }
   }
 
-  private void createTempFolder() {
-    try {
-      temporaryFolder.create();
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-  }
-
   @Override
   protected void after(Description description) throws Throwable {
     close();
 
     if (ignoredException != null) {
       ignoredException.remove();
+    }
+  }
+
+  private void createTempFolder() {
+    // check if the temp folder exists and create it if needed
+    // an IllegalStateException will be thrown if the temp folder does not exist
+    try {
+      temporaryFolder.getRoot();
+    } catch (IllegalStateException e) {
+      try {
+        temporaryFolder.create();
+      } catch (IOException ioe) {
+        throw new UncheckedIOException(ioe);
+      }
     }
   }
 
@@ -162,8 +172,14 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public void connect(int port, PortType type, String... options) throws Exception {
     if (gfsh == null) {
-      this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
-          temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
+      String absolutePath;
+      try {
+        absolutePath = temporaryFolder.newFolder("gfsh_files").getAbsolutePath();
+      } catch (IOException e) {
+        absolutePath = temporaryFolder.getRoot().getAbsolutePath();
+      }
+
+      this.gfsh = new HeadlessGfsh(getClass().getName(), 30, absolutePath);
     }
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
     String endpoint;
