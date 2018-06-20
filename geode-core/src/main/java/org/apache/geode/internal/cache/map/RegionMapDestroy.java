@@ -20,7 +20,6 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -469,7 +468,7 @@ public class RegionMapDestroy {
 
   private void handleTombstoneVersionTag() {
     if (event.getVersionTag() == null) {
-      setEventVersionTagFromTombstone(); // TODO coverage
+      event.setVersionTag(createVersionTagFromStamp(tombstoneRegionEntry.getVersionStamp()));
     } else {
       try {
         updateTombstoneVersionTag();
@@ -599,12 +598,6 @@ public class RegionMapDestroy {
 
   private void removeNewRegionEntryFromMap() {
     focusedRegionMap.removeEntry(event.getKey(), newRegionEntry, false);
-  }
-
-  private void setEventVersionTagFromTombstone() { // TODO coverage
-    Assert.assertTrue(event.getVersionTag() == null);
-    Assert.assertTrue(newRegionEntry == tombstoneRegionEntry);
-    event.setVersionTag(createVersionTagFromStamp(tombstoneRegionEntry.getVersionStamp()));
   }
 
   private void updateTombstoneVersionTag() {
