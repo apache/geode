@@ -603,9 +603,9 @@ public class RegionMapDestroy {
   private void updateTombstoneVersionTag() {
     // hasTombstone with versionTag - update the tombstone version info
     focusedRegionMap.processVersionTag(tombstoneRegionEntry, event);
-    if (doPart3) {
-      internalRegion.generateAndSetVersionTag(event, newRegionEntry); // TODO coverage
-    }
+    // This code used call generateAndSetVersionTag if doPart3 was true.
+    // But none of the code that calls this method ever sets doPart3 to true.
+    assert !doPart3;
     // This is not conflict, we need to persist the tombstone again with new
     // version tag
     try {
