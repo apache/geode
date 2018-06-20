@@ -191,7 +191,7 @@ public class RegionMapDestroy {
       return false;
     }
     if (!isReplicaOrFromServer()) {
-      return false;
+      return false; // TODO coverage
     }
     if (!isRemote()) {
       return false;
@@ -202,7 +202,7 @@ public class RegionMapDestroy {
   private boolean isReplicaOrFromServer() {
     if (internalRegion.getDataPolicy().withReplication()) {
       return true;
-    }
+    } // TODO coverage
     if (event.isFromServer()) {
       return true;
     }
@@ -214,10 +214,10 @@ public class RegionMapDestroy {
       return true;
     }
     if (event.isFromWANAndVersioned()) {
-      return true;
+      return true; // TODO coverage
     }
     if (event.isBridgeEvent()) {
-      return true;
+      return true; // TODO coverage
     }
     return false;
   }
@@ -239,11 +239,11 @@ public class RegionMapDestroy {
         if (isNotRemovedOrNeedTombstone()) {
           destroyExistingEntry();
         } else {
-          handleEntryAlreadyRemoved();
+          handleEntryAlreadyRemoved(); // TODO coverage
         }
       }
     } catch (ConcurrentCacheModificationException e) {
-      handleConcurrentModificationException();
+      handleConcurrentModificationException(); // TODO coverage
       throw e;
     }
   }
@@ -270,7 +270,7 @@ public class RegionMapDestroy {
       return false;
     }
     if (!isEntryReadyForExpiration()) {
-      cancelDestroy();
+      cancelDestroy(); // TODO coverage
       return false;
     }
     if (!isEntryReadyForEviction(regionEntry)) {
@@ -280,15 +280,15 @@ public class RegionMapDestroy {
     return true;
   }
 
-  private void throwEntryNotFound() {
+  private void throwEntryNotFound() { // TODO coverage
     internalRegion.checkEntryNotFound(event.getKey());
   }
 
-  private boolean isOldValueExpected() {
+  private boolean isOldValueExpected() { // TODO coverage
     return expectedOldValue != null;
   }
 
-  private void handleConcurrentModificationException() {
+  private void handleConcurrentModificationException() { // TODO coverage
     VersionTag tag = event.getVersionTag();
     if (tag == null) {
       return;
@@ -305,11 +305,11 @@ public class RegionMapDestroy {
       return true;
     }
     if (!internalRegion.getConcurrencyChecksEnabled()) {
-      return false;
+      return false; // TODO coverage
     }
     if (removeRecoveredEntry) {
       return true;
-    }
+    } // TODO coverage
     if (event.isOriginRemote()) {
       return true;
     }
@@ -337,7 +337,7 @@ public class RegionMapDestroy {
   private void disablePart3IfGatewayConflict() {
     if (!event.isConcurrencyConflict()) {
       return;
-    }
+    } // TODO coverage
     if (event.getVersionTag() == null) {
       return;
     }
@@ -349,7 +349,7 @@ public class RegionMapDestroy {
     doPart3 = false;
   }
 
-  private void updateVersionTagOnTombstoneEntry() {
+  private void updateVersionTagOnTombstoneEntry() { // TODO coverage
     if (!regionEntry.isTombstone()) {
       return;
     }
@@ -394,7 +394,7 @@ public class RegionMapDestroy {
   private boolean isEntryReadyForExpiration() {
     if (!event.getOperation().isExpiration()) {
       return true;
-    }
+    } // TODO coverage
     if (event.isOriginRemote()) {
       return true;
     }
@@ -436,7 +436,7 @@ public class RegionMapDestroy {
         // TODO: BUG? why leave a REMOVE_PHASE1 in the map when evicting?
         // Move this check to before createNewRegionEntry?
         return;
-      }
+      } // TODO coverage
       try {
         handleEntryNotFound(newRegionEntry);
       } finally {
@@ -453,7 +453,7 @@ public class RegionMapDestroy {
         return;
       }
       if (isEviction) {
-        return;
+        return; // TODO coverage
       }
       // tombstoneRegionEntry came from doing a get on the map.
       // If it was updated or removed then it would no longer be
@@ -468,15 +468,15 @@ public class RegionMapDestroy {
   }
 
   private void handleTombstoneVersionTag() {
-    if (event.getVersionTag() != null) {
+    if (event.getVersionTag() == null) {
+      setEventVersionTagFromTombstone(); // TODO coverage
+    } else {
       try {
         updateTombstoneVersionTag();
       } catch (ConcurrentCacheModificationException e) {
-        handleConcurrentModificationException();
+        handleConcurrentModificationException(); // TODO coverage
         throw e;
       }
-    } else {
-      setEventVersionTagFromTombstone();
     }
   }
 
@@ -504,9 +504,9 @@ public class RegionMapDestroy {
       if (opCompleted) {
         handleCompletedDestroyExistingEntry();
       } else {
-        handleIncompleteDestroyExistingEntry();
+        handleIncompleteDestroyExistingEntry(); // TODO coverage
       }
-    } catch (RegionClearedException rce) {
+    } catch (RegionClearedException rce) { // TODO coverage
       // Ignore. The exception will ensure that we do not update
       // the LRU List
       opCompleted = true;
@@ -545,7 +545,7 @@ public class RegionMapDestroy {
     focusedRegionMap.lruEntryDestroy(regionEntry);
   }
 
-  private void handleIncompleteDestroyExistingEntry() {
+  private void handleIncompleteDestroyExistingEntry() { // TODO coverage
     if (inTokenMode) {
       return;
     }
@@ -579,7 +579,7 @@ public class RegionMapDestroy {
       return false;
     }
     if (event.isOriginRemote()) {
-      return false;
+      return false; // TODO coverage
     }
     if (event.getVersionTag() == null) {
       return false;
@@ -601,7 +601,7 @@ public class RegionMapDestroy {
     focusedRegionMap.removeEntry(event.getKey(), newRegionEntry, false);
   }
 
-  private void setEventVersionTagFromTombstone() {
+  private void setEventVersionTagFromTombstone() { // TODO coverage
     Assert.assertTrue(event.getVersionTag() == null);
     Assert.assertTrue(newRegionEntry == tombstoneRegionEntry);
     event.setVersionTag(createVersionTagFromStamp(tombstoneRegionEntry.getVersionStamp()));
@@ -611,7 +611,7 @@ public class RegionMapDestroy {
     // hasTombstone with versionTag - update the tombstone version info
     focusedRegionMap.processVersionTag(tombstoneRegionEntry, event);
     if (doPart3) {
-      internalRegion.generateAndSetVersionTag(event, newRegionEntry);
+      internalRegion.generateAndSetVersionTag(event, newRegionEntry); // TODO coverage
     }
     // This is not conflict, we need to persist the tombstone again with new
     // version tag
@@ -634,11 +634,11 @@ public class RegionMapDestroy {
     try {
       focusedRegionMap.processVersionTag(newRegionEntry, event);
     } catch (ConcurrentCacheModificationException e) {
-      handleConcurrentModificationException();
+      handleConcurrentModificationException(); // TODO coverage
       throw e;
     }
     if (doPart3) {
-      internalRegion.generateAndSetVersionTag(event, newRegionEntry);
+      internalRegion.generateAndSetVersionTag(event, newRegionEntry); // TODO coverage
     }
     try {
       internalRegion.recordEvent(event);
@@ -657,7 +657,7 @@ public class RegionMapDestroy {
 
     if (!cacheWrite) {
       throwException = true;
-    } else if (!removeRecoveredEntry) {
+    } else if (!removeRecoveredEntry) { // TODO coverage
       try {
         throwException = !internalRegion.bridgeWriteBeforeDestroy(event, expectedOldValue);
       } catch (EntryNotFoundException e) {
@@ -666,7 +666,7 @@ public class RegionMapDestroy {
       }
     }
     if (throwException) {
-      if (isVersionedOpFromClientOrWAN()) {
+      if (isVersionedOpFromClientOrWAN()) { // TODO coverage
         // we must distribute these since they will update the version information in peers
         if (logger.isDebugEnabled()) {
           logger.debug("ARM.destroy is allowing wan/client destroy of {} to continue",
@@ -680,7 +680,7 @@ public class RegionMapDestroy {
           regionEntry = entryForDistribution;
         }
       }
-    }
+    } // TODO coverage
     if (throwException) {
       if (entryNotFoundException != null) {
         throw entryNotFoundException;
@@ -691,23 +691,23 @@ public class RegionMapDestroy {
 
   private boolean isVersionedOpFromClientOrWAN() {
     if (event.isOriginRemote()) {
-      return false;
+      return false; // TODO coverage
     }
     if (event.getOperation().isLocal()) {
-      return false;
+      return false; // TODO coverage
     }
     if (event.isFromBridgeAndVersioned()) {
-      return true;
+      return true; // TODO coverage
     }
     if (event.isFromWANAndVersioned()) {
-      return true;
+      return true; // TODO coverage
     }
     return false;
   }
 
   private void runWithIndexInUpdateMode(Runnable r) {
     final IndexManager oqlIndexManager = getInitializedIndexManager();
-    if (oqlIndexManager != null) {
+    if (oqlIndexManager != null) { // TODO coverage
       try {
         r.run();
       } finally {
@@ -721,7 +721,7 @@ public class RegionMapDestroy {
   private IndexManager getInitializedIndexManager() {
     final IndexManager oqlIndexManager = internalRegion.getIndexManager();
     if (oqlIndexManager != null) {
-      oqlIndexManager.waitForIndexInit();
+      oqlIndexManager.waitForIndexInit(); // TODO coverage
     }
     return oqlIndexManager;
   }
@@ -757,11 +757,11 @@ public class RegionMapDestroy {
     } catch (RegionClearedException rce) {
       handleRegionClearedException(newRegionEntry);
     } catch (ConcurrentCacheModificationException ccme) {
-      handleConcurrentModificationException();
+      handleConcurrentModificationException(); // TODO coverage
       throw ccme;
     } finally {
       if (!opCompleted && !hasTombstone()) {
-        removeNewRegionEntryFromMap();
+        removeNewRegionEntryFromMap(); // TODO coverage
       }
     }
   }
@@ -805,23 +805,23 @@ public class RegionMapDestroy {
     try {
       // if concurrency checks are enabled, destroy will set the version tag
       if (!destroyEntry(existingRegionEntry, false)) {
-        return;
+        return; // TODO coverage
       }
       if (retainForConcurrency) {
-        internalRegion.basicDestroyBeforeRemoval(existingRegionEntry, event);
+        internalRegion.basicDestroyBeforeRemoval(existingRegionEntry, event); // TODO coverage
       }
       internalRegion.basicDestroyPart2(existingRegionEntry, event, inTokenMode,
           false /* conflict with clear */, duringRI, true);
       focusedRegionMap.lruEntryDestroy(existingRegionEntry);
       doPart3 = true;
-    } catch (RegionClearedException rce) {
+    } catch (RegionClearedException rce) { // TODO coverage
       // Ignore. The exception will ensure that we do not update
       // the LRU List
       internalRegion.basicDestroyPart2(existingRegionEntry, event, inTokenMode,
           true/* conflict with clear */, duringRI, true);
       doPart3 = true;
     } catch (ConcurrentCacheModificationException ccme) {
-      handleConcurrentModificationException();
+      handleConcurrentModificationException(); // TODO coverage
       throw ccme;
     }
   }
@@ -837,7 +837,7 @@ public class RegionMapDestroy {
   private void destroyEntry(RegionEntry entry) throws RegionClearedException {
     opCompleted = destroyEntry(entry, true);
     if (!opCompleted) {
-      return;
+      return; // TODO coverage
     }
     // This is a new entry that was created because we are in
     // token mode or are accepting a destroy operation by adding
@@ -865,7 +865,7 @@ public class RegionMapDestroy {
     return retVal;
   }
 
-  private VersionTag createVersionTagFromStamp(VersionStamp stamp) {
+  private VersionTag createVersionTagFromStamp(VersionStamp stamp) { // TODO coverage
     VersionTag tag = VersionTag.create(stamp.getMemberID());
     tag.setEntryVersion(stamp.getEntryVersion());
     tag.setRegionVersion(stamp.getRegionVersion());
