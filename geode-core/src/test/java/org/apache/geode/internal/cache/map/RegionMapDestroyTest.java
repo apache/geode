@@ -571,6 +571,36 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndExpectedValueDoesRetryAndReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    this.expectedOldValue = "OLD_VALUE";
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndInTokenModeDoesRetryAndReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    this.inTokenMode = true;
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndEvictionDoesRetryAndReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    this.isEviction = true;
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
   public void destroyOfExistingRemovePhase2WithoutConcurrencyChecksDoesRetryAndThrowsEntryNotFound() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();
