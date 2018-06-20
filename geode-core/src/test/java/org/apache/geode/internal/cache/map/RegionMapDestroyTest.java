@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -31,11 +32,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.InOrder;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.cache.AbstractRegionMap;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -743,6 +746,24 @@ public class RegionMapDestroyTest {
 
     validateMapContainsTokenValue(Token.TOMBSTONE);
     validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksCallsIndexManager() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenRemoteEventWithVersionTag();
+    IndexManager indexManager = mock(IndexManager.class);
+    when(this.owner.getIndexManager()).thenReturn(indexManager);
+
+    assertThat(doDestroy()).isTrue();
+
+    InOrder inOrder = inOrder(indexManager, arm._getOwner());
+    inOrder.verify(indexManager, times(1)).waitForIndexInit();
+    inOrder.verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), any(), anyBoolean(),
+        anyBoolean(),
+        anyBoolean(), anyBoolean());
+    inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
   }
 
   /**
