@@ -562,6 +562,44 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksDoesRetryAndThrowsEntryNotFound() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithoutConcurrencyChecksDoesRetryAndThrowsEntryNotFound() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndOriginRemoteDoesRetryAndDoesRemove() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    givenOriginIsRemote();
+
+    assertThat(doDestroy()).isTrue();
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndClientOriginDoesRetryAndDoesRemove() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    givenEventWithClientOrigin();
+
+    assertThat(doDestroy()).isTrue();
+  }
+
+  @Test
   public void destroyOfExistingEntryRemovesEntryFromMapAndDoesNotifications() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();

@@ -239,7 +239,7 @@ public class RegionMapDestroy {
         if (isNotRemovedOrNeedTombstone()) {
           destroyExistingEntry();
         } else {
-          handleEntryAlreadyRemoved(); // TODO coverage
+          handleEntryAlreadyRemoved();
         }
       }
     } catch (ConcurrentCacheModificationException e) {
@@ -284,7 +284,7 @@ public class RegionMapDestroy {
     internalRegion.checkEntryNotFound(event.getKey());
   }
 
-  private boolean isOldValueExpected() { // TODO coverage
+  private boolean isOldValueExpected() {
     return expectedOldValue != null;
   }
 
@@ -305,11 +305,11 @@ public class RegionMapDestroy {
       return true;
     }
     if (!internalRegion.getConcurrencyChecksEnabled()) {
-      return false; // TODO coverage
+      return false;
     }
     if (removeRecoveredEntry) {
       return true;
-    } // TODO coverage
+    }
     if (event.isOriginRemote()) {
       return true;
     }
@@ -349,10 +349,10 @@ public class RegionMapDestroy {
     doPart3 = false;
   }
 
-  private void updateVersionTagOnTombstoneEntry() { // TODO coverage
+  private void updateVersionTagOnTombstoneEntry() {
     if (!regionEntry.isTombstone()) {
       return;
-    }
+    } // TODO coverage
     if (event.getVersionTag() == null) {
       return;
     }
@@ -638,7 +638,7 @@ public class RegionMapDestroy {
       throw e;
     }
     if (doPart3) {
-      internalRegion.generateAndSetVersionTag(event, newRegionEntry); // TODO coverage
+      internalRegion.generateAndSetVersionTag(event, newRegionEntry);
     }
     try {
       internalRegion.recordEvent(event);
