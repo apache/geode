@@ -214,10 +214,10 @@ public class RegionMapDestroy {
       return true;
     }
     if (event.isFromWANAndVersioned()) {
-      return true; // TODO coverage
+      return true;
     }
-    if (event.isBridgeEvent()) {
-      return true; // TODO coverage
+    if (event.hasClientOrigin()) {
+      return true;
     }
     return false;
   }

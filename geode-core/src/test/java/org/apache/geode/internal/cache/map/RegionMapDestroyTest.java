@@ -50,6 +50,7 @@ import org.apache.geode.internal.cache.VMLRURegionMap;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
@@ -203,7 +204,10 @@ public class RegionMapDestroyTest {
 
   private void givenRemoteEventWithVersionTag() {
     givenOriginIsRemote();
+    givenEventWithVersionTag();
+  }
 
+  private void givenEventWithVersionTag() {
     RegionVersionVector versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
     VersionTag versionTag = mock(VersionTag.class);
@@ -225,6 +229,10 @@ public class RegionMapDestroyTest {
 
   private void givenOriginIsRemote() {
     event.setOriginRemote(true);
+  }
+
+  private void givenEventWithClientOrigin() {
+    event.setContext(mock(ClientProxyMembershipID.class));
   }
 
   private boolean doDestroy() {
@@ -660,6 +668,32 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
     givenRemoteEventWithVersionTag();
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapContainsTokenValue(Token.TOMBSTONE);
+    validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndClientOriginEventAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenEventWithClientOrigin();
+    givenEventWithVersionTag();
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapContainsTokenValue(Token.TOMBSTONE);
+    validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndWANEventAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
 
     assertThat(doDestroy()).isTrue();
 
