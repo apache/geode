@@ -707,7 +707,7 @@ public class RegionMapDestroy {
 
   private void runWithIndexInUpdateMode(Runnable r) {
     final IndexManager oqlIndexManager = getInitializedIndexManager();
-    if (oqlIndexManager != null) { // TODO coverage
+    if (oqlIndexManager != null) {
       try {
         r.run();
       } finally {
@@ -721,7 +721,7 @@ public class RegionMapDestroy {
   private IndexManager getInitializedIndexManager() {
     final IndexManager oqlIndexManager = internalRegion.getIndexManager();
     if (oqlIndexManager != null) {
-      oqlIndexManager.waitForIndexInit(); // TODO coverage
+      oqlIndexManager.waitForIndexInit();
     }
     return oqlIndexManager;
   }
