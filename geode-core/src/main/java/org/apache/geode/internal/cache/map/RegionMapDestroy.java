@@ -337,9 +337,9 @@ public class RegionMapDestroy {
   private void disablePart3IfGatewayConflict() {
     if (!event.isConcurrencyConflict()) {
       return;
-    } // TODO coverage
+    }
     if (event.getVersionTag() == null) {
-      return;
+      return; // TODO coverage
     }
     if (!event.getVersionTag().isGatewayTag()) {
       return;

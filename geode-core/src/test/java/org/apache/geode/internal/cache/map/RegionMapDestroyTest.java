@@ -80,7 +80,6 @@ public class RegionMapDestroyTest {
   private boolean cacheWrite;
   private boolean isEviction;
   private boolean removeRecoveredEntry;
-  private boolean invokeCallbacks;
   private boolean fromRILocalDestroy;
 
   @Before
@@ -110,7 +109,6 @@ public class RegionMapDestroyTest {
     isEviction = false;
     expectedOldValue = null;
     removeRecoveredEntry = false;
-    invokeCallbacks = false;
   }
 
   @After
@@ -719,6 +717,34 @@ public class RegionMapDestroyTest {
     validateInvokedDestroyMethodsOnRegion(false);
   }
 
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndWANEventWithConflictAddsATombstoneButDoesNotDoPart3() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+    event.isConcurrencyConflict(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapContainsTokenValue(Token.TOMBSTONE);
+    validatePart2(false);
+    validateNoPart3();
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndEventWithConflictAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenRemoteEventWithVersionTag();
+    event.isConcurrencyConflict(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapContainsTokenValue(Token.TOMBSTONE);
+    validateInvokedDestroyMethodsOnRegion(false);
+  }
+
   /**
    * instead of a TOMBSTONE we leave an evictableEntry whose value is REMOVE_PHASE1 this looks like
    * a bug. It is caused by some code in: AbstractRegionEntry.destroy() that calls removePhase1 when
@@ -763,16 +789,27 @@ public class RegionMapDestroyTest {
   }
 
   private void validateInvokedDestroyMethodsOnRegion(boolean conflictWithClear) {
-    invokeCallbacks = true;
-    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
-        eq(conflictWithClear), eq(duringRI), eq(invokeCallbacks));
+    validatePart2(conflictWithClear);
+    validatePart3();
+  }
+
+  private void validatePart3() {
     verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
-        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+        eq(duringRI), eq(true), eq(expectedOldValue));
+  }
+
+  private void validatePart2(boolean conflictWithClear) {
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(conflictWithClear), eq(duringRI), eq(true));
   }
 
   private void validateNoDestroyInvocationsOnRegion() {
     verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), anyBoolean());
+    validateNoPart3();
+  }
+
+  private void validateNoPart3() {
     verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), any());
   }
