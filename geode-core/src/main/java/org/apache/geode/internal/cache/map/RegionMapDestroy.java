@@ -453,7 +453,7 @@ public class RegionMapDestroy {
         return;
       }
       if (isEviction) {
-        return; // TODO coverage
+        return;
       }
       // tombstoneRegionEntry came from doing a get on the map.
       // If it was updated or removed then it would no longer be

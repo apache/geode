@@ -514,6 +514,16 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void evictDestroyOfExistingTombstoneWithConcurrencyChecksReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+    this.isEviction = true;
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
   public void destroyOfExistingTombstoneWithConcurrencyChecksAndRemoveRecoveredEntryDoesRemove() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
