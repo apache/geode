@@ -18,8 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-import java.io.Serializable;
-
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +27,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
@@ -53,7 +52,7 @@ public class ClientAuthDUnitTest {
   @Test
   public void authWithCorrectPasswordShouldPass() throws Exception {
     lsRule.startClientVM(0, "test", "test", true, server.getPort(),
-        () -> new ClientCacheHook(lsRule));
+        new ClientCacheHook(lsRule));
   }
 
   @Test
@@ -61,11 +60,11 @@ public class ClientAuthDUnitTest {
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
 
     assertThatThrownBy(() -> lsRule.startClientVM(0, "test", "invalidPassword", true,
-        server.getPort(), () -> new ClientCacheHook(lsRule)))
+        server.getPort(), new ClientCacheHook(lsRule)))
             .isInstanceOf(AuthenticationFailedException.class);
   }
 
-  static class ClientCacheHook implements Runnable, Serializable {
+  static class ClientCacheHook implements SerializableRunnableIF {
     final ClusterStartupRule lsRule;
 
     ClientCacheHook(ClusterStartupRule lsRule) {
