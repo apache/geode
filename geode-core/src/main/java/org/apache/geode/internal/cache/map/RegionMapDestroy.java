@@ -191,7 +191,7 @@ public class RegionMapDestroy {
       return false;
     }
     if (!isReplicaOrFromServer()) {
-      return false; // TODO coverage
+      return false;
     }
     if (!isRemote()) {
       return false;
@@ -206,7 +206,7 @@ public class RegionMapDestroy {
     if (event.isFromServer()) {
       return true;
     }
-    return false; // TODO coverage
+    return false;
   }
 
   private boolean isRemote() {

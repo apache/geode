@@ -658,6 +658,18 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void evictDestroyWithEmptyNonReplicateRegionWithConcurrencyChecksDoesNothing() {
+    givenConcurrencyChecks(true);
+    givenEviction();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+
+    assertThat(doDestroy()).isFalse();
+
+    validateMapContainsTokenValue(Token.REMOVED_PHASE1);
+    validateNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void evictDestroyWithEmptyRegionDoesNothing() {
     givenConcurrencyChecks(false);
     givenEviction();
