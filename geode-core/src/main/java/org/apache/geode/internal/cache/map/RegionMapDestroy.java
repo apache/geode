@@ -280,7 +280,7 @@ public class RegionMapDestroy {
     return true;
   }
 
-  private void throwEntryNotFound() { // TODO coverage
+  private void throwEntryNotFound() {
     internalRegion.checkEntryNotFound(event.getKey());
   }
 
@@ -436,7 +436,7 @@ public class RegionMapDestroy {
         // TODO: BUG? why leave a REMOVE_PHASE1 in the map when evicting?
         // Move this check to before createNewRegionEntry?
         return;
-      } // TODO coverage
+      }
       try {
         handleEntryNotFound(newRegionEntry);
       } finally {
@@ -579,7 +579,7 @@ public class RegionMapDestroy {
       return false;
     }
     if (event.isOriginRemote()) {
-      return false; // TODO coverage
+      return false;
     }
     if (event.getVersionTag() == null) {
       return false;
@@ -657,7 +657,7 @@ public class RegionMapDestroy {
 
     if (!cacheWrite) {
       throwException = true;
-    } else if (!removeRecoveredEntry) { // TODO coverage
+    } else if (!removeRecoveredEntry) {
       try {
         throwException = !internalRegion.bridgeWriteBeforeDestroy(event, expectedOldValue);
       } catch (EntryNotFoundException e) {
@@ -666,7 +666,7 @@ public class RegionMapDestroy {
       }
     }
     if (throwException) {
-      if (isVersionedOpFromClientOrWAN()) { // TODO coverage
+      if (isVersionedOpFromClientOrWAN()) {
         // we must distribute these since they will update the version information in peers
         if (logger.isDebugEnabled()) {
           logger.debug("ARM.destroy is allowing wan/client destroy of {} to continue",
@@ -680,7 +680,7 @@ public class RegionMapDestroy {
           regionEntry = entryForDistribution;
         }
       }
-    } // TODO coverage
+    }
     if (throwException) {
       if (entryNotFoundException != null) {
         throw entryNotFoundException;
@@ -691,16 +691,16 @@ public class RegionMapDestroy {
 
   private boolean isVersionedOpFromClientOrWAN() {
     if (event.isOriginRemote()) {
-      return false; // TODO coverage
+      return false;
     }
     if (event.getOperation().isLocal()) {
-      return false; // TODO coverage
+      return false;
     }
     if (event.isFromBridgeAndVersioned()) {
-      return true; // TODO coverage
+      return true;
     }
     if (event.isFromWANAndVersioned()) {
-      return true; // TODO coverage
+      return true;
     }
     return false;
   }

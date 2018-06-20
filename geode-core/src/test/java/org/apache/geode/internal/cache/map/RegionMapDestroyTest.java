@@ -185,22 +185,12 @@ public class RegionMapDestroyTest {
 
   private void givenExistingEntryWithVersionTag() {
     givenExistingEntry();
-
-    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
-    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    VersionTag<?> versionTag = mock(VersionTag.class);
-    when(versionTag.hasValidVersion()).thenReturn(true);
-    event.setVersionTag(versionTag);
+    givenEventWithVersionTag();
   }
 
   private void givenExistingEntryWithTokenAndVersionTag(Token token) {
     givenExistingEntry(token);
-
-    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
-    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    VersionTag<?> versionTag = mock(VersionTag.class);
-    when(versionTag.hasValidVersion()).thenReturn(true);
-    event.setVersionTag(versionTag);
+    givenEventWithVersionTag();
   }
 
   private void givenRemoteEventWithVersionTag() {
@@ -642,6 +632,88 @@ public class RegionMapDestroyTest {
     assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
   }
 
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteAndBridgeWriteBeforeDestroyThrows_ThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    doThrow(EntryNotFoundException.class).when(arm._getOwner()).bridgeWriteBeforeDestroy(any(),
+        any());
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void localDestroyWithEmptyNonReplicateRegionWithConcurrencyChecksThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenEventWithClientOrigin();
+    givenEventWithVersionTag();
+    event.setOperation(Operation.LOCAL_DESTROY);
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndClientTaggedEventAndCacheWriteDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    givenEventWithClientOrigin();
+    givenEventWithVersionTag();
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapContainsTokenValue(Token.TOMBSTONE);
+    validateNoPart2();
+    validatePart3();
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndWANTaggedEventAndCacheWriteDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapContainsTokenValue(Token.TOMBSTONE);
+    validateNoPart2();
+    validatePart3();
+  }
+
   /**
    * This seems to be a bug. We should not leave an evictableEntry in the entryMap added by the
    * destroy call if destroy returns false.
@@ -837,9 +909,13 @@ public class RegionMapDestroyTest {
   }
 
   private void validateNoDestroyInvocationsOnRegion() {
+    validateNoPart2();
+    validateNoPart3();
+  }
+
+  private void validateNoPart2() {
     verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), anyBoolean());
-    validateNoPart3();
   }
 
   private void validateNoPart3() {
