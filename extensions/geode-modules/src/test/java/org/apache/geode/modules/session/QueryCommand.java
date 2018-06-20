@@ -29,6 +29,10 @@ public enum QueryCommand {
 
   CALLBACK,
 
+  FUNCTION,
+
+  REMOVE,
+
   UNKNOWN;
 
 }
