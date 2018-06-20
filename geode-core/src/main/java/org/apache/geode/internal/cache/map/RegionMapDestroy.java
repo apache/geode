@@ -339,7 +339,7 @@ public class RegionMapDestroy {
       return;
     }
     if (event.getVersionTag() == null) {
-      return; // TODO coverage
+      return;
     }
     if (!event.getVersionTag().isGatewayTag()) {
       return;

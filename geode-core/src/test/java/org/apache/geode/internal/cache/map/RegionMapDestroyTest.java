@@ -574,6 +574,32 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingEntryWithConflictDoesPart3() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    event.isConcurrencyConflict(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    validatePart3();
+  }
+
+  @Test
+  public void destroyOfExistingEntryWithConflictAndWANSkipsPart3() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    event.isConcurrencyConflict(true);
+    this.givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    validateNoPart3();
+  }
+
+  @Test
   public void destroyOfExistingEntryCallsUpdateSizeOnRemove() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();
