@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.awaitility.Awaitility;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -132,6 +133,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
   }
 
+  @Ignore
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
   public void recreateIndexWithDifferentFieldsShouldFail(RegionTestableType regionTestType) {
