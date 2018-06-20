@@ -251,6 +251,7 @@ public class RegionMapDestroy {
   private void handleEntryAlreadyRemoved() {
     updateVersionTagOnTombstoneEntry();
     if (isOldValueExpected()) {
+      cancelDestroy();
       return;
     }
     if (inTokenMode) {
@@ -263,7 +264,8 @@ public class RegionMapDestroy {
   }
 
   private boolean destroyShouldContinue() {
-    if (isRemovedPhase2(regionEntry)) {
+    if (regionEntry.isRemovedPhase2()) {
+      cleanupRemovedPhase2(regionEntry);
       retry = true;
       return false;
     }
@@ -283,11 +285,7 @@ public class RegionMapDestroy {
   }
 
   private boolean isOldValueExpected() {
-    if (expectedOldValue != null) {
-      cancelDestroy();
-      return true;
-    }
-    return false;
+    return expectedOldValue != null;
   }
 
   private void handleConcurrentModificationException() {
@@ -406,13 +404,9 @@ public class RegionMapDestroy {
     return false;
   }
 
-  private boolean isRemovedPhase2(RegionEntry entry) {
-    if (!entry.isRemovedPhase2()) {
-      return false;
-    }
+  private void cleanupRemovedPhase2(RegionEntry entry) {
     focusedRegionMap.getEntryMap().remove(event.getKey(), entry);
     internalRegion.getCachePerfStats().incRetries();
-    return true;
   }
 
   private void finishTombstoneOrEntryNotFound() {
@@ -610,7 +604,7 @@ public class RegionMapDestroy {
   private void setEventVersionTagFromTombstone() {
     Assert.assertTrue(event.getVersionTag() == null);
     Assert.assertTrue(newRegionEntry == tombstoneRegionEntry);
-    event.setVersionTag(getVersionTagFromStamp(tombstoneRegionEntry.getVersionStamp()));
+    event.setVersionTag(createVersionTagFromStamp(tombstoneRegionEntry.getVersionStamp()));
   }
 
   private void updateTombstoneVersionTag() {
@@ -787,7 +781,8 @@ public class RegionMapDestroy {
     RegionEntry existingRegionEntry = getExistingOrAddEntry(newRegionEntry);
     while (!opCompleted && existingRegionEntry != null) {
       synchronized (existingRegionEntry) {
-        if (isRemovedPhase2(existingRegionEntry)) {
+        if (existingRegionEntry.isRemovedPhase2()) {
+          cleanupRemovedPhase2(existingRegionEntry);
           existingRegionEntry = getExistingOrAddEntry(newRegionEntry);
         } else {
           event.setRegionEntry(existingRegionEntry);
@@ -870,7 +865,7 @@ public class RegionMapDestroy {
     return retVal;
   }
 
-  private VersionTag getVersionTagFromStamp(VersionStamp stamp) {
+  private VersionTag createVersionTagFromStamp(VersionStamp stamp) {
     VersionTag tag = VersionTag.create(stamp.getMemberID());
     tag.setEntryVersion(stamp.getEntryVersion());
     tag.setRegionVersion(stamp.getRegionVersion());
