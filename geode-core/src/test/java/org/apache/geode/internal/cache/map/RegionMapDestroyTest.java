@@ -231,6 +231,10 @@ public class RegionMapDestroyTest {
     event.setOriginRemote(true);
   }
 
+  private void givenEventFromServer() {
+    event.setFromServer(true);
+  }
+
   private void givenEventWithClientOrigin() {
     event.setContext(mock(ClientProxyMembershipID.class));
   }
@@ -694,6 +698,20 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenEventWithVersionTag();
     when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    validateMapContainsTokenValue(Token.TOMBSTONE);
+    validateInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndEventFromServerAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenRemoteEventWithVersionTag();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenEventFromServer();
 
     assertThat(doDestroy()).isTrue();
 

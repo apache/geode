@@ -202,11 +202,11 @@ public class RegionMapDestroy {
   private boolean isReplicaOrFromServer() {
     if (internalRegion.getDataPolicy().withReplication()) {
       return true;
-    } // TODO coverage
+    }
     if (event.isFromServer()) {
       return true;
     }
-    return false;
+    return false; // TODO coverage
   }
 
   private boolean isRemote() {
