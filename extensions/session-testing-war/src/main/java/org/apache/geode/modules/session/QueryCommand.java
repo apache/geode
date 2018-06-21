@@ -29,6 +29,8 @@ public enum QueryCommand {
 
   INVALIDATE,
 
+  CALLBACK,
+
   UNKNOWN,
 
   FUNCTION;

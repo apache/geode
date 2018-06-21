@@ -49,7 +49,7 @@ sourceSets {
 // let IntelliJ know where the generated sources are.
 idea {
     module {
-        sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
+        sourceDirs += file("$buildDir/generated-src/proto/main/java")
     }
 }
 
