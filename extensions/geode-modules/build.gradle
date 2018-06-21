@@ -25,6 +25,7 @@ dependencies {
     exclude module: 'tribes'
   }
   compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
+  compile project(':extensions/session-testing-war')
 
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
