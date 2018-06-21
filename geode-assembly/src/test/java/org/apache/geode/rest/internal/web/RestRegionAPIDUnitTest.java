@@ -83,7 +83,7 @@ public class RestRegionAPIDUnitTest {
     restClient.doGetAndAssertThat("")
         .hasStatusCode(HttpStatus.SC_OK)
         .hasContentType(MediaType.APPLICATION_JSON.toString())
-        .hasResponseBody().isEqualTo(
+        .hasResponseBody().isEqualToIgnoringWhitespace(
             "{\"regions\":[{\"name\":\"regionA\",\"type\":\"REPLICATE\",\"key-constraint\":null,\"value-constraint\":null}]}");
   }
 
@@ -91,7 +91,7 @@ public class RestRegionAPIDUnitTest {
   public void getRegionWhenEmpty() {
     restClient.doGetAndAssertThat("/regionA")
         .statusIsOk()
-        .hasResponseBody().isEqualTo("{\"regionA\":[]}");
+        .hasResponseBody().isEqualToIgnoringWhitespace("{\"regionA\":[]}");
   }
 
   @Test
@@ -201,7 +201,8 @@ public class RestRegionAPIDUnitTest {
             + "\"@new\":{\"customerId\":1,\"firstName\":\"mary\",\"lastName\":\"doe\"}}")
         .hasStatusCode(HttpStatus.SC_CONFLICT)
         .hasResponseBody()
-        .isEqualTo("{\"customerId\":1,\"firstName\":\"jon\",\"lastName\":\"doe\"}");
+        .isEqualToIgnoringWhitespace(
+            "{\"customerId\":1,\"firstName\":\"jon\",\"lastName\":\"doe\"}");
 
     // put with CAS with different key, status is ok, but did not put a second entry in
     restClient.doPutAndAssert("/regionA/customer2?op=CAS",
