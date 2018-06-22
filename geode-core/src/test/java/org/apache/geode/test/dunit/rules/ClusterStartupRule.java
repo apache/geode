@@ -44,8 +44,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
-import org.apache.geode.test.dunit.SerializableConsumerIF;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -238,28 +236,15 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return memberVM;
   }
 
-  /**
-   * Starts a client with the given properties, configuring the cacheFactory with the provided
-   * Consumer
-   */
   public ClientVM startClientVM(int index, Properties properties,
-      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup, String clientVersion)
+      SerializableConsumer<ClientCacheFactory> cacheFactorySetup, String clientVersion)
       throws Exception {
-    return startClientVM(index, properties, cacheFactorySetup, clientVersion,
-        () -> {
-        });
-  }
-
-  public ClientVM startClientVM(int index, Properties properties,
-      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup, String clientVersion,
-      SerializableRunnableIF clientCacheHook) throws Exception {
     VM client = getVM(index, clientVersion);
     Exception error = client.invoke(() -> {
       clientCacheRule =
           new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
       try {
         clientCacheRule.before();
-        clientCacheHook.run();
         return null;
       } catch (Exception e) {
         return e;
@@ -274,7 +259,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public ClientVM startClientVM(int index, Properties properties,
-      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
+      SerializableConsumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
     return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
   }
 
@@ -285,30 +270,13 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
 
-    SerializableConsumerIF<ClientCacheFactory> consumer =
-        ((cacheFactory) -> {
-          cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
-          for (int serverPort : serverPorts) {
-            cacheFactory.addPoolServer("localhost", serverPort);
-          }
-        });
+    SerializableConsumer<ClientCacheFactory> consumer = ((cacheFactory) -> {
+      cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
+      for (int serverPort : serverPorts) {
+        cacheFactory.addPoolServer("localhost", serverPort);
+      }
+    });
     return startClientVM(index, props, consumer);
-  }
-
-  public ClientVM startClientVM(int index, String username, String password,
-      boolean subscriptionEnabled, int serverPort, SerializableRunnableIF clientCacheHook)
-      throws Exception {
-    Properties props = new Properties();
-    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
-    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
-    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
-
-    SerializableConsumerIF<ClientCacheFactory> consumer =
-        ((cacheFactory) -> {
-          cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
-          cacheFactory.addPoolServer("localhost", serverPort);
-        });
-    return startClientVM(index, props, consumer, VersionManager.CURRENT_VERSION, clientCacheHook);
   }
 
   /**
@@ -408,5 +376,9 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public interface SerializableFunction1<T> extends UnaryOperator<T>, Serializable {
+  }
+
+  public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
+
   }
 }

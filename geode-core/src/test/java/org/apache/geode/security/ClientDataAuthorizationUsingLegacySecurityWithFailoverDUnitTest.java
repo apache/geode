@@ -42,7 +42,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -53,7 +52,6 @@ import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.security.templates.UsernamePrincipal;
-import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -329,10 +327,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     int server1Port = this.server1.getPort();
     int server2Port = this.server2.getPort();
 
-    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
+    ClientVM client1 = csRule.startClientVM(3, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2);
-    ClientVM client1 = csRule.startClientVM(3, props, cacheSetup, clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
 
     // Initialize cache
     client1.invoke(() -> {
@@ -388,10 +385,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
+    ClientVM client = csRule.startClientVM(3, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2);
-    ClientVM client = csRule.startClientVM(3, props, cacheSetup, clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
 
     // Initialize cache
     client.invoke(() -> {
