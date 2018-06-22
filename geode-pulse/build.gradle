@@ -61,6 +61,8 @@ dependencies {
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
+  compile ('org.springframework:spring-context:' + project.'springframework.version');
+  compile ('org.springframework:spring-web:' + project.'springframework.version');
   runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
