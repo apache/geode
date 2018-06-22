@@ -2397,19 +2397,6 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
-  /**
-   * Additional flags for a disk region that are persisted in its meta-data.
-   *
-   * @since GemFire 7.0
-   */
-  public enum DiskRegionFlag {
-    /**
-     * True if this disk region has entries with versioning enabled. Depending on this flag, the
-     * appropriate RegionEntryFactory gets instantiated.
-     */
-    IS_WITH_VERSIONING
-  }
-
   Collection<DiskRegionView> getKnown() {
     lock(false);
     try {
@@ -2821,5 +2808,18 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     } finally {
       unlock(true);
     }
+  }
+
+  /**
+   * Additional flags for a disk region that are persisted in its meta-data.
+   *
+   * @since GemFire 7.0
+   */
+  public enum DiskRegionFlag {
+    /**
+     * True if this disk region has entries with versioning enabled. Depending on this flag, the
+     * appropriate RegionEntryFactory gets instantiated.
+     */
+    IS_WITH_VERSIONING
   }
 }
