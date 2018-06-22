@@ -110,13 +110,11 @@ public class NetstatFunction implements InternalFunction {
   }
 
   private static void addNetstatDefaultOptions(final List<String> cmdOptionsList) {
+    cmdOptionsList.add("-v");
+    cmdOptionsList.add("-a");
+    cmdOptionsList.add("-n");
     if (isLinux()) {
-      cmdOptionsList.add("-v");
-      cmdOptionsList.add("-a");
       cmdOptionsList.add("-e");
-    } else {
-      cmdOptionsList.add("-v");
-      cmdOptionsList.add("-a");
     }
   }
 
@@ -158,8 +156,12 @@ public class NetstatFunction implements InternalFunction {
         .append(" output ###################").append(lineSeparator);
 
     if (isLinux() || isMacOSX() || isSolaris()) {
+      List<String> cmdOptionsList = new ArrayList<>();
+      cmdOptionsList.add(LSOF_COMMAND);
+      cmdOptionsList.add("-n");
+      cmdOptionsList.add("-P");
 
-      ProcessBuilder procBuilder = new ProcessBuilder(LSOF_COMMAND);
+      ProcessBuilder procBuilder = new ProcessBuilder(cmdOptionsList);
       try {
         Process lsof = procBuilder.start();
         InputStreamReader reader = new InputStreamReader(lsof.getInputStream());
