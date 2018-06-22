@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -237,7 +238,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public ClientVM startClientVM(int index, Properties properties,
-      SerializableConsumer<ClientCacheFactory> cacheFactorySetup, String clientVersion)
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup, String clientVersion)
       throws Exception {
     VM client = getVM(index, clientVersion);
     Exception error = client.invoke(() -> {
@@ -259,7 +260,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public ClientVM startClientVM(int index, Properties properties,
-      SerializableConsumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
     return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
   }
 
@@ -270,7 +271,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
 
-    SerializableConsumer<ClientCacheFactory> consumer = ((cacheFactory) -> {
+    SerializableConsumerIF<ClientCacheFactory> consumer = ((cacheFactory) -> {
       cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
       for (int serverPort : serverPorts) {
         cacheFactory.addPoolServer("localhost", serverPort);
@@ -376,9 +377,5 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public interface SerializableFunction1<T> extends UnaryOperator<T>, Serializable {
-  }
-
-  public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
-
   }
 }
