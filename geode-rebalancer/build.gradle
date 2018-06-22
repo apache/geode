@@ -16,8 +16,10 @@
  */
 
 dependencies {
-  provided project(':geode-common')
-  provided project(':geode-core')
+  compileOnly project(':geode-common')
+  testCompileOnly project(':geode-common')
+  compileOnly project(':geode-core')
+  testCompileOnly project(':geode-core')
 
   compile ('org.springframework:spring-context:' + project.'springframework.version') {
     exclude module: 'spring-beans'

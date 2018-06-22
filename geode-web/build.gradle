@@ -44,11 +44,12 @@ dependencies {
     exclude module: 'spring-aop'
   }
 
-  provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-   
+  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+
   // have to use output since we exclude the dependent classes from jar :(
-  provided project(path: ':geode-core', configuration: 'classesOutput')
-  
+  compileOnly project(path: ':geode-core')
+  testCompileOnly project(path: ':geode-core')
+
   testCompile project(':geode-junit')
   testRuntime project(':geode-common')
   testRuntime project(':geode-core')

@@ -74,8 +74,9 @@ dependencies {
 
   providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
 
-  provided 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  provided 'com.google.guava:guava:' + project.'guava.version'
+  compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
+  compileOnly 'com.google.guava:guava:' + project.'guava.version'
+  testCompileOnly 'com.google.guava:guava:' + project.'guava.version'
 
   testCompile project(':geode-junit')
   testCompile project(':geode-core')
