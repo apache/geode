@@ -94,6 +94,7 @@ subprojects {
     destinationDir = file("$buildDir/javadoc")
     options.addStringOption('Xdoclint:none', '-quiet')
     options.encoding = 'UTF-8'
+    classpath += configurations.compileOnly
   }
 }
 

@@ -17,7 +17,7 @@
 
 dependencies {
   compileOnly project(':geode-core')
-  testCompileOnly project(':geode-core')
+  testCompile project(':geode-core')
 
   testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile project(':geode-junit')

@@ -60,8 +60,9 @@ dependencies {
   testCompile files(project(':geode-core').sourceSets.test.output)
 
   compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   compileOnly project(':geode-core')
-  testCompileOnly project(':geode-core')
+  testCompile project(':geode-core')
 }
 
 war {
