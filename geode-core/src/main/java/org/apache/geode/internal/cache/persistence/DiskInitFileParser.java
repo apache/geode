@@ -629,6 +629,7 @@ public class DiskInitFileParser {
       this.delegate = wrapped;
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
       if (method.getName().equals("isClosing")) {
         if (delegate == null) {
