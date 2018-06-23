@@ -25,7 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Paths;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,8 +59,7 @@ public abstract class TestSessionsBase {
 
   // Set up the servers we need
   public static void setupServer(DeltaSessionManager manager) throws Exception {
-    FileUtils.copyDirectory(Paths.get("..", "resources", "test", "tomcat").toFile(),
-        new File("./tomcat"));
+    FileUtils.copyDirectory(new File("../resources/test/tomcat"), new File("./tomcat"));
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new EmbeddedTomcat("/test", port, "JVM-1");
 
