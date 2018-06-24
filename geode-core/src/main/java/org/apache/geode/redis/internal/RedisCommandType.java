@@ -2589,6 +2589,36 @@ public enum RedisCommandType {
     }
   },
 
+
+  /**************************************
+   * Geospatial commands ****************
+   **************************************/
+
+  GEOADD {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new Executor() {
+          @Override
+          public void executeCommand(Command command, ExecutionHandlerContext context) {
+            command.setResponse(
+                    Coder.getIntegerResponse(context.getByteBufAllocator(), 1));
+          }
+        };
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
   /***************************************
    ************ Transactions *************
    ***************************************/
