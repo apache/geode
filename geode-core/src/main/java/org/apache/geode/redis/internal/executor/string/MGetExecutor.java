@@ -60,8 +60,7 @@ public class MGetExecutor extends StringExecutor {
     for (ByteArrayWrapper key : keys)
       values.add(results.get(key));
 
-    command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), values));
-
+    respondBulkStrings(command, context, values);
   }
 
 }

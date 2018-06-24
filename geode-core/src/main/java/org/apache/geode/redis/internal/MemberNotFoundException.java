@@ -12,27 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor;
 
-import java.util.List;
 
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+package org.apache.geode.redis.internal;
 
-public class EchoExecutor extends AbstractExecutor {
+public class MemberNotFoundException extends Exception {
+  private static final long serialVersionUID = 4707944288714910949L;
 
-  @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.ECHO));
-      return;
-    }
-
-    byte[] echoMessage = commandElems.get(1);
-    respondBulkStrings(command, context, echoMessage);
+  public MemberNotFoundException() {
+    super();
   }
 
+  public MemberNotFoundException(String message) {
+    super(message);
+  }
+
+  public MemberNotFoundException(Throwable cause) {
+    super(cause);
+  }
+
+  public MemberNotFoundException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

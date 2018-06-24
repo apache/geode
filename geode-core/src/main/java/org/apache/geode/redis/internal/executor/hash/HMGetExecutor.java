@@ -65,7 +65,6 @@ public class HMGetExecutor extends HashExecutor {
     for (ByteArrayWrapper field : fields)
       values.add(results.get(field));
 
-    command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), values));
-
+    respondBulkStrings(command, context, values);
   }
 }

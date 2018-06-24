@@ -84,7 +84,7 @@ public class IncrByFloatExecutor extends StringExecutor {
 
     if (valueWrapper == null) {
       r.put(key, new ByteArrayWrapper(incrArray));
-      command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), increment));
+      respondBulkStrings(command, context, increment);
       return;
     }
 
@@ -122,7 +122,7 @@ public class IncrByFloatExecutor extends StringExecutor {
     stringValue = "" + value;
     r.put(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)));
 
-    command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), value));
+    respondBulkStrings(command, context, value);
   }
 
 }

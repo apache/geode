@@ -12,27 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor;
+package org.apache.geode.redis;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import com.github.davidmoten.geo.LatLong;
+import org.junit.Test;
 
-public class EchoExecutor extends AbstractExecutor {
+import org.apache.geode.redis.internal.CoderException;
+import org.apache.geode.redis.internal.GeoCoder;
 
-  @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.ECHO));
-      return;
-    }
-
-    byte[] echoMessage = commandElems.get(1);
-    respondBulkStrings(command, context, echoMessage);
+public class GeoCoderTest {
+  @Test
+  public void testGeoHash() throws CoderException {
+    String hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
+        Double.toString(38.115556).getBytes());
+    assertEquals("sqc8b49rnyte", hash);
   }
 
+  @Test
+  public void testGeoPos() throws CoderException {
+    LatLong pos = GeoCoder.geoPos("sqc8b49rnyte");
+    assertEquals(13.361389, pos.getLon(), 0.000001);
+    assertEquals(38.115556, pos.getLat(), 0.000001);
+  }
 }

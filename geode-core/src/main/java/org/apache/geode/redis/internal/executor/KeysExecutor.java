@@ -61,9 +61,6 @@ public class KeysExecutor extends AbstractExecutor {
     if (matchingKeys.isEmpty())
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
     else
-      command.setResponse(
-          Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), matchingKeys));
-
-
+      respondBulkStrings(command, context, matchingKeys);
   }
 }

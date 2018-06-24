@@ -12,46 +12,46 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.DoubleWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisConstants;
 
-public class ZScoreExecutor extends SortedSetExecutor {
+public class GeoHashExecutor extends GeoSortedSetExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
+    ByteArrayWrapper key = command.getKey();
 
     if (commandElems.size() < 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.ZSCORE));
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEOHASH));
       return;
     }
 
-    ByteArrayWrapper key = command.getKey();
-    ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
+    List<String> hashes = new ArrayList<>();
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
-    checkDataType(key, RedisDataType.REDIS_SORTEDSET, context);
-    Region<ByteArrayWrapper, DoubleWrapper> keyRegion = getRegion(context, key);
+    for (int i = 2; i < commandElems.size(); i++) {
+      byte[] member = commandElems.get(i);
 
-    if (keyRegion == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
+      ByteArrayWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
+      if (hashWrapper != null) {
+        hashes.add(hashWrapper.toString());
+      } else {
+        hashes.add(null);
+      }
     }
-    DoubleWrapper score = keyRegion.get(member);
-    if (score == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
-    }
-    respondBulkStrings(command, context, score.toString());
+
+    respondBulkStrings(command, context, hashes);
   }
-
 }

@@ -12,27 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.executor;
 
-import java.util.List;
+package org.apache.geode.redis.internal;
 
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+public class GeoCoord {
+  double longitude;
+  double latitude;
 
-public class EchoExecutor extends AbstractExecutor {
-
-  @Override
-  public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    if (commandElems.size() < 2) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.ECHO));
-      return;
-    }
-
-    byte[] echoMessage = commandElems.get(1);
-    respondBulkStrings(command, context, echoMessage);
+  public GeoCoord(double lon, double lat) {
+    this.longitude = lon;
+    this.latitude = lat;
   }
 
+  public double getLongitude() {
+    return longitude;
+  }
+
+  public double getLatitude() {
+    return latitude;
+  }
 }
