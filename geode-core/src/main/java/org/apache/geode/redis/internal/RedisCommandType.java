@@ -81,24 +81,7 @@ import org.apache.geode.redis.internal.executor.set.SRemExecutor;
 import org.apache.geode.redis.internal.executor.set.SScanExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZCountExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZIncrByExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZLexCountExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRangeByLexExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRangeByScoreExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRangeExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRankExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRemExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByLexExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByRankExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRemRangeByScoreExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeByScoreExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRevRangeExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZRevRankExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZScanExecutor;
-import org.apache.geode.redis.internal.executor.sortedset.ZScoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.*;
 import org.apache.geode.redis.internal.executor.string.AppendExecutor;
 import org.apache.geode.redis.internal.executor.string.BitCountExecutor;
 import org.apache.geode.redis.internal.executor.string.BitOpExecutor;
@@ -2600,13 +2583,7 @@ public enum RedisCommandType {
     @Override
     public Executor getExecutor() {
       if (executor == null) {
-        executor = new Executor() {
-          @Override
-          public void executeCommand(Command command, ExecutionHandlerContext context) {
-            command.setResponse(
-                    Coder.getIntegerResponse(context.getByteBufAllocator(), 1));
-          }
-        };
+        executor = new GeoAddExecutor();
       }
       return executor;
     }

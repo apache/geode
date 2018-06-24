@@ -16,7 +16,10 @@ package org.apache.geode.redis;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.junit.After;
@@ -60,8 +63,14 @@ public class GeoJUnitTest {
 
   @Test
   public void testGeoAdd() {
-    Long l = jedis.geoadd("Sicily", 13.361, 38.116, "Palermo");
+    Long l = jedis.geoadd("Sicily", 13.361389, 38.115556, "Palermo");
     assertTrue(l == 1L);
+
+    Region<ByteArrayWrapper, StringWrapper> sicilyRegion = cache.getRegion("Sicily");
+    assertNotNull("Expected region to be not NULL", sicilyRegion);
+
+    // Check GeoHash
+    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(), "sqc8b49rnyte");
   }
 
   private class EntryCmp implements Comparator<Entry<String, Double>> {

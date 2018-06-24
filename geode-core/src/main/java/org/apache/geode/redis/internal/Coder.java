@@ -513,6 +513,50 @@ public class Coder {
       return Double.parseDouble(d);
   }
 
+  public static String geoHash(byte[] lon, byte[] lat) {
+    Double longitude = Coder.bytesToDouble(lon);
+    Double latitude = Coder.bytesToDouble(lat);
+
+    String longDigits = coordDigits(longitude, -180.0, 180.0);
+    String latDigits = coordDigits(latitude, -90.0, 90.0);
+    String hashBinStr = "";
+
+    for (int c = 0; c < 30; c++) {
+      hashBinStr += longDigits.charAt(c);
+      hashBinStr += latDigits.charAt(c);
+    }
+
+    String hashStr = "";
+    for (int d = 0; d < 12; d++) {
+      int l = d*5;
+      String dig = hashBinStr.substring(l, l+5);
+      hashStr += base32(Integer.parseInt(dig, 2));
+    }
+
+    return hashStr;
+  }
+
+  private static char base32(int x) {
+    String base32str = "0123456789bcdefghjkmnpqrstuvwxyz";
+    return base32str.charAt(x);
+  }
+
+  private static String coordDigits(Double coordinate, Double min, Double max) {
+    String binString = "";
+    while (binString.length() < 30) {
+      Double mid = (min + max) / 2;
+      if (coordinate >= mid) {
+        binString += "1";
+        min = mid;
+      } else {
+        binString += "0";
+        max = mid;
+      }
+    }
+
+    return binString;
+  }
+
   public static ByteArrayWrapper stringToByteWrapper(String s) {
     return new ByteArrayWrapper(stringToBytes(s));
   }
