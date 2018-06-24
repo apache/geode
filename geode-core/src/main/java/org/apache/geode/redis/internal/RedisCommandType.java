@@ -81,6 +81,7 @@ import org.apache.geode.redis.internal.executor.set.SRemExecutor;
 import org.apache.geode.redis.internal.executor.set.SScanExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoAddExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZCountExecutor;
@@ -2600,13 +2601,7 @@ public enum RedisCommandType {
     @Override
     public Executor getExecutor() {
       if (executor == null) {
-        executor = new Executor() {
-          @Override
-          public void executeCommand(Command command, ExecutionHandlerContext context) {
-            command.setResponse(
-                    Coder.getIntegerResponse(context.getByteBufAllocator(), 1));
-          }
-        };
+        executor = new GeoAddExecutor();
       }
       return executor;
     }

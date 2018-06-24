@@ -80,8 +80,8 @@ public class StringsJunitTest {
       full += rand;
     }
     String ret = jedis.get(key);
-    assertEquals(ret.length(), len);
-    assertEquals(full, ret);
+    assertTrue(ret.length() == len);
+    assertTrue(full.equals(ret));
     assertTrue(full.length() == jedis.strlen(key));
   }
 

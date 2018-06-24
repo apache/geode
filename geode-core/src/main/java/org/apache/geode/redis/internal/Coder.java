@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -93,6 +94,8 @@ public class Coder {
   public static final String CHARSET = "UTF-8";
 
   protected static final DecimalFormat decimalFormatter = new DecimalFormat("#");
+  public static final int LEN_GEOHASH = 60;
+
   static {
     decimalFormatter.setMaximumFractionDigits(10);
   }
@@ -511,6 +514,57 @@ public class Coder {
       return Double.NEGATIVE_INFINITY;
     else
       return Double.parseDouble(d);
+  }
+
+  public static String geoHash(byte[] lon, byte[] lat) {
+    Double longitude = Coder.bytesToDouble(lon);
+    Double latitude = Coder.bytesToDouble(lat);
+
+    char[] longDigits = coordDigits(longitude, -180.0, 180.0);
+    char[] latDigits = coordDigits(latitude, -90.0, 90.0);
+    char[] hashBin = new char[LEN_GEOHASH];
+    for (int c = 0; c < LEN_GEOHASH/2; c++) {
+      hashBin[2*c] = longDigits[c];
+      hashBin[(2*c)+1] = latDigits[c];
+    }
+
+    StringBuilder hashStrBuilder = new StringBuilder();
+    StringBuilder digitBuilder = new StringBuilder();
+
+    int e = 0;
+    for (int d = 0; d < LEN_GEOHASH; d++) {
+      digitBuilder.append(hashBin[d]);
+      if (e == 4) {
+        hashStrBuilder.append(base32(Integer.parseInt(digitBuilder.toString(), 2)));
+        digitBuilder = new StringBuilder();
+        e = 0;
+      } else {
+        e++;
+      }
+    }
+
+    return hashStrBuilder.toString();
+  }
+
+  private static char base32(int x) {
+    String base32str = "0123456789bcdefghjkmnpqrstuvwxyz";
+    return base32str.charAt(x);
+  }
+
+  private static char[] coordDigits(Double coordinate, Double min, Double max) {
+    char[] bin = new char[LEN_GEOHASH/2];
+    for (int c = 0; c < bin.length; c++) {
+      Double mid = (min + max) / 2;
+      if (coordinate >= mid) {
+        bin[c] = '1';
+        min = mid;
+      } else {
+        bin[c] = '0';
+        max = mid;
+      }
+    }
+
+    return bin;
   }
 
   public static ByteArrayWrapper stringToByteWrapper(String s) {

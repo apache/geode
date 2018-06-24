@@ -16,7 +16,10 @@ package org.apache.geode.redis;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.junit.After;
@@ -24,6 +27,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Tuple;
 
@@ -59,9 +63,31 @@ public class GeoJUnitTest {
   }
 
   @Test
-  public void testGeoAdd() {
-    Long l = jedis.geoadd("Sicily", 13.361, 38.116, "Palermo");
+  public void testGeoAddSingle() {
+    Long l = jedis.geoadd("Sicily", 13.361389, 38.115556, "Palermo");
     assertTrue(l == 1L);
+
+    Region<ByteArrayWrapper, StringWrapper> sicilyRegion = cache.getRegion("Sicily");
+    assertNotNull("Expected region to be not NULL", sicilyRegion);
+
+    // Check GeoHash
+    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(), "sqc8b49rnyte");
+  }
+
+  @Test
+  public void testGeoAddMultiple() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    Region<ByteArrayWrapper, StringWrapper> sicilyRegion = cache.getRegion("Sicily");
+    assertNotNull("Expected region to be not NULL", sicilyRegion);
+
+    // Check GeoHash
+    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(), "sqc8b49rnyte");
+    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString(), "sqdtr74hyu5n");
   }
 
   private class EntryCmp implements Comparator<Entry<String, Double>> {
