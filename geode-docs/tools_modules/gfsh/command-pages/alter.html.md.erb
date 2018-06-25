@@ -127,7 +127,7 @@ The three required options, `--name`, `--region`, and `--disk-dirs`, identify th
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-enable-statistics</span></td>
-<td>Enables statistics for the region. Valid values are true or false. If the parameter is specified without a value, the value of true is used.</td>
+<td>Enables statistics for the region specified by the <code>\-\-region</code> option. Valid values are true or false. If the parameter is specified without a value, the value of true is used.</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-initial-capacity</span></td>
@@ -500,7 +500,7 @@ Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OF
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-statistic-archive-file </span></td>
-<td>The file to which the running system member writes statistic samples. For example: &quot;StatisticsArchiveFile.gfs&quot;. An empty string disables archiving. Adding .gz suffix to the file name causes it to be compressed. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
+<td>The file to which the running system member writes statistic samples. For example: &quot;StatisticsArchiveFile.gfs&quot;. Must be defined to enable archiving. Adding the <code>.gz</code> suffix to the file name causes it to be compressed. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -510,7 +510,7 @@ Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OF
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-enable-statistics</span></td>
-<td>Whether statistic sampling should be enabled. Valid values are: <code class="ph codeph">true</code> and <code class="ph codeph">false</code>. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
+<td>Whether system level statistic sampling should be enabled, also requires <code>\-\-statistic-archive-file</code> to be specified. Valid values are: <code class="ph codeph">true</code> and <code class="ph codeph">false</code>. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
 <td>false</td>
 </tr>
 <tr class="odd">

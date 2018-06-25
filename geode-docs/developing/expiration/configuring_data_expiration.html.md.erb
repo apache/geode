@@ -23,7 +23,7 @@ Configure the type of expiration and the expiration action to use.
 
 <a id="configuring_data_expiration__section_ADB8302125624E01A808EA5E4FF79A5C"></a>
 
--   Set the region's `statistics-enabled` attribute to true.
+-   Set the region's `statistics-enabled` attribute to true,  cluster and server level statistics are not verbose enough to allow expiration actions in a region, region level statistics are required to utilize expiration actions.
 
     The statistics used for expiration are available directly to the application through the `CacheStatistics` object returned by the `Region` and `Region.Entry` `getStatistics` methods. The `CacheStatistics` object also provides a method for resetting the statistics counters.
 
