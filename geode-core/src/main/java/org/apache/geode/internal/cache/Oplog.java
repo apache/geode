@@ -2160,7 +2160,7 @@ public class Oplog implements CompactableOplog, Flushable {
             drs.recordRecoveredVersonHolder((VersionSource) member, versionHolder, latestOplog);
             if (isPersistRecoveryDebugEnabled) {
               logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                  "adding RVV entry drId={},member={},versionHolder={},latestOplog={},oplogId={}",
+                  "adding RVV entry drId={}, member={}, versionHolder={}, latestOplog={}, oplogId={}",
                   drId, memberId, versionHolder, latestOplog, getOplogId());
             }
           } else {
