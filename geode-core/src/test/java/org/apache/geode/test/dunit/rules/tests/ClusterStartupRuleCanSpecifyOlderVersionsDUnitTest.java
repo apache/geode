@@ -26,9 +26,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -81,9 +79,8 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   @Test
   public void clientVersioningTest() throws Exception {
-    SerializableConsumerIF<ClientCacheFactory> consumer = cf -> {
-    };
-    ClientVM locator = csRule.startClientVM(0, new Properties(), consumer, version);
+    ClientVM locator = csRule.startClientVM(0, new Properties(), (cf) -> {
+    }, version);
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);

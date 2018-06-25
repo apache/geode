@@ -38,7 +38,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -46,7 +45,6 @@ import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.security.templates.UsernamePrincipal;
-import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -122,9 +120,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataWrite");
     int locatorPort = locator.getPort();
 
-    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
-        .addPoolLocator("localhost", locatorPort);
-    ClientVM clientVM = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     // Client adds data
     clientVM.invoke(() -> {
@@ -156,9 +153,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
     int locatorPort = locator.getPort();
 
-    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
-        .addPoolLocator("localhost", locatorPort);
-    ClientVM client = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM client = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     // Client cannot get through any avenue
     client.invoke(() -> {
@@ -183,9 +179,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataRead");
     int locatorPort = locator.getPort();
 
-    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
-        .addPoolLocator("localhost", locatorPort);
-    ClientVM client = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM client = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     // Add some values for the client to get
     server.invoke(() -> {
@@ -219,10 +214,9 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
 
     int locatorPort = locator.getPort();
-    SerializableConsumerIF<ClientCacheFactory> cacheSetup = cf -> cf
-        .addPoolLocator("localhost", locatorPort);
 
-    ClientVM clientVM = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     clientVM.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
