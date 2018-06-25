@@ -23,7 +23,7 @@ limitations under the License.
 
 
 This section introduces <%=vars.product_name%> transactions.
-Geode offers an API for client applications that do transactional work.
+<%=vars.product_name%> offers an API for client applications that do transactional work.
 While the implementation of the API does not provide
 applications a rigid adherence to all the ACID properties of transactions,
 it handles many situations.
@@ -32,7 +32,8 @@ locking methods of a traditional database.
 
 ## Overview of the Application's Transaction
 
-There are two ways that an application can run a transaction:
+An application can run a transaction directly or
+invoke a function which contains a transaction:
 
 - The application uses the transaction API.
 Here is a code fragment to show the structure of a basic transaction,
@@ -51,27 +52,21 @@ with its `begin` to start the transaction and `commit` to end the transaction.
     }
     ```
 
-- Use functions.
-Two approaches combine functions with transactions.
-Section [Transactions and Functions](working_with_transactions.html)
-details the interaction.
-The use of a function can have performance benefits,
-as compared to the application directly using the transaction API.
-The performance benefit results from both the functions
-and the region data residing on servers.
-As the function invokes region operations,
-those operations on region entries stay on the server,
-so there is no network round trip time to do get or put
-operations on region data.
+- Use a function.
+A transaction is embedded in a function.
+The application invokes the function,
+and the function contains the transaction that does the `begin`,
+the region operations, and the `commit`.
 
-    - A function invocation is embedded in a transaction.
-    The application starts the transaction by invoking `begin`,
-    invokes the function within the transaction,
-    and then does the `commit` to end the transaction.
-    - A transaction is embedded in a function.
-    The application invokes the function,
-    and the function contains the transaction that does the `begin`,
-    the region operations, and the `commit`.
+    This use of a function can have performance benefits.
+    The performance benefit results from both the function
+    and the region data residing on servers.
+    As the function invokes region operations,
+    those operations on region entries stay on the server,
+    so there is no network round trip time to do get or put
+    operations on region data.
+    Section [Transactions and Functions](working_with_transactions.html)
+    details the interaction.
 
 ## Adherence to ACID Promises
 
@@ -137,7 +132,7 @@ If not consistent,
 Relational databases provide durability by using disk storage for
 recovery and transaction logging.
 <%=vars.product_name%> is optimized for performance
-and does not support on-disk or in-memory durability for transactions.
+and does not support on-disk durability for transactions.
 
 The implementation of the durability promise prohibits
 regions with persistence from participating in transactions.
@@ -165,7 +160,7 @@ and durability.
 
 <%=vars.product_name%> transactions are used to group the execution of cache operations and to gain the control offered by transactional commit and rollback. Applications create transactions by using an instance of the <%=vars.product_name%> `CacheTransactionManager`. During a transaction, cache operations are performed and distributed through <%=vars.product_name%> as usual. See [<%=vars.product_name%> Cache Transactions](cache_transactions.html#topic_e15_mr3_5k) for details on <%=vars.product_name%> transactions and how these transactions work.
 
-JTA global transactions allow you to use the standard JTA interface to coordinate <%=vars.product_name%> transactions with JDBC transactions. When performing JTA global transactions, you have the option of using <%=vars.product_name%>’s own implementation of JTA or a third party’s implementation (typically application servers such as WebLogic or JBoss) of JTA. In addition, some third party JTA implementations allow you to set <%=vars.product_name%> as a “last resource” to ensure transactional consistency across data sources in the event that <%=vars.product_name%> or another data source becomes unavailable. For global transactions, applications use `java:/UserTransaction` to start and terminate transactions while <%=vars.product_name%> cache operations are performed in the same manner as regular <%=vars.product_name%> cache transactions. See [JTA Global Transactions with <%=vars.product_name%>](JTA_transactions.html) for details on JTA Global transactions.
+JTA global transactions allow you to use the standard JTA interface to coordinate with other XA datastores. When performing JTA global transactions, use a third party’s implementation (typically application servers such as WebLogic or JBoss) of JTA. Some third party JTA implementations allow you to set <%=vars.product_name%> as a “last resource” to ensure transactional consistency across data sources in the event that <%=vars.product_name%> or another data source becomes unavailable. For global transactions, applications use `java:/UserTransaction` to start and terminate transactions while <%=vars.product_name%> cache operations are performed in the same manner as regular <%=vars.product_name%> cache transactions. See [JTA Global Transactions with <%=vars.product_name%>](JTA_transactions.html) for details on JTA Global transactions.
 
 You can also coordinate a <%=vars.product_name%> cache transaction with an external database by specifying database operations within cache and transaction application plug-ins (CacheWriters/CacheListeners and TransactionWriters/TransactionListeners.) This is an alternative to using JTA transactions. See [How to Run a <%=vars.product_name%> Transaction that Coordinates with an External Database](run_a_cache_transaction_with_external_db.html#task_sdn_2qk_2l).
 
