@@ -226,6 +226,10 @@ public class RegionMapDestroyTest {
     event.setOriginRemote(true);
   }
 
+  private void givenRetryEvent() {
+    event.setPossibleDuplicate(true);
+  }
+
   @Test
   public void destroyWithEmptyRegionThrowsException() {
     givenConcurrencyChecks(false);
@@ -522,6 +526,17 @@ public class RegionMapDestroyTest {
 
     assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
         expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyRetryDuplicateOfExistingTombstoneWithConcurrencyChecksDoesRemove() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+    givenRetryEvent();
+
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
+        expectedOldValue, removeRecoveredEntry)).isTrue();
   }
 
   @Test
