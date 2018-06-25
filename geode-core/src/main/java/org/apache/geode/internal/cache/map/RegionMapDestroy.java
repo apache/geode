@@ -801,7 +801,10 @@ public class RegionMapDestroy {
         return; // TODO coverage
       }
       if (retainForConcurrency) {
-        internalRegion.basicDestroyBeforeRemoval(existingRegionEntry, event); // TODO coverage
+        // TODO coverage: this will only happen if we find an existing entry after the initial
+        // getEntry returned null.
+        // So we need putIfAbsent to return an existing entry when getEntry returned null.
+        internalRegion.basicDestroyBeforeRemoval(existingRegionEntry, event);
       }
       internalRegion.basicDestroyPart2(existingRegionEntry, event, inTokenMode,
           false /* conflict with clear */, duringRI, true);
