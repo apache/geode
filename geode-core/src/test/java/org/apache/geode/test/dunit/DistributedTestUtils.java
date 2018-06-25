@@ -93,12 +93,13 @@ public class DistributedTestUtils {
    * NOTE: if you use this method be sure that you clean up the VM before the end of your test with
    * disconnectFromDS() or disconnectAllFromDS().
    */
-  public static boolean crashDistributedSystem(final VM vm) {
-    return vm.invoke(() -> {
-      DistributedSystem system = InternalDistributedSystem.getAnyInstance();
-      crashDistributedSystem(system);
-      return true;
-    });
+  public static void crashDistributedSystem(final VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> {
+        DistributedSystem system = InternalDistributedSystem.getAnyInstance();
+        crashDistributedSystem(system);
+      });
+    }
   }
 
   /**
@@ -122,9 +123,7 @@ public class DistributedTestUtils {
       dsProperties.put(DISABLE_AUTO_RECONNECT, "true");
     }
 
-    for (Iterator<Map.Entry<Object, Object>> iterator = properties.entrySet().iterator(); iterator
-        .hasNext();) {
-      Map.Entry<Object, Object> entry = iterator.next();
+    for (Map.Entry<Object, Object> entry : properties.entrySet()) {
       String key = (String) entry.getKey();
       Object value = entry.getValue();
       dsProperties.put(key, value);
