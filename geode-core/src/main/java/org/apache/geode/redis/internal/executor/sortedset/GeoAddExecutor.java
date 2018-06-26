@@ -13,19 +13,21 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
         List<byte[]> commandElems = command.getProcessedCommand();
         ByteArrayWrapper key = command.getKey();
 
-        byte[] longitude = commandElems.get(2);
-        byte[] latitude = commandElems.get(3);
-        byte[] member = commandElems.get(4);
+        for (int i = 2; i < commandElems.size(); i+=3) {
+            byte[] longitude = commandElems.get(i);
+            byte[] latitude = commandElems.get(i+1);
+            byte[] member = commandElems.get(i+2);
 
-        String score;
-        score = Coder.geoHash(longitude, latitude);
+            String score;
+            score = Coder.geoHash(longitude, latitude);
 
-        Region<ByteArrayWrapper, StringWrapper> keyRegion =
-                getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
-        Object oldVal = keyRegion.put(new ByteArrayWrapper(member), new StringWrapper(score));
+            Region<ByteArrayWrapper, StringWrapper> keyRegion =
+                    getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
+            Object oldVal = keyRegion.put(new ByteArrayWrapper(member), new StringWrapper(score));
 
-        if (oldVal == null)
-            numberOfAdds = 1;
+            if (oldVal == null)
+                numberOfAdds++;
+        }
 
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numberOfAdds));
     }
