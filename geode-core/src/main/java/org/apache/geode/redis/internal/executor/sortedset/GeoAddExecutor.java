@@ -13,6 +13,11 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
         List<byte[]> commandElems = command.getProcessedCommand();
         ByteArrayWrapper key = command.getKey();
 
+        if (commandElems.size() < 5 || ((commandElems.size() - 2) % 3) != 0) {
+            command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEOADD));
+            return;
+        }
+
         for (int i = 2; i < commandElems.size(); i+=3) {
             byte[] longitude = commandElems.get(i);
             byte[] latitude = commandElems.get(i+1);

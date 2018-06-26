@@ -246,6 +246,12 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the ZSCORE command is \"ZSCORE key member\"";
 
     /*
+     * Geospatial
+     */
+    public static final String GEOADD =
+            "The wrong number of arguments or syntax was provided, the format for the GEOADD command is \"GEOADD key longitude latitude member [longitude latitude member ...]\", or not every latitude/longitude pair matches to a member";
+
+    /*
      * String
      */
     public static final String APPEND =
