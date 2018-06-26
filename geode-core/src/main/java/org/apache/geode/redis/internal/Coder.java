@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -93,6 +94,8 @@ public class Coder {
   public static final String CHARSET = "UTF-8";
 
   protected static final DecimalFormat decimalFormatter = new DecimalFormat("#");
+  public static final int LEN_GEOHASH = 60;
+
   static {
     decimalFormatter.setMaximumFractionDigits(10);
   }
@@ -517,23 +520,30 @@ public class Coder {
     Double longitude = Coder.bytesToDouble(lon);
     Double latitude = Coder.bytesToDouble(lat);
 
-    String longDigits = coordDigits(longitude, -180.0, 180.0);
-    String latDigits = coordDigits(latitude, -90.0, 90.0);
-    String hashBinStr = "";
-
-    for (int c = 0; c < 30; c++) {
-      hashBinStr += longDigits.charAt(c);
-      hashBinStr += latDigits.charAt(c);
+    char[] longDigits = coordDigits(longitude, -180.0, 180.0);
+    char[] latDigits = coordDigits(latitude, -90.0, 90.0);
+    char[] hashBin = new char[LEN_GEOHASH];
+    for (int c = 0; c < LEN_GEOHASH/2; c++) {
+      hashBin[2*c] = longDigits[c];
+      hashBin[(2*c)+1] = latDigits[c];
     }
 
-    String hashStr = "";
-    for (int d = 0; d < 12; d++) {
-      int l = d*5;
-      String dig = hashBinStr.substring(l, l+5);
-      hashStr += base32(Integer.parseInt(dig, 2));
+    StringBuilder hashStrBuilder = new StringBuilder();
+    StringBuilder digitBuilder = new StringBuilder();
+
+    int e = 0;
+    for (int d = 0; d < LEN_GEOHASH; d++) {
+      digitBuilder.append(hashBin[d]);
+      if (e == 4) {
+        hashStrBuilder.append(base32(Integer.parseInt(digitBuilder.toString(), 2)));
+        digitBuilder = new StringBuilder();
+        e = 0;
+      } else {
+        e++;
+      }
     }
 
-    return hashStr;
+    return hashStrBuilder.toString();
   }
 
   private static char base32(int x) {
@@ -541,20 +551,20 @@ public class Coder {
     return base32str.charAt(x);
   }
 
-  private static String coordDigits(Double coordinate, Double min, Double max) {
-    String binString = "";
-    while (binString.length() < 30) {
+  private static char[] coordDigits(Double coordinate, Double min, Double max) {
+    char[] bin = new char[LEN_GEOHASH/2];
+    for (int c = 0; c < bin.length; c++) {
       Double mid = (min + max) / 2;
       if (coordinate >= mid) {
-        binString += "1";
+        bin[c] = '1';
         min = mid;
       } else {
-        binString += "0";
+        bin[c] = '0';
         max = mid;
       }
     }
 
-    return binString;
+    return bin;
   }
 
   public static ByteArrayWrapper stringToByteWrapper(String s) {
