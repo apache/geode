@@ -16,16 +16,12 @@ package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.apache.geode.rest.internal.web.GeodeRestClient.getCode;
-import static org.apache.geode.rest.internal.web.GeodeRestClient.getJsonArray;
-import static org.apache.geode.rest.internal.web.GeodeRestClient.getJsonObject;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URLEncoder;
 
-import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
@@ -43,6 +39,7 @@ import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -57,8 +54,8 @@ public class RestSecurityPostProcessorTest {
       .withProperty(SECURITY_POST_PROCESSOR, RedactingPostProcessor.class.getName())
       .withRestService().withAutoStart();
 
-  private final GeodeRestClient restClient =
-      new GeodeRestClient("localhost", serverStarter.getHttpPort());
+  private final GeodeDevRestClient restClient =
+      new GeodeDevRestClient("localhost", serverStarter.getHttpPort());
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
@@ -79,24 +76,21 @@ public class RestSecurityPostProcessorTest {
   @Test
   public void getRegionKey() throws Exception {
     // Test a single key
-    HttpResponse response = restClient.doGet("/customers/1", "dataReader", "1234567");
-    assertEquals(200, getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    JSONObject jsonObject =
+        assertResponse(restClient.doGet("/customers/1", "dataReader", "1234567"))
+            .hasStatusCode(200)
+            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .getJsonObject();
 
-    // Ensure SSN is hidden
-    JSONObject jsonObject = getJsonObject(response);
     assertEquals("*********", jsonObject.getString("socialSecurityNumber"));
     assertEquals(1L, jsonObject.getLong("customerId"));
 
     // Try with super-user
-    response = restClient.doGet("/customers/1", "super-user", "1234567");
-    assertEquals(200, getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
-
-    // ensure SSN is readable
-    jsonObject = getJsonObject(response);
+    jsonObject =
+        assertResponse(restClient.doGet("/customers/1", "super-user", "1234567"))
+            .hasStatusCode(200)
+            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .getJsonObject();
     assertEquals("555555555", jsonObject.getString("socialSecurityNumber"));
     assertEquals(1L, jsonObject.getLong("customerId"));
   }
@@ -104,12 +98,12 @@ public class RestSecurityPostProcessorTest {
   // Test multiple keys
   @Test
   public void getMultipleRegionKeys() throws Exception {
-    HttpResponse response = restClient.doGet("/customers/1,3", "dataReader", "1234567");
-    assertEquals(200, getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    JSONObject jsonObject =
+        assertResponse(restClient.doGet("/customers/1,3", "dataReader", "1234567"))
+            .hasStatusCode(200)
+            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .getJsonObject();
 
-    JSONObject jsonObject = getJsonObject(response);
     JSONArray jsonArray = jsonObject.getJSONArray("customers");
     final int length = jsonArray.length();
     assertEquals(2, length);
@@ -123,12 +117,11 @@ public class RestSecurityPostProcessorTest {
 
   @Test
   public void getRegion() throws Exception {
-    HttpResponse response = restClient.doGet("/customers", "dataReader", "1234567");
-    assertEquals(200, getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    JSONObject jsonObject = assertResponse(restClient.doGet("/customers", "dataReader", "1234567"))
+        .hasStatusCode(200)
+        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .getJsonObject();
 
-    JSONObject jsonObject = getJsonObject(response);
     JSONArray jsonArray = jsonObject.getJSONArray("customers");
     final int length = jsonArray.length();
     for (int index = 0; index < length; ++index) {
@@ -142,12 +135,11 @@ public class RestSecurityPostProcessorTest {
   public void adhocQuery() throws Exception {
     String query = "/queries/adhoc?q="
         + URLEncoder.encode("SELECT * FROM /customers order by customerId", "UTF-8");
-    HttpResponse response = restClient.doGet(query, "dataReader", "1234567");
-    assertEquals(200, getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    JSONArray jsonArray = assertResponse(restClient.doGet(query, "dataReader", "1234567"))
+        .hasStatusCode(200)
+        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .getJsonArray();
 
-    JSONArray jsonArray = getJsonArray(response);
     final int length = jsonArray.length();
     for (int index = 0; index < length; ++index) {
       JSONObject customer = jsonArray.getJSONObject(index);
@@ -162,25 +154,24 @@ public class RestSecurityPostProcessorTest {
     String namedQuery = "SELECT c FROM /customers c WHERE c.customerId = $1";
 
     // Install the named query
-    HttpResponse response =
+    assertResponse(
         restClient.doPost("/queries?id=selectCustomer&q=" + URLEncoder.encode(namedQuery, "UTF-8"),
-            "dataReader", "1234567", "");
-    assertEquals(201, getCode(response));
+            "dataReader", "1234567", ""))
+                .hasStatusCode(201);
 
     // Verify the query has been installed
     String query = "/queries";
-    response = restClient.doGet(query, "dataReader", "1234567");
-    assertEquals(200, getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    assertResponse(restClient.doGet(query, "dataReader", "1234567"))
+        .hasStatusCode(200)
+        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
     // Execute the query
-    response = restClient.doPost("/queries/selectCustomer", "dataReader", "1234567",
-        "{" + "\"@type\": \"int\"," + "\"@value\": 1" + "}");
-    assertEquals(200, getCode(response));
+    JSONArray jsonArray =
+        assertResponse(restClient.doPost("/queries/selectCustomer", "dataReader", "1234567",
+            "{" + "\"@type\": \"int\"," + "\"@value\": 1" + "}"))
+                .hasStatusCode(200)
+                .getJsonArray();
 
-    // Validate the result
-    JSONArray jsonArray = getJsonArray(response);
     assertTrue(jsonArray.length() == 1);
     JSONObject customer = jsonArray.getJSONObject(0);
     assertEquals("*********", customer.getString("socialSecurityNumber"));

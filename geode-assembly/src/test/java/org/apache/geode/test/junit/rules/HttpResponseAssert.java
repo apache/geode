@@ -37,7 +37,7 @@ import org.apache.geode.internal.util.ArrayUtils;
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
   private static Logger logger = LogService.getLogger();
   private String responseBody;
-  private String requestUri;
+  private String logMessage;
 
   public HttpResponseAssert(String uri, HttpResponse httpResponse) {
     super(httpResponse, HttpResponseAssert.class);
@@ -46,16 +46,29 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     } catch (IOException e) {
       throw new RuntimeException(e.getMessage(), e);
     }
-    this.requestUri = uri;
-    logger.info(requestUri + ", response body: \n" + responseBody);
+    if (uri != null) {
+      logMessage = uri + ", response body: \n" + responseBody;
+
+    } else {
+      logMessage = "response body: \n" + responseBody;
+    }
+    logger.info(logMessage);
+  }
+
+  public static HttpResponseAssert assertResponse(HttpResponse response) {
+    return new HttpResponseAssert(null, response);
   }
 
   public HttpResponseAssert hasStatusCode(int... httpStatus) {
     int statusCode = actual.getStatusLine().getStatusCode();
     assertThat(statusCode)
-        .describedAs(requestUri + ", response body: \n" + responseBody + "\n" + descriptionText())
+        .describedAs(logMessage + "\n" + descriptionText())
         .isIn(ArrayUtils.toIntegerArray(httpStatus));
     return this;
+  }
+
+  public AbstractCharSequenceAssert<?, String> hasHeaderValue(String headerName) {
+    return assertThat(actual.getFirstHeader(headerName).getValue());
   }
 
   public AbstractCharSequenceAssert<?, String> hasResponseBody() {
@@ -63,13 +76,13 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
   }
 
   public HttpResponseAssert hasContentType(String contentType) {
-    assertThat(actual.getEntity().getContentType().getValue()).contains(contentType);
+    assertThat(actual.getEntity().getContentType().getValue()).containsIgnoringCase(contentType);
     return this;
   }
 
   public HttpResponseAssert statusIsOk() {
     assertThat(actual.getStatusLine().getStatusCode())
-        .describedAs(requestUri + ", response body: \n" + responseBody + "\n" + descriptionText())
+        .describedAs(logMessage + "\n" + descriptionText())
         .isBetween(200, 299);
     return this;
   }
@@ -79,7 +92,13 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     return new JSONObject(tokener);
   }
 
-  public ListAssert<Object> getJsonArray() {
+  public JSONArray getJsonArray() {
+    JSONTokener tokener = new JSONTokener(responseBody);
+    JSONArray array = new JSONArray(tokener);
+    return array;
+  }
+
+  public ListAssert<Object> hasJsonArray() {
     JSONTokener tokener = new JSONTokener(responseBody);
     JSONArray array = new JSONArray(tokener);
     List<Object> list = new ArrayList<>();
@@ -90,6 +109,9 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
   }
 
   private String getResponseBody() throws IOException {
+    if (actual.getEntity() == null) {
+      return "";
+    }
     return IOUtils.toString(actual.getEntity().getContent(), "UTF-8");
   }
 

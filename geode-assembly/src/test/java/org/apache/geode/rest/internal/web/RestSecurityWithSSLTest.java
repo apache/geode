@@ -23,11 +23,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.junit.Assert.assertEquals;
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 
 import java.net.URL;
 
-import org.apache.http.HttpResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,6 +36,7 @@ import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -61,10 +61,9 @@ public class RestSecurityWithSSLTest {
 
   @Test
   public void testRestSecurityWithSSL() throws Exception {
-    GeodeRestClient restClient =
-        new GeodeRestClient("localhost", serverStarter.getHttpPort(), true);
-    HttpResponse response = restClient.doGet("/servers", "cluster", "cluster");
-
-    assertEquals(200, GeodeRestClient.getCode(response));
+    GeodeDevRestClient restClient =
+        new GeodeDevRestClient("localhost", serverStarter.getHttpPort(), true);
+    assertResponse(restClient.doGet("/servers", "cluster", "cluster"))
+        .hasStatusCode(200);
   }
 }

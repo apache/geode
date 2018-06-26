@@ -14,12 +14,11 @@
  */
 package org.apache.geode.rest.internal.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
@@ -34,6 +33,7 @@ import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -46,120 +46,107 @@ public class RestSecurityIntegrationTest {
   public static ServerStarterRule serverStarter = new ServerStarterRule()
       .withSecurityManager(SimpleSecurityManager.class).withRestService().withAutoStart();
 
-  private final GeodeRestClient restClient =
-      new GeodeRestClient("localhost", serverStarter.getHttpPort());
+  private static GeodeDevRestClient restClient;
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @BeforeClass
-  public static void before() throws Exception {
+  public static void before() {
     serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    restClient =
+        new GeodeDevRestClient("localhost", serverStarter.getHttpPort());
   }
 
   @Test
   public void testListFunctions() throws Exception {
-    HttpResponse response = restClient.doGet("/functions", "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/functions", "user", "user");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/functions", "dataRead", "dataRead");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    response.getEntity();
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    assertResponse(restClient.doGet("/functions", "user", "wrongPswd")).hasStatusCode(401);
+    assertResponse(restClient.doGet("/functions", "user", "user")).hasStatusCode(403);
+    assertResponse(restClient.doGet("/functions", "dataRead", "dataRead"))
+        .hasStatusCode(200)
+        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
   }
 
   @Test
   public void executeNotRegisteredFunction() throws Exception {
-    HttpResponse response =
-        restClient.doPost("/functions/invalid-function-id", "user", "wrongPswd", "");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doPost("/functions/invalid-function-id", "user", "user", "");
-    assertEquals(404, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPost("/functions/invalid-function-id", "user", "wrongPswd", ""))
+        .hasStatusCode(401);
+    assertResponse(restClient.doPost("/functions/invalid-function-id", "user", "user", ""))
+        .hasStatusCode(404);
   }
 
   @Test
   public void testQueries() throws Exception {
-    HttpResponse response = restClient.doGet("/queries", "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/queries", "user", "user");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/queries", "dataRead", "dataRead");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    assertResponse(restClient.doGet("/queries", "user", "wrongPswd"))
+        .hasStatusCode(401);
+    assertResponse(restClient.doGet("/queries", "user", "user"))
+        .hasStatusCode(403);
+    assertResponse(restClient.doGet("/queries", "dataRead", "dataRead"))
+        .hasStatusCode(200)
+        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
   }
 
   @Test
   public void testAdhocQuery() throws Exception {
-    HttpResponse response = restClient.doGet("/queries/adhoc?q=", "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/queries/adhoc?q=", "user", "user");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/queries/adhoc?q=", "dataRead", "dataRead");
+    assertResponse(restClient.doGet("/queries/adhoc?q=", "user", "wrongPswd"))
+        .hasStatusCode(401);
+    assertResponse(restClient.doGet("/queries/adhoc?q=", "user", "user"))
+        .hasStatusCode(403);
     // because we're only testing the security of the endpoint, not the endpoint functionality, a
     // 500 is acceptable
-    assertEquals(500, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doGet("/queries/adhoc?q=", "dataRead", "dataRead"))
+        .hasStatusCode(500);
   }
 
   @Test
   public void testPostQuery() throws Exception {
-    HttpResponse response = restClient.doPost("/queries?id=0&q=", "user", "wrongPswd", "");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doPost("/queries?id=0&q=", "user", "user", "");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doPost("/queries?id=0&q=", "dataRead", "dataRead", "");
-    // because we're only testing the security of the endpoint, not the endpoint functionality, a
-    // 500 is acceptable
-    assertEquals(500, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPost("/queries?id=0&q=", "user", "wrongPswd", ""))
+        .hasStatusCode(401);
+    assertResponse(restClient.doPost("/queries?id=0&q=", "user", "user", ""))
+        .hasStatusCode(403);
+    assertResponse(restClient.doPost("/queries?id=0&q=", "dataRead", "dataRead", ""))
+        .hasStatusCode(500);
   }
 
   @Test
   public void testPostQuery2() throws Exception {
-    HttpResponse response =
-        restClient.doPost("/queries/id", "user", "wrongPswd", "{\"id\" : \"foo\"}");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doPost("/queries/id", "user", "user", "{\"id\" : \"foo\"}");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doPost("/queries/id", "dataRead", "dataRead", "{\"id\" : \"foo\"}");
-    // We should get a 404 because we're trying to update a query that doesn't exist
-    assertEquals(404, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPost("/queries/id", "user", "wrongPswd", "{\"id\" : \"foo\"}"))
+        .hasStatusCode(401);
+    assertResponse(restClient.doPost("/queries/id", "user", "user", "{\"id\" : \"foo\"}"))
+        .hasStatusCode(403);
+    assertResponse(restClient.doPost("/queries/id", "dataRead", "dataRead", "{\"id\" : \"foo\"}"))
+        .hasStatusCode(404);
   }
 
   @Test
   public void testPutQuery() throws Exception {
-    HttpResponse response =
-        restClient.doPut("/queries/id", "user", "wrongPswd", "{\"id\" : \"foo\"}");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doPut("/queries/id", "user", "user", "{\"id\" : \"foo\"}");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doPut("/queries/id", "dataRead", "dataRead", "{\"id\" : \"foo\"}");
-    // We should get a 404 because we're trying to update a query that doesn't exist
-    assertEquals(404, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPut("/queries/id", "user", "wrongPswd", "{\"id\" : \"foo\"}"))
+        .hasStatusCode(401);
+    assertResponse(restClient.doPut("/queries/id", "user", "user", "{\"id\" : \"foo\"}"))
+        .hasStatusCode(403);
+    assertResponse(restClient.doPut("/queries/id", "dataRead", "dataRead", "{\"id\" : \"foo\"}"))
+        .hasStatusCode(404);
   }
 
   @Test
   public void testDeleteQuery() throws Exception {
-    HttpResponse response = restClient.doDelete("/queries/id", "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doDelete("/queries/id", "stranger", "stranger");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doDelete("/queries/id", "dataWrite", "dataWrite");
-    // We should get a 404 because we're trying to delete a query that doesn't exist
-    assertEquals(404, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doDelete("/queries/id", "user", "wrongPswd"))
+        .hasStatusCode(401);
+    assertResponse(restClient.doDelete("/queries/id", "stranger", "stranger"))
+        .hasStatusCode(403);
+    assertResponse(restClient.doDelete("/queries/id", "dataWrite", "dataWrite"))
+        .hasStatusCode(404);
   }
 
   @Test
   public void testServers() throws Exception {
-    HttpResponse response = restClient.doGet("/servers", "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/servers", "stranger", "stranger");
-    assertEquals(403, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/servers", "cluster", "cluster");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    assertResponse(restClient.doGet("/servers", "user", "wrongPswd"))
+        .hasStatusCode(401);
+    assertResponse(restClient.doGet("/servers", "stranger", "stranger"))
+        .hasStatusCode(403);
+    assertResponse(restClient.doGet("/servers", "cluster", "cluster"))
+        .hasStatusCode(200)
+        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
   }
 
   /**
@@ -168,15 +155,15 @@ public class RestSecurityIntegrationTest {
    */
   @Test
   public void testPing() throws Exception {
-    HttpResponse response = restClient.doHEAD("/ping", "stranger", "stranger");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/ping", "stranger", "stranger");
-    assertEquals(200, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doHEAD("/ping", "stranger", "stranger"))
+        .hasStatusCode(200);
+    assertResponse(restClient.doGet("/ping", "stranger", "stranger"))
+        .hasStatusCode(200);
 
-    response = restClient.doHEAD("/ping", "data", "data");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    response = restClient.doGet("/ping", "data", "data");
-    assertEquals(200, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doHEAD("/ping", "data", "data"))
+        .hasStatusCode(200);
+    assertResponse(restClient.doGet("/ping", "data", "data"))
+        .hasStatusCode(200);
   }
 
   /**
@@ -184,12 +171,10 @@ public class RestSecurityIntegrationTest {
    */
   @Test
   public void getRegions() throws Exception {
-    HttpResponse response = restClient.doGet("", "dataRead", "dataRead");
-    assertEquals("A '200 - OK' was expected", 200, GeodeRestClient.getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    JSONObject jsonObject = assertResponse(restClient.doGet("", "dataRead", "dataRead"))
+        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .getJsonObject();
 
-    JSONObject jsonObject = GeodeRestClient.getJsonObject(response);
     JSONArray regions = jsonObject.getJSONArray("regions");
     assertNotNull(regions);
     assertTrue(regions.length() > 0);
@@ -198,12 +183,12 @@ public class RestSecurityIntegrationTest {
     assertEquals("REPLICATE", region.get("type"));
 
     // List regions with an unknown user - 401
-    response = restClient.doGet("", "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doGet("", "user", "wrongPswd"))
+        .hasStatusCode(401);
 
     // list regions with insufficent rights - 403
-    response = restClient.doGet("", "dataReadAuthRegion", "dataReadAuthRegion");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doGet("", "dataReadAuthRegion", "dataReadAuthRegion"))
+        .hasStatusCode(403);
   }
 
   /**
@@ -212,18 +197,16 @@ public class RestSecurityIntegrationTest {
   @Test
   public void getRegion() throws Exception {
     // Test an unknown user - 401 error
-    HttpResponse response = restClient.doGet("/" + REGION_NAME, "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doGet("/" + REGION_NAME, "user", "wrongPswd"))
+        .hasStatusCode(401);
 
     // Test a user with insufficient rights - 403
-    response = restClient.doGet("/" + REGION_NAME, "stranger", "stranger");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doGet("/" + REGION_NAME, "stranger", "stranger"))
+        .hasStatusCode(403);
 
     // Test an authorized user - 200
-    response = restClient.doGet("/" + REGION_NAME, "data", "data");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    assertResponse(restClient.doGet("/" + REGION_NAME, "data", "data"))
+        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
   }
 
   /**
@@ -232,16 +215,16 @@ public class RestSecurityIntegrationTest {
   @Test
   public void headRegion() throws Exception {
     // Test an unknown user - 401 error
-    HttpResponse response = restClient.doHEAD("/" + REGION_NAME, "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doHEAD("/" + REGION_NAME, "user", "wrongPswd"))
+        .hasStatusCode(401);
 
     // Test a user with insufficient rights - 403
-    response = restClient.doHEAD("/" + REGION_NAME, "stranger", "stranger");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doHEAD("/" + REGION_NAME, "stranger", "stranger"))
+        .hasStatusCode(403);
 
     // Test an authorized user - 200
-    response = restClient.doHEAD("/" + REGION_NAME, "data", "data");
-    assertEquals(200, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doHEAD("/" + REGION_NAME, "data", "data"))
+        .hasStatusCode(200);
   }
 
   /**
@@ -250,12 +233,12 @@ public class RestSecurityIntegrationTest {
   @Test
   public void deleteRegion() throws Exception {
     // Test an unknown user - 401 error
-    HttpResponse response = restClient.doDelete("/" + REGION_NAME, "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doDelete("/" + REGION_NAME, "user", "wrongPswd"))
+        .hasStatusCode(401);
 
     // Test a user with insufficient rights - 403
-    response = restClient.doDelete("/" + REGION_NAME, "dataRead", "dataRead");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doDelete("/" + REGION_NAME, "dataRead", "dataRead"))
+        .hasStatusCode(403);
   }
 
   /**
@@ -264,13 +247,11 @@ public class RestSecurityIntegrationTest {
   @Test
   public void getRegionKeys() throws Exception {
     // Test an authorized user
-    HttpResponse response = restClient.doGet("/" + REGION_NAME + "/keys", "data", "data");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    assertResponse(restClient.doGet("/" + REGION_NAME + "/keys", "data", "data"))
+        .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
     // Test an unauthorized user
-    response = restClient.doGet("/" + REGION_NAME + "/keys", "dataWrite", "dataWrite");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doGet("/" + REGION_NAME + "/keys", "dataWrite", "dataWrite"))
+        .hasStatusCode(403);
   }
 
   /**
@@ -279,15 +260,13 @@ public class RestSecurityIntegrationTest {
   @Test
   public void getRegionKey() throws Exception {
     // Test an authorized user
-    HttpResponse response = restClient.doGet("/" + REGION_NAME + "/key1", "dataReadAuthRegionKey1",
-        "dataReadAuthRegionKey1");
-    assertEquals(200, GeodeRestClient.getCode(response));
-    assertThat(GeodeRestClient.getContentType(response))
-        .containsIgnoringCase(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    assertResponse(restClient.doGet("/" + REGION_NAME + "/key1", "dataReadAuthRegionKey1",
+        "dataReadAuthRegionKey1"))
+            .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
     // Test an unauthorized user
-    response = restClient.doGet("/" + REGION_NAME + "/key1", "dataWrite", "dataWrite");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doGet("/" + REGION_NAME + "/key1", "dataWrite", "dataWrite"))
+        .hasStatusCode(403);
   }
 
   /**
@@ -296,17 +275,17 @@ public class RestSecurityIntegrationTest {
   @Test
   public void deleteRegionKey() throws Exception {
     // Test an unknown user - 401 error
-    HttpResponse response = restClient.doDelete("/" + REGION_NAME + "/key1", "user", "wrongPswd");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doDelete("/" + REGION_NAME + "/key1", "user", "wrongPswd"))
+        .hasStatusCode(401);
 
     // Test a user with insufficient rights - 403
-    response = restClient.doDelete("/" + REGION_NAME + "/key1", "dataRead", "dataRead");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doDelete("/" + REGION_NAME + "/key1", "dataRead", "dataRead"))
+        .hasStatusCode(403);
 
     // Test an authorized user - 200
-    response = restClient.doDelete("/" + REGION_NAME + "/key1", "dataWriteAuthRegionKey1",
-        "dataWriteAuthRegionKey1");
-    assertEquals(200, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doDelete("/" + REGION_NAME + "/key1", "dataWriteAuthRegionKey1",
+        "dataWriteAuthRegionKey1"))
+            .hasStatusCode(200);
   }
 
   /**
@@ -315,19 +294,19 @@ public class RestSecurityIntegrationTest {
   @Test
   public void postRegionKey() throws Exception {
     // Test an unknown user - 401 error
-    HttpResponse response = restClient.doPost("/" + REGION_NAME + "?key9", "user", "wrongPswd",
-        "{ \"key9\" : \"foo\" }");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPost("/" + REGION_NAME + "?key9", "user", "wrongPswd",
+        "{ \"key9\" : \"foo\" }"))
+            .hasStatusCode(401);
 
     // Test a user with insufficient rights - 403
-    response = restClient.doPost("/" + REGION_NAME + "?key9", "dataRead", "dataRead",
-        "{ \"key9\" : \"foo\" }");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPost("/" + REGION_NAME + "?key9", "dataRead", "dataRead",
+        "{ \"key9\" : \"foo\" }"))
+            .hasStatusCode(403);
 
-    // Test an authorized user - 200
-    response = restClient.doPost("/" + REGION_NAME + "?key9", "dataWrite", "dataWrite",
-        "{ \"key9\" : \"foo\" }");
-    assertEquals(201, GeodeRestClient.getCode(response));
+    // Test an authorized user - 201
+    assertResponse(restClient.doPost("/" + REGION_NAME + "?key9", "dataWrite", "dataWrite",
+        "{ \"key9\" : \"foo\" }"))
+            .hasStatusCode(201);
   }
 
   /**
@@ -341,35 +320,35 @@ public class RestSecurityIntegrationTest {
     String casJSON =
         "{\"@old\":{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Order\",\"purchaseOrderNo\":1121,\"customerId\":1012,\"description\":\"Order for  XYZ Corp\",\"orderDate\":\"02/10/2014\",\"deliveryDate\":\"02/20/2014\",\"contact\":\"Jelly Bean\",\"email\":\"jelly.bean@example.com\",\"phone\":\"01-2048096\",\"items\":[{\"itemNo\":1,\"description\":\"Product-100\",\"quantity\":12,\"unitPrice\":5,\"totalPrice\":60}],\"totalPrice\":225},\"@new \":{\"@type\":\"com.gemstone.gemfire.web.rest.domain.Order\",\"purchaseOrderNo\":1121,\"customerId\":1013,\"description\":\"Order for  New Corp\",\"orderDate\":\"02/10/2014\",\"deliveryDate\":\"02/25/2014\",\"contact\":\"Vanilla Bean\",\"email\":\"vanillabean@example.com\",\"phone\":\"01-2048096\",\"items\":[{\"itemNo\":12345,\"description\":\"part 123\",\"quantity\":12,\"unitPrice\":29.99,\"totalPrice\":149.95}],\"totalPrice\":149.95}}";
     // Test an unknown user - 401 error
-    HttpResponse response = restClient.doPut("/" + REGION_NAME + "/key1?op=PUT", "user",
-        "wrongPswd", "{ \"key9\" : \"foo\" }");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPut("/" + REGION_NAME + "/key1?op=PUT", "user", "wrongPswd",
+        "{ \"key9\" : \"foo\" }"))
+            .hasStatusCode(401);
 
-    response = restClient.doPut("/" + REGION_NAME + "/key1?op=CAS", "user", "wrongPswd",
-        "{ \"key9\" : \"foo\" }");
-    assertEquals(401, GeodeRestClient.getCode(response));
-    response = restClient.doPut("/" + REGION_NAME + "/key1?op=REPLACE", "user", "wrongPswd",
-        "{ \"@old\" : \"value1\", \"@new\" : \"CASvalue\" }");
-    assertEquals(401, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPut("/" + REGION_NAME + "/key1?op=CAS", "user", "wrongPswd",
+        "{ \"key9\" : \"foo\" }"))
+            .hasStatusCode(401);
+    assertResponse(restClient.doPut("/" + REGION_NAME + "/key1?op=REPLACE", "user", "wrongPswd",
+        "{ \"@old\" : \"value1\", \"@new\" : \"CASvalue\" }"))
+            .hasStatusCode(401);
 
-    response = restClient.doPut("/" + REGION_NAME + "/key1?op=PUT", "dataRead", "dataRead",
-        "{ \"key1\" : \"foo\" }");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPut("/" + REGION_NAME + "/key1?op=PUT", "dataRead", "dataRead",
+        "{ \"key1\" : \"foo\" }"))
+            .hasStatusCode(403);
 
-    response = restClient.doPut("/" + REGION_NAME + "/key1?op=REPLACE", "dataRead", "dataRead",
-        "{ \"key1\" : \"foo\" }");
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPut("/" + REGION_NAME + "/key1?op=REPLACE", "dataRead", "dataRead",
+        "{ \"key1\" : \"foo\" }"))
+            .hasStatusCode(403);
 
-    response =
-        restClient.doPut("/" + REGION_NAME + "/key1?op=CAS", "dataRead", "dataRead", casJSON);
-    assertEquals(403, GeodeRestClient.getCode(response));
+    assertResponse(
+        restClient.doPut("/" + REGION_NAME + "/key1?op=CAS", "dataRead", "dataRead", casJSON))
+            .hasStatusCode(403);
 
-    response = restClient.doPut("/" + REGION_NAME + "/key1?op=PUT", "dataWriteAuthRegionKey1",
-        "dataWriteAuthRegionKey1", "{ \"key1\" : \"foo\" }");
-    assertEquals(200, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPut("/" + REGION_NAME + "/key1?op=PUT", "dataWriteAuthRegionKey1",
+        "dataWriteAuthRegionKey1", "{ \"key1\" : \"foo\" }"))
+            .hasStatusCode(200);
 
-    response = restClient.doPut("/" + REGION_NAME + "/key1?op=REPLACE", "dataWriteAuthRegionKey1",
-        "dataWriteAuthRegionKey1", json);
-    assertEquals(200, GeodeRestClient.getCode(response));
+    assertResponse(restClient.doPut("/" + REGION_NAME + "/key1?op=REPLACE",
+        "dataWriteAuthRegionKey1", "dataWriteAuthRegionKey1", json))
+            .hasStatusCode(200);
   }
 }

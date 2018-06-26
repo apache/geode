@@ -15,10 +15,10 @@
 package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_HTTP_SERVICE_PORT;
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.junit.BeforeClass;
@@ -30,13 +30,14 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, RestAPITest.class})
 public class RestServersIntegrationTest {
 
-  private static GeodeRestClient restClient;
+  private static GeodeDevRestClient restClient;
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule().withRestService(true);
@@ -52,21 +53,20 @@ public class RestServersIntegrationTest {
         AvailablePort.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, AvailablePort.SOCKET));
     serverStarter.startServer();
     assertThat(serverStarter.getHttpPort()).isEqualTo(DEFAULT_HTTP_SERVICE_PORT);
-    restClient = new GeodeRestClient("localhost", serverStarter.getHttpPort());
+    restClient = new GeodeDevRestClient("localhost", serverStarter.getHttpPort());
   }
 
   @Test
   public void testGet() throws Exception {
-    HttpResponse response = restClient.doGet("/", null, null);
-    assertThat(GeodeRestClient.getCode(response)).isEqualTo(HttpStatus.SC_OK);
+    assertResponse(restClient.doGet("/", null, null))
+        .hasStatusCode(HttpStatus.SC_OK);
   }
 
   @Test
   public void testServerStartedOnDefaultPort() throws Exception {
-    HttpResponse response = restClient.doGet("/servers", null, null);
-    assertThat(GeodeRestClient.getCode(response)).isEqualTo(HttpStatus.SC_OK);
-    JSONArray body = GeodeRestClient.getJsonArray(response);
-    assertThat(body.length()).isEqualTo(1);
-    assertThat(body.getString(0)).isEqualTo("http://localhost:" + DEFAULT_HTTP_SERVICE_PORT);
+    JSONArray jsonArray = assertResponse(restClient.doGet("/servers", null, null))
+        .hasStatusCode(HttpStatus.SC_OK).getJsonArray();
+    assertThat(jsonArray.length()).isEqualTo(1);
+    assertThat(jsonArray.getString(0)).isEqualTo("http://localhost:" + DEFAULT_HTTP_SERVICE_PORT);
   }
 }

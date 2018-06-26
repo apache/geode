@@ -45,6 +45,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.rest.internal.web.controllers.Customer;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -68,19 +69,19 @@ public class RestRegionAPIDUnitTest {
     return server.getCache().getRegion("/regionA");
   }
 
-  public static GeodeRestClient restClient;
+  public static GeodeDevRestClient restClient;
 
   private static List<String> jsonDocuments = new ArrayList<>();
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    restClient = new GeodeRestClient("localhost", server.getHttpPort(), false);
+    restClient = new GeodeDevRestClient("localhost", server.getHttpPort(), false);
     initJsonDocuments();
   }
 
   @Test
   public void getAllResources() {
-    restClient.doGetAndAssertThat("")
+    restClient.doGetAndAssert("")
         .hasStatusCode(HttpStatus.SC_OK)
         .hasContentType(MediaType.APPLICATION_JSON.toString())
         .hasResponseBody().isEqualToIgnoringWhitespace(
@@ -89,7 +90,7 @@ public class RestRegionAPIDUnitTest {
 
   @Test
   public void getRegionWhenEmpty() {
-    restClient.doGetAndAssertThat("/regionA")
+    restClient.doGetAndAssert("/regionA")
         .statusIsOk()
         .hasResponseBody().isEqualToIgnoringWhitespace("{\"regionA\":[]}");
   }
@@ -100,7 +101,7 @@ public class RestRegionAPIDUnitTest {
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
     region.put("customer2", new Customer(2L, "jane", "doe", "123-456-999"));
 
-    JSONObject jsonObject = restClient.doGetAndAssertThat("/regionA")
+    JSONObject jsonObject = restClient.doGetAndAssert("/regionA")
         .statusIsOk().getJsonObject();
 
     assertThat(jsonObject.getJSONArray("regionA").length()).isEqualTo(2);
@@ -112,7 +113,7 @@ public class RestRegionAPIDUnitTest {
     Region region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
 
-    JSONObject jsonObject = restClient.doGetAndAssertThat("/regionA/customer1")
+    JSONObject jsonObject = restClient.doGetAndAssert("/regionA/customer1")
         .statusIsOk().getJsonObject();
     System.out.println(jsonObject.toString());
     assertThat(jsonObject.get("firstName").toString()).isEqualTo("jon");
@@ -255,7 +256,7 @@ public class RestRegionAPIDUnitTest {
     region.put("customer2", new Customer(2L, "jane", "doe", "123-456-999"));
 
     JSONObject jsonObject =
-        restClient.doGetAndAssertThat("/regionA/keys").statusIsOk().getJsonObject();
+        restClient.doGetAndAssert("/regionA/keys").statusIsOk().getJsonObject();
     assertThat(jsonObject.get("keys").toString()).isEqualTo("[\"customer1\",\"customer2\"]");
   }
 
@@ -270,7 +271,7 @@ public class RestRegionAPIDUnitTest {
             "SELECT book.displayprice FROM /regionA e, e.store.book book  WHERE book.displayprice > 5",
             "UTF-8");
 
-    restClient.doGetAndAssertThat(urlPrefix).statusIsOk().getJsonArray().hasSize(12)
+    restClient.doGetAndAssert(urlPrefix).statusIsOk().hasJsonArray().hasSize(12)
         .containsExactlyInAnyOrder(18.95, 18.95, 8.99, 8.99, 8.99, 8.95, 22.99, 22.99, 22.99, 12.99,
             112.99, 112.99);
   }
@@ -290,7 +291,7 @@ public class RestRegionAPIDUnitTest {
     }
 
     // get the list of defined queries and verify the size of them
-    JSONObject jsonObject = restClient.doGetAndAssertThat("/queries").statusIsOk().getJsonObject();
+    JSONObject jsonObject = restClient.doGetAndAssert("/queries").statusIsOk().getJsonObject();
     JSONArray queriesArray = (JSONArray) jsonObject.get("queries");
     assertThat(queriesArray.length()).isEqualTo(5);
 
@@ -298,7 +299,7 @@ public class RestRegionAPIDUnitTest {
     for (int i = 0; i < 5; i++) {
       restClient.doPostAndAssert("/queries/Query" + i, "[{\"@type\":\"double\",\"@value\":8.99}]")
           .statusIsOk()
-          .getJsonArray().hasSize(8)
+          .hasJsonArray().hasSize(8)
           .containsExactlyInAnyOrder(18.95, 18.95, 22.99, 22.99, 22.99, 12.99, 112.99, 112.99);
     }
   }
@@ -342,7 +343,7 @@ public class RestRegionAPIDUnitTest {
 
     futures.add(pool.submit(() -> {
       for (int i = 0; i < entryCount; i++) {
-        restClient.doGetAndAssertThat("/regionA/customer" + i).hasStatusCode(HttpStatus.SC_OK,
+        restClient.doGetAndAssert("/regionA/customer" + i).hasStatusCode(HttpStatus.SC_OK,
             HttpStatus.SC_NOT_FOUND);
       }
       return true;

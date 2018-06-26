@@ -13,12 +13,9 @@
  * the License.
  */
 
-package org.apache.geode.rest.internal.web;
+package org.apache.geode.test.junit.rules;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -45,70 +42,34 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
-import org.apache.geode.test.junit.rules.HttpResponseAssert;
-
-public class GeodeRestClient {
+/**
+ * this doesn't need to be a rule, since there is no setup and cleanup to do, just a utility
+ * to issue rest call. It's different from GeodeHttpClientRule in that it creates a httpClient
+ * in every rest call, while GeodeHttpClientRule uses one httpClient for the duration of the
+ * entire test.
+ */
+public class GeodeDevRestClient {
   public static final String CONTEXT = "/geode/v1";
 
-  private int restPort = 0;
-  private String bindAddress = null;
-  private String protocol = "http";
-  private boolean useHttps = false;
-  private KeyStore keyStore;
+  private String bindAddress;
+  private int restPort;
+  private boolean useSsl;
+  private HttpHost host;
 
-  public GeodeRestClient(String bindAddress, int restPort) {
+  public GeodeDevRestClient(int restPort) {
+    this("localhost", restPort, false);
+  }
+
+  public GeodeDevRestClient(String bindAddress, int restPort) {
+    this(bindAddress, restPort, false);
+  }
+
+  public GeodeDevRestClient(String bindAddress, int restPort, boolean useSsl) {
     this.bindAddress = bindAddress;
     this.restPort = restPort;
-  }
-
-  public GeodeRestClient(String bindAddress, int restPort, boolean useHttps) {
-    if (useHttps) {
-      this.protocol = "https";
-      this.useHttps = true;
-    } else {
-      this.protocol = "http";
-      this.useHttps = false;
-    }
-    this.bindAddress = bindAddress;
-    this.restPort = restPort;
-  }
-
-  public static String getContentType(HttpResponse response) {
-    return response.getEntity().getContentType().getValue();
-  }
-
-  /**
-   * Retrieve the status code of the HttpResponse
-   *
-   * @param response The HttpResponse message received from the server
-   * @return a numeric value
-   */
-  public static int getCode(HttpResponse response) {
-    return response.getStatusLine().getStatusCode();
-  }
-
-  public static JSONObject getJsonObject(HttpResponse response) {
-    JSONTokener tokener = null;
-    try {
-      tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-    return new JSONObject(tokener);
-  }
-
-  public static JSONArray getJsonArray(HttpResponse response) {
-    JSONTokener tokener = null;
-    try {
-      tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
-    } catch (IOException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-    return new JSONArray(tokener);
+    this.useSsl = useSsl;
+    host = new HttpHost(bindAddress, restPort, useSsl ? "https" : "http");
   }
 
   public HttpResponse doHEAD(String query, String username, String password) {
@@ -135,48 +96,13 @@ public class GeodeRestClient {
     return doRequest(getRequest, username, password);
   }
 
-
-  public HttpResponseAssert doGetAndAssertThat(String uri) {
-    return new HttpResponseAssert("Get " + uri, doGet(uri, null, null));
-  }
-
-  public HttpResponse doGetRequest(String url) {
-    HttpGet getRequest = new HttpGet(url);
-    return doRequest(getRequest, null, null);
-  }
-
   public HttpResponse doDelete(String uri, String username, String password) {
     HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
     return doRequest(httpDelete, username, password);
   }
 
-  public HttpResponse doRequest(HttpRequestBase request, String username, String password) {
-    HttpHost targetHost = new HttpHost(bindAddress, restPort, protocol);
-
-    HttpClientBuilder clientBuilder = HttpClients.custom();
-    HttpClientContext clientContext = HttpClientContext.create();
-
-    // configures the clientBuilder and clientContext
-    if (username != null) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()),
-          new UsernamePasswordCredentials(username, password));
-      clientBuilder.setDefaultCredentialsProvider(credsProvider);
-    }
-
-    try {
-      if (useHttps) {
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()},
-            new SecureRandom());
-        clientBuilder.setSSLContext(ctx);
-        clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
-      }
-
-      return clientBuilder.build().execute(targetHost, request, clientContext);
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
+  public HttpResponseAssert doGetAndAssert(String uri) {
+    return new HttpResponseAssert("Get " + uri, doGet(uri, null, null));
   }
 
   public HttpResponseAssert doPutAndAssert(String uri, String body) {
@@ -191,7 +117,37 @@ public class GeodeRestClient {
     return new HttpResponseAssert("Delete " + uri, doDelete(uri, null, null));
   }
 
-  private static class DefaultTrustManager implements X509TrustManager {
+  /**
+   * this handles rest calls. each request creates a different httpClient object
+   */
+  public HttpResponse doRequest(HttpRequestBase request, String username, String password) {
+    HttpClientBuilder clientBuilder = HttpClients.custom();
+    HttpClientContext clientContext = HttpClientContext.create();
+
+    // configures the clientBuilder and clientContext
+    if (username != null) {
+      CredentialsProvider credsProvider = new BasicCredentialsProvider();
+      credsProvider.setCredentials(new AuthScope(bindAddress, restPort),
+          new UsernamePasswordCredentials(username, password));
+      clientBuilder.setDefaultCredentialsProvider(credsProvider);
+    }
+
+    try {
+      if (useSsl) {
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()},
+            new SecureRandom());
+        clientBuilder.setSSLContext(ctx);
+        clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+      }
+
+      return clientBuilder.build().execute(host, request, clientContext);
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  public static class DefaultTrustManager implements X509TrustManager {
 
     @Override
     public void checkClientTrusted(X509Certificate[] arg0, String arg1)

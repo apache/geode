@@ -15,10 +15,10 @@
 package org.apache.geode.rest.internal.web;
 
 
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -30,6 +30,7 @@ import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -41,19 +42,19 @@ public class SwaggerVerificationIntegrationTest {
       .withSecurityManager(SimpleTestSecurityManager.class).withRestService().withAutoStart();
 
   @Rule
+  public GeodeHttpClientRule client = new GeodeHttpClientRule(serverStarter::getHttpPort);
+
+  @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Test
   public void isSwaggerRunning() throws Exception {
-    GeodeRestClient restClient = new GeodeRestClient("localhost", serverStarter.getHttpPort());
     // Check the UI
-    HttpResponse response = restClient.doGetRequest("/geode/swagger-ui.html");
-    assertThat(GeodeRestClient.getCode(response), is(200));
+    assertResponse(client.get("/geode/swagger-ui.html")).hasStatusCode(200);
 
     // Check the JSON
-    response = restClient.doGetRequest("/geode/v2/api-docs");
-    assertThat(GeodeRestClient.getCode(response), is(200));
-    JSONObject json = GeodeRestClient.getJsonObject(response);
+    JSONObject json =
+        assertResponse(client.get("/geode/v2/api-docs")).hasStatusCode(200).getJsonObject();
     assertThat(json.get("swagger"), is("2.0"));
 
     JSONObject info = json.getJSONObject("info");

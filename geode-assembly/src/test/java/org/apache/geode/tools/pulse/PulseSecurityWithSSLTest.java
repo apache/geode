@@ -40,7 +40,7 @@ import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 
@@ -69,7 +69,7 @@ public class PulseSecurityWithSSLTest {
   }
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(locator::getHttpPort).withSSL();
+  public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort).withSSL();
 
 
   @Test
