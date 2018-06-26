@@ -15,17 +15,24 @@
 package org.apache.geode.distributed.internal;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -49,46 +56,17 @@ public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    // reinitialize the advisor
-    this.advisor = DistributionAdvisor.createDistributionAdvisor(new DistributionAdvisee() {
-      public DistributionAdvisee getParentAdvisee() {
-        return null;
-      }
+    DistributionAdvisee advisee = mock(DistributionAdvisee.class);
+    when(advisee.getName()).thenReturn("DistributionAdvisorDUnitTest");
+    when(advisee.getSystem()).thenReturn(getSystem());
+    when(advisee.getFullPath()).thenReturn(getName());
+    when(advisee.getDistributionManager()).thenReturn(getSystem().getDistributionManager());
+    when(advisee.getCancelCriterion()).thenReturn(getSystem().getCancelCriterion());
 
-      public InternalDistributedSystem getSystem() {
-        return DistributionAdvisorDUnitTest.this.getSystem();
-      }
+    advisor = DistributionAdvisor.createDistributionAdvisor(advisee);
 
-      public String getName() {
-        return "DistributionAdvisorDUnitTest";
-      }
+    when(advisee.getDistributionAdvisor()).thenReturn(advisor);
 
-      public String getFullPath() {
-        return getName();
-      }
-
-      public DistributionManager getDistributionManager() {
-        return getSystem().getDistributionManager();
-      }
-
-      public DistributionAdvisor getDistributionAdvisor() {
-        return DistributionAdvisorDUnitTest.this.advisor;
-      }
-
-      public DistributionAdvisor.Profile getProfile() {
-        return null;
-      }
-
-      public void fillInProfile(DistributionAdvisor.Profile profile) {}
-
-      public int getSerialNumber() {
-        return 0;
-      }
-
-      public CancelCriterion getCancelCriterion() {
-        return DistributionAdvisorDUnitTest.this.getSystem().getCancelCriterion();
-      }
-    });
     Set ids = getSystem().getDistributionManager().getOtherNormalDistributionManagerIds();
     assertEquals(VM.getVMCount(), ids.size());
     List profileList = new ArrayList();
@@ -119,5 +97,46 @@ public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
       expected.add(profiles[i].getDistributedMember());
     }
     assertEquals(expected, advisor.adviseGeneric());
+  }
+
+  @Test
+  public void advisorIssuesSevereAlertForStateFlush() throws Exception {
+    final long membershipVersion = advisor.startOperation();
+    advisor.forceNewMembershipVersion();
+
+    final Logger logger = mock(Logger.class);
+    final Exception exceptionHolder[] = new Exception[1];
+    Thread thread = new Thread(() -> {
+      try {
+        advisor.waitForCurrentOperations(logger, 2000, 4000);
+      } catch (RuntimeException e) {
+        synchronized (exceptionHolder) {
+          exceptionHolder[0] = e;
+        }
+      }
+    });
+    thread.setDaemon(true);
+    thread.start();
+
+    try {
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+        verify(logger, atLeastOnce()).warn(isA(String.class), isA(Long.class));
+      });
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+        verify(logger, atLeastOnce()).fatal(isA(String.class), isA(Long.class));
+      });
+    } finally {
+      if (thread.isAlive()) {
+        advisor.endOperation(membershipVersion);
+        thread.interrupt();
+        thread.join(10000);
+      } else {
+        synchronized (exceptionHolder) {
+          if (exceptionHolder[0] != null) {
+            throw exceptionHolder[0];
+          }
+        }
+      }
+    }
   }
 }
