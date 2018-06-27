@@ -36,7 +36,6 @@ import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
-import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,6 +57,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -70,6 +70,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -300,7 +302,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testConflictingUDPPort() throws Exception {
+  public void testConflictingUDPPort() {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, String.valueOf(this.mcastPort));
     config.setProperty(START_LOCATOR, "localhost[" + this.locatorPort + "]");
@@ -309,13 +311,14 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     DistributedSystem.connect(config);
 
-    getHost(0).getVM(1).invoke(() -> {
+    IgnoredException.addIgnoredException("SystemConnectException", VM.getVM(1));
+    VM.getVM(1).invoke(() -> {
       String locators = (String) config.remove(START_LOCATOR);
 
       config.put(LOCATORS, locators);
 
       assertThatThrownBy(() -> DistributedSystem.connect(config))
-          .isInstanceOf(GemFireConfigException.class);
+          .isInstanceOfAny(GemFireConfigException.class, SystemConnectException.class);
     });
   }
 
