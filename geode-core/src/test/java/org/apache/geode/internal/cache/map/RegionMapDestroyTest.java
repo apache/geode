@@ -382,6 +382,20 @@ public class RegionMapDestroyTest {
     validateInvokedDestroyMethodsOnRegion(false);
   }
 
+  @Test
+  public void destroyWithConcurrentChangeFromNullToValidRetriesAndThrowsConcurrentCacheModificationException()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    doThrow(ConcurrentCacheModificationException.class).when(evictableEntry).destroy(
+        eq(arm._getOwner()), eq(event), eq(false),
+        anyBoolean(), eq(expectedOldValue), anyBoolean(), anyBoolean());
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
+    validateNoDestroyInvocationsOnRegion();
+  }
 
   @Test
   public void destroyWithConcurrentChangeFromNullToValidRetriesAndCallsUpdateSizeOnRemove()

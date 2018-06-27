@@ -66,24 +66,24 @@ public class RegionMapDestroy {
   private RegionEntry regionEntry;
   private RegionEntry tombstoneRegionEntry;
 
-  public RegionMapDestroy(InternalRegion internalRegion, FocusedRegionMap focusedRegionMap,
-      CacheModificationLock cacheModificationLock, final EntryEventImpl eventArg,
+  public RegionMapDestroy(InternalRegion internalRegionArg, FocusedRegionMap focusedRegionMapArg,
+      CacheModificationLock cacheModificationLockArg, final EntryEventImpl eventArg,
       final boolean inTokenModeArg,
       final boolean duringRIArg, final boolean cacheWriteArg, final boolean isEvictionArg,
       final Object expectedOldValueArg, final boolean removeRecoveredEntryArg) {
-    this.internalRegion = internalRegion;
-    this.focusedRegionMap = focusedRegionMap;
-    this.cacheModificationLock = cacheModificationLock;
-    this.event = eventArg;
-    this.inTokenMode = inTokenModeArg;
-    this.duringRI = duringRIArg;
-    this.cacheWrite = cacheWriteArg;
-    this.isEviction = isEvictionArg;
-    this.expectedOldValue = expectedOldValueArg;
+    internalRegion = internalRegionArg;
+    focusedRegionMap = focusedRegionMapArg;
+    cacheModificationLock = cacheModificationLockArg;
+    event = eventArg;
+    inTokenMode = inTokenModeArg;
+    duringRI = duringRIArg;
+    cacheWrite = cacheWriteArg;
+    isEviction = isEvictionArg;
+    expectedOldValue = expectedOldValueArg;
     // for RI local-destroy we don't want to keep tombstones.
     // In order to simplify things we just set this recovery
     // flag to true to force the entry to be removed
-    this.removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
+    removeRecoveredEntry = removeRecoveredEntryArg || event.isFromRILocalDestroy();
   }
 
   public boolean destroy() {
@@ -222,7 +222,7 @@ public class RegionMapDestroy {
   }
 
   private boolean hasTombstone() {
-    return this.tombstoneRegionEntry != null;
+    return tombstoneRegionEntry != null;
   }
 
   private void handleExistingRegionEntryWithIndexInUpdateMode() {
@@ -232,18 +232,13 @@ public class RegionMapDestroy {
   }
 
   private void handleExistingRegionEntryWhileInUpdateMode() {
-    try {
-      synchronized (regionEntry) {
-        internalRegion.checkReadiness();
-        if (isNotRemovedOrNeedTombstone()) {
-          destroyExistingEntry();
-        } else {
-          handleEntryAlreadyRemoved();
-        }
+    synchronized (regionEntry) {
+      internalRegion.checkReadiness();
+      if (isNotRemovedOrNeedTombstone()) {
+        destroyExistingEntry();
+      } else {
+        handleEntryAlreadyRemoved();
       }
-    } catch (ConcurrentCacheModificationException e) {
-      handleConcurrentModificationException(); // TODO coverage
-      throw e;
     }
   }
 
@@ -290,7 +285,7 @@ public class RegionMapDestroy {
   private void handleConcurrentModificationException() {
     VersionTag tag = event.getVersionTag();
     if (tag == null) {
-      return; // coverage
+      return;
     }
     if (!tag.isTimeStampUpdated()) {
       return;
@@ -365,7 +360,7 @@ public class RegionMapDestroy {
     // (e.g., from cache client update thread) we need to update
     // the tombstone's version information
     // TODO use destroyEntry() here
-    focusedRegionMap.processVersionTag(regionEntry, event);
+    processVersionTag(regionEntry);
     try {
       regionEntry.makeTombstone(internalRegion, event.getVersionTag());
     } catch (RegionClearedException e) {
@@ -602,13 +597,7 @@ public class RegionMapDestroy {
   }
 
   private void updateTombstoneVersionTag() {
-    try {
-      // hasTombstone with versionTag - update the tombstone version info
-      focusedRegionMap.processVersionTag(tombstoneRegionEntry, event);
-    } catch (ConcurrentCacheModificationException e) {
-      handleConcurrentModificationException();
-      throw e;
-    }
+    processVersionTag(tombstoneRegionEntry);
     // This code used to call generateAndSetVersionTag if doPart3 was true.
     // But none of the code that calls this method ever sets doPart3 to true.
     assert !doPart3;
@@ -627,14 +616,17 @@ public class RegionMapDestroy {
     opCompleted = true;
   }
 
-  private void makeNewRegionEntryTombstone() {
+  private void processVersionTag(RegionEntry entry) {
     try {
-      focusedRegionMap.processVersionTag(newRegionEntry, event);
+      focusedRegionMap.processVersionTag(entry, event);
     } catch (ConcurrentCacheModificationException e) {
-      // since it is a brand new region entry, is a conflict possible?
       handleConcurrentModificationException();
       throw e;
     }
+  }
+
+  private void makeNewRegionEntryTombstone() {
+    processVersionTag(newRegionEntry);
     if (doPart3) {
       internalRegion.generateAndSetVersionTag(event, newRegionEntry);
     }
@@ -754,9 +746,6 @@ public class RegionMapDestroy {
       // and will be removed when gii completes
     } catch (RegionClearedException rce) {
       handleRegionClearedException(newRegionEntry);
-    } catch (ConcurrentCacheModificationException ccme) {
-      handleConcurrentModificationException(); // TODO coverage
-      throw ccme;
     } finally {
       if (!opCompleted && !hasTombstone()) {
         removeNewRegionEntryFromMap(); // TODO coverage
@@ -800,6 +789,7 @@ public class RegionMapDestroy {
   }
 
   private void destroyExisting(RegionEntry existingRegionEntry) {
+    boolean conflictWithClear = false;
     try {
       // if concurrency checks are enabled, destroy will set the version tag
       if (!destroyEntry(existingRegionEntry, false)) {
@@ -811,19 +801,14 @@ public class RegionMapDestroy {
         // So we need putIfAbsent to return an existing entry when getEntry returned null.
         internalRegion.basicDestroyBeforeRemoval(existingRegionEntry, event);
       }
-      internalRegion.basicDestroyPart2(existingRegionEntry, event, inTokenMode,
-          false /* conflict with clear */, duringRI, true);
-      focusedRegionMap.lruEntryDestroy(existingRegionEntry);
-      doPart3 = true;
     } catch (RegionClearedException rce) { // TODO coverage
-      // Ignore. The exception will ensure that we do not update
-      // the LRU List
-      internalRegion.basicDestroyPart2(existingRegionEntry, event, inTokenMode,
-          true/* conflict with clear */, duringRI, true);
-      doPart3 = true;
-    } catch (ConcurrentCacheModificationException ccme) {
-      handleConcurrentModificationException(); // TODO coverage
-      throw ccme;
+      conflictWithClear = true;
+    }
+    internalRegion.basicDestroyPart2(existingRegionEntry, event, inTokenMode, conflictWithClear,
+        duringRI, true);
+    doPart3 = true;
+    if (!conflictWithClear) {
+      focusedRegionMap.lruEntryDestroy(existingRegionEntry);
     }
   }
 
@@ -852,18 +837,29 @@ public class RegionMapDestroy {
   private boolean destroyEntry(RegionEntry entry, boolean forceDestroy)
       throws CacheWriterException, TimeoutException,
       EntryNotFoundException, RegionClearedException {
-    focusedRegionMap.processVersionTag(entry, event);
+    processVersionTag(entry);
     final int oldSize = internalRegion.calculateRegionEntryValueSize(entry);
     final boolean wasAlreadyRemoved = entry.isDestroyedOrRemoved();
-    boolean retVal = entry.destroy(event.getRegion(), event, inTokenMode, cacheWrite,
-        expectedOldValue, forceDestroy, removeRecoveredEntry);
-    if (retVal) {
+    if (destroyEntryHandleConflict(entry, forceDestroy)) {
       EntryLogger.logDestroy(event);
       if (!wasAlreadyRemoved) {
         internalRegion.updateSizeOnRemove(event.getKey(), oldSize);
       }
+      return true;
     }
-    return retVal;
+    return false; // coverage
+  }
+
+  private boolean destroyEntryHandleConflict(RegionEntry entry, boolean forceDestroy)
+      throws CacheWriterException, TimeoutException,
+      EntryNotFoundException, RegionClearedException {
+    try {
+      return entry.destroy(event.getRegion(), event, inTokenMode, cacheWrite,
+          expectedOldValue, forceDestroy, removeRecoveredEntry);
+    } catch (ConcurrentCacheModificationException e) {
+      handleConcurrentModificationException();
+      throw e;
+    }
   }
 
   private VersionTag createVersionTagFromStamp(VersionStamp stamp) {
