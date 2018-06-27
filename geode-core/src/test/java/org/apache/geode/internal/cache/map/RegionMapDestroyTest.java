@@ -398,6 +398,41 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWithConcurrentChangeFromNullToValidRetriesCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(evictableEntry, times(1)).removePhase2();
+    validateNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyExistingEntryWithVersionStampCallsDestroyWhichReturnsFalseCausingDestroyToNotHappenAndDoesNotCallRemovePhase2()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    event.setOriginRemote(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(evictableEntry, never()).removePhase2();
+    validateNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void destroyWithConcurrentChangeFromNullToValidRetriesAndCallsUpdateSizeOnRemove()
       throws RegionClearedException {
     givenConcurrencyChecks(true);

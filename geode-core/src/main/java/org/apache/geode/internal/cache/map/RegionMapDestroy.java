@@ -499,7 +499,7 @@ public class RegionMapDestroy {
       if (opCompleted) {
         handleCompletedDestroyExistingEntry();
       } else {
-        handleIncompleteDestroyExistingEntry(); // TODO coverage
+        handleIncompleteDestroyExistingEntry();
       }
     } catch (RegionClearedException rce) { // TODO coverage
       // Ignore. The exception will ensure that we do not update
@@ -540,18 +540,19 @@ public class RegionMapDestroy {
     focusedRegionMap.lruEntryDestroy(regionEntry);
   }
 
-  private void handleIncompleteDestroyExistingEntry() { // TODO coverage
+  private void handleIncompleteDestroyExistingEntry() {
     if (inTokenMode) {
-      return;
+      return; // TODO coverage
     }
     EntryLogger.logDestroy(event);
     internalRegion.recordEvent(event);
     if (regionEntry.getVersionStamp() == null) {
       regionEntry.removePhase2();
-    } else if (regionEntry.isTombstone() && event.isOriginRemote()) {
+    } else if (regionEntry.isTombstone() && event.isOriginRemote()) {// TODO coverage
       // the entry is already a tombstone, but we're destroying it
       // again, so we need to reschedule the tombstone's expiration
-      internalRegion.rescheduleTombstone(regionEntry, regionEntry.getVersionStamp().asVersionTag());
+      internalRegion.rescheduleTombstone(regionEntry, regionEntry.getVersionStamp().asVersionTag());// TODO
+                                                                                                    // coverage
     }
     focusedRegionMap.lruEntryDestroy(regionEntry);
     opCompleted = true;
@@ -847,7 +848,7 @@ public class RegionMapDestroy {
       }
       return true;
     }
-    return false; // coverage
+    return false;
   }
 
   private boolean destroyEntryHandleConflict(RegionEntry entry, boolean forceDestroy)
