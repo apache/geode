@@ -351,7 +351,13 @@ public class RegionMapDestroy {
   private void updateVersionTagOnTombstoneEntry() {
     if (!regionEntry.isTombstone()) {
       return;
-    } // TODO coverage
+    } // TODO coverage to get here need the following:
+    // 1. an existing entry that becomes a tombstone AFTER ifTombstoneSetRegionEntryToNull is called
+    // and BEFORE we sync on "regionEntry".
+    // 2. event.isOriginRemote to return false
+    // 3. removeRecoveredRegion to be false
+    // 4. event.getContext to return null
+    // 5. concurrencyChecks to be true
     if (event.getVersionTag() == null) {
       return;
     }
