@@ -184,7 +184,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(expectedStatus.getJavaVersion(), actualStatus.getJavaVersion());
   }
 
-  protected Integer readPid(final File workingDirectory) throws IOException {
+  protected Integer readPid(final File workingDirectory) {
     assertTrue(String.format("The working directory (%1$s) must exist!", workingDirectory),
         workingDirectory != null && workingDirectory.isDirectory());
 
@@ -228,16 +228,18 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   protected Status stopLocator(final String workingDirectory) {
+    final Integer pid = readPid(new File(workingDirectory));
     return waitForGemFireProcessToStop(
         new Builder().setCommand(Command.STOP).setWorkingDirectory(workingDirectory).build().stop(),
-        workingDirectory);
+        pid);
   }
 
   protected Status stopServer(final String workingDirectory) {
+    final Integer pid = readPid(new File(workingDirectory));
     return waitForGemFireProcessToStop(
         new ServerLauncher.Builder().setCommand(ServerLauncher.Command.STOP)
             .setWorkingDirectory(workingDirectory).build().stop(),
-        workingDirectory);
+        pid);
   }
 
   protected String toString(final Result result) {
@@ -254,32 +256,28 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   protected Status waitForGemFireProcessToStop(final ServiceState serviceState,
-      final String workingDirectory) {
+      final Integer pid) {
     if (!Status.STOPPED.equals(serviceState.getStatus())) {
-      try {
-        final Integer pid = readPid(new File(workingDirectory));
 
-        if (pid != null) {
-          WaitCriterion waitCriteria = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return !ProcessUtils.isProcessAlive(pid);
-            }
-
-            @Override
-            public String description() {
-              return String.format("Waiting for GemFire Process with PID (%1$d) to stop.", pid);
-            }
-          };
-
-          waitForCriterion(waitCriteria, TimeUnit.SECONDS.toMillis(15),
-              TimeUnit.SECONDS.toMillis(5), false);
-
-          if (!waitCriteria.done()) {
-            processIds.offer(pid);
+      if (pid != null) {
+        WaitCriterion waitCriteria = new WaitCriterion() {
+          @Override
+          public boolean done() {
+            return !ProcessUtils.isProcessAlive(pid);
           }
+
+          @Override
+          public String description() {
+            return String.format("Waiting for GemFire Process with PID (%1$d) to stop.", pid);
+          }
+        };
+
+        waitForCriterion(waitCriteria, TimeUnit.SECONDS.toMillis(15),
+            TimeUnit.SECONDS.toMillis(5), false);
+
+        if (!waitCriteria.done()) {
+          processIds.offer(pid);
         }
-      } catch (IOException ignore) {
       }
     }
 
