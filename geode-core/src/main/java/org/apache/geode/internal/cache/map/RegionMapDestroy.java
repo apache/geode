@@ -287,10 +287,10 @@ public class RegionMapDestroy {
     return expectedOldValue != null;
   }
 
-  private void handleConcurrentModificationException() { // TODO coverage
+  private void handleConcurrentModificationException() {
     VersionTag tag = event.getVersionTag();
     if (tag == null) {
-      return;
+      return; // coverage
     }
     if (!tag.isTimeStampUpdated()) {
       return;
@@ -476,12 +476,7 @@ public class RegionMapDestroy {
     if (event.getVersionTag() == null) {
       event.setVersionTag(createVersionTagFromStamp(tombstoneRegionEntry.getVersionStamp()));
     } else {
-      try {
-        updateTombstoneVersionTag();
-      } catch (ConcurrentCacheModificationException e) {
-        handleConcurrentModificationException(); // TODO coverage
-        throw e;
-      }
+      updateTombstoneVersionTag();
     }
   }
 
@@ -607,9 +602,14 @@ public class RegionMapDestroy {
   }
 
   private void updateTombstoneVersionTag() {
-    // hasTombstone with versionTag - update the tombstone version info
-    focusedRegionMap.processVersionTag(tombstoneRegionEntry, event);
-    // This code used call generateAndSetVersionTag if doPart3 was true.
+    try {
+      // hasTombstone with versionTag - update the tombstone version info
+      focusedRegionMap.processVersionTag(tombstoneRegionEntry, event);
+    } catch (ConcurrentCacheModificationException e) {
+      handleConcurrentModificationException();
+      throw e;
+    }
+    // This code used to call generateAndSetVersionTag if doPart3 was true.
     // But none of the code that calls this method ever sets doPart3 to true.
     assert !doPart3;
     // This is not conflict, we need to persist the tombstone again with new

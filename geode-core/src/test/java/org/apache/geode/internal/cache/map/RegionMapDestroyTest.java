@@ -54,7 +54,9 @@ import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -122,6 +124,25 @@ public class RegionMapDestroyTest {
   private void givenConcurrencyChecks(boolean enabled) {
     withConcurrencyChecks = enabled;
     when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
+  }
+
+  private void givenMockedTombstone() {
+    givenEvictionWithMockedEntryMap();
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.isTombstone()).thenReturn(true);
+    when(evictableEntry.isRemoved()).thenReturn(true);
+    // We are not really testing eviction in this test.
+    // But since the framework currently has a mocked evictableEntry
+    // we use some evict stuff from it but tell the RegionMapDestroy
+    // that it is not an eviction.
+    isEviction = false;
+  }
+
+  private void givenVersionStampThatDetectsConflict() {
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    doThrow(ConcurrentCacheModificationException.class).when(versionStamp)
+        .processVersionTag(eq(event));
   }
 
   private void givenEmptyRegionMap() {
@@ -510,6 +531,29 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
 
     assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneThatThrowsConcurrentCacheModificationExceptionNeverCallsNotify() {
+    givenConcurrencyChecks(true);
+    givenMockedTombstone();
+    givenVersionStampThatDetectsConflict();
+    givenEventWithVersionTag();
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
+    verify(arm._getOwner(), never()).notifyTimestampsToGateways(any());
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneThatThrowsConcurrentCacheModificationExceptionWithTimeStampUpdatedCallsNotify() {
+    givenConcurrencyChecks(true);
+    givenMockedTombstone();
+    givenVersionStampThatDetectsConflict();
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isTimeStampUpdated()).thenReturn(true);
+
+    assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
+    verify(arm._getOwner(), times(1)).notifyTimestampsToGateways(eq(event));
   }
 
   @Test
