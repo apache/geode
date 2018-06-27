@@ -402,7 +402,6 @@ public class RegionMapDestroyTest {
     validateInvokedDestroyMethodsOnRegion(false);
   }
 
-
   @Test
   public void destroyInTokenModeWithConcurrentChangeFromNullToRemovePhase2RetriesAndNeverCallsUpdateSizeOnRemove()
       throws RegionClearedException {
@@ -706,6 +705,25 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
   }
+
+  @Test
+  public void expireDestroyOfEntryInUseIsCancelled()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(evictableEntry.isInUseByTransaction()).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    event.setOperation(Operation.EXPIRE_DESTROY);
+
+    assertThat(doDestroy()).isFalse();
+
+    verify(evictableEntry, never()).destroy(any(), any(), anyBoolean(), anyBoolean(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    validateNoDestroyInvocationsOnRegion();
+  }
+
 
   @Test
   public void destroyOfExistingEntryCallsUpdateSizeOnRemove() {

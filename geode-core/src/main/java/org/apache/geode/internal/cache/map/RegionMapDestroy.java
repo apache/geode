@@ -269,7 +269,7 @@ public class RegionMapDestroy {
       return false;
     }
     if (!isEntryReadyForExpiration()) {
-      cancelDestroy(); // TODO coverage
+      cancelDestroy();
       return false;
     }
     if (!isEntryReadyForEviction(regionEntry)) {
@@ -405,7 +405,7 @@ public class RegionMapDestroy {
     }
     if (!regionEntry.isInUseByTransaction()) {
       return true;
-    } // TODO coverage
+    }
     return false;
   }
 
