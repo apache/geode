@@ -750,7 +750,7 @@ public class RegionMapDestroy {
     }
     try {
       // if concurrency checks are enabled, destroy will set the version tag
-      destroyEntry(newRegionEntry);
+      destroyEntryAndDoPart2(newRegionEntry);
       // Note no need for LRU work since the entry is destroyed
       // and will be removed when gii completes
     } catch (RegionClearedException rce) {
@@ -836,7 +836,7 @@ public class RegionMapDestroy {
     doPart3 = true;
   }
 
-  private void destroyEntry(RegionEntry entry) throws RegionClearedException {
+  private void destroyEntryAndDoPart2(RegionEntry entry) throws RegionClearedException {
     opCompleted = destroyEntry(entry, true);
     if (!opCompleted) {
       return; // TODO coverage
@@ -867,7 +867,7 @@ public class RegionMapDestroy {
     return retVal;
   }
 
-  private VersionTag createVersionTagFromStamp(VersionStamp stamp) { // TODO coverage
+  private VersionTag createVersionTagFromStamp(VersionStamp stamp) {
     VersionTag tag = VersionTag.create(stamp.getMemberID());
     tag.setEntryVersion(stamp.getEntryVersion());
     tag.setRegionVersion(stamp.getRegionVersion());
