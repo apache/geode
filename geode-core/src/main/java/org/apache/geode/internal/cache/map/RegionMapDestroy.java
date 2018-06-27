@@ -628,14 +628,10 @@ public class RegionMapDestroy {
   }
 
   private void makeNewRegionEntryTombstone() {
-    // this shouldn't fail since we just created the entry.
-    // it will either generate a tag or apply a server's version tag
-    try {
-      focusedRegionMap.processVersionTag(newRegionEntry, event);
-    } catch (ConcurrentCacheModificationException e) {
-      handleConcurrentModificationException(); // TODO coverage
-      throw e;
-    }
+    // We used to call processVersionTag here.
+    // But since this is a newRegionEntry it can not have
+    // a VersionStamp yet so processVersionTag does nothing.
+    assert newRegionEntry.getVersionStamp() == null;
     if (doPart3) {
       internalRegion.generateAndSetVersionTag(event, newRegionEntry);
     }
