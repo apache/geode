@@ -678,12 +678,33 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry();
     event.isConcurrencyConflict(true);
-    this.givenEventWithVersionTag();
+    givenEventWithVersionTag();
     when(event.getVersionTag().isGatewayTag()).thenReturn(true);
 
     assertThat(doDestroy()).isTrue();
 
     validateNoPart3();
+  }
+
+  @Test
+  public void expireDestroyOfExistingEntry() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    event.setOperation(Operation.EXPIRE_DESTROY);
+
+    assertThat(doDestroy()).isTrue();
+  }
+
+  @Test
+  public void expireDestroyOfExistingEntryWithOriginRemote() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    givenOriginIsRemote();
+    event.setOperation(Operation.EXPIRE_DESTROY);
+
+    assertThat(doDestroy()).isTrue();
   }
 
   @Test

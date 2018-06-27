@@ -399,13 +399,13 @@ public class RegionMapDestroy {
   private boolean isEntryReadyForExpiration() {
     if (!event.getOperation().isExpiration()) {
       return true;
-    } // TODO coverage
+    }
     if (event.isOriginRemote()) {
       return true;
     }
     if (!regionEntry.isInUseByTransaction()) {
       return true;
-    }
+    } // TODO coverage
     return false;
   }
 
