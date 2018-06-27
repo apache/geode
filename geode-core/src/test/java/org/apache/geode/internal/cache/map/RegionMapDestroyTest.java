@@ -494,35 +494,6 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndDoesDestroy()
-      throws RegionClearedException {
-    givenConcurrencyChecks(true);
-    givenEvictionWithMockedEntryMap();
-    givenExistingEvictableEntryWithMockedIsTombstone();
-
-    isEviction = false;
-
-    assertThat(doDestroy()).isTrue();
-
-    validateInvokedDestroyMethodOnEvictableEntry();
-    validateInvokedDestroyMethodsOnRegion(false);
-  }
-
-  @Test
-  public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndCallsUpdateSizeOnRemove()
-      throws RegionClearedException {
-    givenConcurrencyChecks(true);
-    givenEvictionWithMockedEntryMap();
-    givenExistingEvictableEntryWithMockedIsTombstone();
-
-    isEviction = false;
-
-    assertThat(doDestroy()).isTrue();
-
-    verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
-  }
-
-  @Test
   public void destroyOfExistingEntryInTokenModeAddsAToken() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();

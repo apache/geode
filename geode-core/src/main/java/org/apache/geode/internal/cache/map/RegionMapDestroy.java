@@ -105,13 +105,24 @@ public class RegionMapDestroy {
       regionEntry = focusedRegionMap.getEntry(event);
       invokeTestHookForConcurrentOperation();
       logDestroy();
-      ifTombstoneSetRegionEntryToNull();
       if (regionEntry == null) {
+        handleNullRegionEntry();
+      } else {
+        handleExistingRegionEntry();
+      }
+    } while (retry);
+  }
+
+  private void handleExistingRegionEntry() {
+    synchronized (regionEntry) {
+      if (tombstoneShouldBeTreatedAsNullEntry()) {
+        tombstoneRegionEntry = regionEntry;
+        regionEntry = null;
         handleNullRegionEntry();
       } else {
         handleExistingRegionEntryWithIndexInUpdateMode();
       }
-    } while (retry);
+    }
   }
 
   private void afterDestroyActions() {
@@ -153,21 +164,17 @@ public class RegionMapDestroy {
     }
   }
 
-  private void ifTombstoneSetRegionEntryToNull() {
+  private boolean tombstoneShouldBeTreatedAsNullEntry() {
     // the logic in this class is already very involved, and adding tombstone
     // permutations to (re != null) greatly complicates it. So, we check
     // for a tombstone here and, if found, pretend for a bit that the entry is null
     if (removeRecoveredEntry) {
-      return;
-    }
-    if (regionEntry == null) {
-      return;
+      return false;
     }
     if (!regionEntry.isTombstone()) {
-      return;
+      return false;
     }
-    tombstoneRegionEntry = regionEntry;
-    regionEntry = null;
+    return true;
   }
 
   private void logDestroy() {
@@ -232,13 +239,11 @@ public class RegionMapDestroy {
   }
 
   private void handleExistingRegionEntryWhileInUpdateMode() {
-    synchronized (regionEntry) {
-      internalRegion.checkReadiness();
-      if (isNotRemovedOrNeedTombstone()) {
-        destroyExistingEntry();
-      } else {
-        handleEntryAlreadyRemoved();
-      }
+    internalRegion.checkReadiness();
+    if (isNotRemovedOrNeedTombstone()) {
+      destroyExistingEntry();
+    } else {
+      handleEntryAlreadyRemoved();
     }
   }
 
@@ -446,24 +451,19 @@ public class RegionMapDestroy {
   }
 
   private void finishTombstone() {
-    synchronized (tombstoneRegionEntry) {
-      if (!tombstoneRegionEntry.isTombstone()) {
-        // tombstone was changed to no longer be one so retry
-        retry = true;
-        return;
-      }
-      if (isEviction) {
-        return;
-      }
-      // tombstoneRegionEntry came from doing a get on the map.
-      // If it was updated or removed then it would no longer be
-      // a tombstone (which we checked above).
-      // So at this point we know it is still in the map.
-      try {
-        handleEntryNotFound(tombstoneRegionEntry);
-      } finally {
-        handleTombstoneVersionTag();
-      }
+    if (isEviction) {
+      return;
+    }
+    // Since we sync before testing the region entry to see
+    // if it is a tombstone, it is impossible for it to change
+    // to something else.
+    assert tombstoneRegionEntry.isTombstone();
+    // tombstoneRegionEntry came from doing a get on the map.
+    // So at this point we know it is still in the map.
+    try {
+      handleEntryNotFound(tombstoneRegionEntry);
+    } finally {
+      handleTombstoneVersionTag();
     }
   }
 
