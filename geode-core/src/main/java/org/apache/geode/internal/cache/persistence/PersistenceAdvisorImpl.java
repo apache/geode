@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
@@ -103,7 +104,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     // To prevent races if we crash during initialization, mark equal members as online before we
     // initialize. We will still report these members as equal, but if we crash and recover they
     // will no longer be considered equal.
-    equalMembers = new HashSet<>(persistentMemberView.getOfflineAndEqualMembers());
+    equalMembers = new CopyOnWriteHashSet<>(persistentMemberView.getOfflineAndEqualMembers());
     for (PersistentMemberID id : equalMembers) {
       persistentMemberView.memberOnline(id);
     }
@@ -326,7 +327,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           runningDiskStores.add(mem.diskStoreId);
         }
         // Remove any equal members which are not actually running right now.
-        equalMembers.removeIf(id -> !runningDiskStores.contains(id.diskStoreId));
+        for (PersistentMemberID id : equalMembers) {
+          if (!runningDiskStores.contains(id.diskStoreId)) {
+            equalMembers.remove(id);
+          }
+        }
         membersToMarkOffline.removeAll(equalMembers);
       }
       for (PersistentMemberID id : membersToMarkOffline) {
