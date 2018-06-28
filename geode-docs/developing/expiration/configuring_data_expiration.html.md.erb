@@ -21,9 +21,8 @@ limitations under the License.
 
 Configure the type of expiration and the expiration action to use.
 
--   Set the region's `statistics-enabled` attribute to `true`.
+-   Expiration actions require setting the region attribute of `statistics-enabled` to `true`. This can be done in the region element of a `cache.xml` file, the `gfsh` command line, or through the API.
 
-    **Note:** Region level statistics are required to utilize expiration actions; cluster and server level statistics are not verbose enough to allow expiration actions in a region.
 
 -   Set the expiration attributes by expiration type, with the max times and expiration actions. See the region attributes listings for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, and `region-idle-time` in [&lt;region-attributes&gt;](../../reference/topics/cache_xml.html#region-attributes).
 
