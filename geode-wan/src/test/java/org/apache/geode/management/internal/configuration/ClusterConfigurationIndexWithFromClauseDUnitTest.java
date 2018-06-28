@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -72,9 +73,47 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     String serverName = vm1.getName();
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.LIST_MEMBER);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
-    lsRule.stopVM(1);
+    lsRule.stopMember(1);
     lsRule.startServerVM(1, locator.getPort());
     verifyIndexRecreated(INDEX_NAME);
+  }
+
+  @Test
+  @Parameters(method = "getRegionTypes")
+  public void indexCreatedWithDefinedIndexWithEntrySetInFromClauseMustPersistInClusterConfig(
+      RegionShortcut regionShortcut)
+      throws Exception {
+    IgnoredException.addIgnoredException("java.lang.IllegalStateException");
+    MemberVM vm1 = lsRule.startServerVM(1, locator.getPort());
+    gfshCommandRule.connectAndVerify(locator);
+    createRegionUsingGfsh(REGION_NAME, regionShortcut, null);
+    createIndexUsingGfsh("\"" + REGION_NAME + ".entrySet() z\"", "z.key", INDEX_NAME);
+    String serverName = vm1.getName();
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DEFINED_INDEXES);
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    lsRule.stopMember(1);
+    lsRule.startServerVM(1, locator.getPort());
+    verifyIndexRecreated(INDEX_NAME);
+
+  }
+
+  @Test
+  @Parameters(method = "getRegionTypes")
+  public void indexCreatedWithDefinedIndexWithAliasInFromClauseMustPersistInClusterConfig(
+      RegionShortcut regionShortcut)
+      throws Exception {
+    IgnoredException.addIgnoredException("java.lang.IllegalStateException");
+    MemberVM vm1 = lsRule.startServerVM(1, locator.getPort());
+    gfshCommandRule.connectAndVerify(locator);
+    createRegionUsingGfsh(REGION_NAME, regionShortcut, null);
+    createIndexUsingGfsh("\"" + REGION_NAME + " z\"", "z.ID", INDEX_NAME);
+    String serverName = vm1.getName();
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_DEFINED_INDEXES);
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    lsRule.stopMember(1);
+    lsRule.startServerVM(1, locator.getPort());
+    verifyIndexRecreated(INDEX_NAME);
+
   }
 
   private void verifyIndexRecreated(String indexName) throws Exception {
@@ -90,6 +129,15 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, expression);
     csb.addOption(CliStrings.CREATE_INDEX__REGION, regionName);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
+    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  private void defineIndexUsingGfsh(String regionName, String expression, String indexName)
+      throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEFINE_INDEX);
+    csb.addOption(CliStrings.DEFINE_INDEX__EXPRESSION, expression);
+    csb.addOption(CliStrings.DEFINE_INDEX__REGION, regionName);
+    csb.addOption(CliStrings.DEFINE_INDEX_NAME, indexName);
     gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
 

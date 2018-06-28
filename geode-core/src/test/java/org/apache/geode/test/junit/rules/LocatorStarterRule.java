@@ -72,14 +72,19 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     }
   }
 
+
+
   public void startLocator() {
     try {
       // this will start a jmx manager and admin rest service by default
-      locator = (InternalLocator) startLocatorAndDS(0, null, properties);
+      locator = (InternalLocator) startLocatorAndDS(memberPort, null, properties);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+    // memberPort is by default zero, which translates to "randomly select an available port,"
+    // which is why it is updated here after being specified above.
     memberPort = locator.getPort();
+
     DistributionConfig config = locator.getConfig();
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();

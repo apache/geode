@@ -16,6 +16,8 @@ package org.apache.geode.cache.client.internal;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -23,12 +25,12 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 public class ConnectionConnector {
+  private static final Logger logger = LogService.getLogger();
+
   private final ClientSideHandshakeImpl handshake;
   private final int socketBufferSize;
   private final int handshakeTimeout;
@@ -41,12 +43,11 @@ public class ConnectionConnector {
   private GatewaySender gatewaySender;
 
   public ConnectionConnector(EndpointManager endpointManager, InternalDistributedSystem sys,
-      int socketBufferSize, int handshakeTimeout, int readTimeout, ClientProxyMembershipID proxyId,
-      CancelCriterion cancelCriterion, boolean usedByGateway, GatewaySender sender,
-      boolean multiuserSecureMode) {
+      int socketBufferSize, int handshakeTimeout, int readTimeout, CancelCriterion cancelCriterion,
+      boolean usedByGateway, GatewaySender sender, SocketCreator socketCreator,
+      ClientSideHandshakeImpl handshake) {
 
-    this.handshake =
-        new ClientSideHandshakeImpl(proxyId, sys, sys.getSecurityService(), multiuserSecureMode);
+    this.handshake = handshake;
     this.handshake.setClientReadTimeout(readTimeout);
     this.endpointManager = endpointManager;
     this.ds = sys;
@@ -56,27 +57,47 @@ public class ConnectionConnector {
     this.usedByGateway = usedByGateway;
     this.gatewaySender = sender;
     this.cancelCriterion = cancelCriterion;
-    if (this.usedByGateway || (this.gatewaySender != null)) {
-      this.socketCreator =
-          SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY);
+    this.socketCreator = socketCreator;
+    if (this.socketCreator != null && (this.usedByGateway || (this.gatewaySender != null))) {
       if (sender != null && !sender.getGatewayTransportFilters().isEmpty()) {
         this.socketCreator.initializeTransportFilterClientSocketFactory(sender);
       }
-    } else {
-      // If configured use SSL properties for cache-server
-      this.socketCreator =
-          SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER);
     }
   }
 
   public ConnectionImpl connectClientToServer(ServerLocation location, boolean forQueue)
       throws IOException {
-    ConnectionImpl connection = new ConnectionImpl(this.ds, this.cancelCriterion);
-    ClientSideHandshake connHandShake = new ClientSideHandshakeImpl(handshake);
-    connection.connect(endpointManager, location, connHandShake, socketBufferSize, handshakeTimeout,
-        readTimeout, getCommMode(forQueue), this.gatewaySender, this.socketCreator);
-    connection.setHandshake(connHandShake);
-    return connection;
+    ConnectionImpl connection = null;
+    boolean initialized = false;
+    try {
+      connection = getConnection(this.ds, this.cancelCriterion);
+      ClientSideHandshake connHandShake = getClientSideHandshake(handshake);
+      connection.connect(endpointManager, location, connHandShake, socketBufferSize,
+          handshakeTimeout, readTimeout, getCommMode(forQueue), this.gatewaySender,
+          this.socketCreator);
+      connection.setHandshake(connHandShake);
+      initialized = true;
+      return connection;
+    } finally {
+      if (!initialized && connection != null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Destroy failed connection to {}", location);
+        }
+        destroyConnection(connection);
+      }
+    }
+  }
+
+  void destroyConnection(ConnectionImpl connection) {
+    connection.destroy();
+  }
+
+  ConnectionImpl getConnection(InternalDistributedSystem ds, CancelCriterion cancelCriterion) {
+    return new ConnectionImpl(ds, cancelCriterion);
+  }
+
+  ClientSideHandshake getClientSideHandshake(ClientSideHandshakeImpl handshake) {
+    return new ClientSideHandshakeImpl(handshake);
   }
 
   public CacheClientUpdater connectServerToClient(Endpoint endpoint, QueueManager qManager,

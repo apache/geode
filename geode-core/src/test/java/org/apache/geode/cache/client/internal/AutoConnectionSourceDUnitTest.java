@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -526,21 +527,33 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   private void waitForJoin(VM vm) {
     vm.invoke("wait for join", () -> {
       MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
-      Awaitility.await().atMost(10, SECONDS).until(() -> listener.getJoins() > 0);
+      try {
+        Awaitility.await().atMost(10, SECONDS).until(() -> listener.getJoins() > 0);
+      } catch (ConditionTimeoutException e) {
+        // do nothing here - caller will perform validations
+      }
     });
   }
 
   private void waitForCrash(VM vm) {
     vm.invoke("wait for crash", () -> {
       MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
-      Awaitility.await().atMost(10, SECONDS).until(() -> listener.getCrashes() > 0);
+      try {
+        Awaitility.await().atMost(10, SECONDS).until(() -> listener.getCrashes() > 0);
+      } catch (ConditionTimeoutException e) {
+        // do nothing here - caller will perform validations
+      }
     });
   }
 
   private void waitForDeparture(VM vm) {
     vm.invoke("wait for departure", () -> {
       MyListener listener = (MyListener) remoteObjects.get(BRIDGE_LISTENER);
-      Awaitility.await().atMost(10, SECONDS).until(() -> listener.getDepartures() > 0);
+      try {
+        Awaitility.await().atMost(10, SECONDS).until(() -> listener.getDepartures() > 0);
+      } catch (ConditionTimeoutException e) {
+        // do nothing here - caller will perform validations
+      }
     });
   }
 

@@ -14,11 +14,18 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.io.File;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.Member;
@@ -78,9 +85,12 @@ public class MemberVM extends VMProvider implements Member {
     return ((Server) member).getEmbeddedLocatorPort();
   }
 
+  /**
+   * this gracefully shutdown the member inside this vm
+   */
   @Override
-  public void stopVM(boolean cleanWorkingDir) {
-    super.stopVM(cleanWorkingDir);
+  public void stopMember(boolean cleanWorkingDir) {
+    super.stopMember(cleanWorkingDir);
 
     if (!cleanWorkingDir) {
       return;
@@ -89,6 +99,34 @@ public class MemberVM extends VMProvider implements Member {
     // if using the dunit/vm dir as the preset working dir, need to cleanup dir
     // so that regions/indexes won't get persisted across tests
     Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
+  }
+
+  /**
+   * this disconnects the distributed system of the member. The member will automatically try to
+   * reconnect after 5 seconds.
+   */
+  public void forceDisconnectMember() {
+    vm.invoke(() -> ClusterStartupRule.memberStarter.forceDisconnectMember());
+  }
+
+  public void waitTilLocatorFullyReconnected() {
+    vm.invoke(() -> Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> {
+      InternalLocator intLocator = InternalLocator.getLocator();
+      InternalCache cache = ClusterStartupRule.getCache();
+      return intLocator != null && cache != null && intLocator.getDistributedSystem().isConnected()
+          && intLocator.isReconnected();
+    }));
+  }
+
+  public void waitTilServerFullyReconnected() {
+    vm.invoke(() -> Awaitility.waitAtMost(30, SECONDS).until(() -> {
+      InternalDistributedSystem internalDistributedSystem =
+          InternalDistributedSystem.getConnectedInstance();
+      return internalDistributedSystem != null
+          && internalDistributedSystem.getCache() != null
+          && !internalDistributedSystem.getCache().getCacheServers().isEmpty();
+    }));
+
   }
 
   /**
@@ -116,4 +154,5 @@ public class MemberVM extends VMProvider implements Member {
     vm.invoke(() -> ClusterStartupRule.memberStarter
         .waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(expectedGatewayObjectCount));
   }
+
 }

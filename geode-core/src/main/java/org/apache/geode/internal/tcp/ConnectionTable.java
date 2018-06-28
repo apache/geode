@@ -86,7 +86,7 @@ public class ConnectionTable {
    * synchronized because of static cleanup.
    */
   // ThreadLocal<Map>
-  private final ThreadLocal threadOrderedConnMap;
+  protected final ThreadLocal<Map> threadOrderedConnMap;
 
   /**
    * List of thread-owned ordered connection maps, for cleanup

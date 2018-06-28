@@ -141,23 +141,22 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
 
   /**
-   * This list contains classes that Geode's classes subclass, such as antlr AST classes which
-   * are used by our Object Query Language. It also contains certain
-   * classes that are DataSerializable but end up being serialized as part of other serializable
-   * objects. VersionedObjectList, for instance, is serialized as part of a
-   * partial putAll exception object.
+   * This list contains classes that Geode's classes subclass, such as antlr AST classes which are
+   * used by our Object Query Language. It also contains certain classes that are DataSerializable
+   * but end up being serialized as part of other serializable objects. VersionedObjectList, for
+   * instance, is serialized as part of a partial putAll exception object.
    * <p>
-   * Do not java-serialize objects that Geode does not have complete control over. This
-   * leaves us open to security attacks such as Gadget Chains and compromises the ability
-   * to do a rolling upgrade from one version of Geode to the next.
+   * Do not java-serialize objects that Geode does not have complete control over. This leaves us
+   * open to security attacks such as Gadget Chains and compromises the ability to do a rolling
+   * upgrade from one version of Geode to the next.
    * <p>
    * In general you shouldn't use java serialization and you should implement
-   * DataSerializableFixedID
-   * for internal Geode objects. This gives you better control over backward-compatibility.
+   * DataSerializableFixedID for internal Geode objects. This gives you better control over
+   * backward-compatibility.
    * <p>
-   * Do not add to this list unless absolutely necessary. Instead put your classes either
-   * in the sanctionedSerializables file for your module or in its excludedClasses file.
-   * Run AnalyzeSerializables to generate the content for the file.
+   * Do not add to this list unless absolutely necessary. Instead put your classes either in the
+   * sanctionedSerializables file for your module or in its excludedClasses file. Run
+   * AnalyzeSerializables to generate the content for the file.
    * <p>
    */
   private static final String SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN =
@@ -798,8 +797,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       new ConcurrentHashMap<>();
 
   /**
-   * {@code RegistrationListener}s that receive callbacks when {@code DataSerializer}s and
-   * {@code Instantiator}s are registered. Note: copy-on-write access used for this set
+   * {@code RegistrationListener}s that receive callbacks when {@code DataSerializer}s and {@code
+   * Instantiator}s are registered. Note: copy-on-write access used for this set
    */
   private static volatile Set listeners = new HashSet();
 
@@ -825,7 +824,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * Instantiates an instance of {@code DataSerializer}
    *
    * @throws IllegalArgumentException If the class can't be instantiated
-   *
    * @see DataSerializer#register(Class)
    */
   static DataSerializer newInstance(Class c) {
@@ -843,7 +841,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       StringId s = LocalizedStrings.DataSerializer_CLASS_0_DOES_NOT_HAVE_A_ZEROARGUMENT_CONSTRUCTOR;
       Object[] args = new Object[] {c.getName()};
       if (c.getDeclaringClass() != null) {
-        s = LocalizedStrings.DataSerializer_CLASS_0_DOES_NOT_HAVE_A_ZEROARGUMENT_CONSTRUCTOR_IT_IS_AN_INNER_CLASS_OF_1_SHOULD_IT_BE_A_STATIC_INNER_CLASS;
+        s =
+            LocalizedStrings.DataSerializer_CLASS_0_DOES_NOT_HAVE_A_ZEROARGUMENT_CONSTRUCTOR_IT_IS_AN_INNER_CLASS_OF_1_SHOULD_IT_BE_A_STATIC_INNER_CLASS;
         args = new Object[] {c.getName(), c.getDeclaringClass()};
       }
       throw new IllegalArgumentException(s.toLocalizedString(args));
@@ -889,7 +888,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
    *
    * @param distribute Should the registered {@code DataSerializer} be distributed to other members
    *        of the distributed system?
-   *
    * @see DataSerializer#register(Class)
    */
   public static DataSerializer register(Class c, boolean distribute) {
@@ -1018,8 +1016,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Marks a {@code DataSerializer} className for registration with the data serialization
-   * framework if and when it is needed. Does not necessarily load the classes into this VM.
+   * Marks a {@code DataSerializer} className for registration with the data serialization framework
+   * if and when it is needed. Does not necessarily load the classes into this VM.
    *
    * @param className Name of the DataSerializer class.
    * @param distribute If true, distribute this data serializer.
@@ -1074,10 +1072,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * During client/server handshakes the server may send a collection of DataSerializers and
-   * the classes they support. The DataSerializers are registered as "holders" to avoid loading the
-   * actual classes until they're needed. This method registers the names of classes supported
-   * by the DataSerializers
+   * During client/server handshakes the server may send a collection of DataSerializers and the
+   * classes they support. The DataSerializers are registered as "holders" to avoid loading the
+   * actual classes until they're needed. This method registers the names of classes supported by
+   * the DataSerializers
    *
    * @param map The classes returned by DataSerializer.supportedClasses()
    */
@@ -1100,10 +1098,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * A SerializerAttributesHolder holds information required to load a DataSerializer
-   * and exists to allow client/server connections to be created more quickly than
-   * they would if the DataSerializer information downloaded from the server were
-   * used to immediately load the corresponding classes.
+   * A SerializerAttributesHolder holds information required to load a DataSerializer and exists to
+   * allow client/server connections to be created more quickly than they would if the
+   * DataSerializer information downloaded from the server were used to immediately load the
+   * corresponding classes.
    */
   public static class SerializerAttributesHolder {
     private String className = "";
@@ -1121,7 +1119,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
 
     /**
-     *
      * @return String the classname of the data serializer this instance represents.
      */
     public String getClassName() {
@@ -1230,10 +1227,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Returns the {@code DataSerializer} for the given class. If no class has been registered,
-   * {@code null} is returned. Remember that it is okay to return {@code null} in this case. This
-   * method is invoked when writing an object. If a serializer isn't available, then its the user's
-   * fault.
+   * Returns the {@code DataSerializer} for the given class. If no class has been registered, {@code
+   * null} is returned. Remember that it is okay to return {@code null} in this case. This method is
+   * invoked when writing an object. If a serializer isn't available, then its the user's fault.
    */
   private static DataSerializer getSerializer(Class c) {
     DataSerializer ds = classesToSerializers.get(c.getName());
@@ -1813,14 +1809,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
   /**
    * Writes a {@code Set} to a {@code DataOutput}.
    * <P>
-   * This method is internal because its semantics (that is, its ability to write any kind of
-   * {@code Set}) are different from the {@code write}XXX methods of the external
-   * {@code DataSerializer}.
+   * This method is internal because its semantics (that is, its ability to write any kind of {@code
+   * Set}) are different from the {@code write}XXX methods of the external {@code DataSerializer}.
    *
    * @throws IOException A problem occurs while writing to {@code out}
-   *
    * @see #readSet
-   *
    * @since GemFire 4.0
    */
   public static void writeSet(Collection<?> set, DataOutput out) throws IOException {
@@ -1849,9 +1842,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * @throws IOException A problem occurs while writing to {@code out}
    * @throws ClassNotFoundException The class of one of the {@code HashSet}'s elements cannot be
    *         found.
-   *
    * @see #writeSet
-   *
    * @since GemFire 4.0
    */
   public static Set readSet(DataInput in) throws IOException, ClassNotFoundException {
@@ -1864,7 +1855,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
    *
    * @throws IOException A problem occurs while reading from {@code in}
    * @throws ClassNotFoundException The class of one of the {@code Set}'s elements cannot be found.
-   *
    * @see #writeSet
    */
   public static <E> boolean readCollection(DataInput in, Collection<E> c)
@@ -1912,7 +1902,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
-  /** read a set of Long objects */
+  /**
+   * read a set of Long objects
+   */
   public static Set<Long> readSetOfLongs(DataInput in) throws IOException {
     int size = in.readInt();
     if (size < 0) {
@@ -1953,7 +1945,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
-  /** read a set of Long objects */
+  /**
+   * read a set of Long objects
+   */
   public static List<Long> readListOfLongs(DataInput in) throws IOException {
     int size = in.readInt();
     if (size < 0) {
@@ -1968,7 +1962,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
       return result;
     }
   }
-
 
 
   /**
@@ -2175,7 +2168,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * Writes given number of characters from array of {@code char}s to a {@code DataOutput}.
    *
    * @throws IOException A problem occurs while writing to {@code out}
-   *
    * @see DataSerializer#readCharArray
    * @since GemFire 6.6
    */
@@ -2484,7 +2476,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      throw new ToDataException("toData failed on DataSerializable " + ds.getClass(), t);
+      throw new ToDataException(
+          "toData failed on DataSerializable " + null == ds ? "null" : ds.getClass().toString(), t);
     }
   }
 
@@ -2702,7 +2695,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Serializes a list of Integers. The argument may be null. Deserialize with readListOfIntegers().
+   * Serializes a list of Integers. The argument may be null. Deserialize with
+   * readListOfIntegers().
    *
    * TODO: writeListOfIntegers is unused
    */
@@ -2762,7 +2756,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * being read. The return value may be {@code null}.
    *
    * @throws IOException A problem occurs while reading from {@code in}
-   *
    * @since GemFire 5.7
    */
   public static String readString(DataInput in, byte header) throws IOException {
@@ -3341,10 +3334,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * wait an amount of time for the registration message to arrive.
    */
   abstract static class Marker {
-    /** The DataSerializer that is filled in upon registration */
+    /**
+     * The DataSerializer that is filled in upon registration
+     */
     protected DataSerializer serializer = null;
 
-    /** set to true once setSerializer is called. */
+    /**
+     * set to true once setSerializer is called.
+     */
     boolean hasBeenSet = false;
 
     abstract DataSerializer getSerializer();
@@ -3361,6 +3358,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
     }
   }
+
   /**
    * A marker object for {@code DataSerializer}s that have not been registered. Using this marker
    * object allows us to asynchronously send {@code DataSerializer} registration updates. If the
@@ -3426,6 +3424,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
      * yet, then this method will wait until the serializer is registered. If this method has to
      * wait for too long, then {@code null} is returned.
      */
+
     /**
      * Returns the serializer associated with this marker. Waits forever (unless interrupted) for it
      * to be initialized. Returns null if this Marker failed to initialize.
@@ -3446,9 +3445,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
     }
   }
+
   /**
-   * A distribution message that alerts other members of the distributed cache of a new
-   * {@code DataSerializer} being registered.
+   * A distribution message that alerts other members of the distributed cache of a new {@code
+   * DataSerializer} being registered.
    */
   public static class RegistrationMessage extends SerialDistributionMessage {
     /**
@@ -3461,10 +3461,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
      */
     protected EventID eventId;
 
-    /** The name of the {@code DataSerializer} class */
+    /**
+     * The name of the {@code DataSerializer} class
+     */
     private String className;
 
-    /** The versions in which this message was modified */
+    /**
+     * The versions in which this message was modified
+     */
     private static final Version[] dsfidVersions = new Version[] {};
 
     /**
@@ -3473,8 +3477,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
     public RegistrationMessage() {}
 
     /**
-     * Creates a new {@code RegistrationMessage} that broadcasts that the given
-     * {@code DataSerializer} was registered.
+     * Creates a new {@code RegistrationMessage} that broadcasts that the given {@code
+     * DataSerializer} was registered.
      */
     public RegistrationMessage(DataSerializer s) {
       this.className = s.getClass().getName();
@@ -3588,8 +3592,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * A listener whose listener methods are invoked when {@link DataSerializer}s and
-   * {@link Instantiator}s are registered. This is part of the fix for bug 31422.
+   * A listener whose listener methods are invoked when {@link DataSerializer}s and {@link
+   * Instantiator}s are registered. This is part of the fix for bug 31422.
    *
    * @see InternalDataSerializer#addRegistrationListener
    * @see InternalDataSerializer#removeRegistrationListener
@@ -3616,8 +3620,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static class DSObjectInputStream extends ObjectInputStream {
 
     /**
-     * Creates a new {@code DSObjectInputStream} that delegates its behavior to a given
-     * {@code InputStream}.
+     * Creates a new {@code DSObjectInputStream} that delegates its behavior to a given {@code
+     * InputStream}.
      */
     DSObjectInputStream(InputStream stream) throws IOException {
       super(stream);
@@ -3708,7 +3712,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   /**
    * Just like a WellKnownDS but its type is compatible with PDX.
-   *
    */
   protected abstract static class WellKnownPdxDS extends WellKnownDS {
     // subclasses need to implement toData

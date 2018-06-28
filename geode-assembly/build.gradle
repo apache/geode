@@ -53,7 +53,8 @@ configurations {
 }
 
 dependencies {
-  provided project(':geode-core')
+  compileOnly project(':geode-core')
+  testCompile project(':geode-core')
 
   archives project(':geode-common')
   archives project(':geode-json')
@@ -113,8 +114,6 @@ dependencies {
 }
 
 sourceSets {
-  // need to remove this since we use the dependencies jar out of the install dir
-  //test.runtimeClasspath -= configurations.provided
 }
 
 test {

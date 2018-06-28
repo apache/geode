@@ -121,6 +121,7 @@ subprojects {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
+    outputs.upToDateWhen{false}
   }
 
   task distributedTest(type:Test) {
@@ -129,6 +130,7 @@ subprojects {
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     forkEvery 1
+    outputs.upToDateWhen{false}
   }
 
   task flakyTest(type:Test) {
@@ -142,6 +144,7 @@ subprojects {
     }
 
     reports.junitXml.destination = file "$buildDir/test-reports-flaky"
+    outputs.upToDateWhen{false}
   }
 
   task securityTest(type:Test) {
@@ -345,6 +348,7 @@ subprojects {
       includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
     }
     forkEvery 1
+    outputs.upToDateWhen{false}
   }
 
   // apply common test configuration
@@ -354,12 +358,8 @@ subprojects {
       test.configure {
         onlyIf { ! Boolean.getBoolean('skip.tests') }
 
-        //force tests to be run every time by
-        //saying the results are never up to date
-        outputs.upToDateWhen { false }
-
         def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
-        workingDir resultsDir.absolutePath
+        test.workingDir = resultsDir
 
         reports.html.destination = file "$buildDir/reports/$name"
         testLogging {

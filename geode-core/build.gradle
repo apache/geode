@@ -38,7 +38,8 @@ dependencies {
   antlr 'antlr:antlr:' + project.'antlr.version'
 
   // External
-  provided files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
+  testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
   compile 'org.jgroups:jgroups:' + project.'jgroups.version'
   compile 'antlr:antlr:' + project.'antlr.version'
@@ -97,7 +98,12 @@ dependencies {
   compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
     ext.optional = true
   }
-  provided ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  compileOnly ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+    ext.optional = true
+  }
+  testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true

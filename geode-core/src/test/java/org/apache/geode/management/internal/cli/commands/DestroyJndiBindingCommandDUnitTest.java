@@ -97,7 +97,7 @@ public class DestroyJndiBindingCommandDUnitTest {
         () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0));
 
     // bounce server1 and assert that there is still no datasource received from cluster config
-    server1.stopVM(false);
+    server1.stopMember(false);
     server1 = cluster.startServerVM(1, locator.getPort());
 
     // verify no datasource from cluster config

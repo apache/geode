@@ -61,6 +61,8 @@ dependencies {
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
+  compile ('org.springframework:spring-context:' + project.'springframework.version');
+  compile ('org.springframework:spring-web:' + project.'springframework.version');
   runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
@@ -72,8 +74,10 @@ dependencies {
 
   providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
 
-  provided 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  provided 'com.google.guava:guava:' + project.'guava.version'
+  compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
+  testCompile 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
+  compileOnly 'com.google.guava:guava:' + project.'guava.version'
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
 
   testCompile project(':geode-junit')
   testCompile project(':geode-core')

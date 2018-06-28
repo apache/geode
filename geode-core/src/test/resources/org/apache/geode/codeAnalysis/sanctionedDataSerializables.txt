@@ -1311,8 +1311,8 @@ fromData,20
 toData,9
 
 org/apache/geode/internal/cache/TXCommitMessage,2
-fromData,211
-toData,292
+fromData,236
+toData,316
 
 org/apache/geode/internal/cache/TXCommitMessage$CommitProcessForLockIdMessage,2
 fromData,26
@@ -1331,8 +1331,8 @@ fromData,16
 toData,16
 
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommit,2
-fromData,173
-toData,77
+fromData,164
+toData,82
 
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommit$FarSideEntryOp,2
 fromData,171

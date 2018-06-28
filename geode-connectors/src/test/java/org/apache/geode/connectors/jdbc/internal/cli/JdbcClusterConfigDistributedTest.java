@@ -64,7 +64,7 @@ public class JdbcClusterConfigDistributedTest {
       validateRegionMapping(service.getMappingForRegion("regionName"));
     });
 
-    server.stopVM(false);
+    server.stopMember(false);
 
     server = cluster.startServerVM(1, locator.getPort());
     server.invoke(() -> {

@@ -21,12 +21,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,7 +38,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -123,9 +120,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataWrite");
     int locatorPort = locator.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
-        .addPoolLocator("localhost", locatorPort);
-    ClientVM clientVM = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     // Client adds data
     clientVM.invoke(() -> {
@@ -157,9 +153,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
     int locatorPort = locator.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
-        .addPoolLocator("localhost", locatorPort);
-    ClientVM client = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM client = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     // Client cannot get through any avenue
     client.invoke(() -> {
@@ -184,9 +179,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataRead");
     int locatorPort = locator.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
-        .addPoolLocator("localhost", locatorPort);
-    ClientVM client = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM client = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     // Add some values for the client to get
     server.invoke(() -> {
@@ -220,10 +214,9 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
 
     int locatorPort = locator.getPort();
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
-        .addPoolLocator("localhost", locatorPort);
 
-    ClientVM clientVM = csRule.startClientVM(2, props, cacheSetup, clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort), clientVersion);
 
     clientVM.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();

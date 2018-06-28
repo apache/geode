@@ -96,6 +96,7 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -952,6 +953,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   }
 
   @Test
+  @Category(FlakyTest.class)
   public void recoversFromCloseDuringRegionOperation() throws Exception {
     vm0.invoke(() -> createPartitionedRegion(1, -1, 1, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 1, true));

@@ -80,7 +80,7 @@ public class ImportOldClusterConfigDUnitTest {
     server.invoke(ImportOldClusterConfigDUnitTest::regionOneExists);
     server.invoke(ImportOldClusterConfigDUnitTest::regionTwoExists);
 
-    lsRule.stopVM(1);
+    lsRule.stopMember(1);
 
     server = lsRule.startServerVM(1, locator.getPort());
     server.invoke(ImportOldClusterConfigDUnitTest::regionOneExists);

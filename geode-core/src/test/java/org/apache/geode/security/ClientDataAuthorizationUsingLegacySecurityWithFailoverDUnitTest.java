@@ -23,12 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -44,7 +42,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -192,7 +189,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopVM(true);
+    server_to_fail.stopMember(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
@@ -256,7 +253,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopVM(true);
+    server_to_fail.stopMember(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
@@ -302,7 +299,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopVM(true);
+    server_to_fail.stopMember(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
@@ -330,10 +327,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     int server1Port = this.server1.getPort();
     int server2Port = this.server2.getPort();
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    ClientVM client1 = csRule.startClientVM(3, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2);
-    ClientVM client1 = csRule.startClientVM(3, props, cacheSetup, clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
 
     // Initialize cache
     client1.invoke(() -> {
@@ -361,7 +357,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopVM(true);
+    server_to_fail.stopMember(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
@@ -389,10 +385,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
+    ClientVM client = csRule.startClientVM(3, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2);
-    ClientVM client = csRule.startClientVM(3, props, cacheSetup, clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
 
     // Initialize cache
     client.invoke(() -> {

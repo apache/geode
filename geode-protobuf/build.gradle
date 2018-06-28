@@ -16,7 +16,8 @@
  */
 
 dependencies {
-    provided project(':geode-core')
+    compileOnly project(':geode-core')
+    testCompile project(':geode-core')
     compile project(':geode-protobuf-messages')
 
     testCompile project(':geode-junit')

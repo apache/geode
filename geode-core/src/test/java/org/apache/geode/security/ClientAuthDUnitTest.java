@@ -15,20 +15,20 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.Serializable;
-
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
@@ -43,41 +43,45 @@ public class ClientAuthDUnitTest {
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
-
-  @After
-  public void tearDown() throws Exception {
-    disconnectAllFromDS();
-  }
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
+      .withRegion(RegionShortcut.REPLICATE, "region");
 
   @Test
   public void authWithCorrectPasswordShouldPass() throws Exception {
-    lsRule.startClientVM(0, "test", "test", true, server.getPort(), new ClientCacheHook(lsRule));
+    ClientVM clientVM = lsRule.startClientVM(0, "data", "data", true, server.getPort());
+    clientVM.invoke(() -> {
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      ClientRegionFactory clientRegionFactory =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      Region region = clientRegionFactory.create("region");
+      region.put("A", "A");
+    });
   }
 
   @Test
-  public void authWithIncorrectPasswordShouldFail() throws Exception {
+  public void authWithIncorrectPasswordWithSubscriptionEnabled() throws Exception {
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
-
-    assertThatThrownBy(() -> lsRule.startClientVM(0, "test", "invalidPassword", true,
-        server.getPort(), new ClientCacheHook(lsRule)))
-            .isInstanceOf(AuthenticationFailedException.class);
-  }
-
-  static class ClientCacheHook implements Runnable, Serializable {
-    final ClusterStartupRule lsRule;
-
-    ClientCacheHook(ClusterStartupRule lsRule) {
-      this.lsRule = lsRule;
-    }
-
-    public void run() {
-      // Perform an operation that causes the cache to lazy-initialize a pool with the invalid
-      // authentication so as to induce the exception.
-      ClientCache clientCache = lsRule.getClientCache();
+    ClientVM clientVM = lsRule.startClientVM(0, "test", "invalidPassword", true, server.getPort());
+    clientVM.invoke(() -> {
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
       ClientRegionFactory clientRegionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-      clientRegionFactory.create("region");
-    }
+      assertThatThrownBy(() -> clientRegionFactory.create("region"))
+          .isInstanceOf(AuthenticationFailedException.class);
+    });
+  }
+
+  @Test
+  public void authWithIncorrectPasswordWithSubscriptionNotEnabled() throws Exception {
+    IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
+    ClientVM clientVM = lsRule.startClientVM(0, "test", "invalidPassword", false, server.getPort());
+    clientVM.invoke(() -> {
+      ClientCache clientCache = ClusterStartupRule.getClientCache();
+      ClientRegionFactory clientRegionFactory =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      Region region = clientRegionFactory.create("region");
+      assertThatThrownBy(() -> region.put("A", "A")).isInstanceOf(ServerOperationException.class)
+          .hasCauseInstanceOf(AuthenticationFailedException.class);
+    });
   }
 }

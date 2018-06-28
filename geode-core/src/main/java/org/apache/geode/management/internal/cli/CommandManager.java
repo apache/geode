@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -150,20 +151,19 @@ public class CommandManager {
   private void loadPluginCommands() {
     ServiceLoader<CommandMarker> loader =
         ServiceLoader.load(CommandMarker.class, ClassPathLoader.getLatest().asClassLoader());
+    Iterator<CommandMarker> iterator = loader.iterator();
     try {
-      loader.forEach(commandMarker -> {
+      while (iterator.hasNext()) {
         try {
-          add(commandMarker);
-        } catch (Exception e) {
-          logWrapper.warning("Could not load Command from: " + commandMarker.getClass() + " due to "
-              + e.getLocalizedMessage(), e); // continue
+          add(iterator.next());
+        } catch (Throwable t) {
+          logWrapper.warning("Could not load plugin command: " + t.getMessage());
         }
-      });
+      }
     } catch (Throwable th) {
       logWrapper.severe("Could not load plugin commands in the latest classLoader.", th);
     }
   }
-
 
   private void loadCommands() {
     loadUserCommands();
