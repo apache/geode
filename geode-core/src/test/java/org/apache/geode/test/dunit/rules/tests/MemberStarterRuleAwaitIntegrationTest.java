@@ -19,10 +19,13 @@ import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import com.sun.tools.javac.util.List;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.awaitility.core.ConditionTimeoutException;
 import org.awaitility.core.Predicate;
 import org.junit.Test;
@@ -62,11 +65,11 @@ public class MemberStarterRuleAwaitIntegrationTest {
 
   @Test
   public void testWithDefaultPresentation() throws Exception {
-    Callable<Boolean> alwaysFalseProvider = () -> false;
-    Predicate<Boolean> booleanIdentityPredicate = b -> b.equals(true);
+    Supplier<Boolean> alwaysFalseProvider = () -> false;
     String description = "Awaiting until boolean becomes true.";
-    assertThatThrownBy(() -> ruleToUse.waitUntilSatisfied(alwaysFalseProvider,
-        booleanIdentityPredicate, description, 1, TimeUnit.SECONDS))
+
+    assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(alwaysFalseProvider,
+        UnaryOperator.identity(), true, description, 1, TimeUnit.SECONDS)))
             .isInstanceOf(ConditionTimeoutException.class)
             .hasMessageContaining("false")
             .hasMessageContaining(description);
@@ -74,11 +77,11 @@ public class MemberStarterRuleAwaitIntegrationTest {
 
   @Test
   public void waitCanAcceptNullsIfPredicateAcceptsNulls() throws Exception {
-    Callable<Boolean> alwaysNullProvider = () -> null;
+    Supplier<Boolean> alwaysNullProvider = () -> null;
     Predicate<Boolean> booleanIdentityPredicate = b -> b != null && b.equals(true);
     String description = "Awaiting until boolean becomes not null and also true.";
-    assertThatThrownBy(() -> ruleToUse.waitUntilSatisfied(alwaysNullProvider,
-        booleanIdentityPredicate, description, 1, TimeUnit.SECONDS))
+    assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(alwaysNullProvider,
+        UnaryOperator.identity(), true, description, 1, TimeUnit.SECONDS)))
             .isInstanceOf(ConditionTimeoutException.class)
             .hasMessageContaining("null")
             .hasMessageContaining(description);
@@ -86,13 +89,24 @@ public class MemberStarterRuleAwaitIntegrationTest {
 
   @Test
   public void waitCanPrintMoreComplexResults() throws Exception {
-    Callable<List<String>> abcListProvider = () -> List.of("A", "B", "C");
-    Predicate<List<String>> isListEmptyPredicate = l -> l.isEmpty();
+    Supplier<List<String>> abcListProvider = () -> List.of("A", "B", "C");
+    Function<List<String>, Integer> examiner = list -> list.size();
     String description = "Awaiting until list becomes empty.";
-    assertThatThrownBy(() -> ruleToUse.waitUntilSatisfied(abcListProvider, isListEmptyPredicate,
-        description, 1, TimeUnit.SECONDS))
+    assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(abcListProvider,
+        examiner, 0, description, 1, TimeUnit.SECONDS)))
             .isInstanceOf(ConditionTimeoutException.class)
             .hasMessageContaining("A,B,C")
             .hasMessageContaining(description);
+  }
+
+  private ThrowingCallable printExceptionWrapper(ThrowingCallable throwingCallable) {
+    return () -> {
+      try {
+        throwingCallable.call();
+      } catch (Exception e) {
+        System.out.println(e);
+        throw (e);
+      }
+    };
   }
 }
