@@ -414,6 +414,23 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWithInTokenModeCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), anyBoolean(), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    inTokenMode = true;
+
+    assertThat(doDestroy()).isFalse();
+
+    verify(evictableEntry, never()).removePhase2();
+    validateNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void destroyExistingEntryWithVersionStampCallsDestroyWhichReturnsFalseCausingDestroyToNotHappenAndDoesNotCallRemovePhase2()
       throws RegionClearedException {
     givenConcurrencyChecks(true);

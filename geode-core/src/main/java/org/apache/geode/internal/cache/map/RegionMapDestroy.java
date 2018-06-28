@@ -542,7 +542,7 @@ public class RegionMapDestroy {
 
   private void handleIncompleteDestroyExistingEntry() {
     if (inTokenMode) {
-      return; // TODO coverage
+      return;
     }
     EntryLogger.logDestroy(event);
     internalRegion.recordEvent(event);
@@ -551,8 +551,7 @@ public class RegionMapDestroy {
     } else if (regionEntry.isTombstone() && event.isOriginRemote()) {// TODO coverage
       // the entry is already a tombstone, but we're destroying it
       // again, so we need to reschedule the tombstone's expiration
-      internalRegion.rescheduleTombstone(regionEntry, regionEntry.getVersionStamp().asVersionTag());// TODO
-                                                                                                    // coverage
+      internalRegion.rescheduleTombstone(regionEntry, regionEntry.getVersionStamp().asVersionTag());
     }
     focusedRegionMap.lruEntryDestroy(regionEntry);
     opCompleted = true;
