@@ -34,7 +34,7 @@ public class CreateRegionCommandDUnitTest {
   private static MemberVM locator, server1, server2;
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

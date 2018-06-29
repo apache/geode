@@ -41,7 +41,7 @@ public class DestroyGatewaySenderCommandDUnitTest {
   public static final String DESTROY = "destroy gateway-sender --id=sender";
 
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

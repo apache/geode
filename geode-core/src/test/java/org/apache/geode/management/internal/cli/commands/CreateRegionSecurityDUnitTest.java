@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category({DistributedTest.class, SecurityTest.class})
 public class CreateRegionSecurityDUnitTest {
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   private static MemberVM locator;
 

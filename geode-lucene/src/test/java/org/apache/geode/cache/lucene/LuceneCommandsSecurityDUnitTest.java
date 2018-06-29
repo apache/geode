@@ -52,7 +52,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class LuceneCommandsSecurityDUnitTest {
 
   @Rule
-  public ClusterStartupRule locatorServer = new ClusterStartupRule();
+  public ClusterStartupRule locatorServer = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule gfshShell = new GfshCommandRule();

@@ -70,7 +70,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @Rule
   public transient GfshCommandRule gfshConnector = new GfshCommandRule();

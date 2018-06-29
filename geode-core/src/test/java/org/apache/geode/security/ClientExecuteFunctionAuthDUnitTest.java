@@ -50,7 +50,7 @@ public class ClientExecuteFunctionAuthDUnitTest {
   private static ClientVM client1, client2;
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(3);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

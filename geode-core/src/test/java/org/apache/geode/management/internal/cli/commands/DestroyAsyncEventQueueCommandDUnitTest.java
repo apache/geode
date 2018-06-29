@@ -40,7 +40,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
   private static MemberVM locator, server1, server2, server3;
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

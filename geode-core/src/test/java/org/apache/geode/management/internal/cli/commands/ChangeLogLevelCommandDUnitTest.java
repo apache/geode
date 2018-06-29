@@ -48,7 +48,7 @@ public class ChangeLogLevelCommandDUnitTest {
   private static final String GROUP2 = "Group2";
 
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

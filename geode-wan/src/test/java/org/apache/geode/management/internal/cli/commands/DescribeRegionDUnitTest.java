@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class DescribeRegionDUnitTest {
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule(5);
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -42,14 +42,14 @@ public class DescribeRegionDUnitTest {
   public void describeRegionWithGatewayAndAsyncEventQueue() throws Exception {
     Properties props = new Properties();
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    MemberVM sending_locator = lsRule.startLocatorVM(1, props);
+    MemberVM sending_locator = lsRule.startLocatorVM(0, props);
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + sending_locator.getPort() + "]");
-    lsRule.startLocatorVM(2, props);
+    lsRule.startLocatorVM(1, props);
 
-    lsRule.startServerVM(3, "group1", sending_locator.getPort());
-    lsRule.startServerVM(4, "group2", sending_locator.getPort());
+    lsRule.startServerVM(2, "group1", sending_locator.getPort());
+    lsRule.startServerVM(3, "group2", sending_locator.getPort());
 
     gfsh.connectAndVerify(sending_locator);
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 "

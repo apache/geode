@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class MainWithChildrenRollingFileHandlerDUnitTest {
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(1);
 
   @Test
   public void testGeode2874_nameWithoutExtensionDoesNotThrowOnMemberRestart() throws Exception {

@@ -39,7 +39,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
   private MemberVM locator;
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   @Before
   public void before() throws Exception {

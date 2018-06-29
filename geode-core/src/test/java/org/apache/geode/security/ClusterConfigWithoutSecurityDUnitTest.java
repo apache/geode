@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class ClusterConfigWithoutSecurityDUnitTest {
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(1);
 
   @Rule
   public ServerStarterRule serverStarter = new ServerStarterRule();

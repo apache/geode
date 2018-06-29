@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class MergeLogsDUnitTest {
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3).withLogFile();
   private MemberVM locator;
 
   private static final String MESSAGE_1 = "MergeLogsMessage1";

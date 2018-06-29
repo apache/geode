@@ -39,7 +39,7 @@ public class ListJndiBindingCommandDUnitTest {
   private static MemberVM locator, server;
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

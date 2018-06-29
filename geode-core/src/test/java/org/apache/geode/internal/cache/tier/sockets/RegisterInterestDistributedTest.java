@@ -49,13 +49,13 @@ public class RegisterInterestDistributedTest {
   private MemberVM server;
 
   @Rule
-  public ClusterStartupRule locatorServerStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule locatorServerStartupRule = new ClusterStartupRule(2);
 
   @Before
   public void before() throws Exception {
-    locator = locatorServerStartupRule.startLocatorVM(1, new Properties());
+    locator = locatorServerStartupRule.startLocatorVM(0, new Properties());
     locatorPort = locator.getPort();
-    server = locatorServerStartupRule.startServerVM(3, locatorPort);
+    server = locatorServerStartupRule.startServerVM(1, locatorPort);
     createServerRegion(server, RegionShortcut.PARTITION);
   }
 

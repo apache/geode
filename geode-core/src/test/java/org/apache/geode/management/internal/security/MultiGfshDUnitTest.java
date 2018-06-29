@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.rules.Member;
 public class MultiGfshDUnitTest {
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   private Member server;
 

@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ExportLogsOnServerManagerDUnit {
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(2).withLogFile();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();

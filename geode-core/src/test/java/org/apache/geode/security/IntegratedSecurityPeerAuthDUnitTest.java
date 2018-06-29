@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class IntegratedSecurityPeerAuthDUnitTest {
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(4);
 
   private static MemberVM locator;
 

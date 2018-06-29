@@ -35,7 +35,7 @@ public class CacheConfigDAODUnitTest {
 
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   @Test
   public void xmlCreatedByCCServiceCanBeLoadedByServer() {

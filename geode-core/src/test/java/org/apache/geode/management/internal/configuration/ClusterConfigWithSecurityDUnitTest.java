@@ -54,7 +54,7 @@ public class ClusterConfigWithSecurityDUnitTest {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule connector = new GfshCommandRule();

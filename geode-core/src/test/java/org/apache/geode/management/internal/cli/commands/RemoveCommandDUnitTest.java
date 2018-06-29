@@ -38,7 +38,7 @@ public class RemoveCommandDUnitTest {
   private static final String EMPTY_STRING = "";
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

@@ -64,7 +64,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Rule
-  public ClusterStartupRule csRule = new ClusterStartupRule();
+  public ClusterStartupRule csRule = new ClusterStartupRule(3);
 
   private MemberVM locator;
   private MemberVM server;

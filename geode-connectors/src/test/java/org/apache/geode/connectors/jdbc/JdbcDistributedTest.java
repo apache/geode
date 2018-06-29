@@ -68,7 +68,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public transient ClusterStartupRule startupRule = new ClusterStartupRule();
+  public transient ClusterStartupRule startupRule = new ClusterStartupRule(3);
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();

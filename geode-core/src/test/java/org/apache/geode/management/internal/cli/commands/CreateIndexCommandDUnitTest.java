@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class CreateIndexCommandDUnitTest {
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

@@ -41,7 +41,7 @@ public class StartServerWithXmlDUnitTest {
   private MemberVM locator;
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   @Before
   public void before() throws Exception {

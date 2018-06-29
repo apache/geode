@@ -47,7 +47,7 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
   }
 
   @Rule
-  public ClusterStartupRule csRule = new ClusterStartupRule();
+  public ClusterStartupRule csRule = new ClusterStartupRule(1);
 
   @Test
   public void locatorVersioningTest() throws Exception {

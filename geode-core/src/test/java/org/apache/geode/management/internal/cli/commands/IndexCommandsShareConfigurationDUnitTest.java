@@ -47,7 +47,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule(2);
   private static String partitionedRegionName = "partitionedRegion";
   private static String indexName = "index1";
   private static String groupName = "group1";

@@ -40,7 +40,7 @@ public class PulseAcceptanceNoAuthTest extends PulseAcceptanceTestBase {
       new LocatorStarterRule().withJMXManager().withAutoStart();
 
   @ClassRule
-  public static ClusterStartupRule clusterRule = new ClusterStartupRule();
+  public static ClusterStartupRule clusterRule = new ClusterStartupRule(2);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

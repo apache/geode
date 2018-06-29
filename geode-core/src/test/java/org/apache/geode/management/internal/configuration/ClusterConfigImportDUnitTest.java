@@ -50,7 +50,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   private MemberVM locatorVM;
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();

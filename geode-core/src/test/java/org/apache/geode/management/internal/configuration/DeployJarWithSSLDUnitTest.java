@@ -53,7 +53,7 @@ public class DeployJarWithSSLDUnitTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

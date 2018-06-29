@@ -55,7 +55,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule(4);
 
   @Rule
   public TestName testName = new SerializableTestName();

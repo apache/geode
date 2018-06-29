@@ -49,7 +49,7 @@ public class ClientCQAuthDUnitTest {
   private VM client3;
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule(3);
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()
@@ -58,9 +58,9 @@ public class ClientCQAuthDUnitTest {
 
   @Before
   public void setUp() {
-    client1 = startupRule.getVM(1);
-    client2 = startupRule.getVM(2);
-    client3 = startupRule.getVM(3);
+    client1 = startupRule.getVM(0);
+    client2 = startupRule.getVM(1);
+    client3 = startupRule.getVM(2);
   }
 
   @Test

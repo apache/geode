@@ -55,13 +55,13 @@ public class CQDistributedTest implements Serializable {
   private TestCqListener testListener;
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(2);
 
   @Before
   public void before() throws Exception {
-    locator = clusterStartupRule.startLocatorVM(1, new Properties());
+    locator = clusterStartupRule.startLocatorVM(0, new Properties());
     Integer locator1Port = locator.getPort();
-    server = clusterStartupRule.startServerVM(3, locator1Port);
+    server = clusterStartupRule.startServerVM(1, locator1Port);
     createServerRegion(server, RegionShortcut.PARTITION);
 
     ClientCache clientCache = createClientCache(locator1Port);

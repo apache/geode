@@ -157,7 +157,7 @@ public class ConnectCommandWithSSLTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(1);
 
   private static MemberVM locator;
   private OutputStream out = null;

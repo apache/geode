@@ -49,7 +49,7 @@ public class ServerLauncherDUnitTest {
   public TemporaryFolder tempDir = new TemporaryFolder();
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   public static class TestManagementListener extends UniversalMembershipListenerAdapter {
 

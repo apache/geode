@@ -38,7 +38,7 @@ public class JdbcClusterConfigDistributedTest {
 
   private static MemberVM locator, server;
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

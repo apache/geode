@@ -143,7 +143,7 @@ public class VM implements Serializable {
     this.id = id;
     this.version = version;
     this.client = client;
-    available = true;
+    this.available = true;
   }
 
   /**

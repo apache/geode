@@ -48,7 +48,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @RunWith(JUnitParamsRunner.class)
 public class AlterRuntimeCommandDUnitTest {
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule().withLogFile();
+  public ClusterStartupRule startupRule = new ClusterStartupRule(3).withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

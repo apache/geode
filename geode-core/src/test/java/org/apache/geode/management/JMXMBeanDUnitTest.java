@@ -88,7 +88,7 @@ public class JMXMBeanDUnitTest implements Serializable {
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   private transient CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
-  private ClusterStartupRule lsRule = new ClusterStartupRule();
+  private ClusterStartupRule lsRule = new ClusterStartupRule(3);
   private transient MBeanServerConnectionRule jmxConnector = new MBeanServerConnectionRule();
 
   @Rule
