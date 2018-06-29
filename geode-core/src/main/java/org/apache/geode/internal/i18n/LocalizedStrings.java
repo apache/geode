@@ -5816,9 +5816,6 @@ public class LocalizedStrings {
           "AutoConnectionSource UpdateLocatorListTask started with interval={0} ms.");
   public static final StringId AutoConnectionSourceImpl_COULD_NOT_CREATE_A_NEW_CONNECTION_TO_SERVER_0 =
       new StringId(4484, "Could not create a new connection to server: {0}");
-  public static final StringId DistributionAdvisor_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_CURRENT_OPERATIONS_TO_DISTRIBUTE =
-      new StringId(4485,
-          "{0} seconds have elapsed while waiting for current operations to distribute");
   public static final StringId DistributionManager_I_0_AM_THE_ELDER =
       new StringId(4486, "I, {0}, am the elder.");
   public static final StringId InternalLocator_STARTING_PEER_LOCATION_FOR_0 =
