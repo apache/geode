@@ -348,11 +348,18 @@ public class RegionMapDestroy {
           : focusedRegionMap.getEntryFactory().createEntry(internalRegion, event.getKey(),
               Token.REMOVED_PHASE1);
       synchronized (newRegionEntry) {
-        if (haveTombstone && !tombstone.isTombstone()) {
-          // we have to check this again under synchronization since it may have changed
-          retry = true;
-          doContinue = true;
-          return;
+        // we have to check this again under synchronization since it may have changed
+        if (haveTombstone) {
+          if (tombstone.isTombstone() && event.isPossibleDuplicate()) {
+            // duplicate - treat as complete
+            opCompleted = true;
+            return;
+          } else if (!tombstone.isTombstone()) {
+            // concurrent change - try again
+            retry = true;
+            doContinue = true;
+            return;
+          }
         }
         regionEntry = (RegionEntry) focusedRegionMap.getEntryMap().putIfAbsent(event.getKey(),
             newRegionEntry);
