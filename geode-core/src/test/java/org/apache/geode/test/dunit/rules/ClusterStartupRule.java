@@ -119,7 +119,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void before() throws Throwable {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(vmCount);
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }
