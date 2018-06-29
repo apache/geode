@@ -46,7 +46,7 @@ Old log files become eligible for online compaction when their garbage content s
             myCache.getDiskStore("myDiskStore").forceCompaction();
             ```
 
-        -   Using `gfsh`, compact a disk store in a distributed system with the [compact disk-store](../../tools_modules/gfsh/command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC) command. Examples:
+        -   Using `gfsh`, compact a disk store with the [compact disk-store](../../tools_modules/gfsh/command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC) command. Examples:
 
             ``` pre
             gfsh>compact disk-store --name=Disk1

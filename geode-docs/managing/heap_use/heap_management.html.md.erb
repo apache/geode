@@ -67,7 +67,7 @@ The resource manager has two threshold settings, each expressed as a percentage 
 
     The resource manager enforces eviction thresholds only on regions whose LRU eviction policies are based on heap percentage. Regions whose eviction policies based on entry count or memory size use other mechanisms to manage evictions. See [Eviction](../../developing/eviction/chapter_overview.html) for more detail regarding eviction policies.
 
-  2.  **Critical Threshold**. Above this, all activity that might add data to the cache is refused. This threshold is set above the eviction threshold and is intended to allow the eviction and GC work to catch up. This JVM, all other JVMs in the distributed system, and all clients to the system receive `LowMemoryException` for operations that would add to this critical member's heap consumption. Activities that fetch or reduce data are allowed. For a list of refused operations, see the Javadocs for the `ResourceManager` method `setCriticalHeapPercentage`.
+  2.  **Critical Threshold**. Above this, all activity that might add data to the cache is refused. This threshold is set above the eviction threshold and is intended to allow the eviction and GC work to catch up. This JVM, all other JVMs in the cluster, and all clients to the system receive `LowMemoryException` for operations that would add to this critical member's heap consumption. Activities that fetch or reduce data are allowed. For a list of refused operations, see the Javadocs for the `ResourceManager` method `setCriticalHeapPercentage`.
 
     Critical threshold is enforced on all regions, regardless of LRU eviction policy, though it can be set to zero to disable its effect.
 
@@ -153,7 +153,7 @@ If your JVM allows, configure it to initiate concurrent mark-sweep (CMS) garbage
 
 ## <a id="configuring_resource_manager__section_DE1CC494C2B547B083AA00821250972A" class="no-quick-link"></a>Monitor and Tune Heap LRU Configurations
 
-In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire distributed system. To stay below critical, tune so that the <%=vars.product_name%> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
+In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire clsuter. To stay below critical, tune so that the <%=vars.product_name%> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
 
 Use the statistics provided by your JVM to make sure your memory and GC settings are sufficient for your needs.
 

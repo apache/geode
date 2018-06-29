@@ -38,7 +38,7 @@ You can also configure sample rate and the filename of your statistic archive fi
 
 Alternately, if you are not using the cluster configuration service, configure `gemfire.properties` for the statistics monitoring and archiving that you need:
 
-1.  Enable statistics gathering for the distributed system. This is required for all other statistics activities:
+1.  Enable statistics gathering for the cluster. This is required for all other statistics activities:
 
     ``` pre
     statistic-sampling-enabled=true
@@ -160,9 +160,9 @@ You can specify limits on the archive files for statistics using the gfsh `alter
     -   The `--statistic-archive-file` parameter controls whether the statistics files are compressed. If you give the file name a `.gz` suffix, it is compressed, thereby taking up less disk space.
 -   **Maximum Size of a Single Archive File**. If the value of the `--archive-file-size-limit` is greater than zero, a new archive is started when the size of the current archive exceeds the limit. Only one archive can be active at a time.
     **Note:**
-    If you modify the value of `--archive-file-size-limit` while the distributed system is running, the new value does not take effect until the current archive becomes inactive (that is, when a new archive is started).
+    If you modify the value of `--archive-file-size-limit` while the cluster is running, the new value does not take effect until the current archive becomes inactive (that is, when a new archive is started).
 
 -   **Maximum Size of All Archive Files**. The `--archive-disk-space-limit` parameter controls the maximum size of all inactive archive files combined. By default, the limit is set to 0, meaning that archive space is unlimited. Whenever an archive becomes inactive or when the archive file is renamed, the combined size of the inactive files is calculated. If the size exceeds the `--archive-disk-space-limit`, the inactive archive with the oldest modification time is deleted. This continues until the combined size is less than the limit. If `--archive-disk-space-limit` is less than or equal to `--archive-file-size-limit`, when the active archive is made inactive due to its size, it is immediately deleted.
 
 **Note:**
-    If you modify the value of `--archive-disk-space-limit` while the distributed system is running, the new value does not take effect until the current archive becomes inactive.
+    If you modify the value of `--archive-disk-space-limit` while the cluster is running, the new value does not take effect until the current archive becomes inactive.

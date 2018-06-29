@@ -23,14 +23,14 @@ The <%=vars.product_name_long%> topology options allow you to scale horizontally
 
 <%=vars.product_name_long%> provides a variety of cache topologies:
 
--   At the core of all systems is the single, peer-to-peer distributed system.
+-   At the core of all systems is the single, peer-to-peer cluster.
 -   For horizontal and vertical scaling, you can combine individual systems into client/server and multi-site (WAN) topologies:
     -   In client/server systems, a small number of server processes manage data and event processing for a much larger client group.
     -   In multi-site systems, several geographically disparate systems are loosely coupled into a single, cohesive processing unit.
 
 ## <a id="concept_7628F498DB534A2D8A99748F5DA5DC94__section_333142A36A3E4AF7A1EC31856ED99FCA" class="no-quick-link"></a>Peer-to-Peer Configuration
 
-The peer-to-peer distributed system is the building block for all <%=vars.product_name%> installations. Peer-to-peer alone is the simplest topology. Each cache instance, or member, directly communicates with every other member in the distributed system. This cache configuration is primarily designed for applications that need to embed a cache within the application process space and participate in a cluster. A typical example is an application server cluster in which the application and the cache are co-located and share the same heap.
+The peer-to-peer cluster is the building block for all <%=vars.product_name%> installations. Peer-to-peer alone is the simplest topology. Each cache instance, or member, directly communicates with every other member in the cluster. This cache configuration is primarily designed for applications that need to embed a cache within the application process space and participate in a cluster. A typical example is an application server cluster in which the application and the cache are co-located and share the same heap.
 
 <img src="../../images_svg/p2p_topology.svg" id="concept_7628F498DB534A2D8A99748F5DA5DC94__image_vzs_qwn_4r" class="image" />
 

@@ -34,7 +34,7 @@ Geode logs and statistics are the two most important artifacts used in troublesh
     -   C:\\Users\\*UserProfileName*\\AppData\\Local\\Microsoft\\Windows\\WER\\ReportArchive
     -   C:\\Users\\*UserProfileName*\\AppData\\Local\\Microsoft\\Windows\\WER\\ReportQueue
 
-When a problem arises that involves more than one process, a network problem is the most likely cause. When you diagnose a problem, create a log file for each member of all the distributed systems involved. If you are running a client/server architecture, create log files for the clients.
+When a problem arises that involves more than one process, a network problem is the most likely cause. When you diagnose a problem, create a log file for each member of all the clusters involved. If you are running a client/server architecture, create log files for the clients.
 
 **Note:**
 You must run a time synchronization service on all hosts for troubleshooting. Synchronized time stamps ensure that log messages on different hosts can be merged to accurately reproduce a chronological history of a distributed run.
@@ -57,7 +57,7 @@ For each process, complete these steps:
     **Note:**
     Running with the log level at `fine` can impact system performance and fill up your disk.
 
-4.  Enable statistics gathering for the distributed system either by modifying `gemfire.properties`:
+4.  Enable statistics gathering for the cluster either by modifying `gemfire.properties`:
 
     ``` pre
     statistic-sampling-enabled=true

@@ -25,13 +25,13 @@ limitations under the License.
 
 At its most general, data management means having current data available when and where your applications need it. In a properly configured <%=vars.product_name%> installation, you store your data in your local members and <%=vars.product_name%> automatically distributes it to the other members that need it according to your cache configuration settings. You may be storing very large data objects that require special consideration, or you may have a high volume of data requiring careful configuration to safeguard your application's performance or memory use. You may need to be able to explicitly lock some data during particular operations. Most data management features are available as configuration options, which you can specify either using the `gfsh` cluster configuration service, `cache.xml` file or the API. Once configured, <%=vars.product_name%> manages the data automatically. For example, this is how you manage data distribution, disk storage, data expiration activities, and data partitioning. A few features are managed at run-time through the API.
 
-At the architectural level, data distribution runs between peers in a single system and between clients and servers.
+At the architectural level, data distribution runs between peers in a single cluster and between clients and servers.
 
 -   Peer-to-peer provides the core distribution and storage models, which are specified as attributes on the data regions.
 
 -   For client/server, you choose which data regions to share between the client and server tiers. Then, within each region, you can fine-tune the data that the server automatically sends to the client by subscribing to subsets.
 
-Data storage in any type of installation is based on the peer-to-peer configuration for each individual distributed system. Data and event distribution is based on a combination of the peer-to-peer and system-to-system configurations.
+Data storage in any type of installation is based on the peer-to-peer configuration for each individual cluster. Data and event distribution is based on a combination of the peer-to-peer and system-to-system configurations.
 
 Storage and distribution models are configured through cache and region attributes. The main choices are partitioned, replicated, or just distributed. All server regions must be partitioned or replicated. Each region’s `data-policy` and `subscription-attributes`, and its `scope` if it is not a partitioned region, interact for finer control of data distribution.
 
