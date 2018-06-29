@@ -2480,8 +2480,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
     // Fix for #48066 - make sure that region operations are completely
     // distributed to peers before destroying the region.
-    long timeout =
-        1000L * getCache().getInternalDistributedSystem().getConfig().getAckWaitThreshold();
     Boolean flushOnClose =
         !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close"); // test hook
     if (!this.cache.forcedDisconnect() && flushOnClose
@@ -2489,7 +2487,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         && this.getDistributionManager().getMembershipManager().isConnected()) {
       getDistributionAdvisor().forceNewMembershipVersion();
       try {
-        getDistributionAdvisor().waitForCurrentOperations(timeout);
+        getDistributionAdvisor().waitForCurrentOperations();
       } catch (Exception e) {
         // log this but try to close the region so that listeners are invoked
         logger.warn(LocalizedMessage.create(LocalizedStrings.GemFireCache_0_ERROR_CLOSING_REGION_1,
