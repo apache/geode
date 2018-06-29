@@ -31,6 +31,8 @@ sourceSets {
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -161,6 +163,11 @@ dependencies {
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
+
+
+  // Integration Tests
+
+
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -171,6 +178,14 @@ sourceSets {
   }
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
+  }
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integrationTest/java')
+    }
+    resources.srcDir file('src/integrationTest/resources')
   }
 }
 
