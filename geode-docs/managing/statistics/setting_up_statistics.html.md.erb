@@ -26,6 +26,7 @@ You can configure statistics and statistics archiving in several ways.
 In this procedure it is assumed that you understand [Basic Configuration and Programming](../../basic_config/book_intro.html).
 
 Execute the following commands to modify the cluster's configuration and enable cluster or server statistics.
+
 ``` pre
 gfsh>start locator --name=l1 --enable-cluster-configuration=true
 gfsh>alter runtime --enable-statistics=true -–statistic-archive-file=myStatisticsArchiveFile.gfs
