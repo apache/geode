@@ -23,7 +23,6 @@ ENV GRADLE_USER_HOME /usr/local/maven_files
 WORKDIR /tmp/work
 
 ADD https://github.com/geofffranks/spruce/releases/download/v${SPRUCE_VERSION}/spruce-linux-amd64 /usr/local/bin/spruce
-ADD docker.list /etc/apt/sources.list.d/
 ADD https://github.com/krallin/tini/releases/download/v0.14.0/tini-static-amd64 /usr/local/bin/tini
 ADD tini-wrapper.go .
 ADD ./initdocker /usr/local/bin/initdocker
@@ -34,21 +33,23 @@ RUN chmod +x /usr/local/bin/tini \
   && chmod +x /usr/local/bin/initdocker \
   && chmod +x cache_dependencies.sh \
   && apt-get update \
-  && apt-get install -y --no-install-recommends lsb-release \
-	&& echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+  && apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    lsb-release \
+  && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
   && echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
+  && echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
   && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
   && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
-  && apt-key adv --keyserver hkp://pgp.mit.edu --recv-keys 58118E89F3A912897C070ADBF76221572C52609D \
+  && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
   && apt-get update \
   && apt-get purge lxc-docker \
   && apt-get install -y --no-install-recommends \
-    apt-transport-https \
     aptitude \
     ca-certificates \
     cgroupfs-mount \
     docker-compose \
-    docker-engine \
+    docker-ce \
     golang \
     google-chrome-stable \
     google-cloud-sdk \
