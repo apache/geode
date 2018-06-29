@@ -45,7 +45,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ArrayUtils;
 
@@ -789,43 +788,49 @@ public class DistributionAdvisor {
     return membershipVersion;
   }
 
-  public void waitForCurrentOperations() {
-    long timeout =
-        1000L * this.getDistributionManager().getSystem().getConfig().getAckWaitThreshold();
-    waitForCurrentOperations(timeout);
-  }
-
   /**
    * wait for the current operations being sent on views prior to the joining of the given member to
    * be placed on communication channels before returning
    *
    * @since GemFire 5.1
    */
-  public void waitForCurrentOperations(long timeout) {
+  public void waitForCurrentOperations() {
+    long timeout =
+        1000L * this.getDistributionManager().getSystem().getConfig().getAckWaitThreshold();
+    waitForCurrentOperations(logger, timeout, timeout * 2l);
+  }
+
+  public void waitForCurrentOperations(Logger alertLogger, long warnMS, long severeAlertMS) {
     // CacheProfile profile = (CacheProfile)getProfile(member);
     // long targetVersion = profile.initialMembershipVersion - 1;
+    long timeout =
+        1000L;// * this.getDistributionManager().getSystem().getConfig().getAckWaitThreshold();
 
     // this may wait longer than it should if the membership version changes, dumping
     // more operations into the previousVersionOpCount
     long startTime = System.currentTimeMillis();
-    long warnTime = startTime + timeout;
-    long quitTime = warnTime + timeout - 1000L;
+    long warnTime = startTime + warnMS;
+    long severeAlertTime = startTime + severeAlertMS;
     boolean warned = false;
+    boolean severeAlertIssued = false;
     final boolean isDebugEnabled_STATE_FLUSH_OP =
-        logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE);
+        DistributionAdvisor.logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE);
     while (true) {
       long opCount;
       synchronized (this.opCountLock) {
         opCount = this.previousVersionOpCount;
       }
       if (opCount <= 0) {
+        if (warned) {
+          logger.info("Wait for current operations completed");
+        }
         break;
       }
       // The advisor's close() method will set the pVOC to zero. This loop
       // must not terminate due to cache closure until that happens.
       // See bug 34361 comment 79
       if (isDebugEnabled_STATE_FLUSH_OP) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+        DistributionAdvisor.logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
             "Waiting for current operations to finish({})", opCount);
       }
       try {
@@ -836,18 +841,19 @@ public class DistributionAdvisor {
       long now = System.currentTimeMillis();
       if ((!warned) && System.currentTimeMillis() >= warnTime) {
         warned = true;
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DistributionAdvisor_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_CURRENT_OPERATIONS_TO_DISTRIBUTE,
-            Long.toString((warnTime - startTime) / 1000L)));
-      } else if (warned && (now >= quitTime)) {
+        alertLogger.warn("This operation has been stalled for {} milliseconds waiting for "
+            + "current operations to complete.", warnMS);
+      } else if (warned && !severeAlertIssued && (now >= severeAlertTime)) {
         // OSProcess.printStacks(0);
-        throw new GemFireIOException(
-            "Current operations did not distribute within " + (now - startTime) + " milliseconds");
+        alertLogger.fatal("This operation has been stalled for {} milliseconds "
+            + "waiting for current operations to complete.  Something may be blocking operations.",
+            severeAlertMS);
+        severeAlertIssued = true;
       }
     }
     if (this.membershipClosed) {
       if (isDebugEnabled_STATE_FLUSH_OP) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
+        DistributionAdvisor.logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
             "State Flush stopped waiting for operations to distribute because advisor has been closed");
       }
     }

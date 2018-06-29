@@ -2489,7 +2489,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         && this.getDistributionManager().getMembershipManager().isConnected()) {
       getDistributionAdvisor().forceNewMembershipVersion();
       try {
-        getDistributionAdvisor().waitForCurrentOperations(timeout);
+        getDistributionAdvisor().waitForCurrentOperations(logger, timeout, timeout * 2l);
       } catch (Exception e) {
         // log this but try to close the region so that listeners are invoked
         logger.warn(LocalizedMessage.create(LocalizedStrings.GemFireCache_0_ERROR_CLOSING_REGION_1,
