@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -280,7 +279,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // First wait until the region mbean is not null...
     waitUntilEqual(
         () -> getRegionMBean(regionName),
-        Objects::nonNull, true,
+        Objects::nonNull,
+        true,
         String.format("Expecting to find an mbean for region '%s'", regionName),
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
 
@@ -288,9 +288,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     String assertionConditionDescription = String.format(
         "Expecting region '%s' to be found on exactly %d servers", regionName, exactServerCount);
     waitUntilSatisfied(
-        () -> getRegionMBean(regionName).getMembers(),
-        UnaryOperator.identity(),
-        members -> Assertions.assertThat(members).isNotNull().asList().hasSize(exactServerCount),
+        () -> Arrays.asList(getRegionMBean(regionName).getMembers()),
+        Function.identity(),
+        members -> Assertions.assertThat(members).isNotNull().hasSize(exactServerCount),
         assertionConditionDescription,
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
   }
