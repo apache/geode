@@ -14,46 +14,32 @@
  */
 package org.apache.geode.pdx;
 
-import org.junit.After;
-import org.junit.Before;
+import static org.junit.Assert.fail;
+
+import java.nio.ByteBuffer;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
-import org.apache.geode.internal.offheap.NullOffHeapMemoryStats;
-import org.apache.geode.internal.offheap.NullOutOfOffHeapMemoryListener;
 import org.apache.geode.internal.offheap.OffHeapStoredObject;
-import org.apache.geode.internal.offheap.SlabImpl;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import org.apache.geode.internal.tcp.ByteBufferInputStream.OffHeapByteSource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(UnitTest.class)
-public class OffHeapByteSourceJUnitTest extends ByteSourceJUnitTest {
-
-  @Before
-  public final void setUp() throws Exception {
-    MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
-        new NullOffHeapMemoryStats(), new SlabImpl[] {new SlabImpl(1024 * 1024)});
-  }
-
-  @After
-  public final void tearDown() throws Exception {
-    MemoryAllocatorImpl.freeOffHeapMemory();
-  }
-
-  @Override
-  protected boolean isTestOffHeap() {
-    return true;
-  }
+@Category(IntegrationTest.class)
+public class OffHeapByteBufferByteSourceJUnitTest extends OffHeapByteSourceJUnitTest {
 
   @Override
   protected ByteSource createByteSource(byte[] bytes) {
     StoredObject so = MemoryAllocatorImpl.getAllocator().allocateAndInitialize(bytes, false, false);
     if (so instanceof OffHeapStoredObject) {
-      // bypass the factory to make sure that OffHeapByteSource is tested
-      return new OffHeapByteSource(so);
+      OffHeapStoredObject c = (OffHeapStoredObject) so;
+      ByteBuffer bb = c.createDirectByteBuffer();
+      if (bb == null) {
+        fail("could not create a direct ByteBuffer for an off-heap Chunk");
+      }
+      return ByteSourceFactory.create(bb);
     } else {
       // bytes are so small they can be encoded in a long (see DataAsAddress).
       // So for this test just wrap the original bytes.
