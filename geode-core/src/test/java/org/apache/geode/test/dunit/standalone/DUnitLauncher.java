@@ -30,12 +30,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
@@ -72,11 +70,12 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.
  *
- * For use within eclipse. This class completely skips hydra and just starts some vms directly,
- * creating a fake test configuration
+ * This class starts some vms directly, creating a fake test configuration
  *
  * Also, it's a good idea to set your working directory, because the test code a lot of files that
  * it leaves around.
+ *
+ * @see org.apache.geode.test.dunit.standalone.DUnitHost
  */
 public class DUnitLauncher {
 
@@ -103,12 +102,12 @@ public class DUnitLauncher {
   /**
    * VM ID for the VM to use for the debugger.
    */
-  private static final int DEBUGGING_VM_NUM = -1;
+  static final int DEBUGGING_VM_NUM = -1;
 
   /**
    * VM ID for the VM to use for the locator.
    */
-  private static final int LOCATOR_VM_NUM = -2;
+  static final int LOCATOR_VM_NUM = -2;
 
   static final long STARTUP_TIMEOUT = 120 * 1000;
   private static final String STARTUP_TIMEOUT_MESSAGE =
@@ -133,29 +132,13 @@ public class DUnitLauncher {
 
   private DUnitLauncher() {}
 
-  private static boolean isHydra() {
-    try {
-      // TODO - this is hacky way to test for a hydra environment - see
-      // if there is registered test configuration object.
-      Class<?> clazz = Class.forName("hydra.TestConfig");
-      Method getInstance = clazz.getMethod("getInstance", new Class[0]);
-      getInstance.invoke(null);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-  }
-
-  /**
-   * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
-   */
   public static void launchIfNeeded() {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
       return;
     }
 
-    if (!isHydra() && !isLaunched()) {
+    if (!isLaunched()) {
       try {
         launch();
       } catch (Exception e) {
@@ -210,35 +193,12 @@ public class DUnitLauncher {
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       public void run() {
-        // System.out.println("shutting down DUnit JVMs");
-        // for (int i=0; i<NUM_VMS; i++) {
-        // try {
-        // processManager.getStub(i).shutDownVM();
-        // } catch (Exception e) {
-        // System.out.println("exception shutting down vm_"+i+": " + e);
-        // }
-        // }
-        // // TODO - hasLiveVMs always returns true
-        // System.out.print("waiting for JVMs to exit");
-        // long giveUp = System.currentTimeMillis() + 5000;
-        // while (giveUp > System.currentTimeMillis()) {
-        // if (!processManager.hasLiveVMs()) {
-        // return;
-        // }
-        // System.out.print(".");
-        // System.out.flush();
-        // try {
-        // Thread.sleep(1000);
-        // } catch (InterruptedException e) {
-        // break;
-        // }
-        // }
-        // System.out.println("\nkilling any remaining JVMs");
         processManager.killVMs();
       }
     });
 
     // Create a VM for the locator
+    // This is very likely antequated and should be removed.
     processManager.launchVM(LOCATOR_VM_NUM);
 
     // wait for the VM to start up
@@ -345,7 +305,6 @@ public class DUnitLauncher {
 
   public static void init(MasterRemote master) {
     DUnitEnv.set(new StandAloneDUnitEnv(master));
-    // fake out tests that are using a bunch of hydra stuff
     String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
     workspaceDir = workspaceDir == null ? new File(".").getAbsolutePath() : workspaceDir;
 
@@ -473,95 +432,6 @@ public class DUnitLauncher {
       } catch (InterruptedException e) {
         throw new RuntimeException("Failed waiting for VM", e);
       }
-    }
-  }
-
-  private static class DUnitHost extends Host {
-    private static final long serialVersionUID = -8034165624503666383L;
-
-    private final transient VM debuggingVM;
-
-    private transient ProcessManager processManager;
-
-    public DUnitHost(String hostName, ProcessManager processManager) throws RemoteException {
-      super(hostName);
-      this.debuggingVM = new VM(this, -1, new RemoteDUnitVM());
-      this.processManager = processManager;
-    }
-
-    public void init(Registry registry, int numVMs)
-        throws AccessException, RemoteException, NotBoundException, InterruptedException {
-      for (int i = 0; i < numVMs; i++) {
-        RemoteDUnitVMIF remote = processManager.getStub(i);
-        addVM(i, remote);
-      }
-
-      addLocator(LOCATOR_VM_NUM, processManager.getStub(LOCATOR_VM_NUM));
-
-      addHost(this);
-    }
-
-    /**
-     * Retrieves one of this host's VMs based on the specified VM ID. This will not bounce VM to a
-     * different version. It will only get the current running VM or launch a new one if not already
-     * launched.
-     *
-     * @param n ID of the requested VM; a value of <code>-1</code> will return the controller VM,
-     *        which may be useful for debugging.
-     * @return VM for the requested VM ID.
-     */
-    @Override
-    public VM getVM(int n) {
-      if (n < getVMCount() && n != DEBUGGING_VM_NUM) {
-        VM current = super.getVM(n);
-        return getVM(current.getVersion(), n);
-      } else {
-        return getVM(VersionManager.CURRENT_VERSION, n);
-      }
-    }
-
-    @Override
-    public VM getVM(String version, int n) {
-      if (n == DEBUGGING_VM_NUM) {
-        // for ease of debugging, pass -1 to get the local VM
-        return debuggingVM;
-      }
-
-      if (n < getVMCount()) {
-        VM current = super.getVM(n);
-        if (!current.getVersion().equals(version)) {
-          System.out.println(
-              "Bouncing VM" + n + " from version " + current.getVersion() + " to " + version);
-          current.bounce(version);
-        }
-        return current;
-      }
-
-      int oldVMCount = getVMCount();
-      if (n >= oldVMCount) {
-        // If we don't have a VM with that number, dynamically create it.
-        try {
-          // first fill in any gaps, to keep the superclass, Host, happy
-          for (int i = oldVMCount; i < n; i++) {
-            processManager.launchVM(i);
-          }
-          processManager.waitForVMs(STARTUP_TIMEOUT);
-
-          for (int i = oldVMCount; i < n; i++) {
-            addVM(i, processManager.getStub(i));
-          }
-
-          // now create the one we really want
-          processManager.launchVM(version, n, false);
-          processManager.waitForVMs(STARTUP_TIMEOUT);
-          addVM(n, processManager.getStub(n));
-
-        } catch (IOException | InterruptedException | NotBoundException e) {
-          throw new RuntimeException("Could not dynamically launch vm + " + n, e);
-        }
-      }
-
-      return super.getVM(n);
     }
   }
 }
