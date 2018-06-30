@@ -33,6 +33,8 @@ configurations {
   archives
   integrationTestCompile.extendsFrom testCompile
   integrationTestRuntime.extendsFrom testRuntime
+  distributedTestCompile.extendsFrom integrationTestCompile
+  distributedTestRuntime.extendsFrom integrationTestRuntime
 }
 
 dependencies {
@@ -186,6 +188,14 @@ sourceSets {
       srcDir file('src/integrationTest/java')
     }
     resources.srcDir file('src/integrationTest/resources')
+  }
+  distributedTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/distributedTest/java')
+    }
+    resources.srcDir file('src/distributedTest/resources')
   }
 }
 
