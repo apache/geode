@@ -12,23 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.monitoring.executor;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.ThreadMonitoring;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
-public abstract class AbstractExecutorGroup {
+public abstract class AbstractExecutor {
 
-  private final ThreadMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadMonitoring;
   private static final int THREAD_DUMP_DEPTH = 40;
   private static final Logger logger = LogService.getLogger();
   private long threadID;
@@ -36,11 +34,7 @@ public abstract class AbstractExecutorGroup {
   private short numIterationsStuck;
   private long startTime;
 
-  private static final Properties nonDefault = new Properties();
-  private static final DistributionConfigImpl distributionConfigImpl =
-      new DistributionConfigImpl(nonDefault);
-
-  public AbstractExecutorGroup(ThreadMonitoring tMonitoring) {
+  public AbstractExecutor(ThreadsMonitoring tMonitoring) {
     this.startTime = System.currentTimeMillis();
     this.numIterationsStuck = 0;
     this.threadID = Thread.currentThread().getId();
@@ -50,26 +44,6 @@ public abstract class AbstractExecutorGroup {
   public void handleExpiry(long stuckTime) {
     this.incNumIterationsStuck();
     logger.warn(handleLogMessage(stuckTime));
-    if (distributionConfigImpl.getThreadMonitorAutoEnabled()
-        && this.numIterationsStuck > distributionConfigImpl.getThreadMonitorAutoLimit())
-      handleInterrupt();
-  }
-
-  @SuppressWarnings("deprecation")
-  private void handleInterrupt() {
-    for (Thread t : Thread.getAllStackTraces().keySet()) {
-      if (t.getId() == this.threadID) {
-        logger.error("Thread: <{}> is stuck for <{}> iterations - Executing Interrupt\n",
-            this.threadID, this.numIterationsStuck);
-
-        t.stop();
-        if (this.threadMonitoring != null) {
-          threadMonitoring.getMonitorMap().remove(this.threadID);
-        }
-
-        break;
-      }
-    }
   }
 
   private String handleLogMessage(long stuckTime) {

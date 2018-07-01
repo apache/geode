@@ -12,32 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.monitoring.executor;
 
-package org.apache.geode.distributed;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
-import java.util.Map;
+public class FunctionExecutionPooledExecutorGroup extends AbstractExecutor {
 
-import org.apache.geode.internal.statistics.AbstractExecutorGroup;
+  public static final String GRPNAME = "FunctionExecutionPooledExecutor";
 
-public interface ThreadMonitoring {
 
-  public enum Mode {
-    FunctionExecutor,
-    PooledExecutor,
-    SerialQueuedExecutor,
-    OneTaskOnlyExecutor,
-    ScheduledThreadExecutor,
-    AGSExecutor
-  };
+  public FunctionExecutionPooledExecutorGroup(ThreadsMonitoring tMonitoring) {
+    super(tMonitoring);
+    super.setGrpName(GRPNAME);
+  }
 
-  Map<Long, AbstractExecutorGroup> getMonitorMap();
+  @Override
+  public void handleExpiry(long stuckTime) {
+    super.handleExpiry(stuckTime);
+  }
 
-  /**
-   * Closes this ThreadMonitoring and releases all resources associated with it.
-   */
-  void close();
-
-  public boolean startMonitor(Mode mode);
-
-  public void endMonitor();
 }

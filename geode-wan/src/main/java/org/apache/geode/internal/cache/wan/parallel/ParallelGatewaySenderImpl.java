@@ -20,7 +20,6 @@ import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -38,6 +37,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * @since GemFire 7.0
@@ -200,7 +200,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     clonedEvent.setEventId(newEventId);
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  private ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

@@ -12,15 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.monitoring.executor;
 
-import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
-public class GatewaySenderEventProcessorGroup extends AbstractExecutorGroup {
+public class OneTaskOnlyExecutorGroup extends AbstractExecutor {
 
-  public static final String GRPNAME = "GatewaySenderEventProcessor";
+  public static final String GRPNAME = "OneTaskOnlyExecutor";
 
-  public GatewaySenderEventProcessorGroup(ThreadMonitoring tMonitoring) {
+  public OneTaskOnlyExecutorGroup(ThreadsMonitoring tMonitoring) {
     super(tMonitoring);
     super.setGrpName(GRPNAME);
 

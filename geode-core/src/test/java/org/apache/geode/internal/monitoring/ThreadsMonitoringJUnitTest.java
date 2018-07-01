@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed;
+package org.apache.geode.internal.monitoring;
 
 import static org.junit.Assert.assertTrue;
 
@@ -24,12 +24,12 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Contains simple tests for the {@link org.apache.geode.distributed.ThreadMonitoring}.
+ * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoring}.
  *
  * @since Geode 1.5
  */
 @Category({UnitTest.class})
-public class ThreadMonitoringJUnitTest {
+public class ThreadsMonitoringJUnitTest {
 
   public enum ModeExpected {
     FunctionExecutor,
@@ -49,7 +49,7 @@ public class ThreadMonitoringJUnitTest {
    */
   @Test
   public void testVerifyNumberOfElements() {
-    assertTrue(ThreadMonitoring.Mode.values().length == numberOfElements);
+    assertTrue(ThreadsMonitoring.Mode.values().length == numberOfElements);
   }
 
   /**
@@ -58,9 +58,9 @@ public class ThreadMonitoringJUnitTest {
   @Test
   public void testVerifyTypeOfElements() {
     try {
-      for (int i = 0; i < ThreadMonitoring.Mode.values().length; i++) {
+      for (int i = 0; i < ThreadsMonitoring.Mode.values().length; i++) {
         assertTrue(
-            ThreadMonitoring.Mode.values()[i].name().equals(ModeExpected.values()[i].name()));
+            ThreadsMonitoring.Mode.values()[i].name().equals(ModeExpected.values()[i].name()));
       }
     } catch (ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException) {
       logger.error(

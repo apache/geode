@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal;
+package org.apache.geode.internal.monitoring;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -21,23 +21,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.ThreadMonitoring.Mode;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Contains simple tests for the {@link ThreadMonitoringImpl}.
- *
+ * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoringImpl}.
  *
  * @since Geode 1.5
  */
 @Category({UnitTest.class})
-public class ThreadMonitoringImplJUnitTest {
+public class ThreadsMonitoringImplJUnitTest {
 
-  private ThreadMonitoringImpl threadMonitoringImpl;
+  private ThreadsMonitoringImpl threadsMonitoringImpl;
 
   @Before
   public void before() {
-    threadMonitoringImpl = new ThreadMonitoringImpl();
+    threadsMonitoringImpl = new ThreadsMonitoringImpl();
   }
 
   /**
@@ -46,14 +45,14 @@ public class ThreadMonitoringImplJUnitTest {
   @Test
   public void testStartMonitor() {
 
-    assertTrue(threadMonitoringImpl.startMonitor(Mode.FunctionExecutor));
-    assertTrue(threadMonitoringImpl.startMonitor(Mode.PooledExecutor));
-    assertTrue(threadMonitoringImpl.startMonitor(Mode.SerialQueuedExecutor));
-    assertTrue(threadMonitoringImpl.startMonitor(Mode.OneTaskOnlyExecutor));
-    assertTrue(threadMonitoringImpl.startMonitor(Mode.ScheduledThreadExecutor));
-    assertTrue(threadMonitoringImpl.startMonitor(Mode.AGSExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.FunctionExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.PooledExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.SerialQueuedExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.OneTaskOnlyExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.ScheduledThreadExecutor));
+    assertTrue(threadsMonitoringImpl.startMonitor(Mode.AGSExecutor));
 
-    threadMonitoringImpl.close();
+    threadsMonitoringImpl.close();
   }
 
   /**
@@ -62,11 +61,11 @@ public class ThreadMonitoringImplJUnitTest {
   @Test
   public void testClosure() {
 
-    assertTrue(threadMonitoringImpl.getThreadMonitoringProcess() != null);
-    assertFalse(threadMonitoringImpl.isClosed());
-    threadMonitoringImpl.close();
-    assertTrue(threadMonitoringImpl.isClosed());
-    assertFalse(threadMonitoringImpl.getThreadMonitoringProcess() != null);
+    assertTrue(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
+    assertFalse(threadsMonitoringImpl.isClosed());
+    threadsMonitoringImpl.close();
+    assertTrue(threadsMonitoringImpl.isClosed());
+    assertFalse(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
 
   }
 }

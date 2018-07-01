@@ -12,32 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.monitoring.executor;
 
-import static org.junit.Assert.assertTrue;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+public class PooledExecutorGroup extends AbstractExecutor {
 
-import org.apache.geode.test.junit.categories.UnitTest;
+  public static final String GRPNAME = "PooledExecutorWithDMStats";
 
-/**
- * Contains simple tests for the {@link SerialQueuedExecutorGroup}.
- *
- *
- * @since Geode 1.5
- */
-@Category({UnitTest.class})
-public class SerialQueuedExecutorGroupJUnitTest {
+  public PooledExecutorGroup(ThreadsMonitoring tMonitoring) {
+    super(tMonitoring);
+    super.setGrpName(GRPNAME);
+  }
 
-  public static final String GRPNAME = "SerialQueuedExecutorWithDMStats";
-
-  /**
-   * Tests that {@link SerialQueuedExecutorGroup} is setting the correct Group name
-   */
-  @Test
-  public void testVerifyGroupName() {
-    AbstractExecutorGroup serialQueuedExecutorGroup = new SerialQueuedExecutorGroup(null);
-    assertTrue(serialQueuedExecutorGroup.getGrpName().equals(GRPNAME));
+  @Override
+  public void handleExpiry(long stuckTime) {
+    super.handleExpiry(stuckTime);
   }
 }

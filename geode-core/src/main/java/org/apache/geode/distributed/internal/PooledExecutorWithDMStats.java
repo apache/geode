@@ -25,8 +25,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * A ThreadPoolExecutor with stat support.
@@ -34,14 +34,14 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  */
 public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   protected final PoolStatHelper stats;
-  private final ThreadMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadMonitoring;
 
   /**
    * Create a new pool
    **/
   public PooledExecutorWithDMStats(SynchronousQueue<Runnable> q, int maxPoolSize,
       PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(getCorePoolSize(maxPoolSize), maxPoolSize, msTimeout, TimeUnit.MILLISECONDS, q, tf, reh);
     // if (getCorePoolSize() != 0 && getCorePoolSize() == getMaximumPoolSize()) {
     // allowCoreThreadTimeOut(true); // deadcoded for 1.5
@@ -84,7 +84,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * settings except for pool size.
    **/
   public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int maxPoolSize, PoolStatHelper stats,
-      ThreadFactory tf, int msTimeout, ThreadMonitoring tMonitoring) {
+      ThreadFactory tf, int msTimeout, ThreadsMonitoring tMonitoring) {
     this(initQ(q), maxPoolSize, stats, tf, msTimeout, initREH(q), tMonitoring);
     if (!(q instanceof SynchronousQueue)) {
       this.bufferQueue = q;
@@ -142,7 +142,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * Sets timeout to IDLE_THREAD_TIMEOUT
    */
   public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int poolSize, PoolStatHelper stats,
-      ThreadFactory tf, ThreadMonitoring tMonitoring) {
+      ThreadFactory tf, ThreadsMonitoring tMonitoring) {
     /**
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
@@ -158,7 +158,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * Default timeout with no stats.
    */
   public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int poolSize, ThreadFactory tf,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     this(q, poolSize, null/* no stats */, tf, tMonitoring);
   }
 
@@ -168,7 +168,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
       this.stats.startJob();
     }
     if (this.threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadMonitoring.Mode.PooledExecutor);
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.PooledExecutor);
     }
   }
 

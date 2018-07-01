@@ -12,23 +12,41 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
 
-import org.apache.geode.distributed.ThreadMonitoring;
+package org.apache.geode.internal.monitoring;
 
-public class OneTaskOnlyExecutorGroup extends AbstractExecutorGroup {
+import java.util.Map;
 
-  public static final String GRPNAME = "OneTaskOnlyExecutor";
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
-  public OneTaskOnlyExecutorGroup(ThreadMonitoring tMonitoring) {
-    super(tMonitoring);
-    super.setGrpName(GRPNAME);
+public interface ThreadsMonitoring {
 
-  }
+  public enum Mode {
+    FunctionExecutor,
+    PooledExecutor,
+    SerialQueuedExecutor,
+    OneTaskOnlyExecutor,
+    ScheduledThreadExecutor,
+    AGSExecutor
+  };
 
-  @Override
-  public void handleExpiry(long stuckTime) {
-    super.handleExpiry(stuckTime);
-  }
+  Map<Long, AbstractExecutor> getMonitorMap();
 
+  /**
+   * Closes this ThreadMonitoring and releases all resources associated with it.
+   */
+  void close();
+
+  /**
+   * Starting to monitor a new executor object.
+   *
+   * @param mode the object executor group.
+   * @return true - if succeeded , false - if failed.
+   */
+  public boolean startMonitor(Mode mode);
+
+  /**
+   * Ending the monitoring of an executor object.
+   */
+  public void endMonitor();
 }

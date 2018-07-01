@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * A ScheduledThreadPoolExecutor which allows threads to time out after the keep alive time. With
@@ -47,10 +47,10 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     implements ScheduledExecutorService {
 
   private final ScheduledThreadPoolExecutor timer;
-  private final ThreadMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadMonitoring;
 
   public ScheduledThreadPoolExecutorWithKeepAlive(int corePoolSize, long keepAlive,
-      TimeUnit timeUnit, ThreadFactory threadFactory, ThreadMonitoring tMonitoring) {
+      TimeUnit timeUnit, ThreadFactory threadFactory, ThreadsMonitoring tMonitoring) {
     super(0, corePoolSize - 1, keepAlive, timeUnit, new SynchronousQueue(), threadFactory,
         new BlockCallerPolicy());
     timer = new ScheduledThreadPoolExecutor(1, threadFactory) {
@@ -73,7 +73,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
   @Override
   protected void beforeExecute(Thread t, Runnable r) {
     if (this.threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadMonitoring.Mode.ScheduledThreadExecutor);
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.ScheduledThreadExecutor);
     }
   }
 

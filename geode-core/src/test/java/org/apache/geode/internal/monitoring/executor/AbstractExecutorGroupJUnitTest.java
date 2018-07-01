@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.monitoring.executor;
 
 import static org.junit.Assert.assertTrue;
 
@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class})
 public class AbstractExecutorGroupJUnitTest {
 
-  private final AbstractExecutorGroup abstractExecutorGroup =
+  private final AbstractExecutor abstractExecutorGroup =
       new FunctionExecutionPooledExecutorGroup(null);
 
   @Test

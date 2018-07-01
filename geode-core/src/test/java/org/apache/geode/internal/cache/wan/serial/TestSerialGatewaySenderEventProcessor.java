@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class TestSerialGatewaySenderEventProcessor extends SerialGatewaySenderEventProcessor {
 
   public TestSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(sender, id, tMonitoring);
   }
 

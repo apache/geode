@@ -32,9 +32,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -346,7 +346,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     assertEquals(6, ex.getMaximumPoolSize());
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  private ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

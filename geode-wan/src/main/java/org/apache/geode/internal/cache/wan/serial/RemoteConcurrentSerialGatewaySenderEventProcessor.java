@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class RemoteConcurrentSerialGatewaySenderEventProcessor
     extends ConcurrentSerialGatewaySenderEventProcessor {
@@ -26,7 +26,7 @@ public class RemoteConcurrentSerialGatewaySenderEventProcessor
   private static final Logger logger = LogService.getLogger();
 
   public RemoteConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(sender, tMonitoring);
   }
 

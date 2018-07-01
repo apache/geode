@@ -30,7 +30,6 @@ import org.junit.experimental.categories.Category;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import org.apache.geode.cache.Operation;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -41,6 +40,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -149,7 +149,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     return id;
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  private ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.distributed.internal;
+package org.apache.geode.internal.monitoring;
 
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -22,36 +22,39 @@ import java.util.TimerTask;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.statistics.AbstractExecutorGroup;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
 
-public class ThreadMonitoringProcess extends TimerTask {
+public class ThreadsMonitoringProcess extends TimerTask {
 
-  private final ThreadMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadsMonitoring;
   private ResourceManagerStats resourceManagerStats = null;
   private static final Logger logger = LogService.getLogger();
-  private int timeLimit;
+  private final int timeLimit;
 
-  private Properties nonDefault = new Properties();
-  private DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+  private final Properties nonDefault = new Properties();
+  private final DistributionConfigImpl distributionConfigImpl =
+      new DistributionConfigImpl(nonDefault);
 
-  protected ThreadMonitoringProcess(ThreadMonitoring tMonitoring) {
-    timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
-    this.threadMonitoring = tMonitoring;
+  protected ThreadsMonitoringProcess(ThreadsMonitoring tMonitoring) {
+    this.timeLimit = this.distributionConfigImpl.getThreadMonitorTimeLimit();
+    this.threadsMonitoring = tMonitoring;
   }
 
   public boolean mapValidation() {
     boolean isStuck = false;
     int numOfStuck = 0;
-    for (Entry<Long, AbstractExecutorGroup> entry1 : threadMonitoring.getMonitorMap().entrySet()) {
+    for (Entry<Long, AbstractExecutor> entry1 : this.threadsMonitoring.getMonitorMap().entrySet()) {
       logger.trace("Checking Thread {}\n", entry1.getKey());
       long currentTime = System.currentTimeMillis();
       long delta = currentTime - entry1.getValue().getStartTime();
-      if (delta >= timeLimit) {
+      if (delta >= this.timeLimit) {
         isStuck = true;
         numOfStuck++;
         logger.warn("Thread <{}> is stuck , initiating handleExpiry\n", entry1.getKey());
@@ -59,13 +62,13 @@ public class ThreadMonitoringProcess extends TimerTask {
       }
     }
     if (!isStuck) {
-      if (resourceManagerStats != null)
-        resourceManagerStats.setIsThreadStuck(0);
+      if (this.resourceManagerStats != null)
+        this.resourceManagerStats.setNumThreadStuck(0);
       logger.trace("There are NO stuck threads in the system\n");
       return false;
     } else {
-      if (resourceManagerStats != null)
-        resourceManagerStats.setIsThreadStuck(numOfStuck);
+      if (this.resourceManagerStats != null)
+        this.resourceManagerStats.setNumThreadStuck(numOfStuck);
       logger.warn("There are <{}> stuck threads in the system\n", numOfStuck);
       return true;
     }
@@ -73,7 +76,7 @@ public class ThreadMonitoringProcess extends TimerTask {
 
   @Override
   public void run() {
-    if (resourceManagerStats == null) {
+    if (this.resourceManagerStats == null) {
       try {
         InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
         if (ds == null)

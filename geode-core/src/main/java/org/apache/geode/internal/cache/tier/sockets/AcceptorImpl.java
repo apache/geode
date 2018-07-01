@@ -69,7 +69,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -92,6 +91,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -669,7 +669,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  private ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

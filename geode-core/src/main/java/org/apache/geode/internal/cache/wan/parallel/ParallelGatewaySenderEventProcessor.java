@@ -25,7 +25,6 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -39,6 +38,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEventProcessor {
 
@@ -48,7 +48,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   final int nDispatcher;
 
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(LoggingThreadGroup
         .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
         "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
@@ -62,7 +62,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher, ThreadMonitoring tMonitoring) {
+      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring) {
     super(
         LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + sender.getId(),
             logger),

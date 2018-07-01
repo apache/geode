@@ -39,7 +39,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.Conflatable;
@@ -58,6 +57,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -114,7 +114,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   private Exception exception;
 
-  private final ThreadMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadMonitoring;
 
   /*
    * The batchIdToEventsMap contains a mapping between batch id and an array of events. The first
@@ -147,7 +147,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   private int batchSize;
 
   public AbstractGatewaySenderEventProcessor(LoggingThreadGroup createThreadGroup, String string,
-      GatewaySender sender, ThreadMonitoring tMonitoring) {
+      GatewaySender sender, ThreadsMonitoring tMonitoring) {
     super(createThreadGroup, string);
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
@@ -1316,7 +1316,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   protected void beforeExecute() {
     if (this.threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadMonitoring.Mode.AGSExecutor);
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.AGSExecutor);
     }
   }
 

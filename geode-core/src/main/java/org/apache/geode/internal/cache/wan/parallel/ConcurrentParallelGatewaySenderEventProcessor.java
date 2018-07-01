@@ -35,7 +35,6 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * Parallel processor which constitutes of multiple {@link ParallelGatewaySenderEventProcessor}.
@@ -76,7 +76,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   final int nDispatcher;
 
   public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(
         LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + sender.getId()),
         "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
@@ -368,7 +368,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     this.processors[pId].enqueueEvent(event);
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  private ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

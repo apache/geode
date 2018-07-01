@@ -12,21 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
 
-import org.apache.geode.distributed.ThreadMonitoring;
+package org.apache.geode.internal.monitoring;
 
-public class PooledExecutorGroup extends AbstractExecutorGroup {
+import java.util.concurrent.ConcurrentMap;
 
-  public static final String GRPNAME = "PooledExecutorWithDMStats";
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
-  public PooledExecutorGroup(ThreadMonitoring tMonitoring) {
-    super(tMonitoring);
-    super.setGrpName(GRPNAME);
+public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
+
+  @Override
+  public void close() {}
+
+  @Override
+  public boolean startMonitor(Mode mode) {
+    return true;
   }
 
   @Override
-  public void handleExpiry(long stuckTime) {
-    super.handleExpiry(stuckTime);
+  public void endMonitor() {}
+
+  @Override
+  public ConcurrentMap<Long, AbstractExecutor> getMonitorMap() {
+    return null;
   }
+
 }

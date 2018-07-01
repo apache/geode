@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.monitoring.executor;
 
 import static org.junit.Assert.assertTrue;
 
@@ -22,22 +22,23 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Contains simple tests for the {@link PooledExecutorGroup}.
- *
+ * Contains simple tests for the {@link
+ * org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup}.
  *
  * @since Geode 1.5
  */
 @Category({UnitTest.class})
-public class PooledExecutorGroupJUnitTest {
+public class OneTaskOnlyExecutorGroupJUnitTest {
 
-  public static final String GRPNAME = "PooledExecutorWithDMStats";
+  public static final String GRPNAME = "OneTaskOnlyExecutor";
 
   /**
-   * Tests that {@link PooledExecutorGroup} is setting the correct Group name
+   * Tests that {@link org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup} is
+   * setting the correct Group name
    */
   @Test
   public void testVerifyGroupName() {
-    AbstractExecutorGroup pooledExecutorGroup = new PooledExecutorGroup(null);
-    assertTrue(pooledExecutorGroup.getGrpName().equals(GRPNAME));
+    AbstractExecutor oneTaskOnlyExecutorGroup = new OneTaskOnlyExecutorGroup(null);
+    assertTrue(oneTaskOnlyExecutorGroup.getGrpName().equals(GRPNAME));
   }
 }

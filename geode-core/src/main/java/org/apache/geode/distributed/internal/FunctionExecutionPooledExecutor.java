@@ -25,8 +25,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * A ThreadPoolExecutor with stat support. This executor also has a buffer that rejected executions
@@ -42,14 +42,14 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  */
 public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
   protected final PoolStatHelper stats;
-  private final ThreadMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadMonitoring;
 
   /**
    * Create a new pool
    **/
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int maxPoolSize,
       PoolStatHelper stats, ThreadFactory tf, int msTimeout, RejectedExecutionHandler reh,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(getCorePoolSize(maxPoolSize), maxPoolSize, msTimeout, TimeUnit.MILLISECONDS, q, tf, reh);
     // if (getCorePoolSize() != 0 && getCorePoolSize() == getMaximumPoolSize()) {
     // allowCoreThreadTimeOut(true); // deadcoded for 1.5
@@ -125,7 +125,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
 
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int maxPoolSize,
       PoolStatHelper stats, ThreadFactory tf, int msTimeout, final boolean forFnExec,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     this(initQ(q), maxPoolSize, stats, tf, msTimeout, initREH(q, forFnExec), tMonitoring);
     final int retryFor =
         Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RETRY_INTERVAL", 5000).intValue();
@@ -191,7 +191,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
    * Sets timeout to IDLE_THREAD_TIMEOUT
    */
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize,
-      PoolStatHelper stats, ThreadFactory tf, ThreadMonitoring tMonitoring) {
+      PoolStatHelper stats, ThreadFactory tf, ThreadsMonitoring tMonitoring) {
     /**
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
@@ -203,7 +203,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
   }
 
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize,
-      PoolStatHelper stats, ThreadFactory tf, boolean forFnExec, ThreadMonitoring tMonitoring) {
+      PoolStatHelper stats, ThreadFactory tf, boolean forFnExec, ThreadsMonitoring tMonitoring) {
     /**
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
@@ -218,7 +218,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
    * Default timeout with no stats.
    */
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize, ThreadFactory tf,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     this(q, poolSize, null/* no stats */, tf, tMonitoring);
   }
 
@@ -228,7 +228,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
       this.stats.startJob();
     }
     if (this.threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadMonitoring.Mode.FunctionExecutor);
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.FunctionExecutor);
     }
   }
 

@@ -36,7 +36,6 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -53,6 +52,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 public class ConcurrentSerialGatewaySenderEventProcessor
@@ -70,7 +70,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   private final Set<RegionQueue> queues;
 
   public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(LoggingThreadGroup
         .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
         "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
@@ -403,7 +403,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     }
   }
 
-  protected ThreadMonitoring getThreadMonitorObj() {
+  protected ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

@@ -60,7 +60,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -84,6 +83,9 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.tcp.Connection;
@@ -453,9 +455,9 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Thread Monitor mechanism to monitor system threads
    *
-   * @see org.apache.geode.distributed.ThreadMonitoring
+   * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
    */
-  private final ThreadMonitoring threadMonitor;
+  private final ThreadsMonitoring threadMonitor;
 
   /** a map keyed on InternalDistributedMember, to direct channels to other systems */
   // protected final Map channelMap = CFactory.createCM();
@@ -691,10 +693,10 @@ public class ClusterDistributionManager implements DistributionManager {
       DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
 
       if (distributionConfigImpl.getThreadMonitorEnabled()) {
-        this.threadMonitor = new ThreadMonitoringImpl();
+        this.threadMonitor = new ThreadsMonitoringImpl();
         logger.info("[ThreadsMonitor] a New Monitor object and process were created.\n");
       } else {
-        this.threadMonitor = new ThreadMonitoringImplDummy();
+        this.threadMonitor = new ThreadsMonitoringImplDummy();
         logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
       }
     }
@@ -3577,7 +3579,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   /** returns the Threads Monitoring instance */
-  public ThreadMonitoring getThreadMonitoring() {
+  public ThreadsMonitoring getThreadMonitoring() {
     return this.threadMonitor;
   }
 
@@ -4016,7 +4018,7 @@ public class ClusterDistributionManager implements DistributionManager {
       }
     }
 
-    private ThreadMonitoring getThreadMonitorObj() {
+    private ThreadsMonitoring getThreadMonitorObj() {
       InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
       if (ds == null)
         return null;

@@ -46,7 +46,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
@@ -56,6 +55,9 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -73,9 +75,9 @@ public class LonerDistributionManager implements DistributionManager {
   /**
    * Thread Monitor mechanism to monitor system threads
    *
-   * @see org.apache.geode.distributed.ThreadMonitoring
+   * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
    */
-  private final ThreadMonitoring threadMonitor;
+  private final ThreadsMonitoring threadMonitor;
 
   //////////////////////// Constructors ////////////////////////
 
@@ -97,10 +99,10 @@ public class LonerDistributionManager implements DistributionManager {
     DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
 
     if (distributionConfigImpl.getThreadMonitorEnabled()) {
-      this.threadMonitor = new ThreadMonitoringImpl();
+      this.threadMonitor = new ThreadsMonitoringImpl();
       logger.info("[ThreadsMonitor] New Monitor object and process were created.\n");
     } else {
-      this.threadMonitor = new ThreadMonitoringImplDummy();
+      this.threadMonitor = new ThreadsMonitoringImplDummy();
       logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
     }
   }
@@ -1484,7 +1486,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   @Override
   /** returns the Threads Monitoring instance */
-  public ThreadMonitoring getThreadMonitoring() {
+  public ThreadsMonitoring getThreadMonitoring() {
     return this.threadMonitor;
   }
 }

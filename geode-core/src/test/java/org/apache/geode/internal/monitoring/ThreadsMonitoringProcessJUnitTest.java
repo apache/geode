@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal;
+package org.apache.geode.internal.monitoring;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -23,25 +23,25 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.ThreadMonitoring.Mode;
-import org.apache.geode.internal.statistics.AbstractExecutorGroup;
-import org.apache.geode.internal.statistics.PooledExecutorGroup;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Contains simple tests for the {@link ThreadMonitoringImpl}.
- *
+ * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoringImpl}.
  *
  * @since Geode 1.5
  */
 @Category({UnitTest.class})
-public class ThreadMonitoringProcessJUnitTest {
+public class ThreadsMonitoringProcessJUnitTest {
 
-  private ThreadMonitoringImpl threadMonitoringImpl;
+  private ThreadsMonitoringImpl threadsMonitoringImpl;
 
   @Before
   public void before() {
-    threadMonitoringImpl = new ThreadMonitoringImpl();
+    threadsMonitoringImpl = new ThreadsMonitoringImpl();
   }
 
   /**
@@ -56,14 +56,14 @@ public class ThreadMonitoringProcessJUnitTest {
 
     int timeLimit = distributionConfigImpl.getThreadMonitorTimeLimit();
 
-    AbstractExecutorGroup absExtgroup = new PooledExecutorGroup(threadMonitoringImpl);
+    AbstractExecutor absExtgroup = new PooledExecutorGroup(threadsMonitoringImpl);
     absExtgroup.setStartTime(absExtgroup.getStartTime() - timeLimit - 1);
 
-    threadMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
+    threadsMonitoringImpl.getMonitorMap().put(threadID, absExtgroup);
 
-    assertTrue(threadMonitoringImpl.getThreadMonitoringProcess().mapValidation());
+    assertTrue(threadsMonitoringImpl.getThreadsMonitoringProcess().mapValidation());
 
-    threadMonitoringImpl.close();
+    threadsMonitoringImpl.close();
   }
 
   /**
@@ -72,10 +72,10 @@ public class ThreadMonitoringProcessJUnitTest {
   @Test
   public void testThreadIsNotStuck() {
 
-    threadMonitoringImpl.startMonitor(Mode.PooledExecutor);
+    threadsMonitoringImpl.startMonitor(Mode.PooledExecutor);
 
-    assertFalse(threadMonitoringImpl.getThreadMonitoringProcess().mapValidation());
+    assertFalse(threadsMonitoringImpl.getThreadsMonitoringProcess().mapValidation());
 
-    threadMonitoringImpl.close();
+    threadsMonitoringImpl.close();
   }
 }

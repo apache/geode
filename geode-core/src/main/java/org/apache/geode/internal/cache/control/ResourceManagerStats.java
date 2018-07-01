@@ -564,14 +564,14 @@ public class ResourceManagerStats {
   /**
    * Returns the value of ThreadStuck (how many (if at all) stuck threads are in the system)
    */
-  public int getIsThreadStuck() {
+  public int getNumThreadStuck() {
     return this.stats.getInt(numThreadsStuckId);
   }
 
   /**
    * Sets the value of Thread Stuck
    */
-  public void setIsThreadStuck(int value) {
+  public void setNumThreadStuck(int value) {
     this.stats.setInt(numThreadsStuckId, value);
   }
 }

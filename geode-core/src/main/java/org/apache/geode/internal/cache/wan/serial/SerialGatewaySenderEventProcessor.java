@@ -42,7 +42,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -60,6 +59,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -112,7 +112,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
 
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + id, logger),
         "Event Processor for GatewaySender_" + id, sender, tMonitoring);
 

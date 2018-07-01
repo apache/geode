@@ -50,7 +50,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.PoolCancelledException;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -68,6 +67,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
 /**
@@ -1619,7 +1619,7 @@ public class PoolImpl implements InternalPool {
     return subscriptionTimeoutMultiplier;
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  private ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     if (ds == null)
       return null;

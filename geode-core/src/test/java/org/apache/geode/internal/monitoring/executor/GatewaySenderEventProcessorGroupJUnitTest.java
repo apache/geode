@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.monitoring.executor;
 
 import static org.junit.Assert.assertTrue;
 
@@ -22,8 +22,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Contains simple tests for the {@link GatewaySenderEventProcessorGroup}.
- *
+ * Contains simple tests for the {@link
+ * org.apache.geode.internal.monitoring.executor.GatewaySenderEventProcessorGroup}.
  *
  * @since Geode 1.5
  */
@@ -33,11 +33,13 @@ public class GatewaySenderEventProcessorGroupJUnitTest {
   public static final String GRPNAME = "GatewaySenderEventProcessor";
 
   /**
-   * Tests that {@link GatewaySenderEventProcessorGroup} is setting the correct Group name
+   * Tests that {@link
+   * org.apache.geode.internal.monitoring.executor.GatewaySenderEventProcessorGroup} is setting the
+   * correct Group name
    */
   @Test
   public void testVerifyGroupName() {
-    AbstractExecutorGroup gatewaySenderEventProcessorGroup =
+    AbstractExecutor gatewaySenderEventProcessorGroup =
         new GatewaySenderEventProcessorGroup(null);
     assertTrue(gatewaySenderEventProcessorGroup.getGrpName().equals(GRPNAME));
   }

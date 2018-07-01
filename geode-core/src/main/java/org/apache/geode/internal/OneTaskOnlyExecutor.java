@@ -20,7 +20,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.distributed.ThreadMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * A decorator for a ScheduledExecutorService which tries to make sure that there is only one task
@@ -46,17 +46,17 @@ import org.apache.geode.distributed.ThreadMonitoring;
 @SuppressWarnings("synthetic-access")
 public class OneTaskOnlyExecutor {
 
-  private final ThreadMonitoring threadMonitoring;
+  private final ThreadsMonitoring threadMonitoring;
   private final ScheduledExecutorService ex;
   private ScheduledFuture<?> future = null;
   private ConflatedTaskListener listener;
 
-  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ThreadMonitoring tMonitoring) {
+  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ThreadsMonitoring tMonitoring) {
     this(ex, new ConflatedTaskListenerAdapter(), tMonitoring);
   }
 
   public OneTaskOnlyExecutor(ScheduledExecutorService ex, ConflatedTaskListener listener,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     this.ex = ex;
     this.listener = listener;
     this.threadMonitoring = tMonitoring;
@@ -172,7 +172,7 @@ public class OneTaskOnlyExecutor {
 
   protected void beforeExecute() {
     if (this.threadMonitoring != null) {
-      threadMonitoring.startMonitor(ThreadMonitoring.Mode.OneTaskOnlyExecutor);
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.OneTaskOnlyExecutor);
     }
   }
 

@@ -29,12 +29,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * This interface defines the services provided by any class that is a distribution manager.
@@ -499,5 +499,5 @@ public interface DistributionManager extends ReplySender {
   DistributedMember getMemberWithName(String name);
 
   /** returns the Threads Monitoring instance */
-  public ThreadMonitoring getThreadMonitoring();
+  public ThreadsMonitoring getThreadMonitoring();
 }

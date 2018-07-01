@@ -18,12 +18,12 @@ package org.apache.geode.internal.cache.wan.parallel;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.ThreadMonitoring;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * Remote version of GatewaySenderEvent Processor
@@ -33,7 +33,7 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
     extends ConcurrentParallelGatewaySenderEventProcessor {
 
   public RemoteConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadMonitoring tMonitoring) {
+      ThreadsMonitoring tMonitoring) {
     super(sender, tMonitoring);
   }
 
@@ -67,7 +67,7 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
     }
   }
 
-  private ThreadMonitoring getThreadMonitorObj() {
+  private ThreadsMonitoring getThreadMonitorObj() {
     InternalDistributedSystem internalDistributedSystem =
         InternalDistributedSystem.getAnyInstance();
     if (internalDistributedSystem == null)

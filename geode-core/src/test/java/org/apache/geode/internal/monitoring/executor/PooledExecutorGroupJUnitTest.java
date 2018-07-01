@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.monitoring.executor;
 
 import static org.junit.Assert.assertTrue;
 
@@ -22,23 +22,23 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Contains simple tests for the {@link ScheduledThreadPoolExecutorWKAGroup}.
- *
+ * Contains simple tests for the {@link
+ * org.apache.geode.internal.monitoring.executor.PooledExecutorGroup}.
  *
  * @since Geode 1.5
  */
 @Category({UnitTest.class})
-public class ScheduledThreadPoolExecutorWKAGroupJUnitTest {
+public class PooledExecutorGroupJUnitTest {
 
-  public static final String GRPNAME = "ScheduledThreadPoolExecutorWithKeepAlive";
+  public static final String GRPNAME = "PooledExecutorWithDMStats";
 
   /**
-   * Tests that {@link ScheduledThreadPoolExecutorWKAGroup} is setting the correct Group name
+   * Tests that {@link org.apache.geode.internal.monitoring.executor.PooledExecutorGroup} is setting
+   * the correct Group name
    */
   @Test
   public void testVerifyGroupName() {
-    AbstractExecutorGroup scheduledThreadPoolExecutorWKAGroup =
-        new ScheduledThreadPoolExecutorWKAGroup(null);
-    assertTrue(scheduledThreadPoolExecutorWKAGroup.getGrpName().equals(GRPNAME));
+    AbstractExecutor pooledExecutorGroup = new PooledExecutorGroup(null);
+    assertTrue(pooledExecutorGroup.getGrpName().equals(GRPNAME));
   }
 }
