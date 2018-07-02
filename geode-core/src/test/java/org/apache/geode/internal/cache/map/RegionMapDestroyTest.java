@@ -373,8 +373,8 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEvictionWithMockedEntryMap();
     givenExistingEvictableEntry("value");
-
     when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    isEviction = false;
 
     assertThat(doDestroy()).isTrue();
 
@@ -392,6 +392,7 @@ public class RegionMapDestroyTest {
     doThrow(ConcurrentCacheModificationException.class).when(evictableEntry).destroy(
         eq(arm._getOwner()), eq(event), eq(false),
         anyBoolean(), eq(expectedOldValue), anyBoolean(), anyBoolean());
+    isEviction = false;
 
     assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
     validateNoDestroyInvocationsOnRegion();
@@ -406,6 +407,7 @@ public class RegionMapDestroyTest {
     when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
     when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
         eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    isEviction = false;
 
     assertThat(doDestroy()).isTrue();
 
@@ -455,8 +457,8 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEvictionWithMockedEntryMap();
     givenExistingEvictableEntry("value");
-
     when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    isEviction = false;
 
     assertThat(doDestroy()).isTrue();
 
@@ -958,7 +960,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateMapContainsTokenValue(Token.REMOVED_PHASE1);
+    validateMapDoesNotContainKey(KEY);
     validateNoDestroyInvocationsOnRegion();
   }
 
@@ -970,7 +972,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateMapContainsTokenValue(Token.REMOVED_PHASE1);
+    validateMapDoesNotContainKey(KEY);
     validateNoDestroyInvocationsOnRegion();
   }
 

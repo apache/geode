@@ -415,7 +415,7 @@ public class RegionMapDestroy {
   }
 
   private void finishTombstoneOrEntryNotFound() {
-    if (isEviction && !internalRegion.getConcurrencyChecksEnabled()) {
+    if (isEviction) {
       return;
     }
     // The following ensures that there is not a concurrent operation
@@ -437,11 +437,6 @@ public class RegionMapDestroy {
         retry = true;
         return;
       }
-      if (isEviction) {
-        // TODO: BUG? why leave a REMOVE_PHASE1 in the map when evicting?
-        // Move this check to before createNewRegionEntry?
-        return;
-      }
       try {
         handleEntryNotFound(newRegionEntry);
       } finally {
@@ -451,9 +446,6 @@ public class RegionMapDestroy {
   }
 
   private void finishTombstone() {
-    if (isEviction) {
-      return;
-    }
     // Since we sync before testing the region entry to see
     // if it is a tombstone, it is impossible for it to change
     // to something else.
