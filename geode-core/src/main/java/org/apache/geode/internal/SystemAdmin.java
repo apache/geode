@@ -76,7 +76,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.backup.BackupUtil;
+import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.MergeLogFiles;
@@ -618,8 +618,9 @@ public class SystemAdmin {
     InternalDistributedSystem ads = getAdminCnx();
 
     // Baseline directory should be null if it was not provided on the command line
-    BackupStatus status = BackupUtil.backupAllMembers(ads.getDistributionManager(), targetDir,
-        SystemAdmin.baselineDir);
+    BackupStatus status =
+        new BackupOperation().backupAllMembers(ads.getDistributionManager(), targetDir,
+            SystemAdmin.baselineDir);
 
     boolean incomplete = !status.getOfflineDiskStores().isEmpty();
 

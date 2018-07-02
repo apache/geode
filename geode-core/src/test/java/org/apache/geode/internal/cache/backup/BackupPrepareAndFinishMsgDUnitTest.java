@@ -144,15 +144,16 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
       throws InterruptedException, TimeoutException, ExecutionException {
     DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
-    Properties backupProperties = BackupUtil.createBackupProperties(diskDirs[0].toString(), null);
+    Properties backupProperties = new BackupConfigFactory()
+        .withTargetDirPath(diskDirs[0].toString()).createBackupProperties();
     Future<Void> future = null;
-    new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
+    new PrepareBackupStep(dm, dm.getId(), dm.getCache(), recipients,
         new PrepareBackupFactory(), backupProperties).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> assertTrue(backupLock.getQueueLength() > 0));
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())
+    new FinishBackupStep(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())
         .send();
     future.get(5, TimeUnit.SECONDS);
   }
@@ -160,14 +161,15 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
   private void doReadActionsAndVerifyCompletion() {
     DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
-    Properties backupProperties = BackupUtil.createBackupProperties(diskDirs[0].toString(), null);
-    new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
+    Properties backupProperties = new BackupConfigFactory()
+        .withTargetDirPath(diskDirs[0].toString()).createBackupProperties();
+    new PrepareBackupStep(dm, dm.getId(), dm.getCache(), recipients,
         new PrepareBackupFactory(), backupProperties).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     List<CompletableFuture<?>> futureList = doReadActions();
     CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[futureList.size()]));
     assertTrue(backupLock.getQueueLength() == 0);
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())
+    new FinishBackupStep(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())
         .send();
   }
 

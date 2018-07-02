@@ -209,7 +209,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   private BackupStatus baseline(VM vm) {
     return vm.invoke(() -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+        return new BackupOperation().backupAllMembers(getSystem().getDistributionManager(),
             getBaselineDir().toString(), null);
       } catch (ManagementException e) {
         throw new RuntimeException(e);
@@ -220,7 +220,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   private BackupStatus incremental(VM vm) {
     return vm.invoke(() -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+        return new BackupOperation().backupAllMembers(getSystem().getDistributionManager(),
             getIncrementalDir().toString(), getBaselineBackupDir().toString());
       } catch (ManagementException e) {
         throw new RuntimeException(e);
@@ -231,7 +231,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   private BackupStatus incremental2(VM vm) {
     return vm.invoke(() -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+        return new BackupOperation().backupAllMembers(getSystem().getDistributionManager(),
             getIncremental2Dir().toString(), getIncrementalBackupDir().toString());
       } catch (ManagementException e) {
         throw new RuntimeException(e);
@@ -940,7 +940,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
       @Override
       public Object call() {
         try {
-          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+          return new BackupOperation().backupAllMembers(getSystem().getDistributionManager(),
               getIncrementalDir().toString(), this.baselineDir.toString());
 
         } catch (ManagementException e) {

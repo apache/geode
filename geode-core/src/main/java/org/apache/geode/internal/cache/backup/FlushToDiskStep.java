@@ -14,53 +14,72 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.IOException;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
-class FinishBackupOperation extends BackupOperation {
+/**
+ * A Operation to from an admin VM to all non admin members to start a backup. In the prepare phase
+ * of the backup, the members will suspend bucket destroys to make sure buckets aren't missed during
+ * the backup.
+ */
+public class FlushToDiskStep {
   private static final Logger logger = LogService.getLogger();
 
+  private final DistributionManager dm;
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
-  private final FinishBackupFactory finishBackupFactory;
+  private final FlushToDiskFactory flushToDiskFactory;
 
-  FinishBackupOperation(DistributionManager dm, InternalDistributedMember member,
+  FlushToDiskStep(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
-      FinishBackupFactory FinishBackupFactory) {
-    super(dm);
+      FlushToDiskFactory flushToDiskFactory) {
+    this.flushToDiskFactory = flushToDiskFactory;
+    this.dm = dm;
     this.member = member;
-    this.cache = cache;
     this.recipients = recipients;
-    this.finishBackupFactory = FinishBackupFactory;
+    this.cache = cache;
   }
 
-  @Override
-  ReplyProcessor21 createReplyProcessor() {
-    return finishBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
-  }
+  void send() {
+    ReplyProcessor21 replyProcessor = createReplyProcessor();
 
-  @Override
-  DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return finishBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
-  }
+    dm.putOutgoing(createDistributionMessage(replyProcessor));
 
-  @Override
-  void processLocally() {
+    processLocally();
+
     try {
-      addToResults(member, finishBackupFactory.createFinishBackup(cache).run());
-    } catch (IOException e) {
-      logger.fatal("Failed to FinishBackup in " + member, e);
+      replyProcessor.waitForReplies();
+    } catch (ReplyException e) {
+      if (!(e.getCause() instanceof CancelException)) {
+        throw e;
+      }
+    } catch (InterruptedException e) {
+      logger.warn(e.getMessage(), e);
     }
+  }
+
+  private ReplyProcessor21 createReplyProcessor() {
+    return this.flushToDiskFactory.createReplyProcessor(dm, recipients);
+  }
+
+  private DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
+    return this.flushToDiskFactory.createRequest(member, recipients,
+        replyProcessor.getProcessorId());
+  }
+
+  private void processLocally() {
+    flushToDiskFactory.createFlushToDisk(cache).run();
   }
 
 }
