@@ -100,6 +100,10 @@ public class FederatingManager extends Manager {
     this.messenger = new MemberMessenger(jmxAdapter, repo, system);
   }
 
+  void setProxyFactory(MBeanProxyFactory newProxyFactory) {
+    this.proxyFactory = newProxyFactory;
+  }
+
   /**
    * This method will be invoked whenever a member wants to be a managing node. The exception
    * Management exception has to be handled by the caller.
