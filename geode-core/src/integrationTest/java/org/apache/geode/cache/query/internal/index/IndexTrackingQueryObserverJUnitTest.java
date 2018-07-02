@@ -39,7 +39,6 @@ import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.cache.query.internal.index.IndexTrackingQueryObserverDUnitTest.IndexTrackingTestHook;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;

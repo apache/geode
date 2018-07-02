@@ -40,7 +40,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
-import org.apache.geode.cache.query.dunit.QueryUsingPoolDUnitTest.TestObject;
+import org.apache.geode.cache.query.dunit.TestObject;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
