@@ -60,7 +60,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -699,16 +698,6 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
   @Test
   public void testExecuteWithDiskDirsAndDiskSizesMismatch() throws Exception {
-    IgnoredException ignoredException =
-        IgnoredException.addIgnoredException(IllegalStateException.class.getName());
-    try {
-      doTestExecuteWithDiskDirsAndDiskSizesMismatch();
-    } finally {
-      ignoredException.remove();
-    }
-  }
-
-  private void doTestExecuteWithDiskDirsAndDiskSizesMismatch() throws Exception {
     final String diskStoreName = "mockDiskStore";
     final String memberId = "mockMemberId";
     final String memberName = "mockMemberName";

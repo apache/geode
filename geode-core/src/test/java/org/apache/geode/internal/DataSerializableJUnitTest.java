@@ -1898,7 +1898,7 @@ public class DataSerializableJUnitTest implements Serializable {
         if (e instanceof VirtualMachineError) {
           SystemFailure.setFailure((VirtualMachineError) e); // don't throw
         }
-        fail("Uncaught exception in thread " + t, e);
+        fail("Uncaught exception in thread " + t + e);
       }
     };
     Thread thread = new Thread(group, "Registrar") {
@@ -1908,7 +1908,7 @@ public class DataSerializableJUnitTest implements Serializable {
           DataSerializer.register(c);
 
         } catch (Exception ex) {
-          fail("Interrupted while registering", ex);
+          fail("Interrupted while registering" + ex);
         }
       }
     };
@@ -1956,7 +1956,7 @@ public class DataSerializableJUnitTest implements Serializable {
         if (e instanceof VirtualMachineError) {
           SystemFailure.setFailure((VirtualMachineError) e); // don't throw
         }
-        fail("Uncaught exception in thread " + t, e);
+        fail("Uncaught exception in thread " + t + e);
       }
     };
     Thread thread = new Thread(group, "Registrar") {
@@ -1966,7 +1966,7 @@ public class DataSerializableJUnitTest implements Serializable {
           Instantiator.register(inst);
 
         } catch (Exception ex) {
-          fail("Interrupted while registering", ex);
+          fail("Interrupted while registering" + ex);
         }
       }
     };
