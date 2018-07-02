@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
-class PrepareBackupOperation extends BackupOperation {
+class PrepareBackupStep extends BackupStep {
   private static final Logger logger = LogService.getLogger();
 
   private final InternalDistributedMember member;
@@ -36,7 +36,7 @@ class PrepareBackupOperation extends BackupOperation {
   private final PrepareBackupFactory prepareBackupFactory;
   private final Properties properties;
 
-  PrepareBackupOperation(DistributionManager dm, InternalDistributedMember member,
+  PrepareBackupStep(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
       PrepareBackupFactory prepareBackupFactory, Properties properties) {
     super(dm);

@@ -74,7 +74,8 @@ public class PrepareBackupFactoryTest {
 
   @Test
   public void createPrepareBackupReturnsPrepareBackup() throws Exception {
-    Properties properties = BackupUtil.createBackupProperties("targetDir", null);
+    Properties properties =
+        new BackupConfigFactory().withTargetDirPath("targetDir").createBackupProperties();
     assertThat(prepareBackupFactory.createPrepareBackup(member, cache, properties))
         .isInstanceOf(PrepareBackup.class);
   }

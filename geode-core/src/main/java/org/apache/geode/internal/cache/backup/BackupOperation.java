@@ -15,71 +15,104 @@
 package org.apache.geode.internal.cache.backup;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.CancelException;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.management.BackupStatus;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.internal.BackupStatusImpl;
 
-abstract class BackupOperation implements BackupResultCollector {
-  private static final Logger logger = LogService.getLogger();
+public class BackupOperation {
 
-  private final DistributionManager dm;
-  private final Map<DistributedMember, Set<PersistentID>> results =
-      Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
+  private final FlushToDiskFactory flushToDiskFactory;
+  private final PrepareBackupFactory prepareBackupFactory;
+  private final AbortBackupFactory abortBackupFactory;
+  private final FinishBackupFactory finishBackupFactory;
 
-  protected BackupOperation(DistributionManager dm) {
-    this.dm = dm;
+  public BackupOperation() {
+    this(new FlushToDiskFactory(), new PrepareBackupFactory(), new AbortBackupFactory(),
+        new FinishBackupFactory());
   }
 
-  abstract ReplyProcessor21 createReplyProcessor();
+  BackupOperation(FlushToDiskFactory flushToDiskFactory, PrepareBackupFactory prepareBackupFactory,
+      AbortBackupFactory abortBackupFactory, FinishBackupFactory finishBackupFactory) {
+    this.flushToDiskFactory = flushToDiskFactory;
+    this.prepareBackupFactory = prepareBackupFactory;
+    this.abortBackupFactory = abortBackupFactory;
+    this.finishBackupFactory = finishBackupFactory;
+  }
 
-  abstract DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor);
+  public BackupStatus backupAllMembers(DistributionManager dm, String targetDirPath,
+      String baselineDirPath) {
+    Properties properties = new BackupConfigFactory().withTargetDirPath(targetDirPath)
+        .withBaselineDirPath(baselineDirPath).createBackupProperties();
+    return performBackup(dm, properties);
+  }
 
-  abstract void processLocally();
+  private BackupStatus performBackup(DistributionManager dm, Properties properties)
+      throws ManagementException {
+    BackupLockService backupLockService = new BackupLockService();
+    BackupStatus status;
+    if (backupLockService.obtainLock(dm)) {
+      try {
+        Set<PersistentID> missingMembers =
+            AdminDistributedSystemImpl.getMissingPersistentMembers(dm);
+        Set<InternalDistributedMember> recipients = dm.getOtherDistributionManagerIds();
 
-  Map<DistributedMember, Set<PersistentID>> send() {
-    ReplyProcessor21 replyProcessor = createReplyProcessor();
+        BackupDataStoreResult result = performBackupSteps(dm, recipients, properties);
 
-    dm.putOutgoing(createDistributionMessage(replyProcessor));
+        // It's possible that when calling getMissingPersistentMembers, some members are
+        // still creating/recovering regions, and at FinishBackupRequest.send, the
+        // regions at the members are ready. Logically, since the members in successfulMembers
+        // should override the previous missingMembers
+        for (Set<PersistentID> onlineMembersIds : result.getSuccessfulMembers().values()) {
+          missingMembers.removeAll(onlineMembersIds);
+        }
 
-    processLocally();
-
-    try {
-      replyProcessor.waitForReplies();
-    } catch (ReplyException e) {
-      if (!(e.getCause() instanceof CancelException)) {
-        throw e;
+        result.getExistingDataStores().keySet().removeAll(result.getSuccessfulMembers().keySet());
+        for (Set<PersistentID> lostMembersIds : result.getExistingDataStores().values()) {
+          missingMembers.addAll(lostMembersIds);
+        }
+        status = new BackupStatusImpl(result.getSuccessfulMembers(), missingMembers);
+      } finally {
+        backupLockService.releaseLock(dm);
       }
-    } catch (InterruptedException e) {
-      logger.warn(e.getMessage(), e);
+
+    } else {
+      throw new ManagementException(
+          LocalizedStrings.DistributedSystem_BACKUP_ALREADY_IN_PROGRESS.toLocalizedString());
     }
-
-    return getResults();
+    return status;
   }
 
-  @Override
-  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
-    if (persistentIds != null && !persistentIds.isEmpty()) {
-      results.put(member, persistentIds);
+  private BackupDataStoreResult performBackupSteps(DistributionManager dm, Set recipients,
+      Properties properties) {
+    new FlushToDiskStep(dm, dm.getId(), dm.getCache(), recipients, flushToDiskFactory).send();
+
+    boolean abort = true;
+    Map<DistributedMember, Set<PersistentID>> successfulMembers;
+    Map<DistributedMember, Set<PersistentID>> existingDataStores;
+    try {
+      existingDataStores = new PrepareBackupStep(dm, dm.getId(), dm.getCache(), recipients,
+          prepareBackupFactory, properties).send();
+      abort = false;
+    } finally {
+      if (abort) {
+        new AbortBackupStep(dm, dm.getId(), dm.getCache(), recipients, abortBackupFactory)
+            .send();
+        successfulMembers = Collections.emptyMap();
+      } else {
+        successfulMembers = new FinishBackupStep(dm, dm.getId(), dm.getCache(), recipients,
+            finishBackupFactory).send();
+      }
     }
-  }
-
-  Map<DistributedMember, Set<PersistentID>> getResults() {
-    return this.results;
-  }
-
-  protected DistributionManager getDistributionManager() {
-    return this.dm;
+    return new BackupDataStoreResult(existingDataStores, successfulMembers);
   }
 }

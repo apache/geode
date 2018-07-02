@@ -88,7 +88,7 @@ import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
-import org.apache.geode.internal.cache.backup.BackupUtil;
+import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -2322,7 +2322,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   public static BackupStatus backupAllMembers(DistributionManager dm, File targetDir,
       File baselineDir) throws AdminException {
     String baselineDirectory = baselineDir == null ? null : baselineDir.toString();
-    return BackupUtil.backupAllMembers(dm, targetDir.toString(), baselineDirectory);
+    return new BackupOperation().backupAllMembers(dm, targetDir.toString(), baselineDirectory);
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {

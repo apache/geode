@@ -69,8 +69,8 @@ public class PrepareBackupRequestTest {
     recipients = new HashSet<>();
     persistentIds = new HashSet<>();
 
-    backupProperties =
-        BackupUtil.createBackupProperties(targetDir.toString(), baselineDir.toString());
+    backupProperties = new BackupConfigFactory().withTargetDirPath(targetDir.toString())
+        .withBaselineDirPath(baselineDir.toString()).createBackupProperties();
 
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);
