@@ -192,7 +192,7 @@ public class HARegion extends DistributedRegion {
 
       // <HA overflow>
       if (conflatable instanceof HAEventWrapper) {
-        this.owningQueue.decAndRemoveFromHAContainer((HAEventWrapper) conflatable);
+        this.owningQueue.decAndRemoveFromHAContainer((HAEventWrapper) conflatable, "Invalidate");
       }
       // </HA overflow>
       // update the stats
