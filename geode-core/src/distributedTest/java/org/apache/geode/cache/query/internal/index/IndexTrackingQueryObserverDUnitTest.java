@@ -186,7 +186,8 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
         Index keyIndex1 = null;
         try {
           if (create) {
-            keyIndex1 = (IndexProtocol) qs.createIndex(IndexTrackingTestHook.INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+            keyIndex1 = (IndexProtocol) qs.createIndex(IndexTrackingTestHook.INDEX_NAME,
+                IndexType.FUNCTIONAL, "ID",
                 "/portfolio ");
             assertNotNull(keyIndex1);
             assertTrue(keyIndex1 instanceof PartitionedIndex);

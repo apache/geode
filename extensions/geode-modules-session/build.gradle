@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+evaluationDependsOn(":geode-core")
+
 dependencies {
   compile project(':extensions/geode-modules-session-internal')
   compile project(':geode-core')
