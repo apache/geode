@@ -37,3 +37,19 @@ dependencies {
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
   compile project(":geode-old-versions")
 }
+
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integrationTest/java')
+    }
+    resources.srcDir file('src/integrationTest/resources')
+  }
+}
