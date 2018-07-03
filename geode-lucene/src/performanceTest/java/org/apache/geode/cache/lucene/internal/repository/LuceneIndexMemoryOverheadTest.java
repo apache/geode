@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal.repository;
 
 
-import static org.apache.geode.cache.lucene.LuceneQueriesIntegrationTest.REGION_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 
 import java.nio.charset.Charset;
@@ -44,6 +43,7 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
 @Category({PerformanceTest.class, LuceneTest.class})
 @Ignore("Tests have no assertions")
 public class LuceneIndexMemoryOverheadTest extends LuceneIntegrationTest {
+  private static final String REGION_NAME = "index";
   private static int NUM_BATCHES = 30;
   private static int NUM_ENTRIES = 10000;
   private Random random = new Random(0);
