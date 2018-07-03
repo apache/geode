@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OplogTest {
   private final DiskStoreImpl.OplogCompactor compactor = mock(DiskStoreImpl.OplogCompactor.class);
   private final PersistentOplogSet parent = mock(PersistentOplogSet.class);

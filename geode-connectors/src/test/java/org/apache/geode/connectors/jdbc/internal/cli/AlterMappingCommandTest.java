@@ -41,7 +41,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class AlterMappingCommandTest {
   public static final String COMMAND = "alter jdbc-mapping --region='region' ";
   private AlterMappingCommand command;

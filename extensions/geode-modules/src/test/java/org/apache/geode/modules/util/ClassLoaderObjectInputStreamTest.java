@@ -40,7 +40,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @SuppressWarnings("unused")
 public class ClassLoaderObjectInputStreamTest {
 

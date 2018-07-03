@@ -61,7 +61,6 @@ import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntrie
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class AbstractRegionMapTest {
 
   private static final Object KEY = "key";

@@ -31,7 +31,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, MembershipTest.class}) // Fails on Windows -- see GEODE-373
+@Category({MembershipTest.class}) // Fails on Windows -- see GEODE-373
 public class ProductUseLogJUnitTest {
 
   private long oldMax;

@@ -32,7 +32,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LoginHandlerInterceptorRequestHeaderJUnitTest {
 
   SecurityService securityService;

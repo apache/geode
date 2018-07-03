@@ -35,7 +35,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
  *
  * @see org.apache.geode.test.junit.rules.RetryRule
  */
-@Category(UnitTest.class)
 public class RetryRuleGlobalWithExceptionTest {
 
   @Test

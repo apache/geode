@@ -33,7 +33,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PartitionRegionConfigTest {
 
   private int prId;

@@ -41,7 +41,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since Geode 1.0
  */
-@Category(UnitTest.class)
 public class ResourceInstTest {
 
   @Mock

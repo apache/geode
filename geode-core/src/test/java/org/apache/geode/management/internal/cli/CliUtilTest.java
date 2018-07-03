@@ -31,7 +31,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class CliUtilTest {
 
   @Rule

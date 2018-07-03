@@ -30,7 +30,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ProtobufUtilitiesJUnitTest {
 
   private ProtobufSerializationService protobufSerializationService =

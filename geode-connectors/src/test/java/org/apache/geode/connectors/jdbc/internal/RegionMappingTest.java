@@ -35,7 +35,6 @@ import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionMappingTest {
 
   @Rule

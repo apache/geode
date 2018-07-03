@@ -30,7 +30,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * to Interfaces, Classes, Public and Protected Fields, Enums, Enum Constants, Public and Protected
  * Methods, Packages, and Constructors.
  */
-@Category(UnitTest.class)
 public class ExperimentalJUnitTest {
 
   private static final String FIELD_NAME = "field";

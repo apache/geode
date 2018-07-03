@@ -40,7 +40,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class ConfigurePDXCommandTest {
   private static final String BASE_COMMAND_STRING = "configure pdx ";
 

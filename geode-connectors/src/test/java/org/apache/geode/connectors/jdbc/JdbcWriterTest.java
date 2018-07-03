@@ -39,7 +39,6 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JdbcWriterTest {
 
   private EntryEvent<Object, Object> entryEvent;

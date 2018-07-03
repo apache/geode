@@ -39,7 +39,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * Unit tests the FastLogger class which wraps and delegates to an actual Logger with optimizations
  * for isDebugEnabled and isTraceEnabled.
  */
-@Category(UnitTest.class)
 public class FastLoggerJUnitTest {
 
   private MessageFactory messageFactory;

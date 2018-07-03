@@ -30,7 +30,6 @@ import org.mockito.Mock;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PartitionedRegionDataStoreTest {
   @Mock
   private PartitionedRegion partitionedRegion;

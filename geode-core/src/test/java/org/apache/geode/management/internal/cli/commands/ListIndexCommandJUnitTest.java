@@ -66,7 +66,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class ListIndexCommandJUnitTest {
   private Mockery mockContext;
 

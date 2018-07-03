@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionDescriptionJUnitTest {
   private static final String evictionKeyShared = "sharedEvictionKey";
   private static final String partKeyShared = "sharedPartitionKey";

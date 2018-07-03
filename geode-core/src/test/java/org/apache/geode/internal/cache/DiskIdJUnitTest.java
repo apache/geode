@@ -27,7 +27,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Test verifies the setting and getting of disk id values are correctly
  */
-@Category(UnitTest.class)
 public class DiskIdJUnitTest {
 
   /**

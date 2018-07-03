@@ -25,7 +25,6 @@ import org.xml.sax.InputSource;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DefaultEntityResolver2Test {
 
   @Test

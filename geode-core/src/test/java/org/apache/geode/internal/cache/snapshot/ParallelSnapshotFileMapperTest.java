@@ -31,7 +31,6 @@ import org.junit.rules.ExpectedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ParallelSnapshotFileMapperTest {
   private static final int PORT = 1234;
   private static final String BASE_LOCATION = "/test/snapshot";

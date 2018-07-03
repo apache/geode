@@ -52,7 +52,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 8.0
  */
-@Category(UnitTest.class)
 public class SerializableObjectHttpMessageConverterJUnitTest {
 
   private Mockery mockContext;

@@ -34,7 +34,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class InternalCacheForClientAccessTest {
 
   private InternalCache delegate;

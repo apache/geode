@@ -76,7 +76,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @since GemFire 7.0
  */
 @SuppressWarnings({"null", "unused"})
-@Category(UnitTest.class)
 public class DescribeDiskStoreFunctionJUnitTest {
 
   private static final Logger logger = LogService.getLogger();

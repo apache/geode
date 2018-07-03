@@ -29,7 +29,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class UserInputPropertyTest {
 
   private UserInputProperty userInputProperty;

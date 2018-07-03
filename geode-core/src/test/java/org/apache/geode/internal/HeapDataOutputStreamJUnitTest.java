@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * TODO right now this just tests the new write(ByteBuffer) method. We might want to add some unit
  * tests for the existing methods.
  */
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class HeapDataOutputStreamJUnitTest {
 
   @Before

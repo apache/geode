@@ -54,7 +54,6 @@ import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @RunWith(JUnitParamsRunner.class)
-@Category(UnitTest.class)
 public class SqlHandlerTest {
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
   private static final String REGION_NAME = "testRegion";

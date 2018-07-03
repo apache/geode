@@ -28,7 +28,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * FixedPartitioningTestBase Tester.
  */
-@Category(UnitTest.class)
 public class FixedPartitioningTestBaseJUnitTest {
 
 

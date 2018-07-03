@@ -46,7 +46,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilitie
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_KEY1 = "my key1";
   private final String TEST_KEY2 = "my key2";

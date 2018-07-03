@@ -43,7 +43,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
  */
-@Category(UnitTest.class)
 public class CommandManagerJUnitTest {
 
   private static final String COMMAND1_NAME = "command1";

@@ -42,7 +42,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   final String HOSTNAME = "hostname";
   final int PORT = 12345;

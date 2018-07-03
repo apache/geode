@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class AbstractOpTest {
 
   @Test

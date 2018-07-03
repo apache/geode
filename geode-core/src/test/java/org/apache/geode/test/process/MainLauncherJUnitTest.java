@@ -34,7 +34,6 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 /**
  * Quick sanity tests to make sure MainLauncher is functional.
  */
-@Category(UnitTest.class)
 public class MainLauncherJUnitTest {
 
   private static final long TIMEOUT_SECONDS = 10;

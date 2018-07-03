@@ -40,7 +40,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class DescribeConnectionCommandTest {
   public static final String COMMAND = "describe jdbc-connection --name=name";
   private DescribeConnectionCommand command;

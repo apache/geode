@@ -28,7 +28,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * DistributionLocatorId Tester.
  */
-@Category(UnitTest.class)
 public class DistributionLocatorIdJUnitTest {
 
   @Test

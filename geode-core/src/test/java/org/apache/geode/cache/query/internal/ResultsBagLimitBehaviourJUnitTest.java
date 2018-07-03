@@ -43,7 +43,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * TODO: Test for null behaviour in various functions
  */
-@Category(UnitTest.class)
 public class ResultsBagLimitBehaviourJUnitTest {
 
   @Test

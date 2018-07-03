@@ -53,7 +53,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * This class tests the GMS StatRecorder class, which records JGroups messaging statistics
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class StatRecorderJUnitTest {
 
   private Protocol mockDownProtocol;

@@ -59,7 +59,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"*.UnitTest"})
 @PrepareForTest({CacheClientNotifier.class})
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class UnregisterInterestTest {
 
   private static final String REGION_NAME = "region1";

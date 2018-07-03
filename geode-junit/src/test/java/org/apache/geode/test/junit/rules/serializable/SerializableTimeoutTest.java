@@ -35,7 +35,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link SerializableTimeout}.
  */
-@Category(UnitTest.class)
 public class SerializableTimeoutTest {
 
   @Test

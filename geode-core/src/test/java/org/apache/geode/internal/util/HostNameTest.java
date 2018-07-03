@@ -36,7 +36,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class HostNameTest {
 

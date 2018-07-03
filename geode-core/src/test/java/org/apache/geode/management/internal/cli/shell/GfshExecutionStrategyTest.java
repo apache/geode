@@ -38,7 +38,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest
  */
-@Category(UnitTest.class)
 public class GfshExecutionStrategyTest {
   private static final String COMMAND1_SUCCESS = "Command1 Executed successfully";
   private static final String COMMAND2_SUCCESS = "Command2 Executed successfully";

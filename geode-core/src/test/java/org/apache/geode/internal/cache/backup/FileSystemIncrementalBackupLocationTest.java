@@ -40,7 +40,6 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FileSystemIncrementalBackupLocationTest {
 
   @Rule

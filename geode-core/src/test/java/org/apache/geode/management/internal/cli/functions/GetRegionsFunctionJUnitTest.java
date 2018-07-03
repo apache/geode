@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class GetRegionsFunctionJUnitTest {
 
   TestResultSender testResultSender = new TestResultSender();

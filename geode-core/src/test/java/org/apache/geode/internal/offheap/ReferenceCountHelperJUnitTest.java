@@ -45,7 +45,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * interfering with jacoco
  *
  */
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"*.UnitTest"})
 @PrepareForTest({ReferenceCountHelper.class})

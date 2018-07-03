@@ -78,7 +78,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 3.0
  */
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class DataSerializableJUnitTest implements Serializable {
 
   /** A <code>ByteArrayOutputStream</code> that data is serialized to */

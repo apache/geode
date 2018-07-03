@@ -32,7 +32,6 @@ import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TXFailoverOpTest {
 
   @Rule

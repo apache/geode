@@ -48,7 +48,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DistributedEventTrackerTest {
   LocalRegion region;
   RegionAttributes<?, ?> regionAttributes;

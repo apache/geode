@@ -40,7 +40,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 
 public class ListMappingCommandTest {
   public static final String COMMAND = "list jdbc-mappings";

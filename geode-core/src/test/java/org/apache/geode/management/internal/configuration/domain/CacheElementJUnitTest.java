@@ -45,7 +45,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see CacheElement
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class CacheElementJUnitTest {
 
   private Document loadSchema(final String schemaLocation) throws Exception {

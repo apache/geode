@@ -36,7 +36,6 @@ import org.junit.runner.notification.Failure;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
-@Category(UnitTest.class)
 public class ExecutorServiceRuleTest {
 
   static volatile AtomicIntegerWithMaxValueSeen concurrentTasks;

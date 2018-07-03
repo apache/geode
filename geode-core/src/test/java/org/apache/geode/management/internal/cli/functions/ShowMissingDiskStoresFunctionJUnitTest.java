@@ -61,7 +61,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ShowMissingDiskStoresFunctionJUnitTest {
 
   private GemFireCacheImpl cache;

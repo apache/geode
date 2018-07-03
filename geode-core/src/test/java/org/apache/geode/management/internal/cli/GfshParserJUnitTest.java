@@ -30,7 +30,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * GfshParserJUnitTest - Includes tests to check the parsing and auto-completion capabilities of
  * {@link GfshParser}
  */
-@Category(UnitTest.class)
 public class GfshParserJUnitTest {
 
   private String input;

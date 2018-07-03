@@ -31,7 +31,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 6.8
  */
-@Category(UnitTest.class)
 public class InOutParameterJUnitTest {
 
   @Test

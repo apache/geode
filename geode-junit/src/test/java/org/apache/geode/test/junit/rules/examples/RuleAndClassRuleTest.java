@@ -31,7 +31,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
 /**
  * Example usage of a rule as both a method {@literal @}Rule and a {@literal @}ClassRule.
  */
-@Category(UnitTest.class)
 public class RuleAndClassRuleTest {
 
   @Test

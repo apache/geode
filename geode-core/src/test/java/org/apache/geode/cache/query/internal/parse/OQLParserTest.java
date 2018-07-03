@@ -26,7 +26,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * TODO: class created to fix GEODE-3938. Add more tests for other queries, parameters, etc.
  */
-@Category(UnitTest.class)
 public class OQLParserTest {
 
   @Test

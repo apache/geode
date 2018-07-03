@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestFilterInfoMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RequestFilterInfoMessageTest {
 
   private ClusterDistributionManager dm;

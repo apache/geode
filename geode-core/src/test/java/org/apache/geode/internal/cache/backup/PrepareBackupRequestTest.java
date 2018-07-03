@@ -38,7 +38,6 @@ import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PrepareBackupRequestTest {
 
   private PrepareBackupRequest prepareBackupRequest;

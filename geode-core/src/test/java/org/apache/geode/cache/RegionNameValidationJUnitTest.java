@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionNameValidationJUnitTest {
   private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
   private static final String REGION_NAME = "MyRegion";

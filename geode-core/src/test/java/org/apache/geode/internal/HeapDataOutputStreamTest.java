@@ -24,7 +24,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class HeapDataOutputStreamTest {
 
   @Test

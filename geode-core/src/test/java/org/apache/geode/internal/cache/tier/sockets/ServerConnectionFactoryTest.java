@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * What we are concerned with is making sure that everything stays the same when the feature flag
  * isn't set, and that we at least try to load the service when the feature flag is true.
  */
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ServerConnectionFactoryTest {
 
   @Rule

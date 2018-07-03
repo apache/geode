@@ -33,7 +33,6 @@ import org.apache.geode.internal.cache.persistence.query.mock.Pair;
 import org.apache.geode.internal.cache.persistence.query.mock.PairComparator;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TemporaryResultSetFactoryJUnitTest {
 
   @Test

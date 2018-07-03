@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @PowerMockIgnore("*.UnitTest")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(InternalLocator.class)

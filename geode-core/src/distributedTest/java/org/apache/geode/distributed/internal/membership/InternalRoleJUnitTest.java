@@ -25,7 +25,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * InternalRole Tester.
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class InternalRoleJUnitTest {
 
   @Test

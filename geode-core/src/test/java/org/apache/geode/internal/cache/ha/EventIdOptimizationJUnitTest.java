@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * methods written in <code>EventID</code> class for the above optimization. For distributed testing
  * for the same , please refer {@link EventIdOptimizationDUnitTest}.
  */
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class EventIdOptimizationJUnitTest {
 
   /** The long id (threadId or sequenceId) having value equivalent to byte */

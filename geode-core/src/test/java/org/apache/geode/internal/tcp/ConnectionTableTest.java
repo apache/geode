@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class ConnectionTableTest {
   private ConnectionTable connectionTable;
   private Socket socket;

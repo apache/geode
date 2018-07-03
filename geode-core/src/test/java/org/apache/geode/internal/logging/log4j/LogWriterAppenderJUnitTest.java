@@ -41,7 +41,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests the LogWriterAppender.
  */
-@Category(UnitTest.class)
 public class LogWriterAppenderJUnitTest {
 
   private Level previousLogLevel;

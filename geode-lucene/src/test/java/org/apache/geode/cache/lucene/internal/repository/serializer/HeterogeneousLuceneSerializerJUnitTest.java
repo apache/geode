@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit test of the ObjectToDocumentMapper.
  */
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class HeterogeneousLuceneSerializerJUnitTest {
 
   /**

@@ -41,7 +41,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link StatisticsImpl}.
  */
-@Category(UnitTest.class)
 public class StatisticsImplTest {
 
   private Logger originalLogger;

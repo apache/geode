@@ -24,7 +24,7 @@ import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class VersionValidatorJUnitTest {
   private static final int MAJOR_VERSION = 3;
   private static final int MINOR_VERSION = 3;

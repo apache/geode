@@ -70,7 +70,6 @@ import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ParallelQueueRemovalMessageJUnitTest {
 
   private static final String GATEWAY_SENDER_ID = "ny";

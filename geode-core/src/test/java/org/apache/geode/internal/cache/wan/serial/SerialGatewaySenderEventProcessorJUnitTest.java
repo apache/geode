@@ -40,7 +40,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class SerialGatewaySenderEventProcessorJUnitTest {
 
   private AbstractGatewaySender sender;

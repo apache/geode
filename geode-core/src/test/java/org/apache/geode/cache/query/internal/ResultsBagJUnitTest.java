@@ -36,7 +36,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Test ResultsBag, including null elements
  */
-@Category(UnitTest.class)
 public class ResultsBagJUnitTest {
 
   @Test

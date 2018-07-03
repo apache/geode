@@ -31,7 +31,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TinyMemoryBlockJUnitTest {
 
   private MemoryAllocatorImpl ma;

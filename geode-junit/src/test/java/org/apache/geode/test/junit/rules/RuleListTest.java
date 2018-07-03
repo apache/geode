@@ -32,7 +32,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
 /**
  * Unit tests for {@link RuleList}.
  */
-@Category(UnitTest.class)
 public class RuleListTest {
 
   private static AtomicInteger counter;

@@ -60,7 +60,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 6.8
  */
-@Category(UnitTest.class)
 public class SystemUtilsJUnitTest {
 
   // NOTE this test adds some maintenance overhead but ensure the correct functioning of GemFire

@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * codepoints, and that it doesn't tend to test strings that are particularly long, though the more
  * trials you run, the longer they get.
  */
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 @RunWith(JUnitQuickcheck.class)
 public class InternalDataSerializerQuickcheckStringTest {
   @Property(trials = 1000)

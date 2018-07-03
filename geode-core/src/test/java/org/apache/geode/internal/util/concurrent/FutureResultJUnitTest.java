@@ -30,7 +30,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * Unit tests for {@link FutureResult}.
  *
  */
-@Category(UnitTest.class)
 public class FutureResultJUnitTest {
 
   @Test

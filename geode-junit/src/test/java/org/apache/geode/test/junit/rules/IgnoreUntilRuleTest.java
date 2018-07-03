@@ -33,7 +33,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
 /**
  * Unit tests for {@link IgnoreUntilRule}.
  */
-@Category(UnitTest.class)
 public class IgnoreUntilRuleTest {
 
   private static final String ASSERTION_ERROR_MESSAGE = "failing test";

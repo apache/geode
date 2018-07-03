@@ -26,7 +26,6 @@ import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class ClassNameConverterTest {
 
   private ClassNameConverter converter;

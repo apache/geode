@@ -30,7 +30,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
  */
-@Category(UnitTest.class)
 public class MemoryAllocatorFillPatternJUnitTest {
 
   /** Size of single test slab. */

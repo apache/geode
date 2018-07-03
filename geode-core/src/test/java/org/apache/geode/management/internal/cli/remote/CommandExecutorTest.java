@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CommandExecutorTest {
   GfshParseResult parseResult;
   CommandExecutor executor;

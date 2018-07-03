@@ -33,7 +33,6 @@ import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JdbcConnectorServiceXmlParserTest {
 
   private Attributes attributes;

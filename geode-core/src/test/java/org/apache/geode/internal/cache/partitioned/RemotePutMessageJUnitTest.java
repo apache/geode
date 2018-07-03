@@ -34,7 +34,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RemotePutMessageJUnitTest {
   static final int UNKNOWN_REGION = 234;
 

@@ -42,7 +42,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CreateConnectionFunctionTest {
 
   private static final String CONNECTION_NAME = "theConnection";

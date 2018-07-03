@@ -52,7 +52,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class AbstractPeerTXRegionStubTest {
   private AbstractPeerTXRegionStub txrStub;
   private TXStateStub state;

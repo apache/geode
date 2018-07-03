@@ -27,7 +27,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * AbstractBaseController Tester.
  */
-@Category({UnitTest.class, RestAPITest.class})
+@Category({RestAPITest.class})
 public class AbstractBaseControllerJUnitTest {
 
   AbstractBaseController abstractBaseController = new AbstractBaseController() {

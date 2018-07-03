@@ -43,7 +43,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class StartServerCommandTest {
   private StartServerCommand serverCommands;
 

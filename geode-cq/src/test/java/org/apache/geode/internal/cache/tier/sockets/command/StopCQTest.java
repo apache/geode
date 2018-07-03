@@ -29,7 +29,6 @@ import org.apache.geode.security.ResourcePermission.Target;
 import org.apache.geode.test.dunit.rules.CQUnitTestRule;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class StopCQTest {
 
   @Rule

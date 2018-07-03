@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.DistributedCacheOperation.CacheOperationMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CacheOperationMessageTest {
 
   @Test

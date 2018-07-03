@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * Unfortunately, we can't test the happy path with a unit test, because the function service is
  * static, and there's mocking function execution is too complicated.
  */
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ExecuteFunctionOnRegionRequestOperationHandlerJUnitTest {
   private static final String TEST_REGION = "testRegion";
   private static final String TEST_FUNCTION_ID = "testFunction";

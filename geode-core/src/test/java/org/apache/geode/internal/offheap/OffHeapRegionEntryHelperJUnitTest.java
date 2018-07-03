@@ -50,7 +50,6 @@ import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.entries.VersionedStatsDiskRegionEntryOffHeap;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
 @PrepareForTest({OffHeapStoredObject.class, OffHeapRegionEntryHelper.class})

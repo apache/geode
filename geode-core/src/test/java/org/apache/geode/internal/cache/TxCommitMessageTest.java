@@ -40,7 +40,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for TxCommitMessage.
  */
-@Category(UnitTest.class)
 public class TxCommitMessageTest {
 
   private Mockery mockContext;

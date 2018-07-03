@@ -40,7 +40,6 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class HashIndexSetJUnitTest {
 
   Map<Integer, Portfolio> portfoliosMap;

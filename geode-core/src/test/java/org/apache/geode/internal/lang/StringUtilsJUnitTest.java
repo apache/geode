@@ -42,7 +42,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @since GemFire 7.0
  */
 @SuppressWarnings("null")
-@Category(UnitTest.class)
 public class StringUtilsJUnitTest {
 
 

@@ -39,7 +39,6 @@ import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class IntegratedSecurityServiceTest {
 
   private SecurityManager mockSecurityManager;

@@ -31,7 +31,6 @@ import org.apache.geode.management.internal.cli.domain.Interface2;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ClasspathScanLoadHelperJUnitTest {
 
   private final String PACKAGE_NAME = "org.apache.geode.management.internal.cli.domain";

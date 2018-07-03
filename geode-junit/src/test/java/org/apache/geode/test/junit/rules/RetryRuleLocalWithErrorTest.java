@@ -34,7 +34,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
  * Unit tests for {@link RetryRule} involving local scope (ie rule affects only the test methods
  * annotated with {@code @Retry}) with failures due to an {@code Error}.
  */
-@Category(UnitTest.class)
 public class RetryRuleLocalWithErrorTest {
 
   @Test

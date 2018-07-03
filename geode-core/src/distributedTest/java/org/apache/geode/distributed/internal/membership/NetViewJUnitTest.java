@@ -35,7 +35,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class NetViewJUnitTest {
 
   private List<InternalDistributedMember> members;

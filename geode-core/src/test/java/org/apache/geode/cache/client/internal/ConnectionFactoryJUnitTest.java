@@ -34,7 +34,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ConnectionFactoryJUnitTest {
 
   @Before

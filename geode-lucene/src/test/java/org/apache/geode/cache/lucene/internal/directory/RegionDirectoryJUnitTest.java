@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * This test is still mocking out the underlying cache, rather than using a real region.
  */
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class RegionDirectoryJUnitTest extends BaseDirectoryTestCase {
 
   @Rule

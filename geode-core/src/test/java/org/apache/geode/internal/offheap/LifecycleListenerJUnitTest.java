@@ -30,7 +30,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests LifecycleListener
  */
-@Category(UnitTest.class)
 public class LifecycleListenerJUnitTest {
 
   private final List<LifecycleListenerCallback> afterCreateCallbacks =

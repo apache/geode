@@ -31,7 +31,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.DiskBackupStatusImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DiskBackupStatusTest {
 
   @Test

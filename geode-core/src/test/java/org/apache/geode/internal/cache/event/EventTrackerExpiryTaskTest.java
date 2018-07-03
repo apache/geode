@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class EventTrackerExpiryTaskTest {
   private static final long TIME_TO_LIVE = 100;
 

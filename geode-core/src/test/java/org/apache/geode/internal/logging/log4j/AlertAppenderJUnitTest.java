@@ -43,7 +43,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests the AlertAppender.
  */
-@Category(UnitTest.class)
 public class AlertAppenderJUnitTest {
 
   private final List<DistributedMember> members = new ArrayList<DistributedMember>();

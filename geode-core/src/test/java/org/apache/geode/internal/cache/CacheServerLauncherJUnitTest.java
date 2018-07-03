@@ -25,7 +25,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * CacheServerLauncher Tester.
  */
-@Category(UnitTest.class)
 public class CacheServerLauncherJUnitTest {
 
   @Test

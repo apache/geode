@@ -38,7 +38,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link ProcessLauncherContext}.
  */
-@Category(UnitTest.class)
 public class ProcessLauncherContextTest {
 
   private boolean redirectOutput;

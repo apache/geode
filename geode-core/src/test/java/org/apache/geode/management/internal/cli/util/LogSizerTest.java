@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LogSizerTest {
   private LogFilter logFilter;
   private SizeExportLogsFunction.Args nonFilteringArgs;

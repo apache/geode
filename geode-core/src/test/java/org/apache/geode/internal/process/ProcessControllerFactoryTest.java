@@ -33,7 +33,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 8.0
  */
-@Category(UnitTest.class)
 public class ProcessControllerFactoryTest {
 
   private ProcessControllerFactory factory;

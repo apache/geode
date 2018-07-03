@@ -55,7 +55,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionMapDestroyTest {
 
   private static final EvictionAttributes evictionAttributes =

@@ -50,7 +50,7 @@ import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneQueryImplJUnitTest {
   private static int LIMIT = 123;
   private LuceneQueryImpl<Object, Object> query;

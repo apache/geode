@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * the License.
  */
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ProtocolVersionHandlerJUnitTest {
   private static final int INVALID_MAJOR_VERSION = 67;
   private static final int INVALID_MINOR_VERSION = 92347;

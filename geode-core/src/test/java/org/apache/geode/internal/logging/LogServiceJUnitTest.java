@@ -36,7 +36,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for LogService
  */
-@Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class LogServiceJUnitTest {
 

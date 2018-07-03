@@ -37,7 +37,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link LocatorLauncher.LocatorState}.
  */
-@Category(UnitTest.class)
 public class LocatorStateTest {
 
   private String classpath;

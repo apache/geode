@@ -54,7 +54,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @RunWith(JUnitParamsRunner.class)
-@Category(UnitTest.class)
 public class SqlToPdxInstanceCreatorTest {
 
   private static final String COLUMN_NAME_1 = "columnName1";

@@ -46,7 +46,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class PdxInstanceImplTest {
   PdxType emptyPdxType;
   PdxField nonExistentField;

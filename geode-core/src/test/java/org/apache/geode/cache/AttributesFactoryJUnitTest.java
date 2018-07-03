@@ -37,7 +37,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 3.0
  */
-@Category(UnitTest.class)
 public class AttributesFactoryJUnitTest {
 
   @Test

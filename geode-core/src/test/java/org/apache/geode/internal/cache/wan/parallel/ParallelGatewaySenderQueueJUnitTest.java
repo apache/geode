@@ -50,7 +50,6 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue.M
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue.ParallelGatewaySenderQueueMetaRegion;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ParallelGatewaySenderQueueJUnitTest {
 
   private ParallelGatewaySenderQueue queue;

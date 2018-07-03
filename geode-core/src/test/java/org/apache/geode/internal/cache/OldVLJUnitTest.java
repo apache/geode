@@ -30,7 +30,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OldVLJUnitTest {
 
   private ByteArrayOutputStream baos;

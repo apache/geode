@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.wan.serial.BatchDestroyOperation.DestroyMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DestroyMessageTest {
 
   @Test

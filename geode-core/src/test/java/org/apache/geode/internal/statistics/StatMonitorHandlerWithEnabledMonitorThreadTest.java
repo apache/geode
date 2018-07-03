@@ -35,7 +35,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Extracted tests from StatMonitorHandlerTest that require enableMonitorThread
  */
-@Category(UnitTest.class)
 public class StatMonitorHandlerWithEnabledMonitorThreadTest {
 
   @Rule

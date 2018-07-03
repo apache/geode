@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ManageBackupBucketReplyMessageTest {
   @Mock
   private ClusterDistributionManager distributionManager;

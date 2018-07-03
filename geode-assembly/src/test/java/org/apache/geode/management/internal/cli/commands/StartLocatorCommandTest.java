@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class StartLocatorCommandTest {
   private StartLocatorCommand locatorCommands;
 

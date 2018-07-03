@@ -26,7 +26,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests DiskStoreImpl.OplogEntryIdMap
  */
-@Category(UnitTest.class)
 public class OplogEntryIdMapJUnitTest {
 
   @Test

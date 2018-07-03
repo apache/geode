@@ -73,7 +73,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests the DataType support for off-heap MemoryInspector.
  */
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
 @PrepareForTest({InternalInstantiator.class, Instantiator.class, DataSerializer.class,

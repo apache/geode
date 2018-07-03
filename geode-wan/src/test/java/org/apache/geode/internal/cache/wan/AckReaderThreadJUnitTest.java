@@ -28,7 +28,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class AckReaderThreadJUnitTest {
 
   private GemFireCacheImpl cache;

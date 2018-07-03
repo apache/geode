@@ -45,7 +45,6 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class AbstractRegionMapPutTest {
   private final InternalRegion internalRegion = mock(InternalRegion.class);
   private final FocusedRegionMap focusedRegionMap = mock(FocusedRegionMap.class);

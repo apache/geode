@@ -51,7 +51,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Assert
  * @see org.junit.Test
  */
-@Category(UnitTest.class)
 public class IOUtilsJUnitTest {
 
   private Mockery mockContext;

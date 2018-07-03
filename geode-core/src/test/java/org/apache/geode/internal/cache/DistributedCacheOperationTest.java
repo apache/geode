@@ -34,7 +34,6 @@ import org.apache.geode.internal.cache.DistributedCacheOperation.CacheOperationM
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DistributedCacheOperationTest {
 
   @Test

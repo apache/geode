@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class InternalDataSerializerSerializationWhitelistTest {
   private HeapDataOutputStream outputStream;
   private Object testSerializable;

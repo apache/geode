@@ -27,7 +27,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 5.0.2 (cbb5x_PerfScale)
  */
-@Category(UnitTest.class)
 public class UniqueIdGeneratorJUnitTest {
 
   @Test

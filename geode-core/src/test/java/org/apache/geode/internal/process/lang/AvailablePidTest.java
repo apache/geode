@@ -44,7 +44,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link AvailablePid}.
  */
-@Category(UnitTest.class)
 public class AvailablePidTest {
 
   private AvailablePid availablePid;

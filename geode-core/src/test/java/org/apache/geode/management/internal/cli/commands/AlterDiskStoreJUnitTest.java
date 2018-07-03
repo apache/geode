@@ -28,7 +28,6 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class AlterDiskStoreJUnitTest {
   @Rule
   public GfshParserRule gfsh = new GfshParserRule();

@@ -23,7 +23,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class PasswordUtilJUnitTest {
 
   /**

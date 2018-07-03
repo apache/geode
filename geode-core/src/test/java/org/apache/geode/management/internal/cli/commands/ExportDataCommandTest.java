@@ -26,7 +26,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
-@Category(UnitTest.class)
 public class ExportDataCommandTest {
 
   @ClassRule

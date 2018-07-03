@@ -35,7 +35,6 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FilterProfileNullCqBaseRegionJUnitTest {
 
   private FilterProfile filterProfile;

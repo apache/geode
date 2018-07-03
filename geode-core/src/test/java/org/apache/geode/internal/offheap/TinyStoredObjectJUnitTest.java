@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   @Override

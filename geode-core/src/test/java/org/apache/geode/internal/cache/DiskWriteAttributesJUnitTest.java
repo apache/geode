@@ -27,7 +27,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests if DiskWriteAttributeFactory returns the correct DWA object with the desired values
  */
-@Category(UnitTest.class)
 public class DiskWriteAttributesJUnitTest {
 
   /**

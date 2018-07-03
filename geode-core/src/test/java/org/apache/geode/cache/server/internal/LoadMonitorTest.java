@@ -26,7 +26,6 @@ import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LoadMonitorTest {
 
   @Test

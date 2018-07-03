@@ -67,7 +67,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LuceneEventListener.class, LogService.class})
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 @PowerMockIgnore({"*.UnitTest", "*.LuceneTest"})
 public class LuceneEventListenerJUnitTest {
 

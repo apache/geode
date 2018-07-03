@@ -28,7 +28,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TXSynchronizationRunnableTest {
 
   private CancelCriterion cancelCriterion;

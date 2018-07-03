@@ -36,7 +36,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * TODO these tests need some work. I don't think they really represent edge cases for this variable
  * length value.
  */
-@Category(UnitTest.class)
 public class VLJUnitTest {
 
   private ByteArrayOutputStream baos;

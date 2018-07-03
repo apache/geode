@@ -28,7 +28,6 @@ import org.springframework.shell.core.Completion;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LogLevelConverterTest {
 
   @Test

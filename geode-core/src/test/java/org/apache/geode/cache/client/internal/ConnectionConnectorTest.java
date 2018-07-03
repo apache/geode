@@ -39,7 +39,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ConnectionConnectorTest {
   private CancelCriterion cancelCriterion;
   private EndpointManager endpointManager;

@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests the default SocketCloser.
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class SocketCloserJUnitTest {
 
   private SocketCloser socketCloser;

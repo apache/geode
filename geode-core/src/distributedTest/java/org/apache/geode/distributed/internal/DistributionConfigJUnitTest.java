@@ -62,7 +62,7 @@ import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class DistributionConfigJUnitTest {
 
   private Map<Class<?>, Class<?>> classMap;

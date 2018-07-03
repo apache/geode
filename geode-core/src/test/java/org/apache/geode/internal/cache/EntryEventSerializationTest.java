@@ -41,7 +41,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class EntryEventSerializationTest {
 
   private InternalRegion region;

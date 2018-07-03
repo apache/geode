@@ -38,7 +38,6 @@ import org.apache.geode.test.junit.rules.RepeatRule;
  * @see org.apache.geode.test.junit.Repeat
  * @see org.apache.geode.test.junit.rules.RepeatRule
  */
-@Category(UnitTest.class)
 public class RepeatingTestCasesExampleTest {
 
   private static final AtomicInteger repeatOnceCounter = new AtomicInteger(0);

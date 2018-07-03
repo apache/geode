@@ -39,7 +39,7 @@ import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SecurityServiceFactoryTest {
 
   private SecurityService service;

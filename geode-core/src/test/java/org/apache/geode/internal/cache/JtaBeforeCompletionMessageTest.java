@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JtaBeforeCompletionMessageTest {
   @Test
   public void testBeforeCompletionNotInvokedIfJTACompleted() throws Exception {

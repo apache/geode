@@ -26,7 +26,6 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JdkToolTest {
 
   @Test

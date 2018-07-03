@@ -42,7 +42,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests all basic methods of ContextImpl.
  */
-@Category(UnitTest.class)
 public class ContextJUnitTest {
 
   private Context initialContext;

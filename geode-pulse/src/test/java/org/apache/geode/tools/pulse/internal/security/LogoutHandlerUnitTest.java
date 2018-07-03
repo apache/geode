@@ -44,7 +44,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Repository.class)
 @PowerMockRunnerDelegate(Parameterized.class)

@@ -32,7 +32,6 @@ import org.junit.rules.Timeout;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class SemaphoreReadWriteLockJUnitTest {
 
   private static final long OPERATION_TIMEOUT_MILLIS = 10 * 1000;

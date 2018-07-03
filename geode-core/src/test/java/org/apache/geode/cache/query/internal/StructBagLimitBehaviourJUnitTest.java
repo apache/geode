@@ -33,7 +33,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Test StructBag Limit behaviour
  */
-@Category(UnitTest.class)
 public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJUnitTest {
 
   public ResultsBag getBagObject(Class clazz) {

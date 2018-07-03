@@ -53,7 +53,6 @@ import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunct
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class CreateJndiBindingCommandTest {
 
   @ClassRule

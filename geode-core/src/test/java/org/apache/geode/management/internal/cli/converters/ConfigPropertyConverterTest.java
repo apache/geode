@@ -25,7 +25,6 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class ConfigPropertyConverterTest {
 
   private ConfigPropertyConverter converter;

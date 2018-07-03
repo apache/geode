@@ -28,7 +28,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(UnitTest.class)
 public class PluckStacksUnitTest {
 
 

@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.OldValueImporterTestBase;
 import org.apache.geode.internal.cache.partitioned.PutMessage.PutReplyMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PutPutReplyMessageJUnitTest extends OldValueImporterTestBase {
 
   @Override

@@ -37,7 +37,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * TODO: add actual assertions
  */
-@Category(UnitTest.class)
 public class TypedJsonTest {
 
   private static final String RESULT = "result";

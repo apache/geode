@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRe
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PartitionedRegionLoadModelJUnitTest {
 
   private static final int MAX_MOVES = 5000;

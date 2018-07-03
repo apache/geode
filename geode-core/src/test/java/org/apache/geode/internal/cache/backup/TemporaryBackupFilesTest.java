@@ -32,7 +32,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TemporaryBackupFilesTest {
 
   private static final String DISK_STORE_DIR_NAME = "testDiskStores";

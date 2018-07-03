@@ -47,7 +47,6 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FetchKeysMessageTest {
   @Mock(answer = RETURNS_DEEP_STUBS)
   private InternalCache cache;

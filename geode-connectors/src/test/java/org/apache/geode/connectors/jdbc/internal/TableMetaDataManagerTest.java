@@ -38,7 +38,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TableMetaDataManagerTest {
   private static final String TABLE_NAME = "testTable";
   private static final String KEY_COLUMN = "keyColumn";

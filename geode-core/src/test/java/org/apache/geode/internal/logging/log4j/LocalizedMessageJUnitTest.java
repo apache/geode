@@ -28,7 +28,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests for LocalizedMessage which bridges our StringId LocalizedStrings for Log4J2 usage.
  */
-@Category(UnitTest.class)
 public class LocalizedMessageJUnitTest {
 
   @Test

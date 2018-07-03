@@ -28,7 +28,6 @@ import org.mockito.listeners.MethodInvocationReport;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OffHeapStoredObjectAddressStackJUnitTest {
 
   @Test

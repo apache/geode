@@ -30,7 +30,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SimpleSecurityManagerTest {
   private SimpleTestSecurityManager manager;
   private Properties credentials;

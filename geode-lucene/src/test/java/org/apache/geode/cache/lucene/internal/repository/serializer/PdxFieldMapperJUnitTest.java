@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit test of the PdxFieldMapperJUnitTest. Tests that all field types are mapped correctly.
  */
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class PdxFieldMapperJUnitTest {
 
   @Test

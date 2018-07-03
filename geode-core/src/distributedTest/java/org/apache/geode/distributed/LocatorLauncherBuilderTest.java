@@ -37,7 +37,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link LocatorLauncher.Builder}. Extracted from {@link LocatorLauncherTest}.
  */
-@Category(UnitTest.class)
 public class LocatorLauncherBuilderTest {
 
   private InetAddress localHost;

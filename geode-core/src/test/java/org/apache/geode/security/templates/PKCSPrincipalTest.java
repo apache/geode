@@ -28,7 +28,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link PKCSPrincipal}
  */
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class PKCSPrincipalTest {
 
   @Test

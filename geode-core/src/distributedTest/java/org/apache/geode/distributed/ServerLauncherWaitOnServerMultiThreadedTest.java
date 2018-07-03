@@ -33,7 +33,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Multithreaded unit tests for {@link ServerLauncher}. Extracted from {@link ServerLauncherTest}.
  */
-@Category(UnitTest.class)
 public class ServerLauncherWaitOnServerMultiThreadedTest {
 
   private final AtomicBoolean connectionStateHolder = new AtomicBoolean(true);

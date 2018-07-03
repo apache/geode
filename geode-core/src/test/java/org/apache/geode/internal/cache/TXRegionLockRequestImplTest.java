@@ -30,7 +30,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TXRegionLockRequestImplTest {
 
   private InternalCache cache;

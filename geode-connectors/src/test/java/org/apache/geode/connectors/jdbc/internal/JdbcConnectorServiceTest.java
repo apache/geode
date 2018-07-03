@@ -28,7 +28,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JdbcConnectorServiceTest {
 
   private static final String TEST_CONFIG_NAME = "testConfig";

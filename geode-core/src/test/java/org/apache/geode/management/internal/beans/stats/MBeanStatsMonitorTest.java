@@ -44,7 +44,6 @@ import org.apache.geode.internal.statistics.ValueMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor.DefaultHashMap;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class MBeanStatsMonitorTest {
 
   private ValueMonitor statsMonitor;

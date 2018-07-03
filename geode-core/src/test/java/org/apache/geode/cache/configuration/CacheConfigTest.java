@@ -28,7 +28,6 @@ import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class CacheConfigTest {
 
   private CacheConfig cacheConfig;

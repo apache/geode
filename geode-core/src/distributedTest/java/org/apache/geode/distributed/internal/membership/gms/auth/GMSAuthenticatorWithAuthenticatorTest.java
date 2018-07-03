@@ -34,7 +34,7 @@ import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 /**
  * Unit tests GMSAuthenticator using old security.
  */
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthenticatorTestCase {
 
   /**

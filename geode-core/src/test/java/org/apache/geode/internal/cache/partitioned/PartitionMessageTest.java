@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PartitionMessageTest {
 
   private GemFireCacheImpl cache;

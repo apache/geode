@@ -45,7 +45,6 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class DestroyAsyncEventQueueCommandTest {
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();

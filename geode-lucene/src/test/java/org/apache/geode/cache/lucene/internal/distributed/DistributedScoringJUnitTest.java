@@ -41,7 +41,7 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.Heterogeneou
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class DistributedScoringJUnitTest {
 
   private String[] indexedFields = new String[] {"txt"};

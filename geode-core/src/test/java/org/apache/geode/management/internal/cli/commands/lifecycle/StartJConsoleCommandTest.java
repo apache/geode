@@ -22,7 +22,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class StartJConsoleCommandTest {
   @Test
   public void testCreateJmxServerUrlWithMemberName() {

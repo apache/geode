@@ -41,7 +41,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /*
  * PowerMock used in this test to verify static method MemoryAllocatorImpl.debugLog
  */
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"*.UnitTest"})
 @PrepareForTest({MemoryAllocatorImpl.class})

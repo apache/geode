@@ -36,7 +36,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
-@Category(UnitTest.class)
 public class PulseAppListenerTest {
   private Repository repository;
   private PulseAppListener appListener;

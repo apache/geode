@@ -31,7 +31,6 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LogLevelInterceptorTest {
   private List<AbstractCliAroundInterceptor> interceptors = new ArrayList<>();
   private GfshParseResult parseResult;

@@ -27,7 +27,6 @@ import org.apache.geode.test.junit.rules.RetryRule;
 /**
  * Example usage of {@link RetryRule} with global scope.
  */
-@Category(UnitTest.class)
 public class RetryRuleExampleTest {
 
   private static int count = 0;

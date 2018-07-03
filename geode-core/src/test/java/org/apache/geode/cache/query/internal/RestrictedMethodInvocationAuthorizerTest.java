@@ -39,7 +39,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class RestrictedMethodInvocationAuthorizerTest {
   RestrictedMethodInvocationAuthorizer methodInvocationAuthorizer =
       new RestrictedMethodInvocationAuthorizer(null);

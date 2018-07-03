@@ -57,7 +57,6 @@ import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntrie
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @SuppressWarnings("unchecked")
-@Category(UnitTest.class)
 public class AbstractRegionMapTxApplyDestroyTest {
   // parameters
   private Object key = "key";

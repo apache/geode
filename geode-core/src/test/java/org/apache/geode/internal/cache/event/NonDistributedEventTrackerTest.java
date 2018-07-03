@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class NonDistributedEventTrackerTest {
   private NonDistributedEventTracker tracker = NonDistributedEventTracker.getInstance();
 

@@ -41,7 +41,6 @@ import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 
-@Category(UnitTest.class)
 public class ColocationHelperTest {
   /**
    * This test assumes Locale is in English. Before the test, change the locale of Locale and

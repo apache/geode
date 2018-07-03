@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.DiskStoreMonitor.DiskState;
 import org.apache.geode.internal.cache.DiskStoreMonitor.DiskUsage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DiskUsageTest {
 
   @Test

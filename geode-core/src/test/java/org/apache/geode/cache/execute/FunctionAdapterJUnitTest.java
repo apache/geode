@@ -32,7 +32,6 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(UnitTest.class)
 public class FunctionAdapterJUnitTest {
 
   private static final long serialVersionUID = 1L;

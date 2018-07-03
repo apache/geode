@@ -77,7 +77,6 @@ import org.apache.geode.pdx.internal.PdxInstanceEnum;
 import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @PowerMockIgnore("*.UnitTest")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(TypeUtils.class)

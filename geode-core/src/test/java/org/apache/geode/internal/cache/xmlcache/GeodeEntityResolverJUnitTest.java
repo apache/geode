@@ -23,7 +23,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit test for {@link GeodeEntityResolver} and {@link DefaultEntityResolver2}.
  */
-@Category(UnitTest.class)
 public class GeodeEntityResolverJUnitTest extends AbstractEntityResolverTest {
 
   private EntityResolver entityResolver;

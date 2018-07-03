@@ -35,7 +35,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * This test also contains some other non deterministic RVV junit tests
  *
  */
-@Category(UnitTest.class)
 public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmallBitSetJUnitTest {
 
   private Random random;

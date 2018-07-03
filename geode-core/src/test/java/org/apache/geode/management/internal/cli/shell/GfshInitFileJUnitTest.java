@@ -52,7 +52,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * Makes use of reflection to reset private static variables on some classes to replace loggers that
  * would otherwise clutter the console.
  */
-@Category(UnitTest.class)
 public class GfshInitFileJUnitTest {
 
   private static final String INIT_FILE_NAME = GfshConfig.DEFAULT_INIT_FILE_NAME;

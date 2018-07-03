@@ -33,7 +33,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
 /**
  * Unit tests for {@link RepeatRule}.
  */
-@Category(UnitTest.class)
 public class RepeatRuleTest {
 
   private static final String ASSERTION_ERROR_MESSAGE = "failing test";

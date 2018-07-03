@@ -33,7 +33,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link FileProcessController}.
  */
-@Category(UnitTest.class)
 public class FileProcessControllerTest {
 
   private FileProcessController controller;

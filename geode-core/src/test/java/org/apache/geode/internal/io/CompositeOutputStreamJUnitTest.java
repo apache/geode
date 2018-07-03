@@ -38,7 +38,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class CompositeOutputStreamJUnitTest {
 
   private Mockery mockContext;

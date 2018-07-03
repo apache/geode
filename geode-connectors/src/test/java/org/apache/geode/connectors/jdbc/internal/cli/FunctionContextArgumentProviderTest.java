@@ -31,7 +31,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FunctionContextArgumentProviderTest {
 
   private FunctionContext<?> context;

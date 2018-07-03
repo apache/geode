@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OffHeapStorageJUnitTest {
 
   private static final long MEGABYTE = 1024 * 1024;

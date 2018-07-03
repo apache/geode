@@ -47,7 +47,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * <li>{@link BlobHelper#deserializeOffHeapBlob(StoredObject)}
  * <li>{@link BlobHelper#serializeToBlob(Object, Version)}
  */
-@Category(UnitTest.class)
 public class BlobHelperTest {
 
   private static final int HDOS_ALLOC_SIZE = 32;

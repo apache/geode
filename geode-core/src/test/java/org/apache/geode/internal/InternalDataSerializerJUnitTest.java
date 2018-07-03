@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Tests the functionality of the {@link InternalDataSerializer} class.
  */
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class InternalDataSerializerJUnitTest {
   @Test
   public void testIsGemfireObject() {

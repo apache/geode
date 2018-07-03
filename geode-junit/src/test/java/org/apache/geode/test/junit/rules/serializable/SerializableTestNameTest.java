@@ -34,7 +34,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link SerializableTestName}.
  */
-@Category(UnitTest.class)
 public class SerializableTestNameTest {
 
   @Test

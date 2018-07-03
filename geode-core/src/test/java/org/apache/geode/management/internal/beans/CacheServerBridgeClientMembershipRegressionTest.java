@@ -46,7 +46,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * <p>
  * GEODE-3407: JMX and membership may deadlock on CacheFactory.getAnyInstance
  */
-@Category(UnitTest.class)
 public class CacheServerBridgeClientMembershipRegressionTest {
 
   private final AtomicBoolean after = new AtomicBoolean();

@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @PowerMockIgnore("*.UnitTest")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(RemotePutMessage.class)

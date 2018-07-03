@@ -25,7 +25,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JdbcConnectorExceptionTest {
   @Rule
   public TestName testName = new TestName();

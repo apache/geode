@@ -28,7 +28,6 @@ import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ExportLogsFunctionTest {
   @Test
   public void defaultExportLogLevelShouldBeAll() throws Exception {

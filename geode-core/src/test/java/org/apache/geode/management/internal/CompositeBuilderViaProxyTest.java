@@ -27,7 +27,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.management.internal.OpenTypeConverter.CompositeBuilderViaProxy;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CompositeBuilderViaProxyTest {
 
   @Test

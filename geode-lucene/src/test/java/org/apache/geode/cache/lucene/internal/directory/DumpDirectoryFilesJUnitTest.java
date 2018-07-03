@@ -44,7 +44,7 @@ import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class DumpDirectoryFilesJUnitTest {
 
   private RegionFunctionContext context;

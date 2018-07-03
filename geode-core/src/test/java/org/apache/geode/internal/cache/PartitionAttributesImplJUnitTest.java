@@ -45,7 +45,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit test suite for PartitionAttributesImpl.
  */
-@Category(UnitTest.class)
 public class PartitionAttributesImplJUnitTest {
 
   private String colocatedRegionFullPath;

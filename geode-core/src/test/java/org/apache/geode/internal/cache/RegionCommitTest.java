@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.TXCommitMessage.RegionCommit;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionCommitTest {
 
   private ClusterDistributionManager dm;

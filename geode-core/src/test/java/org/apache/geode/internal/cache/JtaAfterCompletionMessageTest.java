@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JtaAfterCompletionMessageTest {
   @Test
   public void testAfterCompletionNotInvokedIfJTACompleted() throws Exception {

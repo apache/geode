@@ -51,7 +51,7 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
   private static final String TEST_GROUP1 = "group1";
   private static final String TEST_GROUP2 = "group2";

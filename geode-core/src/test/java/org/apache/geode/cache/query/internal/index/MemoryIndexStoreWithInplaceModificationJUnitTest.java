@@ -25,7 +25,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class MemoryIndexStoreWithInplaceModificationJUnitTest extends MemoryIndexStoreJUnitTest {
 
   public void subclassPreSetup() {

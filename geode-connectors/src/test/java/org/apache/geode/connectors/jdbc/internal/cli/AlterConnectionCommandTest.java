@@ -41,7 +41,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class AlterConnectionCommandTest {
   public static final String COMMAND = "alter jdbc-connection --name=name ";
   private AlterConnectionCommand command;

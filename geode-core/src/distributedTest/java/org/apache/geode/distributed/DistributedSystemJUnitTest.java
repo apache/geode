@@ -27,7 +27,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for DistributedSystem class.
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class DistributedSystemJUnitTest {
 
   @Rule

@@ -48,7 +48,6 @@ import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   private MemoryAllocator ma;

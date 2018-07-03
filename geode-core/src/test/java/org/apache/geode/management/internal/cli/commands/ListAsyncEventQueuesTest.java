@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category({UnitTest.class, AEQTest.class})
+@Category({AEQTest.class})
 public class ListAsyncEventQueuesTest {
   private static final String COMMAND = "list async-event-queues ";
 

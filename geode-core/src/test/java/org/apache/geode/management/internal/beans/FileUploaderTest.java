@@ -34,7 +34,6 @@ import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class FileUploaderTest {
 
   @Rule

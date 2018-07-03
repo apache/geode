@@ -37,7 +37,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * This class tests the functionality of the {@link ObjIdMap} class.
  */
-@Category(UnitTest.class)
 public class ObjIdMapJUnitTest {
 
   @Test

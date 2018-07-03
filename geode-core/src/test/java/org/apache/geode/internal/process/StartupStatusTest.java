@@ -34,7 +34,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class StartupStatusTest {
 
   private StartupStatusListener listener;

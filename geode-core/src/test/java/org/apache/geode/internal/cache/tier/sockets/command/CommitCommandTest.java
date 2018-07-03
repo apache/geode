@@ -47,7 +47,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Exposes GEODE-537: NPE in JTA AFTER_COMPLETION command processing
  */
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class CommitCommandTest {
 
   /**

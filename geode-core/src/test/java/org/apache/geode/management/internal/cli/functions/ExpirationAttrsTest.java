@@ -26,7 +26,6 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs.ExpirationAttrs;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ExpirationAttrsTest {
 
   private ExpirationAttrs attrs;

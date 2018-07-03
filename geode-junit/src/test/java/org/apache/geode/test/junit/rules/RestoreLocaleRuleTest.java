@@ -37,7 +37,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
 /**
  * Unit tests for {@link RestoreLocaleRule}.
  */
-@Category(UnitTest.class)
 public class RestoreLocaleRuleTest {
 
   private static Locale notDefaultLocale;

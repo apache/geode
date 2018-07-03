@@ -35,7 +35,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link SerializableTemporaryFolder}.
  */
-@Category(UnitTest.class)
 public class SerializableTemporaryFolderTest {
 
   @Rule

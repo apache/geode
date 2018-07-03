@@ -31,7 +31,6 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FragmentJUnitTest {
 
   private SlabImpl[] slabs;

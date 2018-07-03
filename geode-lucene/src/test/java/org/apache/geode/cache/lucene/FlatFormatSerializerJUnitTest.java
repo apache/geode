@@ -34,7 +34,7 @@ import org.apache.geode.cache.lucene.test.Person;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class FlatFormatSerializerJUnitTest {
 
   private HashSet<Person> createCollectionObjectContacts() {

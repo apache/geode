@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LRUListWithAsyncSortingTest {
 
   @Rule

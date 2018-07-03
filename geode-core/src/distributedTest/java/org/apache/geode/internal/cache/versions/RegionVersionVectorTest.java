@@ -52,7 +52,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category(UnitTest.class)
 public class RegionVersionVectorTest {
 
   @Rule

@@ -36,7 +36,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 7.x
  */
-@Category(UnitTest.class)
 @SuppressWarnings("null")
 public class ArrayUtilsTest {
 

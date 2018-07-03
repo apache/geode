@@ -25,7 +25,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ExportLogsCacheWriterUnitTest {
   private ExportLogsCacheWriter writer = new ExportLogsCacheWriter();
 

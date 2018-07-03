@@ -26,7 +26,6 @@ import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class StatsRateJUnitTest {
 
   private Long SINGLE_STATS_LONG_COUNTER = null;

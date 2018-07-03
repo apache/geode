@@ -26,7 +26,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link ThrowableUtils}
  */
-@Category(UnitTest.class)
 public class ThrowableUtilsTest {
 
   @Test

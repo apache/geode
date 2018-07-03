@@ -35,7 +35,6 @@ import org.apache.geode.test.junit.rules.RetryRule;
  * Tests involving fakePid use {@link RetryRule} because the fakePid may become used by a real
  * process before the test executes.
  */
-@Category(UnitTest.class)
 public class AttachProcessUtilsTest {
 
   private static final int PREFERRED_FAKE_PID = 42;

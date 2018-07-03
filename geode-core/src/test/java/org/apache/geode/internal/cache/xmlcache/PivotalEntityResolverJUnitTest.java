@@ -25,7 +25,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {
 
   private EntityResolver entityResolver;

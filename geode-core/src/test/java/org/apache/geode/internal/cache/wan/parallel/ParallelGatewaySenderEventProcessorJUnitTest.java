@@ -35,7 +35,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ParallelGatewaySenderEventProcessorJUnitTest {
 
   private GemFireCacheImpl cache;

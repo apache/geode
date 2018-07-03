@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DataSerializerHolderJUnitTest extends TestCase {
 
   @After

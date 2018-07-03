@@ -33,7 +33,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class HelperUnitTest {
   private Helper helper;
   private CliCommand cliCommand;

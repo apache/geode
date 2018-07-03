@@ -38,7 +38,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link CallbackSampler}.
  */
-@Category(UnitTest.class)
 @RunWith(MockitoJUnitRunner.class)
 public class CallbackSamplerTest {
 

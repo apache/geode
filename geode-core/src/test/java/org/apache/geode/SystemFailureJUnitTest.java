@@ -28,7 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class SystemFailureJUnitTest {
 
   private static final int LONG_WAIT = 30000;

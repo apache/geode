@@ -31,7 +31,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionVersionHolderJUnitTest {
 
   private int originalBitSetWidth;

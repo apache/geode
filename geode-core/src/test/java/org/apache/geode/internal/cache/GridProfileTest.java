@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class GridProfileTest {
 
   @Test
