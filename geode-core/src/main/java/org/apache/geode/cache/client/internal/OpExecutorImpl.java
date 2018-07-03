@@ -229,7 +229,6 @@ public class OpExecutorImpl implements ExecutablePool {
   private Object executeWithServerAffinity(ServerLocation loc, Op op) {
     try {
       Object retVal = executeOnServer(loc, op, true, false);
-      affinityRetryCount.set(0);
       return retVal;
     } catch (ServerConnectivityException e) {
       if (logger.isDebugEnabled()) {
@@ -293,6 +292,11 @@ public class OpExecutorImpl implements ExecutablePool {
 
   public ServerLocation getServerAffinityLocation() {
     return this.affinityServerLocation.get();
+  }
+
+  // for test only
+  protected int getAffinityRetryCount() {
+    return affinityRetryCount.get();
   }
 
   public void setServerAffinityLocation(ServerLocation serverLocation) {

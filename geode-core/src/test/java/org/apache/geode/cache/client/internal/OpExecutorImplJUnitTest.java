@@ -16,6 +16,11 @@ package org.apache.geode.cache.client.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +47,7 @@ import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -456,6 +462,32 @@ public class OpExecutorImplJUnitTest {
     reset();
     assertEquals(0, borrows);
     assertEquals(0, returns);
+  }
+
+  @Test
+  public void executeWithServerAffinityDoesNotResetAffinityRetryCount() {
+    OpExecutorImpl opExecutor =
+        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, true, cancelCriterion, mock(PoolImpl.class)));
+    opExecutor.setupServerAffinity(true);
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    ServerConnectivityException serverConnectivityException =
+        mock(ServerConnectivityException.class);
+
+    doReturn(serverLocation).when(opExecutor).getNextOpServerLocation();
+    doThrow(serverConnectivityException).when(opExecutor).executeOnServer(serverLocation,
+        txSynchronizationOp, true, false);
+    when(((AbstractOp) txSynchronizationOp).getMessage()).thenReturn(mock(Message.class));
+    opExecutor.execute(txSynchronizationOp);
+    assertEquals(1, opExecutor.getAffinityRetryCount());
+
+    Op txFailoverOp = mock(TXFailoverOp.TXFailoverOpImpl.class);
+    doReturn(new Object()).when(opExecutor).executeOnServer(serverLocation, txFailoverOp, true,
+        false);
+    opExecutor.execute(txFailoverOp);
+    assertEquals(1, opExecutor.getAffinityRetryCount());
   }
 
   private class DummyManager implements ConnectionManager {
