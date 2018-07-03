@@ -43,7 +43,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -107,7 +106,7 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     Result result = operationHandler.process(serializationService, generateTestRequest(false, true),
         getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(result instanceof Success);
+    assertTrue(result instanceof Success);
 
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
     verify(regionMock).put(TEST_KEY2, TEST_VALUE2);
