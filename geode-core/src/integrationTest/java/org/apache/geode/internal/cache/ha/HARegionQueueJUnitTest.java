@@ -25,22 +25,34 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.doReturn;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.awaitility.Awaitility;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,6 +60,9 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.TestName;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -60,6 +75,10 @@ import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
+import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -1366,6 +1385,396 @@ public class HARegionQueueJUnitTest {
             HARegionQueue.getMessageSyncInterval(), is(updatedMessageSyncInterval)));
   }
 
+  @Test
+  public void testPutEventInHARegion_Conflatable() throws Exception {
+    HARegionQueue regionQueue = createHARegionQueue(testName.getMethodName());
+
+    Conflatable expectedConflatable =
+        new ConflatableObject("key", "value", new EventID(new byte[] {1}, 1, 1), true,
+            testName.getMethodName());
+
+    final long position = 0L;
+    Conflatable returnedConflatable = regionQueue.putEventInHARegion(expectedConflatable, position);
+
+    Assert.assertEquals(expectedConflatable, returnedConflatable);
+
+    Conflatable conflatableInRegion = (Conflatable) regionQueue.getRegion().get(position);
+
+    Assert.assertEquals(expectedConflatable, conflatableInRegion);
+  }
+
+  @Test
+  public void testPutEventInHARegion_HAEventWrapper_New() throws Exception {
+    HARegionQueue regionQueue =
+        createHARegionQueue(testName.getMethodName(), HARegionQueue.BLOCKING_HA_QUEUE);
+    HARegionQueue regionQueueSpy = Mockito.spy(regionQueue);
+
+    HAEventWrapper newHAEventWrapper = new HAEventWrapper(mock(EventID.class));
+
+    doReturn(newHAEventWrapper).when(regionQueueSpy)
+        .putEntryConditionallyIntoHAContainer(newHAEventWrapper);
+
+    final long position = 0L;
+    Conflatable returnedHAEventWrapper =
+        regionQueueSpy.putEventInHARegion(newHAEventWrapper, position);
+
+    Assert.assertEquals(newHAEventWrapper, returnedHAEventWrapper);
+
+    HAEventWrapper haEventWrapperInRegion =
+        (HAEventWrapper) regionQueueSpy.getRegion().get(position);
+
+    Assert.assertEquals(newHAEventWrapper, haEventWrapperInRegion);
+    verify(regionQueueSpy, times(1)).putEntryConditionallyIntoHAContainer(newHAEventWrapper);
+  }
+
+  @Test
+  public void testPutEventInHARegion_HAEventWrapper_EntryAlreadyExisted() throws Exception {
+    HARegionQueue regionQueue =
+        createHARegionQueue(testName.getMethodName(), HARegionQueue.BLOCKING_HA_QUEUE);
+    HARegionQueue regionQueueSpy = Mockito.spy(regionQueue);
+
+    // Mock out an existing entry and increment ref count as if it had already been added to the HA
+    // container
+    HAEventWrapper existingHAEventWrapper = new HAEventWrapper(mock(EventID.class));
+    HAEventWrapper newHAEventWrapper = new HAEventWrapper(mock(EventID.class));
+
+    doReturn(existingHAEventWrapper).when(regionQueueSpy)
+        .putEntryConditionallyIntoHAContainer(newHAEventWrapper);
+
+    final long position = 0L;
+    Conflatable returnedHAEventWrapper =
+        regionQueueSpy.putEventInHARegion(newHAEventWrapper, position);
+
+    Assert.assertEquals(existingHAEventWrapper, returnedHAEventWrapper);
+
+    HAEventWrapper haEventWrapperInRegion =
+        (HAEventWrapper) regionQueueSpy.getRegion().get(position);
+
+    Assert.assertEquals(existingHAEventWrapper, haEventWrapperInRegion);
+    verify(regionQueueSpy, times(1)).putEntryConditionallyIntoHAContainer(newHAEventWrapper);
+  }
+
+  @Test
+  public void testPutEventInHARegion_HAEventWrapper_QueueNotInitialized() throws Exception {
+    HARegionQueue regionQueue =
+        createHARegionQueue(testName.getMethodName(), HARegionQueue.BLOCKING_HA_QUEUE);
+
+    // Mock that the regionQueue is not yet initialized
+    regionQueue.initialized.set(false);
+
+    HARegionQueue regionQueueSpy = Mockito.spy(regionQueue);
+    // Mock out an existing entry and increment ref count as if it had already been added to the HA
+    // container
+    HAEventWrapper expectedHAEventWrapper = new HAEventWrapper(mock(EventID.class));
+
+    final long position = 0L;
+    Conflatable returnedHAEventWrapper =
+        regionQueueSpy.putEventInHARegion(expectedHAEventWrapper, position);
+
+    Assert.assertEquals(expectedHAEventWrapper, returnedHAEventWrapper);
+
+    HAEventWrapper haEventWrapperInRegion =
+        (HAEventWrapper) regionQueueSpy.getRegion().get(position);
+
+    Assert.assertEquals(expectedHAEventWrapper, haEventWrapperInRegion);
+
+    // putEntryConditionallyIntoHAContainer should not be called if the queue isn't yet initialized
+    verify(regionQueueSpy, times(0)).putEntryConditionallyIntoHAContainer(expectedHAEventWrapper);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testPutEventInHARegion_HAEventWrapper_NullClientUpdateMessage() throws Exception {
+    HARegionQueue regionQueue =
+        createHARegionQueue(testName.getMethodName(), HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAEventWrapper haEventWrapperWithNullCUMI = new HAEventWrapper(mock(EventID.class));
+    haEventWrapperWithNullCUMI.setClientUpdateMessage(null);
+
+    final long position = 0L;
+    regionQueue.putEventInHARegion(haEventWrapperWithNullCUMI, 0L);
+  }
+
+  @Test
+  public void testPutEntryConditionallyIntoHAContainer_MultipleThreads_SameWrapperInstanceAndCorrectRefCount()
+      throws Exception {
+    HARegionQueue regionQueue =
+        createHARegionQueue(testName.getMethodName(), HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAEventWrapper mockHaEventWrapper = mock(HAEventWrapper.class);
+    doReturn(true).when(mockHaEventWrapper).getPutInProgress();
+
+    ClientUpdateMessageImpl mockClientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+    doReturn(mockClientUpdateMessage).when(mockHaEventWrapper).getClientUpdateMessage();
+
+    int numClients = 100;
+    ExecutorService executorService = Executors.newFixedThreadPool(numClients);
+
+    Collection<Callable<Conflatable>> concurrentPuts =
+        Collections.nCopies(numClients, (Callable<Conflatable>) () -> regionQueue
+            .putEntryConditionallyIntoHAContainer(mockHaEventWrapper));
+
+    List<Future<Conflatable>> futures = executorService.invokeAll(concurrentPuts);
+
+    List<Conflatable> conflatables = new ArrayList<>();
+
+    for (Future future : futures) {
+      conflatables.add((Conflatable) future.get());
+    }
+
+    boolean areAllConflatablesEqual = conflatables.stream().allMatch(conflatables.get(0)::equals);
+
+    Assert.assertTrue(areAllConflatablesEqual);
+    verify(mockHaEventWrapper, times(numClients)).incAndGetReferenceCount();
+    Assert.assertEquals(regionQueue.haContainer.get(mockHaEventWrapper), mockClientUpdateMessage);
+  }
+
+  @Test
+  public void testPutEntryConditionallyIntoHAContainer_AddCQAndInterestList() throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    ClientProxyMembershipID mockClientProxyMembershipId = mock(ClientProxyMembershipID.class);
+    CacheClientProxy mockCacheClientProxy = mock(CacheClientProxy.class);
+
+    doReturn(mockClientProxyMembershipId).when(mockCacheClientProxy).getProxyID();
+    ((HAContainerWrapper) regionQueue.haContainer).putProxy(haRegionName, mockCacheClientProxy);
+
+    ClientUpdateMessageImpl.ClientCqConcurrentMap mockClientCqConcurrentMap =
+        mock(ClientUpdateMessageImpl.ClientCqConcurrentMap.class);
+    ClientUpdateMessageImpl.CqNameToOp mockCqNameToOp =
+        mock(ClientUpdateMessageImpl.CqNameToOp.class);
+
+    doReturn(mockCqNameToOp).when(mockClientCqConcurrentMap).get(mockClientProxyMembershipId);
+
+    ClientUpdateMessageImpl mockClientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+    doReturn(true).when(mockClientUpdateMessage)
+        .isClientInterestedInUpdates(mockClientProxyMembershipId);
+
+    HAEventWrapper mockHAEventWrapper = mock(HAEventWrapper.class);
+    doReturn(mockClientUpdateMessage).when(mockHAEventWrapper).getClientUpdateMessage();
+    doReturn(mockClientCqConcurrentMap).when(mockHAEventWrapper).getClientCqs();
+
+    // Mock that a put is in progress so we don't null out the
+    // ClientUpdateMessage member on the HAEventWrapper
+    mockHAEventWrapper.incrementPutInProgressCounter();
+
+    // TODO: Why don't we add CQs and Interest when we initially add the
+    // wrapper to the container?
+    regionQueue.putEntryConditionallyIntoHAContainer(mockHAEventWrapper);
+    regionQueue.putEntryConditionallyIntoHAContainer(mockHAEventWrapper);
+
+    verify(mockClientUpdateMessage, times(1)).addClientCqs(mockClientProxyMembershipId,
+        mockCqNameToOp);
+    verify(mockClientUpdateMessage, times(1)).addClientInterestList(mockClientProxyMembershipId,
+        true);
+
+    // Mock that the ClientUpdateMessage is only interested in invalidates, then do another put
+    doReturn(false).when(mockClientUpdateMessage)
+        .isClientInterestedInUpdates(mockClientProxyMembershipId);
+    doReturn(true).when(mockClientUpdateMessage)
+        .isClientInterestedInInvalidates(mockClientProxyMembershipId);
+
+    regionQueue.putEntryConditionallyIntoHAContainer(mockHAEventWrapper);
+
+    verify(mockClientUpdateMessage, times(1)).addClientInterestList(mockClientProxyMembershipId,
+        false);
+  }
+
+  @Test
+  public void testDecAndRemoveFromHAContainer_WrapperInContainer() throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAContainerWrapper mockHAContainer = mock(HAContainerWrapper.class);
+    HAEventWrapper mockHAEventWrapper = mock(HAEventWrapper.class);
+
+    doReturn(mockHAEventWrapper).when(mockHAContainer).getKey(mockHAEventWrapper);
+
+    regionQueue.haContainer = mockHAContainer;
+
+    regionQueue.decAndRemoveFromHAContainer(mockHAEventWrapper);
+
+    verify(mockHAContainer, times(1)).remove(mockHAEventWrapper);
+  }
+
+  @Test
+  public void testDecAndRemoveFromHAContainer_RemoteWrapperNotInContainer_Removed()
+      throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAContainerWrapper mockHAContainer = mock(HAContainerWrapper.class);
+    HAEventWrapper mockHAEventWrapperInContainer = mock(HAEventWrapper.class);
+    HAEventWrapper mockRemoteHAEventWrapper = mock(HAEventWrapper.class);
+
+    doReturn(mockHAEventWrapperInContainer).when(mockHAContainer).getKey(mockRemoteHAEventWrapper);
+
+    regionQueue.haContainer = mockHAContainer;
+
+    regionQueue.decAndRemoveFromHAContainer(mockRemoteHAEventWrapper);
+
+    verify(mockHAContainer, times(1)).remove(mockHAEventWrapperInContainer);
+  }
+
+  @Test
+  public void testDecAndRemoveFromHAContainer_DecrementedButNotRemoved() throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAContainerWrapper mockHAContainer = mock(HAContainerWrapper.class);
+    HAEventWrapper mockHAEventWrapper = mock(HAEventWrapper.class);
+
+    doReturn(mockHAEventWrapper).when(mockHAContainer).getKey(mockHAEventWrapper);
+    doReturn(1L).when(mockHAEventWrapper).decAndGetReferenceCount();
+
+    regionQueue.haContainer = mockHAContainer;
+
+    regionQueue.decAndRemoveFromHAContainer(mockHAEventWrapper);
+
+    verify(mockHAEventWrapper, times(1)).decAndGetReferenceCount();
+    verify(mockHAContainer, times(0)).remove(mockHAEventWrapper);
+  }
+
+  @Test
+  public void testDecAndRemoveFromHAContainer_AlreadyRemoved() throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAContainerWrapper mockHAContainer = mock(HAContainerWrapper.class);
+    HAEventWrapper mockHAEventWrapperInContainer = mock(HAEventWrapper.class);
+    HAEventWrapper mockRemoteHAEventWrapper = mock(HAEventWrapper.class);
+
+    doReturn(null).when(mockHAContainer).getKey(mockRemoteHAEventWrapper);
+
+    regionQueue.haContainer = mockHAContainer;
+
+    regionQueue.decAndRemoveFromHAContainer(mockRemoteHAEventWrapper);
+
+    verify(mockHAContainer, times(0)).remove(mockHAEventWrapperInContainer);
+    verify(mockHAEventWrapperInContainer, times(0)).decAndGetReferenceCount();
+  }
+
+  @Test
+  public void testDecAndRemoveFromHAContainer_RefChangedAfterGettingKey() throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAContainerWrapper mockHAContainer = mock(HAContainerWrapper.class);
+    HAEventWrapper mockOriginalHAEventWrapperInContainer = mock(HAEventWrapper.class);
+    HAEventWrapper mockNewHAEventWrapperInContainer = mock(HAEventWrapper.class);
+    HAEventWrapper mockRemoteHAEventWrapper = mock(HAEventWrapper.class);
+
+    // First call will return original wrapper in container, then second call will return a new one
+    // to simulate the key being replaced by a new one in a different thread
+    doReturn(mockOriginalHAEventWrapperInContainer)
+        .doReturn(mockNewHAEventWrapperInContainer)
+        .when(mockHAContainer).getKey(mockRemoteHAEventWrapper);
+
+    regionQueue.haContainer = mockHAContainer;
+
+    regionQueue.decAndRemoveFromHAContainer(mockRemoteHAEventWrapper);
+
+    verify(mockHAContainer, times(0)).remove(mockOriginalHAEventWrapperInContainer);
+    verify(mockOriginalHAEventWrapperInContainer, times(0)).decAndGetReferenceCount();
+    verify(mockHAContainer, times(1)).remove(mockNewHAEventWrapperInContainer);
+    verify(mockNewHAEventWrapperInContainer, times(1)).decAndGetReferenceCount();
+  }
+
+  @Test
+  public void testDecAndRemoveFromHAContainer_MultipleThreadsDecrementing() throws Exception {
+    HARegionQueue regionQueue =
+        createHARegionQueue(testName.getMethodName(), HARegionQueue.BLOCKING_HA_QUEUE);
+
+    HAEventWrapper mockHAEventWrapper = mock(HAEventWrapper.class);
+
+    HAContainerWrapper mockHAContainer = mock(HAContainerWrapper.class);
+    doReturn(mockHAEventWrapper).when(mockHAContainer).getKey(mockHAEventWrapper);
+    regionQueue.haContainer = mockHAContainer;
+
+    final int numClients = 100;
+
+    doAnswer(new Answer() {
+      private long mockRefCount = numClients;
+
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        return --mockRefCount;
+      }
+    }).when(mockHAEventWrapper).decAndGetReferenceCount();
+
+    ExecutorService executorService = Executors.newFixedThreadPool(numClients);
+
+    Collection<Callable<Void>> concurrentDecAndRemoves =
+        Collections.nCopies(numClients, (Callable<Void>) () -> {
+          regionQueue
+              .decAndRemoveFromHAContainer(mockHAEventWrapper);
+          return null;
+        });
+
+    List<Future<Void>> futures = executorService.invokeAll(concurrentDecAndRemoves);
+
+    for (Future<Void> future : futures) {
+      future.get();
+    }
+
+    verify(mockHAEventWrapper, times(numClients)).decAndGetReferenceCount();
+    verify(mockHAContainer, times(1)).remove(mockHAEventWrapper);
+  }
+
+  @Test
+  public void testPutEntryConditionallyIntoHAContainerUpdatesInterestList() throws Exception {
+    final String haRegionName = testName.getMethodName();
+
+    HARegionQueue regionQueue =
+        createHARegionQueue(haRegionName, HARegionQueue.BLOCKING_HA_QUEUE);
+
+    ClientProxyMembershipID mockClientProxyMembershipId = mock(ClientProxyMembershipID.class);
+    CacheClientProxy mockCacheClientProxy = mock(CacheClientProxy.class);
+
+    doReturn(mockClientProxyMembershipId).when(mockCacheClientProxy).getProxyID();
+    ((HAContainerWrapper) regionQueue.haContainer).putProxy(haRegionName, mockCacheClientProxy);
+
+    EventID mockEventID = mock(EventID.class);
+    ClientUpdateMessageImpl mockClientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+    mockClientUpdateMessage.setEventIdentifier(mockEventID);
+
+    doReturn(true).when(mockClientUpdateMessage)
+        .isClientInterestedInUpdates(mockClientProxyMembershipId);
+
+    HAEventWrapper originalHAEventWrapper = new HAEventWrapper(mockEventID);
+    originalHAEventWrapper.setClientUpdateMessage(mockClientUpdateMessage);
+
+    // allow putInProgress to be false (so we null out the msg field in the wrapper)
+    regionQueue.putEntryConditionallyIntoHAContainer(originalHAEventWrapper);
+
+    // the initial haContainer.putIfAbsent() doesn't need to invoke addClientInterestList
+    // as it is already part of the original message
+    verify(mockClientUpdateMessage, times(0)).addClientInterestList(mockClientProxyMembershipId,
+        true);
+
+    // create a new wrapper with the same id and message
+    HAEventWrapper newHAEventWrapper = new HAEventWrapper(mockEventID);
+    newHAEventWrapper.setClientUpdateMessage(mockClientUpdateMessage);
+
+    regionQueue.putEntryConditionallyIntoHAContainer(newHAEventWrapper);
+
+    // Verify that the original haContainerEntry gets the updated clientInterestList
+    verify(mockClientUpdateMessage, times(1)).addClientInterestList(mockClientProxyMembershipId,
+        true);
+  }
+
   /**
    * Wait until a given runnable stops throwing exceptions. It should take at least
    * minimumElapsedTime after the supplied start time to happen.
@@ -1447,7 +1856,15 @@ public class HARegionQueueJUnitTest {
   }
 
   /**
-   * Creates region-queue object
+   * Creates HA region-queue object with specified queue type
+   */
+  private HARegionQueue createHARegionQueue(String name, int queueType)
+      throws IOException, ClassNotFoundException, CacheException, InterruptedException {
+    return HARegionQueue.getHARegionQueueInstance(name, cache, queueType, false);
+  }
+
+  /**
+   * Creates region-queue object with specified HARegionQueueAttributes
    */
   HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
