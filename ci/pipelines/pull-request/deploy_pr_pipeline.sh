@@ -88,7 +88,7 @@ TEAM=${CONCOURSE_TEAM}
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
 fly -t ${TARGET} set-pipeline \
   --non-interactive \
-  --pipeline ${SANITIZED_GEODE_BRANCH} \
+  --pipeline pr-${SANITIZED_GEODE_BRANCH} \
   --config ${TMP_DIR}/final.yml \
   --var concourse-team=${TEAM}
 
