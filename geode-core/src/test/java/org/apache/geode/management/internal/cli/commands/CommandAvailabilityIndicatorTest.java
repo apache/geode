@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 
@@ -29,7 +28,6 @@ import org.apache.geode.internal.cache.extension.mock.MockExtensionCommands;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
 public class CommandAvailabilityIndicatorTest {

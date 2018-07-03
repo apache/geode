@@ -25,7 +25,6 @@ import org.mockito.Mockito;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({LuceneTest.class})
 public class LuceneIndexFactoryImplJUnitTest {

@@ -26,10 +26,8 @@ import java.util.stream.Collectors;
 import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class DataSerializerHolderJUnitTest extends TestCase {
 

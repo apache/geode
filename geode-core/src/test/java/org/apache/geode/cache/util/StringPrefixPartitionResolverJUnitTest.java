@@ -18,11 +18,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.internal.cache.EntryOperationImpl;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class StringPrefixPartitionResolverJUnitTest {
   static final String DELIMITER = StringPrefixPartitionResolver.DEFAULT_DELIMITER;

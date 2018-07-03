@@ -29,13 +29,11 @@ import java.util.Collection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the Serialization of the Query related class.

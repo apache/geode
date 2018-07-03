@@ -35,7 +35,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.DSCODE;
@@ -46,7 +45,6 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 

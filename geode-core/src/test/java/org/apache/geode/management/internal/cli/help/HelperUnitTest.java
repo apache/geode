@@ -25,13 +25,11 @@ import java.lang.reflect.Method;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class HelperUnitTest {
   private Helper helper;

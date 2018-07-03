@@ -31,12 +31,10 @@ import org.apache.logging.log4j.message.ParameterizedMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.PureLogWriter;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the LogWriterAppender.

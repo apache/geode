@@ -19,10 +19,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.InitialImageOperation.RequestRVVMessage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class RequestRVVMessageTest {
 

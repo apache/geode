@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.Matchers;
 
 import org.apache.geode.cache.Cache;
@@ -47,7 +46,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.BytesToString;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ExportLogsCommandTest {
 

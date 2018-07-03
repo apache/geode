@@ -85,7 +85,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.util.test.TestUtil;
 
 @Category({MembershipTest.class})

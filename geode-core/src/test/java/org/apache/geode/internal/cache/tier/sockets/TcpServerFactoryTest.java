@@ -22,7 +22,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({MembershipTest.class})
 public class TcpServerFactoryTest {

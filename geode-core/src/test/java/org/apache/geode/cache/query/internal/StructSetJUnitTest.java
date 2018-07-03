@@ -25,14 +25,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class StructSetJUnitTest {
 

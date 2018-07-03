@@ -30,7 +30,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.UnitTestValueHolder;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test of methods on HeapDataOutputStream

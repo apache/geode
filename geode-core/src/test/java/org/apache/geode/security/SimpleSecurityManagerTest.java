@@ -28,7 +28,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({SecurityTest.class})
 public class SimpleSecurityManagerTest {

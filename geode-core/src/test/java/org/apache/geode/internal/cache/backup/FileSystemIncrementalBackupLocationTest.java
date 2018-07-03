@@ -32,13 +32,11 @@ import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class FileSystemIncrementalBackupLocationTest {
 

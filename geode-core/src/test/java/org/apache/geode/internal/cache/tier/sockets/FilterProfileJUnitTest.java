@@ -35,7 +35,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({ClientSubscriptionTest.class})
 public class FilterProfileJUnitTest {

@@ -23,10 +23,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ClearSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class EvictionListBuilderTest {
   private static final String EVICTION_PROPERTY_NAME = "geode." + EVICTION_SCAN_ASYNC;

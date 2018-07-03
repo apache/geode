@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the serialization and deserialization of randomly generated Strings.

@@ -23,7 +23,6 @@ import java.util.Properties;
 import com.examples.UserGfshCommand;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
@@ -38,7 +37,6 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions

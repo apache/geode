@@ -31,7 +31,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.ResultCollector;
@@ -42,7 +41,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunctionArgs;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class DestroyAsyncEventQueueCommandTest {

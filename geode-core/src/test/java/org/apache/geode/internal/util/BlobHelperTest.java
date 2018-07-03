@@ -29,14 +29,12 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.offheap.StoredObject;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit Tests for {@link BlobHelper}.

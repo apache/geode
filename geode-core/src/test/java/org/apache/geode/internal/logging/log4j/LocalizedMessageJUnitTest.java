@@ -20,10 +20,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests for LocalizedMessage which bridges our StringId LocalizedStrings for Log4J2 usage.

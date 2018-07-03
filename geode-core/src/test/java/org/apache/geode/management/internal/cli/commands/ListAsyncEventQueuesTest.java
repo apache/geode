@@ -36,7 +36,6 @@ import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category({AEQTest.class})

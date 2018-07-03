@@ -30,12 +30,10 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
 public class JAXBServiceTest {

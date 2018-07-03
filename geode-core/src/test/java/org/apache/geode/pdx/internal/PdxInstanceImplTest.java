@@ -44,7 +44,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({SerializationTest.class})
 public class PdxInstanceImplTest {

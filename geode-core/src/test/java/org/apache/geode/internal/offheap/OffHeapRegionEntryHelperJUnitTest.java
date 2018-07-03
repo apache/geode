@@ -29,7 +29,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -48,7 +47,6 @@ import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.entries.VersionedStatsDiskRegionEntryOffHeap;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")

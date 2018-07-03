@@ -46,9 +46,7 @@ import static org.junit.Assume.assumeNotNull;
 import java.lang.management.ManagementFactory;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The SystemUtilsJUnitTest class is a test suite of test cases for testing the contract and

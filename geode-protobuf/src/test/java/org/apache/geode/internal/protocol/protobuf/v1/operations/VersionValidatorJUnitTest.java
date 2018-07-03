@@ -22,7 +22,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({ClientServerTest.class})
 public class VersionValidatorJUnitTest {

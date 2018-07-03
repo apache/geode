@@ -32,7 +32,6 @@ import org.apache.geode.cache.lucene.test.Customer;
 import org.apache.geode.cache.lucene.test.Page;
 import org.apache.geode.cache.lucene.test.Person;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({LuceneTest.class})
 public class FlatFormatSerializerJUnitTest {

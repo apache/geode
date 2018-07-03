@@ -38,7 +38,6 @@ import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
@@ -51,7 +50,6 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @RunWith(JUnitParamsRunner.class)
 public class SqlToPdxInstanceCreatorTest {

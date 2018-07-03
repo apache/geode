@@ -25,12 +25,10 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class OffHeapWriteObjectAsByteArrayJUnitTest {
 

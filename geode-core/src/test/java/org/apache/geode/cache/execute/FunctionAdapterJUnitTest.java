@@ -24,12 +24,10 @@ import java.io.FileInputStream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.util.test.TestUtil;
 
 public class FunctionAdapterJUnitTest {

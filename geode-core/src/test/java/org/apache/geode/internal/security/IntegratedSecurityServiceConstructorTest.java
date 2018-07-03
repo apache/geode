@@ -23,12 +23,10 @@ import org.apache.shiro.SecurityUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class IntegratedSecurityServiceConstructorTest {
 

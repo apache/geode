@@ -28,7 +28,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * A unit test of the RegionDirectory class that uses the Directory test case from the lucene code

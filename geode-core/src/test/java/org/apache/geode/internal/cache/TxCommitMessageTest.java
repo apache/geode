@@ -27,7 +27,6 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -35,7 +34,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for TxCommitMessage.

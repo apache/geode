@@ -17,10 +17,8 @@ package org.apache.geode.cache.server.internal;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ConnectionCountProbeJUnitTest {
 

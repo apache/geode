@@ -21,9 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Asserts fixes for bug JDK-8076152 in JDK 1.8.0u20 to 1.8.0.u45.

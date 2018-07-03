@@ -30,13 +30,11 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test ResultsBag Limit behaviour

@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({MembershipTest.class})
 public class SystemFailureJUnitTest {

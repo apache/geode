@@ -27,11 +27,9 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
 public class FileUploaderTest {

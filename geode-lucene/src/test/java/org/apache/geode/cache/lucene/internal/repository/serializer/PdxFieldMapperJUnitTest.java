@@ -26,7 +26,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test of the PdxFieldMapperJUnitTest. Tests that all field types are mapped correctly.

@@ -40,11 +40,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for supplying an init file to Gfsh.

@@ -25,9 +25,7 @@ import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class AbstractBackupWriterConfigTest {
 

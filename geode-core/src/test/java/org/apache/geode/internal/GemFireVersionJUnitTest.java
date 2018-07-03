@@ -21,10 +21,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * This test prints out the version information obtained from the {@link GemFireVersion} class. It

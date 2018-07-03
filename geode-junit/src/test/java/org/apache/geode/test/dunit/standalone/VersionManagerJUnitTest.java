@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({BackwardCompatibilityTest.class})
 public class VersionManagerJUnitTest {

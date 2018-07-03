@@ -71,7 +71,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.statistics.StatArchiveWriter;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link DataSerializable} class.

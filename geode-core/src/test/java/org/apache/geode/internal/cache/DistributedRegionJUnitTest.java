@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import java.util.concurrent.ConcurrentMap;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
@@ -39,7 +38,6 @@ import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTest {
 

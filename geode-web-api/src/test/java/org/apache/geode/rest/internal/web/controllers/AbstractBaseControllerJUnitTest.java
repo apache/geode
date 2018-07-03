@@ -22,7 +22,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * AbstractBaseController Tester.

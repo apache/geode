@@ -40,7 +40,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({ClientServerTest.class})
 public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTest {

@@ -24,12 +24,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.DiskBackupStatusImpl;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class DiskBackupStatusTest {
 

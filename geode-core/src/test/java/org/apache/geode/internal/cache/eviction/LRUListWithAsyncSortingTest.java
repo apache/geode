@@ -33,13 +33,11 @@ import java.util.stream.IntStream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class LRUListWithAsyncSortingTest {
 

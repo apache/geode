@@ -26,13 +26,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class GetRegionsFunctionTest {
 

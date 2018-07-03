@@ -24,12 +24,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class TinyMemoryBlockJUnitTest {
 

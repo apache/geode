@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.management.internal.cli.domain.AbstractImpl;
@@ -29,7 +28,6 @@ import org.apache.geode.management.internal.cli.domain.Impl12;
 import org.apache.geode.management.internal.cli.domain.Interface1;
 import org.apache.geode.management.internal.cli.domain.Interface2;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ClasspathScanLoadHelperJUnitTest {
 

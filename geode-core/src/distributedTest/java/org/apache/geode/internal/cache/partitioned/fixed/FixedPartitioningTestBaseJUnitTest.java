@@ -21,9 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * FixedPartitioningTestBase Tester.

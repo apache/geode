@@ -78,30 +78,6 @@ subprojects {
     options.annotationProcessorPath = files(configurations['apt'])
   }
 
-  //This target does not run any tests. Rather, it validates that there are no
-  //tests that are missing a category annotation
-  task checkMissedTests(type: Test) {
-    include '**/*Test.class'
-    useJUnit {
-      excludeCategories 'org.apache.geode.test.junit.categories.UnitTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.PerformanceTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.HydraTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.ContainerTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.UITest'
-      excludeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-
-    //Skip launching any DUnit VMs during this run. This will prevent
-    //junit from launching VMs while parsing categories
-    systemProperty 'gemfire.DUnitLauncher.LAUNCHED', 'true'
-
-    beforeTest { descriptor ->
-      throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
-    }
-  }
-
   test {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
@@ -420,8 +396,6 @@ subprojects {
     description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
 
-  check.dependsOn checkMissedTests
-
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest, repeatTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest, repeatTest].each {it.finalizedBy combineReports}
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest
+  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest].each {it.finalizedBy combineReports}
 }

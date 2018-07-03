@@ -31,7 +31,6 @@ import org.mockito.Mockito;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({LuceneTest.class})
 public class TopEntriesFunctionCollectorJUnitTest {

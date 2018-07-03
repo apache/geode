@@ -23,9 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and

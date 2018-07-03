@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({SecurityTest.class})
 public class RestrictedMethodInvocationAuthorizerTest {

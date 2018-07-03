@@ -30,10 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.Banner;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ArgumentRedactorJUnitTest {
   private static final String someProperty = "redactorTest.someProperty";

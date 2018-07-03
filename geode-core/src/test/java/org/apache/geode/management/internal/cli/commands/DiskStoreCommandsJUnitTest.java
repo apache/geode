@@ -33,7 +33,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
@@ -48,7 +47,6 @@ import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundExcepti
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The DiskStoreCommandsJUnitTest class is a test suite of test cases testing the contract and

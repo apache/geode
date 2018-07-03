@@ -25,10 +25,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class OldVLJUnitTest {
 

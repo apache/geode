@@ -23,7 +23,6 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({LuceneTest.class})
 public class LuceneIndexImplJUnitTest {

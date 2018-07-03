@@ -19,11 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.lang.reflect.AnnotatedElement;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.annotations.experimentalpackage.ClassInExperimentalPackage;
 import org.apache.geode.experimental.nonexperimentalpackage.ClassInNonExperimentalPackage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for the <tt>Experimental</tt> annotation. Verifies that the annotation can be applied

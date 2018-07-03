@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufStreamProcessor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({ClientServerTest.class})
 public class ProtobufStreamProcessorTest {

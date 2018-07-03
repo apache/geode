@@ -23,13 +23,11 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class LogLevelInterceptorTest {
   private List<AbstractCliAroundInterceptor> interceptors = new ArrayList<>();

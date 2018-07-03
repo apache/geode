@@ -26,7 +26,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import org.apache.geode.cache.Operation;
@@ -38,7 +37,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class SerialGatewaySenderEventProcessorJUnitTest {
 

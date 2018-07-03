@@ -34,7 +34,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
@@ -47,7 +46,6 @@ import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Comp
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class PartitionedRegionLoadModelJUnitTest {
 

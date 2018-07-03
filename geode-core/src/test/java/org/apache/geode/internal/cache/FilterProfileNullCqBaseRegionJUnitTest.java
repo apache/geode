@@ -26,14 +26,12 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class FilterProfileNullCqBaseRegionJUnitTest {
 

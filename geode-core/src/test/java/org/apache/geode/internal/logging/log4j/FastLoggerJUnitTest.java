@@ -31,9 +31,7 @@ import org.apache.logging.log4j.message.ParameterizedMessageFactory;
 import org.apache.logging.log4j.spi.ExtendedLogger;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests the FastLogger class which wraps and delegates to an actual Logger with optimizations

@@ -35,9 +35,7 @@ import javax.naming.NoPermissionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests all basic methods of ContextImpl.

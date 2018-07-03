@@ -23,9 +23,7 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class BucketRedundancyTrackerTest {
   private static final int TARGET_COPIES = 2;

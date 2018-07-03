@@ -21,9 +21,7 @@ import static org.junit.Assert.assertFalse;
 import java.lang.reflect.Constructor;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * AlertLevel Tester.

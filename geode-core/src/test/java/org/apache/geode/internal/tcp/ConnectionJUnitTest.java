@@ -34,7 +34,6 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({MembershipTest.class})
 public class ConnectionJUnitTest {

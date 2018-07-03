@@ -31,11 +31,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class MemoryAllocatorJUnitTest {
 

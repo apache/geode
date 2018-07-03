@@ -29,10 +29,8 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class StartupStatusTest {
 

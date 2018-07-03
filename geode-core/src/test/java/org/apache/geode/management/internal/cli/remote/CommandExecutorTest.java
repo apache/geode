@@ -25,7 +25,6 @@ import static org.mockito.Mockito.spy;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -33,7 +32,6 @@ import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundExcepti
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class CommandExecutorTest {
   GfshParseResult parseResult;

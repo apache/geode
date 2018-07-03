@@ -37,7 +37,6 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -60,7 +59,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The DescribeDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of

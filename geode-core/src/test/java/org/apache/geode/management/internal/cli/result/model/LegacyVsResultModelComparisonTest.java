@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
@@ -30,7 +29,6 @@ import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class LegacyVsResultModelComparisonTest {
 

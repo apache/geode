@@ -23,10 +23,8 @@ import java.lang.reflect.Proxy;
 import java.util.HashSet;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class FilterByPathJUnitTest {
 

@@ -20,12 +20,10 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ExportLogsInterceptorJUnitTest {
   private ExportLogsInterceptor interceptor;

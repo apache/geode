@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({LuceneTest.class})
 public class LuceneIndexXmlParserJUnitTest {

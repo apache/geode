@@ -20,10 +20,8 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @RunWith(JUnitParamsRunner.class)
 public class RegionEntryFactoryBuilderJUnitTest {

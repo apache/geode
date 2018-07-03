@@ -19,10 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class HelpBlockUnitTest {
   private HelpBlock firstBlock, secondBlock, thirdBlock;

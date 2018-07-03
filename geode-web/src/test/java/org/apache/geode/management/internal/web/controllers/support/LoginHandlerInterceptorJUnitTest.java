@@ -36,11 +36,9 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract and

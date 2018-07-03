@@ -22,11 +22,9 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestFilterInfoMessage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class RequestFilterInfoMessageTest {
 

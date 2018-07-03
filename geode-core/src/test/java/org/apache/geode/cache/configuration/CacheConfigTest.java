@@ -22,10 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
 public class CacheConfigTest {

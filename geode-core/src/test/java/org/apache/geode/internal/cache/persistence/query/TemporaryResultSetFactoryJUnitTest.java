@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.persistence.query.IndexMap.IndexEntry;
@@ -31,7 +30,6 @@ import org.apache.geode.internal.cache.persistence.query.mock.IndexMapImpl;
 import org.apache.geode.internal.cache.persistence.query.mock.NaturalComparator;
 import org.apache.geode.internal.cache.persistence.query.mock.Pair;
 import org.apache.geode.internal.cache.persistence.query.mock.PairComparator;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class TemporaryResultSetFactoryJUnitTest {
 

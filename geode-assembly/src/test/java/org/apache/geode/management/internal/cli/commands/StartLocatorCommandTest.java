@@ -36,13 +36,11 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class StartLocatorCommandTest {
   private StartLocatorCommand locatorCommands;

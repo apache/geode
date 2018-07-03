@@ -22,7 +22,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -30,7 +29,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ClientExporterTest {
 

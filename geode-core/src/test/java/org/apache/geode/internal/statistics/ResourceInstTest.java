@@ -21,13 +21,11 @@ import java.lang.reflect.Field;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceType;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatArchiveFile;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ResourceInst}.

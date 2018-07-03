@@ -26,14 +26,12 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class OnlineCommandProcessorTest {
 

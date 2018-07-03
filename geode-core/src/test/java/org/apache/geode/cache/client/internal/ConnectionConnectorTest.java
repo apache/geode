@@ -28,7 +28,6 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.PoolCancelledException;
@@ -37,7 +36,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ConnectionConnectorTest {
   private CancelCriterion cancelCriterion;

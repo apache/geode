@@ -24,9 +24,7 @@ import java.util.Random;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * A test of the region version holder, where all of the test methods will now build there RVV by

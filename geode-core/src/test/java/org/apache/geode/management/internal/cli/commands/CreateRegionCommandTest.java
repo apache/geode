@@ -30,7 +30,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -46,7 +45,6 @@ import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs.ExpirationAttrs;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class CreateRegionCommandTest {

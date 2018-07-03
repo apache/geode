@@ -50,7 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -68,7 +67,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
 import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the DataType support for off-heap MemoryInspector.

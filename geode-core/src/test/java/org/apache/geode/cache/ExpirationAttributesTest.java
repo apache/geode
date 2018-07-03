@@ -18,9 +18,7 @@ package org.apache.geode.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ExpirationAttributesTest {
   @Test

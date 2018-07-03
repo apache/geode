@@ -37,7 +37,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DiskAccessException;
@@ -57,7 +56,6 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class RegionMapPutTest {
   private final InternalRegion internalRegion = mock(InternalRegion.class);

@@ -28,7 +28,6 @@ import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.QueryService;
@@ -36,7 +35,6 @@ import org.apache.geode.cache.query.internal.index.AbstractIndex.InternalIndexSt
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class MemoryIndexStoreJUnitTest {
 

@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -49,7 +48,6 @@ import org.apache.geode.cache.query.internal.index.HashIndex;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class CreateDefinedIndexesFunctionTest {
   private Cache cache;

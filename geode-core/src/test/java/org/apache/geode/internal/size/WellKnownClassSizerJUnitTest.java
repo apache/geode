@@ -19,10 +19,8 @@ import static org.apache.geode.internal.size.SizeTestUtil.roundup;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class WellKnownClassSizerJUnitTest {
 

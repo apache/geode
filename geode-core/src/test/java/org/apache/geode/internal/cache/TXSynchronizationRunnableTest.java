@@ -21,12 +21,10 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class TXSynchronizationRunnableTest {
 

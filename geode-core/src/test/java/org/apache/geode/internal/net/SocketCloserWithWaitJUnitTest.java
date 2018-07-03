@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests SocketCloser with a wait time. The default SocketCloser does not wait. This test configures

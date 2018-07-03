@@ -26,14 +26,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link CallbackSampler}.

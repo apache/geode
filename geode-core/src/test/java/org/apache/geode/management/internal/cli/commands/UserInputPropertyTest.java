@@ -24,10 +24,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class UserInputPropertyTest {
 

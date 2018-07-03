@@ -25,13 +25,11 @@ import java.util.Stack;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class JdbcConnectorServiceXmlParserTest {
 

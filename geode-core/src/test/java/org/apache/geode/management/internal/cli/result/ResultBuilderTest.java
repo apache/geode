@@ -20,10 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class ResultBuilderTest {
 

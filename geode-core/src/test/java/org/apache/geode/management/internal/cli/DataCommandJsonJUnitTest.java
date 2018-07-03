@@ -23,11 +23,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.dto.Car;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class DataCommandJsonJUnitTest {
 

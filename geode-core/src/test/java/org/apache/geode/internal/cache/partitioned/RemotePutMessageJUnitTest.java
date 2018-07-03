@@ -24,7 +24,6 @@ import java.util.HashSet;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Operation;
@@ -32,7 +31,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class RemotePutMessageJUnitTest {
   static final int UNKNOWN_REGION = 234;

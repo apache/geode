@@ -24,10 +24,8 @@ import static org.mockito.Mockito.verify;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.util.CollectionUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AbstractSignalNotificationHandler}.

@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.RedisTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({RedisTest.class})
 public class AbstractScanExecutorTest {

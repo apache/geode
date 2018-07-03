@@ -20,14 +20,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class JavaSerializationJUnitTest {
 

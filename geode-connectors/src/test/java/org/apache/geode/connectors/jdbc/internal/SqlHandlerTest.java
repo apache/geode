@@ -39,7 +39,6 @@ import junitparams.JUnitParamsRunner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
@@ -51,7 +50,6 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @RunWith(JUnitParamsRunner.class)
 public class SqlHandlerTest {

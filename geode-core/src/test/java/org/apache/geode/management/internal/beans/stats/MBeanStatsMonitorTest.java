@@ -28,7 +28,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -42,7 +41,6 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.statistics.FakeValueMonitor;
 import org.apache.geode.internal.statistics.ValueMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor.DefaultHashMap;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class MBeanStatsMonitorTest {
 

@@ -32,7 +32,6 @@ import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({ClientServerTest.class})
 public class ServerBlackListJUnitTest {

@@ -20,9 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class AggregatorJUnitTest {
 

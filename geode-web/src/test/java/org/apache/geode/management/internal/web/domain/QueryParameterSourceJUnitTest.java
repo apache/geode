@@ -28,10 +28,8 @@ import javax.management.Query;
 import javax.management.QueryExp;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The QueryParameterSourceJUnitTest class is a test suite of test cases testing the contract and

@@ -31,10 +31,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
 

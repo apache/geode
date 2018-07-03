@@ -25,10 +25,8 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class PartitionedRegionDataStoreTest {
   @Mock

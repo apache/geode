@@ -28,13 +28,11 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 public class CompiledInJUnitTest {
 

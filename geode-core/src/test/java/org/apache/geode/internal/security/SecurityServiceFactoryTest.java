@@ -37,7 +37,6 @@ import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({SecurityTest.class})
 public class SecurityServiceFactoryTest {

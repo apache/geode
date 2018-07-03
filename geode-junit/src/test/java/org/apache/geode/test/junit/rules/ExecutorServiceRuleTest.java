@@ -29,11 +29,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
 public class ExecutorServiceRuleTest {

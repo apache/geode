@@ -24,14 +24,12 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test ResultsBag, including null elements
