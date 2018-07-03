@@ -35,6 +35,8 @@ configurations {
   integrationTestRuntime.extendsFrom testRuntime
   distributedTestCompile.extendsFrom integrationTestCompile
   distributedTestRuntime.extendsFrom integrationTestRuntime
+  performanceTestCompile.extendsFrom testCompile
+  performanceTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -193,6 +195,14 @@ sourceSets {
     }
     resources.srcDir file('src/distributedTest/resources')
   }
+  performanceTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/performanceTest/java')
+    }
+    resources.srcDir file('src/performanceTest/resources')
+  }
 }
 
 jmh {
@@ -276,4 +286,10 @@ dependencies {
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
+
+task integrationTestx(type: Test) {
+  useJUnit()
+  testClassesDirs = sourceSets.integrationTest.output.classesDirs
+  classpath = sourceSets.integrationTest.runtimeClasspath
+}
 
