@@ -287,9 +287,3 @@ dependencies {
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
-task integrationTestx(type: Test) {
-  useJUnit()
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-}
-
