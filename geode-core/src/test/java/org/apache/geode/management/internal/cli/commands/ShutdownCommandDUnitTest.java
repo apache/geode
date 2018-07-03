@@ -43,7 +43,7 @@ public class ShutdownCommandDUnitTest {
   private MemberVM server2;
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

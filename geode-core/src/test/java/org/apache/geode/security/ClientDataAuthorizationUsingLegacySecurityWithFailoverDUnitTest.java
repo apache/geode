@@ -70,7 +70,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Rule
-  public ClusterStartupRule csRule = new ClusterStartupRule();
+  public ClusterStartupRule csRule = new ClusterStartupRule(4);
 
   private MemberVM locator;
   private MemberVM server1;

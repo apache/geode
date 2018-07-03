@@ -52,7 +52,7 @@ public class AlterDiskStoreDUnitTest {
   private static MemberVM server1;
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

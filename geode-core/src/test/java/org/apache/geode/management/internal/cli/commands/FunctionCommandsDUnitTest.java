@@ -56,7 +56,7 @@ public class FunctionCommandsDUnitTest {
   private static final String RESULT_HEADER = "Message";
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

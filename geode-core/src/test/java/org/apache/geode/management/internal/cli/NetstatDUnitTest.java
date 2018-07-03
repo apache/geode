@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class NetstatDUnitTest {
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

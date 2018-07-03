@@ -75,7 +75,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule(1);
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();

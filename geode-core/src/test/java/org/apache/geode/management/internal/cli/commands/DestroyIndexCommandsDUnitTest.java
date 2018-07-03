@@ -53,7 +53,7 @@ public class DestroyIndexCommandsDUnitTest {
   private MemberVM server2;
 
   @Rule
-  public ClusterStartupRule rule = new ClusterStartupRule();
+  public ClusterStartupRule rule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

@@ -40,7 +40,7 @@ public class LogNoPasswordTest {
 
   private static String PASSWORD = "abcdefghijklmn";
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(1).withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

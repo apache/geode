@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class StartServerAuthorizationTest {
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(2);
   private static MemberVM locator = null;
 
   @Rule

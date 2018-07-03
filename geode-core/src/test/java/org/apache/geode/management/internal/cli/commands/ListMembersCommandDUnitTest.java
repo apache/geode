@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category({DistributedTest.class})
 public class ListMembersCommandDUnitTest {
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(4);
   private static MemberVM locator;
 
   @Rule

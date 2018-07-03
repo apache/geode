@@ -18,7 +18,6 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.Serializable;
@@ -102,10 +101,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   private boolean logFile = false;
 
-  public ClusterStartupRule() {
-    this(NUM_VMS);
-  }
-
   public ClusterStartupRule(final int vmCount) {
     this.vmCount = vmCount;
   }
@@ -124,7 +119,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void before() throws Throwable {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(vmCount);
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }

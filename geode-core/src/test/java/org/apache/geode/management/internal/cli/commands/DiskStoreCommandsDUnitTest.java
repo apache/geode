@@ -53,7 +53,7 @@ public class DiskStoreCommandsDUnitTest {
   private static final String GROUP = "GROUP1";
 
   @Rule
-  public ClusterStartupRule rule = new ClusterStartupRule();
+  public ClusterStartupRule rule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ImportOldClusterConfigDUnitTest {
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

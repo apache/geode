@@ -61,7 +61,7 @@ public class ShowDeadlockDUnitTest {
   private String showDeadlockCommand;
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

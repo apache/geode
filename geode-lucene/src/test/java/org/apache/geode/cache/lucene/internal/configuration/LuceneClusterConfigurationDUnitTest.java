@@ -58,7 +58,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class LuceneClusterConfigurationDUnitTest {
 
   @Rule
-  public ClusterStartupRule ls = new ClusterStartupRule();
+  public ClusterStartupRule ls = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();

@@ -41,7 +41,7 @@ public class CreateJndiBindingCommandDUnitTest {
   private static MemberVM locator, server1, server2;
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(3);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

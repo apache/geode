@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class PeerSecurityWithEmbeddedLocatorDUnitTest {
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
 
   @Test

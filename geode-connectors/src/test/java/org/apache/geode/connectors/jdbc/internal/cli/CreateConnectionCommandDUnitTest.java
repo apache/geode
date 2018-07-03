@@ -46,7 +46,7 @@ public class CreateConnectionCommandDUnitTest {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule(2);
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();

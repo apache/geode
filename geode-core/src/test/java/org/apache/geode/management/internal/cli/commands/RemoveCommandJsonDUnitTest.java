@@ -49,7 +49,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
   private static final String JSON_REGION_NAME = "jsonReplicateRegion";
 
   @Rule
-  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();

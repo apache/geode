@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category({DistributedTest.class, GfshTest.class})
 public class ExecuteFunctionCommandDUnitTest {
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(4);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

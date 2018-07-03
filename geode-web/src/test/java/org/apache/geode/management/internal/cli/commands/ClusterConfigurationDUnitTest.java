@@ -45,7 +45,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClusterConfigurationDUnitTest {
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule(4);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

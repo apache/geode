@@ -42,7 +42,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public transient ClusterStartupRule locatorStartup = new ClusterStartupRule();
+  public transient ClusterStartupRule locatorStartup = new ClusterStartupRule(1);
 
   /**
    * Starts a server for the client Tomcat container to connect to using the GFSH command line

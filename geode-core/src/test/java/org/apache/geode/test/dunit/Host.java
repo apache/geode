@@ -22,16 +22,14 @@ import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
- * This class represents a host on which a remote method may be invoked. It provides access to the
- * VMs and GemFire systems that run on that host.
+ * This class represents a host on which a remote method may be invoked.
+ * It provides access to the VMs and member/client systems that run on that host.
  *
  * <p>
- * Additionally, it provides access to the Java RMI registry that runs on the host. By default, an
- * RMI registry is only started on the host on which Hydra's Master VM runs. RMI registries may be
- * started on other hosts via additional Hydra configuration.
- *
+ * Additionally, it provides access to the Java RMI registry that runs on the host.
+ * By default, an RMI registry is only started on the host on which Hydra's Master VM runs.
+ * RMI registries may be started on other hosts via additional Hydra configuration.
  */
-@SuppressWarnings("serial")
 public abstract class Host implements Serializable {
 
   /** The available hosts */
@@ -181,22 +179,12 @@ public abstract class Host implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Host ");
-    sb.append(getHostName());
-    sb.append(" with ");
-    sb.append(getVMCount());
-    sb.append(" VMs");
-    return sb.toString();
+    return String.format("Host %s with %d VMs", getHostName(), getVMCount());
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o instanceof Host) {
-      return ((Host) o).getHostName().equals(getHostName());
-
-    } else {
-      return false;
-    }
+    return o instanceof Host && ((Host) o).getHostName().equals(getHostName());
   }
 
   @Override

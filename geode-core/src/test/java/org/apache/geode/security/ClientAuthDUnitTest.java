@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({DistributedTest.class, SecurityTest.class, FlakyTest.class})
 public class ClientAuthDUnitTest {
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(1);
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()

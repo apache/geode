@@ -50,7 +50,7 @@ public class ClusterConfigurationIndexWithFromClauseDUnitTest {
   }
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule gfshCommandRule = new GfshCommandRule();

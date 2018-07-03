@@ -46,7 +46,7 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public transient ClusterStartupRule startupRule = new ClusterStartupRule();
+  public transient ClusterStartupRule startupRule = new ClusterStartupRule(2);
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();

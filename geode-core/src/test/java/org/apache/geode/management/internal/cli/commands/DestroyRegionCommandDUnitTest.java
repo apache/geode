@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.rules.VMProvider;
 @Category({DistributedTest.class, RegionsTest.class})
 public class DestroyRegionCommandDUnitTest {
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

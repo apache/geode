@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 public class ConcurrentDeployDUnitTest {
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();

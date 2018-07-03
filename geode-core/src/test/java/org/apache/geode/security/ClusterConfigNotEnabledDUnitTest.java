@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClusterConfigNotEnabledDUnitTest {
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(2);
 
   @Test
   public void serverShouldNotRequestClusterConfig() throws Exception {

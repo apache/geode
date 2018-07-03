@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.rules.VMProvider;
 public class AlterRegionCommandDUnitTest {
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(4);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

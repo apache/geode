@@ -43,7 +43,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
       COMMAND + "--listener=" + MyAsyncEventListener.class.getName();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

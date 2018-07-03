@@ -47,7 +47,7 @@ public class ImportClusterConfigDistributedTest {
   public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(2);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

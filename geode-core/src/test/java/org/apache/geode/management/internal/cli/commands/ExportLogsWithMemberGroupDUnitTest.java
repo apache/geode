@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category({DistributedTest.class})
 public class ExportLogsWithMemberGroupDUnitTest {
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(4).withLogFile();
 
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();

@@ -63,7 +63,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
   private static MemberVM server1;
   private static MemberVM server2;
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

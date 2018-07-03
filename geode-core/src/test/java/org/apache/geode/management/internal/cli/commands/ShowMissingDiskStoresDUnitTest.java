@@ -53,7 +53,7 @@ public class ShowMissingDiskStoresDUnitTest {
   public TestName testName = new TestName();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();

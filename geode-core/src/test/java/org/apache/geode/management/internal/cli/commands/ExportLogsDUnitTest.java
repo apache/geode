@@ -66,7 +66,7 @@ public class ExportLogsDUnitTest {
   private static final String ERROR_LOG_PREFIX = "[IGNORE]";
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3).withLogFile();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();

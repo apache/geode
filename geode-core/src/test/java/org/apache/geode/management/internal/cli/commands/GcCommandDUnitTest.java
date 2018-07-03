@@ -60,7 +60,7 @@ public class GcCommandDUnitTest {
 
 
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

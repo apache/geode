@@ -67,7 +67,7 @@ public class JMXMBeanReconnectDUnitTest {
   private MemberVM locator1, locator2, server1, server2;
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(4);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

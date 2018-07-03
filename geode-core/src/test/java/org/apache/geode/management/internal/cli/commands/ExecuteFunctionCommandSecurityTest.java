@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @ClassRule
-  public static ClusterStartupRule lsRule = new ClusterStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

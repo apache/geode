@@ -52,7 +52,7 @@ public class AlterCompressorDUnitTest {
   private static MemberVM server3;
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(4);
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

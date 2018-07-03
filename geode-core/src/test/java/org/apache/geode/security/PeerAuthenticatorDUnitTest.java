@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({DistributedTest.class, SecurityTest.class})
 public class PeerAuthenticatorDUnitTest {
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(3);
 
   @Before
   public void before() throws Exception {

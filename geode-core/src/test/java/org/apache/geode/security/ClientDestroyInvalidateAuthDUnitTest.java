@@ -41,7 +41,7 @@ public class ClientDestroyInvalidateAuthDUnitTest {
 
   private ClientVM client1, client2;
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule(2);
   @Rule
   public ServerStarterRule server =
       new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
@@ -58,7 +58,7 @@ public class ClientDestroyInvalidateAuthDUnitTest {
 
   @Test
   public void testDestroyInvalidate() throws Exception {
-    client1 = lsRule.startClientVM(1, "data", "data", true, server.getPort());
+    client1 = lsRule.startClientVM(0, "data", "data", true, server.getPort());
     // Delete one key and invalidate another key with an authorized user.
     client1.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
@@ -77,7 +77,7 @@ public class ClientDestroyInvalidateAuthDUnitTest {
       cache.close();
     });
 
-    client2 = lsRule.startClientVM(2, "dataRead", "dataRead", true, server.getPort());
+    client2 = lsRule.startClientVM(1, "dataRead", "dataRead", true, server.getPort());
     // Delete one key and invalidate another key with an unauthorized user.
     client2.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
