@@ -365,7 +365,7 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    Thread.sleep(memberTimeout / GMSHealthMonitor.LOGICAL_INTERVAL);
+    Thread.sleep(memberTimeout);
 
     ArrayList<InternalDistributedMember> recipient = new ArrayList<InternalDistributedMember>();
     recipient.add(mockMembers.get(0));
@@ -379,7 +379,7 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.processMessage(sm);
 
     Awaitility.await("waiting for remove(member) to be invoked")
-        .atMost(3 * memberTimeout, TimeUnit.SECONDS).until(() -> {
+        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).until(() -> {
           verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
               any(String.class));
         });
