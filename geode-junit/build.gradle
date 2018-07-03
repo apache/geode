@@ -53,3 +53,8 @@ sourceSets {
     resources.srcDir file('src/integrationTest/resources')
   }
 }
+
+test {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}

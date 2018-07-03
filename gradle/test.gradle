@@ -103,10 +103,6 @@ subprojects {
   }
 
   test {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.UnitTest'
-    }
-
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
