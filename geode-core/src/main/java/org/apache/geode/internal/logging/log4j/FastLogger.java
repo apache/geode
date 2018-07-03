@@ -73,4 +73,12 @@ public class FastLogger extends ExtendedLoggerWrapper {
   public ExtendedLogger getExtendedLogger() {
     return super.logger;
   }
+
+  @Override
+  public void info(String message) {
+    if (message.equals("false") || message.equals("true")) {
+      super.info(message, new Exception());
+    }
+    super.info(message);
+  }
 }
