@@ -100,6 +100,7 @@ public class FederatingManager extends Manager {
     this.messenger = new MemberMessenger(jmxAdapter, repo, system);
   }
 
+  @TestingOnly
   void setProxyFactory(MBeanProxyFactory newProxyFactory) {
     this.proxyFactory = newProxyFactory;
   }
