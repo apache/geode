@@ -76,10 +76,6 @@ jobs:
               path: geode-unmerged-request
               status: failure
               context: $BUILD_JOB_NAME
-          - put: send-notification-email
-            params:
-              subject: built-geode/subject
-              body: built-geode/body
         on_success:
           aggregate:
           - put: geode
