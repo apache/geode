@@ -31,15 +31,17 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @Category({IntegrationTest.class, RedisTest.class})
 public class GeoJUnitTest {
@@ -66,19 +68,7 @@ public class GeoJUnitTest {
   }
 
   @Test
-  public void testGeoAddSingle() {
-    Long l = jedis.geoadd("Sicily", 13.361389, 38.115556, "Palermo");
-    assertTrue(l == 1L);
-
-    Region<ByteArrayWrapper, StringWrapper> sicilyRegion = cache.getRegion("Sicily");
-    assertNotNull("Expected region to be not NULL", sicilyRegion);
-
-    // Check GeoHash
-    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(), "sqc8b49rnyte");
-  }
-
-  @Test
-  public void testGeoAddMultiple() {
+  public void testGeoAdd() {
     Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
     memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
@@ -108,34 +98,21 @@ public class GeoJUnitTest {
     assertEquals(null, hashes.get(2));
   }
 
-  private class EntryCmp implements Comparator<Entry<String, Double>> {
+  @Test
+  public void testGeoPos() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
 
-    @Override
-    public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
-      Double diff = o1.getValue() - o2.getValue();
-      if (diff == 0)
-        return o2.getKey().compareTo(o1.getKey());
-      else
-        return diff > 0 ? 1 : -1;
-    }
+    List<GeoCoordinate> positions = jedis.geopos("Sicily", "Palermo", "Catania", "Rome");
 
-  }
-
-  private class EntryRevCmp implements Comparator<Entry<String, Double>> {
-
-    @Override
-    public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
-      Double diff = o2.getValue() - o1.getValue();
-      if (diff == 0)
-        return o1.getKey().compareTo(o2.getKey());
-      else
-        return diff > 0 ? 1 : -1;
-    }
-
-  }
-
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
+    assertEquals(13.361389, positions.get(0).getLongitude(), 0.000001);
+    assertEquals(38.115556, positions.get(0).getLatitude(), 0.000001);
+    assertEquals(15.087269, positions.get(1).getLongitude(), 0.000001);
+    assertEquals(37.502669, positions.get(1).getLatitude(), 0.000001);
+    assertEquals(null, positions.get(2));
   }
 
   @After
