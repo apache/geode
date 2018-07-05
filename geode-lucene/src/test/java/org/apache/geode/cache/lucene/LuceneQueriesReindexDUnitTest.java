@@ -229,11 +229,13 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
       });
     }
 
-    // wait again for threads to die.
-    ai1.join();
-    ai2.join();
+    // wait again for maximum 60 seconds for threads to die.
+    ai1.join(60000);
+    ai2.join(60000);
 
     // at this time, both threads should be dead already, then we check the exception status
+    // if either thread is still alive, the getException call will throw an exception which would
+    // make the test fail.
     boolean ai1HasException = ai1.getException() instanceof UnsupportedOperationException;
     boolean ai2HasException = ai2.getException() instanceof UnsupportedOperationException;
     assertThat(ai1HasException || ai2HasException).isTrue();
