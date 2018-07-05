@@ -20,7 +20,7 @@ public class GeoPosExecutor extends GeoSortedSetExecutor {
         ByteArrayWrapper key = command.getKey();
 
         if (commandElems.size() < 3) {
-            command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEOHASH));
+            command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEOPOS));
             return;
         }
 
