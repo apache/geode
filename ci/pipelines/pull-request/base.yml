@@ -22,10 +22,6 @@ resource_types:
     type: docker-image
     source:
       repository: frodenas/gcs-resource
-  - name: email
-    type: docker-image
-    source:
-      repository: pcfseceng/email-resource
   - name: pull-request
     type: docker-image
     source:
@@ -111,10 +107,6 @@ jobs:
               path: geode-unmerged-request
               status: failure
               context: $BUILD_JOB_NAME
-          - put: send-notification-email
-            params:
-              subject: results/subject
-              body: results/body
       on_success:
         aggregate:
         - put: geode
@@ -176,12 +168,6 @@ jobs:
           - geode-core:distributedTest
           - distributedtestcore
           path: geode/ci/scripts/test-run.sh
-      on_failure:
-        aggregate:
-        - put: send-notification-email
-          params:
-            subject: built-geode/subject
-            body: built-geode/body
 
       ensure:
         aggregate:
@@ -226,12 +212,6 @@ jobs:
           - distributedTest
           - distributedtesteverythingelse
           path: geode/ci/scripts/test-run.sh
-      on_failure:
-        aggregate:
-          - put: send-notification-email
-            params:
-              subject: built-geode/subject
-              body: built-geode/body
       ensure:
         aggregate:
         - task: archive-results-everythingelse
