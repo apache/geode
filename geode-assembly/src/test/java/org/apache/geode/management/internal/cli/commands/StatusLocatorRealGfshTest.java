@@ -36,9 +36,9 @@ public class StatusLocatorRealGfshTest {
 
   @Test
   public void statusLocatorFailsWhenNotConnected() throws Exception {
-    GfshScript.of("start locator --name=locator1").withName("start locator").execute(gfshRule);
+    GfshScript.of("start locator --name=locator1").withName("start-locator").execute(gfshRule);
 
-    GfshScript.of("status locator --name=locator1").withName("status locator").expectFailure()
+    GfshScript.of("status locator --name=locator1").withName("status-locator").expectFailure()
         .execute(gfshRule);
   }
 }
