@@ -15,13 +15,12 @@
 
 package org.apache.geode.tools.pulse;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 
 import java.io.File;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 
@@ -41,7 +40,7 @@ public class PulseJmxPasswordFileTest {
   public LocatorStarterRule locator = new LocatorStarterRule();
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(locator::getHttpPort);
+  public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort);
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -58,7 +57,6 @@ public class PulseJmxPasswordFileTest {
   public void testLogin() throws Exception {
     client.loginToPulseAndVerify("user", "user");
 
-    HttpResponse response = client.post("/pulse/pulseUpdate");
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+    assertResponse(client.post("/pulse/pulseUpdate")).hasStatusCode(200);
   }
 }

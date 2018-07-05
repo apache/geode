@@ -15,6 +15,8 @@
 
 package org.apache.geode.rest.internal.web;
 
+
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -23,7 +25,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.http.HttpResponse;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -37,6 +38,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({RestAPITest.class, DistributedTest.class})
@@ -51,7 +53,7 @@ public class RestFunctionExecuteDUnitTest {
   private static JarBuilder jarBuilder = new JarBuilder();
   private static MemberVM locator, server1, server2;
 
-  private GeodeRestClient client;
+  private GeodeDevRestClient client;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -84,31 +86,29 @@ public class RestFunctionExecuteDUnitTest {
 
   @Test
   public void connectToServer1() throws Exception {
-    client = new GeodeRestClient("localhost", server1.getHttpPort());
-    HttpResponse response = client.doPost("/functions/myTestFunction", "dataRead", "dataRead", "");
-    assertThat(GeodeRestClient.getCode(response)).isEqualTo(403);
+    client = new GeodeDevRestClient("localhost", server1.getHttpPort());
+    assertResponse(client.doPost("/functions/myTestFunction", "dataRead", "dataRead", ""))
+        .hasStatusCode(403);
 
     // function can't be executed on all members since it's only deployed on server1
-    response = client.doPost("/functions/myTestFunction", "dataManage", "dataManage", "");
-    assertThat(GeodeRestClient.getCode(response)).isEqualTo(500);
+    assertResponse(client.doPost("/functions/myTestFunction", "dataManage", "dataManage", ""))
+        .hasStatusCode(500);
 
     // function can't be executed on server2
-    response = client.doPost("/functions/myTestFunction?onMembers=server-2", "dataManage",
-        "dataManage", "");
-    assertThat(GeodeRestClient.getCode(response)).isEqualTo(500);
+    assertResponse(client.doPost("/functions/myTestFunction?onMembers=server-2", "dataManage",
+        "dataManage", "")).hasStatusCode(500);
 
     // function can only be executed on server1 only
-    response = client.doPost("/functions/myTestFunction?onMembers=server-1", "dataManage",
-        "dataManage", "");
-    assertThat(GeodeRestClient.getCode(response)).isEqualTo(200);
+    assertResponse(client.doPost("/functions/myTestFunction?onMembers=server-1", "dataManage",
+        "dataManage", "")).hasStatusCode(200);
   }
 
   @Test
   public void connectToServer2() throws Exception {
     // function is deployed on server1
-    client = new GeodeRestClient("localhost", server2.getHttpPort());
-    HttpResponse response = client.doPost("/functions/myTestFunction", "dataRead", "dataRead", "");
-    assertThat(GeodeRestClient.getCode(response)).isEqualTo(404);
+    client = new GeodeDevRestClient("localhost", server2.getHttpPort());
+    assertResponse(client.doPost("/functions/myTestFunction", "dataRead", "dataRead", ""))
+        .hasStatusCode(404);
   }
 
   // find ImplementsFunction.java in the geode-core resource

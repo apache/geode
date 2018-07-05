@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
-import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 
@@ -47,7 +47,7 @@ public class PulseSecurityTest {
   public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(server::getHttpPort);
+  public GeodeHttpClientRule client = new GeodeHttpClientRule(server::getHttpPort);
 
 
   @Test
