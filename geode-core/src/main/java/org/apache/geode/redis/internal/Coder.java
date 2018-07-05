@@ -14,20 +14,18 @@
  */
 package org.apache.geode.redis.internal;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.query.Struct;
+
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-
-import org.apache.geode.cache.EntryDestroyedException;
-import org.apache.geode.cache.query.Struct;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs
