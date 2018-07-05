@@ -310,13 +310,10 @@ public abstract class PartitionMessage extends DistributionMessage
         return;
       }
       pr = getPartitionedRegion();
-      if ((pr == null || !pr.getDistributionAdvisor().isInitialized()) && failIfRegionMissing()) {
-        // if the distributed system is disconnecting, don't send a reply saying
-        // the partitioned region can't be found (bug 36585)
-        thr = new ForceReattemptException(
-            LocalizedStrings.PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
-                .toLocalizedString(dm.getDistributionManagerId(), regionId));
-        return; // reply sent in finally block below
+      Throwable forcedReattempt = processCheckForPR(pr, dm);
+      if (forcedReattempt != null) {
+        thr = forcedReattempt;
+        return;
       }
 
       if (pr != null) {
@@ -417,6 +414,23 @@ public abstract class PartitionMessage extends DistributionMessage
         EntryLogger.clearSource();
       }
     }
+  }
+
+  /**
+   * If the PR is missing or isn't ready for use we may want to return a
+   * ForceReattemptException to have the sender retry after a bit
+   */
+  protected Throwable processCheckForPR(PartitionedRegion pr,
+      DistributionManager distributionManager) {
+    if ((pr == null || !pr.getDistributionAdvisor().isInitialized()) && failIfRegionMissing()) {
+      // if the distributed system is disconnecting, don't send a reply saying
+      // the partitioned region can't be found (bug 36585)
+      Throwable thr = new ForceReattemptException(
+          LocalizedStrings.PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
+              .toLocalizedString(distributionManager.getDistributionManagerId(), regionId));
+      return thr; // reply sent in finally block below
+    }
+    return null;
   }
 
   /**
