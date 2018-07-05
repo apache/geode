@@ -18,6 +18,8 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
             return;
         }
 
+        Region<ByteArrayWrapper, StringWrapper> keyRegion = getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
+
         for (int i = 2; i < commandElems.size(); i+=3) {
             byte[] longitude = commandElems.get(i);
             byte[] latitude = commandElems.get(i+1);
@@ -25,9 +27,6 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
 
             String score;
             score = Coder.geoHash(longitude, latitude);
-
-            Region<ByteArrayWrapper, StringWrapper> keyRegion =
-                    getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
             Object oldVal = keyRegion.put(new ByteArrayWrapper(member), new StringWrapper(score));
 
             if (oldVal == null)

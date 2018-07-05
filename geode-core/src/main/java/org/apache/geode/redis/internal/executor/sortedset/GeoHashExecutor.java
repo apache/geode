@@ -24,11 +24,12 @@ public class GeoHashExecutor extends GeoSortedSetExecutor {
         }
 
         List<String> hashes = new ArrayList<>();
+        Region<ByteArrayWrapper, StringWrapper> keyRegion =
+                getRegion(context, key);
+
         for (int i = 2; i < commandElems.size(); i++) {
             byte[] member = commandElems.get(i);
 
-            Region<ByteArrayWrapper, StringWrapper> keyRegion =
-                    getRegion(context, key);
             StringWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
             if (hashWrapper != null) {
                 hashes.add(hashWrapper.toString());
