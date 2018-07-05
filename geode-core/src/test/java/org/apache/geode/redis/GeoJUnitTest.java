@@ -108,6 +108,23 @@ public class GeoJUnitTest {
     assertEquals(null, hashes.get(2));
   }
 
+  @Test
+  public void testGeoPos() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    List<GeoCoordinate> positions = jedis.geopos("Sicily", "Palermo", "Catania", "Rome");
+
+    assertEquals(13.361389, positions.get(0).getLongitude(), 0.000001);
+    assertEquals(38.115556, positions.get(0).getLatitude(), 0.000001);
+    assertEquals(15.087269, positions.get(1).getLongitude(), 0.000001);
+    assertEquals(37.502669, positions.get(1).getLatitude(), 0.000001);
+    assertEquals(null, positions.get(2));
+  }
+
   private class EntryCmp implements Comparator<Entry<String, Double>> {
 
     @Override

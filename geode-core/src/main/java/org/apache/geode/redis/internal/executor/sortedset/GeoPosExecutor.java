@@ -7,11 +7,12 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.StringWrapper;
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GeoHashExecutor extends GeoSortedSetExecutor {
+public class GeoPosExecutor extends GeoSortedSetExecutor {
 
     @Override
     public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -23,7 +24,7 @@ public class GeoHashExecutor extends GeoSortedSetExecutor {
             return;
         }
 
-        List<String> hashes = new ArrayList<>();
+        List<GeoCoord> positions = new ArrayList<>();
         Region<ByteArrayWrapper, StringWrapper> keyRegion = getRegion(context, key);
 
         for (int i = 2; i < commandElems.size(); i++) {
@@ -31,12 +32,12 @@ public class GeoHashExecutor extends GeoSortedSetExecutor {
 
             StringWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
             if (hashWrapper != null) {
-                hashes.add(hashWrapper.toString());
+                positions.add(Coder.geoPos(hashWrapper.toString()));
             } else {
-                hashes.add(null);
+                positions.add(null);
             }
         }
 
-        command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), hashes));
+        command.setResponse(Coder.getBulkStringGeoCoordinateArrayResponse(context.getByteBufAllocator(), positions));
     }
 }

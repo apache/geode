@@ -18,9 +18,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.query.Struct;
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -328,8 +330,37 @@ public class Coder {
     return buf;
   }
 
-  public static ByteBuf getBulkStringArrayResponseOfValues(ByteBufAllocator alloc,
-      Collection<?> items) {
+  public static ByteBuf getBulkStringGeoCoordinateArrayResponse(ByteBufAllocator alloc, Collection<GeoCoord> items) {
+    Iterator<GeoCoord> it = items.iterator();
+    ByteBuf response = alloc.buffer();
+    response.writeByte(Coder.ARRAY_ID);
+    ByteBuf tmp = alloc.buffer();
+    int size = 0;
+    while (it.hasNext()) {
+      GeoCoord next = it.next();
+      if (next == null) {
+        tmp.writeBytes(Coder.bNIL);
+      } else {
+        tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
+                Arrays.asList(
+                        Double.toString(next.getLongitude()),
+                        Double.toString(next.getLatitude())
+                )
+        ));
+      }
+      size++;
+    }
+
+    response.writeBytes(intToBytes(size));
+    response.writeBytes(Coder.CRLFar);
+    response.writeBytes(tmp);
+
+    tmp.release();
+
+    return response;
+  }
+
+  public static ByteBuf getBulkStringArrayResponseOfValues(ByteBufAllocator alloc, Collection<?> items) {
     Iterator<?> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(Coder.ARRAY_ID);
@@ -518,6 +549,24 @@ public class Coder {
       return Double.parseDouble(d);
   }
 
+  public static GeoCoord geoPos(String hash) {
+    StringBuilder binStringBuilder = new StringBuilder();
+    for (char digit : hash.toCharArray()) {
+      int val = base32Val(digit);
+      binStringBuilder.append(base32bin(val));
+    }
+
+    char[] binChars = binStringBuilder.toString().toCharArray();
+    char[] lonChars = new char[binChars.length/2];
+    char[] latChars = new char[binChars.length/2];
+    for (int i = 0; i < binChars.length; i+=2) {
+      lonChars[i/2] = binChars[i];
+      latChars[i/2] = binChars[i+1];
+    }
+
+    return new GeoCoord(coord(lonChars, -180.0, 180.0), coord(latChars, -90.0, 90.0));
+  }
+
   public static String geoHash(byte[] lon, byte[] lat) {
     Double longitude = Coder.bytesToDouble(lon);
     Double latitude = Coder.bytesToDouble(lat);
@@ -553,6 +602,31 @@ public class Coder {
     return base32str.charAt(x);
   }
 
+  private static int base32Val(char d) {
+    String base32str = "0123456789bcdefghjkmnpqrstuvwxyz";
+    return base32str.indexOf(d);
+  }
+
+  private static String base32bin(int v) {
+    if (v > 15) {
+      return Integer.toBinaryString(v);
+    }
+
+    if (v > 7) {
+      return "0" + Integer.toBinaryString(v);
+    }
+
+    if (v > 3) {
+      return "00" + Integer.toBinaryString(v);
+    }
+
+    if (v > 1) {
+      return "000" + Integer.toBinaryString(v);
+    }
+
+    return "0000" + Integer.toBinaryString(v);
+  }
+
   private static char[] coordDigits(Double coordinate, Double min, Double max) {
     char[] bin = new char[LEN_GEOHASH/2];
     for (int c = 0; c < bin.length; c++) {
@@ -567,6 +641,20 @@ public class Coder {
     }
 
     return bin;
+  }
+
+  private static double coord(char[] digits, Double min, Double max) {
+    Double mid = (min + max) / 2;
+    for (char d : digits) {
+      if (d == '1') {
+        min = mid;
+      } else {
+        max = mid;
+      }
+      mid = (min + max) / 2;
+    }
+
+    return mid;
   }
 
   public static ByteArrayWrapper stringToByteWrapper(String s) {
