@@ -1887,8 +1887,12 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
   private void validateRegionFunctionContextForColocatedRegions(final int key1, final int key2) {
     Region rootRegion = getRootRegion(regionNameTop);
-    Function function = new FunctionAdapter() {
-      // @Override
+    Function function = new Function() {
+      @Override
+      public boolean hasResult() {
+        return true;
+      }
+
       @Override
       public void execute(FunctionContext context) {
         RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
@@ -1959,6 +1963,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
         validateLocalEntrySet(key1, localData.entrySet());
         validateLocalKeySet(key1, localData.keySet());
         validateLocalValues(key1, localData.values());
+        context.getResultSender().lastResult(true);
       }
 
       // @Override
@@ -1968,7 +1973,9 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       }
     };
 
-    FunctionService.onRegion(rootRegion).withFilter(createKeySet(key1)).execute(function);
+    ResultCollector<Boolean, List<Boolean>> resultCollector =
+        FunctionService.onRegion(rootRegion).withFilter(createKeySet(key1)).execute(function);
+    assertThat(resultCollector.getResult()).hasSize(1).containsExactly(true);
   }
 
   private List<Boolean> executeFunction() {
