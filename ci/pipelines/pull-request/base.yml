@@ -50,17 +50,6 @@ resources:
     - geode-docs/*
     - geode-book/*
 
-- name: send-notification-email
-  type: email
-  source:
-    smtp:
-      host: ((!source-email-server))
-      port: "587"
-      username: ((!source-email-username))
-      password: ((!source-email-password))
-    from: ((!source-email-address))
-    to: [ ((!notification-email-address)) ]
-
 groups:
 - name: main
   jobs:
