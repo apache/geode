@@ -90,6 +90,21 @@ public class GeoJUnitTest {
     assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString(), "sqdtr74hyu5n");
   }
 
+  @Test
+  public void testGeoHash() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    List<String> hashes = jedis.geohash("Sicily", "Palermo", "Catania", "Rome");
+
+    assertEquals("sqc8b49rnyte", hashes.get(0));
+    assertEquals("sqdtr74hyu5n", hashes.get(1));
+    assertEquals(null, hashes.get(2));
+  }
+
   private class EntryCmp implements Comparator<Entry<String, Double>> {
 
     @Override

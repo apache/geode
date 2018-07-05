@@ -151,11 +151,15 @@ public class Coder {
     response.writeBytes(CRLFar);
     while (it.hasNext()) {
       String next = it.next();
-      response.writeByte(BULK_STRING_ID);
-      response.writeBytes(intToBytes(next.length()));
-      response.writeBytes(CRLFar);
-      response.writeBytes(stringToBytes(next));
-      response.writeBytes(CRLFar);
+      if (next == null) {
+        response.writeBytes(bNIL);
+      } else {
+        response.writeByte(BULK_STRING_ID);
+        response.writeBytes(intToBytes(next.length()));
+        response.writeBytes(CRLFar);
+        response.writeBytes(stringToBytes(next));
+        response.writeBytes(CRLFar);
+      }
     }
     return response;
   }
