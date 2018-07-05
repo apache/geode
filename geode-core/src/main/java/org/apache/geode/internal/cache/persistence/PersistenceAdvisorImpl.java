@@ -912,7 +912,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
                 "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),
                 regionPath, initializingID, state);
           }
-          removeNewerPersistentID(membersToWaitFor, initializingID);
+          removeByDiskStoreID(membersToWaitFor, diskStoreID, false);
         }
 
         // If the peer has an initializing id, they are also not online.
@@ -923,8 +923,8 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         // If we were able to determine what disk store this member is in, and it doesn't have a
         // persistent ID, but we think we should be waiting for it, stop waiting for it.
         if (initializingID == null && persistentID == null & diskStoreID != null) {
-          removeByDiskStoreID(membersToWaitFor, diskStoreID);
-          removeByDiskStoreID(offlineMembers, diskStoreID);
+          removeByDiskStoreID(membersToWaitFor, diskStoreID, true);
+          removeByDiskStoreID(offlineMembers, diskStoreID, true);
         }
       }
     }
@@ -957,17 +957,19 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
    * Remove all members with a given disk store id from the set of members to wait for.
    */
   private void removeByDiskStoreID(Set<PersistentMemberID> membersToWaitFor,
-      DiskStoreID diskStoreID) {
+      DiskStoreID diskStoreID, boolean updateAdvisor) {
     for (Iterator<PersistentMemberID> itr = membersToWaitFor.iterator(); itr.hasNext();) {
       PersistentMemberID id = itr.next();
       if (id.diskStoreId.equals(diskStoreID)) {
         if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
           logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
-              "{}-{}: Not waiting for {} because it no longer has this region in it's disk store",
+              "{}-{}: Not waiting for {} because it no longer has this region in its disk store",
               shortDiskStoreId(), regionPath, id);
         }
         itr.remove();
-        memberRemoved(id, false);
+        if (updateAdvisor) {
+          memberRemoved(id, false);
+        }
       }
     }
   }
