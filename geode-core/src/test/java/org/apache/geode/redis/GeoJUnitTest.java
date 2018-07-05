@@ -66,19 +66,7 @@ public class GeoJUnitTest {
   }
 
   @Test
-  public void testGeoAddSingle() {
-    Long l = jedis.geoadd("Sicily", 13.361389, 38.115556, "Palermo");
-    assertTrue(l == 1L);
-
-    Region<ByteArrayWrapper, StringWrapper> sicilyRegion = cache.getRegion("Sicily");
-    assertNotNull("Expected region to be not NULL", sicilyRegion);
-
-    // Check GeoHash
-    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(), "sqc8b49rnyte");
-  }
-
-  @Test
-  public void testGeoAddMultiple() {
+  public void testGeoAdd() {
     Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
     memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
@@ -123,36 +111,6 @@ public class GeoJUnitTest {
     assertEquals(15.087269, positions.get(1).getLongitude(), 0.000001);
     assertEquals(37.502669, positions.get(1).getLatitude(), 0.000001);
     assertEquals(null, positions.get(2));
-  }
-
-  private class EntryCmp implements Comparator<Entry<String, Double>> {
-
-    @Override
-    public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
-      Double diff = o1.getValue() - o2.getValue();
-      if (diff == 0)
-        return o2.getKey().compareTo(o1.getKey());
-      else
-        return diff > 0 ? 1 : -1;
-    }
-
-  }
-
-  private class EntryRevCmp implements Comparator<Entry<String, Double>> {
-
-    @Override
-    public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
-      Double diff = o2.getValue() - o1.getValue();
-      if (diff == 0)
-        return o1.getKey().compareTo(o2.getKey());
-      else
-        return diff > 0 ? 1 : -1;
-    }
-
-  }
-
-  private String randString() {
-    return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }
 
   @After
