@@ -554,7 +554,7 @@ public class ServerLauncherBuilderTest {
 
   @Test
   public void setServerBindAddressToUnknownHostThrowsIllegalArgumentException() throws Exception {
-    assertThatThrownBy(() -> new Builder().setServerBindAddress("badHostName.badCompany.com"))
+    assertThatThrownBy(() -> new Builder().setServerBindAddress("badHostName.example.com"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(UnknownHostException.class);
   }
