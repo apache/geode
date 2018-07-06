@@ -203,7 +203,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     executeTextSearch(accessor);
   }
 
-  private void verifyCreateIndexWithDifferentFieldShouldFail() throws InterruptedException {
+  private void verifyCreateIndexWithDifferentFieldShouldFail() throws Exception {
     AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
       createIndex("text");
     });
@@ -212,33 +212,34 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
       createIndex("text2");
     });
 
-    // wait for 10 seconds first for threads to finish
+    // wait for at most 10 seconds first for threads to finish
     ai1.join(10000);
     ai2.join(10000);
 
-    // if one thread is still alive after 10 seconds, will try to create the same index on the
+    // if one thread is still alive after 10 seconds, assert that they other thread throws
+    // an exception and then try to create the same index on the
     // other datastore to unblock the thread.
     if (ai1.isAlive()) {
+      assertThat(ai2.getException() instanceof UnsupportedOperationException).isTrue();
       dataStore2.invoke(() -> {
         createIndex("text");
       });
     }
     if (ai2.isAlive()) {
+      assertThat(ai1.getException() instanceof UnsupportedOperationException).isTrue();
       dataStore1.invoke(() -> {
         createIndex("text2");
       });
     }
+    // if both threads finished already, assert that both threads throw exception
+    else {
+      assertThat(ai1.getException() instanceof UnsupportedOperationException).isTrue();
+      assertThat(ai2.getException() instanceof UnsupportedOperationException).isTrue();
+    }
 
-    // wait again for maximum 60 seconds for threads to die.
-    ai1.join(60000);
-    ai2.join(60000);
-
-    // at this time, both threads should be dead already, then we check the exception status
-    // if either thread is still alive, the getException call will throw an exception which would
-    // make the test fail.
-    boolean ai1HasException = ai1.getException() instanceof UnsupportedOperationException;
-    boolean ai2HasException = ai2.getException() instanceof UnsupportedOperationException;
-    assertThat(ai1HasException || ai2HasException).isTrue();
+    // wait again for at most 60 seconds for threads to die.
+    ai1.join(60_000);
+    ai2.join(60_000);
   }
 
   @Test
