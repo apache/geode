@@ -619,7 +619,8 @@ public class SystemAdmin {
 
     // Baseline directory should be null if it was not provided on the command line
     BackupStatus status =
-        new BackupOperation().backupAllMembers(ads.getDistributionManager(), targetDir,
+        new BackupOperation(ads.getDistributionManager(), ads.getCache()).backupAllMembers(
+            targetDir,
             SystemAdmin.baselineDir);
 
     boolean incomplete = !status.getOfflineDiskStores().isEmpty();
