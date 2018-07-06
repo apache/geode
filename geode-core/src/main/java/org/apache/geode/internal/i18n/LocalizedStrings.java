@@ -1330,7 +1330,7 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_CLIENT_CONFLATION_PROP_NAME =
       new StringId(1839, "Client override for server queue conflation setting");
   public static final StringId PRHARRedundancyProvider_ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET =
-      new StringId(1840, "allocate enough members to host bucket.");
+      new StringId(1840, "allocate enough members to host a new bucket");
   public static final StringId PRHARedundancyProvider_TIME_OUT_WAITING_0_MS_FOR_CREATION_OF_BUCKET_FOR_PARTITIONED_REGION_1_MEMBERS_REQUESTED_TO_CREATE_THE_BUCKET_ARE_2 =
       new StringId(1841,
           "Time out waiting {0} ms for creation of bucket for partitioned region {1}. Members requested to create the bucket are: {2}");
@@ -1358,7 +1358,7 @@ public class LocalizedStrings {
       new StringId(1852, "Excpetion  in bucket index creation : {0}");
   public static final StringId PRHARRedundancyProvider_CONFIGURED_REDUNDANCY_LEVEL_COULD_NOT_BE_SATISFIED_0 =
       new StringId(1853,
-          "Configured Redundancy Level Could Not be Satisfied. {0} to satisfy redundancy for the region.{1}");
+          "Configured redundancy level could not be satisfied. {0} to satisfy redundancy for the region.{1}");
   public static final StringId PartitionedRegionDataStore_PARTITIONEDREGION_0_CAUGHT_UNEXPECTED_EXCEPTION_DURING_CLEANUP =
       new StringId(1854, "PartitionedRegion {0}: caught unexpected exception during data cleanup");
   public static final StringId MemberFunctionExecutor_NO_MEMBER_FOUND_FOR_EXECUTING_FUNCTION_0 =
@@ -3355,7 +3355,7 @@ public class LocalizedStrings {
   public static final StringId MemberMessage_MEMBERRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1 =
       new StringId(3033, "MemberResponse got memberDeparted event for < {0} > crashed =  {1}");
   public static final StringId PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1 =
-      new StringId(3034, "{0} : could not find partitioned region with Id  {1}");
+      new StringId(3034, "{0} : could not find partitioned region with Id {1}");
   public static final StringId PartitionMessage_ATTEMPT_FAILED =
       new StringId(3035, "Attempt failed");
   public static final StringId PartitionMessage_DISTRIBUTED_SYSTEM_IS_DISCONNECTING =
