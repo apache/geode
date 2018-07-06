@@ -156,12 +156,14 @@ public class DistTXWANDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.doDistTXPuts(getTestMethodName() + "_PR", 5));
 
+    // verify that the data was received
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 5));
+
     // verify all buckets drained on all sender nodes.
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
     vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 5));
   }
 }

@@ -3296,7 +3296,7 @@ public class WANTestBase extends DistributedTestCase {
             + abstractSender.getSecondaryEventQueueSize() + ". Queue content is: "
             + displayQueueContent(queue), 0, abstractSender.getSecondaryEventQueueSize());
       });
-      assertEquals("Except events in all secondary queues after drain is 0", 0,
+      assertEquals("Expected events in all secondary queues after drain is 0", 0,
           abstractSender.getSecondaryEventQueueSize());
     } finally {
       exp.remove();
