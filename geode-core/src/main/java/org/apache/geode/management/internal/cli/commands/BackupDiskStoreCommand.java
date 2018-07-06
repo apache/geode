@@ -60,9 +60,10 @@ public class BackupDiskStoreCommand extends InternalGfshCommand {
       BackupStatus backupStatus;
 
       if (baselineDir != null && !baselineDir.isEmpty()) {
-        backupStatus = new BackupOperation().backupAllMembers(dm, targetDir, baselineDir);
+        backupStatus =
+            new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, baselineDir);
       } else {
-        backupStatus = new BackupOperation().backupAllMembers(dm, targetDir, null);
+        backupStatus = new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, null);
       }
 
       Map<DistributedMember, Set<PersistentID>> backedupMemberDiskstoreMap =

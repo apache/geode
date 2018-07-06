@@ -477,7 +477,7 @@ public class DistributedSystemBridge {
    */
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath) {
     BackupStatus result =
-        new BackupOperation().backupAllMembers(dm, targetDirPath, baselineDirPath);
+        new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDirPath, baselineDirPath);
     DiskBackupStatusImpl diskBackupStatus = new DiskBackupStatusImpl();
     diskBackupStatus.generateBackedUpDiskStores(result.getBackedUpDiskStores());
     diskBackupStatus.generateOfflineDiskStores(result.getOfflineDiskStores());
