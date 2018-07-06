@@ -27,6 +27,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -35,6 +36,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -112,8 +114,25 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   }
 
   @Override
+  protected Throwable processCheckForPR(PartitionedRegion pr,
+      DistributionManager distributionManager) {
+    if (pr != null && !pr.getDistributionAdvisor().isInitialized()) {
+      Throwable thr = new ForceReattemptException(
+          LocalizedStrings.PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
+              .toLocalizedString(distributionManager.getDistributionManagerId(),
+                  pr.getRegionIdentifier()));
+      return thr; // reply sent in finally block below
+    }
+    return null;
+  }
+
+
+  @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws CacheException {
+    if (r == null) {
+      return true;
+    }
     if (this.op.isLocal()) {
       // notify the advisor that the sending member has locally destroyed (or closed) the region
 
@@ -219,13 +238,14 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       super(system, initMembers);
     }
 
-    /**
-     * Ignore any incoming exception from other VMs, we just want an acknowledgement that the
-     * message was processed.
-     */
     @Override
     protected void processException(ReplyException ex) {
-      if (logger.isDebugEnabled()) {
+      // retry on ForceReattempt in case the region is still being initialized
+      if (ex.getRootCause() instanceof ForceReattemptException) {
+        super.processException(ex);
+      }
+      // other errors are ignored
+      else if (logger.isDebugEnabled()) {
         logger.debug("DestroyRegionResponse ignoring exception", ex);
       }
     }
