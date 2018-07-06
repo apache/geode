@@ -17,6 +17,8 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -171,6 +173,10 @@ public class DistributionAdvisor {
    * opCountLock
    */
   private long currentVersionOpCount;
+
+  private Map<Thread, ExceptionWrapper> currentVersionOperationThreads = new HashMap<>();
+
+  private Map<Thread, ExceptionWrapper> previousVersionOperationThreads = new HashMap<>();
 
   /**
    * Hold onto removed profiles to compare to late-processed profiles. Fix for bug 36881. Protected
@@ -617,14 +623,14 @@ public class DistributionAdvisor {
       } else {
         if (!membershipClosed) {
           membershipVersion++;
-          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-            logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-                "StateFlush incremented membership version: {}", membershipVersion);
-          }
           newProfile.initialMembershipVersion = membershipVersion;
           synchronized (this.opCountLock) {
             previousVersionOpCount += currentVersionOpCount;
             currentVersionOpCount = 0;
+            if (logger.isDebugEnabled()) {
+              previousVersionOperationThreads.putAll(currentVersionOperationThreads);
+              currentVersionOperationThreads.clear();
+            }
           }
         }
       }
@@ -722,17 +728,12 @@ public class DistributionAdvisor {
   public synchronized void forceNewMembershipVersion() {
     if (!membershipClosed) {
       membershipVersion++;
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-            "StateFlush forced new membership version: {}", membershipVersion);
-      }
       synchronized (this.opCountLock) {
         previousVersionOpCount += currentVersionOpCount;
         currentVersionOpCount = 0;
-        if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE)) {
-          logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE,
-              "advisor for {} forced new membership version to {} previousOpCount={}", getAdvisee(),
-              membershipVersion, previousVersionOpCount);
+        if (logger.isDebugEnabled()) {
+          previousVersionOperationThreads.putAll(currentVersionOperationThreads);
+          currentVersionOperationThreads.clear();
         }
       }
     }
@@ -747,17 +748,12 @@ public class DistributionAdvisor {
    * @since GemFire 5.1
    */
   public synchronized long startOperation() {
-    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE)) {
-      logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE,
-          "startOperation() op count is now {} in view version {}", currentVersionOpCount + 1,
-          membershipVersion);
-    }
     synchronized (this.opCountLock) {
-      currentVersionOpCount++;
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "StateFlush current opcount incremented: {}",
-            currentVersionOpCount);
+      if (logger.isDebugEnabled()) {
+        currentVersionOperationThreads.put(Thread.currentThread(),
+            new ExceptionWrapper(new Exception("stack trace")));
       }
+      currentVersionOpCount++;
     }
     return membershipVersion;
   }
@@ -773,19 +769,39 @@ public class DistributionAdvisor {
     synchronized (this.opCountLock) {
       if (version == membershipVersion) {
         currentVersionOpCount--;
-        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-          logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-              "StateFlush current opcount deccremented: {}", currentVersionOpCount);
+        if (logger.isDebugEnabled()) {
+          currentVersionOperationThreads.remove(Thread.currentThread());
         }
       } else {
         previousVersionOpCount--;
-        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-          logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-              "StateFlush previous opcount incremented: {}", previousVersionOpCount);
+        if (logger.isDebugEnabled()) {
+          previousVersionOperationThreads.remove(Thread.currentThread());
         }
       }
     }
     return membershipVersion;
+  }
+
+  private static class ExceptionWrapper {
+    private Exception exception;
+
+    ExceptionWrapper(Exception exception) {
+      this.exception = exception;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder(500);
+      OutputStream os = new OutputStream() {
+        @Override
+        public void write(int i) {
+          builder.append((char) i);
+        }
+      };
+      PrintStream stream = new PrintStream(os);
+      exception.printStackTrace(stream);
+      return builder.toString();
+    }
   }
 
   /**
@@ -808,8 +824,6 @@ public class DistributionAdvisor {
     final long severeAlertTime = startTime + severeAlertMS;
     boolean warned = false;
     boolean severeAlertIssued = false;
-    final boolean isDebugEnabled_STATE_FLUSH_OP =
-        DistributionAdvisor.logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE);
     while (true) {
       long opCount;
       synchronized (this.opCountLock) {
@@ -824,10 +838,6 @@ public class DistributionAdvisor {
       // The advisor's close() method will set the pVOC to zero. This loop
       // must not terminate due to cache closure until that happens.
       // See bug 34361 comment 79
-      if (isDebugEnabled_STATE_FLUSH_OP) {
-        DistributionAdvisor.logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-            "Waiting for current operations to finish({})", opCount);
-      }
       try {
         Thread.sleep(50);
       } catch (InterruptedException e) {
@@ -836,20 +846,18 @@ public class DistributionAdvisor {
       long now = System.currentTimeMillis();
       if ((!warned) && System.currentTimeMillis() >= warnTime) {
         warned = true;
-        alertLogger.warn("This operation has been stalled for {} milliseconds waiting for "
+        alertLogger.warn("This thread has been stalled for {} milliseconds waiting for "
             + "current operations to complete.", warnMS);
+        logger.debug("Waiting for these threads: {}", previousVersionOperationThreads);
+        logger.debug("New version threads are {}", currentVersionOperationThreads);
       } else if (warned && !severeAlertIssued && (now >= severeAlertTime)) {
         // OSProcess.printStacks(0);
-        alertLogger.fatal("This operation has been stalled for {} milliseconds "
+        alertLogger.fatal("This thread has been stalled for {} milliseconds "
             + "waiting for current operations to complete.  Something may be blocking operations.",
             severeAlertMS);
+        logger.debug("Waiting for these threads: {}", previousVersionOperationThreads);
+        logger.debug("New version threads are {}", currentVersionOperationThreads);
         severeAlertIssued = true;
-      }
-    }
-    if (this.membershipClosed) {
-      if (isDebugEnabled_STATE_FLUSH_OP) {
-        DistributionAdvisor.logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-            "State Flush stopped waiting for operations to distribute because advisor has been closed");
       }
     }
   }

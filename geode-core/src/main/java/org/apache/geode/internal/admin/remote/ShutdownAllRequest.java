@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -293,7 +294,7 @@ public class ShutdownAllRequest extends AdminRequest {
     public Set getResults() {
       logger.debug("{} shutdownAll returning {}", this,
           results/* , new Exception("stack trace") */);
-      return results;
+      return new HashSet(results);
     }
   }
 }
