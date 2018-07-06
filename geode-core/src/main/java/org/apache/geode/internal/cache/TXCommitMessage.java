@@ -300,7 +300,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       // need to continue the iteration if one of the regions is destroyed
       // since others may still be okay
       try {
-        long newv = dr.getDistributionAdvisor().endOperation(viewVersion);
+        dr.getDistributionAdvisor().endOperation(viewVersion);
       } catch (RuntimeException ex) {
         rte = ex;
       }
