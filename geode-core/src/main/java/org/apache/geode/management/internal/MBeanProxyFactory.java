@@ -16,6 +16,7 @@ package org.apache.geode.management.internal;
 
 import java.beans.IntrospectionException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -78,14 +79,13 @@ public class MBeanProxyFactory {
       Region<String, Object> monitoringRegion, Object newVal) {
 
     try {
-      String name = objectName.toString();
-      FederationComponent federationComponent = (FederationComponent) monitoringRegion.get(name);
+      FederationComponent federationComponent = (FederationComponent) newVal;
       String interfaceClassName = federationComponent.getMBeanInterfaceClass();
 
       Class interfaceClass = ClassLoadUtil.classFromName(interfaceClassName);
 
       Object object = MBeanProxyInvocationHandler.newProxyInstance(member, monitoringRegion,
-          objectName, interfaceClass);
+          objectName, federationComponent, interfaceClass);
 
       jmxAdapter.registerMBeanProxy(object, objectName);
 
@@ -123,19 +123,18 @@ public class MBeanProxyFactory {
       logger.debug("Creating proxy for: {}", member.getId());
     }
 
-    Set<String> mbeanNames = monitoringRegion.keySet();
+    Set<Map.Entry<String, Object>> mbeans = monitoringRegion.entrySet();
 
-    for (String mbeanName : mbeanNames) {
+    for (Map.Entry<String, Object> mbean : mbeans) {
 
       ObjectName objectName = null;
       try {
-        objectName = ObjectName.getInstance(mbeanName);
+        objectName = ObjectName.getInstance(mbean.getKey());
         if (logger.isDebugEnabled()) {
           logger.debug("Creating proxy for ObjectName: " + objectName.toString());
         }
 
-        createProxy(member, objectName, monitoringRegion,
-            monitoringRegion.get(objectName.toString()));
+        createProxy(member, objectName, monitoringRegion, mbean.getValue());
       } catch (Exception e) {
         logger.warn("Create Proxy failed for {} with exception {}", objectName, e.getMessage(), e);
       }
