@@ -1,12 +1,13 @@
 package org.apache.geode.redis.internal;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 public class GeoCoder {
   /**
@@ -21,7 +22,7 @@ public class GeoCoder {
 
 
   public static ByteBuf getBulkStringGeoCoordinateArrayResponse(ByteBufAllocator alloc,
-                                                                Collection<GeoCoord> items) {
+      Collection<GeoCoord> items) {
     Iterator<GeoCoord> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(Coder.ARRAY_ID);
@@ -33,9 +34,9 @@ public class GeoCoder {
         tmp.writeBytes(Coder.bNIL);
       } else {
         tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
-                Arrays.asList(
-                        Double.toString(next.getLongitude()),
-                        Double.toString(next.getLatitude()))));
+            Arrays.asList(
+                Double.toString(next.getLongitude()),
+                Double.toString(next.getLatitude()))));
       }
       size++;
     }
