@@ -567,6 +567,25 @@ public class Coder {
     return new GeoCoord(coord(lonChars, -180.0, 180.0), coord(latChars, -90.0, 90.0));
   }
 
+  public static Double geoDist(String hash1, String hash2) {
+    GeoCoord coord1 = geoPos(hash1);
+    GeoCoord coord2 = geoPos(hash2);
+
+    Double lat1 = Math.toRadians(coord1.getLatitude());
+    Double long1 = Math.toRadians(coord1.getLongitude());
+    Double lat2 = Math.toRadians(coord2.getLatitude());
+    Double long2 = Math.toRadians(coord2.getLongitude());
+
+    Double hav = haversine(lat2-lat1) + (Math.cos(lat1) * Math.cos(lat2) * haversine(long2-long1));
+    Double distAngle = Math.acos(1 - (2 * hav));
+
+    return 6372797.560856 * distAngle;
+  }
+
+  public static Double haversine(Double rad) {
+    return 0.5 * (1 - Math.cos(rad));
+  }
+
   public static String geoHash(byte[] lon, byte[] lat) {
     Double longitude = Coder.bytesToDouble(lon);
     Double latitude = Coder.bytesToDouble(lat);

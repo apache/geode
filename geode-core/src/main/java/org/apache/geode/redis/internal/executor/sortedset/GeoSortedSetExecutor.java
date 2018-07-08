@@ -15,14 +15,17 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.*;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class GeoSortedSetExecutor extends AbstractExecutor {
 
   @Override
   protected Region<ByteArrayWrapper, StringWrapper> getOrCreateRegion(
-      ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
+          ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, StringWrapper> r = (Region<ByteArrayWrapper, StringWrapper>) context
         .getRegionProvider().getOrCreateRegion(key, type, context);

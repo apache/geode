@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @Category({IntegrationTest.class, RedisTest.class})
 public class GeoJUnitTest {
@@ -113,6 +115,33 @@ public class GeoJUnitTest {
     assertEquals(15.087269, positions.get(1).getLongitude(), 0.000001);
     assertEquals(37.502669, positions.get(1).getLatitude(), 0.000001);
     assertEquals(null, positions.get(2));
+  }
+
+  @Test
+  public void testGeoDist() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    Double dist = jedis.geodist("Sicily", "Palermo", "Catania");
+    assertEquals(166274.1516, dist, 5.0);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.KM);
+    assertEquals(166.2742, dist, 0.005);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.M);
+    assertEquals(166274.1516, dist, 5.0);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.MI);
+    assertEquals(103.3182, dist, 0.003);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.FT);
+    assertEquals(545520.0960, dist, 15.0);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Foo");
+    assertNull(dist);
   }
 
   @After
