@@ -13,22 +13,19 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.org.apache.hadoop.fs;
+package org.apache.geode.redis.internal.executor.sortedset;
 
-public class GeoCoord {
-  double longitude;
-  double latitude;
+import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
 
-  public GeoCoord(double lon, double lat) {
-    this.longitude = lon;
-    this.latitude = lat;
-  }
+import java.util.Arrays;
 
-  public double getLongitude() {
-    return longitude;
-  }
+public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
-  public double getLatitude() {
-    return latitude;
+  @Override
+  public void executeCommand(Command command, ExecutionHandlerContext context) {
+    command.setResponse(
+        Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), Arrays.asList("test")));
   }
 }

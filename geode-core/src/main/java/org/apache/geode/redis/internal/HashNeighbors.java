@@ -13,22 +13,28 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.org.apache.hadoop.fs;
+package org.apache.geode.redis.internal;
 
-public class GeoCoord {
-  double longitude;
-  double latitude;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-  public GeoCoord(double lon, double lat) {
-    this.longitude = lon;
-    this.latitude = lat;
-  }
+public class HashNeighbors {
+    public String center;
+    public String west;
+    public String east;
+    public String north;
+    public String south;
+    public String northwest;
+    public String northeast;
+    public String southwest;
+    public String southeast;
 
-  public double getLongitude() {
-    return longitude;
-  }
-
-  public double getLatitude() {
-    return latitude;
-  }
+    public List<String> get() {
+        return Arrays
+                .asList(center, west, east, north, south, northwest, northeast, southwest, southeast)
+                .stream()
+                .filter(n -> n != null)
+                .collect(Collectors.toList());
+    }
 }

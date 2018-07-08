@@ -20,7 +20,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.StringWrapper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -28,6 +27,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
@@ -36,14 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
-@Category({IntegrationTest.class, RedisTest.class})
+@Category({RedisTest.class})
 public class GeoJUnitTest {
   private static Jedis jedis;
   private static GeodeRedisServer server;
@@ -79,8 +77,31 @@ public class GeoJUnitTest {
     assertNotNull("Expected region to be not NULL", sicilyRegion);
 
     // Check GeoHash
-    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(), "sqc8b49rnyte");
-    assertEquals(sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString(), "sqdtr74hyu5n");
+    assertEquals(
+        sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(),
+        "sqc8b49rnyte");
+    assertEquals(
+        sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString(),
+        "sqdtr74hyu5n");
+  }
+
+  @Test
+  public void testGeoAddBoundaries() {
+    Exception ex = null;
+    try {
+      jedis.geoadd("Sicily", 13.36, 91.0, "Palermo");
+    } catch (Exception e) {
+      ex = e;
+    }
+    assertNotNull(ex);
+
+    ex = null;
+    try {
+      jedis.geoadd("Sicily", -181, 38.12, "Palermo");
+    } catch (Exception e) {
+      ex = e;
+    }
+    assertNotNull(ex);
   }
 
   @Test
@@ -113,6 +134,46 @@ public class GeoJUnitTest {
     assertEquals(15.087269, positions.get(1).getLongitude(), 0.000001);
     assertEquals(37.502669, positions.get(1).getLatitude(), 0.000001);
     assertEquals(null, positions.get(2));
+  }
+
+  @Test
+  public void testGeoDist() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    Double dist = jedis.geodist("Sicily", "Palermo", "Catania");
+    assertEquals(166274.1516, dist, 5.0);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.KM);
+    assertEquals(166.2742, dist, 0.005);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.M);
+    assertEquals(166274.1516, dist, 5.0);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.MI);
+    assertEquals(103.3182, dist, 0.003);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Catania", GeoUnit.FT);
+    assertEquals(545520.0960, dist, 15.0);
+
+    dist = jedis.geodist("Sicily", "Palermo", "Foo");
+    assertNull(dist);
+  }
+
+  @Test
+  public void testGeoRadiusBasic() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    List<GeoRadiusResponse> gr = jedis.georadius("Sicily", 15.0, 37.0, 100, GeoUnit.KM);
+    assertEquals(gr.size(), 1);
+    assertEquals(gr.get(0).getMemberByString(), "Catania");
   }
 
   @After
