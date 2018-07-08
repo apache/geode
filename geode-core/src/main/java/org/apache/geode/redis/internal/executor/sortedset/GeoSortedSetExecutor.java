@@ -25,7 +25,7 @@ public abstract class GeoSortedSetExecutor extends AbstractExecutor {
 
   @Override
   protected Region<ByteArrayWrapper, StringWrapper> getOrCreateRegion(
-          ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
+      ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
     @SuppressWarnings("unchecked")
     Region<ByteArrayWrapper, StringWrapper> r = (Region<ByteArrayWrapper, StringWrapper>) context
         .getRegionProvider().getOrCreateRegion(key, type, context);

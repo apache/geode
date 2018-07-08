@@ -14,12 +14,12 @@
  */
 package org.apache.geode.redis.internal;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 /**
  * This is a wrapper class for doubles, similar to {@link ByteArrayWrapper}
@@ -55,7 +55,8 @@ public class StringWrapper implements DataSerializable, Comparable<Object> {
       other = ((StringWrapper) arg0).str;
     } else if (arg0 instanceof Double) {
       other = (String) arg0;
-    } else return 0;
+    } else
+      return 0;
 
     return this.str.compareTo(other);
   }
