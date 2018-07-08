@@ -41,6 +41,6 @@ public class GeoPosExecutor extends GeoSortedSetExecutor {
     }
 
     command.setResponse(
-        Coder.getBulkStringGeoCoordinateArrayResponse(context.getByteBufAllocator(), positions));
+        GeoCoder.getBulkStringGeoCoordinateArrayResponse(context.getByteBufAllocator(), positions));
   }
 }

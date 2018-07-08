@@ -1,6 +1,12 @@
 package org.apache.geode.redis.internal;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class GeoCoder {
   /**
@@ -12,6 +18,36 @@ public class GeoCoder {
    * Earth radius for distance calculations.
    */
   private static final double EARTH_RADIUS_IN_METERS = 6372797.560856;
+
+
+  public static ByteBuf getBulkStringGeoCoordinateArrayResponse(ByteBufAllocator alloc,
+                                                                Collection<GeoCoord> items) {
+    Iterator<GeoCoord> it = items.iterator();
+    ByteBuf response = alloc.buffer();
+    response.writeByte(Coder.ARRAY_ID);
+    ByteBuf tmp = alloc.buffer();
+    int size = 0;
+    while (it.hasNext()) {
+      GeoCoord next = it.next();
+      if (next == null) {
+        tmp.writeBytes(Coder.bNIL);
+      } else {
+        tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
+                Arrays.asList(
+                        Double.toString(next.getLongitude()),
+                        Double.toString(next.getLatitude()))));
+      }
+      size++;
+    }
+
+    response.writeBytes(Coder.intToBytes(size));
+    response.writeBytes(Coder.CRLFar);
+    response.writeBytes(tmp);
+
+    tmp.release();
+
+    return response;
+  }
 
   /**
    * Converts geohash to lat/long.
