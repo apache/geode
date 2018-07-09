@@ -31,7 +31,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -64,7 +63,6 @@ import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a test verifies region is LIFO enabled by MEMORY verifies correct stats updating and
@@ -73,7 +71,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * @since GemFire 5.7
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(IntegrationTest.class)
 public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
   /** The cache instance */

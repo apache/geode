@@ -22,11 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Added specifically to test scenario of defect TRAC #47181.
@@ -39,7 +37,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * Extracted from {@link PartitionedRegionBucketCreationDistributionDUnitTest}.
  */
 
-@Category(IntegrationTest.class)
 public class EnforceUniqueHostForLonerIntegrationTest {
 
   private Cache cache;

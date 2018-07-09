@@ -47,13 +47,12 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Verifies bug fixes against QueryService
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class QueryServiceRegressionTest {
 
   private Region region;

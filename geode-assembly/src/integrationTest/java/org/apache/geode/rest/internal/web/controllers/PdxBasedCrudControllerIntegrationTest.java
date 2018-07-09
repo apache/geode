@@ -50,11 +50,10 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.management.internal.AgentUtil;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
-@Category({IntegrationTest.class, RestAPITest.class})
+@Category({RestAPITest.class})
 public class PdxBasedCrudControllerIntegrationTest {
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();

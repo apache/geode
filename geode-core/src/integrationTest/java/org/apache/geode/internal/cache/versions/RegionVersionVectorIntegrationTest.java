@@ -25,7 +25,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -35,9 +34,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class RegionVersionVectorIntegrationTest {
 
   private Properties props = new Properties();

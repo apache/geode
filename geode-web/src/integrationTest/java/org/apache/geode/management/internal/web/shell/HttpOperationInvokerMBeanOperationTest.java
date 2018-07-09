@@ -29,15 +29,12 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category(IntegrationTest.class)
 public class HttpOperationInvokerMBeanOperationTest {
 
   @ClassRule

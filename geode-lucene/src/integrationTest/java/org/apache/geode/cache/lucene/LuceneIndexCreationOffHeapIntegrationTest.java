@@ -29,13 +29,12 @@ import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * Tests of lucene index creation that use off heap memory
  */
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneIndexCreationOffHeapIntegrationTest extends LuceneIntegrationTest {
 
   @Override

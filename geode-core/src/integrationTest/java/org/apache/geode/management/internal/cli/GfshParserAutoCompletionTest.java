@@ -25,10 +25,9 @@ import org.springframework.shell.core.Completion;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class GfshParserAutoCompletionTest {
   @ClassRule
   public static GfshParserRule parser = new GfshParserRule();

@@ -80,10 +80,9 @@ import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class IndexCreationJUnitTest {
 
   private ObjectType resType1 = null;

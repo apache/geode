@@ -49,11 +49,10 @@ import org.apache.geode.cache.query.functional.StructSetOrResultsSet;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class IndexMaintainceJUnitTest {
 
   @Before

@@ -65,13 +65,12 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * Test that DistributionConfigImpl handles SSL options correctly.
  */
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SSLConfigJUnitTest {
 
   private static final Properties SSL_PROPS_MAP = new Properties();

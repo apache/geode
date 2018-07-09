@@ -28,13 +28,10 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class RemoveAllCacheListenerPeerRegressionTest {
   private Cache cache;
   private DistributedSystem ds;

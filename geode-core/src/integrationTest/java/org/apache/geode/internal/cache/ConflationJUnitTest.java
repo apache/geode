@@ -26,10 +26,8 @@ import static org.junit.Assert.fail;
 import java.util.Collection;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test does a check that conflation in the buffer happen correctly
@@ -45,7 +43,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * </ul>
  * The test is done for persist only, overflow only and persist + overflow only (async modes).
  */
-@Category(IntegrationTest.class)
 public class ConflationJUnitTest extends DiskRegionTestingBase {
 
   private DiskRegionProperties diskProps = new DiskRegionProperties();

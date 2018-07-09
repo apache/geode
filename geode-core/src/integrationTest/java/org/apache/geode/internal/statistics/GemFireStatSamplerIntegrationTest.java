@@ -61,7 +61,6 @@ import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
@@ -69,7 +68,7 @@ import org.apache.geode.test.junit.categories.StatisticsTest;
  *
  * @since GemFire 7.0
  */
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({StatisticsTest.class})
 public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   private static final Logger logger = LogService.getLogger();

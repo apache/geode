@@ -25,16 +25,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for FastLogger when using the default log4j2 config for GemFire.
  *
  */
-@Category(IntegrationTest.class)
 public class FastLoggerWithDefaultConfigJUnitTest {
 
   private static final String TEST_LOGGER_NAME = FastLogger.class.getPackage().getName();

@@ -55,7 +55,6 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Functional integration tests for {@link QueryDataFunction}.
@@ -64,7 +63,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 8.1
  */
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class QueryDataFunctionIntegrationTest {
 
   private static final String REPLICATED_REGION = "exampleRegion";

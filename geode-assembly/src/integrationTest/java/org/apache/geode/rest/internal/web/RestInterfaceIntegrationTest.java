@@ -75,7 +75,6 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
@@ -95,7 +94,7 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
  * @see org.apache.geode.pdx.ReflectionBasedAutoSerializer
  * @since Geode 1.0.0
  */
-@Category({IntegrationTest.class, RestAPITest.class})
+@Category({RestAPITest.class})
 public class RestInterfaceIntegrationTest {
 
   @Rule

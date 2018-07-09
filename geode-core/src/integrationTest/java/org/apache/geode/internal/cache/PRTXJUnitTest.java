@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.TXJUnitTest;
 import org.apache.geode.cache.AttributesFactory;
@@ -27,9 +26,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class PRTXJUnitTest extends TXJUnitTest {
 
   @Override

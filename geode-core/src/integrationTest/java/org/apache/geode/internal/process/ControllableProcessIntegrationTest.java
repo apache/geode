@@ -28,15 +28,12 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class ControllableProcessIntegrationTest {
 
   private LocalProcessLauncher localProcessLauncher;

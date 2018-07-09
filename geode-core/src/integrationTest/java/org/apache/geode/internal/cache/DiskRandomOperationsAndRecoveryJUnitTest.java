@@ -22,16 +22,13 @@ import java.util.Iterator;
 import java.util.Random;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingBase {
 
   private static final int ENTRY_SIZE = 1024;

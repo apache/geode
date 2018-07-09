@@ -32,13 +32,11 @@ import javax.management.QueryExp;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for querying of {@link MemberMXBean} as used in MBeanProcessController to
@@ -49,7 +47,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 8.0
  */
-@Category(IntegrationTest.class)
 public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTestCase {
 
   private ObjectName pattern;

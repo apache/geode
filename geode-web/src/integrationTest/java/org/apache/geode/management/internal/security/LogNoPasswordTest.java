@@ -26,16 +26,13 @@ import java.util.Scanner;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(IntegrationTest.class)
 public class LogNoPasswordTest {
 
   private static String PASSWORD = "abcdefghijklmn";

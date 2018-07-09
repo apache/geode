@@ -21,10 +21,8 @@ import static org.mockito.Mockito.mock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Extracted from {@link ServerLauncherLocalIntegrationTest}. This tests the same mechanism used by
@@ -33,7 +31,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * TRAC #51201: ServerLauncher.start fails to configure server with Spring
  */
-@Category(IntegrationTest.class)
 public class ServerLauncherWithProviderRegressionTest extends ServerLauncherIntegrationTestCase {
 
   private Cache providerCache;

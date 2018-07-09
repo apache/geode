@@ -24,7 +24,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -33,7 +32,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test for Bug no. 40662. To verify the default action being set in eviction attributes by
@@ -45,7 +43,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 6.6
  */
-@Category(IntegrationTest.class)
 public class DefaultEvictionActionRegressionTest {
 
   private static final String BUG_40662_XML = DefaultEvictionActionRegressionTest.class

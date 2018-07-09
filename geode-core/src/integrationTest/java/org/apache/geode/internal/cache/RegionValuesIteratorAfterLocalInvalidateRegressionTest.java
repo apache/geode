@@ -25,7 +25,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
@@ -33,7 +32,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Confirm that bug 34583 is fixed. Cause of bug is recursion is entries iterator that causes stack
@@ -42,7 +40,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * TRAC #34583: StackOverflowError while performing region.put() at bridge client.
  */
-@Category(IntegrationTest.class)
 public class RegionValuesIteratorAfterLocalInvalidateRegressionTest {
 
   private static final int PUT_COUNT = 25000;

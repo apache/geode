@@ -25,7 +25,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
 import org.apache.geode.LogWriter;
@@ -38,7 +37,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a test for creation of Partition region(PR).
@@ -61,7 +59,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(IntegrationTest.class)
 public class PartitionedRegionCreationJUnitTest {
   static volatile int PRNumber = 0;
 

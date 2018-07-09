@@ -57,10 +57,9 @@ import org.apache.geode.pdx.internal.PdxInstanceEnum;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({IntegrationTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class PdxInstanceFactoryJUnitTest {
   private GemFireCacheImpl cache;
 

@@ -28,7 +28,6 @@ import javax.transaction.UserTransaction;
 import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -40,7 +39,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Ensure that the ignoreJTA Region setting works
@@ -49,7 +47,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  */
 @SuppressWarnings("deprecation")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(IntegrationTest.class)
 public class JtaNoninvolvementJUnitTest {
 
   private Cache cache;

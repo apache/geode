@@ -35,13 +35,12 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Integration tests for {@link Statistics} as implemented by {@link DistributedSystem}.
  */
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({StatisticsTest.class})
 public class DistributedSystemStatisticsIntegrationTest {
 
   private DistributedSystem system;

@@ -17,16 +17,13 @@ package org.apache.geode.internal.compression;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the Snappy {@link Compressor}.
  */
-@Category(IntegrationTest.class)
 public class SnappyCompressorJUnitTest {
 
   /**

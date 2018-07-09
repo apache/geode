@@ -43,10 +43,9 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class ExecutionContextJUnitTest {
   boolean failure = false;
   String exceptionStr = "";

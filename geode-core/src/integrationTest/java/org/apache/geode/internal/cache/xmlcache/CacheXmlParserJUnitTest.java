@@ -32,21 +32,18 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test cases for {@link CacheXmlParser}.
  *
  * @since GemFire 8.1
  */
-@Category(IntegrationTest.class)
 public class CacheXmlParserJUnitTest {
 
   @Rule

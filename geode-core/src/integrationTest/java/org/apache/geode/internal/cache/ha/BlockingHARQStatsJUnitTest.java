@@ -20,7 +20,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test runs all tests of HARegionQueueStatsJUnitTest using BlockingHARegionQueue instead of
@@ -28,7 +27,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class BlockingHARQStatsJUnitTest extends HARegionQueueStatsJUnitTest {
 
   /**

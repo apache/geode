@@ -44,12 +44,11 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Make sure max-connections on cache server is enforced
  */
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class CacheServerMaxConnectionsJUnitTest {
 
   private static final int MAX_CNXS = 100;

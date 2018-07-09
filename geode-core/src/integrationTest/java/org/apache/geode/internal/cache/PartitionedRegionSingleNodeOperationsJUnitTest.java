@@ -33,7 +33,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
 import org.apache.geode.LogWriter;
@@ -49,7 +48,6 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache30.RegionTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test for Partitioned Region operations on a single node. Following tests are included:
@@ -60,7 +58,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(IntegrationTest.class)
 public class PartitionedRegionSingleNodeOperationsJUnitTest {
   private static final Logger logger = LogService.getLogger();
 

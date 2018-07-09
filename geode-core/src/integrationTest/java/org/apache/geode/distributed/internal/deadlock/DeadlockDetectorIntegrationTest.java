@@ -32,14 +32,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TODO: can we get rid of the Thread.sleep calls?
  */
-@Category(IntegrationTest.class)
 public class DeadlockDetectorIntegrationTest {
 
   private volatile Set<Thread> stuckThreads;

@@ -34,10 +34,9 @@ import org.apache.geode.examples.security.ExampleSecurityManager.User;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.ResourcePermission.Target;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ExampleSecurityManagerTest {
 
   private ExampleSecurityManager exampleSecurityManager;

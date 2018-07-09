@@ -17,11 +17,10 @@ package org.apache.geode.management.internal.cli.commands;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Server;
 
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class QueryCommandOverHttpTest extends QueryCommandIntegrationTest {
 
   @Override

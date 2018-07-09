@@ -31,7 +31,6 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.index.IndexManager.IndexUpdaterThread;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -42,7 +41,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  *
  *
  */
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class AsyncIndexUpdaterThreadShutdownJUnitTest {
 
   String name = "PR_with_Async_Index";

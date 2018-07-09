@@ -41,12 +41,11 @@ import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class QueryCommandIntegrationTest {
 
   private final String DEFAULT_FETCH_SIZE = String.valueOf(Gfsh.DEFAULT_APP_FETCH_SIZE);

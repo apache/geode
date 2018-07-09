@@ -25,15 +25,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests notifications of CacheLifecycleListener from GemFireCacheImpl.
  */
-@Category(IntegrationTest.class)
 public class CacheLifecycleListenerJUnitTest {
 
   @Test

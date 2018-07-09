@@ -38,13 +38,12 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * TODO: does this test provide any valuable coverage?
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class TestNewFunctionSSorRSIntegrationTest {
 
   @Before

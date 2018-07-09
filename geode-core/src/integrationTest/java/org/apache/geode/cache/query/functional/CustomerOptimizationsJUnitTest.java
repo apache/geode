@@ -41,10 +41,9 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class CustomerOptimizationsJUnitTest {
   public CustomerOptimizationsJUnitTest() {}
 

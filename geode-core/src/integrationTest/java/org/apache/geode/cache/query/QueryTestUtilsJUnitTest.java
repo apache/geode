@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.data.Numbers;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -39,7 +38,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  *
  *
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class QueryTestUtilsJUnitTest {
 
   private static final long serialVersionUID = 1L;

@@ -42,14 +42,13 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.JMXTest;
 
 /**
  *
  * @since GemFire 1.4
  */
-@Category({IntegrationTest.class, JMXTest.class})
+@Category({JMXTest.class})
 public class DistributedSystemStatsJUnitTest {
 
   protected static final long SLEEP = 100;

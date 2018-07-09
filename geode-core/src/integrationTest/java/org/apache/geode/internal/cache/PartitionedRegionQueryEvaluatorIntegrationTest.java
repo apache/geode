@@ -29,7 +29,6 @@ import java.util.Random;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.ExpirationAttributes;
@@ -40,12 +39,10 @@ import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.util.VersionedArrayList;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This class is an integration test for {@link PartitionedRegionQueryEvaluator} class.
  */
-@Category(IntegrationTest.class)
 public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   @Rule

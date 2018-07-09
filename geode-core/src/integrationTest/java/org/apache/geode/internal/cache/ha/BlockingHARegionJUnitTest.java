@@ -34,9 +34,8 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class BlockingHARegionJUnitTest {
 
   private static InternalCache cache = null;

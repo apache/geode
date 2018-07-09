@@ -23,7 +23,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -32,12 +31,10 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test the replace method with an entry that has overflowed to disk.
  */
-@Category(IntegrationTest.class)
 public class ReplaceWithOverflowJUnitTest {
 
   private static Cache cache;

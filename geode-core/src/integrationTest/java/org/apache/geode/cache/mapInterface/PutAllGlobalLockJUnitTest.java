@@ -36,9 +36,8 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.DLockTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, DLockTest.class})
+@Category({DLockTest.class})
 public class PutAllGlobalLockJUnitTest { // TODO: reformat
 
   Region testRegion = null;

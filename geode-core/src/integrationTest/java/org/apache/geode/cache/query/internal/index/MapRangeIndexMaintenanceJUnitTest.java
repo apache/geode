@@ -38,10 +38,9 @@ import org.apache.geode.cache.query.data.Instrument;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class MapRangeIndexMaintenanceJUnitTest {
 
   private static final String INDEX_NAME = "keyIndex1";

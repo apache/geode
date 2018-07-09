@@ -29,14 +29,13 @@ import org.springframework.http.MediaType;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
+@Category({SecurityTest.class, RestAPITest.class})
 public class RestSecurityIntegrationTest {
 
   protected static final String REGION_NAME = "AuthRegion";

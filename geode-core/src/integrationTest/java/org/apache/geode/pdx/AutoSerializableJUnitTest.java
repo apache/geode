@@ -59,10 +59,9 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({IntegrationTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class AutoSerializableJUnitTest {
 
   private GemFireCacheImpl c;

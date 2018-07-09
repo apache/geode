@@ -32,7 +32,6 @@ import java.net.InetAddress;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
@@ -40,14 +39,12 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@link LocatorLauncher} as an in-process API within an existing JVM.
  *
  * @since GemFire 8.0
  */
-@Category(IntegrationTest.class)
 public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrationTestCase {
 
   @Before

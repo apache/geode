@@ -48,12 +48,11 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a functional-test for <code>ClientHealthMonitor</code>.
  */
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientHealthMonitorIntegrationTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 

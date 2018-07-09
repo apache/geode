@@ -26,14 +26,13 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.offheap.TxReleasesOffHeapOnCloseJUnitTest;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 
 /**
  * Same tests as that of {@link TxReleasesOffHeapOnCloseJUnitTest} after setting
  * "distributed-transactions" property to true
  */
-@Category({IntegrationTest.class, DistributedTransactionsTest.class})
+@Category({DistributedTransactionsTest.class})
 public class DistTXReleasesOffHeapOnCloseJUnitTest extends TxReleasesOffHeapOnCloseJUnitTest {
 
   public DistTXReleasesOffHeapOnCloseJUnitTest() {}

@@ -24,7 +24,6 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -32,9 +31,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class AtomicStatsJUnitTest {
 
   /**

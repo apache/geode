@@ -32,13 +32,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.management.ManagerMXBean;
 import org.apache.geode.management.internal.beans.ManagerMBean;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ManagerMBeanAuthorizationJUnitTest {
   private ManagerMXBean managerMXBean;
 

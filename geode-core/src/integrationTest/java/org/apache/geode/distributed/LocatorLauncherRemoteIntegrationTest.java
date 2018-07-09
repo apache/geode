@@ -32,14 +32,12 @@ import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessControllerFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@code LocatorLauncher} as an application main in a forked JVM.
  *
  * @since GemFire 8.0
  */
-@Category(IntegrationTest.class)
 public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteIntegrationTestCase {
 
   @Before

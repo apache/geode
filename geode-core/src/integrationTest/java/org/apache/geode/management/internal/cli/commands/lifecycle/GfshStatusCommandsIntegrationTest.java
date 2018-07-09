@@ -21,16 +21,13 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category(IntegrationTest.class)
 public class GfshStatusCommandsIntegrationTest {
   private static final String LOCATOR_NAME = "locator1";
 

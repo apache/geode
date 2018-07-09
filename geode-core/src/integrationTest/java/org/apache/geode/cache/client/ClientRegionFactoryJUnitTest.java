@@ -61,14 +61,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for the ClientRegionFactory class
  *
  * @since GemFire 6.5
  */
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientRegionFactoryJUnitTest {
 
   @Rule

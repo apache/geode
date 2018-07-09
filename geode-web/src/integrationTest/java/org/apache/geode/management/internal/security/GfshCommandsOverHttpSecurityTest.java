@@ -17,11 +17,10 @@ package org.apache.geode.management.internal.security;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class GfshCommandsOverHttpSecurityTest extends GfshCommandsSecurityTest {
   public GfshCommandsOverHttpSecurityTest() {
     gfshConnection = new GfshCommandRule(serverStarter::getHttpPort, GfshCommandRule.PortType.http);

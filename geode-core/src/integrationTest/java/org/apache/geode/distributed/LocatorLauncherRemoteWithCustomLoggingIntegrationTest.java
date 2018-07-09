@@ -27,17 +27,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@code LocatorLauncher} as an application main in a forked JVM with
  * custom logging configuration.
  */
-@Category(IntegrationTest.class)
 public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest
     extends LocatorLauncherRemoteIntegrationTestCase {
 

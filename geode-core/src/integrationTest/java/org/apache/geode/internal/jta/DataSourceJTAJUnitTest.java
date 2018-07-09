@@ -31,13 +31,11 @@ import javax.transaction.UserTransaction;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -49,7 +47,6 @@ import org.apache.geode.util.test.TestUtil;
  * after inserts abd before commit or rollback.
  *
  */
-@Category(IntegrationTest.class)
 public class DataSourceJTAJUnitTest {
 
   @AfterClass

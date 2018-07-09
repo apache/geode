@@ -36,10 +36,9 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({IntegrationTest.class, RedisTest.class})
+@Category({RedisTest.class})
 public class SetsJUnitTest {
   private static Jedis jedis;
   private static GeodeRedisServer server;

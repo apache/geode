@@ -73,10 +73,9 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({IntegrationTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class AnalyzeSerializablesJUnitTest {
 
   private static final String NEW_LINE = System.getProperty("line.separator");

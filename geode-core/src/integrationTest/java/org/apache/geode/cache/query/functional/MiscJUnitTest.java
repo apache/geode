@@ -46,10 +46,9 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.data.Data;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class MiscJUnitTest {
 
   @Before

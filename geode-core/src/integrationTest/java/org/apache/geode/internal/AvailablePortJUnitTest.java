@@ -24,16 +24,13 @@ import java.net.ServerSocket;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * multicast availability is tested in JGroupsMessengerJUnitTest
  */
-@Category(IntegrationTest.class)
 public class AvailablePortJUnitTest {
 
   private ServerSocket socket;

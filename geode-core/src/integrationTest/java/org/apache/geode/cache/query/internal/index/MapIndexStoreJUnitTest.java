@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeap;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -47,7 +46,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  * IndexStorage
  *
  */
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class MapIndexStoreJUnitTest {
 
   IndexStore indexDataStructure;

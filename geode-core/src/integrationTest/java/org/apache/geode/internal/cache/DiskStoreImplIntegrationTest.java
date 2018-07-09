@@ -28,7 +28,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
@@ -40,10 +39,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.backup.BackupService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 
-@Category(IntegrationTest.class)
 public class DiskStoreImplIntegrationTest {
   private static final String DISK_STORE_NAME = "testDiskStore";
   private static final String REGION_NAME = "testRegion";

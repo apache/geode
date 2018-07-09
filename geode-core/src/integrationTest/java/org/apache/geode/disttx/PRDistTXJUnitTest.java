@@ -30,13 +30,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PRTXJUnitTest;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Same tests as that of {@link PRTXJUnitTest} after setting "distributed-transactions" property to
  * true
  */
-@Category({IntegrationTest.class, DistributedTransactionsTest.class})
+@Category({DistributedTransactionsTest.class})
 public class PRDistTXJUnitTest extends PRTXJUnitTest {
 
   @Override

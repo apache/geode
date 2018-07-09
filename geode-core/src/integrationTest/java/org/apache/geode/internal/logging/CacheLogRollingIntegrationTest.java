@@ -39,7 +39,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -47,7 +46,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  *
  * @since GemFire 6.5
  */
-@Category({IntegrationTest.class, LoggingTest.class})
+@Category({LoggingTest.class})
 public class CacheLogRollingIntegrationTest {
 
   private static final int MAX_LOG_STATEMENTS = 100000;

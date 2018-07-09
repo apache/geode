@@ -27,16 +27,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for launching a Server in a forked process with custom logging configuration
  */
-@Category(IntegrationTest.class)
 public class ServerLauncherRemoteWithCustomLoggingIntegrationTest
     extends ServerLauncherRemoteIntegrationTestCase {
 

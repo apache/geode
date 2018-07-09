@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -32,7 +31,6 @@ import org.apache.geode.internal.cache.Token.Tombstone;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test creates an entry and verifies if {@link UpdateOperation} applies correctly on it after
@@ -42,7 +40,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * @since GemFire 7.0.1
  *
  */
-@Category(IntegrationTest.class)
 public class UpdateVersionJUnitTest {
 
   private static final String regionName = "versionedregion";

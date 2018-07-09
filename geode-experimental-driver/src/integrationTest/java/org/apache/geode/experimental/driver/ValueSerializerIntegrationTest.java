@@ -26,9 +26,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ValueSerializerIntegrationTest extends IntegrationTestBase {
 
   private ValueSerializer serializer;

@@ -18,17 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.
  *
  * @since Geode 1.0
  */
-@Category(IntegrationTest.class)
 public class PRDataStoreMemoryOffHeapJUnitTest extends PRDataStoreMemoryJUnitTest {
 
   @Override

@@ -37,9 +37,8 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class PostProcessingIntegrationTest {
   public static final String SPAM = "Spam!";
   public static final String REGION_NAME = "region";

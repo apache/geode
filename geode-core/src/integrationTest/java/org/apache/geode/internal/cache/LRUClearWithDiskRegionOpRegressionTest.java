@@ -22,7 +22,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
@@ -35,7 +34,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Regression test to confirm fix for TRAC #37244.
@@ -46,7 +44,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @see org.apache.geode.internal.cache.eviction.TestLRUListWithAsyncSorting
  */
-@Category(IntegrationTest.class)
 public class LRUClearWithDiskRegionOpRegressionTest {
 
   private InternalCache cache;

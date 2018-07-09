@@ -24,10 +24,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.management.internal.beans.DiskStoreMBeanBridge;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.JMXTest;
 
-@Category({IntegrationTest.class, JMXTest.class})
+@Category({JMXTest.class})
 public class DiskStatsJUnitTest extends MBeanStatsTestCase {
 
   private DiskStoreMBeanBridge bridge;

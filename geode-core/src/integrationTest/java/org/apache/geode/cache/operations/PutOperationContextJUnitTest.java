@@ -23,7 +23,6 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
@@ -32,9 +31,7 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class PutOperationContextJUnitTest {
 
   @Test

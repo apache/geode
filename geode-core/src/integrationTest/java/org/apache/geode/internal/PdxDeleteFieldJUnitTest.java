@@ -47,10 +47,9 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxUnreadData;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({IntegrationTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class PdxDeleteFieldJUnitTest {
 
   @Test

@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
@@ -40,7 +39,6 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test methods to ensure that disk Clear is apparently atomic to region clear.
@@ -51,7 +49,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * TODO: use DiskRegionTestingBase and DiskRegionHelperFactory
  */
-@Category(IntegrationTest.class)
 public class DiskRegionClearJUnitTest {
 
   private static Region testRegion = null;

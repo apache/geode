@@ -30,10 +30,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 
-@Category({IntegrationTest.class, JDBCConnectorTest.class})
+@Category({JDBCConnectorTest.class})
 public class CreateConnectionCommandIntegrationTest {
 
   private InternalCache cache;

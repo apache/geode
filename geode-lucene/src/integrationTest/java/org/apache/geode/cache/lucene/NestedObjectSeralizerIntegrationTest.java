@@ -39,10 +39,9 @@ import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest {
 
   private static int WAIT_FOR_FLUSH_TIME = 10000;

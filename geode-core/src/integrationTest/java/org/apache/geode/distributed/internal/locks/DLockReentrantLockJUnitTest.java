@@ -32,9 +32,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.test.junit.categories.DLockTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, DLockTest.class})
+@Category({DLockTest.class})
 public class DLockReentrantLockJUnitTest {
   final long id = 1213L;
 

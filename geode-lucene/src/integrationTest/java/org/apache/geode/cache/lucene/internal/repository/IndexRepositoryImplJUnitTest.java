@@ -59,14 +59,13 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.Type2;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * Test of the {@link IndexRepository} and everything below it. This tests that we can save Apache
  * Geode objects or PDXInstance objects into a lucene index and search for those objects later.
  */
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class IndexRepositoryImplJUnitTest {
 
   private IndexRepositoryImpl repo;

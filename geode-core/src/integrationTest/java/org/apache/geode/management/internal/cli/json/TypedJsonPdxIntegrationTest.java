@@ -24,7 +24,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -33,7 +32,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for {@link TypedJson}.
@@ -41,7 +39,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * TODO: add actual assertions
  */
-@Category(IntegrationTest.class)
 public class TypedJsonPdxIntegrationTest {
 
   private static final String RESULT = "result";

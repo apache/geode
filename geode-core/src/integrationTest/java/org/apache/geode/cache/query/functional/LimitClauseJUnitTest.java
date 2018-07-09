@@ -47,10 +47,9 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class LimitClauseJUnitTest {
 
   Region region;

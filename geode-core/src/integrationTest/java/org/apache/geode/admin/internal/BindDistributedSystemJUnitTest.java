@@ -22,11 +22,9 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests {@link org.apache.geode.admin.internal.AdminDistributedSystemImpl}.
@@ -35,7 +33,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * @since GemFire 3.5
  */
 @SuppressWarnings("deprecation")
-@Category(IntegrationTest.class)
 public class BindDistributedSystemJUnitTest {
 
   private static final int RETRY_ATTEMPTS = 3;

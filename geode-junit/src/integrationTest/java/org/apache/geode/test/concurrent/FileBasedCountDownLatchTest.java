@@ -17,11 +17,8 @@ package org.apache.geode.test.concurrent;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class FileBasedCountDownLatchTest {
   @Test
   public void singleThreadedBehaviorIsCorrect() throws Exception {

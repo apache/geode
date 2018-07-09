@@ -30,7 +30,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -41,13 +40,11 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the old disk apis to make sure they do the correct thing. Once we drop these old deprecated
  * disk apis then this unit test can be removed.
  */
-@Category(IntegrationTest.class)
 public class DiskOldAPIsJUnitTest {
 
   protected static Cache cache = null;

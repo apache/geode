@@ -34,14 +34,13 @@ import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * JUnit test for verifying the proper functioning of HARegionQueue related statistics.
  *
  *
  */
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HARegionQueueStatsJUnitTest {
 
   /** The cache instance */

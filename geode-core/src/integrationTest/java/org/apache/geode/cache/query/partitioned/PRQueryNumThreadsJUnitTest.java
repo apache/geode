@@ -30,7 +30,6 @@ import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -38,7 +37,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  *
  *
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class PRQueryNumThreadsJUnitTest {
   String regionName = "portfolios";
 

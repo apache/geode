@@ -40,16 +40,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.util.concurrent.cm.ConcurrentHashMapJUnitTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.JSR166TestCase;
 
 /**
  * Adopted from the JSR166 test cases. {@link ConcurrentHashMapJUnitTest}
  */
-@Category(IntegrationTest.class)
 public class CopyOnWriteHashMapJUnitTest extends JSR166TestCase { // TODO: reformat
 
   /**

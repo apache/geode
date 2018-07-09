@@ -33,13 +33,12 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TODO: Add additional tests for all methods in DataCommandFunction.
  *
  */
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class DataCommandFunctionJUnitTest {
 
   private static Cache cache;

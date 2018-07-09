@@ -32,10 +32,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.LegacySecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.templates.DummyAuthenticator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class CacheFactoryWithSecurityObjectTest {
 
   private SecurityManager simpleSecurityManager;

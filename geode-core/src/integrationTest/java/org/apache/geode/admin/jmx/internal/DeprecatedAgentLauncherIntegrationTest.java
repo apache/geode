@@ -37,16 +37,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.admin.jmx.internal.AgentLauncher.Status;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.process.ProcessWrapper;
 
-@Category(IntegrationTest.class)
 public class DeprecatedAgentLauncherIntegrationTest {
 
   private String classpath;

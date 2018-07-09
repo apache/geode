@@ -36,11 +36,10 @@ import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class GMSEncryptJUnitTest {
 
   private static final int THREAD_COUNT = 20;

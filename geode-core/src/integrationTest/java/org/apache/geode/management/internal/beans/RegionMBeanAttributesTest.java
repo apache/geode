@@ -23,16 +23,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.RegionMXBean;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
 public class RegionMBeanAttributesTest {
 
   private RegionMXBean bean;

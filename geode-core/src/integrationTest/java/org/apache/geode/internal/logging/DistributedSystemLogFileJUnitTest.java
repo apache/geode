@@ -53,14 +53,13 @@ import org.apache.geode.internal.logging.log4j.FastLogger;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Connects DistributedSystem and tests logging behavior at a high level.
  *
  */
-@Category({IntegrationTest.class, LoggingTest.class})
+@Category({LoggingTest.class})
 public class DistributedSystemLogFileJUnitTest {
   @Rule
   public TestName name = new TestName();

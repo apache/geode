@@ -45,7 +45,6 @@ import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
 import org.apache.geode.internal.process.io.IntegerFileWriter;
 import org.apache.geode.internal.process.io.StringFileWriter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
@@ -55,7 +54,6 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
  * This test shows one of the more appropriate uses of ErrorCollector Rule -- catching any failed
  * assertions in another thread that isn't the main JUnit thread.
  */
-@Category(IntegrationTest.class)
 public class FileProcessControllerIntegrationTest {
 
   private static final String STATUS_JSON = generateStatusJson();

@@ -23,10 +23,9 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.test.LuceneTestSerializer;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneIndexXmlGeneratorWhereRegionCreatedBeforeReindexIntegrationJUnitTest
     extends LuceneIndexXmlGeneratorIntegrationJUnitTest {
 

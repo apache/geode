@@ -26,10 +26,8 @@ import java.util.concurrent.TimeoutException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
@@ -43,7 +41,6 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
  *
  * @since GemFire 8.2
  */
-@Category(IntegrationTest.class)
 public class BlockingProcessStreamReaderWindowsTest
     extends AbstractProcessStreamReaderIntegrationTest {
 

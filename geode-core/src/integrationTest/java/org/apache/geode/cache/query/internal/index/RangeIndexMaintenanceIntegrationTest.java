@@ -20,10 +20,9 @@ import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class RangeIndexMaintenanceIntegrationTest extends AbstractIndexMaintenanceIntegrationTest {
 
   @Override

@@ -46,7 +46,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This tests make sure that, in case of LonerDistributedSystem we don't get ClassCast Exception.
@@ -59,7 +58,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * Extracted from {@link PRFunctionExecutionDUnitTest}.
  */
-@Category({IntegrationTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class FunctionExecutionOnLonerRegressionTest {
 
   private Region<String, String> region;

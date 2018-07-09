@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
@@ -39,7 +38,6 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * If a new expiration time is specified that is shorter than an existing one, ensure the new
@@ -50,7 +48,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 7.0
  */
-@Category(IntegrationTest.class)
 public class ShorteningExpirationTimeRegressionTest {
 
   private static final int LONG_WAIT_MS = 2 * 60 * 1000;

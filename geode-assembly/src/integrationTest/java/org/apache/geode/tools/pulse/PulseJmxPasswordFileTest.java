@@ -27,14 +27,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 
-@Category({IntegrationTest.class, SecurityTest.class, PulseTest.class})
+@Category({SecurityTest.class, PulseTest.class})
 public class PulseJmxPasswordFileTest {
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule();

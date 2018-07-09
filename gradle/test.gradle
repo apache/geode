@@ -100,7 +100,6 @@ subprojects {
     classpath = sourceSets.integrationTest.runtimeClasspath
 
     useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 

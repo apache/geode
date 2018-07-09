@@ -18,10 +18,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test will test that there are no unexpected behaviours if the the region attributes are
@@ -29,7 +27,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * The behaviour should be predictable
  */
-@Category(IntegrationTest.class)
 public class DiskRegionChangingRegionAttributesJUnitTest extends DiskRegionTestingBase {
 
   private DiskRegionProperties props;

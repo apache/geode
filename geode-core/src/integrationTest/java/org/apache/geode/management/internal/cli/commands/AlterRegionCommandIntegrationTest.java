@@ -21,12 +21,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, RegionsTest.class})
+@Category({RegionsTest.class})
 public class AlterRegionCommandIntegrationTest {
   @ClassRule
   public static ServerStarterRule server =

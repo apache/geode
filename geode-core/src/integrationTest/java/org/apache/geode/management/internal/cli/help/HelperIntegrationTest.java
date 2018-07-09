@@ -24,15 +24,12 @@ import java.lang.reflect.Method;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.management.internal.cli.commands.GfshHelpCommand;
 import org.apache.geode.management.internal.cli.commands.GfshHintCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class HelperIntegrationTest {
   private static Helper helper;
 

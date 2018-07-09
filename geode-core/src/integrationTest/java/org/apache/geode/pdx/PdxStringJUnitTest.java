@@ -33,10 +33,9 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxString;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({IntegrationTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class PdxStringJUnitTest {
 
   private GemFireCacheImpl c;

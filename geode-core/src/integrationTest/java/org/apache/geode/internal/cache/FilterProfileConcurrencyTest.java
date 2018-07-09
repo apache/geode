@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -34,10 +33,8 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @RunWith(ConcurrentTestRunner.class)
-@Category(IntegrationTest.class)
 public class FilterProfileConcurrencyTest {
 
   @Test

@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -49,7 +48,6 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the functionality of the {@link CopyHelper#copy} method and the builtin copy-on-get Cache
@@ -58,7 +56,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * @since GemFire 4.0
  *
  */
-@Category(IntegrationTest.class)
 public class CopyJUnitTest {
 
   private Cache cache;

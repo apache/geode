@@ -57,10 +57,9 @@ import org.apache.geode.cache.query.internal.index.MemoryIndexStore.MemoryIndexS
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class IndexMaintenanceJUnitTest {
 
   private QueryService qs;

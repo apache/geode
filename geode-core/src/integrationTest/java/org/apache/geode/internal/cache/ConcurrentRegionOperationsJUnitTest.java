@@ -30,13 +30,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a multi threaded tests. This test creates two regions. Region1 which is persistent and
@@ -54,7 +52,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * regions are checked for equality. * This test is run for all modes persist, persist+overflow,
  * overflow only in syn and async mode.
  */
-@Category(IntegrationTest.class)
 public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
 
   private int numberOfPutsThreads = 5;

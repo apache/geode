@@ -26,7 +26,6 @@ import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
@@ -35,13 +34,11 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TestCase that emulates the conditions that entry destroy with concurrent destroy region or cache
  * close event will get expected Exception.
  */
-@Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class DestroyEntryDuringCloseIntegrationTest {
 

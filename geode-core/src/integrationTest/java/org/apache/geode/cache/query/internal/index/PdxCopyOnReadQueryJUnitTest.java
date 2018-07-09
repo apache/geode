@@ -32,10 +32,9 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class PdxCopyOnReadQueryJUnitTest {
 
   private Cache cache = null;

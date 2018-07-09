@@ -28,13 +28,12 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * Integration tests for SecurityService using shiro.ini
  */
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SecurityServiceWithShiroIniIntegrationTest {
 
   protected Properties props = new Properties();

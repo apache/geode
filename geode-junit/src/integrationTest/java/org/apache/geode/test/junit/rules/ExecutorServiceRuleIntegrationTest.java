@@ -27,14 +27,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.mockito.InOrder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
-@Category(IntegrationTest.class)
 public class ExecutorServiceRuleIntegrationTest {
 
   static volatile CountDownLatch hangLatch;

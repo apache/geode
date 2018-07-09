@@ -27,7 +27,6 @@ import com.examples.snapshot.MyPdxSerializer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -36,9 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.RegionGenerator;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class OfflineSnapshotJUnitTest {
 
   private RegionGenerator rgen;

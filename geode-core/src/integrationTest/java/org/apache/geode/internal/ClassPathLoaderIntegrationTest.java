@@ -44,7 +44,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.execute.Execution;
@@ -57,7 +56,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -66,7 +64,6 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
  *
  * Extracted from ClassPathLoaderTest.
  */
-@Category(IntegrationTest.class)
 public class ClassPathLoaderIntegrationTest {
 
   private static final int TEMP_FILE_BYTES_COUNT = 256;

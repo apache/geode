@@ -65,9 +65,8 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, MembershipJUnitTest.class})
+@Category({MembershipJUnitTest.class})
 public class MembershipJUnitTest {
 
   /**

@@ -39,7 +39,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -54,7 +53,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.jta.CacheUtils;
 import org.apache.geode.internal.jta.JTAUtils;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This JUnit version is created from class org.apache.geode.internal.jta.functional.CacheTest1.
@@ -64,7 +62,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * variations in DDL.
  *
  */
-@Category(IntegrationTest.class)
 public class CacheJUnitTest {
 
   private static final Logger logger = LogService.getLogger();

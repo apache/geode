@@ -16,11 +16,10 @@ package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class AnalyzeLuceneSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
 
   @Override

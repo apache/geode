@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.admin.GemFireHealth;
@@ -40,7 +39,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Contains simple tests for the {@link CacheHealthEvaluator}
@@ -49,7 +47,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * @since GemFire 3.5
  */
 @SuppressWarnings("deprecation")
-@Category(IntegrationTest.class)
 public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
 
   @Rule

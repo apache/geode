@@ -26,15 +26,12 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests for the BackupInspector.
  */
-@Category(IntegrationTest.class)
 public class BackupInspectorIntegrationTest {
 
   private static final String IF_FILE_SUFFIX = ".if";

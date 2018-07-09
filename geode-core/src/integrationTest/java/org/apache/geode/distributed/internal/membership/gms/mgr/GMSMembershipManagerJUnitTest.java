@@ -83,10 +83,9 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class GMSMembershipManagerJUnitTest {
 
   private static final long WAIT_FOR_REPLIES_MILLIS = 2000;

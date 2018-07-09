@@ -31,10 +31,9 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegrationTest {
 
   @Override

@@ -52,12 +52,11 @@ import org.apache.geode.internal.cache.ha.HARegionQueue.MapWrapper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test to verify Add operation to HARegion Queue with and without conflation.
  */
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HARQAddOperationJUnitTest {
   private static final Logger logger = LogService.getLogger();
 

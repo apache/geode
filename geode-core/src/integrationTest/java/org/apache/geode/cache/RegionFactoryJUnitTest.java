@@ -57,7 +57,6 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.CancelException;
@@ -67,14 +66,12 @@ import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for the RegionFactory class
  *
  * @since GemFire 5.0
  */
-@Category(IntegrationTest.class)
 public class RegionFactoryJUnitTest {
 
   @Rule

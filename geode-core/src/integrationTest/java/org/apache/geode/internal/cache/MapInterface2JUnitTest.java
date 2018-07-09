@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -40,9 +39,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class MapInterface2JUnitTest {
 
   protected boolean afterClearCallbackOccurred = false;

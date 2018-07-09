@@ -20,10 +20,8 @@ import static org.junit.Assume.assumeFalse;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Functional integration tests for BlockingProcessStreamReader. All tests are skipped on Windows
@@ -34,7 +32,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 8.2
  */
-@Category(IntegrationTest.class)
 public class BlockingProcessStreamReaderIntegrationTest
     extends BaseProcessStreamReaderIntegrationTest {
 

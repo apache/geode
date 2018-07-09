@@ -35,7 +35,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -43,7 +42,7 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  *
  *
  */
-@Category({IntegrationTest.class, OffHeapTest.class})
+@Category({OffHeapTest.class})
 public class OffHeapIndexJUnitTest {
   private GemFireCacheImpl gfc;
 

@@ -23,19 +23,16 @@ import java.util.Properties;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test tests Illegal arguements being passed to create disk regions. The creation of the DWA
  * object should throw a relevant exception if the arguements specified are incorrect.
  */
-@Category(IntegrationTest.class)
 public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
 
   public void createRegion(String path) {

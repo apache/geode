@@ -17,19 +17,16 @@ package org.apache.geode.internal.cache;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests if callbacks are getting invoked correctly for 'create', 'update' and 'destroy' of disk
  * region entries with concurrent 'clear'
  */
-@Category(IntegrationTest.class)
 public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase {
 
   private static volatile boolean intoCreateAfterCbk = false;

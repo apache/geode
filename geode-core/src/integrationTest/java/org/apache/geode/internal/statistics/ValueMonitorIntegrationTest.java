@@ -44,7 +44,6 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.statistics.StatisticsNotification.Type;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
@@ -52,7 +51,7 @@ import org.apache.geode.test.junit.categories.StatisticsTest;
  *
  * @since GemFire 7.0
  */
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({StatisticsTest.class})
 public class ValueMonitorIntegrationTest {
 
   private Mockery mockContext;

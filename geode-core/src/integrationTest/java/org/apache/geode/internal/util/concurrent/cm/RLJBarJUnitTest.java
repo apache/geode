@@ -22,12 +22,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.JSR166TestCase;
 
-@Category(IntegrationTest.class)
 public class RLJBarJUnitTest extends JSR166TestCase { // TODO: reformat
 
   public static final int ITERS = 10;

@@ -35,14 +35,13 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.rest.internal.web.controllers.Customer;
 import org.apache.geode.rest.internal.web.controllers.RedactingPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
+@Category({SecurityTest.class, RestAPITest.class})
 public class RestSecurityPostProcessorTest {
 
   @ClassRule

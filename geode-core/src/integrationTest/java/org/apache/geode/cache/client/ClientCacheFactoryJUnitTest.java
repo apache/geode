@@ -57,7 +57,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for the ClientCacheFactory class
@@ -65,7 +64,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * @since GemFire 6.5
  */
 @FixMethodOrder(NAME_ASCENDING)
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientCacheFactoryJUnitTest {
 
   private ClientCache clientCache;

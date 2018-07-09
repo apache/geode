@@ -34,16 +34,13 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.mockito.InOrder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Extracted from {@link RegionExpirationDistributedTest}.
  */
-@Category(IntegrationTest.class)
 public class RegionExpirationIntegrationTest {
 
   private Cache cache;

@@ -70,7 +70,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.process.ProcessWrapper;
 
 /**
@@ -78,7 +77,6 @@ import org.apache.geode.test.process.ProcessWrapper;
  *
  * @since GemFire 6.0
  */
-@Category(IntegrationTest.class)
 public class DeprecatedCacheServerLauncherIntegrationTest {
   private static final Logger logger = LogService.getLogger();
 

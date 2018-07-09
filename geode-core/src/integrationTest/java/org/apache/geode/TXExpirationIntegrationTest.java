@@ -37,7 +37,6 @@ import junitparams.naming.TestCaseName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.AttributesMutator;
@@ -57,14 +56,12 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests transaction expiration functionality
  *
  * @since GemFire 4.0
  */
-@Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class TXExpirationIntegrationTest {
 

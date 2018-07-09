@@ -32,13 +32,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunctionIntegrationTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
 public class LogExporterIntegrationTest {
 
   @Rule

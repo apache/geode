@@ -60,7 +60,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -71,7 +70,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  *
  * @see ClientSocketFactoryIntegrationTest
  */
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class SSLSocketIntegrationTest {
 
   private static final String MESSAGE = SSLSocketIntegrationTest.class.getName() + " Message";

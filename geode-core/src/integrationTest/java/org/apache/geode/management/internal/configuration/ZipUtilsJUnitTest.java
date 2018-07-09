@@ -27,16 +27,13 @@ import org.apache.commons.io.FilenameUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * JUnit Test for {@link ZipUtils}
  */
-@Category(IntegrationTest.class)
 public class ZipUtilsJUnitTest {
 
   private String destinationFolderName = "destination";

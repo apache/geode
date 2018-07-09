@@ -43,7 +43,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -51,7 +50,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  * functions.
  */
 @SuppressWarnings("deprecation")
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class LonerDMJUnitTest {
 
   @After

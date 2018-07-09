@@ -39,13 +39,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class LogExporterTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

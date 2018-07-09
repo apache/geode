@@ -36,7 +36,6 @@ import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for ClientSocketFactory.
@@ -44,7 +43,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * Extracted from {@code JSSESocketJUnitTest}.
  */
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientSocketFactoryIntegrationTest {
 
   private static final String EXCEPTION_MESSAGE =

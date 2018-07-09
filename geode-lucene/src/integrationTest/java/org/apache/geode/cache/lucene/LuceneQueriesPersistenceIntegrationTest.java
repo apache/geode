@@ -39,13 +39,12 @@ import org.apache.geode.cache.lucene.internal.repository.serializer.Type1;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * Tests of lucene index creation that use persistence
  */
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTest {
 

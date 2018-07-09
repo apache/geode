@@ -17,19 +17,16 @@ package org.apache.geode.internal.cache.diskPerf;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.internal.cache.DiskRegionHelperFactory;
 import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region Perf test for Overflow only with Sync writes. 1) Performance of get operation for
  * entry in memory.
  */
-@Category(IntegrationTest.class)
 public class DiskRegOverflowSyncGetInMemPerfJUnitPerformanceTest extends DiskRegionTestingBase {
 
   private static int ENTRY_SIZE = 1024;

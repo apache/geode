@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
@@ -45,12 +44,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.VMLRURegionMap;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test for transactional operations on overflowed data
  */
-@Category(IntegrationTest.class)
 public class TransactionsWithOverflowTest {
 
   @Rule

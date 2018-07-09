@@ -22,7 +22,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
@@ -30,7 +29,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  *
  * @see SecurityServiceWithShiroIniIntegrationTest
  */
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SecurityServiceWithCustomRealmIntegrationTest
     extends SecurityServiceWithShiroIniIntegrationTest {
 

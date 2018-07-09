@@ -29,11 +29,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class GemfireCoreClasspathTest {
   @Test
   public void testGemFireCoreClasspath() throws IOException {

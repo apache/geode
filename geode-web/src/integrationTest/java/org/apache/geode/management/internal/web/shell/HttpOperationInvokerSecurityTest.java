@@ -29,18 +29,15 @@ import javax.management.QueryExp;
 
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category(IntegrationTest.class)
 public class HttpOperationInvokerSecurityTest {
 
   @ClassRule

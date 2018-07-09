@@ -32,9 +32,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
 
   ScheduledThreadPoolExecutorWithKeepAlive ex;

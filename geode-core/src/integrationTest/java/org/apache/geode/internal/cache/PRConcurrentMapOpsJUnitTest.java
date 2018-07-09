@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -35,14 +34,12 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests ConcurrentMap operations on a PartitionedRegion on a single node.
  *
  */
 
-@Category(IntegrationTest.class)
 public class PRConcurrentMapOpsJUnitTest {
 
   static DistributedSystem sys;

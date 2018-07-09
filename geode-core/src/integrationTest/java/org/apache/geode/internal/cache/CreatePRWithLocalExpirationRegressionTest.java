@@ -23,21 +23,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * PRWithLocalExpirationRegressionTest
  *
  * TRAC #40632: PR expiration with localDestroy fails with InternalGemFireError
  */
-@Category(IntegrationTest.class)
 public class CreatePRWithLocalExpirationRegressionTest {
 
   private Cache cache;

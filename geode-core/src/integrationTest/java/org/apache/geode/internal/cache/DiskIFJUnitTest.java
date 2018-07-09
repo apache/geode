@@ -24,19 +24,16 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests DiskRegion's IF file.
  *
  */
-@Category(IntegrationTest.class)
 public class DiskIFJUnitTest extends DiskRegionTestingBase {
   DiskRegionProperties diskProps = new DiskRegionProperties();
 

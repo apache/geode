@@ -31,18 +31,15 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
  * @since GemFire 8.1
  */
-@Category(IntegrationTest.class)
 public class HTTPServiceSSLSupportJUnitTest {
 
   private File jks;

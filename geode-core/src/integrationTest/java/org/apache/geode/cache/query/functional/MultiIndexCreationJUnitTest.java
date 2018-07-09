@@ -44,10 +44,9 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
 import org.apache.geode.cache.query.internal.index.HashIndex;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class MultiIndexCreationJUnitTest {
   private static String regionName = "portfolios";
   private String prRegionName = "prPortfolios";

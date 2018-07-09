@@ -33,13 +33,12 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
  * Tests behavior that interacts with file system.
  */
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({StatisticsTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class StatArchiveHandlerIntegrationTest {
 

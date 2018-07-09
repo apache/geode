@@ -53,7 +53,6 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -62,7 +61,7 @@ import org.apache.geode.util.test.TestUtil;
  *
  * @since GemFire 7.0
  */
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({StatisticsTest.class})
 @SuppressWarnings({"rawtypes", "unused"})
 public class StatArchiveWriterReaderIntegrationTest {
 

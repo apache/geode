@@ -35,7 +35,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpHeaders;
@@ -47,9 +46,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class HttpRequesterTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

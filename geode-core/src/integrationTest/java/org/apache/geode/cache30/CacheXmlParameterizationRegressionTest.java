@@ -26,19 +26,16 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TRAC #40255: Parameterization of XML configuration file
  */
-@Category(IntegrationTest.class)
 @Ignore("Test is broken and was named *JUnitDisabledTest")
 public class CacheXmlParameterizationRegressionTest {
 

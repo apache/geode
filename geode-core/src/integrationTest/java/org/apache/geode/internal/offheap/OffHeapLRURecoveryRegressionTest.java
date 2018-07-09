@@ -33,13 +33,12 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Test to reproduce GEODE-2097.
  */
-@Category({IntegrationTest.class, OffHeapTest.class})
+@Category({OffHeapTest.class})
 public class OffHeapLRURecoveryRegressionTest {
 
   static final String DS_NAME = "OffHeapLRURecoveryRegressionTestDS";

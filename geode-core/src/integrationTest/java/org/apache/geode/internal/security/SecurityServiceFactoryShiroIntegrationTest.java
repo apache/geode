@@ -24,10 +24,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SecurityServiceFactoryShiroIntegrationTest {
 
   private static final String SHIRO_INI_FILE = "SecurityServiceFactoryShiroIntegrationTest.ini";

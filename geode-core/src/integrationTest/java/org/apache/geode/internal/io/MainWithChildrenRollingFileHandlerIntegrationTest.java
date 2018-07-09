@@ -23,13 +23,10 @@ import java.util.regex.Pattern;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class MainWithChildrenRollingFileHandlerIntegrationTest {
 
   private String name;

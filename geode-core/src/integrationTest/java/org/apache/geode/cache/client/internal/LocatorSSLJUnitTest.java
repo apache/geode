@@ -32,10 +32,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class LocatorSSLJUnitTest {
   private final String SERVER_KEY_STORE =
       TestUtil.getResourcePath(LocatorSSLJUnitTest.class, "cacheserver.keystore");

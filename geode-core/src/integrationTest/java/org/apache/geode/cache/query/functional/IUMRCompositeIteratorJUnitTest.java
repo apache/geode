@@ -47,10 +47,9 @@ import org.apache.geode.cache.query.data.PhoneNo;
 import org.apache.geode.cache.query.data.Street;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class IUMRCompositeIteratorJUnitTest {
 
   @Before

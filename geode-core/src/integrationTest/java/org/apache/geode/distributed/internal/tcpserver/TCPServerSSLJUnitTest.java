@@ -48,11 +48,10 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class TCPServerSSLJUnitTest {
 
   private InetAddress localhost;

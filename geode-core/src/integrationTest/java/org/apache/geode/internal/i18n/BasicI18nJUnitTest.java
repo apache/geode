@@ -28,15 +28,12 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This class tests all basic i18n functionality.
  */
-@Category(IntegrationTest.class)
 public class BasicI18nJUnitTest {
 
   private static final Locale DEFAULT_LOCALE = Locale.getDefault();

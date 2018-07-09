@@ -23,16 +23,13 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.operations.PutOperationContextJUnitTest;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class GetOperationContextImplJUnitTest {
 
   @Test

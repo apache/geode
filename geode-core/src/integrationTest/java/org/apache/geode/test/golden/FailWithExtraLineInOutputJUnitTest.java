@@ -18,9 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.process.ProcessWrapper;
 
 /**
@@ -28,7 +26,6 @@ import org.apache.geode.test.process.ProcessWrapper;
  * failure message.
  *
  */
-@Category(IntegrationTest.class)
 public class FailWithExtraLineInOutputJUnitTest extends FailOutputTestCase {
 
   @Override

@@ -51,11 +51,10 @@ import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneIndexXmlParserIntegrationJUnitTest {
 
   @Rule

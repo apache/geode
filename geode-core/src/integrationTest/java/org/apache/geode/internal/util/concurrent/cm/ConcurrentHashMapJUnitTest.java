@@ -41,13 +41,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.JSR166TestCase;
 
-@Category(IntegrationTest.class)
 public class ConcurrentHashMapJUnitTest extends JSR166TestCase { // TODO: reformat
 
   /**

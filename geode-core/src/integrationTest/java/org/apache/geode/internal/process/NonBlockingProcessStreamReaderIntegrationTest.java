@@ -17,10 +17,8 @@ package org.apache.geode.internal.process;
 import static org.apache.geode.internal.process.ProcessStreamReader.ReadingMode.NON_BLOCKING;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Functional integration tests for NonBlockingProcessStreamReader which was introduced to fix TRAC
@@ -31,7 +29,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 8.2
  */
-@Category(IntegrationTest.class)
 public class NonBlockingProcessStreamReaderIntegrationTest
     extends BaseProcessStreamReaderIntegrationTest {
 

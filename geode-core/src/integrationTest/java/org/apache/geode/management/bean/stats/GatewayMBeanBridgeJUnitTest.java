@@ -25,10 +25,9 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.management.internal.beans.GatewaySenderMBeanBridge;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.JMXTest;
 
-@Category({IntegrationTest.class, JMXTest.class})
+@Category({JMXTest.class})
 public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
   private GatewaySenderMBeanBridge bridge;

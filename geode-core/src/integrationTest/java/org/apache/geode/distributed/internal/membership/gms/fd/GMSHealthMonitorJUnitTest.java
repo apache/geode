@@ -90,10 +90,9 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class GMSHealthMonitorJUnitTest {
 
   private Services services;

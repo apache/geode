@@ -31,9 +31,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class RegionIntegrationTest extends IntegrationTestBase {
   /** a JSON document */
   private static final String jsonDocument =

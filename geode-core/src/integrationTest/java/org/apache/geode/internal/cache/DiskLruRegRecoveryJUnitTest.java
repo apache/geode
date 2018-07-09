@@ -20,17 +20,14 @@ import static org.junit.Assert.fail;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk LRU region recovery tests.
  */
-@Category(IntegrationTest.class)
 public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
   @Override

@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test runs all tests of HARQAddOperationJUnitTest using BlockingHARegionQueue instead of
@@ -40,7 +39,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest {
 
   /**

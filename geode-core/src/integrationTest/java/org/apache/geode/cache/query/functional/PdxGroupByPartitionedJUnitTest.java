@@ -20,10 +20,9 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CacheUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class PdxGroupByPartitionedJUnitTest extends PdxGroupByTestImpl {
 
   @Override

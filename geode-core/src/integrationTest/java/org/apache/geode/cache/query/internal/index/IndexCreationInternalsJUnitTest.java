@@ -43,10 +43,9 @@ import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class IndexCreationInternalsJUnitTest {
   protected String childThreadName1 = "";
   protected String childThreadName2 = "";

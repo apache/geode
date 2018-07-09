@@ -32,9 +32,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
 
   @Override

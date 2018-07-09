@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.process.ProcessWrapper;
 
 /**
@@ -32,7 +30,6 @@ import org.apache.geode.test.process.ProcessWrapper;
  * always pass.
  *
  */
-@Category(IntegrationTest.class)
 public class PassJUnitTest extends GoldenTestCase implements ExecutableProcess {
 
   @Override

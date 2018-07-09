@@ -62,7 +62,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a test for the APIs of a HARegionQueue and verifies that the head, tail and size counters
@@ -71,7 +70,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * TODO: use ExecutorServiceRule instead of raw threads (move CyclicBarrier into rule if needed)
  */
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HARegionQueueJUnitTest {
 
   /** total number of threads doing put operations */

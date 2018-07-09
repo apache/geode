@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -39,12 +38,10 @@ import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.memcached.KeyWrapper;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test for binary protocol
  */
-@Category(IntegrationTest.class)
 public class GemcachedBinaryClientJUnitTest extends GemcachedDevelopmentJUnitTest {
 
   @Override

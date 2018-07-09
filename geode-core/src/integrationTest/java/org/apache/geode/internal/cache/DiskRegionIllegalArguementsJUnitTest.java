@@ -29,19 +29,16 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test tests Illegal arguments being passed to create disk regions. The creation of the DWA
  * object should throw a relevant exception if the arguments specified are incorrect.
  */
-@Category(IntegrationTest.class)
 public class DiskRegionIllegalArguementsJUnitTest {
 
   protected static Cache cache = null;

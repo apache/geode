@@ -23,15 +23,12 @@ import java.util.Collections;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 
-@Category(IntegrationTest.class)
 public class JmxPasswordFileTest {
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule();

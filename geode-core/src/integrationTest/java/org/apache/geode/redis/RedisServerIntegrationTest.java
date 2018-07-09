@@ -26,10 +26,9 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({IntegrationTest.class, RedisTest.class})
+@Category({RedisTest.class})
 public class RedisServerIntegrationTest {
 
   private Cache cache;

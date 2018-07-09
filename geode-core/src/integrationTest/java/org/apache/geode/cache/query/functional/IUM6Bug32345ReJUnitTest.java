@@ -40,7 +40,6 @@ import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -48,7 +47,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  *
  * Created on May 5, 2005, 10:32 AM
  */
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class IUM6Bug32345ReJUnitTest {
   StructType resType1 = null;
   StructType resType2 = null;

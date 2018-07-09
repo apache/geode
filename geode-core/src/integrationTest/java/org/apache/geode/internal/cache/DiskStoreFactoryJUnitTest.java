@@ -37,7 +37,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -48,12 +47,10 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests DiskStoreFactory
  */
-@Category(IntegrationTest.class)
 public class DiskStoreFactoryJUnitTest {
 
   private static Cache cache = null;

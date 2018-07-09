@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.DiskAccessException;
@@ -50,7 +49,6 @@ import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * JUnit tests covering some miscellaneous functionality of Disk Region.
@@ -59,7 +57,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * TODO: fails when running integrationTest from gradle command-line on Windows 7<br>
  * TODO: overhaul error handling and disk usage
  */
-@Category(IntegrationTest.class)
 public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
   private static volatile boolean hasNotified = false;

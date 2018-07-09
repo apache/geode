@@ -22,14 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Contains simple tests for the {@link MemberHealthEvaluator}.
@@ -38,7 +36,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * @since GemFire 3.5
  */
 @SuppressWarnings("deprecation")
-@Category(IntegrationTest.class)
 public class MemberHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
 
   /**

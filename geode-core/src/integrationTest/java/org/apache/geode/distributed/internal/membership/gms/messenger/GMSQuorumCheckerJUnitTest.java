@@ -43,10 +43,9 @@ import org.mockito.stubbing.Answer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class GMSQuorumCheckerJUnitTest {
 
   private InternalDistributedMember[] mockMembers;

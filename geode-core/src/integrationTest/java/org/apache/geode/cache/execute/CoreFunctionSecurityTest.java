@@ -24,7 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.examples.SimpleSecurityManager;
@@ -80,13 +79,11 @@ import org.apache.geode.management.internal.configuration.functions.DownloadJarF
 import org.apache.geode.management.internal.configuration.functions.GetClusterConfigurationFunction;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
 import org.apache.geode.management.internal.configuration.functions.RecreateCacheFunction;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 
-@Category(IntegrationTest.class)
 public class CoreFunctionSecurityTest {
   private static final String RESULT_HEADER = "Message";
 

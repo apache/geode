@@ -22,15 +22,12 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
 public class CacheConfigIntegrationTest {
   @Rule
   public ServerStarterRule server = new ServerStarterRule();

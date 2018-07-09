@@ -14,17 +14,14 @@
  */
 package org.apache.geode.test.golden;
 
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that test output containing an unexpected ERROR message will fail with that ERROR
  * message as the failure message.
  *
  */
-@Category(IntegrationTest.class)
 public class FailWithLoggerErrorInOutputJUnitTest extends FailWithProblemInOutputTestCase {
 
   @Override

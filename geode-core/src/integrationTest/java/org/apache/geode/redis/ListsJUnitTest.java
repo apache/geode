@@ -35,10 +35,9 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({IntegrationTest.class, RedisTest.class})
+@Category({RedisTest.class})
 public class ListsJUnitTest {
 
   private static Jedis jedis;

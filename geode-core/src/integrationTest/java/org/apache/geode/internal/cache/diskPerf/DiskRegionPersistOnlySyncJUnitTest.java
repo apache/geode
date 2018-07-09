@@ -20,7 +20,6 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.RegionAttributes;
@@ -30,12 +29,10 @@ import org.apache.geode.internal.cache.DiskRegionHelperFactory;
 import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region perf test for Persist only with sync writes.
  */
-@Category(IntegrationTest.class)
 public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
 
   private LogWriter log = null;

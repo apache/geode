@@ -24,7 +24,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.data.Address;
 import org.apache.geode.cache.query.data.Data;
@@ -32,7 +31,6 @@ import org.apache.geode.cache.query.data.Employee;
 import org.apache.geode.cache.query.data.Manager;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Verifies that value constraint is used by Region.put
@@ -40,7 +38,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * TRAC #32947: value constraint not enforced on Region.put or Region.create
  */
-@Category(IntegrationTest.class)
 public class ValueConstraintRegressionTest {
 
   private DistributedSystem distributedSystem;

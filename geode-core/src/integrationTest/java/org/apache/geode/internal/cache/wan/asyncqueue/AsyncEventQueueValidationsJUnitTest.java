@@ -41,10 +41,9 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.MyGatewayEventFilter;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({IntegrationTest.class, AEQTest.class})
+@Category({AEQTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class AsyncEventQueueValidationsJUnitTest {
 

@@ -24,7 +24,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.CacheFactory;
@@ -37,9 +36,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryHeap;
 import org.apache.geode.internal.cache.entries.VersionedThinRegionEntryHeapObjectKey;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class TombstoneCreationJUnitTest {
   @Rule
   public TestName nameRule = new TestName();

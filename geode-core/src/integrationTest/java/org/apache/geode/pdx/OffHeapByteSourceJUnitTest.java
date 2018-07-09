@@ -16,7 +16,6 @@ package org.apache.geode.pdx;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.NullOffHeapMemoryStats;
@@ -27,9 +26,7 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.OffHeapByteSource;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class OffHeapByteSourceJUnitTest extends ByteSourceJUnitTest {
 
   @Before

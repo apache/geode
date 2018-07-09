@@ -32,7 +32,6 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  *
  *
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class PRQueryRegionClosedJUnitTest {
   static final String regionName = "portfolios";
 

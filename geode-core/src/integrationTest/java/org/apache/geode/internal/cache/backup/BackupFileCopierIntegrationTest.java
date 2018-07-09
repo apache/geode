@@ -37,7 +37,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -54,12 +53,10 @@ import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @PowerMockIgnore("*.IntegrationTest")
 @PrepareForTest({BackupFileCopier.class, URL.class})
 @RunWith(PowerMockRunner.class)
-@Category(IntegrationTest.class)
 public class BackupFileCopierIntegrationTest {
   private static final String CONFIG_DIRECTORY = "config";
   private static final String USER_FILES = "user";

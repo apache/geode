@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
@@ -56,7 +55,6 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.eviction.CountLRUEviction;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the functionality of cache regions whose contents may be written to disk.
@@ -64,7 +62,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 3.2
  */
-@Category(IntegrationTest.class)
 public class DiskRegionIntegrationTest {
 
   private static final String REGION_NAME = "testRegion";

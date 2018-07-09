@@ -35,10 +35,9 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.data.Address;
 import org.apache.geode.cache.query.data.Employee;
 import org.apache.geode.cache.query.data.Manager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class IteratorTypeDefEmpJUnitTest {
 
   @Before

@@ -32,14 +32,13 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests PoolManager
  *
  * @since GemFire 5.7
  */
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class PoolManagerJUnitTest {
 
   private DistributedSystem ds;

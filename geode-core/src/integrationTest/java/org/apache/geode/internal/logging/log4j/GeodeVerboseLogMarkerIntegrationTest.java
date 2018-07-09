@@ -30,18 +30,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.custom.BasicAppender;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests with accept and deny of GEODE_VERBOSE and GEMFIRE_VERBOSE.
  */
-@Category(IntegrationTest.class)
 public class GeodeVerboseLogMarkerIntegrationTest {
 
   private static final String RESOURCE_PACKAGE = "/org/apache/geode/internal/logging/log4j/marker/";

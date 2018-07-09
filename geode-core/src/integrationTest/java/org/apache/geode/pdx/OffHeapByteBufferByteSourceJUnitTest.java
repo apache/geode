@@ -18,16 +18,12 @@ import static org.junit.Assert.fail;
 
 import java.nio.ByteBuffer;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.OffHeapStoredObject;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class OffHeapByteBufferByteSourceJUnitTest extends OffHeapByteSourceJUnitTest {
 
   @Override

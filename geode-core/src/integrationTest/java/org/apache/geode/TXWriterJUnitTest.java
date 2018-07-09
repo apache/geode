@@ -23,7 +23,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.UserTransaction;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
@@ -31,9 +30,7 @@ import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionEvent;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class TXWriterJUnitTest extends TXWriterTestCase {
 
   /**

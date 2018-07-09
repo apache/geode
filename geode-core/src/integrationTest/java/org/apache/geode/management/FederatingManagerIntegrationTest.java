@@ -31,11 +31,10 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.management.internal.FederatingManager;
 import org.apache.geode.management.internal.MemberMessenger;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, JMXTest.class})
+@Category({JMXTest.class})
 public class FederatingManagerIntegrationTest {
 
   @Rule

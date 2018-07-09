@@ -102,10 +102,9 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class JGroupsMessengerJUnitTest {
 
   private static final String AES_128 = "AES:128";

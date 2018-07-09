@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -31,7 +30,6 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Cache.createRegionFactory should return a new instance with default values.
@@ -57,7 +55,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *     at PartitionAttributesTest.main(PartitionAttributesTest.java:47)
  * </pre>
  */
-@Category(IntegrationTest.class)
 public class CreateRegionFactoryNewInstanceRegressionTest {
 
   private Cache cache;

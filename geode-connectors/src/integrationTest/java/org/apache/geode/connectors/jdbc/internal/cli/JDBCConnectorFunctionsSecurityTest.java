@@ -30,7 +30,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -48,7 +47,7 @@ class InheritsDefaultPermissionsJDBCFunction extends CliFunction<String> {
 }
 
 
-@Category({IntegrationTest.class, SecurityException.class})
+@Category({SecurityException.class})
 public class JDBCConnectorFunctionsSecurityTest {
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()

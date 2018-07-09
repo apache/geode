@@ -17,9 +17,8 @@ package org.apache.geode.codeAnalysis;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class AnalyzeCQSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
 
   @Override

@@ -48,7 +48,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.CacheFactory;
@@ -56,13 +55,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test ReadOnly operations are accesible from RMI Connector with readOnly user
  *
  */
-@Category(IntegrationTest.class)
 public class ReadOpFileAccessControllerJUnitTest {
 
   private GemFireCacheImpl cache = null;

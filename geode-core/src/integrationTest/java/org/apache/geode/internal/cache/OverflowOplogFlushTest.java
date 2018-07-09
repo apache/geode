@@ -27,18 +27,15 @@ import java.nio.channels.FileChannel;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Testing recovery from failures writing OverflowOplog entries
  */
-@Category(IntegrationTest.class)
 public class OverflowOplogFlushTest extends DiskRegionTestingBase {
 
   @Rule

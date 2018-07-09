@@ -22,12 +22,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.TXExpirationIntegrationTest;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Extends {@link TXExpirationIntegrationTest} with "distributed-transactions" enabled.
  */
-@Category({IntegrationTest.class, DistributedTransactionsTest.class})
+@Category({DistributedTransactionsTest.class})
 public class DistributedTXExpirationIntegrationTest extends TXExpirationIntegrationTest {
 
   @Override

@@ -27,7 +27,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -39,13 +38,11 @@ import org.apache.geode.management.internal.cli.result.TableBuilder.Row;
 import org.apache.geode.management.internal.cli.result.TableBuilder.RowGroup;
 import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
 import org.apache.geode.management.internal.cli.result.TableBuilderHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Testing TableBuilder and TableBuilderHelper using mocks for Gfsh
  *
  */
-@Category(IntegrationTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.IntegrationTest")
 @PrepareForTest(TableBuilderHelper.class)

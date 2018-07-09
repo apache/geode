@@ -27,7 +27,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -37,7 +36,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test to verify that each bridge sever creates its own client_messages_region at its start and
@@ -45,7 +43,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 5.7
  */
-@Category(IntegrationTest.class)
 public class ClientMessagesRegionCreationAndDestroyJUnitTest {
 
   /** The cache instance */

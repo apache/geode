@@ -25,12 +25,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, PulseTest.class})
+@Category({PulseTest.class})
 public class PulseDataExportTest {
 
   @Rule

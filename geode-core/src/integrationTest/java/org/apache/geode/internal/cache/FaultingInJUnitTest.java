@@ -19,15 +19,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests faulting in from current oplog, old oplog and htree for different modes (overflow only,
  * persist+overflow : Sync/Async)
  */
-@Category(IntegrationTest.class)
 public class FaultingInJUnitTest extends DiskRegionTestingBase {
 
   private volatile boolean hasBeenNotified;

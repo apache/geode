@@ -21,7 +21,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -31,7 +30,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  *
  *
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class PRInvalidQueryJUnitTest {
   String regionName = "Portfolios";
 

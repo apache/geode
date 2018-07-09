@@ -18,21 +18,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.TransactionEvent;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
 import org.apache.geode.internal.SystemFailureTestHook;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Extracted from TXWriterJUnitTest. The OOME is problematic and causes the test suite to fail due
  * to suspect strings from SystemFailure Watchdog sending output to STDERR.
  *
  */
-@Category(IntegrationTest.class)
 public class TXWriterOOMEJUnitTest extends TXWriterTestCase {
 
   @Test

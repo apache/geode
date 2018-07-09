@@ -24,19 +24,16 @@ import java.io.FileNotFoundException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.process.io.IntegerFileWriter;
 import org.apache.geode.internal.process.lang.AvailablePid;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Functional integration tests for {@link PidFile}.
  *
  * @since GemFire 8.2
  */
-@Category(IntegrationTest.class)
 public class PidFileIntegrationTest {
 
   private File directory;

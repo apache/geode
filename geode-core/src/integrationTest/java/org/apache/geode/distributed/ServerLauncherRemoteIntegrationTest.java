@@ -28,20 +28,17 @@ import java.net.InetAddress;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessControllerFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@code ServerLauncher} as an application main in a forked JVM.
  *
  * @since GemFire 8.0
  */
-@Category(IntegrationTest.class)
 public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteIntegrationTestCase {
 
   @Before

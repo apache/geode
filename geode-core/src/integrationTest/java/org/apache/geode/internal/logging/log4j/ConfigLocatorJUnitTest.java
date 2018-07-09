@@ -31,17 +31,14 @@ import java.util.Set;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * UnitTest for ConfigLocator which is used to find the Log4J 2 configuration file.
  *
  * @since GemFire 8.2
  */
-@Category(IntegrationTest.class)
 public class ConfigLocatorJUnitTest {
 
   private static Set<String> suffixesNotFoundTested = new HashSet<String>();

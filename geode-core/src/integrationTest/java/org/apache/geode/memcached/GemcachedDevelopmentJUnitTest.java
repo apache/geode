@@ -43,9 +43,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class GemcachedDevelopmentJUnitTest {
 
   private static final Logger logger =

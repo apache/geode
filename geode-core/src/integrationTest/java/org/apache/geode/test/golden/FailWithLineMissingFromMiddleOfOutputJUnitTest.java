@@ -18,16 +18,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.process.ProcessWrapper;
 
 /**
  * Verifies that test output missing an expected line (at the middle of the golden file) will fail
  * with that line as the failure message.
  */
-@Category(IntegrationTest.class)
 public class FailWithLineMissingFromMiddleOfOutputJUnitTest extends FailOutputTestCase {
 
   @Override

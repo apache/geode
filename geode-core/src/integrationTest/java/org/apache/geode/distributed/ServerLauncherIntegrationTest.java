@@ -34,7 +34,6 @@ import java.util.Properties;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
@@ -42,12 +41,10 @@ import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
  */
-@Category(IntegrationTest.class)
 public class ServerLauncherIntegrationTest {
 
   private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");

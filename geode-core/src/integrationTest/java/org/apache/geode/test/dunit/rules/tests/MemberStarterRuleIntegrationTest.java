@@ -19,16 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
 public class MemberStarterRuleIntegrationTest {
 
 

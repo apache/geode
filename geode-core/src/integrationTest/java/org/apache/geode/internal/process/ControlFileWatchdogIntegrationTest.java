@@ -28,17 +28,14 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Functional integration tests for {@link ControlFileWatchdog}.
  */
-@Category(IntegrationTest.class)
 public class ControlFileWatchdogIntegrationTest {
 
   private static final int TEN_MINUTES_MILLIS = 10 * 60 * 1000;

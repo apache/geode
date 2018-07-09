@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Region;
@@ -28,13 +27,11 @@ import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region Perf test for Overflow only with ASync writes. 1) Performance of Put operation
  * causing an eviction. 2) Performance of Get operation for entry which will fault in.
  */
-@Category(IntegrationTest.class)
 public class DiskRegOverflowAsyncJUnitPerformanceTest extends DiskRegionTestingBase {
 
   private static int ENTRY_SIZE = 1024 * 5;

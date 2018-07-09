@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.CacheFactory;
@@ -43,13 +42,11 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.statistics.HostStatSampler;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * IntegrationTests for AutoBalancer that include usage of Cache, StatSampler and
  * DistributedLockService.
  */
-@Category(IntegrationTest.class)
 public class AutoBalancerIntegrationJUnitTest {
 
   private static final int TIMEOUT_SECONDS = 5;

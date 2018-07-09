@@ -24,12 +24,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class GfshConfigInitFileJUnitTest {
 
   private static final String INIT_FILE_NAME = GfshConfig.DEFAULT_INIT_FILE_NAME;

@@ -36,14 +36,13 @@ import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.logging.log4j.Configurator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Integration tests for LogService and how it configures and uses log4j2
  *
  */
-@Category({IntegrationTest.class, LoggingTest.class})
+@Category({LoggingTest.class})
 public class LogServiceIntegrationJUnitTest {
 
   private static final String DEFAULT_CONFIG_FILE_NAME = "log4j2.xml";

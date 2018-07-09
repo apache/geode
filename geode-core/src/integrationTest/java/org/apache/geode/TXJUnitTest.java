@@ -41,7 +41,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -101,14 +100,12 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests basic transaction functionality
  *
  * @since GemFire 4.0
  */
-@Category(IntegrationTest.class)
 @SuppressWarnings("deprecated")
 public class TXJUnitTest {
 

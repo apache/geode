@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
@@ -37,7 +36,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -48,7 +46,6 @@ import org.apache.geode.util.test.TestUtil;
  *
  * @since GemFire 5.1
  */
-@Category(IntegrationTest.class)
 public class DiskRegCacheXmlJUnitTest {
 
   private Cache cache = null;

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -37,9 +36,7 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class MapInterfaceJUnitTest {
 
   protected boolean hasBeenNotified = false;

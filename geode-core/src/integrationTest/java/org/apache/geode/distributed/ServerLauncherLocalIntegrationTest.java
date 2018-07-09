@@ -32,7 +32,6 @@ import java.net.InetAddress;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ServerLauncher.Builder;
@@ -40,14 +39,12 @@ import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessType;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
  *
  * @since GemFire 8.0
  */
-@Category(IntegrationTest.class)
 public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalIntegrationTestCase {
 
   @Before

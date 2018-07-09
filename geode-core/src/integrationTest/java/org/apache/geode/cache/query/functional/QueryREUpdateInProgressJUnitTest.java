@@ -39,7 +39,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -49,7 +48,10 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  *
  *
  */
-@Category({IntegrationTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class}) // GEODE-1059: uses
+                                                 // PRQueryHelper which
+                                                 // launches
+// dunit vms in IntegrationTest
 public class QueryREUpdateInProgressJUnitTest {
 
   private static final String exampleRegionName = "exampleRegion2";

@@ -36,10 +36,9 @@ import org.apache.geode.cache.query.data.Address;
 import org.apache.geode.cache.query.data.Employee;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class QueryUtilsJUnitTest {
 
   private Region region;

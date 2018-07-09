@@ -25,7 +25,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -40,10 +39,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
 public class PartitionedRegionAttributesMutatorTest {
   private static final String TEST_REGION_NAME = "testRegion";
   private static final int DEFAULT_WAIT_DURATION = 5;

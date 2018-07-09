@@ -28,13 +28,10 @@ import net.spy.memcached.MemcachedClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class DomainObjectsAsValuesJUnitTest {
 
   private int PORT;

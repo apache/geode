@@ -30,9 +30,8 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class FilterProfileIntegrationJUnitTest {
 
   private static String regionName = "test";

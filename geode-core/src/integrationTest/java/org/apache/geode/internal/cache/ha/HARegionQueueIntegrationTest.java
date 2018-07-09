@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -73,13 +72,11 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"javax.script.*", "javax.management.*", "org.springframework.shell.event.*",
     "org.springframework.shell.core.*", "*.IntegrationTest"})
 @PrepareForTest({CacheClientNotifier.class})
-@Category(IntegrationTest.class)
 public class HARegionQueueIntegrationTest {
 
   private Cache cache;

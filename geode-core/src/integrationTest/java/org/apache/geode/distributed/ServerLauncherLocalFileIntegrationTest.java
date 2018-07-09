@@ -17,10 +17,8 @@ package org.apache.geode.distributed;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.ProcessControllerFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
@@ -30,7 +28,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 8.0
  */
-@Category(IntegrationTest.class)
 public class ServerLauncherLocalFileIntegrationTest extends ServerLauncherLocalIntegrationTest {
 
   @Before

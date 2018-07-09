@@ -69,7 +69,6 @@ import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -78,7 +77,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  *
  * @since GemFire 2.1
  */
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class InternalDistributedSystemJUnitTest {
 
   /**

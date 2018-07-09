@@ -54,14 +54,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import org.apache.geode.modules.session.junit.PerTestClassLoaderRunner;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SessionTest;
 
 /**
  * In-container testing using Jetty. This allows us to test context listener events as well as
  * dispatching actions.
  */
-@Category({IntegrationTest.class, SessionTest.class})
+@Category({SessionTest.class})
 @RunWith(PerTestClassLoaderRunner.class)
 @SuppressWarnings("unchecked")
 public class SessionReplicationIntegrationJUnitTest {

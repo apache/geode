@@ -35,13 +35,10 @@ import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class AvailablePortHelperIntegrationTest {
 

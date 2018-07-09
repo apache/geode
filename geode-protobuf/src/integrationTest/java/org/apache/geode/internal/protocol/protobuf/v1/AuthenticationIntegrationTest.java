@@ -47,7 +47,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Security seems to have a few possible setups: * Manual SecurityManager set: integrated security *
@@ -55,7 +54,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * or client auth enabled: we call this incompatible with our auth. - with neither enabled: this is
  * what we call "security off". Don't auth at all.
  */
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class AuthenticationIntegrationTest {
 
   private static final String TEST_USERNAME = "bob";

@@ -23,18 +23,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * The test will verify <br>
  * 1. Multiple oplogs are being rolled at once <br>
  * 2. The Number of entries getting logged to the HTree are taking care of creation
  */
-@Category(IntegrationTest.class)
 public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase {
 
   private volatile boolean FLAG = false;

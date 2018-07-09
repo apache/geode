@@ -26,16 +26,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Functional integration tests for {@link NativeProcessUtils}.
  */
-@Category(IntegrationTest.class)
 public class NativeProcessUtilsIntegrationTest {
 
   /** Max sleep timeout for {@link ProcessSleeps} */

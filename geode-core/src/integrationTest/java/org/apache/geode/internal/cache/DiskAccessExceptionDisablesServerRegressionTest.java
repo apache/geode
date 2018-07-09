@@ -23,7 +23,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
@@ -34,7 +33,6 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a bugtest for bug 37500.
@@ -79,7 +77,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *     at java.lang.Thread.run(Thread.java:595)
  * </pre>
  */
-@Category(IntegrationTest.class)
 public class DiskAccessExceptionDisablesServerRegressionTest {
 
   private static final int MAX_OPLOG_SIZE = 1000;

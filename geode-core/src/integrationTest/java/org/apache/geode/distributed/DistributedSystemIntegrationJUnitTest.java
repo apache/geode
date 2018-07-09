@@ -28,13 +28,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Integration tests for DistributedSystem class. These tests require file system I/O.
  */
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class DistributedSystemIntegrationJUnitTest {
 
   @Rule

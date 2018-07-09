@@ -30,7 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -45,7 +44,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.EvictionList;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a test verifies region is LIFO enabled by ENTRY COUNT verifies correct stats updating and
@@ -53,7 +51,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 5.7
  */
-@Category(IntegrationTest.class)
 public class LIFOEvictionAlgoEnabledRegionJUnitTest {
 
   /** The cache instance */

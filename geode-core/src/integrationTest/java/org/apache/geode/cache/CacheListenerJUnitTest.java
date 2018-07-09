@@ -28,14 +28,12 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.RegionMembershipListenerAdapter;
 import org.apache.geode.cache.util.RegionRoleListenerAdapter;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for basic CacheListener feature. NOTE: these tests using a loner DistributedSystem and
@@ -44,7 +42,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 5.0
  */
-@Category(IntegrationTest.class)
 public class CacheListenerJUnitTest {
 
   private DistributedSystem ds;

@@ -27,7 +27,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -36,7 +35,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * AFTER_REGION_CREATE was being sent before region initialization (bug 33726). Test to verify that
@@ -45,7 +43,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * TRAC #33726: afterRegionCreate event delivered before region initialization occurs
  */
-@Category(IntegrationTest.class)
 public class AfterRegionCreateNotBeforeRegionInitRegressionTest {
 
   private Cache cache;

@@ -31,9 +31,8 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class FunctionScannerTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

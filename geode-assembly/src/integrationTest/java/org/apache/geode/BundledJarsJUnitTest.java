@@ -33,11 +33,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({IntegrationTest.class, RestAPITest.class})
+@Category({RestAPITest.class})
 public class BundledJarsJUnitTest {
 
   private static final String VERSION_PATTERN = "[0-9-_.v]{3,}.*\\.jar$";

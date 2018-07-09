@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
@@ -36,7 +35,6 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
@@ -68,7 +66,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  *     at com.gemstone.gemfire.internal.cache.AbstractRegion.put(AbstractRegion.java:122)
  * </pre>
  */
-@Category(IntegrationTest.class)
 public class OplogTooManyFilesOpenRegressionTest {
 
   private static final int VALUE_SIZE = 1024;

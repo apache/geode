@@ -43,10 +43,9 @@ import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SnapshotTest;
 
-@Category({IntegrationTest.class, SnapshotTest.class})
+@Category({SnapshotTest.class})
 public class RegionSnapshotJUnitTest extends SnapshotTestCase {
   private File snapshotFile;
 

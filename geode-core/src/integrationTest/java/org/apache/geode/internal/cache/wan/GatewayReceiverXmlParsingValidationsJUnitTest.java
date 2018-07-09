@@ -44,14 +44,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
 @RunWith(PowerMockRunner.class)
-@Category({IntegrationTest.class, WanTest.class})
+@Category({WanTest.class})
 @PrepareForTest(WANServiceProvider.class)
 @PowerMockRunnerDelegate(Parameterized.class)
 @PowerMockIgnore({"javax.management.*", "javax.security.*", "*.IntegrationTest"})

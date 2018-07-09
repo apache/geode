@@ -38,7 +38,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -47,7 +46,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  *           used. Different variation of hashset variables are passed to the function to check for
  *           errors.
  */
-@Category({IntegrationTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class QueryWithBucketParameterIntegrationTest {
   DefaultQuery queryExecutor;
   LocalDataSet lds;

@@ -29,14 +29,11 @@ import java.util.concurrent.Future;
 
 import net.spy.memcached.MemcachedClient;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class IntegrationJUnitTest {
 
   @Test

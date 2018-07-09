@@ -27,16 +27,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.process.io.IntegerFileWriter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Functional integration tests for {@link ProcessControllerFactory}.
  */
-@Category(IntegrationTest.class)
 public class ProcessControllerFactoryIntegrationTest {
 
   private ProcessControllerFactory factory;

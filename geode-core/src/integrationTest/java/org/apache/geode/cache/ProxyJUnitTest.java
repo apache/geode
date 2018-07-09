@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for basic DataPolicy.EMPTY feature. NOTE: these tests using a loner DistributedSystem
@@ -49,7 +48,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 5.0
  */
-@Category(IntegrationTest.class)
 public class ProxyJUnitTest {
 
   private DistributedSystem ds;

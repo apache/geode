@@ -38,7 +38,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.control.RebalanceFactory;
@@ -57,12 +56,10 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * UnitTests for AutoBalancer. All collaborators should be mocked.
  */
-@Category(IntegrationTest.class)
 public class AutoBalancerJUnitTest {
   Mockery mockContext;
 

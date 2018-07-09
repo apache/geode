@@ -30,13 +30,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class PartitionedRegionSerializableObjectJUnitTest {
 
   private String regionName = "SerizableRegion";

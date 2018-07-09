@@ -22,12 +22,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({IntegrationTest.class, GfshTest.class, SecurityTest.class})
+@Category({GfshTest.class, SecurityTest.class})
 public class ConnectCommandWithSecurityTest {
 
   @ClassRule

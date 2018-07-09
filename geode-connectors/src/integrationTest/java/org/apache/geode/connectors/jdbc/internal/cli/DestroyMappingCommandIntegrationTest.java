@@ -28,10 +28,9 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 
-@Category({IntegrationTest.class, JDBCConnectorTest.class})
+@Category({JDBCConnectorTest.class})
 public class DestroyMappingCommandIntegrationTest {
 
   private String regionName;

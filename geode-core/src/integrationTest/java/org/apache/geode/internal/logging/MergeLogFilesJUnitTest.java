@@ -40,7 +40,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -48,7 +47,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  *
  *
  */
-@Category({IntegrationTest.class, LoggingTest.class})
+@Category({LoggingTest.class})
 public class MergeLogFilesJUnitTest {
 
   //////// Test Methods

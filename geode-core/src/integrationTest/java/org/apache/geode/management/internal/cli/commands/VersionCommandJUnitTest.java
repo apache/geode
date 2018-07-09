@@ -35,11 +35,10 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({IntegrationTest.class, GfshTest.class})
+@Category({GfshTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class VersionCommandJUnitTest {
   private static final String[] EXPECTED_FULL_DATA =

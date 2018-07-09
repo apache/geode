@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -46,12 +45,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * junit test for suspend and resume methods
  */
-@Category(IntegrationTest.class)
 public class TXManagerImplJUnitTest {
 
   @Rule

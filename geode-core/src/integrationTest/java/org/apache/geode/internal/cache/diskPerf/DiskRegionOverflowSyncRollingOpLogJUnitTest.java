@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.diskPerf;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Region;
@@ -30,7 +29,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * 1) Performance of Get Operation for Entry faulting in from current Op Log 2) Performance of Get
@@ -38,7 +36,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * faulting in from H Tree
  *
  */
-@Category(IntegrationTest.class)
 public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTestingBase {
 
   LogWriter log = null;

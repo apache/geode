@@ -75,10 +75,9 @@ import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @SuppressWarnings("deprecation")
-@Category({IntegrationTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class AutoConnectionSourceImplJUnitTest {
 
   private Cache cache;

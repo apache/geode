@@ -20,21 +20,18 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.DiskRegionHelperFactory;
 import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Consolidated Disk Region Perftest. Overflow, Persist, OverflowWithPersist modes are tested for
  * Sync, AsyncWithBuffer and AsyncWithoutBufer writes. Roling oplog is set to true with maxOplogSize
  * = 20 mb
  */
-@Category(IntegrationTest.class)
 public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBase {
 
   private DiskRegionProperties diskProps = new DiskRegionProperties();

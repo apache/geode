@@ -30,13 +30,12 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Run the basic transaction functionality tests in TXJUnitTest after setting
  * "distributed-transactions" property to true
  */
-@Category({IntegrationTest.class, DistributedTransactionsTest.class})
+@Category({DistributedTransactionsTest.class})
 public class DistTXJUnitTest extends TXJUnitTest {
 
   @Override

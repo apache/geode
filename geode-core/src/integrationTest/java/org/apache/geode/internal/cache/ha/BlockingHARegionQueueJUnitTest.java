@@ -27,13 +27,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test runs all tests of HARegionQueueJUnitTest using BlockingHARegionQueue instead of
  * HARegionQueue.
  */
-@Category({IntegrationTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class BlockingHARegionQueueJUnitTest extends HARegionQueueJUnitTest {
 
   @Override

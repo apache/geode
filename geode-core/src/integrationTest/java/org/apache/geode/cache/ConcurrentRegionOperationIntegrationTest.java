@@ -27,7 +27,6 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -36,9 +35,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class ConcurrentRegionOperationIntegrationTest {
 
   private Cache cache;

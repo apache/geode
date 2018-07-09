@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.DiskStore;
@@ -31,12 +30,10 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Miscellaneous disk tests
  */
-@Category(IntegrationTest.class)
 public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBase {
 
   private static File[] dirs1 = null;

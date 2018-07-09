@@ -44,10 +44,9 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class TcpServerJUnitTest {
 
   private/* GemStoneAddition */ InetAddress localhost;

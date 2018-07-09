@@ -37,10 +37,9 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
-@Category({IntegrationTest.class, StatisticsTest.class})
+@Category({StatisticsTest.class})
 public class FileSizeLimitIntegrationTest {
 
   private static final long FILE_SIZE_LIMIT = 1;

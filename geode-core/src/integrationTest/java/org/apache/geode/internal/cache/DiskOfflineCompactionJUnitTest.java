@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -43,12 +42,10 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests offline compaction
  */
-@Category(IntegrationTest.class)
 public class DiskOfflineCompactionJUnitTest {
 
   // In this test, entry version, region version, member id, each will be 1 byte

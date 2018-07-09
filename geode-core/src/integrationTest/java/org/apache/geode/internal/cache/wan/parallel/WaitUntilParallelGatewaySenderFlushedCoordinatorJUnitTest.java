@@ -38,10 +38,9 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinatorJUnitTest;
 import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySenderFlushedCoordinator.WaitUntilBucketRegionQueueFlushedCallable;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({IntegrationTest.class, WanTest.class})
+@Category({WanTest.class})
 public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
     extends WaitUntilGatewaySenderFlushedCoordinatorJUnitTest {
 

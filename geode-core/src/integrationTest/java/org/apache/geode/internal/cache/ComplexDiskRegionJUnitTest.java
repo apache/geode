@@ -18,16 +18,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit testing for ComplexDiskRegion API's
  */
-@Category(IntegrationTest.class)
 public class ComplexDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   private DiskRegionProperties diskProps = new DiskRegionProperties();

@@ -22,7 +22,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -30,12 +29,10 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests memory allocation operations on a PartitionedRegion on a single node.
  */
-@Category(IntegrationTest.class)
 public class PRDataStoreMemoryJUnitTest {
 
   private static DistributedSystem sys;

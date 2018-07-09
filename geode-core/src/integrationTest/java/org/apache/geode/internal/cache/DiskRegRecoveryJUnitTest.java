@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -40,14 +39,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region recovery tests
  *
  * @since GemFire 5.1
  */
-@Category(IntegrationTest.class)
 public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
   private static int EMPTY_RVV_SIZE = 6;

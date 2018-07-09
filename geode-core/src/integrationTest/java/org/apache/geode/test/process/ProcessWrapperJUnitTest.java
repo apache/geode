@@ -18,15 +18,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for ProcessWrapper.
  *
  */
-@Category(IntegrationTest.class)
 public class ProcessWrapperJUnitTest {
 
   private static final String OUTPUT_OF_MAIN = "Executing ProcessWrapperJUnitTest main";

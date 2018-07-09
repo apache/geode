@@ -19,12 +19,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.lang.AttachAPINotFoundException;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for using {@code LocatorLauncher} as an application main in a forked JVM
@@ -35,7 +33,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 8.0
  */
-@Category(IntegrationTest.class)
 public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRemoteIntegrationTest {
 
   @Before

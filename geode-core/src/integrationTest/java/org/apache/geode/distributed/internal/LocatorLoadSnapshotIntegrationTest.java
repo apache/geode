@@ -27,13 +27,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Integration tests extracted from LocatorLoadSnapshotJUnitTest
  */
-@Category({IntegrationTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class LocatorLoadSnapshotIntegrationTest {
 
   /**

@@ -25,20 +25,17 @@ import java.io.PrintWriter;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test is for testing Disk attributes set programmatically The generated cacheXml is used to
  * create a cache and the region properties retested.
  */
-@Category(IntegrationTest.class)
 public class DiskRegCachexmlGeneratorJUnitTest extends DiskRegionTestingBase {
 
   private DiskRegionProperties[] diskRegionProperties = new DiskRegionProperties[12];

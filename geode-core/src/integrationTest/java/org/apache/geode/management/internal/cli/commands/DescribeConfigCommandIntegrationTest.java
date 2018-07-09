@@ -21,12 +21,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.ConfigurationTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({IntegrationTest.class, ConfigurationTest.class})
+@Category({ConfigurationTest.class})
 public class DescribeConfigCommandIntegrationTest {
   private static final String[] EXPECTED_BASE_CONFIGURATION_DATA = {"Configuration of member :",
       "JVM command line arguments", "GemFire properties defined using the API"};

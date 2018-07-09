@@ -23,7 +23,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -37,9 +36,7 @@ import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeapObjectKey;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeapStringKey1;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeapStringKey2;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeapUUIDKey;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
 public class InlineKeyJUnitTest {
   private GemFireCacheImpl createCache() {
     Properties props = new Properties();

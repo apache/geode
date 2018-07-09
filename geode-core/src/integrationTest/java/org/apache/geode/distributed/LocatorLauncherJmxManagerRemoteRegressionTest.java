@@ -21,9 +21,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Regression tests for stopping a JMX Manager process launched with {@link LocatorLauncher}.
@@ -34,7 +32,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * <p>
  * Refactored from LocatorLauncherAssemblyIntegrationTest which used to be in geode-assembly.
  */
-@Category(IntegrationTest.class)
 public class LocatorLauncherJmxManagerRemoteRegressionTest
     extends LocatorLauncherRemoteIntegrationTestCase {
 

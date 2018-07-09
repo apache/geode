@@ -19,13 +19,12 @@ import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * This class contains tests of lucene queries that can fit
  */
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneQueriesWithReindexFlagEnabledIntegrationTest
     extends LuceneQueriesIntegrationTest {
 

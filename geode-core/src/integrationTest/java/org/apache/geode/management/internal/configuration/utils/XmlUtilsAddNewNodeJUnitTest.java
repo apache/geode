@@ -28,7 +28,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,7 +41,6 @@ import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit tests for {@link XmlUtils#addNewNode(Document, XmlEntity)} and
@@ -55,7 +53,6 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * @since GemFire 8.1
  */
-@Category(IntegrationTest.class)
 public class XmlUtilsAddNewNodeJUnitTest {
 
   private static final String TEST_PREFIX = "test";
