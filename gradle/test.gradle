@@ -84,7 +84,21 @@ subprojects {
     }
   }
 
+  sourceSets {
+    integrationTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/integrationTest/java')
+      }
+      resources.srcDir file('src/integrationTest/resources')
+    }
+  }
+
   task integrationTest(type:Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
