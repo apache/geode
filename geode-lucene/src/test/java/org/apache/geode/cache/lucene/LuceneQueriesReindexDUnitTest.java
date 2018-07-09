@@ -218,28 +218,26 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
     // if one thread is still alive after 10 seconds, assert that they other thread throws
     // an exception and then try to create the same index on the
-    // other datastore to unblock the thread.
+    // other datastore to unblock the thread and wait for the thread to finish
     if (ai1.isAlive()) {
       assertThat(ai2.getException() instanceof UnsupportedOperationException).isTrue();
       dataStore2.invoke(() -> {
         createIndex("text");
       });
+      ai1.await();
     }
-    if (ai2.isAlive()) {
+    else if (ai2.isAlive()) {
       assertThat(ai1.getException() instanceof UnsupportedOperationException).isTrue();
       dataStore1.invoke(() -> {
         createIndex("text2");
       });
+      ai2.await();
     }
     // if both threads finished already, assert that both threads throw exception
     else {
       assertThat(ai1.getException() instanceof UnsupportedOperationException).isTrue();
       assertThat(ai2.getException() instanceof UnsupportedOperationException).isTrue();
     }
-
-    // wait again for at most 60 seconds for threads to die.
-    ai1.join(60_000);
-    ai2.join(60_000);
   }
 
   @Test
