@@ -1,4 +1,5 @@
 import org.apache.geode.gradle.TestPropertiesWriter
+import org.apache.geode.gradle.RepeatTest
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -130,6 +131,14 @@ subprojects {
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
     forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
+  task repeatTest(type:RepeatTest) {
+    times= Integer.parseInt(repeat)
+
+    useJUnit {}
+
     outputs.upToDateWhen{false}
   }
 
@@ -417,6 +426,6 @@ subprojects {
 
   check.dependsOn checkMissedTests
 
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest].each {it.finalizedBy combineReports}
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest, repeatTest
+  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest, repeatTest].each {it.finalizedBy combineReports}
 }
