@@ -19,8 +19,6 @@ import org.apache.geode.internal.admin.remote.AdminResponse;
 
 /**
  * The response to the {@link FlushToDiskRequest}
- *
- *
  */
 public class FlushToDiskResponse extends AdminResponse {
 
@@ -28,10 +26,11 @@ public class FlushToDiskResponse extends AdminResponse {
     super();
   }
 
-  public FlushToDiskResponse(InternalDistributedMember sender) {
-    this.setRecipient(sender);
+  FlushToDiskResponse(InternalDistributedMember sender) {
+    setRecipient(sender);
   }
 
+  @Override
   public int getDSFID() {
     return FLUSH_TO_DISK_RESPONSE;
   }

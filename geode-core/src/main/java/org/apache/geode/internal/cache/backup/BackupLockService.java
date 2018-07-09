@@ -38,8 +38,7 @@ public class BackupLockService {
   }
 
   private DistributedLockService getLockService(DistributionManager dm) {
-    DistributedLockService dls = DistributedLockService.getServiceNamed(
-        LOCK_SERVICE_NAME);
+    DistributedLockService dls = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
     if (dls == null) {
       synchronized (LOCK_SYNC) {
         dls = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);

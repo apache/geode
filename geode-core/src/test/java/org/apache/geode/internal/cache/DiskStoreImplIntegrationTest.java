@@ -77,7 +77,7 @@ public class DiskStoreImplIntegrationTest {
     List<Path> tempDirs = new ArrayList<>();
     for (File diskDir : diskStore.getDiskDirs()) {
       Path tempDir =
-          diskDir.toPath().resolve(BackupService.DATA_STORES_TEMPORARY_DIRECTORY + "testing");
+          diskDir.toPath().resolve(BackupService.TEMPORARY_DIRECTORY_FOR_BACKUPS + "testing");
       Files.createDirectories(tempDir);
       tempDirs.add(tempDir);
     }
