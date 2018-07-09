@@ -1584,7 +1584,7 @@ public class DistributionAdvisor {
      *
      * @since GemFire 5.1
      */
-    private synchronized void forceNewMembershipVersion() {
+    synchronized void forceNewMembershipVersion() {
       if (!closed) {
         incrementMembershipVersion();
         previousVersionOpCount += currentVersionOpCount;
@@ -1602,7 +1602,7 @@ public class DistributionAdvisor {
      * @return the current membership version for this advisor
      * @since GemFire 5.1
      */
-    private synchronized long startOperation() {
+    synchronized long startOperation() {
       logNewOperation();
       currentVersionOpCount++;
       return membershipVersion;
@@ -1615,7 +1615,7 @@ public class DistributionAdvisor {
      * @param version The membership version returned by startOperation
      * @since GemFire 5.1
      */
-    private synchronized void endOperation(long version) {
+    synchronized void endOperation(long version) {
       if (version == membershipVersion) {
         currentVersionOpCount--;
         logEndOperation(true);
@@ -1631,14 +1631,14 @@ public class DistributionAdvisor {
      *
      * @since GemFire 5.1
      */
-    private void waitForCurrentOperations() {
+    void waitForCurrentOperations() {
       long timeout =
           1000L * distributionAdvisor.getDistributionManager().getSystem().getConfig()
               .getAckWaitThreshold();
       waitForCurrentOperations(logger, timeout, timeout * 2L);
     }
 
-    private void waitForCurrentOperations(Logger alertLogger, long warnMS, long severeAlertMS) {
+    void waitForCurrentOperations(Logger alertLogger, long warnMS, long severeAlertMS) {
       // this may wait longer than it should if the membership version changes, dumping
       // more operations into the previousVersionOpCount
       final long startTime = System.currentTimeMillis();
@@ -1646,17 +1646,7 @@ public class DistributionAdvisor {
       final long severeAlertTime = startTime + severeAlertMS;
       boolean warned = false;
       boolean severeAlertIssued = false;
-      while (true) {
-        long opCount;
-        synchronized (this) {
-          opCount = this.previousVersionOpCount;
-        }
-        if (opCount <= 0) {
-          if (warned) {
-            alertLogger.info("Wait for current operations completed");
-          }
-          break;
-        }
+      while (operationsAreInProgress()) {
         // The advisor's close() method will set the pVOC to zero. This loop
         // must not terminate due to cache closure until that happens.
         try {
@@ -1673,20 +1663,25 @@ public class DistributionAdvisor {
           severeAlertIssued = true;
         }
       }
-    }
-
-    private void initNewProfile(Profile newProfile) {
-      membershipVersion++;
-      newProfile.initialMembershipVersion = membershipVersion;
-      synchronized (this) {
-        previousVersionOpCount =
-            previousVersionOpCount + currentVersionOpCount;
-        currentVersionOpCount = 0;
-        membershipVersionChanged();
+      if (warned) {
+        alertLogger.info("Wait for current operations completed");
       }
     }
 
-    private synchronized void close() {
+    synchronized boolean operationsAreInProgress() {
+      return previousVersionOpCount > 0;
+    }
+
+    synchronized void initNewProfile(Profile newProfile) {
+      membershipVersion++;
+      newProfile.initialMembershipVersion = membershipVersion;
+      previousVersionOpCount =
+          previousVersionOpCount + currentVersionOpCount;
+      currentVersionOpCount = 0;
+      membershipVersionChanged();
+    }
+
+    synchronized void close() {
       previousVersionOpCount = 0;
       currentVersionOpCount = 0;
       closed = true;
