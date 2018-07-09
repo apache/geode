@@ -31,6 +31,11 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
 
   public static final String UNAUTHORIZED_STRING = "Unauthorized access to method: ";
 
+  protected static final HashMap<String, Set> DEFAULT_WHITELIST;
+  static {
+    DEFAULT_WHITELIST = createWhiteList();
+  }
+
   private SecurityService securityService;
 
   // List of methods that can be invoked by
@@ -39,10 +44,10 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
 
   public RestrictedMethodInvocationAuthorizer(SecurityService securityService) {
     this.securityService = securityService;
-    whiteListedMethodsToClass = createWhiteList();
+    whiteListedMethodsToClass = DEFAULT_WHITELIST;
   }
 
-  private HashMap<String, Set> createWhiteList() {
+  private static HashMap<String, Set> createWhiteList() {
     HashMap<String, Set> whiteListMap = new HashMap();
     Set<Class> objectCallers = new HashSet();
     objectCallers.add(Object.class);
@@ -120,6 +125,10 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
     whiteListMap.put("trim", stringCallers);
 
     return whiteListMap;
+  }
+
+  protected HashMap<String, Set> getWhiteList() {
+    return whiteListedMethodsToClass;
   }
 
   boolean isWhitelisted(Method method) {
