@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
@@ -40,6 +41,7 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager.MemberRevocationListener;
+import org.apache.geode.internal.cache.persistence.PersistentStateQueryMessage.PersistentStateQueryReplyProcessor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -80,10 +82,22 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   protected volatile Set<PersistentMemberID> allMembersWaitingFor;
   protected volatile Set<PersistentMemberID> offlineMembersWaitingFor;
 
+  private final PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory;
+
   public PersistenceAdvisorImpl(CacheDistributionAdvisor cacheDistributionAdvisor,
       DistributedLockService distributedLockService, PersistentMemberView persistentMemberView,
       String regionPath, DiskRegionStats diskRegionStats,
       PersistentMemberManager persistentMemberManager) {
+    this(cacheDistributionAdvisor, distributedLockService, persistentMemberView, regionPath,
+        diskRegionStats, persistentMemberManager, new PersistentStateQueryMessageSenderFactory());
+  }
+
+  @TestingOnly
+  PersistenceAdvisorImpl(CacheDistributionAdvisor cacheDistributionAdvisor,
+      DistributedLockService distributedLockService, PersistentMemberView persistentMemberView,
+      String regionPath, DiskRegionStats diskRegionStats,
+      PersistentMemberManager persistentMemberManager,
+      PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory) {
     this.cacheDistributionAdvisor = cacheDistributionAdvisor;
     this.distributedLockService = distributedLockService;
     this.regionPath = regionPath;
@@ -91,6 +105,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     this.diskRegionStats = diskRegionStats;
     profileChangeListener = new ProfileChangeListener();
     this.persistentMemberManager = persistentMemberManager;
+    this.persistentStateQueryMessageSenderFactory = persistentStateQueryMessageSenderFactory;
 
     // Prevent membership changes while we are persisting the membership view online. If we
     // synchronize on something else, we need to be careful about lock ordering because the
@@ -171,9 +186,20 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   @Override
   public PersistentStateQueryResults getMyStateOnMembers(Set<InternalDistributedMember> members)
       throws ReplyException {
-    return PersistentStateQueryMessage.send(members,
-        cacheDistributionAdvisor.getDistributionManager(), regionPath,
-        persistentMemberView.getMyPersistentID(), persistentMemberView.getMyInitializingID());
+    return fetchPersistentStateQueryResults(members,
+        cacheDistributionAdvisor.getDistributionManager(), persistentMemberView.getMyPersistentID(),
+        persistentMemberView.getMyInitializingID());
+  }
+
+  private PersistentStateQueryResults fetchPersistentStateQueryResults(
+      Set<InternalDistributedMember> members, DistributionManager dm,
+      PersistentMemberID persistentMemberID, PersistentMemberID initializingMemberId) {
+    PersistentStateQueryReplyProcessor replyProcessor = persistentStateQueryMessageSenderFactory
+        .createPersistentStateQueryReplyProcessor(dm, members);
+    PersistentStateQueryMessage message =
+        persistentStateQueryMessageSenderFactory.createPersistentStateQueryMessage(regionPath,
+            persistentMemberID, initializingMemberId, replyProcessor.getProcessorId());
+    return message.send(members, dm, replyProcessor);
   }
 
   /**
@@ -471,10 +497,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     persistenceAdvisorObserver.observe(regionPath);
 
     boolean equal = false;
-    for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : remoteStates.stateOnPeers
+    for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : remoteStates
+        .getStateOnPeers()
         .entrySet()) {
       InternalDistributedMember member = entry.getKey();
-      PersistentMemberID remoteId = remoteStates.persistentIds.get(member);
+      PersistentMemberID remoteId = remoteStates.getPersistentIds().get(member);
 
       final PersistentMemberID myId = getPersistentID();
       PersistentMemberState stateOnPeer = entry.getValue();
@@ -827,9 +854,8 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           cacheDistributionAdvisor.adviseGeneric();
 
       // Fetch the persistent view from all of our peers.
-      PersistentStateQueryResults results = PersistentStateQueryMessage.send(members,
-          cacheDistributionAdvisor.getDistributionManager(), regionPath, myPersistentID,
-          myInitializingId);
+      PersistentStateQueryResults results = fetchPersistentStateQueryResults(members,
+          cacheDistributionAdvisor.getDistributionManager(), myPersistentID, myInitializingId);
 
       // iterate through all of the peers. For each peer: if the guy was previously online according
       // to us, grab its online members and add them to the members to wait for set. We may need to
@@ -838,12 +864,13 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       boolean addedMembers = true;
       while (addedMembers) {
         addedMembers = false;
-        for (Entry<InternalDistributedMember, Set<PersistentMemberID>> entry : results.onlineMemberMap
+        for (Entry<InternalDistributedMember, Set<PersistentMemberID>> entry : results
+            .getOnlineMemberMap()
             .entrySet()) {
           InternalDistributedMember memberId = entry.getKey();
           Set<PersistentMemberID> peersOnlineMembers = entry.getValue();
-          PersistentMemberID persistentID = results.persistentIds.get(memberId);
-          PersistentMemberID initializingID = results.initializingIds.get(memberId);
+          PersistentMemberID persistentID = results.getPersistentIds().get(memberId);
+          PersistentMemberID initializingID = results.getInitializingIds().get(memberId);
           if (membersToWaitFor.contains(persistentID)
               || membersToWaitFor.contains(initializingID)) {
             for (PersistentMemberID peerOnlineMember : peersOnlineMembers) {
@@ -872,12 +899,12 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       }
 
       // For each of our peers, see what our state is according to their view.
-      for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : results.stateOnPeers
-          .entrySet()) {
+      for (Map.Entry<InternalDistributedMember, PersistentMemberState> entry : results
+          .getStateOnPeers().entrySet()) {
         InternalDistributedMember memberId = entry.getKey();
-        PersistentMemberID persistentID = results.persistentIds.get(memberId);
-        PersistentMemberID initializingID = results.initializingIds.get(memberId);
-        DiskStoreID diskStoreID = results.diskStoreIds.get(memberId);
+        PersistentMemberID persistentID = results.getPersistentIds().get(memberId);
+        PersistentMemberID initializingID = results.getInitializingIds().get(memberId);
+        DiskStoreID diskStoreID = results.getDiskStoreIds().get(memberId);
         PersistentMemberState state = entry.getValue();
 
         if (PersistentMemberState.REVOKED.equals(state)) {
@@ -928,7 +955,6 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         }
       }
     }
-
     return membersToWaitFor;
   }
 
