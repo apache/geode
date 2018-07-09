@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -260,13 +261,11 @@ public class ShutdownAllRequest extends AdminRequest {
       }
       if (msg instanceof ShutdownAllResponse) {
         if (((ShutdownAllResponse) msg).isToShutDown()) {
-          if (logger.isDebugEnabled()) {
-            synchronized (results) {
-              logger.debug("{} adding {} to result set {}", this, msg.getSender(),
-                  results);
-            }
+          synchronized (results) {
+            logger.debug("{} adding {} to result set {}", this, msg.getSender(),
+                results);
+            this.results.add(msg.getSender());
           }
-          this.results.add(msg.getSender());
         } else {
           // for member without cache, we will not wait for its result
           // so no need to wait its DS to close either
@@ -291,9 +290,11 @@ public class ShutdownAllRequest extends AdminRequest {
     }
 
     public Set getResults() {
-      logger.debug("{} shutdownAll returning {}", this,
-          results/* , new Exception("stack trace") */);
-      return results;
+      synchronized (results) {
+        logger.debug("{} shutdownAll returning {}", this,
+            results);
+        return new HashSet(results);
+      }
     }
   }
 }
