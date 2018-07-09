@@ -98,9 +98,8 @@ public class AbortBackupStepTest {
 
   @Test
   public void sendReturnsResultsForAllMembers() throws Exception {
-    MemberWithPersistentIds[] ids =
-        new MemberWithPersistentIds[] {new MemberWithPersistentIds(member1, new HashSet<>()),
-            new MemberWithPersistentIds(member2, new HashSet<>())};
+    MemberWithPersistentIds[] ids = new MemberWithPersistentIds[] {
+        createMemberWithPersistentIds(member1), createMemberWithPersistentIds(member2)};
 
     doAnswer(invokeAddToResults(ids)).when(backupReplyProcessor).waitForReplies();
 
@@ -120,7 +119,7 @@ public class AbortBackupStepTest {
 
   @Test
   public void addToResultsShouldShowUpInGetResults() {
-    abortBackupStep.addToResults(member1, new HashSet<>());
+    abortBackupStep.addToResults(member1, createPersistentIds());
     assertThat(abortBackupStep.getResults()).containsOnlyKeys(member1);
   }
 
@@ -169,6 +168,16 @@ public class AbortBackupStepTest {
       }
       return null;
     };
+  }
+
+  private MemberWithPersistentIds createMemberWithPersistentIds(InternalDistributedMember member) {
+    return new MemberWithPersistentIds(member, createPersistentIds());
+  }
+
+  private HashSet<PersistentID> createPersistentIds() {
+    HashSet<PersistentID> persistentIds = new HashSet<>();
+    persistentIds.add(mock(PersistentID.class));
+    return persistentIds;
   }
 
   private static class MemberWithPersistentIds {

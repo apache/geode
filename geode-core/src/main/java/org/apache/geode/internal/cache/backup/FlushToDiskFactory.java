@@ -45,5 +45,4 @@ class FlushToDiskFactory {
       FlushToDiskFactory flushToDiskFactory) {
     return new FlushToDiskStep(dm, member, cache, recipients, flushToDiskFactory);
   }
-
 }

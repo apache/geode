@@ -30,7 +30,8 @@ import org.apache.geode.internal.lang.SystemUtils;
  * Inspects a completed backup and parses the operation log file data from the restore script
  * produced by a previous backup.
  */
-public abstract class BackupInspector {
+abstract class BackupInspector {
+
   /**
    * Maps operation log file names to script lines that copy previously backed up operation log
    * files. These lines will be added to future restore scripts if the operation logs are still
@@ -44,18 +45,13 @@ public abstract class BackupInspector {
   private final Set<String> oplogFileNames = new HashSet<>();
 
   /**
-   * Root directory for a member's backup.
-   */
-  private final File backupDir;
-
-  /**
    * Returns a BackupInspector for a member's backup directory.
    *
    * @param backupDir a member's backup directory.
    * @return a new BackupInspector.
    * @throws IOException the backup directory was malformed.
    */
-  public static BackupInspector createInspector(final File backupDir) throws IOException {
+  static BackupInspector createInspector(final File backupDir) throws IOException {
     if (SystemUtils.isWindows()) {
       return new WindowsBackupInspector(backupDir);
     }
@@ -73,8 +69,6 @@ public abstract class BackupInspector {
     if (!backupDir.exists()) {
       throw new IOException("Backup directory " + backupDir.getAbsolutePath() + " does not exist.");
     }
-
-    this.backupDir = backupDir;
 
     File restoreFile = getRestoreFile(backupDir);
     if (!restoreFile.exists()) {
@@ -103,8 +97,8 @@ public abstract class BackupInspector {
   private void parseRestoreFile(final BufferedReader reader) throws IOException {
     boolean markerFound = false;
 
-    String line = null;
-    while (!markerFound && (null != (line = reader.readLine()))) {
+    String line;
+    while (!markerFound && null != (line = reader.readLine())) {
       markerFound = line.contains(RestoreScript.INCREMENTAL_MARKER_COMMENT);
     }
 
@@ -117,14 +111,7 @@ public abstract class BackupInspector {
    * Returns true if the restore script is incremental.
    */
   public boolean isIncremental() {
-    return !this.oplogFileNames.isEmpty();
-  }
-
-  /**
-   * @return the backup directory being inspected.
-   */
-  public File getBackupDir() {
-    return this.backupDir;
+    return !oplogFileNames.isEmpty();
   }
 
   /**
@@ -132,16 +119,16 @@ public abstract class BackupInspector {
    *
    * @param oplogFileName an operation log file.
    */
-  public String getScriptLineForOplogFile(final String oplogFileName) {
-    return this.oplogLineMap.get(oplogFileName);
+  String getScriptLineForOplogFile(final String oplogFileName) {
+    return oplogLineMap.get(oplogFileName);
   }
 
   /**
    * Returns the set of operation log files copied in the incremental backup section of the restore
    * script.
    */
-  public Set<String> getIncrementalOplogFileNames() {
-    return Collections.unmodifiableSet(this.oplogFileNames);
+  Set<String> getIncrementalOplogFileNames() {
+    return Collections.unmodifiableSet(oplogFileNames);
   }
 
   /**
@@ -149,26 +136,26 @@ public abstract class BackupInspector {
    *
    * @param backupDir a member's backup directory.
    */
-  protected abstract File getRestoreFile(final File backupDir);
+  abstract File getRestoreFile(final File backupDir);
 
   /**
    * Returns the copyTo operation log file path for an operation log file name.
    *
    * @param oplogFileName an operation log file.
    */
-  public abstract String getCopyToForOplogFile(final String oplogFileName);
+  abstract String getCopyToForOplogFile(final String oplogFileName);
 
   /**
    * Returns the copy from operation log file path for an operation log file name.
    *
    * @param oplogFileName an operation log file.
    */
-  public abstract String getCopyFromForOplogFile(final String oplogFileName);
+  abstract String getCopyFromForOplogFile(final String oplogFileName);
 
   /**
    * Parses out operation log data from the incremental backup portion of the restore script.
    *
    * @param reader restore file reader.
    */
-  protected abstract void parseOplogLines(final BufferedReader reader) throws IOException;
+  abstract void parseOplogLines(final BufferedReader reader) throws IOException;
 }

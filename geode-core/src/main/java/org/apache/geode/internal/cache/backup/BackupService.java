@@ -41,41 +41,26 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 public class BackupService {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String DATA_STORES_TEMPORARY_DIRECTORY = "backupTemp_";
+  public static final String TEMPORARY_DIRECTORY_FOR_BACKUPS = "backupTemp_";
+
   private final ExecutorService executor;
   private final MembershipListener membershipListener = new BackupMembershipListener();
   private final InternalCache cache;
+  private final AtomicReference<BackupTask> currentTask = new AtomicReference<>();
 
   private transient Future<HashSet<PersistentID>> taskFuture;
-
-  final AtomicReference<BackupTask> currentTask = new AtomicReference<>();
 
   public BackupService(InternalCache cache) {
     this.cache = cache;
     executor = createExecutor();
   }
 
-  private ExecutorService createExecutor() {
-    LoggingThreadGroup group = LoggingThreadGroup.createThreadGroup("BackupService Thread", logger);
-    ThreadFactory threadFactory = new ThreadFactory() {
-      private final AtomicInteger threadId = new AtomicInteger();
-
-      public Thread newThread(final Runnable command) {
-        Thread thread =
-            new Thread(group, command, "BackupServiceThread" + this.threadId.incrementAndGet());
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    return Executors.newSingleThreadExecutor(threadFactory);
-  }
-
   public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender, BackupWriter writer)
       throws IOException, InterruptedException {
-    validateRequestingAdmin(sender);
+    validateRequestingSender(sender);
     BackupTask backupTask = new BackupTask(cache, writer);
     if (!currentTask.compareAndSet(null, backupTask)) {
-      throw new IOException("Another backup already in progress");
+      throw new IOException("Another backup is already in progress");
     }
     taskFuture = executor.submit(() -> backupTask.backup());
     return backupTask.getPreparedDiskStores();
@@ -111,17 +96,6 @@ public class BackupService {
     return task == null ? null : task.getBackupForDiskStore(diskStore);
   }
 
-  void validateRequestingAdmin(InternalDistributedMember sender) {
-    // We need to watch for pure admin guys that depart. this allMembershipListener set
-    // looks like it should receive those events.
-    Set allIds =
-        cache.getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
-    if (!allIds.contains(sender)) {
-      cleanup();
-      throw new IllegalStateException("The admin member requesting a backup has already departed");
-    }
-  }
-
   public boolean deferDrfDelete(DiskStoreImpl diskStore, Oplog oplog) {
     DiskStoreBackup diskStoreBackup = getBackupForDiskStore(diskStore);
     if (diskStoreBackup != null) {
@@ -138,11 +112,6 @@ public class BackupService {
     return false;
   }
 
-  void cleanup() {
-    cache.getDistributionManager().removeAllMembershipListener(membershipListener);
-    currentTask.set(null);
-  }
-
   public void abortBackup() {
     BackupTask task = currentTask.get();
     cleanup();
@@ -151,7 +120,45 @@ public class BackupService {
     }
   }
 
+  void validateRequestingSender(InternalDistributedMember sender) {
+    // We need to watch for pure admin guys that depart. this allMembershipListener set
+    // looks like it should receive those events.
+    Set allIds =
+        cache.getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
+    if (!allIds.contains(sender)) {
+      cleanup();
+      throw new IllegalStateException("The member requesting a backup has already departed");
+    }
+  }
+
+  void setCurrentTask(BackupTask backupTask) {
+    currentTask.set(backupTask);
+  }
+
+  private ExecutorService createExecutor() {
+    LoggingThreadGroup group = LoggingThreadGroup.createThreadGroup("BackupService Thread", logger);
+    ThreadFactory threadFactory = new ThreadFactory() {
+
+      private final AtomicInteger threadId = new AtomicInteger();
+
+      @Override
+      public Thread newThread(final Runnable command) {
+        Thread thread =
+            new Thread(group, command, "BackupServiceThread" + threadId.incrementAndGet());
+        thread.setDaemon(true);
+        return thread;
+      }
+    };
+    return Executors.newSingleThreadExecutor(threadFactory);
+  }
+
+  private void cleanup() {
+    cache.getDistributionManager().removeAllMembershipListener(membershipListener);
+    currentTask.set(null);
+  }
+
   private class BackupMembershipListener implements MembershipListener {
+
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
@@ -161,19 +168,19 @@ public class BackupService {
     @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {
-      // unused
+      // nothing
     }
 
     @Override
     public void quorumLost(DistributionManager distributionManager,
         Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
-      // unused
+      // nothing
     }
 
     @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {
-      // unused
+      // nothing
     }
   }
 }

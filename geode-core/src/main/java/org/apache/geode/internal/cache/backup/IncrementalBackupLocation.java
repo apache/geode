@@ -21,5 +21,6 @@ import java.util.Map;
 import org.apache.geode.cache.DiskStore;
 
 public interface IncrementalBackupLocation {
+
   Map<String, File> getBackedUpOplogs(DiskStore diskStore) throws IOException;
 }

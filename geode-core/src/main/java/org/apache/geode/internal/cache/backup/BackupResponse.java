@@ -37,12 +37,12 @@ public class BackupResponse extends AdminResponse {
     super();
   }
 
-  public BackupResponse(InternalDistributedMember sender, HashSet<PersistentID> persistentIds) {
+  BackupResponse(InternalDistributedMember sender, HashSet<PersistentID> persistentIds) {
     setRecipient(sender);
     this.persistentIds = persistentIds;
   }
 
-  public Set<PersistentID> getPersistentIds() {
+  Set<PersistentID> getPersistentIds() {
     return persistentIds;
   }
 

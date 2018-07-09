@@ -40,14 +40,14 @@ public class FinishBackupRequest extends CliLegacyMessage {
   private final transient FinishBackupFactory finishBackupFactory;
 
   public FinishBackupRequest() {
-    this.finishBackupFactory = new FinishBackupFactory();
+    finishBackupFactory = new FinishBackupFactory();
   }
 
   FinishBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
       int processorId, FinishBackupFactory finishBackupFactory) {
     setSender(sender);
     setRecipients(recipients);
-    this.msgId = processorId;
+    msgId = processorId;
     this.finishBackupFactory = finishBackupFactory;
   }
 

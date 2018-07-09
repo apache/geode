@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 
 class AbortBackupStep extends BackupStep {
+
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
@@ -38,6 +39,17 @@ class AbortBackupStep extends BackupStep {
     this.cache = cache;
     this.recipients = recipients;
     this.abortBackupFactory = abortBackupFactory;
+  }
+
+  /**
+   * AbortBackupStep overrides addToResults in order to include members with empty persistentIds
+   * (such as the sender).
+   */
+  @Override
+  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
+    if (persistentIds != null) {
+      getResults().put(member, persistentIds);
+    }
   }
 
   @Override
@@ -55,12 +67,4 @@ class AbortBackupStep extends BackupStep {
     abortBackupFactory.createAbortBackup(cache).run();
     addToResults(member, Collections.emptySet());
   }
-
-  @Override
-  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
-    if (persistentIds != null) {
-      getResults().put(member, persistentIds);
-    }
-  }
-
 }
