@@ -36,7 +36,6 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class SystemAdminDUnitTest extends JUnit4DistributedTestCase {
@@ -61,7 +60,6 @@ public class SystemAdminDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1585
   @Test
   public void testPrintStacks() throws Exception {
 
