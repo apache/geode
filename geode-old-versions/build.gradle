@@ -15,51 +15,27 @@
  * limitations under the License.
  */
 
-
 disableMavenPublishing()
-
-project.ext.installs = new Properties();
-
-def addOldVersion(def source, def geodeVersion, def downloadInstall) {
-  sourceSets.create(source, {})
-
-  dependencies.add "${source}Compile", "org.apache.geode:geode-common:$geodeVersion"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-core:$geodeVersion"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-lucene:$geodeVersion"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-old-client-support:$geodeVersion"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-wan:$geodeVersion"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-cq:$geodeVersion"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:$geodeVersion"
-
-  if (downloadInstall) {
-    configurations.create("${source}OldInstall")
-
-    dependencies.add "${source}OldInstall", "org.apache.geode:apache-geode:$geodeVersion"
-
-    project.ext.installs.setProperty(source, "$buildDir/apache-geode-${geodeVersion}")
-    task "downloadAndUnzipFile${geodeVersion}"(type: Copy) {
-      from zipTree(configurations["${source}OldInstall"].singleFile)
-      into buildDir
-    }
-
-    createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${geodeVersion}"]
-  }
-}
-
-
 def generatedResources = "$buildDir/generated-resources/main"
+project.ext.installs = new Properties()
 
-sourceSets {
-  main {
-    output.dir(generatedResources, builtBy: 'createGeodeClasspathsFile')
-  }
-}
-
-task createGeodeClasspathsFile  {
+task createGeodeClasspathsFile {
   File classpathsFile = file("$generatedResources/geodeOldVersionClasspaths.txt")
   File installsFile = file("$generatedResources/geodeOldVersionInstalls.txt")
   outputs.file(classpathsFile)
   outputs.file(installsFile)
+
+
+  // Add sourceSets for backwards compatibility, rolling upgrade, and
+  // pdx testing.
+  addOldVersion('test100', '1.0.0-incubating', false)
+  addOldVersion('test110', '1.1.0', false)
+  addOldVersion('test111', '1.1.1', false)
+  addOldVersion('test120', '1.2.0', true)
+  addOldVersion('test130', '1.3.0', true)
+  addOldVersion('test140', '1.4.0', true)
+  addOldVersion('test150', '1.5.0', true)
+  addOldVersion('test160', '1.6.0', true)
 
   doLast {
     Properties versions = new Properties();
@@ -79,15 +55,51 @@ task createGeodeClasspathsFile  {
       project.ext.installs.store(fos, '')
     }
   }
+}
 
-  // Add sourceSets for backwards compatibility, rolling upgrade, and
-  // pdx testing.
-  addOldVersion('test100', '1.0.0-incubating', false)
-  addOldVersion('test110', '1.1.0', false)
-  addOldVersion('test111', '1.1.1', false)
-  addOldVersion('test120', '1.2.0', true)
-  addOldVersion('test130', '1.3.0', true)
-  addOldVersion('test140', '1.4.0', true)
-  addOldVersion('test150', '1.5.0', true)
-  addOldVersion('test160', '1.6.0', true)
+def addOldVersion(def source, def geodeVersion, def downloadInstall) {
+  sourceSets.create("${source}", {})
+
+  configurations {
+    "${source}Compile"
+  }
+
+  dependencies.add "${source}Compile", "org.apache.geode:geode-common:${geodeVersion}"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-core:${geodeVersion}"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-lucene:${geodeVersion}"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-old-client-support:${geodeVersion}"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-wan:${geodeVersion}"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-cq:${geodeVersion}"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:${geodeVersion}"
+
+  if (downloadInstall) {
+    configurations.create("${source}OldInstall")
+
+    dependencies {
+      "${source}OldInstall"  "org.apache.geode:apache-geode:${geodeVersion}"
+    }
+
+    project.ext.installs.setProperty(source, "${buildDir}/apache-geode-${geodeVersion}")
+
+    task("downloadAndUnzipFile${geodeVersion}") {
+      inputs.file {
+        configurations."${source}OldInstall"
+      }
+
+      outputs.file("${buildDir}/apache-geode-${geodeVersion}")
+      doLast {
+        copy {
+          from zipTree(configurations."${source}OldInstall".singleFile)
+          into project.buildDir
+        }
+      }
+    }
+    createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${geodeVersion}"]
+  }
+}
+
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'createGeodeClasspathsFile')
+  }
 }
