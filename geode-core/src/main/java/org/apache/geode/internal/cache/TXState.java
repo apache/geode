@@ -1172,7 +1172,6 @@ public class TXState implements TXStateInterface {
           Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
       }
     } catch (RuntimeException exception) {
-      LogService.getLogger().info("got exception " + exception);
       afterCompletionException = exception;
     } catch (InternalGemFireError error) {
       TransactionException exception = new TransactionException(error);
