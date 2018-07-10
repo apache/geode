@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -64,13 +65,14 @@ public class LuceneIndexCommandsWithReindexAllowedIntegrationTest
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "__REGION_VALUE_FIELD");
 
     createRegion();
+    AtomicBoolean stopped = new AtomicBoolean();
     Thread ai = new Thread(() -> {
       int count = 0;
-      while (true) {
+      while (!stopped.get()) {
         server.getCache().getRegion(REGION_NAME).put(count, "hello world" + count);
+        count++;
       }
     });
-
     ai.start();
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
@@ -78,7 +80,7 @@ public class LuceneIndexCommandsWithReindexAllowedIntegrationTest
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
-    ai.interrupt();
+    stopped.set(true);
   }
 
   @Test
