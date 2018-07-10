@@ -46,7 +46,7 @@ public class PrepareBackupRequest extends CliLegacyMessage {
   private Properties properties;
 
   public PrepareBackupRequest() {
-    this.prepareBackupFactory = new PrepareBackupFactory();
+    prepareBackupFactory = new PrepareBackupFactory();
   }
 
   PrepareBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,

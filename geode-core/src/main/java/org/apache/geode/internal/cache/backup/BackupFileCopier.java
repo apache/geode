@@ -40,8 +40,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.logging.LogService;
 
-public class BackupFileCopier {
-  Logger logger = LogService.getLogger();
+class BackupFileCopier {
+  private static final Logger logger = LogService.getLogger();
 
   private static final String CONFIG_DIRECTORY = "config";
   private static final String USER_FILES = "user";
@@ -96,9 +96,9 @@ public class BackupFileCopier {
   }
 
   Set<File> copyUserFiles() throws IOException {
-    Set<File> userFilesBackedUp = new HashSet<>();
     ensureExistence(userDirectory);
     List<File> backupFiles = cache.getBackupFiles();
+    Set<File> userFilesBackedUp = new HashSet<>();
     for (File original : backupFiles) {
       if (original.exists()) {
         original = original.getAbsoluteFile();
@@ -116,10 +116,9 @@ public class BackupFileCopier {
   }
 
   Set<File> copyDeployedJars() throws IOException {
+    ensureExistence(userDirectory);
     Set<File> userJars = new HashSet<>();
     JarDeployer deployer = null;
-
-    ensureExistence(userDirectory);
     try {
       // Suspend any user deployed jar file updates during this backup.
       deployer = getJarDeployer();
@@ -177,9 +176,7 @@ public class BackupFileCopier {
     backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
   }
 
-  // package access for testing purposes only
   JarDeployer getJarDeployer() {
     return ClassPathLoader.getLatest().getJarDeployer();
   }
-
 }

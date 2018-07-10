@@ -36,12 +36,12 @@ class FinishBackupStep extends BackupStep {
 
   FinishBackupStep(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
-      FinishBackupFactory FinishBackupFactory) {
+      FinishBackupFactory finishBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
-    this.finishBackupFactory = FinishBackupFactory;
+    this.finishBackupFactory = finishBackupFactory;
   }
 
   @Override
@@ -62,5 +62,4 @@ class FinishBackupStep extends BackupStep {
       logger.fatal("Failed to FinishBackup in " + member, e);
     }
   }
-
 }

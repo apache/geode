@@ -36,9 +36,9 @@ abstract class BackupStep implements BackupResultCollector {
 
   private final DistributionManager dm;
   private final Map<DistributedMember, Set<PersistentID>> results =
-      Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
+      Collections.synchronizedMap(new HashMap<>());
 
-  protected BackupStep(DistributionManager dm) {
+  BackupStep(DistributionManager dm) {
     this.dm = dm;
   }
 
@@ -47,6 +47,13 @@ abstract class BackupStep implements BackupResultCollector {
   abstract DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor);
 
   abstract void processLocally();
+
+  @Override
+  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
+    if (persistentIds != null && !persistentIds.isEmpty()) {
+      results.put(member, persistentIds);
+    }
+  }
 
   Map<DistributedMember, Set<PersistentID>> send() {
     ReplyProcessor21 replyProcessor = createReplyProcessor();
@@ -68,18 +75,11 @@ abstract class BackupStep implements BackupResultCollector {
     return getResults();
   }
 
-  @Override
-  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
-    if (persistentIds != null && !persistentIds.isEmpty()) {
-      results.put(member, persistentIds);
-    }
-  }
-
   Map<DistributedMember, Set<PersistentID>> getResults() {
-    return this.results;
+    return results;
   }
 
-  protected DistributionManager getDistributionManager() {
-    return this.dm;
+  DistributionManager getDistributionManager() {
+    return dm;
   }
 }

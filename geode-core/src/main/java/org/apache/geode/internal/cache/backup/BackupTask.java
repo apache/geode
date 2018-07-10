@@ -34,7 +34,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * This class manages the state an logic to backup a single cache.
  */
-public class BackupTask {
+class BackupTask {
   private static final Logger logger = LogService.getLogger();
 
   private final Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
@@ -46,13 +46,13 @@ public class BackupTask {
   private final HashSet<PersistentID> diskStoresWithData = new HashSet<>();
   private final BackupWriter backupWriter;
 
-  private volatile boolean isCancelled = false;
+  private volatile boolean isCancelled;
 
   private TemporaryBackupFiles temporaryFiles;
   private BackupFileCopier fileCopier;
 
-  BackupTask(InternalCache gemFireCache, BackupWriter backupWriter) {
-    this.cache = gemFireCache;
+  BackupTask(InternalCache cache, BackupWriter backupWriter) {
+    this.cache = cache;
     this.backupWriter = backupWriter;
   }
 
@@ -245,12 +245,10 @@ public class BackupTask {
         // Get an appropriate lock object for each set of oplogs.
         Object childLock = childOplog.getLock();
 
-        // TODO - We really should move this lock into the disk store, but
-        // until then we need to do this magic to make sure we're actually
-        // locking the latest child for both types of oplogs
+        // TODO: We really should move this lock into the disk store, but until then we need to do
+        // this magic to make sure we're actually locking the latest child for both types of oplogs
 
-        // This ensures that all writing to disk is blocked while we are
-        // creating the snapshot
+        // This ensures that all writing to disk is blocked while we are creating the snapshot
         synchronized (childLock) {
           if (logger.isDebugEnabled()) {
             logger.debug("Synchronized on lock for oplog {} on disk store {}",
@@ -294,5 +292,4 @@ public class BackupTask {
   DiskStoreBackup getBackupForDiskStore(DiskStoreImpl diskStore) {
     return backupByDiskStore.get(diskStore);
   }
-
 }

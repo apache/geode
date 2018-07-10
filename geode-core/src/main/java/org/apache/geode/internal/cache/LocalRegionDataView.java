@@ -326,7 +326,7 @@ public class LocalRegionDataView implements InternalDataView {
       token = reg.postPutAllSend(putallOp, successfulPuts);
       reg.postPutAllFireEvents(putallOp, successfulPuts);
     } finally {
-      if (reg instanceof DistributedRegion) {
+      if (token != -1 && reg instanceof DistributedRegion) {
         putallOp.endOperation(token);
       }
     }
@@ -348,7 +348,7 @@ public class LocalRegionDataView implements InternalDataView {
       token = reg.postRemoveAllSend(op, successfulOps);
       reg.postRemoveAllFireEvents(op, successfulOps);
     } finally {
-      if (reg instanceof DistributedRegion) {
+      if (token != -1 && reg instanceof DistributedRegion) {
         op.endOperation(token);
       }
     }

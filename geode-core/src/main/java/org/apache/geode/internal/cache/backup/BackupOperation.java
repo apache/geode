@@ -136,11 +136,14 @@ public class BackupOperation {
   }
 
   interface MissingPersistentMembersProvider {
+
     Set<PersistentID> getMissingPersistentMembers(DistributionManager dm);
   }
 
   private static class DefaultMissingPersistentMembersProvider
       implements MissingPersistentMembersProvider {
+
+    @Override
     public Set<PersistentID> getMissingPersistentMembers(DistributionManager dm) {
       return AdminDistributedSystemImpl.getMissingPersistentMembers(dm);
     }
