@@ -19,26 +19,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%>'s management and monitoring system consists of one JMX Manager node (there should only be one) and one or more managed nodes within a distributed system. All members in the distributed system are manageable through MBeans and <%=vars.product_name%> Management Service APIs.
+<%=vars.product_name%>'s management and monitoring system consists of one JMX Manager node (there should only be one) and one or more managed nodes within a cluster. All members in the cluster are manageable through MBeans and <%=vars.product_name%> Management Service APIs.
 
 ## <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_ABE7007BE3C244FBA0418C4B5BE7E1F2" class="no-quick-link"></a>Architecture
 
 The following diagram depicts the architecture of the management and monitoring system components.
 
-<img src="../../images_svg/JMX_Architecture.svg" id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__image_1E9E8575E13D4087BC47B6A288097B7A" class="image" />
+<img src="../../images/JMX_Architecture.png" id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__image_1E9E8575E13D4087BC47B6A288097B7A" class="image" />
 
 In this architecture every <%=vars.product_name%> member is manageable. All <%=vars.product_name%> MBeans for the local <%=vars.product_name%> processes are automatically registered in the Platform MBeanServer (the default MBeanServer of each JVM that hosts platform MXBeans.)
 
 ## <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_1CF2B237C16F4095A609E62F0C7146C1" class="no-quick-link"></a>Managed Node
 
-Each member of a distributed system is a managed node. Any node that is not currently also acting as a JMX Manager node is referred to simply as a managed node. A managed node has the following resources so that it can answer JMX queries both locally and remotely:
+Each member of a cluster is a managed node. Any node that is not currently also acting as a JMX Manager node is referred to simply as a managed node. A managed node has the following resources so that it can answer JMX queries both locally and remotely:
 
 -   Local MXBeans that represent the locally monitored components on the node. See [List of <%=vars.product_name%> JMX MBeans](list_of_mbeans.html#topic_4BCF867697C3456D96066BAD7F39FC8B) for a list of possible MXBeans existing for the managed node.
 -   Built-in platform MBeans.
 
 ## <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_8604838507194C8B86F1420FBA46894C" class="no-quick-link"></a>JMX Manager Node
 
-A JMX Manager node is a member that can manage other <%=vars.product_name%> members --that is, other managed nodes -- as well as itself. A JMX Manager node can manage all other members in the distributed system.
+A JMX Manager node is a member that can manage other <%=vars.product_name%> members --that is, other managed nodes -- as well as itself. A JMX Manager node can manage all other members in the cluster.
 
 To convert a managed node to a JMX Manager node, you configure the <%=vars.product_name%> property `jmx-manager=true`, in the `gemfire.properties` file, and start the member as a JMX Manager node.
 
@@ -46,13 +46,13 @@ You start the member as a JMX Manager node when you provide`                    
 
 The JMX Manager node has the following extra resources allocated so that it can answer JMX queries:
 
--   RMI connector that allows JMX clients to connect to and access all MXBeans in the distributed system.
+-   RMI connector that allows JMX clients to connect to and access all MXBeans in the cluster.
 -   Local MXBeans that represent the locally monitored components on this node, same as any other managed node.
 -   Aggregate MXBeans:
     -   DistributedSystemMXBean
     -   DistributedRegionMXBean
     -   DistributedLockServiceMXBean
--   ManagerMXBean with Scope=ALL, which allows various distributed system-wide operations.
+-   ManagerMXBean with Scope=ALL, which allows various cluster-wide operations.
 -   Proxy to MXBeans on managed nodes.
 -   Built-in platform MXBeans.
 
@@ -66,7 +66,7 @@ JConsole (and other JMX clients) can connect to any JVM if that JVM is configure
 
 JConsole can connect to any <%=vars.product_name%> member, but if it connects to a non-JMX-Manager member, JConsole only detects the local MBeans for the node, and not MBeans for the cluster.
 
-When a <%=vars.product_name%> locator or server becomes a JMX Manager for the cluster, it enables the RMI connector. JConsole can then connect only to that one JVM to view the MBeans for the entire cluster. It does not need to connect to all the other JVMs. <%=vars.product_name%> manages the inter-JVM communication required to provide a federated view of all MBeans in the distributed system.
+When a <%=vars.product_name%> locator or server becomes a JMX Manager for the cluster, it enables the RMI connector. JConsole can then connect only to that one JVM to view the MBeans for the entire cluster. It does not need to connect to all the other JVMs. <%=vars.product_name%> manages the inter-JVM communication required to provide a federated view of all MBeans in the cluster.
 
 `gfsh` can only connect to a JMX Manager or to a locator. If connected to a locator, the locator provides the necessary connection information for the existing JMX Manager. If the locator detects a JMX Manager is not already running in the cluster, the locator makes itself a JMX Manager. gfsh cannot connect to other non-Manager or non-locator members.
 
@@ -82,7 +82,7 @@ The entry point to <%=vars.product_name%> management is through the ManagementSe
 ManagementService service = ManagementService.getManagementService(cache);
 ```
 
-The resulting ManagementService instance is specific to the provided cache and its distributed system. The implementation of getManagementService is a singleton for now but may eventually support multiple cache instances.
+The resulting ManagementService instance is specific to the provided cache and its cluster. The implementation of getManagementService is a singleton for now but may eventually support multiple cache instances.
 
 You can use the <%=vars.product_name%> management APIs to accomplish the following tasks:
 
@@ -105,8 +105,8 @@ You can also execute gfsh commands using the ManagementService API. See [Executi
 This section lists the currently available tools for managing and monitoring <%=vars.product_name%>:
 
 -   **gfsh**. <%=vars.product_name_long%> command-line interface that provides a simple & powerful command shell that supports the administration, debugging and deployment of <%=vars.product_name%> applications. It features context sensitive help, scripting and the ability to invoke any commands from within the application using a simple API. See [gfsh](../../tools_modules/gfsh/chapter_overview.html).
--   **<%=vars.product_name%> Pulse**. Easy-to-use, browser-based dashboard for monitoring <%=vars.product_name%> deployments. <%=vars.product_name%> Pulse provides an integrated view of all <%=vars.product_name%> members within a distributed system. See [<%=vars.product_name%> Pulse](../../tools_modules/pulse/pulse-overview.html).
--   **Pulse Data Browser**. This <%=vars.product_name%> Pulse utility provides a graphical interface for performing OQL ad-hoc queries in a <%=vars.product_name%> distributed system. See [Data Browser](../../tools_modules/pulse/pulse-views.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser).
+-   **<%=vars.product_name%> Pulse**. Easy-to-use, browser-based dashboard for monitoring <%=vars.product_name%> deployments. <%=vars.product_name%> Pulse provides an integrated view of all <%=vars.product_name%> members within a cluster. See [<%=vars.product_name%> Pulse](../../tools_modules/pulse/pulse-overview.html).
+-   **Pulse Data Browser**. This <%=vars.product_name%> Pulse utility provides a graphical interface for performing OQL ad-hoc queries in a <%=vars.product_name%> cluster. See [Data Browser](../../tools_modules/pulse/pulse-views.html#topic_F0ECE9E8179541CCA3D6C5F4FBA84404__sec_pulsedatabrowser).
 -   **Other Java Monitoring Tools such as JConsole and jvisualvm.** JConsole is a JMX-based management and monitoring tool provided in the Java 2 Platform that provides information on the performance and consumption of resources by Java applications. See [http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html](http://docs.oracle.com/javase/6/docs/technotes/guides/management/jconsole.html). **Java VisualVM (jvisualvm)** is a profiling tool for analyzing your Java Virtual Machine. Java VisualVM is useful to Java application developers to troubleshoot applications and to monitor and improve the applications' performance. Java VisualVM can allow developers to generate and analyse heap dumps, track down memory leaks, perform and monitor garbage collection, and perform lightweight memory and CPU profiling. For more details on using jvisualvm, see [http://docs.oracle.com/javase/6/docs/technotes/tools/share/jvisualvm.html](http://docs.oracle.com/javase/6/docs/technotes/tools/share/jvisualvm.html).
 
 

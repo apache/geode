@@ -46,7 +46,7 @@ The following guidelines apply to region design:
 
 The following guidelines should provide a rough estimate of the amount of memory consumed by your system.
 
-Memory calculation about keys and entries (objects) and region overhead for them can be divided by the number of members of the distributed system for data placed in partitioned regions only. For other regions, the calculation is for each member that hosts the region. Memory used by sockets, threads, and the small amount of application overhead for <%=vars.product_name%> is per member.
+Memory calculation about keys and entries (objects) and region overhead for them can be divided by the number of members of the cluster for data placed in partitioned regions only. For other regions, the calculation is for each member that hosts the region. Memory used by sockets, threads, and the small amount of application overhead for <%=vars.product_name%> is per member.
 
 For each entry added to a region, the <%=vars.product_name%> cache API consumes a certain amount of memory to store and manage the data. This overhead is required even when an entry is overflowed or persisted to disk. Thus objects on disk take up some JVM memory, even when they are paged to disk. The Java cache overhead introduced by a region, using a 32-bit JVM, can be approximated as listed below.
 
@@ -182,7 +182,7 @@ The other index overhead estimates listed here also apply to Lucene indexes.
 
 The <%=vars.product_name%> JMX management and monitoring system contributes to memory overhead and should be accounted for when establishing the memory requirements for your deployment. Specifically, the memory footprint of any processes (such as locators) that are running as JMX managers can increase.
 
-For each resource in the distributed system that is being managed and monitored by the JMX Manager (for example, each MXBean such as MemberMXBean, RegionMXBean, DiskStoreMXBean, LockServiceMXBean and so on), you should add 10 KB of required memory to the JMX Manager node.
+For each resource in the cluster that is being managed and monitored by the JMX Manager (for example, each MXBean such as MemberMXBean, RegionMXBean, DiskStoreMXBean, LockServiceMXBean and so on), you should add 10 KB of required memory to the JMX Manager node.
 
 ## <a id="topic_psn_5tz_j4" class="no-quick-link"></a>Determining Object Serialization Overhead
 
@@ -262,7 +262,7 @@ The following table lists the memory requirements based on connections.
 <td>= (lesser of max-threads property on server or max-connections)* (socket buffer size +thread overhead for the JVM )</td>
 </tr>
 <tr class="odd">
-<td>Per member of the distributed system if conserve sockets is set to true</td>
+<td>Per member of the cluster if conserve sockets is set to true</td>
 <td>4* number of peers</td>
 </tr>
 <tr class="even">

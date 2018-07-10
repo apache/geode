@@ -77,12 +77,12 @@ Use either cache handlers or membership handlers in any single application. Do n
 <tr>
 <td><code class="ph codeph">MembershipListener</code>
 <td><code class="ph codeph">MembershipEvent</code></td>
-<td>Use this interface to receive membership events only about peers. This listener's callback methods are invoked when peer members join or leave the <%=vars.product_name%> distributed system. Callback methods include <code class="ph codeph">memberCrashed</code>, <code class="ph codeph">memberJoined</code>, and <code class="ph codeph">memberLeft</code> (graceful exit).</td>
+<td>Use this interface to receive membership events only about peers. This listener's callback methods are invoked when peer members join or leave the cluster. Callback methods include <code class="ph codeph">memberCrashed</code>, <code class="ph codeph">memberJoined</code>, and <code class="ph codeph">memberLeft</code> (graceful exit).</td>
 </tr>
 <tr>
 <td><code class="ph codeph">RegionMembershipListener</code></td>
 <td><code class="ph codeph">RegionEvent</code></td>
-<td>Provides after-event notification when a region with the same name has been created in another member and when other members hosting the region join or leave the distributed system. Extends <code class="ph codeph">CacheCallback</code> and <code class="ph codeph">CacheListener</code>. Installed in region as a <code class="ph codeph">CacheListener</code>.</td>
+<td>Provides after-event notification when a region with the same name has been created in another member and when other members hosting the region join or leave the cluster. Extends <code class="ph codeph">CacheCallback</code> and <code class="ph codeph">CacheListener</code>. Installed in region as a <code class="ph codeph">CacheListener</code>.</td>
 </tr>
 <tr>
 <td><code class="ph codeph">TransactionListener</code></td>
@@ -154,7 +154,7 @@ The events in this table are cache events unless otherwise noted.
 <tr>
 <td><code class="ph codeph">MembershipEvent</code> (membership event)</td>
 <td><code class="ph codeph">MembershipListener</code></td>
-<td><p>An event that describes the member that originated this event. Instances of this are delivered to a <code class="ph codeph">MembershipListener</code> when a member has joined or left the distributed system.</p></td>
+<td><p>An event that describes the member that originated this event. Instances of this are delivered to a <code class="ph codeph">MembershipListener</code> when a member has joined or left the cluster.</p></td>
 </tr>
 <tr>
 <td><code class="ph codeph">RegionEvent</code></td>

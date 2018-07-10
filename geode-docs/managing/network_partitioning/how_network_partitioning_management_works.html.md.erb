@@ -19,21 +19,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%> handles network outages by using a weighting system to determine whether the remaining available members have a sufficient quorum to continue as a distributed system.
+<%=vars.product_name%> handles network outages by using a weighting system to determine whether the remaining available members have a sufficient quorum to continue as a cluster.
 
 <a id="how_network_partitioning_management_works__section_548146BB8C24412CB7B43E6640272882"></a>
 Individual members are each assigned a weight, and the quorum is determined by comparing the total weight of currently responsive members to the previous total weight of responsive members.
 
-Your distributed system can split into separate running systems when members lose the ability to see each other. The typical cause of this problem is a failure in the network. When a partitioned system is detected, only one side of the system keeps running and the other side automatically shuts down.
+Your cluster can split into separate running systems when members lose the ability to see each other. The typical cause of this problem is a failure in the network. When a partitioned system is detected, only one side of the system keeps running and the other side automatically shuts down.
 
 The network partitioning detection feature is enabled by default with a true value for the `enable-network-partition-detection` property. See [Configure <%=vars.product_name_long%> to Handle Network Partitioning](handling_network_partitioning.html#handling_network_partitioning) for details. Quorum weight calculations are always performed and logged regardless of this configuration setting.
 
 The overall process for detecting a network partition is as follows:
 
-1.  The distributed system starts up. When you start up a distributed system, start the locators first, start the cache servers second, and then start other members such as applications or processes that access distributed system data.
-2.  After the members start up, the oldest member, typically a locator, assumes the role of the membership coordinator. Peer discovery occurs as members come up and members generate a membership discovery list for the distributed system. Locators hand out the membership discovery list as each member process starts up. This list typically contains a hint on who the current membership coordinator is.
-3.  Members join and if necessary, depart the distributed system:
-    -   Member processes make a request to the coordinator to join the distributed system. If authenticated, the coordinator creates a new membership view, hands the new membership view to the new member, and begins the process of sending the new membership view (to add the new member or members) by sending out a view preparation message to existing members in the view.
+1.  The cluster starts up. When you start up a cluster, start the locators first, start the cache servers second, and then start other members such as applications or processes that access cluster data.
+2.  After the members start up, the oldest member, typically a locator, assumes the role of the membership coordinator. Peer discovery occurs as members come up and members generate a membership discovery list for the cluster. Locators hand out the membership discovery list as each member process starts up. This list typically contains a hint on who the current membership coordinator is.
+3.  Members join and if necessary, depart the cluster:
+    -   Member processes make a request to the coordinator to join the cluster. If authenticated, the coordinator creates a new membership view, hands the new membership view to the new member, and begins the process of sending the new membership view (to add the new member or members) by sending out a view preparation message to existing members in the view.
     -   While members are joining the system, it is possible that members are also leaving or being removed through the normal failure detection process. Failure detection removes unresponsive or slow members. See [Managing Slow Receivers](../monitor_tune/slow_receivers_managing.html) and [Failure Detection and Membership Views](failure_detection.html#concept_CFD13177F78C456095622151D6EE10EB) for descriptions of the failure detection process. If a new membership view is sent out that includes one or more failed processes, the coordinator will log the new weight calculations. At any point, if quorum loss is detected due to unresponsive processes, the coordinator will also log a severe level message to identify the failed processes:
 
         ``` pre
@@ -42,7 +42,7 @@ The overall process for detecting a network partition is as follows:
 
         where {0} is the number of processes that failed and {1} lists the processes.
 
-4.  Whenever the coordinator is alerted of a membership change (a member either joins or leaves the distributed system), the coordinator generates a new membership view. The membership view is generated by a two-phase protocol:
+4.  Whenever the coordinator is alerted of a membership change (a member either joins or leaves the cluster), the coordinator generates a new membership view. The membership view is generated by a two-phase protocol:
     1.  In the first phase, the membership coordinator sends out a view preparation message to all members and waits 12 seconds for a view preparation ack return message from each member. If the coordinator does not receive an ack message from a member within 12 seconds, the coordinator attempts to connect to the member's failure-detection socket. If the coordinator cannot connect to the member's failure-detection socket, the coordinator declares the member dead and starts the membership view protocol again from the beginning.
     2.  In the second phase, the coordinator sends out the new membership view to all members that acknowledged the view preparation message or passed the connection test.
 
@@ -51,7 +51,7 @@ The overall process for detecting a network partition is as follows:
     -   A new coordinator may have a stale view of membership if it did not see the last membership view sent by the previous (failed) coordinator. If new members were added during that failure, then the new members may be ignored when the first new view is sent out.
     -   If members were removed during the fail over to the new coordinator, then the new coordinator will have to determine these losses during the view preparation step.
 
-6.  With a default value of `enable-network-partition-detection`, any member that detects that the total membership weight has dropped below 51% within a single membership view change (loss of quorum) declares a network partition event. The coordinator sends a network-partitioned-detected UDP message to all members (even to the non-responsive ones) and then closes the distributed system with a `ForcedDisconnectException`. If a member fails to receive the message before the coordinator closes the system, the member is responsible for detecting the event on its own.
+6.  With a default value of `enable-network-partition-detection`, any member that detects that the total membership weight has dropped below 51% within a single membership view change (loss of quorum) declares a network partition event. The coordinator sends a network-partitioned-detected UDP message to all members (even to the non-responsive ones) and then closes the cluster with a `ForcedDisconnectException`. If a member fails to receive the message before the coordinator closes the system, the member is responsible for detecting the event on its own.
 
 The presumption is that when a network partition is declared, the members that comprise a quorum will continue operations. The surviving members elect a new coordinator, designate a lead member, and so on.
 

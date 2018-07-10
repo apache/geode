@@ -85,7 +85,7 @@ In addition to the standard <%=vars.product_name%> system properties, the follow
 Although these properties are not part of the standard <%=vars.product_name%> system properties, they apply to the entire JVM instance. For more information about managing the heap, refer to [Managing Heap and Off-heap Memory](../../managing/heap_use/heap_management.html#resource_manager).
 
 **Note:**
-It is important to note that the <%=vars.product_name%> Distributed System is a singleton within the entire application server JVM. As such it is important to ensure that different web applications, within the same container, set (or expect) the same cache configuration. When the application server starts, the first web application to start that uses <%=vars.product_name%> Session Caching will determine the overall configuration of the distributed system since it will trigger the creation of the distributed system.
+It is important to note that the <%=vars.product_name%> cluster is a singleton within the entire application server JVM. As such it is important to ensure that different web applications, within the same container, set (or expect) the same cache configuration. When the application server starts, the first web application to start that uses <%=vars.product_name%> Session Caching will determine the overall configuration of the cluster, since it will trigger the creation of the cluster.
 
 ## <a id="weblogic_changing_gf_default_cfg__section_changing_cache_config_props" class="no-quick-link"></a>Changing Cache Configuration Properties
 

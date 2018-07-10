@@ -19,14 +19,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Region types define region behavior within a single distributed system. You have various options for region data storage and distribution.
+Region types define region behavior within a single cluster. You have various options for region data storage and distribution.
 
 <a id="region_types__section_E3435ED1D0D142538B99FA69A9E449EF"></a>
-Within a <%=vars.product_name%> distributed system, you can define distributed regions and non-distributed regions, and you can define regions whose data is spread across the distributed system, and regions whose data is entirely contained in a single member.
+Within a <%=vars.product_name%> cluster, you can define distributed regions and non-distributed regions, and you can define regions whose data is spread across the cluster, and regions whose data is entirely contained in a single member.
 
 Your choice of region type is governed in part by the type of application you are running. In particular, you need to use specific region types for your servers and clients for effective communication between the two tiers:
 
--   Server regions are created inside a `Cache` by servers and are accessed by clients that connect to the servers from outside the server's distributed system. Server regions must have region type partitioned or replicated. Server region configuration uses the `RegionShortcut` enum settings.
+-   Server regions are created inside a `Cache` by servers and are accessed by clients that connect to the servers from outside the server's cluster. Server regions must have region type partitioned or replicated. Server region configuration uses the `RegionShortcut` enum settings.
 -   Client regions are created inside a `ClientCache` by clients and are configured to distribute data and events between the client and the server tier. Client regions must have region type `local`. Client region configuration uses the `ClientRegionShortcut` enum settings.
 -   Peer regions are created inside a `Cache`. Peer regions may be server regions, or they may be regions that are not accessed by clients. Peer regions can have any region type. Peer region configuration uses the `RegionShortcut` enum settings.
 
@@ -117,7 +117,7 @@ Replication is a good choice for small to medium size server regions.
 
 Use replicated regions for:
 
--   **Small amounts of data required by all members of the distributed system**. For example, currency rate information and mortgage rates.
+-   **Small amounts of data required by all members of the cluster**. For example, currency rate information and mortgage rates.
 -   **Data sets that can be contained entirely in a single member**. Each replicated region holds the complete data set for the region
 -   **High performance data access**. Replication guarantees local access from the heap for application threads, providing the lowest possible latency for data access.
 -   **Asynchronous distribution**. All distributed regions, replicated and non-replicated, provide the fastest distribution speeds.

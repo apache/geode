@@ -23,7 +23,7 @@ Your application needs to catch certain classes to handle all the exceptions and
 
 -   `GemFireCheckedException`. This class is the abstract superclass of exceptions that are thrown and declared. Wherever possible, GemFire exceptions are checked exceptions. `GemFireCheckedException` is a <%=vars.product_name%> version of `java.lang.Exception`.
 -   `GemFireException`. This class is the abstract superclass of unchecked exceptions that are thrown to indicate conditions for which the developer should not normally need to check. You can look at the subclasses of `GemFireException` to see all the runtime exceptions in the GemFire system; see the class hierarchy in the online Java API documentation. `GemFireException` is a <%=vars.product_name%> version of java.lang.`RuntimeException`. You can also look at the method details in the `Region` API javadocs for <%=vars.product_name%> exceptions you may want to catch.
--   `SystemFailure`. In addition to exception management, <%=vars.product_name%> provides a class to help you manage catastrophic failure in your distributed system, particularly in your application. The Javadocs for this class provide extensive guidance for managing failures in your system and your application. See `SystemFailure` in the `org.apache.geode` package.
+-   `SystemFailure`. In addition to exception management, <%=vars.product_name%> provides a class to help you manage catastrophic failure in your cluster, particularly in your application. The Javadocs for this class provide extensive guidance for managing failures in your system and your application. See `SystemFailure` in the `org.apache.geode` package.
 
 To see the exceptions thrown by a specific method, refer to the method's online Java documentation.
 
