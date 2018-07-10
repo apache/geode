@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -33,9 +32,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupOperation.MissingPersistentMembersProvider;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class BackupOperationTest {
 
   private FlushToDiskFactory flushToDiskFactory;

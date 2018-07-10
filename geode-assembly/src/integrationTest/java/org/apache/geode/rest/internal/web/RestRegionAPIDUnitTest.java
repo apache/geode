@@ -37,18 +37,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.http.MediaType;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.rest.internal.web.controllers.Customer;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
 public class RestRegionAPIDUnitTest {
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()
