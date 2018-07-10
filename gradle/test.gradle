@@ -104,6 +104,12 @@ subprojects {
     }
 
     forkEvery 1
+
+    if (project.hasProperty('maxParallelForks'))
+      maxParallelForks = project.maxParallelForks as int
+    if (project.hasProperty('forkEvery'))
+      forkEvery = project.forkEvery as int
+
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
