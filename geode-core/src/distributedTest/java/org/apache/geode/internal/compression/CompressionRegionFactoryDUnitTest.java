@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -29,12 +28,11 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests that the compressor region attribute is properly set or rejected by a RegionFactory.
  */
-@Category(DistributedTest.class)
+
 public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Compressed region name.

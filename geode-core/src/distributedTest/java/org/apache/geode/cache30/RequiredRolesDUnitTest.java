@@ -47,7 +47,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -55,7 +54,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  *
  * @since GemFire 5.0
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
   protected transient volatile boolean startTestWaitForRequiredRoles = false;

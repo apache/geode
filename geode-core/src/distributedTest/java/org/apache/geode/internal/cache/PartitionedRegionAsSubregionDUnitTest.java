@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -31,13 +30,12 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Verifies that destroyRegion, localDestroyRegion and close work properly when PartitionedRegion is
  * a subregion.
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
 
   private static final int TOTAL_NUM_BUCKETS = GLOBAL_MAX_BUCKETS_DEFAULT;

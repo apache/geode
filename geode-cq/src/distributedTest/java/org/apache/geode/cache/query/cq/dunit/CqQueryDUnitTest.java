@@ -82,14 +82,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire. It does so by creating a cache server
  * with a cache and a pre-defined region and a data loader. The client creates the same region and
  * attaches the connection pool.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 

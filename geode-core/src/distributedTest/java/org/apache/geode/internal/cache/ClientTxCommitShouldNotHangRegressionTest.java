@@ -21,7 +21,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
@@ -32,7 +31,6 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -88,7 +86,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *     at java.lang.Thread.run(Thread.java:662)
  * </pre>
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class ClientTxCommitShouldNotHangRegressionTest extends LocatorTestBase {
 

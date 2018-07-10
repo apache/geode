@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -48,9 +47,8 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.DiskStoreAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
 

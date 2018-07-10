@@ -67,9 +67,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
   VM P; // GII provider

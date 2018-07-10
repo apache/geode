@@ -35,7 +35,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CustomExpiry;
@@ -63,13 +62,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * RegressionTests extracted from {@link PersistentPartitionedRegionDistributedTest}.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial,unused")
 public class PersistentPartitionedRegionRegressionTest implements Serializable {
 

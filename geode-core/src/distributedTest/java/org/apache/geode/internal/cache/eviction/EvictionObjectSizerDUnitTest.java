@@ -49,10 +49,9 @@ import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.EvictionTest;
 
-@Category({DistributedTest.class, EvictionTest.class})
+@Category({EvictionTest.class})
 @SuppressWarnings("serial")
 public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 

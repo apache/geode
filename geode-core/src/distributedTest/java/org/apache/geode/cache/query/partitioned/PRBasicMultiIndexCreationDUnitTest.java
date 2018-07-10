@@ -40,10 +40,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
-@Category({DistributedTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
 
   private final PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();

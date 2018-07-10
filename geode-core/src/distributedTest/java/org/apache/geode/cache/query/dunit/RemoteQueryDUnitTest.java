@@ -57,7 +57,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -65,7 +64,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  *
  * @since GemFire 5.0.1
  */
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
 
   /** The port on which the bridge server was started in this VM */

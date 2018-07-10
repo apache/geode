@@ -29,14 +29,12 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedCountersRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -47,7 +45,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 2.0
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class ReplicateCacheListenerDistributedTest implements Serializable {
 

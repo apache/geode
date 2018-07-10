@@ -27,7 +27,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
@@ -35,7 +34,6 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.util.DelayedAction;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -112,7 +110,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *     at java.lang.Thread.run(Thread.java:662) from com.gemstone.gemfire.internal.cache.persistence.PersistentGatewayDUnitTest$5.run with 0 args : "Create gateway region" (took 1277 ms)
  * </pre>
  */
-@Category(DistributedTest.class)
+
 public class DiskRecoveryWithVersioningGiiRegressionTest extends CacheTestCase {
 
   private static final int ENTRY_COUNT = 1000;

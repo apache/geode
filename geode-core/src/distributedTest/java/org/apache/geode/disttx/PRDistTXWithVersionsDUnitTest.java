@@ -20,12 +20,10 @@ import java.util.Properties;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.execute.PRTransactionWithVersionsDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class PRDistTXWithVersionsDUnitTest extends PRTransactionWithVersionsDUnitTest {
 
   @Override

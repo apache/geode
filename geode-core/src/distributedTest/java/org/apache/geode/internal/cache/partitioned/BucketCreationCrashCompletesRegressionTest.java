@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -59,7 +58,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #39356: Missing PR buckets with HA
  */
-@Category({DistributedTest.class, RegionsTest.class})
+@Category({RegionsTest.class})
 @SuppressWarnings("serial")
 public class BucketCreationCrashCompletesRegressionTest implements Serializable {
 

@@ -56,12 +56,11 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests client server FORCE_INVALIDATE
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   private static final Logger logger = LogService.getLogger();

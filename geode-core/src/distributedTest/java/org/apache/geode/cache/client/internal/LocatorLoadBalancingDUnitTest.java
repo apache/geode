@@ -55,9 +55,8 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
 
   /**

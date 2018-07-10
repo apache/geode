@@ -48,13 +48,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test code copied from UpdatePropagationDUnitTest Tests that registering interest KEYS works
  * correctly.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

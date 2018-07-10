@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -28,13 +27,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test that keys iterator do not returned keys with removed token as its values
  *
  */
-@Category(DistributedTest.class)
+
 public class IteratorDUnitTest extends JUnit4CacheTestCase {
 
   public IteratorDUnitTest() {

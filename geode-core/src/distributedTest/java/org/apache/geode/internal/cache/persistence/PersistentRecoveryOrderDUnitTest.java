@@ -88,7 +88,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 
@@ -96,7 +95,7 @@ import org.apache.geode.test.junit.categories.PersistenceTest;
  * This is a test of how persistent distributed regions recover. This test makes sure that when
  * multiple VMs are persisting the same region, they recover with the latest data during recovery.
  */
-@Category({DistributedTest.class, PersistenceTest.class})
+@Category({PersistenceTest.class})
 public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBase {
 
   @Override

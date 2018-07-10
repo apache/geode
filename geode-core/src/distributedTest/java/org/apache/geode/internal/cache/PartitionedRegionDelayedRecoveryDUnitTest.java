@@ -38,10 +38,9 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 @SuppressWarnings("synthetic-access")
-@Category(DistributedTest.class)
+
 public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCase {
 
   public PartitionedRegionDelayedRecoveryDUnitTest() {

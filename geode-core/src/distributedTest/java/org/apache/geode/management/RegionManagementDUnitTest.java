@@ -41,7 +41,6 @@ import org.awaitility.core.ConditionFactory;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -67,7 +66,6 @@ import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartiti
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Distributed tests for {@link RegionMXBean}.
@@ -80,7 +78,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * Goal of the Test : RegionMBean gets created once region is created. Data like Region Attributes
  * data and stats are of proper value
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"serial", "unused"})
 public class RegionManagementDUnitTest implements Serializable {
 

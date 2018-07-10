@@ -54,13 +54,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of the {@linkplain org.apache.geode.internal.admin internal
  * admin} API.
  */
-@Category(DistributedTest.class)
+
 public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     implements AlertListener {
 

@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -34,12 +33,11 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class is to test LOCAL_MAX_MEMORY property of partition region while creation of bucket.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class PartitionedRegionLocalMaxMemoryDUnitTest extends CacheTestCase {
 

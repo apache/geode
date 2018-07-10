@@ -47,7 +47,6 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -57,7 +56,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #37210: HARegionQueueStats are never closed
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class HARegionQueueStatsCloseRegressionTest implements Serializable {
 
   private String uniqueName;

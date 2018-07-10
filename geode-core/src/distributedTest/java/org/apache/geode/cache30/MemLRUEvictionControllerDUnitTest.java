@@ -22,7 +22,6 @@ import java.util.Properties;
 import java.util.Random;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -40,7 +39,6 @@ import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.WellKnownClassSizer;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic functionality of the memory lru eviction controller and its statistics.
@@ -48,7 +46,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 3.2
  */
-@Category(DistributedTest.class)
+
 public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
   private static boolean usingMain = false;

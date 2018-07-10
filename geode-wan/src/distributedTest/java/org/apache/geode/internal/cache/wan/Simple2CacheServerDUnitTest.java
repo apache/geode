@@ -37,10 +37,9 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class Simple2CacheServerDUnitTest extends WANTestBase {
   private static final int NUM_KEYS = 10;
   static int afterPrimaryCount = 0;

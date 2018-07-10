@@ -95,14 +95,13 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Tests the basic use cases for PR persistence.
  */
-@Category(DistributedTest.class)
+
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("deprecation,serial,unused")
 public class PersistentPartitionedRegionDistributedTest implements Serializable {

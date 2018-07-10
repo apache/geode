@@ -37,7 +37,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -46,7 +45,7 @@ import org.apache.geode.util.test.TestUtil;
  * gfsh but was configured both by gfsh and a cache.xml file. The JIRA ticket for this is
  * GEODE-2732.
  */
-@Category({DistributedTest.class, MembershipTest.class, ClientServerTest.class})
+@Category({MembershipTest.class, ClientServerTest.class})
 public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
 
 

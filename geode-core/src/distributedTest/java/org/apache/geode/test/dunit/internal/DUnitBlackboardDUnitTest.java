@@ -24,13 +24,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class DUnitBlackboardDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void canPassDataBetweenVMs() throws Exception {

@@ -25,7 +25,6 @@ import java.util.TreeMap;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheEvent;
@@ -45,14 +44,13 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to make sure message queuing works.
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
   /**

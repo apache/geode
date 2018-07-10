@@ -57,13 +57,12 @@ import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * This is for multiuser-authentication
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   private Map<String, String> cqNameToQueryStrings = new HashMap<>();

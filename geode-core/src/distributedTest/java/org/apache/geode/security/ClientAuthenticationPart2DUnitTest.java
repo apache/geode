@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.dunit.standalone.VersionManager;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -40,7 +39,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * this class contains test methods that used to be in its superclass but that test started taking
  * too long and caused dunit runs to hang
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthenticationPart2DUnitTest extends ClientAuthenticationTestCase {

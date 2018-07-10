@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -42,13 +41,12 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Sanity checks on a number of basic cluster configurations with compression turned on.
  *
  */
-@Category(DistributedTest.class)
+
 public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.

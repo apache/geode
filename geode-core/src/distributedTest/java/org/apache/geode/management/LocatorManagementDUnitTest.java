@@ -33,19 +33,17 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Distributed tests for {@link LocatorMXBean}.
  */
-@Category(DistributedTest.class)
+
 public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   private VM managerVM;

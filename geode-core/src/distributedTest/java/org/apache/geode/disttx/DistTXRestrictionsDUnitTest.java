@@ -18,16 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_T
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache30.TXRestrictionsDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Same tests as that of {@link TXRestrictionsDUnitTest} after setting "distributed-transactions"
  * property to true
  */
-@Category(DistributedTest.class)
+
 public class DistTXRestrictionsDUnitTest extends TXRestrictionsDUnitTest {
 
   @Override

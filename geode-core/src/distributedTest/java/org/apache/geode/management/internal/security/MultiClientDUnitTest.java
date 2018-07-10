@@ -41,11 +41,10 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class MultiClientDUnitTest {
   private static final int KEY_COUNT = 20;
 

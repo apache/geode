@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -44,7 +43,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector;
 
 /**
@@ -55,7 +53,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 

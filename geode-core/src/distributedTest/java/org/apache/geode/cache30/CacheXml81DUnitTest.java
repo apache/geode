@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
 
@@ -35,7 +34,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.XmlParser;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests 8.1 schema based configuration. From this point all config test cases should extend this
@@ -43,7 +41,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 8.1
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
 

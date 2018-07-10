@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -42,7 +41,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
  * other than security-username and security-password. But this will be doable only in peer/client
  * case. For gfsh/rest, we still expected the credentials to be wrapped as expected.
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class IntegratedSecurityPeerAuthDUnitTest {
 
   @ClassRule

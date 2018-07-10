@@ -22,8 +22,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -33,12 +31,11 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * test client initiated transactions with concurrency checks enabled.
  */
-@Category(DistributedTest.class)
+
 public class ClientServerTransactionCCEDUnitTest extends ClientServerTransactionDUnitTest {
 
 

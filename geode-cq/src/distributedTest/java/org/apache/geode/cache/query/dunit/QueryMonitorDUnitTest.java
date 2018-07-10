@@ -67,7 +67,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -75,7 +74,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
  *
  * @since GemFire 6.0
  */
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class QueryMonitorDUnitTest implements Serializable {
 
   private static final Logger logger = LogService.getLogger();

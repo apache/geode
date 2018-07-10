@@ -60,10 +60,9 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
-@Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
+@Category({ClientServerTest.class, FunctionServiceTest.class})
 public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRClientServerTestBase {
 
   private static Locator locator = null;

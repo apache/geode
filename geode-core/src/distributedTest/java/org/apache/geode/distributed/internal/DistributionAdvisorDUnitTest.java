@@ -38,10 +38,9 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
   private transient DistributionAdvisor.Profile profiles[];

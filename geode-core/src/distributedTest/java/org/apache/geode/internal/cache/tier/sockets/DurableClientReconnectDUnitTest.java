@@ -64,14 +64,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests for durable reconnect issue
  *
  * @since GemFire 5.2
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

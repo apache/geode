@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
@@ -46,7 +45,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region} that has a scope of
@@ -54,7 +52,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 3.0
  */
-@Category(DistributedTest.class)
+
 public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
 
   /**

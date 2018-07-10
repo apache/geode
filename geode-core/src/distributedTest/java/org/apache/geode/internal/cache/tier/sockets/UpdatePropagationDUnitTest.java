@@ -57,7 +57,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Start client 1 Start client 2 Start Server 1 Start Server 2 Register interest for client 1 on
@@ -68,7 +67,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * The key is to verify that the memberid being used by the client to register with the server is
  * the same across servers
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
   private static final String REGION_NAME = "UpdatePropagationDUnitTest_region";

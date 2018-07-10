@@ -45,11 +45,10 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class, LuceneTest.class})
+@Category({SecurityTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
 

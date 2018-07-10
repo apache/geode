@@ -37,13 +37,12 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.EvictionTest;
 
 /**
  * Performs eviction dunit tests for off-heap memory.
  */
-@Category({DistributedTest.class, EvictionTest.class})
+@Category({EvictionTest.class})
 public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
 
   @Override

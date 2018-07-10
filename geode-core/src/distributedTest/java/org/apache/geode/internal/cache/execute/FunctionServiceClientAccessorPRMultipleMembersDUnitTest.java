@@ -20,14 +20,13 @@ import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * Tests function execution with a client accessing multiple members with a PR with redundancy 0
  * using onRegion calls.
  */
-@Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
+@Category({ClientServerTest.class, FunctionServiceTest.class})
 public class FunctionServiceClientAccessorPRMultipleMembersDUnitTest
     extends FunctionServiceClientAccessorPRBase {
 

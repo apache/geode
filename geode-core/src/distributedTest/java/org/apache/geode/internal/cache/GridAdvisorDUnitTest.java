@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -48,14 +47,13 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the GridAdvisor
  *
  * @since GemFire 5.7
  */
-@Category(DistributedTest.class)
+
 public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
   private static InternalCache cache;

@@ -36,11 +36,10 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, PersistenceTest.class})
+@Category({PersistenceTest.class})
 public class ShowMissingDiskStoresDUnitTest {
 
   // private static final String DISK_STORE = "diskStore";

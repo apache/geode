@@ -31,11 +31,10 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ClientDestroyInvalidateAuthDUnitTest {
   private static String REGION_NAME = "AuthRegion";
 

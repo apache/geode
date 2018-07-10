@@ -71,12 +71,11 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * @since GemFire 5.7
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   private static final int CREATE = 0;

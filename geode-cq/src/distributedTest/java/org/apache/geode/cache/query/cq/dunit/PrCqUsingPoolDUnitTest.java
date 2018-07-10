@@ -56,14 +56,13 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test class for Partitioned Region and CQs
  *
  * @since GemFire 5.5
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   public PrCqUsingPoolDUnitTest() {

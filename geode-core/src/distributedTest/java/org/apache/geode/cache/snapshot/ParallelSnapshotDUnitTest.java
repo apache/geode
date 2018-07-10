@@ -38,11 +38,10 @@ import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SnapshotTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-@Category({DistributedTest.class, SnapshotTest.class})
+@Category({SnapshotTest.class})
 public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
   private static final byte[] ffff = new byte[] {0xf, 0xf, 0xf, 0xf};
   private static final byte[] eeee = new byte[] {0xe, 0xe, 0xe, 0xe};

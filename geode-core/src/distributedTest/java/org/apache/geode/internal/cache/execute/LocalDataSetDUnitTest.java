@@ -49,10 +49,9 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = 1L;

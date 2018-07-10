@@ -56,14 +56,13 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify correct propagation of operations eventID's for put all
  *
  * @since GemFire 5.1
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** server1 VM **/

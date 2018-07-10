@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
@@ -38,7 +37,7 @@ import org.apache.geode.test.junit.categories.WanTest;
  * concurrent serial GatewaySender with concurrency of 4
  *
  */
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
 
   public ConcurrentWANPropagation_1_DUnitTest() {

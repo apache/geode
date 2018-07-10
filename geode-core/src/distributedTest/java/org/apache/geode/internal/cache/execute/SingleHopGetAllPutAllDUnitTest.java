@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
@@ -38,9 +37,8 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
 
 

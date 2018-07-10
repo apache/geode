@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -32,9 +31,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class CatchingUnexpectedExceptionExampleTest implements Serializable {
 

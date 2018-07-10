@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -40,14 +39,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test the getCallbackArgument in light of bug 34075.
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
 
   protected transient int invokeCount;

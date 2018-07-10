@@ -23,10 +23,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.index.DummyQRegion;
 import org.apache.geode.security.query.data.QueryTestObject;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class QuerySecurityUnauthorizedUserBindParameterDUnitTest extends QuerySecurityBase {
 
   @Before

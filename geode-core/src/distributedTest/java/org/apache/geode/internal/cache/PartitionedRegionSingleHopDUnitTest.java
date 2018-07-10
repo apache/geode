@@ -85,9 +85,8 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PR_NAME = "single_hop_pr";

@@ -102,14 +102,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests putAll for c/s. Also tests removeAll
  *
  * @since GemFire 5.0.23
  */
-@Category({DistributedTest.class, ClientServerTest.class, ClientSubscriptionTest.class})
+@Category({ClientServerTest.class, ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class PutAllCSDUnitTest extends ClientServerTestCase {
 

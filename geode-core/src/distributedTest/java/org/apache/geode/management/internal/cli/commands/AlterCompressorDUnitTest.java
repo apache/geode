@@ -40,11 +40,10 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.CompressionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category({DistributedTest.class, CompressionTest.class})
+@Category({CompressionTest.class})
 public class AlterCompressorDUnitTest {
   private static MemberVM locator;
   private static MemberVM server1;

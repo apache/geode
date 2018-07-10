@@ -49,12 +49,11 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /*
  * Test sending ProtoBuf messages to the locator
  */
-@Category({AcceptanceTest.class, DistributedTest.class, ClientServerTest.class})
+@Category({AcceptanceTest.class, ClientServerTest.class})
 public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
   @Rule

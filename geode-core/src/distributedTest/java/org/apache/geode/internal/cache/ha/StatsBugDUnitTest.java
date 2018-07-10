@@ -44,7 +44,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is Dunit test for bug 36109. This test has a cache-client having a primary and a secondary
@@ -55,7 +54,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * , with the failed endpoint getting closed. This bug has been fixed by moving the invalidate stat
  * to be part of our implementation.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 @Ignore("Test was disabled by renaming to DisabledTest")
 public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 

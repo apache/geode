@@ -41,14 +41,13 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This Dunit test is to verify the bug in put() operation. When the put is invoked on the server
  * and NotifyBySubscription is false then it follows normal path and then again calls put of region
  * on which region queue is based. so recurssion is happening.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = HABugInPutDUnitTest.class.getSimpleName() + "_region";

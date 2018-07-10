@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -36,7 +35,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.Repeat;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.RepeatRule;
 
 /**
@@ -44,7 +42,7 @@ import org.apache.geode.test.junit.rules.RepeatRule;
  *
  * see bugs #50785 and #46438
  */
-@Category(DistributedTest.class)
+
 public class ConnectDisconnectDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
 

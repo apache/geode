@@ -22,12 +22,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 
 // Delete this file when LuceneServiceImpl.LUCENE_REINDEX flag is removed.
-@Category({DistributedTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneClusterConfigurationWithReindexFlagEnabled
     extends LuceneClusterConfigurationDUnitTest {
 

@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.ToDataException;
@@ -44,9 +43,8 @@ import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class BrokenSerializationConsistencyRegressionTest implements Serializable {
 

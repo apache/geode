@@ -63,7 +63,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
@@ -71,7 +70,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  *
  * @since GemFire 6.1
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class, SerializationTest.class})
+@Category({ClientSubscriptionTest.class, SerializationTest.class})
 public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
   /*
    * Test configuration one server one client also 2 server 2 client

@@ -51,13 +51,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Test for #44807 to eliminate unnecessary serialization/deserialization in select * queries
  */
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
 
   /** Used for saving & restoring oldObserver without serialization */

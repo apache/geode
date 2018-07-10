@@ -48,10 +48,9 @@ import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {
 
   @Override

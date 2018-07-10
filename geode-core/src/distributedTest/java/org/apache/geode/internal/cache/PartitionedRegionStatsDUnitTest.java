@@ -24,7 +24,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.Cache;
@@ -35,9 +34,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
 
   private static final int CNT = 10;

@@ -110,14 +110,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
  * @since GemFire 8.0
  */
-@Category({DistributedTest.class, RestAPITest.class})
+@Category({RestAPITest.class})
 public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   private static final long serialVersionUID = -254776154266339226L;

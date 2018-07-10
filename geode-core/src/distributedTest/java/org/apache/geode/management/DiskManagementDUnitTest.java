@@ -31,7 +31,6 @@ import org.awaitility.core.ConditionFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -50,13 +49,12 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
  * Test cases to cover all test cases which pertains to disk from Management layer
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"serial", "unused"})
 public class DiskManagementDUnitTest implements Serializable {
 

@@ -17,13 +17,12 @@ package org.apache.geode.internal.cache.tier.sockets;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 
 /**
  * Just like parent but enables server thread pool (ie. selector)
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest {
 
   public ClientServerMiscSelectorDUnitTest() {

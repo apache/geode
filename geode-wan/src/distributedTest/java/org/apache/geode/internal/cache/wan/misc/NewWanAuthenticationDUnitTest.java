@@ -45,10 +45,9 @@ import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class NewWanAuthenticationDUnitTest extends WANTestBase {
 
   public static final Logger logger = LogService.getLogger();

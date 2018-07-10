@@ -39,7 +39,6 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.cache.Cache;
@@ -63,9 +62,8 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class})
+
 public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
   private String key = "key";

@@ -36,14 +36,13 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * TRAC #36995: gemfire.MessageTrackingTimeout should be set via configuration params for
  * BridgeLoader/BridgeWriter
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class MessageTrackingTimeoutRegressionTest implements Serializable {
 
   private static final int USER_SPECIFIED_MESSAGE_TRACKING_TIMEOUT = 54321;

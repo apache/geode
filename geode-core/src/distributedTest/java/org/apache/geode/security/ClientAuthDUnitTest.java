@@ -30,11 +30,10 @@ import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ClientAuthDUnitTest {
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();

@@ -37,12 +37,11 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This tests cases where we have both a connection pool and a bridge loader.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
 
   private static int bridgeServerPort;

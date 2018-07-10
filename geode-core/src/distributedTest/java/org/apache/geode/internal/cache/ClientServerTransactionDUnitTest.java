@@ -119,12 +119,11 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic client-server transaction functionality
  */
-@Category(DistributedTest.class)
+
 public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest {
 
   protected static final int MAX_ENTRIES = 10;

@@ -37,12 +37,11 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.statistics.HostStatSampler;
 import org.apache.geode.internal.statistics.SampleCollector;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Distributed tests for {@link MemberMXBean} attributes.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"serial", "unused"})
 public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
 

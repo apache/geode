@@ -68,11 +68,10 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class ConnectCommandWithSSLTest {
   @ClassRule
   public static CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();

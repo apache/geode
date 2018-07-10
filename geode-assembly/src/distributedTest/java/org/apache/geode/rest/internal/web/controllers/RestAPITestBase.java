@@ -57,10 +57,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 
-@Category({DistributedTest.class, RestAPITest.class})
+@Category({RestAPITest.class})
 class RestAPITestBase extends JUnit4DistributedTestCase {
 
   protected Cache cache = null;

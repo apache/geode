@@ -35,7 +35,6 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -49,10 +48,9 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category(DistributedTest.class)
+
 public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
   static DistributedSystem ds;

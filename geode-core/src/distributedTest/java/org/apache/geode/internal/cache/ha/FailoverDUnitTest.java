@@ -54,7 +54,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Dunit test to verify HA feature. Have 2 nodes S1 & S2. Client is connected to S1 & S2 with S1 as
@@ -62,7 +61,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * failing to S2.During fail over duration do some puts on S1. The client on failing to S2 may
  * receive duplicate events but should not miss any events.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class FailoverDUnitTest extends JUnit4DistributedTestCase {
 
   protected static Cache cache = null;

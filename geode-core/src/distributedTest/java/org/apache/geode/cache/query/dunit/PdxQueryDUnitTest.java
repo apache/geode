@@ -71,10 +71,9 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class PdxQueryDUnitTest extends PDXQueryTestBase {
   public static final Logger logger = LogService.getLogger();
 

@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -36,12 +35,11 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * verifies the count of clear operation
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class RegionClearStatsDistributedTest implements Serializable {
 

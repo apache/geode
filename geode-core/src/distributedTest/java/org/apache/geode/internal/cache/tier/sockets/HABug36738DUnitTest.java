@@ -45,7 +45,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is the bugtest for bug no. 36738. When Object of class ClientUpdateMessage gets deserialized
@@ -54,7 +53,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * HARegion with the value as ClientUpdateMessage. 3. Create server2 and HARegion in it so that GII
  * will happen. 4. Perform get operations from server2.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = "HABug36738DUnitTest_Region";

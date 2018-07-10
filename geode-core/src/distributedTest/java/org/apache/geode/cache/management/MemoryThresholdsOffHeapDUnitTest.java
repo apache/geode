@@ -90,7 +90,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -98,7 +97,7 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  *
  * @since Geode 1.0
  */
-@Category({DistributedTest.class, OffHeapTest.class})
+@Category({OffHeapTest.class})
 public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD

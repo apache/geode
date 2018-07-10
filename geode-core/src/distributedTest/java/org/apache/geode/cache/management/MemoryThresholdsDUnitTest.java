@@ -105,14 +105,13 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
  *
  * @since GemFire 6.0
  */
-@Category(DistributedTest.class)
+
 public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   public static class Range implements DataSerializable {

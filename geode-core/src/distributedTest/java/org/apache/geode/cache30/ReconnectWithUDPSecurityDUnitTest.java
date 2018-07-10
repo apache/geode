@@ -21,10 +21,9 @@ import java.util.Properties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({DistributedTest.class, MembershipTest.class, ClientServerTest.class})
+@Category({MembershipTest.class, ClientServerTest.class})
 public class ReconnectWithUDPSecurityDUnitTest extends ReconnectDUnitTest {
 
   public ReconnectWithUDPSecurityDUnitTest() {

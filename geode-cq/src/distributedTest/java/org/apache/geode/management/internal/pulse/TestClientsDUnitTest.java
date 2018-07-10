@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.cq.dunit.CqQueryDUnitTest;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -30,7 +29,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is for testing Number of clients and can be extended for relevant test addition
@@ -38,7 +36,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  */
 
-@Category(DistributedTest.class)
+
 public class TestClientsDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;

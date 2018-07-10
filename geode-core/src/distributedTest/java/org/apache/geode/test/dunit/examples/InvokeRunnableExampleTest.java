@@ -20,13 +20,11 @@ import static org.apache.geode.test.dunit.VM.getVMCount;
 
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class InvokeRunnableExampleTest {
 
   @ClassRule

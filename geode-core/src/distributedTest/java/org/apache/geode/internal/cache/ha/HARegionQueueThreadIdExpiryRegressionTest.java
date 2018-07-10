@@ -47,7 +47,6 @@ import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -56,7 +55,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #48879: Leaking ThreadIdentifiers and DispatchedAndCurrentEvents objects when client uses
  * many short lived threads
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
 

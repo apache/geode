@@ -59,7 +59,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test verifies the conflation functionality of the dispatcher.
@@ -70,7 +69,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * The test has two regions. In one scenario they share a common bridgewriter and in the second
  * scenario, each has a unique bridgewriter.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

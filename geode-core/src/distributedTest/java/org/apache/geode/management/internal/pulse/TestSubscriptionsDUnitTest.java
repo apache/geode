@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -44,12 +43,11 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is for testing subscriptions
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class TestSubscriptionsDUnitTest extends ManagementTestBase {
 

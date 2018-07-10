@@ -59,10 +59,9 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({DistributedTest.class, ClientServerTest.class, SerializationTest.class})
+@Category({ClientServerTest.class, SerializationTest.class})
 public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedTestCase {
   private static final int instanceCountWithAllPuts = 3;
   private static final int instanceCountWithOnePut = 1;

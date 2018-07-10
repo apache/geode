@@ -62,14 +62,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Client is connected to S1 which has a slow dispatcher. Puts are made on S1. Then S2 is started
  * and made available for the client. After that , S1 's server is stopped. The client fails over to
  * S2. The client should receive all the puts . These puts have arrived on S2 via GII of HARegion.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

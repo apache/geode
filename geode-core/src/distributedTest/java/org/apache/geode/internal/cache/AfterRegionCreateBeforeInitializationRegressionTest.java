@@ -19,7 +19,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -34,12 +33,11 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * TRAC #33726: afterRegionCreate event delivered before region initialization occurs
  */
-@Category(DistributedTest.class)
+
 public class AfterRegionCreateBeforeInitializationRegressionTest extends DistributedTestCase {
 
   private static boolean[] flags = new boolean[2];

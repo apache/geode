@@ -31,7 +31,6 @@ import javax.transaction.UserTransaction;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.AttributesFactory;
@@ -63,14 +62,13 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test the order of operations done on the farside of a tx.
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class TXOrderDUnitTest extends JUnit4CacheTestCase {
 
   private final int TEST_PUT = 0;

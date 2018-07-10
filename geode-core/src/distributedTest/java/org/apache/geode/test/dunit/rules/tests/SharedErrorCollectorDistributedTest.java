@@ -28,7 +28,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -36,10 +35,9 @@ import org.junit.runner.notification.Failure;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class SharedErrorCollectorDistributedTest {
 

@@ -41,13 +41,12 @@ import org.apache.geode.internal.cache.TestObjectWithIdentifier;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * @since GemFire 6.1
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   private static final int PAUSE = 5 * 1000; // TODO: replace with Awaitility

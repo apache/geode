@@ -14,11 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
 public class PRTransactionWithVersionsDUnitTest extends PRTransactionDUnitTest {
 
   public PRTransactionWithVersionsDUnitTest() {

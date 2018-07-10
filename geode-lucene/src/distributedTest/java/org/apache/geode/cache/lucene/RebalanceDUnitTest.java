@@ -33,7 +33,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
  * tests should work across all types of PRs and topologies.
  *
  */
-@Category({DistributedTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
 

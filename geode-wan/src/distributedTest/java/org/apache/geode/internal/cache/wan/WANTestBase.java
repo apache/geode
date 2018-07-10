@@ -179,11 +179,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class WANTestBase extends DistributedTestCase {
 
   protected static Cache cache;

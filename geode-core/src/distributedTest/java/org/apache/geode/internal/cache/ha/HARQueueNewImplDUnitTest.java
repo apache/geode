@@ -64,7 +64,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This DUnit contains various tests to ensure new implementation of ha region queues works as
@@ -72,7 +71,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.7
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String regionName = HARQueueNewImplDUnitTest.class.getSimpleName();

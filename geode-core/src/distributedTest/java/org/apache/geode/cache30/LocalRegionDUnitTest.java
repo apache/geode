@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -33,7 +32,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the functionality of a {@link Scope#LOCAL locally scoped} cache {@link Region} including
@@ -42,7 +40,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 3.0
  */
-@Category(DistributedTest.class)
+
 public class LocalRegionDUnitTest extends CacheListenerTestCase {
 
   /**

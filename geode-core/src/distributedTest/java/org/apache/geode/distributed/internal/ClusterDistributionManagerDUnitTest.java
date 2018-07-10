@@ -74,13 +74,12 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * This class tests the functionality of the {@link ClusterDistributionManager} class.
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   private static final Logger logger = LogService.getLogger();
 

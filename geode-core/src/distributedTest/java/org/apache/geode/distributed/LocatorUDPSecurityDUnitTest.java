@@ -31,10 +31,9 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
   @Override
   protected void addDSProps(Properties p) {

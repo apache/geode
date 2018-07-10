@@ -42,7 +42,6 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -56,7 +55,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 6.5
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class RegisterInterestWithEvictionRegressionTest extends ClientServerTestCase {
 
   private static final int ENTRIES_ON_SERVER = 10;

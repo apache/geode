@@ -35,10 +35,9 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class GatewaySenderOverflowMBeanAttributesDistributedTest extends WANTestBase {
 

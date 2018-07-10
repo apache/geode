@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -35,7 +34,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the {@link CacheStatistics} that are maintained by a {@link Region} and a
@@ -44,7 +42,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 3.0
  */
-@Category(DistributedTest.class)
+
 public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
 
   public CacheStatisticsDUnitTest() {

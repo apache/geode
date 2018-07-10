@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -78,14 +77,13 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is the test for the custom and colocated partitioning of PartitionedRegion
  *
  */
 @SuppressWarnings("synthetic-access")
-@Category(DistributedTest.class)
+
 public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   VM accessor = null;

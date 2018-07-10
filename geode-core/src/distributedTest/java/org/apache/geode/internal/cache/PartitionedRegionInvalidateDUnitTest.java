@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheWriterException;
@@ -35,13 +34,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This tests invalidateRegion functionality on partitioned regions
  *
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   public PartitionedRegionInvalidateDUnitTest() {

@@ -30,7 +30,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -43,9 +42,8 @@ import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
 
   @Override

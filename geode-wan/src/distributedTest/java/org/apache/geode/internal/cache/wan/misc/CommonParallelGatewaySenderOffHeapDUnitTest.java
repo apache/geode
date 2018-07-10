@@ -16,11 +16,10 @@ package org.apache.geode.internal.cache.wan.misc;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("serial")
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class CommonParallelGatewaySenderOffHeapDUnitTest
     extends CommonParallelGatewaySenderDUnitTest {
 

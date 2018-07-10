@@ -40,12 +40,11 @@ import org.apache.geode.internal.cache.SnapshotTestUtil;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({DistributedTest.class, PersistenceTest.class})
+@Category({PersistenceTest.class})
 public class DiskStoreCommandsDUnitTest {
 
   private static final String REGION_1 = "REGION1";

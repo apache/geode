@@ -47,7 +47,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.Alert;
@@ -62,7 +61,6 @@ import org.apache.geode.management.internal.beans.MemberMBean;
 import org.apache.geode.management.internal.beans.SequenceNumber;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * DistributedSystemMXBean tests:
@@ -92,7 +90,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <p>
  * TODO: break up the large tests into smaller tests
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"serial", "unused"})
 public class DistributedSystemDUnitTest implements Serializable {
 

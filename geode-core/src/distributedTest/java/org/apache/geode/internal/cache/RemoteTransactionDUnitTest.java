@@ -43,7 +43,6 @@ import javax.transaction.UserTransaction;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.ExpirationDetector;
 import org.apache.geode.cache.AttributesFactory;
@@ -116,9 +115,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
   protected final String CUSTOMER = "custRegion";

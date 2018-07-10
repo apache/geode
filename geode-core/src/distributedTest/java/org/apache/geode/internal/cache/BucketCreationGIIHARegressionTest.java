@@ -21,7 +21,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -32,7 +31,6 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -42,7 +40,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #41091: Missing primary detected after member forcefully disconnected from DS (underlying
  * InternalGemFireError: Trying to clear a bucket region that was not destroyed)
  */
-@Category(DistributedTest.class)
+
 public class BucketCreationGIIHARegressionTest extends CacheTestCase {
 
   private String uniqueName;

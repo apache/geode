@@ -49,7 +49,6 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -61,7 +60,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #36457: Region Destroy results in unregister interest propagation to server resulting in
  * server being falsely marked dead
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientDestroyRegionUnregisterInterestRegressionTest implements Serializable {
 
   private String uniqueName;

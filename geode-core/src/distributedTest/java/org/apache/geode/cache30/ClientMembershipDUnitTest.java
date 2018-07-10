@@ -74,14 +74,13 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the ClientMembership API including ClientMembershipListener.
  *
  * @since GemFire 4.2.1
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   protected static final boolean CLIENT = true;

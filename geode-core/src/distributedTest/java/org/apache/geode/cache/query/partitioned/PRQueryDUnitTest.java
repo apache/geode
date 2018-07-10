@@ -46,10 +46,9 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 @SuppressWarnings("serial")
 public class PRQueryDUnitTest extends CacheTestCase {
 

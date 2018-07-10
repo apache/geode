@@ -41,12 +41,11 @@ import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category({DistributedTest.class, RegionsTest.class})
+@Category({RegionsTest.class})
 public class AlterRegionCommandDUnitTest {
 
   @ClassRule

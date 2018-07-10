@@ -41,13 +41,12 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * This test verifies exception handling on coordinator node for remote as well as local querying.
  */
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
 
   private static final String PARTITIONED_REGION_NAME = "Portfolios";

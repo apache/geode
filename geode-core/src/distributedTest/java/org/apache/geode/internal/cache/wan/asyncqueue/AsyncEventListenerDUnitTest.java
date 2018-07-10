@@ -69,9 +69,8 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class, AEQTest.class})
+@Category({AEQTest.class})
 public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
   public AsyncEventListenerDUnitTest() {

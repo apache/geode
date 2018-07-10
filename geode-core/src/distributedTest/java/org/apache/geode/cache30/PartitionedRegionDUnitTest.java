@@ -55,7 +55,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region} that has a scope of
@@ -64,7 +63,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.1
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
   public static boolean InvalidateInvoked = false;

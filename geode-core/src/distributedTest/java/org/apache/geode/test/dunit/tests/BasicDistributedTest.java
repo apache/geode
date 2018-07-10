@@ -30,7 +30,6 @@ import static org.junit.Assert.assertThat;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitEnv;
@@ -38,12 +37,11 @@ import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the basic functionality of the distributed unit test framework.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class BasicDistributedTest extends DistributedTestCase {
 

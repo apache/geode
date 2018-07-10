@@ -53,9 +53,8 @@ import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class RegisterInterestServerMetaDataDistributedTest implements Serializable {
 

@@ -64,14 +64,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify correct propagation of EventID from server to client
  *
  * @since GemFire 5.1
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   /** server VM * */

@@ -43,12 +43,11 @@ import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 import com.gemstone.gemfire.OldClientSupportProvider;
 
-@Category({DistributedTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 @SuppressWarnings("deprecation")
 public class OldClientSupportDUnitTest extends JUnit4CacheTestCase {
 

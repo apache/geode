@@ -40,7 +40,6 @@ import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
@@ -48,7 +47,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
  * should be executed against a number of different regions types and topologies.
  *
  */
-@Category({DistributedTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
 

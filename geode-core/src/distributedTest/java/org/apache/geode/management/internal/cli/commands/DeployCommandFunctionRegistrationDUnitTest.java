@@ -35,12 +35,11 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class DeployCommandFunctionRegistrationDUnitTest {
   private MemberVM locator;
   private MemberVM server;

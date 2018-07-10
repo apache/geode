@@ -53,14 +53,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests that the Matris defined in <code>ServerResponseMatrix</code> is applied or not
  *
  * @since GemFire 5.1
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
 
   protected static Cache cache = null;

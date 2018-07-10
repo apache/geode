@@ -46,7 +46,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * The DUnitTest checks whether the following Three counts are incremented correctly or not: 1)
@@ -58,7 +57,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * In the given test DurableClient comes up and goes down discreetly with different
  * DurableClientTimeouts so as to increment the counts
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;

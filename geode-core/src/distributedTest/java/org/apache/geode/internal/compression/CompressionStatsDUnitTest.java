@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -35,14 +34,13 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests compression statistics.
  *
  * @since GemFire 8.0
  */
-@Category(DistributedTest.class)
+
 public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.

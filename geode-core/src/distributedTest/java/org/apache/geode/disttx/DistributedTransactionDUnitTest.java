@@ -28,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -68,10 +67,9 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 @SuppressWarnings("deprecation")
-@Category(DistributedTest.class)
+
 public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
   protected final String CUSTOMER_PR = "customerPRRegion";

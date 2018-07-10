@@ -53,14 +53,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
  * This tests the flag setting for region ( DataPolicy as Empty ) for Delta propogation for a client
  * while registering CQ
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class, SerializationTest.class})
+@Category({ClientSubscriptionTest.class, SerializationTest.class})
 public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

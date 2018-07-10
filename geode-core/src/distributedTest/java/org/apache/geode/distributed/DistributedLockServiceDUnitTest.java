@@ -61,12 +61,11 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DLockTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests distributed ownership via the DistributedLockService api.
  */
-@Category({DistributedTest.class, DLockTest.class})
+@Category({DLockTest.class})
 public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   private static DistributedSystem dlstSystem;

@@ -59,11 +59,10 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-@Category({DistributedTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
   private static final String NAME = "PartitionedPortfolios";

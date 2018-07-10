@@ -17,10 +17,9 @@ package org.apache.geode.internal.cache.wan.misc;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 @SuppressWarnings("serial")
-@Category({DistributedTest.class, AEQTest.class})
+@Category({AEQTest.class})
 public class CommonParallelAsyncEventQueueOffHeapDUnitTest
     extends CommonParallelAsyncEventQueueDUnitTest {
 

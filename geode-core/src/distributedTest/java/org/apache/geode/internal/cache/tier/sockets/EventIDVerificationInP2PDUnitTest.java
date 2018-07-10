@@ -43,7 +43,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify EventID generated from a peer is correctly passed on to the other peer for create,
@@ -51,7 +50,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * P2P for a propagation of given operation. In case of NO-ACK EventIDs should be
  * different.Currently this test is commented because of a bug.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

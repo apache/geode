@@ -18,21 +18,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests Distributed Ack Region with OffHeap memory.
  *
  * @since Geode 1.0
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"deprecation", "serial"})
 public class DistributedAckRegionOffHeapDUnitTest extends DistributedAckRegionDUnitTest {
 

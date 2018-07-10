@@ -25,7 +25,6 @@ import java.io.PrintStream;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.compression.Compressor;
@@ -38,12 +37,11 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests configured and badly configured cache.xml files with regards to compression.
  */
-@Category(DistributedTest.class)
+
 public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
 
   /**

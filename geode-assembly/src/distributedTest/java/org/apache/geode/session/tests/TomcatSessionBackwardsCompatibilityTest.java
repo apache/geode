@@ -37,7 +37,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -45,7 +44,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * This test iterates through the versions of Geode and executes session client compatibility with
  * the current version of Geode.
  */
-@Category({DistributedTest.class, BackwardCompatibilityTest.class})
+@Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class TomcatSessionBackwardsCompatibilityTest {

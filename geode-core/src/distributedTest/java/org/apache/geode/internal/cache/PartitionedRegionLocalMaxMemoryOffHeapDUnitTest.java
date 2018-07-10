@@ -24,7 +24,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -32,7 +31,7 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  *
  * @since Geode 1.0
  */
-@Category({DistributedTest.class, OffHeapTest.class})
+@Category({OffHeapTest.class})
 @SuppressWarnings("serial")
 public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest
     extends PartitionedRegionLocalMaxMemoryDUnitTest {

@@ -65,7 +65,6 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
@@ -73,7 +72,7 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
  * Client-Server with Region/without Region, P2P with partitioned Region/Distributed Region,member
  * Execution
  */
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
 
   static Boolean isByName = null;

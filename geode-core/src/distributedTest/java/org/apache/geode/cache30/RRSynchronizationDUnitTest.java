@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -46,12 +45,11 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * concurrency-control tests for client/server
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class RRSynchronizationDUnitTest extends CacheTestCase {
 

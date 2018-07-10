@@ -57,7 +57,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test verifies the per-client notify-by-subscription (NBS) override functionality along with
@@ -66,7 +65,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 6.0.3
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
 
   class EventListener extends CacheListenerAdapter {

@@ -40,10 +40,9 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class RegionCreateDestroyDUnitTest extends JUnit4CacheTestCase {
 
   private static final String GOOD_REGION_NAME = "Good-Region";

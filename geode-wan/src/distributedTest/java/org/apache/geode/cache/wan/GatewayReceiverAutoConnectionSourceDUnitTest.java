@@ -34,10 +34,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class GatewayReceiverAutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   public GatewayReceiverAutoConnectionSourceDUnitTest() {

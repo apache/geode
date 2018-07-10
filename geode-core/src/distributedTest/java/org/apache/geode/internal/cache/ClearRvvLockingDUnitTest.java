@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
@@ -49,7 +48,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test class to verify proper RVV locking interaction between entry operations such as PUT/REMOVE
@@ -65,7 +63,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  */
 
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
+
 public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
 
   @Rule

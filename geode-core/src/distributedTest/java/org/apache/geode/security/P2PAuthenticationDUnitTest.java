@@ -54,7 +54,6 @@ import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
@@ -62,7 +61,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  *
  * @since GemFire 5.5
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   private static VM locatorVM = null;

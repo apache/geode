@@ -20,17 +20,15 @@ import java.util.Properties;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache30.TXOrderDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Same tests as that of {@link TXOrderDUnitTest} after setting "distributed-transactions" property
  * to true
  */
-@Category(DistributedTest.class)
+
 public class DistTXOrderDUnitTest extends TXOrderDUnitTest {
 
   @Override

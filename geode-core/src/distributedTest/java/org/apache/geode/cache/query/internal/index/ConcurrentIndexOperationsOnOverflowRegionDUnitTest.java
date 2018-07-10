@@ -49,7 +49,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -62,7 +61,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  *
  *
  */
-@Category({DistributedTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class ConcurrentIndexOperationsOnOverflowRegionDUnitTest extends JUnit4CacheTestCase {
 
   String name;

@@ -28,10 +28,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneClientSecurityWithRegionCreatedBeforeIndexDUnitTest
     extends LuceneClientSecurityDUnitTest {

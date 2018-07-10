@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.InvalidDeltaException;
@@ -53,9 +52,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   protected static VM vm0 = null;

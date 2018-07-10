@@ -25,10 +25,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;

@@ -17,13 +17,11 @@ package org.apache.geode.test.dunit.cache.examples;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class CacheTestCaseExampleTest extends CacheTestCase {
 

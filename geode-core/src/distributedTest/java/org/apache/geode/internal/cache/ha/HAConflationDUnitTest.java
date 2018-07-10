@@ -47,7 +47,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is Targetted conflation Dunit test. 1 Client & 1 Server. Slow down the dispatcher. From the
@@ -59,7 +58,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * invalidate. 4) Do a create , update , update & destroy. The client should receive 3 callbacks (
  * craete , conflated update & destroy).
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   VM server1 = null;

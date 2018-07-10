@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.cq.dunit.CqQueryDUnitTest;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -29,14 +28,13 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is for testing server count details from MBean
  *
  */
 
-@Category(DistributedTest.class)
+
 public class TestServerDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;

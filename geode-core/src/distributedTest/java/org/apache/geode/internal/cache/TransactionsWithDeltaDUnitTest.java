@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Delta;
@@ -56,9 +55,8 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
 
   private static final String D_REFERENCE = "ref";

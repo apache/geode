@@ -31,7 +31,6 @@ import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  *
  * @since GemFire 5.5
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
   @Test

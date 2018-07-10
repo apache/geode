@@ -39,13 +39,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This tests that basic entry operations work properly when regions are configured with newly added
  * RegionAttributes in a P2P environment.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
 
   /** test VM */

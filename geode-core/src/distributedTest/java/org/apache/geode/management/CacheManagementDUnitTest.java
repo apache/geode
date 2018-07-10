@@ -37,7 +37,6 @@ import javax.management.ObjectName;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -52,7 +51,6 @@ import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.NotificationHub.NotificationHubListener;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -68,7 +66,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * stats are of proper value To check proper federation of MemberMBean including remote ops and
  * remote data access
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"serial", "unused"})
 public class CacheManagementDUnitTest implements Serializable {
 

@@ -54,7 +54,6 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -65,7 +64,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  * During validation all region operations are paused for a while. Validation happens multiple time
  * during one test run on a fixed time interval.
  */
-@Category({DistributedTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     extends JUnit4DistributedTestCase {
 

@@ -17,11 +17,10 @@ package org.apache.geode.internal.cache.wan.offheap;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.serial.SerialWANPropagationDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("serial")
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class SerialWANPropagationOffHeapDUnitTest extends SerialWANPropagationDUnitTest {
 
   public SerialWANPropagationOffHeapDUnitTest() {

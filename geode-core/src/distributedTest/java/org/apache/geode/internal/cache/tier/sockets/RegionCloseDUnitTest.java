@@ -46,13 +46,12 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify that client side region.close() should unregister the client with the server. It
  * also checks that client region queue also gets removed properly.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

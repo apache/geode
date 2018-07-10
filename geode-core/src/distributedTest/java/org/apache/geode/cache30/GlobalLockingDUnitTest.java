@@ -38,12 +38,11 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DLockTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests distributed locking of global region entries.
  */
-@Category({DistributedTest.class, DLockTest.class})
+@Category({DLockTest.class})
 public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
   private static Region region_testBug32356;

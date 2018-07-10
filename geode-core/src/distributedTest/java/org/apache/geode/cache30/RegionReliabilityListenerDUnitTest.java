@@ -23,7 +23,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -40,14 +39,13 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the functionality of the {@link RegionRoleListener} class.
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
 
   protected static transient Set rolesGain = null;

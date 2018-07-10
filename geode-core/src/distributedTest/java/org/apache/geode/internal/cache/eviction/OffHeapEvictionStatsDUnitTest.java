@@ -28,7 +28,6 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.EvictionTest;
 
 /**
@@ -36,7 +35,7 @@ import org.apache.geode.test.junit.categories.EvictionTest;
  *
  * @since Geode 1.0
  */
-@Category({DistributedTest.class, EvictionTest.class})
+@Category({EvictionTest.class})
 public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
 
   @Override

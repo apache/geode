@@ -50,7 +50,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is the Dunit test to verify the duplicates after the fail over The test perorms following
@@ -58,7 +57,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * directy from the server1. 3. Stop the server1 so that fail over happens 4. Validate the
  * duplicates received by the client1
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

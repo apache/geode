@@ -68,14 +68,13 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * This tests the querying using a RegionFunctionContext which provides a filter (routing keys) to
  * run the query on subset of buckets "locally". If query includes buckets
  */
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   private static final int cnt = 0;

@@ -67,7 +67,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test Scenario :
@@ -94,7 +93,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * client connects to the server c1 register(k1,k2,k3) and c2 register (k4,k5) then verify that
  * updates has occurred as a result of interest registration.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = "InterestListDUnitTest_region";

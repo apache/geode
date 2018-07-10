@@ -14,17 +14,15 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests region reliability defined by MembershipAttributes using GLOBAL scope.
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class RegionReliabilityGlobalDUnitTest extends RegionReliabilityTestCase {
 
   public RegionReliabilityGlobalDUnitTest() {

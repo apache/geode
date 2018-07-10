@@ -29,10 +29,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 @SuppressWarnings({"rawtypes", "serial"})
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HAInterestPart2DUnitTest extends HAInterestTestCase {
 
   public HAInterestPart2DUnitTest() {

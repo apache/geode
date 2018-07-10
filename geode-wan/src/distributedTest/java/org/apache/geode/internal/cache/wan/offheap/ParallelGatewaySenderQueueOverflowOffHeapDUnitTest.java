@@ -17,11 +17,10 @@ package org.apache.geode.internal.cache.wan.offheap;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueueOverflowDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("serial")
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class ParallelGatewaySenderQueueOverflowOffHeapDUnitTest
     extends ParallelGatewaySenderQueueOverflowDUnitTest {
 

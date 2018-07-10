@@ -46,7 +46,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test checks Expiration of events in the regionqueue. 1. It creates regionqueue on 4 vms 2.
@@ -55,7 +54,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * expiration period. 5. Checks size of the regionqueue. Size of the regionqueue should be equal to
  * 0.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

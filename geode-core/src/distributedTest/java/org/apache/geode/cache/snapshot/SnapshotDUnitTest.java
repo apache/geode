@@ -54,10 +54,9 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SnapshotTest;
 
-@Category({DistributedTest.class, SnapshotTest.class})
+@Category({SnapshotTest.class})
 public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
   private static final int NUM_ENTRIES = 1000;

@@ -18,11 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCK
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
 public class InterruptsConserveSocketsFalseDUnitTest extends InterruptsDUnitTest {
 
   public InterruptsConserveSocketsFalseDUnitTest() {

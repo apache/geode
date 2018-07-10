@@ -73,13 +73,12 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Tests the functionality of the {@link DistributedSystem} class.
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
   private int mcastPort;

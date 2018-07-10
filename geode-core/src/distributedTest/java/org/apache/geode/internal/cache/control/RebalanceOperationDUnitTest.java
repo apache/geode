@@ -45,7 +45,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -98,10 +97,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 @SuppressWarnings("synthetic-access")
-@Category(DistributedTest.class)
+
 public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   private static final long MAX_WAIT = 60;

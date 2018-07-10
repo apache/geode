@@ -45,7 +45,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This integration test uses a Cache to hold PdxInstances in serialized form.
@@ -59,7 +58,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <p>
  * This addresses JIRA tickets GEODE-4116 and GEODE-4168.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
 
   /** this JSON document is used by the "put" the tests */

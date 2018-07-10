@@ -36,7 +36,6 @@ import javax.sql.DataSource;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
 import org.apache.geode.cache.Cache;
@@ -53,7 +52,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -61,7 +59,7 @@ import org.apache.geode.util.test.TestUtil;
  * multithreaded transactions. We will have around five threads doing different activities. The
  * response to those activities by transaction manager is tested.
  */
-@Category(DistributedTest.class)
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
 

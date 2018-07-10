@@ -21,9 +21,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class, BackwardCompatibilityTest.class})
+@Category({BackwardCompatibilityTest.class})
 public class LuceneSearchWithRollingUpgradeReindexFlagEnabledDUnitTest
     extends LuceneSearchWithRollingUpgradeDUnit {
   public LuceneSearchWithRollingUpgradeReindexFlagEnabledDUnitTest(String version) {

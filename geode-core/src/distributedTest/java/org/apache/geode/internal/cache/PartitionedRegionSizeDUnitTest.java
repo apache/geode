@@ -24,7 +24,6 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
@@ -35,7 +34,6 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
@@ -43,7 +41,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * PartitionedRegions with different combinations of Scope and Redundancy (Scope DIST_ACK,
  * Redundancy 1 AND Scope DIST_NO_ACK, Redundancy 0).
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
 
   private static final String DISK_STORE_NAME = "DISKSTORE";

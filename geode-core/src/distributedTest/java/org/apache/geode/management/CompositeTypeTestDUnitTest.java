@@ -25,12 +25,10 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Distributed tests for registering of custom mbean using composite types.
@@ -38,7 +36,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * See User API {@link ManagementService#registerMBean(Object, ObjectName)}.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"serial", "unused"})
 public class CompositeTypeTestDUnitTest implements Serializable {
 

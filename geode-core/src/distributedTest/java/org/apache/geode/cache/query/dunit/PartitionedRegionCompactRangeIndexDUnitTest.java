@@ -39,11 +39,10 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({DistributedTest.class, OQLQueryTest.class})
+@Category({OQLQueryTest.class})
 public class PartitionedRegionCompactRangeIndexDUnitTest extends JUnit4DistributedTestCase {
 
   private Properties getSystemProperties(String cacheXML) {

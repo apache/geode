@@ -59,14 +59,13 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>ClientServerGetAllDUnitTest</code> test client/server getAll.
  *
  * @since GemFire 5.7
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
 
   @Override

@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
@@ -38,9 +37,8 @@ import org.apache.geode.management.membership.MembershipListener;
 import org.apache.geode.management.membership.UniversalMembershipListenerAdapter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class ServerLauncherDUnitTest {
 
   private static final Logger logger = LogService.getLogger();

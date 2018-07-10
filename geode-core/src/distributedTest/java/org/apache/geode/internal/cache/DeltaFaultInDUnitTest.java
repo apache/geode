@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -32,13 +31,12 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test that the bucket size does not go negative when we fault out and in a delta object.
  *
  */
-@Category(DistributedTest.class)
+
 public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
 
 

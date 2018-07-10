@@ -71,7 +71,6 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests org.apache.geode.cache.control.ResourceManager.
@@ -79,7 +78,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * TODO: javadoc this test properly and cleanup the helper methods to be more flexible and
  * understandable
  */
-@Category(DistributedTest.class)
+
 public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
 

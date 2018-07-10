@@ -18,19 +18,17 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_T
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache30.CacheMapTxnDUnitTest;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 
 /**
  * Same tests as that of {@link CacheMapTxnDUnitTest} after setting "distributed-transactions"
  * property to true
  */
-@Category(DistributedTest.class)
+
 public class CacheMapDistTXDUnitTest extends CacheMapTxnDUnitTest {
 
   public CacheMapDistTXDUnitTest() {

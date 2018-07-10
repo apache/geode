@@ -24,12 +24,11 @@ import org.junit.rules.TestName;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class CreateRegionCommandDUnitTest {
   private static MemberVM locator, server1, server2;
 

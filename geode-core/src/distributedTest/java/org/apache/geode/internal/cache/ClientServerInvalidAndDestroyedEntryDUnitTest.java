@@ -54,14 +54,13 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This tests the fix for bug #43407 under a variety of configurations and also tests that
  * tombstones are treated in a similar manner. The ticket complains that a client that does a get(K)
  * does not end up with the entry in its cache if K is invalid on the server.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTestCase {
 
   @Override

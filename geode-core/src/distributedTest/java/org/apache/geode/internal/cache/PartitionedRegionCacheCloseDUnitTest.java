@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -29,12 +28,11 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify the meta-data cleanUp done at the time of cache close Op.
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionCacheCloseDUnitTest extends CacheTestCase {
 
   private static final int TOTAL_NUM_BUCKETS = 5;

@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import util.TestException;
 
 import org.apache.geode.cache.CacheTransactionManager;
@@ -71,14 +70,13 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test for co-located PR transactions. the test creates two data hosts and uses function execution
  * to execute transactions.
  *
  */
-@Category(DistributedTest.class)
+
 public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private static final Logger logger = LogService.getLogger();
 

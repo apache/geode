@@ -24,10 +24,9 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SessionTest;
 
-@Category({DistributedTest.class, SessionTest.class})
+@Category({SessionTest.class})
 public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
 
   // Set up the session manager we need

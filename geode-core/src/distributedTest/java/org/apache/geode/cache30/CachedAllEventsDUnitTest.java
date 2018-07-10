@@ -17,7 +17,6 @@ package org.apache.geode.cache30;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -29,14 +28,13 @@ import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Make sure that create are distributed and done in remote regions that are CACHED_ALL_EVENTS*.
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class CachedAllEventsDUnitTest extends JUnit4CacheTestCase {
 
   private VM getOtherVm() {

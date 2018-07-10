@@ -96,7 +96,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -105,7 +104,7 @@ import org.apache.geode.util.test.TestUtil;
  *
  * @since GemFire 4.0
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile InternalDistributedSystem system = null;

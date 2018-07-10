@@ -25,13 +25,12 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * Test of the behavior of a custom ResultCollector when handling exceptions
  */
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class FunctionServiceMultipleOnMemberDUnitTest extends FunctionServiceBase {
 
   private Set<DistributedMember> members = new HashSet<DistributedMember>();

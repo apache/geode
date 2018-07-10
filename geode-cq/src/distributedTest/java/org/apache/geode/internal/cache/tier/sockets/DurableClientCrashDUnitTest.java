@@ -21,7 +21,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client functionality when clients
@@ -29,7 +28,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.2
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class DurableClientCrashDUnitTest extends DurableClientTestCase {
 
   @Override

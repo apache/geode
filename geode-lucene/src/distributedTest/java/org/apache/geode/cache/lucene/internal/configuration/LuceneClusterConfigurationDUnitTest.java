@@ -49,12 +49,11 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category({DistributedTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneClusterConfigurationDUnitTest {
 
   @Rule

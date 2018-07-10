@@ -35,7 +35,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
@@ -44,7 +43,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  *
  *
  */
-@Category({DistributedTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTestCase {
 
   private transient ByteArrayOutputStream baos;

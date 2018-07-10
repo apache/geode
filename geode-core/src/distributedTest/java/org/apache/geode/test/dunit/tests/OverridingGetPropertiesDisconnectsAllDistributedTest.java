@@ -21,16 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Verifies that overriding {@code getDistributedSystemProperties} results in
  * {@code disconnectAllFromDS} during tear down.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class OverridingGetPropertiesDisconnectsAllDistributedTest extends DistributedTestCase {
 

@@ -73,14 +73,13 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Class <code>DurableClientTestCase</code> tests durable client functionality.
  *
  * @since GemFire 5.2
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
   protected static volatile boolean isPrimaryRecovered = false;

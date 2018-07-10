@@ -34,13 +34,12 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-@Category({DistributedTest.class, WanTest.class, GfshTest.class})
+@Category({WanTest.class, GfshTest.class})
 public class DestroyGatewayReceiverCommandDUnitTest {
   private MemberVM locatorSite1;
   private MemberVM server3, server4, server5;

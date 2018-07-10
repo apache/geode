@@ -51,10 +51,9 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({DistributedTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();

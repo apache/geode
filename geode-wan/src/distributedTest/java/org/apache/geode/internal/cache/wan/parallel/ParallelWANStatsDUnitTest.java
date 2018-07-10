@@ -32,10 +32,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class ParallelWANStatsDUnitTest extends WANTestBase {
 
   private static final int NUM_PUTS = 100;

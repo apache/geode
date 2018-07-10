@@ -24,7 +24,6 @@ import java.io.File;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
@@ -56,7 +55,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic functionality of the lru eviction controller and its statistics.
@@ -64,7 +62,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 3.2
  */
-@Category(DistributedTest.class)
+
 public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
   private static boolean usingMain = false;

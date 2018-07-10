@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -31,14 +30,13 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to make sure cache close is working.
  *
  * @since GemFire 3.0
  */
-@Category(DistributedTest.class)
+
 public class CacheCloseDUnitTest extends JUnit4CacheTestCase {
 
   public CacheCloseDUnitTest() {

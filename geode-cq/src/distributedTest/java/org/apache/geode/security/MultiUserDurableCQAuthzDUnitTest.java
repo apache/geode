@@ -52,10 +52,9 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCase {
 
   private final Map<String, String> cqNameToQueryStrings = new HashMap<>();

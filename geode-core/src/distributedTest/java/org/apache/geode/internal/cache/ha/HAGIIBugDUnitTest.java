@@ -53,7 +53,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test points out the bug when GII of HARegion Queue is happening and at the same time it is
@@ -63,7 +62,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * asynchronously till HARegion Queue gets created in vm1. 6. Validate the data. Puts happened
  * during GII should be missed.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

@@ -49,13 +49,12 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests cases that are particular for the auto connection source - dynamically discovering servers,
  * locators, handling locator disappearance, etc.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   protected static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";

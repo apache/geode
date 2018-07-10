@@ -34,7 +34,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
@@ -44,7 +43,7 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
  * <p>
  * Extracted from {@link PRFunctionExecutionDUnitTest}.
  */
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 @SuppressWarnings("serial")
 public class FunctionExceptionsIncludeLocalMemberRegressionTest extends CacheTestCase {
 

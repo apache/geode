@@ -24,14 +24,13 @@ import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Runs force invalidate eviction tests with off-heap regions.
  *
  * @since Geode 1.0
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class ForceInvalidateOffHeapEvictionDUnitTest extends ForceInvalidateEvictionDUnitTest {
 
   public ForceInvalidateOffHeapEvictionDUnitTest() {

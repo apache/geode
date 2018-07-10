@@ -18,12 +18,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_T
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.internal.cache.TransactionsWithDeltaDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class DistTXWithDeltaDUnitTest extends TransactionsWithDeltaDUnitTest {
 
   public DistTXWithDeltaDUnitTest() {

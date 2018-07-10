@@ -23,9 +23,8 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class, AEQTest.class})
+@Category({AEQTest.class})
 public class CommonParallelAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
 
   private static final long serialVersionUID = 1L;

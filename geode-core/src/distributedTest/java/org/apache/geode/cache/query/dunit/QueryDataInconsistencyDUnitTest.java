@@ -54,13 +54,12 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * This tests the data inconsistency during update on an index and querying the same UNLOCKED index.
  */
-@Category({DistributedTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class QueryDataInconsistencyDUnitTest implements Serializable {
 
   private static final int cnt = 0;

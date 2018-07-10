@@ -24,7 +24,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -35,7 +34,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.entries.VersionedThinDiskRegionEntryHeapObjectKey;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -48,7 +46,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #37377: Clear operation with GII in progress may result in a deleted entry to be logged in
  * the oplog without accompanying create
  */
-@Category(DistributedTest.class)
+
 public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTestCase {
 
   private static final int PUT_COUNT = 10000;

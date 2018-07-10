@@ -50,13 +50,12 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
  * Test behavior of region when running out of off-heap memory.
  */
-@Category({DistributedTest.class, OffHeapTest.class})
+@Category({OffHeapTest.class})
 @SuppressWarnings("serial")
 public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
 

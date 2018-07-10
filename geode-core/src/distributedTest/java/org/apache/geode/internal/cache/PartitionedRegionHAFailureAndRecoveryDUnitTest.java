@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -42,7 +41,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests for PartitionedRegion cleanup on Node Failure through Membership listener.<br>
@@ -53,7 +51,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * (2) testMetaDataCleanupOnMultiplePRNodeFail - Test for PartitionedRegion metadata cleanup for
  * multiple failed nodes.
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCase {
 
   private static final int VM_COUNT = 4;

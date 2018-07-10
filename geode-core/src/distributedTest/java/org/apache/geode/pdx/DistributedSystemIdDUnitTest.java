@@ -33,10 +33,9 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({DistributedTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
 
   @Override

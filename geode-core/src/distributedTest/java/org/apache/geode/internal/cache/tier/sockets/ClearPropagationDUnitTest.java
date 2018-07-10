@@ -58,13 +58,12 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is the DUnit Test to verify clear and DestroyRegion operation in Client-Server
  * Configuration.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;

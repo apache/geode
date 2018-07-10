@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -49,14 +48,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the use of CacheDistributionAdvisor in createSubRegion
  *
  *
  */
-@Category(DistributedTest.class)
+
 public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
   private transient VM[] vms;
   private transient InternalDistributedMember[] ids;

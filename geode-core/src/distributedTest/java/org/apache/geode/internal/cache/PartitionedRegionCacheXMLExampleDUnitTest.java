@@ -24,18 +24,16 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
  * This class tests regions created by xml files
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionCacheXMLExampleDUnitTest extends CacheTestCase {
 
   private static final String CACHE_XML_FILE_1 = "PartitionRegionCacheExample1.xml";

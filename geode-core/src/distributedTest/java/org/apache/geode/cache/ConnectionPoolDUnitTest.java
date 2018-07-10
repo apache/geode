@@ -77,7 +77,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the client connection pool in GemFire. It does so by creating a cache server
@@ -87,7 +86,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * Test uses Groboutils TestRunnable objects to achieve multi threading behavior in the test.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 @FixMethodOrder(NAME_ASCENDING)
 public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 

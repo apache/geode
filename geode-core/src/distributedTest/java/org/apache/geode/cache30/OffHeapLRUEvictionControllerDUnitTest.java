@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -35,7 +34,7 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  *
  * @since Geode 1.0
  */
-@Category({DistributedTest.class, OffHeapTest.class})
+@Category({OffHeapTest.class})
 public class OffHeapLRUEvictionControllerDUnitTest extends LRUEvictionControllerDUnitTest {
 
   public OffHeapLRUEvictionControllerDUnitTest() {

@@ -51,14 +51,13 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
  * Test for GEODE-396
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
 
   private Cache cache;

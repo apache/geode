@@ -49,7 +49,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.AttributesFactory;
@@ -79,14 +78,13 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Distributed tests for {@link UniversalMembershipListenerAdapter}.
  *
  * @since GemFire 4.2.1
  */
-@Category(DistributedTest.class)
+
 public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTestCase {
 
   private static final int JOINED = 0;

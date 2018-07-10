@@ -36,12 +36,11 @@ import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({RestAPITest.class, DistributedTest.class})
+@Category({RestAPITest.class})
 public class RestFunctionExecuteDUnitTest {
 
   @ClassRule

@@ -25,12 +25,10 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.io.IntegerFileReader;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -39,7 +37,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
+
 public class LocalProcessLauncherDistributedTest extends DistributedTestCase {
 
   private int pid;

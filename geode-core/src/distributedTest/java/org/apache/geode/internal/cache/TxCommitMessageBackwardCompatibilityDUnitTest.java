@@ -54,7 +54,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
@@ -69,7 +68,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * <li>CacheServer via Pool (transaction)-> CacheServer</li>
  * </ol>
  */
-@Category({DistributedTest.class, BackwardCompatibilityTest.class})
+@Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")

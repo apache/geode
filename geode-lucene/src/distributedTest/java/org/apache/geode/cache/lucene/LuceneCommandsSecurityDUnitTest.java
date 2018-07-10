@@ -42,12 +42,11 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, SecurityTest.class, LuceneTest.class})
+@Category({SecurityTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneCommandsSecurityDUnitTest {
 

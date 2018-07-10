@@ -23,10 +23,9 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 @FixMethodOrder(NAME_ASCENDING)
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ConnectionPoolAutoDUnitTest extends ConnectionPoolDUnitTest {
 
   @Override

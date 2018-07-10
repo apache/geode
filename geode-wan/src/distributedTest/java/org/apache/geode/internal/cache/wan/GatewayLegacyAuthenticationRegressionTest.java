@@ -60,7 +60,6 @@ import org.apache.geode.security.Authenticator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -71,7 +70,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * <p>
  * GEODE-3117: "Gateway authentication throws NullPointerException"
  */
-@Category({DistributedTest.class, SecurityTest.class, WanTest.class})
+@Category({SecurityTest.class, WanTest.class})
 public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
   private static final String REGION_NAME = "TheRegion";

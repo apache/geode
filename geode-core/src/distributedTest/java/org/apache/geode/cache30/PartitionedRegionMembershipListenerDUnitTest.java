@@ -23,8 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
@@ -33,12 +31,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * @since GemFire 6.0
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionMembershipListenerDUnitTest
     extends RegionMembershipListenerDUnitTest {
 

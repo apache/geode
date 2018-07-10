@@ -45,7 +45,6 @@ import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -55,7 +54,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #37805: Cache level API is required, which will return rootRegions() excluding all Meta
  * Regions and HA Regions
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class RootRegionsExcludesHARegionsRegressionTest implements Serializable {
 
   private static final String DURABLE_CLIENT_TIMEOUT_VALUE = String.valueOf(600);

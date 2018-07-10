@@ -71,10 +71,9 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({DistributedTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   // list of expected exceptions to remove in tearDown2()

@@ -38,13 +38,12 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.RegionsTest;
 
 /**
  * Tests the basic use cases for PR persistence.
  */
-@Category({DistributedTest.class, RegionsTest.class})
+@Category({RegionsTest.class})
 public class PersistPRKRFIntegrationTest {
   private static final String REGION_NAME = "testRegion";
   private static final String DISK_STORE_NAME = "testRegionDiskStore";

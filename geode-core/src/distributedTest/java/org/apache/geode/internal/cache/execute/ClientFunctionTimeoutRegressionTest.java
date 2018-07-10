@@ -60,7 +60,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
@@ -71,7 +70,7 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
  * TRAC #51193: The function execution connection on the server is never terminated even if the
  * gemfire.CLIENT_FUNCTION_TIMEOUT property is set
  */
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class ClientFunctionTimeoutRegressionTest implements Serializable {

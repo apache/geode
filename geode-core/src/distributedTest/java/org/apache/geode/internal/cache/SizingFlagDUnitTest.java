@@ -25,7 +25,6 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -54,7 +53,6 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * A test of the when we will use the object sizer to determine the actual size of objects wrapped
@@ -66,7 +64,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * support indexes on regions with overflow to disk.
  *
  */
-@Category(DistributedTest.class)
+
 public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
 
   public SizingFlagDUnitTest() {

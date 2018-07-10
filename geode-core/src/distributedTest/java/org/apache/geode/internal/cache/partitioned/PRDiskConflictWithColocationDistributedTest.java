@@ -31,7 +31,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -47,13 +46,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Extracted from {@link PersistentPartitionedRegionDistributedTest}.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class PRDiskConflictWithColocationDistributedTest implements Serializable {
 

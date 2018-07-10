@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -39,7 +38,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to make sure cache values are lazily deserialized
@@ -49,7 +47,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class ValuesAreLazilyDeserializedRegressionTest extends CacheTestCase {
 
   private static final String REGION_NAME = "bug34948";

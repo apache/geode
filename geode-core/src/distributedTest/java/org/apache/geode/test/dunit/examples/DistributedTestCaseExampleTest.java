@@ -17,13 +17,11 @@ package org.apache.geode.test.dunit.examples;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class DistributedTestCaseExampleTest extends DistributedTestCase {
 

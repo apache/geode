@@ -40,7 +40,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify :
@@ -48,7 +47,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * 1)put() on a mirrored HARegion does not propagate 2)localDestroy() allowed on a mirrored region
  * 3) GII happens normally
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HARegionDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;

@@ -61,14 +61,13 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test class for Partitioned Region and CQs
  *
  * @since GemFire 5.5
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
   public static final String[] regions = new String[] {"regionA", "regionB"};

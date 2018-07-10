@@ -18,16 +18,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCK
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test all the PartitionedRegion api calls when ConserveSockets is set to false
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionAPIConserveSocketsFalseDUnitTest
     extends PartitionedRegionAPIDUnitTest {
 

@@ -16,12 +16,9 @@ package org.apache.geode.internal.cache;
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class RemoteTransactionCCEDUnitTest extends RemoteTransactionDUnitTest {
 
   private static final long serialVersionUID = 5960292521068781262L;

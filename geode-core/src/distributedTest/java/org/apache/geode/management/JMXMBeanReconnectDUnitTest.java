@@ -47,12 +47,11 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 
-@Category({DistributedTest.class, JMXTest.class})
+@Category({JMXTest.class})
 public class JMXMBeanReconnectDUnitTest {
   private static final String LOCATOR_1_NAME = "locator-one";
   private static final String LOCATOR_2_NAME = "locator-two";

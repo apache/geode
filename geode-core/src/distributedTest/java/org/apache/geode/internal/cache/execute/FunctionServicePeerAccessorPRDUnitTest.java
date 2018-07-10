@@ -16,13 +16,12 @@ package org.apache.geode.internal.cache.execute;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * Test of the behavior of a custom ResultCollector when handling exceptions
  */
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class FunctionServicePeerAccessorPRDUnitTest extends FunctionServicePeerAccessorPRBase {
 
   @Override

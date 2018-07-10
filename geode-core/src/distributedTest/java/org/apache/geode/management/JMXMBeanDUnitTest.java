@@ -59,7 +59,6 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.util.test.TestUtil;
@@ -70,7 +69,7 @@ import org.apache.geode.util.test.TestUtil;
  * these tests, otherwise, some tests would fail. Seems like dunit vm tear down did not clean up the
  * ssl settings cleanly.
  */
-@Category({DistributedTest.class, JMXTest.class})
+@Category({JMXTest.class})
 @SuppressWarnings("serial")
 public class JMXMBeanDUnitTest implements Serializable {
 

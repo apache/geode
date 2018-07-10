@@ -21,12 +21,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.SuiteRunner;
 
-@Category({DistributedTest.class, SecurityTest.class, GfshTest.class})
+@Category({SecurityTest.class, GfshTest.class})
 @RunWith(SuiteRunner.class)
 @Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class,
     RebalanceCommandDUnitTest.class, RegionMembershipMBeanDUnitTest.class,

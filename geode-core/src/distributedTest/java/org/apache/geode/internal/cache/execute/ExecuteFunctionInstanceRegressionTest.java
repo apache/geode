@@ -35,7 +35,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
@@ -85,7 +84,7 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
  * <p>
  * Extracted from {@link PRFunctionExecutionDUnitTest}.
  */
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class ExecuteFunctionInstanceRegressionTest extends CacheTestCase {
 
   private String regionName;

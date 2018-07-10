@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Map;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -37,12 +36,11 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests basic region operations with compression enabled.
  */
-@Category(DistributedTest.class)
+
 public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.

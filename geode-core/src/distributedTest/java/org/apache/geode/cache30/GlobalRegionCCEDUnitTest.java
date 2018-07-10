@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -41,13 +40,12 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test is only for GLOBAL REPLICATE Regions. Tests are similar to
  * {@link DistributedAckRegionCCEDUnitTest}.
  */
-@Category(DistributedTest.class)
+
 public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
 
   @Override

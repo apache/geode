@@ -21,7 +21,6 @@ import java.io.File;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
@@ -39,14 +38,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to make sure dynamic regions work
  *
  * @since GemFire 4.3
  */
-@Category(DistributedTest.class)
+
 public class DynamicRegionDUnitTest extends JUnit4CacheTestCase {
 
   // Specify oplog size in MB

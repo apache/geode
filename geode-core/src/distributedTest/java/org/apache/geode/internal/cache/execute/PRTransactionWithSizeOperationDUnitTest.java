@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
@@ -38,9 +37,8 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class PRTransactionWithSizeOperationDUnitTest extends JUnit4CacheTestCase {
   Host host = Host.getHost(0);
   VM dataStore1 = host.getVM(0);

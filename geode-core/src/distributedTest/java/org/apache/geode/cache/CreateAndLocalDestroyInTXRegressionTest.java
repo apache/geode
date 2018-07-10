@@ -35,7 +35,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
@@ -44,7 +43,6 @@ import org.apache.geode.i18n.StringId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Create and LocalDestroy/LocalInvalidate should create event with NewValue
@@ -55,7 +53,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class CreateAndLocalDestroyInTXRegressionTest implements Serializable {

@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -48,7 +47,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the size of clientUpdateMessageImpl with the size calculated by {@link MemoryLRUController}
@@ -56,7 +54,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.7
  */
-@Category(DistributedTest.class)
+
 public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase {
 
   protected static InternalLocator locator;

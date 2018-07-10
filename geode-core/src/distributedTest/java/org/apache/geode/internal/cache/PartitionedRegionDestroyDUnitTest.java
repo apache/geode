@@ -27,7 +27,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -40,12 +39,11 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test aims to test the destroyRegion functionality.
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
   private static volatile CountDownLatch signalLatch = new CountDownLatch(1);

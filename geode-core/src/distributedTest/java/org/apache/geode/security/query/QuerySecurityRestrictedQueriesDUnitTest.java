@@ -29,11 +29,10 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.security.query.data.QueryTestObject;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class QuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {

@@ -85,7 +85,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
@@ -104,7 +103,6 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
  * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
  * @since GemFire 7.0
  */
-@Category(DistributedTest.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @SuppressWarnings("serial")
 public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {

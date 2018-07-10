@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -32,13 +31,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * TRAC #33359: AssertionError thrown while processing
  * cache.DistributedClearOperation$ClearRegionMessage
  */
-@Category(DistributedTest.class)
+
 public class ClearRegionMessageAssertionRegressionTest extends DistributedTestCase {
 
   private static Cache cache;

@@ -26,7 +26,6 @@ import java.util.TreeSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -36,12 +35,11 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests PRID (PartitionedRegion Id) metadata.
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionPRIDDUnitTest extends CacheTestCase {
 
   private static final String RETRY_TIMEOUT_PROPERTY_VALUE = "20000";

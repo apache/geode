@@ -24,7 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheWriter;
@@ -41,14 +40,13 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Asserts that values received in EntryEvents for CacheWriters and CacheListeners are not
  * compressed.
  *
  */
-@Category(DistributedTest.class)
+
 public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.

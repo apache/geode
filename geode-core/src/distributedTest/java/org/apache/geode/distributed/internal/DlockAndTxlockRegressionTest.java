@@ -47,9 +47,8 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DLockTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DLockTest.class, DistributedTest.class})
+@Category({DLockTest.class})
 public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
   public static final String TRANSACTION_COUNT = "transactionCount";

@@ -14,20 +14,18 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests Distributed Ack Region with compression.
  *
  * @since GemFire 8.0
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"deprecation", "serial"})
 public class DistributedAckRegionCompressionDUnitTest extends DistributedAckRegionDUnitTest {
 

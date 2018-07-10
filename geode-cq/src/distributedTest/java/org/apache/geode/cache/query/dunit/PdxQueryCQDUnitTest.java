@@ -48,11 +48,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 
-@Category({DistributedTest.class, SerializationTest.class, ClientSubscriptionTest.class})
+@Category({SerializationTest.class, ClientSubscriptionTest.class})
 public class PdxQueryCQDUnitTest extends PdxQueryCQTestBase {
 
   public PdxQueryCQDUnitTest() {

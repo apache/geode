@@ -18,10 +18,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.concurrent.ConcurrentParallelGatewaySenderOperation_2_DUnitTest;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class ParallelGatewaySenderOperation_2_DUnitTest
     extends ConcurrentParallelGatewaySenderOperation_2_DUnitTest {
 

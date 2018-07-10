@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -48,14 +47,13 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Make sure that operations are distributed and done in regions remote from a PROXY
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class ProxyDUnitTest extends JUnit4CacheTestCase {
 
   private transient Region r;

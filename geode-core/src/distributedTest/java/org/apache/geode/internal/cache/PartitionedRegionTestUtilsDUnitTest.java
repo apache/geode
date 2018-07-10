@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -45,14 +44,13 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Confirm that the utils used for testing work as advertised
  *
  * @since GemFire 5.0
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
 
   private static final int TOTAL_NUM_BUCKETS = 5;

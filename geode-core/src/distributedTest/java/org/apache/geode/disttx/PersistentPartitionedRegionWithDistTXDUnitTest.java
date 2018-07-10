@@ -18,16 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_T
 
 import java.util.Properties;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.internal.cache.partitioned.PersistentPartitionedRegionWithTransactionDUnitTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Same tests as that of {@link PersistentPartitionedRegionWithTransactionDUnitTest} after setting
  * "distributed-transactions" property to true
  */
-@Category(DistributedTest.class)
+
 public class PersistentPartitionedRegionWithDistTXDUnitTest
     extends PersistentPartitionedRegionWithTransactionDUnitTest {
 

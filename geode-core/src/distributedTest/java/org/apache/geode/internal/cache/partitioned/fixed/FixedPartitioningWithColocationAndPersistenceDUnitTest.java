@@ -27,10 +27,9 @@ import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.PartitioningTest;
 
-@Category({DistributedTest.class, PartitioningTest.class})
+@Category({PartitioningTest.class})
 public class FixedPartitioningWithColocationAndPersistenceDUnitTest
     extends FixedPartitioningTestBase {
 

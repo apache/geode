@@ -40,13 +40,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * This tests the rolling upgrade for locators with different GOSSIPVERSION.
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase {
 
   @Override

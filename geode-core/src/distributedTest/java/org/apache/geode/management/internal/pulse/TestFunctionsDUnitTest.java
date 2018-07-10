@@ -33,12 +33,11 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is for testing running functions
  */
-@Category(DistributedTest.class)
+
 public class TestFunctionsDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;

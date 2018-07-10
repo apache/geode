@@ -40,9 +40,8 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category({DistributedTest.class, AEQTest.class})
+@Category({AEQTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueueTestBase {
 

@@ -53,12 +53,11 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DLockTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests distributed ownership via the DistributedLockService api.
  */
-@Category({DistributedTest.class, DLockTest.class})
+@Category({DLockTest.class})
 public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   private static InternalDistributedSystem system;

@@ -71,7 +71,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This Dunit test is to verify that when the dispatcher of CS dispatches the Event , the peer's
@@ -82,7 +81,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * QRM is envoked 7. Again the entry in the regionque of client2 on server2.It should not be
  * present. 8. close client1 and client2 9. close server1 and server2
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = HADispatcherDUnitTest.class.getSimpleName() + "_region";

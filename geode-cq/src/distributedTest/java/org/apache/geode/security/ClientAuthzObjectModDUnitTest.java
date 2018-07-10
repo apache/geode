@@ -34,7 +34,6 @@ import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyAuthzCredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
@@ -51,7 +50,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  *
  * @since GemFire 5.5
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
 
   private static final String PRE_ACCESSOR_CREATE =

@@ -18,13 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+
 public class BeforeClassExampleTest {
 
   @BeforeClass

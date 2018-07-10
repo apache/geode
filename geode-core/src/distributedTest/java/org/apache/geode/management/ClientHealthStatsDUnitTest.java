@@ -37,7 +37,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryEvent;
@@ -55,7 +54,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Distributed tests for client stats exposed via {@link CacheServerMXBean}:
@@ -65,7 +63,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <li>{@link CacheServerMXBean#showClientQueueDetails}
  * </ul>
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings({"serial", "unused"})
 public class ClientHealthStatsDUnitTest implements Serializable {
 

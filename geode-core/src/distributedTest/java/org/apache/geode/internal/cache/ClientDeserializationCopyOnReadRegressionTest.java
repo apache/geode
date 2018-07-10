@@ -68,7 +68,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Client side deserialization should not throw EOFException when copy-on-read is true.
@@ -78,7 +77,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire bugfix5.7
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class ClientDeserializationCopyOnReadRegressionTest extends ClientServerTestCase {

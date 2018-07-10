@@ -49,13 +49,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * One Client , two servers. Ensure that client 1 has registered interest list on server 2. Now
  * Client does a put on server1 . The Client should not receive callback of his own put.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4DistributedTestCase {
 
   private VM vm0 = null;

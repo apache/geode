@@ -43,10 +43,9 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SecurityManagerLifecycleDistributedTest extends CacheTestCase {
 
   private String locators;

@@ -36,10 +36,9 @@ import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({DistributedTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4DistributedTestCase {
   protected VM locator = null;
   protected VM server = null;

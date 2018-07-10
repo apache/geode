@@ -17,14 +17,13 @@ package org.apache.geode.cache30;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Same as parent but uses selector in server
  *
  * @since GemFire 5.1
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClientMembershipSelectorDUnitTest extends ClientMembershipDUnitTest {
   @Override
   protected int getMaxThreads() {

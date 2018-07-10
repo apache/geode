@@ -51,10 +51,9 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
-@Category({DistributedTest.class, FunctionServiceTest.class})
+@Category({FunctionServiceTest.class})
 public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
 
   protected static VM dataStore1 = null;

@@ -25,14 +25,13 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test reconnecting a durable client that is using the locator to discover its servers
  *
  * @since GemFire 5.7
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class DurableClientReconnectAutoDUnitTest extends DurableClientReconnectDUnitTest {
 
   @BeforeClass

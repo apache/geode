@@ -53,7 +53,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -84,7 +83,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -96,7 +94,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <li>Test backing up and recovering while ops are in progress?
  * </ul>
  */
-@Category(DistributedTest.class)
+
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class BackupDistributedTest implements Serializable {

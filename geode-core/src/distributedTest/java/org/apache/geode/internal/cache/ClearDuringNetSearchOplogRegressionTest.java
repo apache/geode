@@ -29,7 +29,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -42,7 +41,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -58,7 +56,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #40299: Suspect String - DiskAccessException : Data for DiskEntry could not be obtained
  * from Disk. A clear operation may have deleted the oplogs (logged as error)
  */
-@Category(DistributedTest.class)
+
 public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
 
   private String uniqueName;

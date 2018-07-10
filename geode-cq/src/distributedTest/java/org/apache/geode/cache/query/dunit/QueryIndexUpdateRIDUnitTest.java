@@ -52,7 +52,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -62,7 +61,7 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  *
  *
  */
-@Category({DistributedTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
   /** The port on which the bridge server was started in this VM */

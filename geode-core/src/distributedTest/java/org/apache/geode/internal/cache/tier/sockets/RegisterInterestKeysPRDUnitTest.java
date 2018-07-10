@@ -20,13 +20,12 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * subclass of UpdatePropagationDUnitTest to exercise partitioned regions
  *
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class RegisterInterestKeysPRDUnitTest extends RegisterInterestKeysDUnitTest {
 
   public RegisterInterestKeysPRDUnitTest() {

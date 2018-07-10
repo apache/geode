@@ -28,7 +28,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
@@ -38,7 +37,7 @@ import org.apache.geode.test.junit.categories.WanTest;
  *
  *
  */
-@Category({DistributedTest.class, WanTest.class})
+@Category({WanTest.class})
 public class WANManagementDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;

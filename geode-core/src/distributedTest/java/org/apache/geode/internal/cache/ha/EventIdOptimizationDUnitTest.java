@@ -59,7 +59,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client to server, server
@@ -71,7 +70,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * p2p and then finally to client-2. It is verified that client-2 receives the same values for
  * thread-id and sequence-id.
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /** Cache-server1 */

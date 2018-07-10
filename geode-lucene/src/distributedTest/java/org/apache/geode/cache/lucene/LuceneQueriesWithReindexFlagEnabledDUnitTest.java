@@ -21,7 +21,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
@@ -29,7 +28,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
  * should be executed against a number of different regions types and topologies.
  *
  */
-@Category({DistributedTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class LuceneQueriesWithReindexFlagEnabledDUnitTest extends LuceneQueriesDUnitTest {
 

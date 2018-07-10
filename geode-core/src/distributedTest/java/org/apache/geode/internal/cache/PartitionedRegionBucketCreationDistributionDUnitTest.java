@@ -28,7 +28,6 @@ import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -42,12 +41,11 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests bucket Creation and distribution for the multiple Partition regions.
  */
-@Category(DistributedTest.class)
+
 public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheTestCase {
 
   private String regionOne;

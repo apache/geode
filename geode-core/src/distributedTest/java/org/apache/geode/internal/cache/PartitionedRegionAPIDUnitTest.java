@@ -27,7 +27,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheLoader;
@@ -44,12 +43,11 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is a dunit test for PartitionedRegion creation and Region API's functionality.
  */
-@Category(DistributedTest.class)
+
 @SuppressWarnings("serial")
 public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 

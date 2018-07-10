@@ -26,11 +26,10 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({DistributedTest.class, AEQTest.class})
+@Category({AEQTest.class})
 public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
 
   private static final long serialVersionUID = 1L;

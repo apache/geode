@@ -28,7 +28,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.modules.session.functions.GetMaxInactiveInterval;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SessionTest;
 
 /**
@@ -37,7 +36,7 @@ import org.apache.geode.test.junit.categories.SessionTest;
  * This class contains all of the tests of session replication functionality. Subclasses of this
  * class configure different containers in order to run these tests against specific containers.
  */
-@Category({DistributedTest.class, SessionTest.class})
+@Category({SessionTest.class})
 public abstract class CargoTestBase extends JUnit4CacheTestCase {
   @Rule
   public transient TestName testName = new TestName();

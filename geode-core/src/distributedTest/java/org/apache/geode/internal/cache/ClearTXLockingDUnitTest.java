@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
@@ -42,7 +41,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test class to verify proper locking interaction between transactions and the CLEAR region
@@ -58,7 +56,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This forces CLEAR to wait until commit processing is complete.
  */
 @SuppressWarnings("serial")
-@Category(DistributedTest.class)
+
 public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
 
   @Rule

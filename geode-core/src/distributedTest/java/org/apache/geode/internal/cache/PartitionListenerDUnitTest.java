@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -43,10 +42,9 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 @SuppressWarnings({"serial", "rawtypes", "deprecation", "unchecked"})
-@Category(DistributedTest.class)
+
 public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
 
   public PartitionListenerDUnitTest() {

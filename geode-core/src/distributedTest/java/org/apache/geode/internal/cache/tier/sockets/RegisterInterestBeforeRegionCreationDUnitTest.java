@@ -48,7 +48,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test tests the scenario whereby a register interest has been called before the region has
@@ -61,7 +60,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * put on region1 in server1 - mirrored region1 is created on server2 - data will come to region1 on
  * server2 via GII - data should be sent to client2
  */
-@Category({DistributedTest.class, ClientSubscriptionTest.class})
+@Category({ClientSubscriptionTest.class})
 public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4DistributedTestCase {
 
   /** Server1 VM **/

@@ -55,14 +55,13 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test to verify EventID generated from Cache Client is correctly passed on to the cache server for
  * create, update, remove and destroy operations.It also checks that peer nodes also get the same
  * EventID.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

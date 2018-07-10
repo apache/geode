@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -41,13 +40,12 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * For the Global region subsequent puts should be blocked until the clear operation is completely
  * done
  */
-@Category(DistributedTest.class)
+
 public class ClearGlobalDUnitTest extends JUnit4DistributedTestCase {
 
   static VM server1 = null;

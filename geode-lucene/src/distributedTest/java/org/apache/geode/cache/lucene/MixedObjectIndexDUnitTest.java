@@ -36,10 +36,9 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category({DistributedTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class MixedObjectIndexDUnitTest extends LuceneQueriesAccessorBase {
 

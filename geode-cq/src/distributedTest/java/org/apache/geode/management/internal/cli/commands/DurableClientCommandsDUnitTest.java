@@ -48,11 +48,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, GfshTest.class}) // GEODE-1705 GEODE-3404
+@Category({GfshTest.class}) // GEODE-1705 GEODE-3404
                                                    // GEODE-3359
 @SuppressWarnings("serial")
 public class DurableClientCommandsDUnitTest {
