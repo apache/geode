@@ -24,23 +24,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Status;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
@@ -48,6 +53,7 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.TXManagerCancelledException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
@@ -95,6 +101,15 @@ public class TXState implements TXStateInterface {
    */
   private int modSerialNum;
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<EntryEventImpl>();
+  /**
+   * for client/server JTA transactions we need to have a single thread handle both beforeCompletion
+   * and afterCompletion so that beforeCompletion can obtain locks for the afterCompletion step.
+   * This is that thread
+   */
+  protected volatile TXStateSynchronizationRunnable syncRunnable;
+
+  private volatile SynchronizationCommitConflictException beforeCompletionException;
+  private volatile RuntimeException afterCompletionException;
 
   // Internal testing hooks
   private Runnable internalAfterReservation;
@@ -901,6 +916,9 @@ public class TXState implements TXStateInterface {
       synchronized (this.completionGuard) {
         this.completionGuard.notifyAll();
       }
+      if (this.syncRunnable != null) {
+        this.syncRunnable.abort();
+      }
       if (iae != null && !this.proxy.getCache().isClosed()) {
         throw iae;
       }
@@ -1000,11 +1018,45 @@ public class TXState implements TXStateInterface {
     if (this.closed) {
       throw new TXManagerCancelledException();
     }
-    this.proxy.getTxMgr().setTXState(null);
+    TXStateSynchronizationRunnable sync = createTxStateSynchronizationRunnable();
+    setSynchronizationRunnable(sync);
+
+    Executor exec = getExecutor();
+    exec.execute(sync);
+    sync.waitForFirstExecution();
+    if (getBeforeCompletionException() != null) {
+      throw getBeforeCompletionException();
+    }
+  }
+
+  TXStateSynchronizationRunnable createTxStateSynchronizationRunnable() {
+    Runnable beforeCompletion = new Runnable() {
+      @SuppressWarnings("synthetic-access")
+      public void run() {
+        doBeforeCompletion();
+      }
+    };
+
+    return new TXStateSynchronizationRunnable(getCache().getCancelCriterion(),
+        beforeCompletion);
+  }
+
+  Executor getExecutor() {
+    return InternalDistributedSystem.getConnectedInstance().getDistributionManager()
+        .getWaitingThreadPool();
+  }
+
+  SynchronizationCommitConflictException getBeforeCompletionException() {
+    return beforeCompletionException;
+  }
+
+  private void setSynchronizationRunnable(TXStateSynchronizationRunnable synchronizationRunnable) {
+    syncRunnable = synchronizationRunnable;
+  }
+
+  void doBeforeCompletion() {
     final long opStart = CachePerfStats.getStatTime();
     this.jtaLifeTime = opStart - getBeginTime();
-
-
     try {
       reserveAndCheck();
       /*
@@ -1042,8 +1094,8 @@ public class TXState implements TXStateInterface {
       }
     } catch (CommitConflictException commitConflict) {
       cleanup();
-      this.proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
-      throw new SynchronizationCommitConflictException(
+      proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
+      beforeCompletionException = new SynchronizationCommitConflictException(
           LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
               .toLocalizedString(getTransactionId()),
           commitConflict);
@@ -1057,40 +1109,79 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public void afterCompletion(int status) {
-    // System.err.println("start afterCompletion");
-    final long opStart = CachePerfStats.getStatTime();
-    switch (status) {
-      case Status.STATUS_COMMITTED:
-        // System.err.println("begin commit in afterCompletion");
-        Assert.assertTrue(this.locks != null,
-            "Gemfire Transaction afterCompletion called with illegal state.");
-        try {
-          proxy.getTxMgr().setTXState(null);
-          commit();
-          saveTXCommitMessageForClientFailover();
-        } catch (CommitConflictException error) {
-          Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
-              + " afterCompletion failed.due to CommitConflictException: " + error);
-        }
+    this.proxy.getTxMgr().setTXState(null);
 
-        this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
-        this.locks = null;
-        // System.err.println("end commit in afterCompletion");
-        break;
-      case Status.STATUS_ROLLEDBACK:
-        this.jtaLifeTime = opStart - getBeginTime();
-        this.proxy.getTxMgr().setTXState(null);
-        rollback();
-        saveTXCommitMessageForClientFailover();
-        this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
-        break;
-      default:
-        Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+    Runnable afterCompletion = new Runnable() {
+      @SuppressWarnings("synthetic-access")
+      public void run() {
+        doAfterCompletion(status);
+      }
+    };
+    // if there was a beforeCompletion call then there will be a thread
+    // sitting in the waiting pool to execute afterCompletion. Otherwise
+    // throw FailedSynchronizationException().
+    TXStateSynchronizationRunnable sync = getSynchronizationRunnable();
+    if (sync != null) {
+      sync.runSecondRunnable(afterCompletion);
+      if (getAfterCompletionException() != null) {
+        throw getAfterCompletionException();
+      }
+    } else {
+      // rollback does not run beforeCompletion.
+      if (status != Status.STATUS_ROLLEDBACK) {
+        throw new FailedSynchronizationException(
+            "Could not execute afterCompletion when beforeCompletion was not executed");
+      }
+      doAfterCompletion(status);
     }
-    // System.err.println("end afterCompletion");
   }
 
-  private void saveTXCommitMessageForClientFailover() {
+  TXStateSynchronizationRunnable getSynchronizationRunnable() {
+    return this.syncRunnable;
+  }
+
+  RuntimeException getAfterCompletionException() {
+    return afterCompletionException;
+  }
+
+  void doAfterCompletion(int status) {
+    final long opStart = CachePerfStats.getStatTime();
+    try {
+      switch (status) {
+        case Status.STATUS_COMMITTED:
+          Assert.assertTrue(this.locks != null,
+              "Gemfire Transaction afterCompletion called with illegal state.");
+          try {
+            commit();
+            saveTXCommitMessageForClientFailover();
+          } catch (CommitConflictException error) {
+            Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
+                + " afterCompletion failed.due to CommitConflictException: " + error);
+          }
+
+          this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
+          this.locks = null;
+          break;
+        case Status.STATUS_ROLLEDBACK:
+          this.jtaLifeTime = opStart - getBeginTime();
+          rollback();
+          saveTXCommitMessageForClientFailover();
+          this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
+          break;
+        default:
+          Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+      }
+    } catch (RuntimeException exception) {
+      LogService.getLogger().info("got exception " + exception);
+      afterCompletionException = exception;
+    } catch (InternalGemFireError error) {
+      TransactionException exception = new TransactionException(error);
+      afterCompletionException = exception;
+    }
+
+  }
+
+  void saveTXCommitMessageForClientFailover() {
     proxy.getTxMgr().saveTXStateForClientFailover(proxy);
   }
 
