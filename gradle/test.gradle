@@ -93,6 +93,15 @@ subprojects {
       }
       resources.srcDir file('src/integrationTest/resources')
     }
+
+    distributedTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/distributedTest/java')
+      }
+      resources.srcDir file('src/distributedTest/resources')
+    }
   }
 
   task integrationTest(type:Test) {
@@ -117,11 +126,21 @@ subprojects {
   }
 
   task distributedTest(type:Test) {
+    testClassesDirs = sourceSets.distributedTest.output.classesDirs
+    classpath = sourceSets.distributedTest.runtimeClasspath
+
     useJUnit {
       includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
+
     forkEvery 1
+
+    if (project.hasProperty('maxParallelForks'))
+      maxParallelForks = project.maxParallelForks as int
+    if (project.hasProperty('forkEvery'))
+      forkEvery = project.forkEvery as int
+
     outputs.upToDateWhen{false}
   }
 

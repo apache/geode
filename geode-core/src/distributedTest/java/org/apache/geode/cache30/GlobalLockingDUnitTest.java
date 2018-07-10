@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category({DistributedTest.class, DLockTest.class})
 public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
-  public static Region region_testBug32356;
+  private static Region region_testBug32356;
 
   public GlobalLockingDUnitTest() {
     super();
