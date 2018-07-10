@@ -25,15 +25,16 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({IntegrationTest.class, RedisTest.class})
-public class RedisServerTest {
+public class RedisServerIntegrationTest {
 
-  Cache cache;
-  GeodeRedisServer redisServer;
+  private Cache cache;
+  private GeodeRedisServer redisServer;
+  private int redisPort;
 
   @Before
   public void createCache() {
@@ -41,6 +42,8 @@ public class RedisServerTest {
     props.setProperty("mcast-port", "0");
     CacheFactory cacheFactory = new CacheFactory(props);
     cache = cacheFactory.create();
+    redisPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    assert (cache.rootRegions().size() == 0);
   }
 
   @After
@@ -52,22 +55,16 @@ public class RedisServerTest {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-3065
   public void initializeRedisCreatesThreeRegions() {
-    createCache();
-    assert (cache.rootRegions().size() == 0);
-    redisServer = new GeodeRedisServer(0);
+    redisServer = new GeodeRedisServer(redisPort);
     redisServer.start();
     assert cache.rootRegions().size() == 2 : cache.rootRegions().size();
     assert cache.getRegion(GeodeRedisServer.REDIS_META_DATA_REGION) != null;
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-3065
   public void initializeRedisCreatesPartitionedRegionByDefault() {
-    createCache();
-    assert (cache.rootRegions().size() == 0);
-    redisServer = new GeodeRedisServer(0);
+    redisServer = new GeodeRedisServer(redisPort);
     redisServer.start();
     Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
     assert r.getAttributes().getDataPolicy() == DataPolicy.PARTITION : r.getAttributes()
@@ -75,12 +72,9 @@ public class RedisServerTest {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-3065
   public void initializeRedisCreatesRegionsUsingSystemProperty() {
-    createCache();
-    assert (cache.rootRegions().size() == 0);
     System.setProperty("gemfireredis.regiontype", "REPLICATE");
-    redisServer = new GeodeRedisServer(0);
+    redisServer = new GeodeRedisServer(redisPort);
     redisServer.start();
     Region r = cache.getRegion(GeodeRedisServer.STRING_REGION);
     assert r.getAttributes().getDataPolicy() == DataPolicy.REPLICATE : r.getAttributes()
