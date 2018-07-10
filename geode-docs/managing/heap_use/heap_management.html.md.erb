@@ -153,7 +153,7 @@ If your JVM allows, configure it to initiate concurrent mark-sweep (CMS) garbage
 
 ## <a id="configuring_resource_manager__section_DE1CC494C2B547B083AA00821250972A" class="no-quick-link"></a>Monitor and Tune Heap LRU Configurations
 
-In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire clsuter. To stay below critical, tune so that the <%=vars.product_name%> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
+In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire cluster. To stay below critical, tune so that the <%=vars.product_name%> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
 
 Use the statistics provided by your JVM to make sure your memory and GC settings are sufficient for your needs.
 
