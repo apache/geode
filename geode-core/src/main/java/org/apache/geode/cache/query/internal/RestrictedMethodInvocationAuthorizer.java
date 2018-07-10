@@ -31,10 +31,7 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
 
   public static final String UNAUTHORIZED_STRING = "Unauthorized access to method: ";
 
-  protected static final HashMap<String, Set> DEFAULT_WHITELIST;
-  static {
-    DEFAULT_WHITELIST = createWhiteList();
-  }
+  protected static final HashMap<String, Set> DEFAULT_WHITELIST = createWhiteList();
 
   private SecurityService securityService;
 

@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  * This test verifies client/server distinct order-by queries with integrated security
  */
 @Category({DistributedTest.class, SecurityTest.class})
-public class QuerySecurityDistinctQueryDUnitTest extends QuerySecurityBase {
+public class QuerySecurityDistinctQueryDistributedTest extends QuerySecurityBase {
 
   public RegionShortcut getRegionType() {
     return RegionShortcut.PARTITION;
@@ -60,6 +60,5 @@ public class QuerySecurityDistinctQueryDUnitTest extends QuerySecurityBase {
       assertThat(results).isInstanceOf(SelectResults.class);
       assertThat(((SelectResults) results).size()).isEqualTo(limit);
     });
-
   }
 }
