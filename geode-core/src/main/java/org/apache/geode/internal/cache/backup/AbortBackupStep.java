@@ -24,13 +24,13 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
-class AbortBackupOperation extends BackupOperation {
+class AbortBackupStep extends BackupStep {
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
   private final AbortBackupFactory abortBackupFactory;
 
-  AbortBackupOperation(DistributionManager dm, InternalDistributedMember member,
+  AbortBackupStep(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
       AbortBackupFactory abortBackupFactory) {
     super(dm);

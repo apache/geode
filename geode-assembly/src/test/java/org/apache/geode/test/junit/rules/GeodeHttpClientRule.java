@@ -16,14 +16,11 @@ package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -48,10 +45,12 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * client behaviors. Usually after you start up a server/locator with http service, you would want
  * to connect to it through http client and verify some behavior, you would need to use this rule.
  *
+ * It uses one httpClient object for the duration of a test.
+ *
  * <p>
  * See {@code PulseSecurityTest} for examples
  */
-public class HttpClientRule extends ExternalResource {
+public class GeodeHttpClientRule extends ExternalResource {
 
   private String hostName;
   private Supplier<Integer> portSupplier;
@@ -59,16 +58,16 @@ public class HttpClientRule extends ExternalResource {
   private HttpClient httpClient;
   private boolean useSSL;
 
-  public HttpClientRule(String hostName, Supplier<Integer> portSupplier) {
+  public GeodeHttpClientRule(String hostName, Supplier<Integer> portSupplier) {
     this.hostName = hostName;
     this.portSupplier = portSupplier;
   }
 
-  public HttpClientRule(Supplier<Integer> portSupplier) {
+  public GeodeHttpClientRule(Supplier<Integer> portSupplier) {
     this("localhost", portSupplier);
   }
 
-  public HttpClientRule withSSL() {
+  public GeodeHttpClientRule withSSL() {
     this.useSSL = true;
     return this;
   }
@@ -85,22 +84,6 @@ public class HttpClientRule extends ExternalResource {
       httpClient = clientBuilder.build();
     } else {
       httpClient = HttpClients.createDefault();
-    }
-  }
-
-  private static class DefaultTrustManager implements X509TrustManager {
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-        throws CertificateException {}
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-        throws CertificateException {}
-
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-      return null;
     }
   }
 
@@ -147,4 +130,5 @@ public class HttpClientRule extends ExternalResource {
     }
     return new HttpGet(builder.build());
   }
+
 }

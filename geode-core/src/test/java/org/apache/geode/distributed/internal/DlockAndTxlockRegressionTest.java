@@ -103,7 +103,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
 
     AsyncInvocation[] asyncInvocations = new AsyncInvocation[servers.length];
     for (int i = 0; i < servers.length; i++) {
-      asyncInvocations[i] = servers[i].invokeAsync(() -> performOps());
+      asyncInvocations[i] = servers[i].invokeAsync("perform ops", () -> performOps());
     }
 
     // this test uses the DUnit blackboard to coordinate actions between JVMs
@@ -117,11 +117,11 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
         // clobber the current lock grantor
         VM vm = servers[i];
         System.out.println("TEST: killing vm " + i);
-        vm.invoke("force disconnect", () -> forceDisconnect());
+        vm.invoke("force disconnect", () -> forceDisconnect(false));
         asyncInvocations[i].join();
         System.out.println("TEST: recreating vm " + i);
         vm.invoke("create cache", () -> createCacheAndRegion());
-        asyncInvocations[i] = vm.invokeAsync(() -> performOps());
+        asyncInvocations[i] = vm.invokeAsync("perform ops", () -> performOps());
 
         // move the grantor into the next VM to be clobbered
         int nextServer = (i + 1) % (servers.length - 1);
@@ -147,9 +147,8 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
       }
 
     } finally {
-
       for (VM vm : servers) {
-        vm.invoke(() -> forceDisconnect());
+        vm.invoke("force disconnect", () -> forceDisconnect(true));
       }
 
       Throwable failure = null;
@@ -173,12 +172,14 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
     }
   }
 
-  public void forceDisconnect() throws Exception {
+  public void forceDisconnect(boolean ignoreLock) throws Exception {
     Cache existingCache = basicGetCache();
-    synchronized (commitLock) {
-      committing = false;
-      while (!committing) {
-        commitLock.wait();
+    if (!ignoreLock) {
+      synchronized (commitLock) {
+        committing = false;
+        while (!committing) {
+          commitLock.wait();
+        }
       }
     }
     if (existingCache != null && !existingCache.isClosed()) {

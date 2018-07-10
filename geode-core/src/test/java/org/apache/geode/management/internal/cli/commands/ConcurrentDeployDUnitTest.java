@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.JarFileRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({DistributedTest.class})
+@Category(DistributedTest.class)
 public class ConcurrentDeployDUnitTest {
 
   @Rule

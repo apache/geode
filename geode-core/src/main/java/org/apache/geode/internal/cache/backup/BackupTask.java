@@ -87,6 +87,9 @@ public class BackupTask {
       DiskStoreImpl storeImpl = (DiskStoreImpl) store;
 
       storeImpl.lockStoreBeforeBackup();
+      if (logger.isDebugEnabled()) {
+        logger.debug("Acquired lock for backup on disk store {}", store.getName());
+      }
       if (storeImpl.hasPersistedData()) {
         diskStoresWithData.add(storeImpl.getPersistentID());
         storeImpl.getStats().startBackup();
@@ -148,6 +151,9 @@ public class BackupTask {
         }
       } finally {
         diskStore.releaseBackupLock();
+        if (logger.isDebugEnabled()) {
+          logger.debug("Released lock for backup on disk store {}", store.getName());
+        }
       }
     }
     return backupByDiskStore;
@@ -246,12 +252,17 @@ public class BackupTask {
         // This ensures that all writing to disk is blocked while we are
         // creating the snapshot
         synchronized (childLock) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Synchronized on lock for oplog {} on disk store {}",
+                childOplog.getOplogId(), diskStore.getName());
+          }
+
           if (diskStore.getPersistentOplogSet().getChild() != childOplog) {
             continue;
           }
 
           if (logger.isDebugEnabled()) {
-            logger.debug("snapshotting oplogs for disk store {}", diskStore.getName());
+            logger.debug("Creating snapshot of oplogs for disk store {}", diskStore.getName());
           }
 
           restoreScript.addExistenceTest(diskStore.getDiskInitFile().getIFFile());
@@ -265,7 +276,7 @@ public class BackupTask {
           diskStore.getPersistentOplogSet().forceRoll(null);
 
           if (logger.isDebugEnabled()) {
-            logger.debug("done backing up disk store {}", diskStore.getName());
+            logger.debug("Finished backup of disk store {}", diskStore.getName());
           }
           break;
         }

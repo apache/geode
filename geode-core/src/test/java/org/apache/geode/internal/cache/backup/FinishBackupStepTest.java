@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class FinishBackupOperationTest {
+public class FinishBackupStepTest {
 
   private DistributionManager dm;
   private InternalCache cache;
@@ -60,7 +60,7 @@ public class FinishBackupOperationTest {
   private FinishBackupRequest finishBackupRequest;
   private FinishBackup finishBackup;
 
-  private FinishBackupOperation finishBackupOperation;
+  private FinishBackupStep finishBackupStep;
 
   @Before
   public void setUp() throws Exception {
@@ -78,13 +78,13 @@ public class FinishBackupOperationTest {
     member2 = mock(InternalDistributedMember.class, "member2");
     recipients = new HashSet<>();
 
-    finishBackupOperation =
-        new FinishBackupOperation(dm, sender, cache, recipients, finishBackupFactory);
+    finishBackupStep =
+        new FinishBackupStep(dm, sender, cache, recipients, finishBackupFactory);
 
     when(finishBackupReplyProcessor.getProcessorId()).thenReturn(42);
 
     when(
-        finishBackupFactory.createReplyProcessor(eq(finishBackupOperation), eq(dm), eq(recipients)))
+        finishBackupFactory.createReplyProcessor(eq(finishBackupStep), eq(dm), eq(recipients)))
             .thenReturn(finishBackupReplyProcessor);
     when(finishBackupFactory.createRequest(eq(sender), eq(recipients), eq(42)))
         .thenReturn(finishBackupRequest);
@@ -93,7 +93,7 @@ public class FinishBackupOperationTest {
 
   @Test
   public void sendShouldSendfinishBackupMessage() throws Exception {
-    finishBackupOperation.send();
+    finishBackupStep.send();
 
     verify(dm, times(1)).putOutgoing(finishBackupRequest);
   }
@@ -105,7 +105,7 @@ public class FinishBackupOperationTest {
     doAnswer(invokeAddToResults(new MemberWithPersistentIds(member1, persistentIdsForMember1)))
         .when(finishBackupReplyProcessor).waitForReplies();
 
-    assertThat(finishBackupOperation.send()).containsOnlyKeys(member1)
+    assertThat(finishBackupStep.send()).containsOnlyKeys(member1)
         .containsValues(persistentIdsForMember1);
   }
 
@@ -115,7 +115,7 @@ public class FinishBackupOperationTest {
     persistentIdsForSender.add(mock(PersistentID.class));
     when(finishBackup.run()).thenReturn(persistentIdsForSender);
 
-    assertThat(finishBackupOperation.send()).containsOnlyKeys(sender)
+    assertThat(finishBackupStep.send()).containsOnlyKeys(sender)
         .containsValue(persistentIdsForSender);
   }
 
@@ -137,46 +137,46 @@ public class FinishBackupOperationTest {
     persistentIdsForSender.add(mock(PersistentID.class));
     when(finishBackup.run()).thenReturn(persistentIdsForSender);
 
-    assertThat(finishBackupOperation.send()).containsOnlyKeys(member1, member2, sender)
+    assertThat(finishBackupStep.send()).containsOnlyKeys(member1, member2, sender)
         .containsValues(persistentIdsForSender, persistentIdsForMember1, persistentIdsForMember2);
   }
 
   @Test
   public void getResultsShouldReturnEmptyMapByDefault() throws Exception {
-    assertThat(finishBackupOperation.getResults()).isEmpty();
+    assertThat(finishBackupStep.getResults()).isEmpty();
   }
 
   @Test
   public void addToResultsWithNullShouldBeNoop() throws Exception {
-    finishBackupOperation.addToResults(member1, null);
-    assertThat(finishBackupOperation.getResults()).isEmpty();
+    finishBackupStep.addToResults(member1, null);
+    assertThat(finishBackupStep.getResults()).isEmpty();
   }
 
   @Test
   public void addToResultsWithEmptySetShouldBeNoop() throws Exception {
-    finishBackupOperation.addToResults(member1, new HashSet<>());
-    assertThat(finishBackupOperation.getResults()).isEmpty();
+    finishBackupStep.addToResults(member1, new HashSet<>());
+    assertThat(finishBackupStep.getResults()).isEmpty();
   }
 
   @Test
   public void addToResultsShouldShowUpInGetResults() throws Exception {
     HashSet<PersistentID> persistentIdsForMember1 = new HashSet<>();
     persistentIdsForMember1.add(mock(PersistentID.class));
-    finishBackupOperation.addToResults(member1, persistentIdsForMember1);
-    assertThat(finishBackupOperation.getResults()).containsOnlyKeys(member1)
+    finishBackupStep.addToResults(member1, persistentIdsForMember1);
+    assertThat(finishBackupStep.getResults()).containsOnlyKeys(member1)
         .containsValue(persistentIdsForMember1);
   }
 
   @Test
   public void sendShouldHandleIOExceptionThrownFromRun() throws Exception {
     when(finishBackup.run()).thenThrow(new IOException("expected exception"));
-    finishBackupOperation.send();
+    finishBackupStep.send();
   }
 
   @Test(expected = RuntimeException.class)
   public void sendShouldThrowNonIOExceptionThrownFromRun() throws Exception {
     when(finishBackup.run()).thenThrow(new RuntimeException("expected exception"));
-    finishBackupOperation.send();
+    finishBackupStep.send();
   }
 
   @Test
@@ -184,21 +184,21 @@ public class FinishBackupOperationTest {
     ReplyException replyException =
         new ReplyException("expected exception", new CacheClosedException("expected exception"));
     doThrow(replyException).when(finishBackupReplyProcessor).waitForReplies();
-    finishBackupOperation.send();
+    finishBackupStep.send();
   }
 
   @Test
   public void sendShouldHandleInterruptedExceptionFromWaitForReplies() throws Exception {
     doThrow(new InterruptedException("expected exception")).when(finishBackupReplyProcessor)
         .waitForReplies();
-    finishBackupOperation.send();
+    finishBackupStep.send();
   }
 
   @Test(expected = ReplyException.class)
   public void sendShouldThrowReplyExceptionWithNoCauseFromWaitForReplies() throws Exception {
     doThrow(new ReplyException("expected exception")).when(finishBackupReplyProcessor)
         .waitForReplies();
-    finishBackupOperation.send();
+    finishBackupStep.send();
   }
 
   @Test(expected = ReplyException.class)
@@ -206,13 +206,13 @@ public class FinishBackupOperationTest {
       throws Exception {
     doThrow(new ReplyException("expected exception", new RuntimeException("expected")))
         .when(finishBackupReplyProcessor).waitForReplies();
-    finishBackupOperation.send();
+    finishBackupStep.send();
   }
 
   @Test
   public void sendShouldfinishForBackupInLocalMemberBeforeWaitingForReplies() throws Exception {
     InOrder inOrder = inOrder(finishBackup, finishBackupReplyProcessor);
-    finishBackupOperation.send();
+    finishBackupStep.send();
 
     inOrder.verify(finishBackup, times(1)).run();
     inOrder.verify(finishBackupReplyProcessor, times(1)).waitForReplies();
@@ -221,7 +221,7 @@ public class FinishBackupOperationTest {
   private Answer<Object> invokeAddToResults(MemberWithPersistentIds... memberWithPersistentIds) {
     return invocation -> {
       for (MemberWithPersistentIds ids : memberWithPersistentIds) {
-        finishBackupOperation.addToResults(ids.member, ids.persistentIds);
+        finishBackupStep.addToResults(ids.member, ids.persistentIds);
       }
       return null;
     };

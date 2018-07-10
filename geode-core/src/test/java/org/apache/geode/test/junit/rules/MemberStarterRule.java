@@ -264,7 +264,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public void waitTillRegionIsReadyOnServers(String regionName, int serverCount) {
     await().atMost(30, TimeUnit.SECONDS).until(() -> getRegionMBean(regionName) != null);
     await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> getRegionMBean(regionName).getMembers().length == serverCount);
+        .until(() -> getRegionMBean(regionName).getMembers() != null
+            && getRegionMBean(regionName).getMembers().length == serverCount);
   }
 
   private long getDiskStoreCount(String diskStoreName) {

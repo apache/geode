@@ -34,7 +34,7 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
-import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
@@ -50,7 +50,7 @@ public class PulseConnectivityTest {
   public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(locator::getHttpPort);
+  public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort);
 
   @Parameterized.Parameter
   public static String jmxBindAddress;
@@ -61,7 +61,6 @@ public class PulseConnectivityTest {
     if ("localhost".equals(nonDefaultJmxBindAddress)) {
       nonDefaultJmxBindAddress = InetAddress.getLocalHost().getHostAddress();
     }
-
     return Arrays.asList(new String[] {"localhost", nonDefaultJmxBindAddress});
   }
 

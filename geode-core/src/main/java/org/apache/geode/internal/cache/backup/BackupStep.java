@@ -14,44 +14,41 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
-/**
- * A Operation to from an admin VM to all non admin members to start a backup. In the prepare phase
- * of the backup, the members will suspend bucket destroys to make sure buckets aren't missed during
- * the backup.
- */
-public class FlushToDiskOperation {
+abstract class BackupStep implements BackupResultCollector {
   private static final Logger logger = LogService.getLogger();
 
   private final DistributionManager dm;
-  private final InternalDistributedMember member;
-  private final InternalCache cache;
-  private final Set<InternalDistributedMember> recipients;
-  private final FlushToDiskFactory flushToDiskFactory;
+  private final Map<DistributedMember, Set<PersistentID>> results =
+      Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
-  FlushToDiskOperation(DistributionManager dm, InternalDistributedMember member,
-      InternalCache cache, Set<InternalDistributedMember> recipients,
-      FlushToDiskFactory flushToDiskFactory) {
-    this.flushToDiskFactory = flushToDiskFactory;
+  protected BackupStep(DistributionManager dm) {
     this.dm = dm;
-    this.member = member;
-    this.recipients = recipients;
-    this.cache = cache;
   }
 
-  void send() {
+  abstract ReplyProcessor21 createReplyProcessor();
+
+  abstract DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor);
+
+  abstract void processLocally();
+
+  Map<DistributedMember, Set<PersistentID>> send() {
     ReplyProcessor21 replyProcessor = createReplyProcessor();
 
     dm.putOutgoing(createDistributionMessage(replyProcessor));
@@ -67,19 +64,22 @@ public class FlushToDiskOperation {
     } catch (InterruptedException e) {
       logger.warn(e.getMessage(), e);
     }
+
+    return getResults();
   }
 
-  private ReplyProcessor21 createReplyProcessor() {
-    return this.flushToDiskFactory.createReplyProcessor(dm, recipients);
+  @Override
+  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
+    if (persistentIds != null && !persistentIds.isEmpty()) {
+      results.put(member, persistentIds);
+    }
   }
 
-  private DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return this.flushToDiskFactory.createRequest(member, recipients,
-        replyProcessor.getProcessorId());
+  Map<DistributedMember, Set<PersistentID>> getResults() {
+    return this.results;
   }
 
-  private void processLocally() {
-    flushToDiskFactory.createFlushToDisk(cache).run();
+  protected DistributionManager getDistributionManager() {
+    return this.dm;
   }
-
 }

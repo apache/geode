@@ -13,12 +13,9 @@
  * the License.
  */
 
-package org.apache.geode.rest.internal.web;
+package org.apache.geode.test.junit.rules;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -45,124 +42,112 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
-public class GeodeRestClient {
+/**
+ * this doesn't need to be a rule, since there is no setup and cleanup to do, just a utility
+ * to issue rest call. It's different from GeodeHttpClientRule in that it creates a httpClient
+ * in every rest call, while GeodeHttpClientRule uses one httpClient for the duration of the
+ * entire test.
+ */
+public class GeodeDevRestClient {
   public static final String CONTEXT = "/geode/v1";
 
-  private int restPort = 0;
-  private String bindAddress = null;
-  private String protocol = "http";
-  private boolean useHttps = false;
-  private KeyStore keyStore;
+  private String bindAddress;
+  private int restPort;
+  private boolean useSsl;
+  private HttpHost host;
 
-  public GeodeRestClient(String bindAddress, int restPort) {
+  public GeodeDevRestClient(int restPort) {
+    this("localhost", restPort, false);
+  }
+
+  public GeodeDevRestClient(String bindAddress, int restPort) {
+    this(bindAddress, restPort, false);
+  }
+
+  public GeodeDevRestClient(String bindAddress, int restPort, boolean useSsl) {
     this.bindAddress = bindAddress;
     this.restPort = restPort;
+    this.useSsl = useSsl;
+    host = new HttpHost(bindAddress, restPort, useSsl ? "https" : "http");
   }
 
-  public GeodeRestClient(String bindAddress, int restPort, boolean useHttps) {
-    if (useHttps) {
-      this.protocol = "https";
-      this.useHttps = true;
-    } else {
-      this.protocol = "http";
-      this.useHttps = false;
-    }
-    this.bindAddress = bindAddress;
-    this.restPort = restPort;
-  }
-
-  public static String getContentType(HttpResponse response) {
-    return response.getEntity().getContentType().getValue();
-  }
-
-  /**
-   * Retrieve the status code of the HttpResponse
-   *
-   * @param response The HttpResponse message received from the server
-   * @return a numeric value
-   */
-  public static int getCode(HttpResponse response) {
-    return response.getStatusLine().getStatusCode();
-  }
-
-  public static JSONObject getJsonObject(HttpResponse response) throws IOException, JSONException {
-    JSONTokener tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
-    return new JSONObject(tokener);
-  }
-
-  public static JSONArray getJsonArray(HttpResponse response) throws IOException, JSONException {
-    JSONTokener tokener = new JSONTokener(new InputStreamReader(response.getEntity().getContent()));
-    return new JSONArray(tokener);
-  }
-
-  public HttpResponse doHEAD(String query, String username, String password) throws Exception {
+  public HttpResponse doHEAD(String query, String username, String password) {
     HttpHead httpHead = new HttpHead(CONTEXT + query);
     return doRequest(httpHead, username, password);
   }
 
-  public HttpResponse doPost(String query, String username, String password, String body)
-      throws Exception {
+  public HttpResponse doPost(String query, String username, String password, String body) {
     HttpPost httpPost = new HttpPost(CONTEXT + query);
     httpPost.addHeader("content-type", "application/json");
     httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPost, username, password);
   }
 
-  public HttpResponse doPut(String query, String username, String password, String body)
-      throws Exception {
+  public HttpResponse doPut(String query, String username, String password, String body) {
     HttpPut httpPut = new HttpPut(CONTEXT + query);
     httpPut.addHeader("content-type", "application/json");
     httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPut, username, password);
   }
 
-  public HttpResponse doGet(String uri, String username, String password) throws Exception {
+  public HttpResponse doGet(String uri, String username, String password) {
     HttpGet getRequest = new HttpGet(CONTEXT + uri);
     return doRequest(getRequest, username, password);
   }
 
-  public HttpResponse doGetRequest(String url) throws Exception {
-    HttpGet getRequest = new HttpGet(url);
-    return doRequest(getRequest, null, null);
-  }
-
-  public HttpResponse doDelete(String uri, String username, String password) throws Exception {
+  public HttpResponse doDelete(String uri, String username, String password) {
     HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
     return doRequest(httpDelete, username, password);
   }
 
-  public HttpResponse doRequest(HttpRequestBase request, String username, String password)
-      throws Exception {
-    HttpHost targetHost = new HttpHost(bindAddress, restPort, protocol);
+  public HttpResponseAssert doGetAndAssert(String uri) {
+    return new HttpResponseAssert("Get " + uri, doGet(uri, null, null));
+  }
 
+  public HttpResponseAssert doPutAndAssert(String uri, String body) {
+    return new HttpResponseAssert("Put " + uri, doPut(uri, null, null, body));
+  }
+
+  public HttpResponseAssert doPostAndAssert(String uri, String body) {
+    return new HttpResponseAssert("Post " + uri, doPost(uri, null, null, body));
+  }
+
+  public HttpResponseAssert doDeleteAndAssert(String uri) {
+    return new HttpResponseAssert("Delete " + uri, doDelete(uri, null, null));
+  }
+
+  /**
+   * this handles rest calls. each request creates a different httpClient object
+   */
+  public HttpResponse doRequest(HttpRequestBase request, String username, String password) {
     HttpClientBuilder clientBuilder = HttpClients.custom();
     HttpClientContext clientContext = HttpClientContext.create();
 
     // configures the clientBuilder and clientContext
     if (username != null) {
       CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(targetHost.getHostName(), targetHost.getPort()),
+      credsProvider.setCredentials(new AuthScope(bindAddress, restPort),
           new UsernamePasswordCredentials(username, password));
       clientBuilder.setDefaultCredentialsProvider(credsProvider);
     }
 
-    if (useHttps) {
-      SSLContext ctx = SSLContext.getInstance("TLS");
-      ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()},
-          new SecureRandom());
-      clientBuilder.setSSLContext(ctx);
-      clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
-    }
+    try {
+      if (useSsl) {
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()},
+            new SecureRandom());
+        clientBuilder.setSSLContext(ctx);
+        clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+      }
 
-    return clientBuilder.build().execute(targetHost, request, clientContext);
+      return clientBuilder.build().execute(host, request, clientContext);
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
   }
 
-  private static class DefaultTrustManager implements X509TrustManager {
+  public static class DefaultTrustManager implements X509TrustManager {
 
     @Override
     public void checkClientTrusted(X509Certificate[] arg0, String arg1)
