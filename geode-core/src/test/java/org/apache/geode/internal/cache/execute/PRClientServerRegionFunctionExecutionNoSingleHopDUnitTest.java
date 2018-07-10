@@ -62,7 +62,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 @Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
@@ -257,8 +256,6 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
    * should retry the function execution. After 5th attempt function will send Boolean as last
    * result.
    */
-  @Category(FlakyTest.class) // GEODE-600: network sensitive, random ports, configs lots of
-                             // PoolFactory network attributes
   @Test
   public void testserverMultiKeyExecution_FunctionInvocationTargetException() {
     createScenario();

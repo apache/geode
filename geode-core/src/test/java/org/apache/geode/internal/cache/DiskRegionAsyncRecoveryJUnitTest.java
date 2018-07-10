@@ -32,7 +32,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -321,7 +320,6 @@ public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1957: recovery does not always happen; possible disk issue?
   @Test
   public void testCloseOpenRegion() throws InterruptedException {
     Region region = createRegion();

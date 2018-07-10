@@ -39,7 +39,6 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
@@ -139,7 +138,6 @@ public class HashesJUnitTest {
     assertTrue(retSet.containsAll(keys));
   }
 
-  @Category(FlakyTest.class) // GEODE-1942
   @Test
   public void testHIncrBy() {
     String key = randString();
@@ -177,7 +175,6 @@ public class HashesJUnitTest {
     for (int i = 0; i < length; i++)
       rString.append((char) (rand.nextInt(57) + 65));
     return rString.toString();
-    // return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }
 
   @After

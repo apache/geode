@@ -29,7 +29,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -62,7 +61,6 @@ public class SecurityManagerLifecycleIntegrationTest {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1661
   @Test
   public void initAndCloseTest() {
     SpySecurityManager ssm = (SpySecurityManager) this.securityService.getSecurityManager();

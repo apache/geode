@@ -58,7 +58,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -912,7 +911,6 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests remote query execution using a BridgeClient as the CacheWriter and CacheLoader.
    */
-  @Category(FlakyTest.class) // GEODE-490: random port
   @Test
   public void testRemoteBridgeClientQueries() throws CacheException {
 

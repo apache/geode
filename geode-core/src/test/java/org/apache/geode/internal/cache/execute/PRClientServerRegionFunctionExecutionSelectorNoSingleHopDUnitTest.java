@@ -64,7 +64,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 @Category({DistributedTest.class, ClientServerTest.class, FunctionServiceTest.class})
@@ -294,7 +293,6 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
    * Ensure that the while executing the function if the servers is down then the execution is
    * failover to other available server
    */
-  @Category(FlakyTest.class) // GEODE-1497
   @Test
   public void testServerFailoverWithTwoServerAliveHA() throws InterruptedException {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");

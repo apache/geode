@@ -31,12 +31,10 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-// flaky: GEODE-3692
-@Category({DistributedTest.class, SecurityTest.class, FlakyTest.class})
+@Category({DistributedTest.class, SecurityTest.class})
 public class ClientAuthDUnitTest {
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();

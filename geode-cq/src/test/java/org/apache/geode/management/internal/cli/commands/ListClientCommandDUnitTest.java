@@ -66,10 +66,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 
-@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-908 GEODE-3530
+@Category({DistributedTest.class, GfshTest.class})
 @SuppressWarnings("serial")
 public class ListClientCommandDUnitTest extends CliCommandTestBase {
 

@@ -332,15 +332,11 @@ public class GeodeRedisServer {
    * @param logLevel The logging level to be used by GemFire
    */
   public GeodeRedisServer(String bindAddress, int port, String logLevel) {
-    if (port <= 0)
-      this.serverPort = DEFAULT_REDIS_SERVER_PORT;
-    else
-      this.serverPort = port;
+    this.serverPort = port <= 0 ? DEFAULT_REDIS_SERVER_PORT : port;
     this.bindAddress = bindAddress;
     this.logLevel = logLevel;
     this.numWorkerThreads = setNumWorkerThreads();
-    if (this.numWorkerThreads == 0)
-      this.singleThreadPerConnection = true;
+    this.singleThreadPerConnection = this.numWorkerThreads == 0;
     this.numSelectorThreads = 1;
     this.metaListener = new MetaCacheListener();
     this.expirationFutures = new ConcurrentHashMap<ByteArrayWrapper, ScheduledFuture<?>>();

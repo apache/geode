@@ -43,7 +43,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -158,7 +157,6 @@ public class GemcachedDevelopmentJUnitTest {
     assertNull(client.get("key1"));
   }
 
-  @Category(FlakyTest.class) // GEODE-1140: time sensitive, thread sleep
   @Test
   public void testExpiration() throws Exception {
     MemcachedClient client = bootstrapClient();

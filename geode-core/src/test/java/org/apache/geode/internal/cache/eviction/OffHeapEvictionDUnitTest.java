@@ -39,7 +39,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.EvictionTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Performs eviction dunit tests for off-heap memory.
@@ -142,7 +141,6 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
     return ResourceType.OFFHEAP_MEMORY;
   }
 
-  @Category(FlakyTest.class) // GEODE-1770
   @Override
   public void testDummyInlineNCentralizedEviction() {
     super.testDummyInlineNCentralizedEviction();

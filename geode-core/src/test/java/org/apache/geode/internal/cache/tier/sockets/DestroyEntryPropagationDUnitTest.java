@@ -61,7 +61,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests propagation of destroy entry operation across the vms
@@ -188,8 +187,6 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
    * This tests whether the destroy are received by the sender or not if there are situation of
    * Interest List fail over
    */
-  @Category(FlakyTest.class) // GEODE-897: random port, time sensitive, waitForCriterion, 2 minute
-                             // timeouts, eats exception (1 fixed)
   @Test
   public void testVerifyDestroyNotReceivedBySender() {
     final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();

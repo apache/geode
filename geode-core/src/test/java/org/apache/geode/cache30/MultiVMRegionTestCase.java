@@ -52,7 +52,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -129,7 +128,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Abstract superclass of {@link Region} tests that involve more than one VM.
@@ -1091,8 +1089,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Tests that a {@link CacheListener} is invoked in a remote VM.
    */
-  @Category(FlakyTest.class) // GEODE-153 & GEODE-932: time sensitive, waitForInvocation
-                             // (waitForCriterion), 3 second timeouts
   @Test
   public void testRemoteCacheListener() throws Exception {
     assertTrue(getRegionAttributes().getScope().isDistributed());
@@ -3615,8 +3611,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that an entry in a distributed region that expires with a distributed destroy causes an
    * event in other VM with isExpiration flag set.
    */
-  @Category(FlakyTest.class) // GEODE-583: time sensitive, expiration, waitForCriterion, short
-                             // timeouts
   @Test
   public void testEntryTtlDestroyEvent() throws Exception {
     assumeTrue(getRegionAttributes().getPartitionAttributes() == null);
@@ -3790,8 +3784,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Tests that an entry in a distributed region expires with a local destroy after a given time to
    * live.
    */
-  @Category(FlakyTest.class) // GEODE-671: time sensitive, expiration, retry loop, async actions,
-                             // waitForCriterion
   @Test
   public void testEntryTtlLocalDestroy() throws Exception {
     assumeTrue(getRegionAttributes().getPartitionAttributes() == null);

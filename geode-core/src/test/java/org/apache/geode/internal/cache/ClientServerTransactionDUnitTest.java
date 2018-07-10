@@ -120,7 +120,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests the basic client-server transaction functionality
@@ -1937,8 +1936,6 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     doFailoverWork(accessor1, accessor2, datastore, client, false, false);
   }
 
-  @Category(FlakyTest.class) // GEODE-1933: IllegalStateException: Thread does not have an active
-                             // transaction
   @Test
   public void testFailoverWithP2PMessagingAndCachingProxy() {
     Host host = Host.getHost(0);

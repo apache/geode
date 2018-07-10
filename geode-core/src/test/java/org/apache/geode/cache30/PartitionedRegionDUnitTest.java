@@ -56,7 +56,6 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the functionality of a cache {@link Region region} that has a scope of
@@ -314,7 +313,6 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * test with multiple vms and a decent spread of keys
    */
-  @Category(FlakyTest.class) // GEODE-555: retry loops, use of Random
   @Test
   public void testExtendedKeysValues() {
     final String regionName = getUniqueName();

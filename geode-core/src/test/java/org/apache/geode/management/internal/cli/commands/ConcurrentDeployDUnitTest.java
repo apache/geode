@@ -27,12 +27,11 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.JarFileRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({DistributedTest.class, FlakyTest.class})
+@Category({DistributedTest.class})
 public class ConcurrentDeployDUnitTest {
 
   @Rule
