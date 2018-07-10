@@ -14,12 +14,15 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -465,30 +468,77 @@ public class OpExecutorImplJUnitTest {
   }
 
   @Test
-  public void executeWithServerAffinityDoesNotResetAffinityRetryCount() {
+  public void executeWithServerAffinityDoesNotChangeInitialRetryCountOfZero() {
     OpExecutorImpl opExecutor =
-        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, true, cancelCriterion, mock(PoolImpl.class)));
-    opExecutor.setupServerAffinity(true);
+        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, true, cancelCriterion, mock(PoolImpl.class));
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    opExecutor.setAffinityRetryCount(0);
+
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    assertEquals(0, opExecutor.getAffinityRetryCount());
+  }
+
+  @Test
+  public void executeWithServerAffinityWithNonZeroAffinityRetryCountWillNotSetToZero() {
+    OpExecutorImpl opExecutor =
+        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, true, cancelCriterion, mock(PoolImpl.class));
 
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
-    ServerConnectivityException serverConnectivityException =
-        mock(ServerConnectivityException.class);
+    opExecutor.setAffinityRetryCount(1);
 
-    doReturn(serverLocation).when(opExecutor).getNextOpServerLocation();
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    assertNotEquals(0, opExecutor.getAffinityRetryCount());
+  }
+
+  @Test
+  public void executeWithServerAffinityWithServerConnectivityExceptionIncrementsRetryCountAndResetsToZero() {
+    OpExecutorImpl opExecutor =
+        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, true, cancelCriterion, mock(PoolImpl.class)));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    ServerConnectivityException serverConnectivityException = new ServerConnectivityException();
+
     doThrow(serverConnectivityException).when(opExecutor).executeOnServer(serverLocation,
         txSynchronizationOp, true, false);
+    opExecutor.setupServerAffinity(true);
     when(((AbstractOp) txSynchronizationOp).getMessage()).thenReturn(mock(Message.class));
-    opExecutor.execute(txSynchronizationOp);
-    assertEquals(1, opExecutor.getAffinityRetryCount());
+    opExecutor.setAffinityRetryCount(0);
 
-    Op txFailoverOp = mock(TXFailoverOp.TXFailoverOpImpl.class);
-    doReturn(new Object()).when(opExecutor).executeOnServer(serverLocation, txFailoverOp, true,
-        false);
-    opExecutor.execute(txFailoverOp);
-    assertEquals(1, opExecutor.getAffinityRetryCount());
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    verify(opExecutor, times(1)).setAffinityRetryCount(1);
+    assertEquals(0, opExecutor.getAffinityRetryCount());
   }
+
+  @Test
+  public void executeWithServerAffinityAndRetryCountGreaterThansTxRetryAttemptThrowsServerConnectivityException() {
+    OpExecutorImpl opExecutor =
+        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, true, cancelCriterion, mock(PoolImpl.class)));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    ServerConnectivityException serverConnectivityException = new ServerConnectivityException();
+
+    doThrow(serverConnectivityException).when(opExecutor).executeOnServer(serverLocation,
+        txSynchronizationOp, true, false);
+    opExecutor.setupServerAffinity(true);
+    when(((AbstractOp) txSynchronizationOp).getMessage()).thenReturn(mock(Message.class));
+    opExecutor.setAffinityRetryCount(opExecutor.TX_RETRY_ATTEMPT + 1);
+
+    assertThatThrownBy(
+        () -> opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp))
+            .isSameAs(serverConnectivityException);
+  }
+
 
   private class DummyManager implements ConnectionManager {
 
