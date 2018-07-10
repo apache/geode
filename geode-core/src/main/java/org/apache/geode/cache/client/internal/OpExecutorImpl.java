@@ -231,8 +231,7 @@ public class OpExecutorImpl implements ExecutablePool {
     final int initialRetryCount = getAffinityRetryCount();
     try {
       try {
-        Object retVal = executeOnServer(loc, op, true, false);
-        return retVal;
+        return executeOnServer(loc, op, true, false);
       } catch (ServerConnectivityException e) {
         if (logger.isDebugEnabled()) {
           logger.debug("caught exception while executing with affinity:{}", e.getMessage(), e);
