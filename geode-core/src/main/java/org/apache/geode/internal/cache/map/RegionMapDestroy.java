@@ -494,16 +494,11 @@ public class RegionMapDestroy {
         handleIncompleteDestroyExistingEntry();
       }
     } catch (RegionClearedException rce) { // TODO coverage
-      // Ignore. The exception will ensure that we do not update
-      // the LRU List
-      opCompleted = true;
       internalRegion.recordEvent(event);
       if (inTokenMode && !duringRI) {
         event.inhibitCacheListenerNotification(true);
       }
-      internalRegion.basicDestroyPart2(regionEntry, event, inTokenMode,
-          true /* conflict with clear */, duringRI, true);
-      doPart3 = true;
+      handleRegionClearedException(regionEntry);
     } finally {
       if (regionEntry.isRemoved() && !regionEntry.isTombstone()) {
         removeRegionEntryFromMap();
@@ -804,11 +799,11 @@ public class RegionMapDestroy {
     }
   }
 
-  private void handleRegionClearedException(RegionEntry newRegionEntry) {
+  private void handleRegionClearedException(RegionEntry entry) {
     // Ignore. The exception will ensure that we do not update the LRU List
     opCompleted = true;
     EntryLogger.logDestroy(event);
-    internalRegion.basicDestroyPart2(newRegionEntry, event, inTokenMode, true, duringRI, true);
+    internalRegion.basicDestroyPart2(entry, event, inTokenMode, true, duringRI, true);
     doPart3 = true;
   }
 
