@@ -166,6 +166,11 @@ public class MemberVM extends VMProvider implements Member {
         serverCount));
   }
 
+  public void waitTillClientsAreReadyOnServers(String serverName, int serverPort, int clientCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillClientsAreReadyOnServer(serverName,
+        serverPort, clientCount));
+  }
+
   public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
         serverCount));
