@@ -30,13 +30,12 @@ import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorize
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.query.data.PdxTrade;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
  * This test verifies client/server distinct order-by queries with integrated security
  */
-@Category({DistributedTest.class, SecurityTest.class})
+@Category(SecurityTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class QuerySecurityDistinctQueryDistributedTest extends QuerySecurityBase {
 
