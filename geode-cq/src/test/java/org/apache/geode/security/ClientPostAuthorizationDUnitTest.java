@@ -114,8 +114,6 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1009: random ports, uses Random, time sensitive,
-                             // waitForCondition (waitForCriterion)
   @Test
   public void testAllOpsNotifications() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllOpsNotifications();
