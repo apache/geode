@@ -30,7 +30,8 @@ import org.apache.geode.test.junit.runners.SuiteRunner;
  */
 @Category({DistributedTest.class, SecurityTest.class, GfshTest.class})
 @RunWith(SuiteRunner.class)
-@Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class, ShellCommandsDUnitTest.class})
+@Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class, ShellCommandsDUnitTest.class,
+    RebalanceCommandDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =

@@ -41,6 +41,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -58,7 +60,6 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagerMXBean;
 import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.dto.Value1;
@@ -126,7 +127,9 @@ public class GemfireDataCommandsDUnitTest {
 
   private static void setupRegions(String regionName, String parRegionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory regionFactory =
+        cache.createRegionFactory(RegionShortcut.REPLICATE).setEvictionAttributes(
+            EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
 
     Region dataRegion = regionFactory.create(DATA_REGION_NAME);
     assertNotNull(dataRegion);
@@ -189,40 +192,6 @@ public class GemfireDataCommandsDUnitTest {
     });
   }
 
-  void setupTestRebalanceForEntireDS() throws Exception {
-    before();
-
-    server1.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-
-      RegionFactory<Integer, Integer> dataRegionFactory =
-          cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create(REBALANCE_REGION_NAME);
-      for (int i = 0; i < 10; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-      region = dataRegionFactory.create(REBALANCE_REGION_NAME + "Another1");
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-    });
-
-    server2.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
-          cache.createRegionFactory(RegionShortcut.PARTITION);
-
-      Region region = dataRegionFactory.create(REBALANCE_REGION_NAME);
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 400), "value" + (i + 400));
-      }
-
-      region = dataRegionFactory.create(REBALANCE_REGION_NAME + "Another2");
-      for (int i = 0; i < 10; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-    });
-  }
 
   void setupForGetPutRemoveLocateEntry(String testName) throws Exception {
     Properties props = locatorProperties();
@@ -354,140 +323,7 @@ public class GemfireDataCommandsDUnitTest {
     testGetPutLocateEntryFromShellAndGemfire(doubleKey, doubleValue, Double.class, true, true);
   }
 
-  @Test
-  public void testRebalanceCommandForTimeOut() throws Exception {
-    setupTestRebalanceForEntireDS();
 
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-    // testRebalanceCommandForTimeOut verified Mbean and executing command
-    String command = "rebalance --time-out=1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testRebalanceCommandForTimeOutForRegion() throws Exception {
-    setupTestRebalanceForEntireDS();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-
-    // testRebalanceCommandForTimeOutForRegion verified Mbean and executing command
-    String command = "rebalance --time-out=1 --include-region=" + "/" + REBALANCE_REGION_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testRebalanceCommandForSimulate() throws Exception {
-    setupTestRebalanceForEntireDS();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-
-    // testRebalanceCommandForSimulate verified Mbean and executing command
-    String command = "rebalance --simulate=true --include-region=" + "/" + REBALANCE_REGION_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testRebalanceCommandForSimulateWithNoMember() throws Exception {
-    setupTestRebalanceForEntireDS();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-
-    // testRebalanceCommandForSimulateWithNoMember verified Mbean and executing command
-
-    String command = "rebalance --simulate=true";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testRebalanceForIncludeRegionFunction() throws Exception {
-    setupWith2Regions();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-    // testRebalanceForIncludeRegionFunction verified Mbean and executing command
-    String command =
-        "rebalance --include-region=" + "/" + REBALANCE_REGION_NAME + ",/" + REBALANCE_REGION2_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testSimulateForEntireDS() throws Exception {
-    setupTestRebalanceForEntireDS();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-
-    // testSimulateForEntireDS verified MBean and executing command
-    String command = "rebalance --simulate=true";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testSimulateForEntireDSWithTimeout() throws Exception {
-    setupTestRebalanceForEntireDS();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-
-    // testSimulateForEntireDS verified MBean and executing command
-    String command = "rebalance --simulate=true --time-out=-1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testRebalanceForEntireDS() throws Exception {
-    setupTestRebalanceForEntireDS();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-
-    // testRebalanceForEntireDS verified Mbean and executing command
-    String command = "rebalance";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
-
-  @Test
-  public void testRebalanceForExcludeRegionFunction() throws Exception {
-    setupWith2Regions();
-
-    // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
-
-    // testRebalanceForExcludeRegionFunction verified Mbean and executing command
-    String command = "rebalance --exclude-region=" + "/" + REBALANCE_REGION2_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-  }
 
   @Test
   public void testRegionsViaMbeanAndFunctions() throws Exception {
@@ -828,19 +664,6 @@ public class GemfireDataCommandsDUnitTest {
     }
   }
 
-  private static void waitForManagerMBean() {
-    Awaitility.waitAtMost(120, TimeUnit.SECONDS).until(() -> {
-      final ManagementService service =
-          ManagementService.getManagementService(ClusterStartupRule.getCache());
-      final DistributedRegionMXBean bean =
-          service.getDistributedRegionMXBean("/" + REBALANCE_REGION_NAME);
-
-
-      return bean != null && bean.getMembers() != null && bean.getMembers().length > 1
-          && bean.getMemberCount() > 0
-          && service.getDistributedSystemMXBean().listRegions().length >= 2;
-    });
-  }
 
   private Integer distributedRegionMembersSizeFromFunction(String regionName) {
     return locator.invoke(() -> {
