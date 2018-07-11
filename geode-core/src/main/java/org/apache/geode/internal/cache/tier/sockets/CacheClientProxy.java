@@ -1544,6 +1544,7 @@ public class CacheClientProxy implements ClientSession {
   protected void deliverMessage(Conflatable conflatable) {
     ThreadState state = this.securityService.bindSubject(this.subject);
     ClientUpdateMessage clientMessage = null;
+
     if (conflatable instanceof HAEventWrapper) {
       clientMessage = ((HAEventWrapper) conflatable).getClientUpdateMessage();
     } else {
@@ -1571,7 +1572,24 @@ public class CacheClientProxy implements ClientSession {
                   "Message dispatcher for proxy {} is getting initialized. Adding message to the queuedEvents.",
                   this);
             }
+
+            if (conflatable instanceof HAEventWrapper) {
+              long refCount = ((HAEventWrapper) conflatable).incrementPutRefCount();
+              logger.info("RYGUY: Incrementing PutRefCount to " + refCount
+                  + " on HAEventWrapper with Event ID: " + conflatable.hashCode() + "; System ID: "
+                  + System.identityHashCode(conflatable) + "; ToString: " + conflatable);
+            }
+
             this.queuedEvents.add(conflatable);
+
+            ClientUpdateMessage myMsg = null;
+            if (conflatable instanceof HAEventWrapper) {
+              myMsg = ((HAEventWrapper) conflatable).getClientUpdateMessage();
+              if (myMsg == null) {
+                logger.info("RYGUY: haWrapper.msg is null. Event ID: " + conflatable.hashCode());
+              }
+            }
+
             return;
           }
         }
@@ -1581,13 +1599,29 @@ public class CacheClientProxy implements ClientSession {
         this._messageDispatcher.enqueueMessage(conflatable);
       } else {
         this._statistics.incMessagesFailedQueued();
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "Message is not added to the queue. Message dispatcher for proxy: {} doesn't exist.",
-              this);
+        if (conflatable instanceof HAEventWrapper) {
+          logger.info(
+              "RYGUY: Message is not added to the queue. Message dispatcher for proxy: " + this
+                  + " doesn't exist. HAEventWrapper ID: " + conflatable.hashCode() + "; System ID: "
+                  + System.identityHashCode(conflatable) + "; ToString: " + conflatable.toString());
+        } else {
+          logger.info("RYGUY: Message is not added to the queue. Message dispatcher for proxy: "
+              + this + " doesn't exist. Conflatable ID: " + conflatable.hashCode() + "; System ID: "
+              + System.identityHashCode(conflatable) + "; ToString: " + conflatable.toString());
         }
       }
     } else {
+      if (conflatable instanceof HAEventWrapper) {
+        logger.info(
+            "RYGUY: Other Message is not added to the queue. Message dispatcher for proxy: " + this
+                + " doesn't exist. HAEventWrapper ID: " + conflatable.hashCode() + "; System ID: "
+                + System.identityHashCode(conflatable) + "; ToString: " + conflatable.toString());
+      } else {
+        logger.info("RYGUY: Other Message is not added to the queue. Message dispatcher for proxy: "
+            + this + " doesn't exist. Conflatable ID: " + conflatable.hashCode() + "; System ID: "
+            + System.identityHashCode(conflatable) + "; ToString: " + conflatable.toString());
+      }
+
       this._statistics.incMessagesFailedQueued();
     }
 
@@ -1692,14 +1726,35 @@ public class CacheClientProxy implements ClientSession {
       }
       Conflatable nextEvent;
       while ((nextEvent = queuedEvents.poll()) != null) {
+        if (nextEvent instanceof HAEventWrapper) {
+          boolean cumiNull = ((HAEventWrapper) nextEvent).getClientUpdateMessage() == null;
+          logger.info("RYGUY: Init Msg Dispatcher draining Event ID: " + nextEvent.hashCode()
+              + "; System ID: " + System.identityHashCode(nextEvent) + "; CUMI null: "
+              + cumiNull + "; ToString: "
+              + nextEvent);
+        }
+
         this._messageDispatcher.enqueueMessage(nextEvent);
+
+        this._cacheClientNotifier.checkAndRemoveFromClientMsgsRegion(nextEvent);
       }
 
       // Now finish emptying the queue with synchronization to make
       // sure we don't miss any events.
       synchronized (this.queuedEventsSync) {
         while ((nextEvent = queuedEvents.poll()) != null) {
+          if (nextEvent instanceof HAEventWrapper) {
+            boolean cumiNull = ((HAEventWrapper) nextEvent).getClientUpdateMessage() == null;
+            logger.info("RYGUY: Init Msg Dispatcher (synchronized) draining Event ID: "
+                + nextEvent.hashCode()
+                + "; System ID: " + System.identityHashCode(nextEvent) + "; CUMI null: "
+                + cumiNull + "; ToString: "
+                + nextEvent);
+          }
+
           this._messageDispatcher.enqueueMessage(nextEvent);
+
+          this._cacheClientNotifier.checkAndRemoveFromClientMsgsRegion(nextEvent);
         }
 
         this.messageDispatcherInit = false; // Done initialization.
@@ -2485,6 +2540,7 @@ public class CacheClientProxy implements ClientSession {
             waitForResumption();
           }
           try {
+
             clientMessage = (ClientMessage) this._messageQueue.peek();
           } catch (RegionDestroyedException skipped) {
             break;

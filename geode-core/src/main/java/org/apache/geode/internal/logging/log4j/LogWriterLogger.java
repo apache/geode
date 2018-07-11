@@ -713,6 +713,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Message msg) {
+    if (msg.getFormattedMessage().equals("false") || msg.getFormattedMessage().equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, msg, (Throwable) null);
   }
 
@@ -725,6 +728,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Message msg, final Throwable t) {
+    if (msg.getFormattedMessage().equals("false") || msg.getFormattedMessage().equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, msg, t);
   }
 
@@ -736,6 +742,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Object message) {
+    if (message instanceof String) {
+      if (message.equals("false") || message.equals("true")) {
+        this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+      }
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, (Throwable) null);
   }
 
@@ -749,6 +760,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final Object message, final Throwable t) {
+    if (message instanceof String) {
+      if (message.equals("false") || message.equals("true")) {
+        this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+      }
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, t);
   }
 
@@ -760,6 +776,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final String message) {
+    if (message.equals("false") || message.equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, (Throwable) null);
   }
 
@@ -773,6 +792,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final String message, final Object... params) {
+    if (message.equals("false") || message.equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, params);
   }
 
@@ -786,6 +808,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Marker marker, final String message, final Throwable t) {
+    if (message.equals("false") || message.equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, marker, message, t);
   }
 
@@ -796,6 +821,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Message msg) {
+    if (msg.getFormattedMessage().equals("false") || msg.getFormattedMessage().equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, (Throwable) null);
   }
 
@@ -807,6 +835,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Message msg, final Throwable t) {
+    if (msg.getFormattedMessage().equals("false") || msg.getFormattedMessage().equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, msg, t);
   }
 
@@ -817,6 +848,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Object message) {
+    if (message instanceof String) {
+      if (message.equals("false") || message.equals("true")) {
+        this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+      }
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, (Throwable) null);
   }
 
@@ -829,6 +865,11 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final Object message, final Throwable t) {
+    if (message instanceof String) {
+      if (message.equals("false") || message.equals("true")) {
+        this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+      }
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, t);
   }
 
@@ -839,6 +880,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final String message) {
+    if (message.equals("false") || message.equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, (Throwable) null);
   }
 
@@ -851,6 +895,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final String message, final Object... params) {
+    if (message.equals("false") || message.equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, params);
   }
 
@@ -863,6 +910,9 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
    */
   @Override
   public void info(final String message, final Throwable t) {
+    if (message.equals("false") || message.equals("true")) {
+      this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, new Exception());
+    }
     this.logWrapper.logIfEnabled(this.loggerName, Level.INFO, null, message, t);
   }
 

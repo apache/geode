@@ -87,16 +87,14 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       AtomicLongFieldUpdater.newUpdater(HAEventWrapper.class, "referenceCount");
 
   /**
-   * If true, the entry containing this HAEventWrapper instance will not be removed from the
+   * If greater than zero, the entry containing this HAEventWrapper instance will not be removed
+   * from the
    * haContainer, even if the referenceCount value is zero.
    */
-  private transient boolean putInProgress = false;
-
-  /**
-   * A value true indicates that this instance is not used in the <code>haContainer</code>. So any
-   * changes in this instance will not be visible to the <code>haContainer</code>.
-   */
-  private transient boolean isRefFromHAContainer = false;
+  @SuppressWarnings("unused")
+  private volatile long putInProgressCount;
+  private static final AtomicLongFieldUpdater<HAEventWrapper> putInProgressCountUpdater =
+      AtomicLongFieldUpdater.newUpdater(HAEventWrapper.class, "putInProgressCount");
 
   /**
    * A reference to its <code>ClientUpdateMessage</code> instance.
@@ -119,6 +117,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     this.shouldConflate = event.shouldBeConflated();
     this.eventIdentifier = event.getEventId();
     rcUpdater.set(this, 0);
+    putInProgressCountUpdater.set(this, 0);
     this.clientUpdateMessage = event;
     this.clientCqs = ((ClientUpdateMessageImpl) event).getClientCqs();
   }
@@ -128,6 +127,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     this.clientUpdateMessage = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,
         new ClientProxyMembershipID(), eventId);
     rcUpdater.set(this, 0);
+    putInProgressCountUpdater.set(this, 0);
   }
 
   /**
@@ -208,22 +208,6 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     return this.clientCqs;
   }
 
-  public void setPutInProgress(boolean inProgress) {
-    this.putInProgress = inProgress;
-  }
-
-  public boolean getPutInProgress() {
-    return this.putInProgress;
-  }
-
-  public void setIsRefFromHAContainer(boolean bool) {
-    this.isRefFromHAContainer = bool;
-  }
-
-  public boolean getIsRefFromHAContainer() {
-    return this.isRefFromHAContainer;
-  }
-
   public void setHAContainer(Map container) {
     this.haContainer = container;
   }
@@ -258,12 +242,13 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   @Override
   public String toString() {
     if (this.clientUpdateMessage != null) {
-      return "HAEventWrapper[refCount=" + getReferenceCount() + "; msg=" + this.clientUpdateMessage
-          + "]";
+      return "HAEventWrapper[refCount=" + getReferenceCount() + "; putInProgress="
+          + putInProgressCountUpdater.get(this) + "; msg=" + this.clientUpdateMessage + "]";
     } else {
       return "HAEventWrapper[region=" + this.regionName + "; key=" + this.keyOfInterest
-          + "; refCount=" + getReferenceCount() + "; inContainer=" + this.isRefFromHAContainer
-          + "; putInProgress=" + this.putInProgress + "; event=" + this.eventIdentifier
+          + "; refCount=" + getReferenceCount()
+          + "; putInProgress=" + putInProgressCountUpdater.get(this) + "; event="
+          + this.eventIdentifier
           + ((this.clientUpdateMessage == null) ? "; no message" : ";with message")
           + ((this.clientUpdateMessage == null) ? ""
               : ("; op=" + this.clientUpdateMessage.getOperation()))
@@ -365,6 +350,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       this.keyOfInterest = this.clientUpdateMessage.getKeyOfInterest();
       this.shouldConflate = this.clientUpdateMessage.shouldBeConflated();
       rcUpdater.set(this, 0);
+      putInProgressCountUpdater.set(this, 0);
     } else {
       // Read and ignore dummy eventIdentifier instance.
       DataSerializer.readObject(in);
@@ -411,4 +397,15 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     return rcUpdater.decrementAndGet(this);
   }
 
+  public long incrementPutRefCount() {
+    return putInProgressCountUpdater.incrementAndGet(this);
+  }
+
+  public long decrementPutRefCount() {
+    return putInProgressCountUpdater.decrementAndGet(this);
+  }
+
+  public boolean getPutInProgress() {
+    return putInProgressCountUpdater.get(this) > 0;
+  }
 }
