@@ -34,5 +34,5 @@ import org.apache.geode.test.junit.runners.SuiteRunner;
 public class CommandOverHttpDUnitTest {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =
-      new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
+      new ProvideSystemProperty("useHTTP", "true");
 }
