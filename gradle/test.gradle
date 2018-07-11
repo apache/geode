@@ -154,15 +154,11 @@ subprojects {
     testClassesDirs = sourceSets.acceptanceTest.output.classesDirs
     classpath = sourceSets.acceptanceTest.runtimeClasspath
 
-
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-
     forkEvery 1
 
     outputs.upToDateWhen{false}
   }
+
 
   task flakyTest(type:Test) {
     useJUnit {
