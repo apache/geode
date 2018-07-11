@@ -73,12 +73,10 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import org.apache.geode.test.junit.categories.UITest;
 import org.apache.geode.tools.pulse.tests.DataBrowserResultLoader;
 import org.apache.geode.tools.pulse.tests.PulseTestData;
 import org.apache.geode.tools.pulse.tests.PulseTestLocators;
@@ -86,7 +84,6 @@ import org.apache.geode.tools.pulse.tests.rules.ScreenshotOnFailureRule;
 import org.apache.geode.tools.pulse.tests.rules.ServerRule;
 import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 
-@Category(UITest.class)
 public class PulseAutomatedTest extends PulseBase {
 
   @ClassRule

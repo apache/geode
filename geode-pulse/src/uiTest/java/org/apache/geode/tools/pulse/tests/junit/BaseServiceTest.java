@@ -42,9 +42,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UITest;
 
 
 /**
@@ -58,7 +56,6 @@ import org.apache.geode.test.junit.categories.UITest;
  *
  */
 @Ignore
-@Category(UITest.class)
 public abstract class BaseServiceTest {
 
   protected static Properties propsForJUnit = new Properties();

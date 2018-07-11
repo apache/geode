@@ -151,18 +151,6 @@ war {
   classpath project(':geode-core').webJar.archivePath
 }
 
-task uiTest(type:Test) {
-  useJUnit {
-    includeCategories 'org.apache.geode.test.junit.categories.UITest'
-    excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-  }
-
-  forkEvery(1)
-  doFirst {
-    TestPropertiesWriter.writeTestProperties(buildDir, name)
-  }
-}
-
 uiTest.dependsOn war
 uiTest.finalizedBy rootProject.combineReports
 rootProject.combineReports.mustRunAfter uiTest

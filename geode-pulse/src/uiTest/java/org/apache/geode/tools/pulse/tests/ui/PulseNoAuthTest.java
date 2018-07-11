@@ -19,16 +19,13 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.openqa.selenium.WebDriver;
 
-import org.apache.geode.test.junit.categories.UITest;
 import org.apache.geode.tools.pulse.tests.rules.ScreenshotOnFailureRule;
 import org.apache.geode.tools.pulse.tests.rules.ServerRule;
 import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 
-@Category(UITest.class)
 @FixMethodOrder(MethodSorters.JVM)
 public class PulseNoAuthTest extends PulseBase {
 

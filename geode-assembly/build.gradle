@@ -440,14 +440,6 @@ def dependOnInstalledProduct = {
   environment ('GEODE_HOME', install)
 }
 
-task uiTest(type: Test) {
-    useJUnit {
-        includeCategories 'org.apache.geode.test.junit.categories.UITest'
-        excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    forkEvery(1)
-}
-
 // Add the configuration closure to the test targets so they depend on the install directory
 test dependOnInstalledProduct
 acceptanceTest dependOnInstalledProduct

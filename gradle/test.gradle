@@ -111,6 +111,15 @@ subprojects {
       }
       resources.srcDir file('src/acceptanceTest/resources')
     }
+
+      uiTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/uiTest/java')
+      }
+      resources.srcDir file('src/uiTest/resources')
+    }
   }
 
   task integrationTest(type:Test) {
@@ -151,13 +160,23 @@ subprojects {
   }
 
   task acceptanceTest(type:Test) {
-    testClassesDirs = sourceSets.acceptanceTest.output.classesDirs
-    classpath = sourceSets.acceptanceTest.runtimeClasspath
+      testClassesDirs = sourceSets.acceptanceTest.output.classesDirs
+      classpath = sourceSets.acceptanceTest.runtimeClasspath
+
+      forkEvery 1
+
+      outputs.upToDateWhen{false}
+  }
+
+  task uiTest(type:Test) {
+    testClassesDirs = sourceSets.uiTest.output.classesDirs
+    classpath = sourceSets.uiTest.runtimeClasspath
 
     forkEvery 1
 
     outputs.upToDateWhen{false}
   }
+
 
 
   task flakyTest(type:Test) {
