@@ -863,6 +863,10 @@ public class TXState implements TXStateInterface {
   }
 
   protected void cleanup() {
+    cleanup(false);
+  }
+
+  protected void cleanup(boolean isBeforeCompletion) {
     IllegalArgumentException iae = null;
     try {
       this.closed = true;
@@ -916,7 +920,7 @@ public class TXState implements TXStateInterface {
       synchronized (this.completionGuard) {
         this.completionGuard.notifyAll();
       }
-      if (this.syncRunnable != null) {
+      if (this.syncRunnable != null && !isBeforeCompletion) {
         this.syncRunnable.abort();
       }
       if (iae != null && !this.proxy.getCache().isClosed()) {
@@ -1093,7 +1097,7 @@ public class TXState implements TXStateInterface {
         }
       }
     } catch (CommitConflictException commitConflict) {
-      cleanup();
+      cleanup(true);
       proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
       beforeCompletionException = new SynchronizationCommitConflictException(
           LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
