@@ -21,7 +21,7 @@ limitations under the License.
 
 For peer-to-peer communication, you can manage socket use at the system member level and at the thread level.
 
-The conserve-sockets setting indicates whether application threads share sockets with other threads or use their own sockets for distributed system member communication. This setting has no effect on communication between a server and its clients, but it does control the server’s communication with its peers or a gateway sender's communication with a gateway receiver. In client/server settings in particular, where there can be a large number of clients for each server, controlling peer-to-peer socket use is an important part of tuning server performance.
+The conserve-sockets setting indicates whether application threads share sockets with other threads or use their own sockets for member communication. This setting has no effect on communication between a server and its clients, but it does control the server’s communication with its peers or a gateway sender's communication with a gateway receiver. In client/server settings in particular, where there can be a large number of clients for each server, controlling peer-to-peer socket use is an important part of tuning server performance.
 
 You configure conserve-sockets for the member as a whole in `gemfire.properties`. Additionally, you can change the sockets conservation policy for the individual thread through the API.
 

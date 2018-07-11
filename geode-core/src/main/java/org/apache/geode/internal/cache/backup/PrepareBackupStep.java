@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -26,41 +27,44 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
-class FinishBackupOperation extends BackupOperation {
+class PrepareBackupStep extends BackupStep {
   private static final Logger logger = LogService.getLogger();
 
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
-  private final FinishBackupFactory finishBackupFactory;
+  private final PrepareBackupFactory prepareBackupFactory;
+  private final Properties properties;
 
-  FinishBackupOperation(DistributionManager dm, InternalDistributedMember member,
+  PrepareBackupStep(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
-      FinishBackupFactory FinishBackupFactory) {
+      PrepareBackupFactory prepareBackupFactory, Properties properties) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
-    this.finishBackupFactory = FinishBackupFactory;
+    this.prepareBackupFactory = prepareBackupFactory;
+    this.properties = properties;
   }
 
   @Override
   ReplyProcessor21 createReplyProcessor() {
-    return finishBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
+    return prepareBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
   }
 
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return finishBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
+    return prepareBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId(),
+        properties);
   }
 
   @Override
   void processLocally() {
     try {
-      addToResults(member, finishBackupFactory.createFinishBackup(cache).run());
-    } catch (IOException e) {
-      logger.fatal("Failed to FinishBackup in " + member, e);
+      addToResults(member,
+          prepareBackupFactory.createPrepareBackup(member, cache, properties).run());
+    } catch (IOException | InterruptedException e) {
+      logger.fatal("Failed to PrepareBackup in " + member, e);
     }
   }
-
 }

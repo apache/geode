@@ -42,7 +42,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class AbortBackupOperationTest {
+public class AbortBackupStepTest {
 
   private DistributionManager dm;
 
@@ -54,7 +54,7 @@ public class AbortBackupOperationTest {
   private AbortBackupRequest abortBackupRequest;
   private AbortBackup abortBackup;
 
-  private AbortBackupOperation abortBackupOperation;
+  private AbortBackupStep abortBackupStep;
 
   @Before
   public void setUp() throws Exception {
@@ -72,12 +72,12 @@ public class AbortBackupOperationTest {
     member2 = mock(InternalDistributedMember.class, "member2");
     Set<InternalDistributedMember> recipients = new HashSet<>();
 
-    abortBackupOperation =
-        new AbortBackupOperation(dm, sender, cache, recipients, abortBackupFactory);
+    abortBackupStep =
+        new AbortBackupStep(dm, sender, cache, recipients, abortBackupFactory);
 
     when(backupReplyProcessor.getProcessorId()).thenReturn(42);
 
-    when(abortBackupFactory.createReplyProcessor(eq(abortBackupOperation), eq(dm), eq(recipients)))
+    when(abortBackupFactory.createReplyProcessor(eq(abortBackupStep), eq(dm), eq(recipients)))
         .thenReturn(backupReplyProcessor);
     when(abortBackupFactory.createRequest(eq(sender), eq(recipients), eq(42)))
         .thenReturn(abortBackupRequest);
@@ -86,42 +86,41 @@ public class AbortBackupOperationTest {
 
   @Test
   public void sendShouldSendAbortBackupMessage() {
-    abortBackupOperation.send();
+    abortBackupStep.send();
 
     verify(dm, times(1)).putOutgoing(abortBackupRequest);
   }
 
   @Test
   public void sendReturnsResultsForLocalMember() {
-    assertThat(abortBackupOperation.send()).containsOnlyKeys(sender);
+    assertThat(abortBackupStep.send()).containsOnlyKeys(sender);
   }
 
   @Test
   public void sendReturnsResultsForAllMembers() throws Exception {
-    MemberWithPersistentIds[] ids =
-        new MemberWithPersistentIds[] {new MemberWithPersistentIds(member1, new HashSet<>()),
-            new MemberWithPersistentIds(member2, new HashSet<>())};
+    MemberWithPersistentIds[] ids = new MemberWithPersistentIds[] {
+        createMemberWithPersistentIds(member1), createMemberWithPersistentIds(member2)};
 
     doAnswer(invokeAddToResults(ids)).when(backupReplyProcessor).waitForReplies();
 
-    assertThat(abortBackupOperation.send()).containsOnlyKeys(member1, member2, sender);
+    assertThat(abortBackupStep.send()).containsOnlyKeys(member1, member2, sender);
   }
 
   @Test
   public void getResultsShouldReturnEmptyMapByDefault() {
-    assertThat(abortBackupOperation.getResults()).isEmpty();
+    assertThat(abortBackupStep.getResults()).isEmpty();
   }
 
   @Test
   public void addToResultsWithNullShouldBeNoop() {
-    abortBackupOperation.addToResults(member1, null);
-    assertThat(abortBackupOperation.getResults()).isEmpty();
+    abortBackupStep.addToResults(member1, null);
+    assertThat(abortBackupStep.getResults()).isEmpty();
   }
 
   @Test
   public void addToResultsShouldShowUpInGetResults() {
-    abortBackupOperation.addToResults(member1, new HashSet<>());
-    assertThat(abortBackupOperation.getResults()).containsOnlyKeys(member1);
+    abortBackupStep.addToResults(member1, createPersistentIds());
+    assertThat(abortBackupStep.getResults()).containsOnlyKeys(member1);
   }
 
   @Test
@@ -129,20 +128,20 @@ public class AbortBackupOperationTest {
     ReplyException replyException =
         new ReplyException("expected exception", new CacheClosedException("expected exception"));
     doThrow(replyException).when(backupReplyProcessor).waitForReplies();
-    abortBackupOperation.send();
+    abortBackupStep.send();
   }
 
   @Test
   public void sendShouldHandleInterruptedExceptionFromWaitForReplies() throws Exception {
     doThrow(new InterruptedException("expected exception")).when(backupReplyProcessor)
         .waitForReplies();
-    abortBackupOperation.send();
+    abortBackupStep.send();
   }
 
   @Test(expected = ReplyException.class)
   public void sendShouldThrowReplyExceptionWithNoCauseFromWaitForReplies() throws Exception {
     doThrow(new ReplyException("expected exception")).when(backupReplyProcessor).waitForReplies();
-    abortBackupOperation.send();
+    abortBackupStep.send();
   }
 
   @Test(expected = ReplyException.class)
@@ -150,13 +149,13 @@ public class AbortBackupOperationTest {
       throws Exception {
     doThrow(new ReplyException("expected exception", new RuntimeException("expected")))
         .when(backupReplyProcessor).waitForReplies();
-    abortBackupOperation.send();
+    abortBackupStep.send();
   }
 
   @Test
   public void sendShouldAbortBackupInLocalMemberBeforeWaitingForReplies() throws Exception {
     InOrder inOrder = inOrder(abortBackup, backupReplyProcessor);
-    abortBackupOperation.send();
+    abortBackupStep.send();
 
     inOrder.verify(abortBackup, times(1)).run();
     inOrder.verify(backupReplyProcessor, times(1)).waitForReplies();
@@ -165,10 +164,20 @@ public class AbortBackupOperationTest {
   private Answer<Object> invokeAddToResults(MemberWithPersistentIds... memberWithPersistentIds) {
     return invocation -> {
       for (MemberWithPersistentIds ids : memberWithPersistentIds) {
-        abortBackupOperation.addToResults(ids.member, ids.persistentIds);
+        abortBackupStep.addToResults(ids.member, ids.persistentIds);
       }
       return null;
     };
+  }
+
+  private MemberWithPersistentIds createMemberWithPersistentIds(InternalDistributedMember member) {
+    return new MemberWithPersistentIds(member, createPersistentIds());
+  }
+
+  private HashSet<PersistentID> createPersistentIds() {
+    HashSet<PersistentID> persistentIds = new HashSet<>();
+    persistentIds.add(mock(PersistentID.class));
+    return persistentIds;
   }
 
   private static class MemberWithPersistentIds {

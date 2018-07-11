@@ -288,7 +288,6 @@ org/apache/geode/internal/cache/InitialImageOperation$GIITestHookType,false
 org/apache/geode/internal/cache/LocalRegion$1,true,0,this$0:org/apache/geode/internal/cache/LocalRegion
 org/apache/geode/internal/cache/LocalRegion$IteratorType,false
 org/apache/geode/internal/cache/Oplog$OkToSkipResult,false
-org/apache/geode/internal/cache/Oplog$OplogFileType,false
 org/apache/geode/internal/cache/PartitionAttributesImpl,false
 org/apache/geode/internal/cache/PRContainsValueFunction,false
 org/apache/geode/internal/cache/PRHARedundancyProvider$ArrayListWithClearState,true,1,wasCleared:boolean

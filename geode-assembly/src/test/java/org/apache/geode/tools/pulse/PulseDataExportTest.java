@@ -16,10 +16,8 @@
 
 package org.apache.geode.tools.pulse;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +27,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.PulseTest;
-import org.apache.geode.test.junit.rules.HttpClientRule;
+import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, PulseTest.class})
@@ -40,7 +38,7 @@ public class PulseDataExportTest {
       new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "regionA");
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(server::getHttpPort);
+  public GeodeHttpClientRule client = new GeodeHttpClientRule(server::getHttpPort);
 
   @Before
   public void before() throws Exception {
@@ -54,13 +52,11 @@ public class PulseDataExportTest {
   public void dataBrowserExportWorksAsExpected() throws Exception {
     client.loginToPulseAndVerify("admin", "admin");
 
-    HttpResponse response =
-        client.get("/pulse/dataBrowserExport", "query", "select * from /regionA a order by a");
-    assertThat(response.getStatusLine().getStatusCode()).describedAs(response.toString())
-        .isEqualTo(200);
-
-    String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
-    assertThat(responseBody).describedAs(response.toString()).isEqualTo(
-        "{\"result\":[[\"java.lang.String\",\"value1\"],[\"java.lang.String\",\"value2\"],[\"java.lang.String\",\"value3\"]]}");
+    assertResponse(
+        client.get("/pulse/dataBrowserExport", "query", "select * from /regionA a order by a"))
+            .hasStatusCode(200)
+            .hasResponseBody()
+            .isEqualToIgnoringWhitespace(
+                "{\"result\":[[\"java.lang.String\",\"value1\"],[\"java.lang.String\",\"value2\"],[\"java.lang.String\",\"value3\"]]}");
   }
 }

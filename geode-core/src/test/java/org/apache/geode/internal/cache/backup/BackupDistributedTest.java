@@ -700,8 +700,9 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
   private BackupStatus backupMember(final VM vm) {
     return vm.invoke("backup", () -> {
       try {
-        return BackupUtil.backupAllMembers(getCache().getDistributionManager(),
-            backupBaseDir.toString(), null);
+        return new BackupOperation(getCache().getDistributionManager(), getCache())
+            .backupAllMembers(
+                backupBaseDir.toString(), null);
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }

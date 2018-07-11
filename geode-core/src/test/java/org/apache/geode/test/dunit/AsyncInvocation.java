@@ -36,14 +36,8 @@ import org.apache.geode.SystemFailure;
  *   AsyncInvocation ai1 = vm.invokeAsync(() -> Test.method1());
  *   AsyncInvocation ai2 = vm.invokeAsync(() -> Test.method2());
  *
- *   ai1.join();
- *   ai2.join();
- *
- *   assertTrue("Exception occurred while invoking " + ai1,
- *              !ai1.exceptionOccurred());
- *   if (ai2.exceptionOccurred()) {
- *     throw ai2.getException();
- *   }
+ *   ai1.await();
+ *   ai2.await();
  * </pre>
  *
  * @param <V> The result type returned by this AsyncInvocation's {@code get} methods
@@ -51,11 +45,6 @@ import org.apache.geode.SystemFailure;
  * @see VM#invokeAsync(Class, String)
  */
 public class AsyncInvocation<V> implements Future<V> {
-
-  // TODO:davidw: Add the ability to get a return value back from the
-  // async method call. (Use a static ThreadLocal field that is
-  // accessible from the Runnable used in VM#invoke)
-  // TODO:?: reimplement using Futures
 
   private static final long DEFAULT_JOIN_MILLIS = 60 * 1000;
 
@@ -85,7 +74,7 @@ public class AsyncInvocation<V> implements Future<V> {
   public AsyncInvocation(final Object target, final String methodName, final Callable<V> work) {
     this.target = target;
     this.methodName = methodName;
-    this.thread =
+    thread =
         new Thread(new AsyncInvocationGroup(), runnable(work), getName(target, methodName));
   }
 
@@ -95,7 +84,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @deprecated This method is not required for anything.
    */
   public Object getTarget() {
-    return this.target;
+    return target;
   }
 
   /**
@@ -104,7 +93,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @deprecated This method is not required for anything.
    */
   public String getMethodName() {
-    return this.methodName;
+    return methodName;
   }
 
   /**
@@ -128,11 +117,11 @@ public class AsyncInvocation<V> implements Future<V> {
       throw new AssertionError(illegalStateException);
     }
 
-    if (this.resultThrowable.get() instanceof RMIException) { // TODO:klund: delete our RMIException
-      return this.resultThrowable.get().getCause();
+    if (resultThrowable.get() instanceof RMIException) { // TODO: delete our RMIException
+      return resultThrowable.get().getCause();
 
     } else {
-      return this.resultThrowable.get();
+      return resultThrowable.get();
     }
   }
 
@@ -145,7 +134,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
    */
   public AsyncInvocation<V> checkException() {
-    if (this.resultThrowable.get() != null) {
+    if (resultThrowable.get() != null) {
       throw new AssertionError("An exception occurred during asynchronous invocation.",
           getException());
     }
@@ -171,7 +160,7 @@ public class AsyncInvocation<V> implements Future<V> {
     join();
     checkException();
     checkIsDone("Return value not available while thread is alive.");
-    return this.resultValue.get();
+    return resultValue.get();
   }
 
   /**
@@ -211,7 +200,7 @@ public class AsyncInvocation<V> implements Future<V> {
    */
   public V getReturnValue() {
     checkIsDone("Return value not available while thread is alive.");
-    return this.resultValue.get();
+    return resultValue.get();
   }
 
   /**
@@ -227,7 +216,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @throws InterruptedException if the current thread is interrupted.
    */
   public synchronized AsyncInvocation<V> join(final long millis) throws InterruptedException {
-    this.thread.join(millis);
+    thread.join(millis);
     return this;
   }
 
@@ -247,7 +236,7 @@ public class AsyncInvocation<V> implements Future<V> {
    */
   public synchronized AsyncInvocation<V> join(final long millis, final int nanos)
       throws InterruptedException {
-    this.thread.join(millis, nanos);
+    thread.join(millis, nanos);
     return this;
   }
 
@@ -271,7 +260,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @return this {@code AsyncInvocation}
    */
   public synchronized AsyncInvocation<V> start() {
-    this.thread.start();
+    thread.start();
     return this;
   }
 
@@ -281,7 +270,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @return this {@code AsyncInvocation}'s work thread.
    */
   public synchronized Thread getThread() {
-    return this.thread;
+    return thread;
   }
 
   /**
@@ -292,25 +281,25 @@ public class AsyncInvocation<V> implements Future<V> {
    *         otherwise.
    */
   public synchronized boolean isAlive() {
-    return this.thread.isAlive();
+    return thread.isAlive();
   }
 
   @Override
   public synchronized boolean isCancelled() {
-    return this.cancelled;
+    return cancelled;
   }
 
   @Override
   public synchronized boolean isDone() {
-    return !this.thread.isAlive(); // state != NEW;
+    return !thread.isAlive(); // state != NEW;
   }
 
   @Override
   public synchronized boolean cancel(final boolean mayInterruptIfRunning) {
-    if (this.thread.isAlive()) {
+    if (thread.isAlive()) {
       if (mayInterruptIfRunning) {
-        this.cancelled = true;
-        this.thread.interrupt();
+        cancelled = true;
+        thread.interrupt();
         return true;
       }
     }
@@ -422,7 +411,7 @@ public class AsyncInvocation<V> implements Future<V> {
     join(millis);
     timeoutIfAlive(millis);
     checkException();
-    return this.resultValue.get();
+    return resultValue.get();
   }
 
   /**
@@ -434,7 +423,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @return this {@code AsyncInvocation}'s thread's ID.
    */
   public long getId() {
-    return this.thread.getId();
+    return thread.getId();
   }
 
   @Override
@@ -452,7 +441,7 @@ public class AsyncInvocation<V> implements Future<V> {
    * @throws IllegalStateException if this {@code AsyncInvocation} is not done.
    */
   private AsyncInvocation<V> checkIsDone(final String message) {
-    if (this.thread.isAlive()) {
+    if (thread.isAlive()) {
       throw new IllegalStateException(message);
     }
     return this;
@@ -469,7 +458,7 @@ public class AsyncInvocation<V> implements Future<V> {
    *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
    */
   private AsyncInvocation<V> timeoutIfAlive(final long timeout) throws TimeoutException {
-    if (this.thread.isAlive()) {
+    if (thread.isAlive()) {
       throw new TimeoutException(
           "Timed out waiting " + timeout + " milliseconds for AsyncInvocation to complete.");
     }

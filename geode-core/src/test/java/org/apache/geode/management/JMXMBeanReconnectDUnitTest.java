@@ -16,6 +16,7 @@
 package org.apache.geode.management;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -34,6 +35,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -193,6 +195,8 @@ public class JMXMBeanReconnectDUnitTest {
     List<ObjectName> locatorBeansExcludingStoppedMember = initialLocator1GemfireBeans.stream()
         .filter(excludingBeansFor("server-" + SERVER_1_VM_INDEX))
         .collect(toList());
+    int numServerMBeans =
+        initialLocator1GemfireBeans.size() - locatorBeansExcludingStoppedMember.size();
 
     assertSoftly(softly -> {
       softly.assertThat(intermediateLocator2GemfireBeans)
@@ -203,6 +207,7 @@ public class JMXMBeanReconnectDUnitTest {
 
     server1.waitTilServerFullyReconnected();
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
+    waitForMBeanFederationFrom(numServerMBeans, server1);
     waitForLocatorsToAgreeOnMembership();
 
     List<ObjectName> finalLocator1GemfireBeans =
@@ -215,6 +220,21 @@ public class JMXMBeanReconnectDUnitTest {
           .containsExactlyElementsOf(finalLocator2GemfireBeans);
       softly.assertThat(finalLocator1GemfireBeans)
           .containsExactlyElementsOf(initialLocator2GemfireBeans);
+    });
+  }
+
+  private void waitForMBeanFederationFrom(int numMemberMBeans, MemberVM member) {
+    String memberName = "server-" + member.getVM().getId();
+    Awaitility.waitAtMost(10, SECONDS).until(() -> {
+      List<ObjectName> beans = null;
+      try {
+        beans = getFederatedGemfireBeansFrom(locator1);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      List<ObjectName> beanList =
+          beans.stream().filter(b -> b.toString().contains(memberName)).sorted().collect(toList());
+      assertThat(beanList.size()).isEqualTo(numMemberMBeans);
     });
   }
 

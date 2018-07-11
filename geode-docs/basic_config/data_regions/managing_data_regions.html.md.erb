@@ -55,7 +55,7 @@ gfsh>create region --name=region1 --type=REPLICATE
 Export the configuration files of your server so that you can save your region's configuration and recreate the region with the same attributes the next time you start up your cache server. See [export config](../../tools_modules/gfsh/command-pages/export.html#topic_C7C69306F93743459E65D46537F4A1EE) for details. 
 
 **Note:**
-The cluster configuration service, which is enabled by default, automatically saves the configuration on the locators in the distributed system. After you use the gfsh create region command, any new servers that you start that attach to the same locator receive the same configuration. You can also create alternate configurations within a distributed system by specifying a group when creating the region and starting servers. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+The cluster configuration service, which is enabled by default, automatically saves the configuration on the locators in the cluster. After you use the gfsh create region command, any new servers that you start that attach to the same locator receive the same configuration. You can also create alternate configurations within a cluster by specifying a group when creating the region and starting servers. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
 
 
 ###  Creating a Region Through the cache.xml File

@@ -56,7 +56,7 @@ class UnixBackupInspector extends BackupInspector {
 
   @Override
   protected void parseOplogLines(final BufferedReader reader) throws IOException {
-    String line = null;
+    String line;
 
     while (null != (line = reader.readLine())) {
       int beginIndex = line.lastIndexOf(File.separator) + 1;

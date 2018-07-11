@@ -44,7 +44,7 @@ import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.cache.backup.BackupUtil;
+import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
@@ -313,8 +313,9 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
   protected BackupStatus backup(final VM vm) {
     return vm.invoke("backup", () -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-            getBackupDir().toString(), null);
+        return new BackupOperation(getSystem().getDistributionManager(), getCache())
+            .backupAllMembers(
+                getBackupDir().toString(), null);
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }

@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
@@ -41,11 +40,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQuery;
+import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
@@ -58,43 +57,36 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({DistributedTest.class, LuceneTest.class})
+@Category({IntegrationTest.class, LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class LuceneIndexCommandsDUnitTest implements Serializable {
+public class LuceneIndexCommandsIntegrationTest {
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
-
-  @Rule
   public SerializableTestName testName = new SerializableTestName();
 
-  protected MemberVM serverVM;
+  @Rule
+  public ServerStarterRule server = new ServerStarterRule();
 
   @Before
   public void before() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsWithReindexAllowedDUnitTest"
-            + ";org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsDUnitTest*"
-            + ";org.apache.geode.test.**");
-    serverVM = startupRule.startServerVM(0, x -> x.withProperties(props).withJMXManager());
-    connect(serverVM);
-  }
+    server.withProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsWithReindexAllowedIntegrationTest"
+            + ";org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsIntegrationTest*"
+            + ";org.apache.geode.test.**")
+        .withJMXManager().startServer();
 
-  public void connect(MemberVM serverVM) throws Exception {
-    gfsh.connectAndVerify(serverVM.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test
@@ -142,18 +134,22 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     entries.put("B", new TestObject("ABC", "EFG", "HIJ"));
 
     putEntries(entries, 2);
-    queryAndVerify("field1:value1", "field1", Collections.singletonList("A"));
+    queryAndVerify("field1:value1", "field1");
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE_LIST_INDEX__STATS, "true");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Index Name", INDEX_NAME)
-        .tableHasColumnWithExactValuesInAnyOrder("Status", "INITIALIZED")
-        .tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region")
-        .tableHasColumnWithExactValuesInAnyOrder("Query Executions", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Documents", "2");
+    CommandResult result = gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Index Name", INDEX_NAME)
+        .tableHasColumnOnlyWithValues("Status", "INITIALIZED")
+        .tableHasColumnOnlyWithValues("Region Path", "/region")
+        .tableHasColumnOnlyWithValues("Query Executions", "1")
+        .getCommandResult();
 
+    // the document count could be greater than 2
+    List<String> documents = result.getTableColumnValues("Documents");
+    assertThat(documents).hasSize(1);
+    assertThat(Integer.parseInt(documents.get(0))).isGreaterThanOrEqualTo(2);
   }
 
 
@@ -167,13 +163,11 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Successfully created lucene index");
 
-    serverVM.invoke(() -> createRegion());
+    createRegion();
 
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      assertArrayEquals(new String[] {"field1", "field2", "field3"}, index.getFieldNames());
-    });
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    assertArrayEquals(new String[] {"field1", "field2", "field3"}, index.getFieldNames());
   }
 
   @Test
@@ -192,17 +186,15 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Successfully created lucene index");
 
-    serverVM.invoke(() -> createRegion());
+    createRegion();
 
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+    assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
+    assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
+    assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
 
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
-      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
-      assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
-      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
-    });
   }
 
   @Test
@@ -217,14 +209,12 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Successfully created lucene index");
 
-    serverVM.invoke(() -> createRegion());
+    createRegion();
 
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    assertThat(index.getLuceneSerializer()).isInstanceOf(PrimitiveSerializer.class);
 
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      assertThat(index.getLuceneSerializer()).isInstanceOf(PrimitiveSerializer.class);
-    });
   }
 
   @Test
@@ -279,17 +269,14 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Successfully created lucene index");
 
-    serverVM.invoke(() -> createRegion());
+    createRegion();
 
-
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
-      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
-      assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
-      assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
-    });
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    final Map<String, Analyzer> fieldAnalyzers = index.getFieldAnalyzers();
+    assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
+    assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
+    assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
   }
 
   @Test
@@ -301,13 +288,12 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    serverVM.invoke(() -> {
-      LuceneServiceImpl luceneService = (LuceneServiceImpl) LuceneServiceProvider.get(getCache());
-      final ArrayList<LuceneIndexCreationProfile> profiles =
-          new ArrayList<>(luceneService.getAllDefinedIndexes());
-      assertEquals(1, profiles.size());
-      assertEquals(INDEX_NAME, profiles.get(0).getIndexName());
-    });
+    LuceneServiceImpl luceneService =
+        (LuceneServiceImpl) LuceneServiceProvider.get(server.getCache());
+    final ArrayList<LuceneIndexCreationProfile> profiles =
+        new ArrayList<>(luceneService.getAllDefinedIndexes());
+    assertEquals(1, profiles.size());
+    assertEquals(INDEX_NAME, profiles.get(0).getIndexName());
   }
 
   @Test
@@ -348,42 +334,41 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Successfully created lucene index");
 
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      createRegion();
-      final LuceneIndex spaceIndex = luceneService.getIndex("space", REGION_NAME);
-      final Map<String, Analyzer> spaceFieldAnalyzers = spaceIndex.getFieldAnalyzers();
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    createRegion();
+    final LuceneIndex spaceIndex = luceneService.getIndex("space", REGION_NAME);
+    final Map<String, Analyzer> spaceFieldAnalyzers = spaceIndex.getFieldAnalyzers();
 
-      final LuceneIndex emptyIndex = luceneService.getIndex("empty", REGION_NAME);
-      final Map<String, Analyzer> emptyFieldAnalyzers2 = emptyIndex.getFieldAnalyzers();
+    final LuceneIndex emptyIndex = luceneService.getIndex("empty", REGION_NAME);
+    final Map<String, Analyzer> emptyFieldAnalyzers2 = emptyIndex.getFieldAnalyzers();
 
-      final LuceneIndex keywordIndex = luceneService.getIndex("keyword", REGION_NAME);
-      final Map<String, Analyzer> keywordFieldAnalyzers = keywordIndex.getFieldAnalyzers();
+    final LuceneIndex keywordIndex = luceneService.getIndex("keyword", REGION_NAME);
+    final Map<String, Analyzer> keywordFieldAnalyzers = keywordIndex.getFieldAnalyzers();
 
-      // Test whitespace analyzers
-      assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          spaceFieldAnalyzers.get("field1").getClass().getCanonicalName());
-      assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          spaceFieldAnalyzers.get("field2").getClass().getCanonicalName());
-      assertEquals(KeywordAnalyzer.class.getCanonicalName(),
-          spaceFieldAnalyzers.get("field3").getClass().getCanonicalName());
+    // Test whitespace analyzers
+    assertEquals(StandardAnalyzer.class.getCanonicalName(),
+        spaceFieldAnalyzers.get("field1").getClass().getCanonicalName());
+    assertEquals(StandardAnalyzer.class.getCanonicalName(),
+        spaceFieldAnalyzers.get("field2").getClass().getCanonicalName());
+    assertEquals(KeywordAnalyzer.class.getCanonicalName(),
+        spaceFieldAnalyzers.get("field3").getClass().getCanonicalName());
 
-      // Test empty analyzers
-      assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          emptyFieldAnalyzers2.get("field1").getClass().getCanonicalName());
-      assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          emptyFieldAnalyzers2.get("field2").getClass().getCanonicalName());
-      assertEquals(KeywordAnalyzer.class.getCanonicalName(),
-          emptyFieldAnalyzers2.get("field3").getClass().getCanonicalName());
+    // Test empty analyzers
+    assertEquals(StandardAnalyzer.class.getCanonicalName(),
+        emptyFieldAnalyzers2.get("field1").getClass().getCanonicalName());
+    assertEquals(StandardAnalyzer.class.getCanonicalName(),
+        emptyFieldAnalyzers2.get("field2").getClass().getCanonicalName());
+    assertEquals(KeywordAnalyzer.class.getCanonicalName(),
+        emptyFieldAnalyzers2.get("field3").getClass().getCanonicalName());
 
-      // Test keyword analyzers
-      assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          keywordFieldAnalyzers.get("field1").getClass().getCanonicalName());
-      assertEquals(StandardAnalyzer.class.getCanonicalName(),
-          keywordFieldAnalyzers.get("field2").getClass().getCanonicalName());
-      assertEquals(KeywordAnalyzer.class.getCanonicalName(),
-          keywordFieldAnalyzers.get("field3").getClass().getCanonicalName());
-    });
+    // Test keyword analyzers
+    assertEquals(StandardAnalyzer.class.getCanonicalName(),
+        keywordFieldAnalyzers.get("field1").getClass().getCanonicalName());
+    assertEquals(StandardAnalyzer.class.getCanonicalName(),
+        keywordFieldAnalyzers.get("field2").getClass().getCanonicalName());
+    assertEquals(KeywordAnalyzer.class.getCanonicalName(),
+        keywordFieldAnalyzers.get("field3").getClass().getCanonicalName());
+
   }
 
   @Test
@@ -406,7 +391,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
         PrimitiveSerializer.class.getCanonicalName());
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
-    serverVM.invoke(() -> createRegion());
+    createRegion();
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESCRIBE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -575,7 +560,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Test
   public void searchWithoutIndexShouldReturnError() throws Exception {
-    serverVM.invoke(() -> createRegion());
+    createRegion();
 
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
@@ -653,7 +638,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Test
   public void testDestroyNonExistentSingleIndex() throws Exception {
-    serverVM.invoke(() -> createRegion());
+    createRegion();
     String expectedStatus = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
         .toLocalizedString(new Object[] {INDEX_NAME, '/' + REGION_NAME});
 
@@ -663,7 +648,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Test
   public void testDestroyNonExistentIndexes() throws Exception {
-    serverVM.invoke(() -> createRegion());
+    createRegion();
 
     String expectedOutput = LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
         .toLocalizedString(new Object[] {"/region"});
@@ -672,30 +657,26 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   protected void createRegion() {
-    getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    server.getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
   }
 
   private void createIndex() {
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
-      Map<String, Analyzer> fieldAnalyzers = new HashMap();
-      fieldAnalyzers.put("field1", new StandardAnalyzer());
-      fieldAnalyzers.put("field2", new KeywordAnalyzer());
-      fieldAnalyzers.put("field3", null);
-      luceneService.createIndexFactory().setFields(fieldAnalyzers).create(INDEX_NAME, REGION_NAME);
-      createRegion();
-    });
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    Map<String, Analyzer> fieldAnalyzers = new HashMap();
+    fieldAnalyzers.put("field1", new StandardAnalyzer());
+    fieldAnalyzers.put("field2", new KeywordAnalyzer());
+    fieldAnalyzers.put("field3", null);
+    luceneService.createIndexFactory().setFields(fieldAnalyzers).create(INDEX_NAME, REGION_NAME);
+    createRegion();
   }
 
   private void createIndexWithoutRegion() {
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
-      Map<String, Analyzer> fieldAnalyzers = new HashMap();
-      fieldAnalyzers.put("field1", new StandardAnalyzer());
-      fieldAnalyzers.put("field2", new KeywordAnalyzer());
-      fieldAnalyzers.put("field3", null);
-      luceneService.createIndexFactory().setFields(fieldAnalyzers).create(INDEX_NAME, REGION_NAME);
-    });
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    Map<String, Analyzer> fieldAnalyzers = new HashMap();
+    fieldAnalyzers.put("field1", new StandardAnalyzer());
+    fieldAnalyzers.put("field2", new KeywordAnalyzer());
+    fieldAnalyzers.put("field3", null);
+    luceneService.createIndexFactory().setFields(fieldAnalyzers).create(INDEX_NAME, REGION_NAME);
   }
 
   private void writeToLog(String text, String resultAsString) {
@@ -703,36 +684,29 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
     System.out.println(text + ":" + resultAsString);
   }
 
-  private void putEntries(Map<String, TestObject> entries, int countOfDocuments) {
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      Region region = getCache().getRegion(REGION_NAME);
-      region.putAll(entries);
-      luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
-      LuceneIndexImpl index = (LuceneIndexImpl) luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      Awaitility.await().atMost(65, TimeUnit.SECONDS).until(
-          () -> assertEquals(true, countOfDocuments <= index.getIndexStats().getDocuments()));
-
-    });
+  private void putEntries(Map<String, TestObject> entries, int countOfDocuments)
+      throws InterruptedException {
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    Region region = server.getCache().getRegion(REGION_NAME);
+    region.putAll(entries);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
+    LuceneIndexImpl index = (LuceneIndexImpl) luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    Awaitility.await().atMost(65, TimeUnit.SECONDS).until(
+        () -> index.getIndexStats().getDocuments() >= countOfDocuments);
   }
 
-  private void queryAndVerify(String queryString, String defaultField, List<String> expectedKeys) {
-    serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      final LuceneQuery<String, TestObject> query = luceneService.createLuceneQueryFactory()
-          .create(INDEX_NAME, REGION_NAME, queryString, defaultField);
-      assertEquals(Collections.singletonList("A"), query.findKeys());
-    });
+  private void queryAndVerify(String queryString, String defaultField)
+      throws LuceneQueryException {
+    LuceneService luceneService = LuceneServiceProvider.get(server.getCache());
+    final LuceneQuery<String, TestObject> query = luceneService.createLuceneQueryFactory()
+        .create(INDEX_NAME, REGION_NAME, queryString, defaultField);
+    assertEquals(Collections.singletonList("A"), query.findKeys());
   }
 
   private String getRegionNotFoundErrorMessage(String regionPath) {
     return CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0,
         new Object[] {regionPath});
-  }
-
-  protected static Cache getCache() {
-    return ClusterStartupRule.getCache();
   }
 
   protected static class TestObject implements Serializable {

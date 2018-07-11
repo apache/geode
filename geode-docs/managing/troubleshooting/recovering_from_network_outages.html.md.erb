@@ -21,19 +21,19 @@ limitations under the License.
 
 The safest response to a network outage is to restart all the processes and bring up a fresh data set.
 
-However, if you know the architecture of your system well, and you are sure you won’t be resurrecting old data, you can do a selective restart. At the very least, you must restart all the members on one side of the network failure, because a network outage causes separate distributed systems that can’t rejoin automatically.
+However, if you know the architecture of your system well, and you are sure you won’t be resurrecting old data, you can do a selective restart. At the very least, you must restart all the members on one side of the network failure, because a network outage causes separate clusters that can’t rejoin automatically.
 
 ## <a id="rec_network_crash__section_900657018DC048EE9BE6A8064FAE48FD" class="no-quick-link"></a>What Happens During a Network Outage
 
-When the network connecting members of a distributed system goes down, system members treat this like a machine crash. Members on each side of the network failure respond by removing the members on the other side from the membership list. If network partitioning detection is enabled (the default), the partition that contains sufficient quorum (&gt; 51% based on member weight) will continue to operate, while the other partition with insufficient quorum will shut down. See [Network Partitioning](../network_partitioning/chapter_overview.html#network_partitioning) for a detailed explanation on how this detection system operates.
+When the network connecting members of a cluster goes down, system members treat this like a machine crash. Members on each side of the network failure respond by removing the members on the other side from the membership list. If network partitioning detection is enabled (the default), the partition that contains sufficient quorum (&gt; 51% based on member weight) will continue to operate, while the other partition with insufficient quorum will shut down. See [Network Partitioning](../network_partitioning/chapter_overview.html#network_partitioning) for a detailed explanation on how this detection system operates.
 
-In addition, members that have been disconnected either via network partition or due to unresponsiveness will automatically try to reconnect to the distributed system unless configured otherwise. See [Handling Forced Cache Disconnection Using Autoreconnect](../member-reconnect.html).
+In addition, members that have been disconnected either via network partition or due to unresponsiveness will automatically try to reconnect to the cluster unless configured otherwise. See [Handling Forced Cache Disconnection Using Autoreconnect](../member-reconnect.html).
 
 ## <a id="rec_network_crash__section_F9A0C31AE25C4E7185DF3B1A8486BDFA" class="no-quick-link"></a>Recovery Procedure
 
 For deployments that have network partition detection and/or auto-reconnect disabled, to recover from a network outage:
 
-1.  Decide which applications and cache servers to restart, based on the architecture of the distributed system. Assume that any process other than a data source is bad and needs restarting. For example, if an outside data feed is coming in to one member, which then redistributes to all the others, you can leave that process running and restart the other members.
+1.  Decide which applications and cache servers to restart, based on the architecture of the cluster. Assume that any process other than a data source is bad and needs restarting. For example, if an outside data feed is coming in to one member, which then redistributes to all the others, you can leave that process running and restart the other members.
 2.  Shut down all the processes that need restarting.
 3.  Restart them in the usual order.
 
@@ -41,15 +41,15 @@ The members recreate the data as they return to active work. For details, see [R
 
 ## <a id="rec_network_crash__section_9914A63673E64EA1ADB6B6767879F0FF" class="no-quick-link"></a>Effect of Network Failure on Partitioned Regions
 
-Both sides of the distributed system continue to run as though the members on the other side were not running. If the members that participate in a partitioned region are on both sides of the network failure, both sides of the partitioned region also continue to run as though the data stores on the other side did not exist. In effect, you now have two partitioned regions.
+Both sides of the cluster continue to run as though the members on the other side were not running. If the members that participate in a partitioned region are on both sides of the network failure, both sides of the partitioned region also continue to run as though the data stores on the other side did not exist. In effect, you now have two partitioned regions.
 
-When the network recovers, the members may be able to see each other again, but they are not able to merge back together into a single distributed system and combine their buckets back into a single partitioned region. You can be sure that the data is in an inconsistent state. Whether you are configured for data redundancy or not, you don’t really know what data was lost and what wasn’t. Even if you have redundant copies and they survived, different copies of an entry may have different values reflecting the interrupted workflow and inaccessible data.
+When the network recovers, the members may be able to see each other again, but they are not able to merge back together into a single cluster and combine their buckets back into a single partitioned region. You can be sure that the data is in an inconsistent state. Whether you are configured for data redundancy or not, you don’t really know what data was lost and what wasn’t. Even if you have redundant copies and they survived, different copies of an entry may have different values reflecting the interrupted workflow and inaccessible data.
 
 ## <a id="rec_network_crash__section_7AD5624F3CD748C0BC163562B26B2DCE" class="no-quick-link"></a>Effect of Network Failure on Distributed Regions
 
-By default, both sides of the distributed system continue to run as though the members on the other side were not running. For distributed regions, however, the regions’s reliability policy configuration can change this default behavior.
+By default, both sides of the cluster continue to run as though the members on the other side were not running. For distributed regions, however, the regions’s reliability policy configuration can change this default behavior.
 
-When the network recovers, the members may be able to see each other again, but they are not able to merge back together into a single distributed system.
+When the network recovers, the members may be able to see each other again, but they are not able to merge back together into a single cluster.
 
 ## <a id="rec_network_crash__section_arm_pnr_3q" class="no-quick-link"></a>Effect of Network Failure on Persistent Regions
 
@@ -63,4 +63,4 @@ For information on how to recover from `ConflictingPersistentDataException` erro
 
 If a client loses contact with all of its servers, the effect is the same as if it had crashed. You need to restart the client. See [Recovering from Client Failure](recovering_from_cs_crashes.html#rec_app_cs_crash__section_24B1898202E64C1E808C59E39417891B). If a client loses contact with some servers, but not all of them, the effect on the client is the same as if the unreachable servers had crashed. See [Recovering from Server Failure](recovering_from_cs_crashes.html#rec_app_cs_crash__section_2A598C85FAD44CDEA605646BF7BEE388).
 
-Servers, like applications, are members of a distributed system, so the effect of network failure on a server is the same as for an application. Exactly what happens depends on the configuration of your site.
+Servers, like applications, are members of a cluster, so the effect of network failure on a server is the same as for an application. Exactly what happens depends on the configuration of your site.

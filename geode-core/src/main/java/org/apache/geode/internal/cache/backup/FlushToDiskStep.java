@@ -14,53 +14,44 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.util.Collections;
 import java.util.Set;
 
-import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
-class AbortBackupOperation extends BackupOperation {
+class FlushToDiskStep extends BackupStep {
+
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
-  private final AbortBackupFactory abortBackupFactory;
+  private final FlushToDiskFactory flushToDiskFactory;
 
-  AbortBackupOperation(DistributionManager dm, InternalDistributedMember member,
+  FlushToDiskStep(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
-      AbortBackupFactory abortBackupFactory) {
+      FlushToDiskFactory flushToDiskFactory) {
     super(dm);
+    this.flushToDiskFactory = flushToDiskFactory;
     this.member = member;
-    this.cache = cache;
     this.recipients = recipients;
-    this.abortBackupFactory = abortBackupFactory;
+    this.cache = cache;
   }
 
   @Override
   ReplyProcessor21 createReplyProcessor() {
-    return abortBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
+    return flushToDiskFactory.createReplyProcessor(getDistributionManager(), recipients);
   }
 
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return abortBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
+    return flushToDiskFactory.createRequest(member, recipients,
+        replyProcessor.getProcessorId());
   }
 
   @Override
   void processLocally() {
-    abortBackupFactory.createAbortBackup(cache).run();
-    addToResults(member, Collections.emptySet());
+    flushToDiskFactory.createFlushToDisk(cache).run();
   }
-
-  @Override
-  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
-    if (persistentIds != null) {
-      getResults().put(member, persistentIds);
-    }
-  }
-
 }

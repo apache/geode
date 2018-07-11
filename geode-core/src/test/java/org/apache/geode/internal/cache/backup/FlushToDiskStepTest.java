@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class FlushToDiskOperationTest {
+public class FlushToDiskStepTest {
 
   private DistributionManager dm;
   private InternalCache cache;
@@ -51,7 +51,7 @@ public class FlushToDiskOperationTest {
   private FlushToDiskRequest flushToDiskRequest;
   private FlushToDisk flushToDisk;
 
-  private FlushToDiskOperation flushToDiskOperation;
+  private FlushToDiskStep flushToDiskStep;
 
   @Before
   public void setUp() throws Exception {
@@ -67,8 +67,8 @@ public class FlushToDiskOperationTest {
     sender = mock(InternalDistributedMember.class, "sender");
     recipients = new HashSet<>();
 
-    flushToDiskOperation =
-        new FlushToDiskOperation(dm, sender, cache, recipients, flushToDiskFactory);
+    flushToDiskStep =
+        new FlushToDiskStep(dm, sender, cache, recipients, flushToDiskFactory);
 
     when(flushToDiskReplyProcessor.getProcessorId()).thenReturn(42);
 
@@ -81,7 +81,7 @@ public class FlushToDiskOperationTest {
 
   @Test
   public void sendShouldSendFlushToDiskMessage() throws Exception {
-    flushToDiskOperation.send();
+    flushToDiskStep.send();
 
     verify(dm, times(1)).putOutgoing(flushToDiskRequest);
   }
@@ -91,21 +91,21 @@ public class FlushToDiskOperationTest {
     ReplyException replyException =
         new ReplyException("expected exception", new CacheClosedException("expected exception"));
     doThrow(replyException).when(flushToDiskReplyProcessor).waitForReplies();
-    flushToDiskOperation.send();
+    flushToDiskStep.send();
   }
 
   @Test
   public void sendShouldHandleInterruptedExceptionFromWaitForReplies() throws Exception {
     doThrow(new InterruptedException("expected exception")).when(flushToDiskReplyProcessor)
         .waitForReplies();
-    flushToDiskOperation.send();
+    flushToDiskStep.send();
   }
 
   @Test(expected = ReplyException.class)
   public void sendShouldThrowReplyExceptionWithNoCauseFromWaitForReplies() throws Exception {
     doThrow(new ReplyException("expected exception")).when(flushToDiskReplyProcessor)
         .waitForReplies();
-    flushToDiskOperation.send();
+    flushToDiskStep.send();
   }
 
   @Test(expected = ReplyException.class)
@@ -113,13 +113,13 @@ public class FlushToDiskOperationTest {
       throws Exception {
     doThrow(new ReplyException("expected exception", new RuntimeException("expected")))
         .when(flushToDiskReplyProcessor).waitForReplies();
-    flushToDiskOperation.send();
+    flushToDiskStep.send();
   }
 
   @Test
   public void sendShouldProcessLocallyBeforeWaitingForReplies() throws Exception {
     InOrder inOrder = inOrder(flushToDisk, flushToDiskReplyProcessor);
-    flushToDiskOperation.send();
+    flushToDiskStep.send();
 
     inOrder.verify(flushToDisk, times(1)).run();
     inOrder.verify(flushToDiskReplyProcessor, times(1)).waitForReplies();

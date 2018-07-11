@@ -21,7 +21,7 @@ limitations under the License.
 
 This section describes alerts for and appropriate responses to various kinds of system failures. It also helps you plan a strategy for data recovery.
 
-If a system member withdraws from the distributed system involuntarily because the member, host, or network fails, the other members automatically adapt to the loss and continue to operate. The distributed system does not experience any disturbance such as timeouts.
+If a system member withdraws from the cluster involuntarily because the member, host, or network fails, the other members automatically adapt to the loss and continue to operate. The cluster does not experience any disturbance such as timeouts.
 
 ## <a id="sys_failure__section_846B00118184487FB8F1E0CD1DC3A81B" class="no-quick-link"></a>Planning for Data Recovery
 
@@ -82,7 +82,7 @@ list is: [[ent(27134):60330/45855, ent(27130):60333/36743]]
 
 Description:
 
-Member ent(27130):60333/36743 is in danger of being forced out of the distributed system because of a suspect-verification failure. This alert is issued at the warning level, after the ack-wait-threshold is reached.
+Member ent(27130):60333/36743 is in danger of being forced out of the cluster because of a suspect-verification failure. This alert is issued at the warning level, after the ack-wait-threshold is reached.
 
 Response:
 
@@ -98,7 +98,7 @@ list is: [[ent(27134):60330/45855, ent(27130):60333/36743]]
 
 Description:
 
-Member ent(27134) is in danger of being forced out of the distributed system because of a suspect-verification failure. This alert is issued at the severe level, after the ack-wait-threshold is reached and after ack-severe-alert-threshold seconds have elapsed.
+Member ent(27134) is in danger of being forced out of the cluster because of a suspect-verification failure. This alert is issued at the severe level, after the ack-wait-threshold is reached and after ack-severe-alert-threshold seconds have elapsed.
 
 Response:
 
@@ -276,7 +276,7 @@ find the reason.
 
 Description:
 
-The process discovered that it was not in the distributed system and cannot determine why it was
+The process discovered that it was not in the cluster and cannot determine why it was
 removed. The membership coordinator removed the member after it failed to respond to an internal 
 are-you-alive message.
 

@@ -20,29 +20,29 @@ import java.util.Set;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 
-public class BackupDataStoreResult {
+class BackupDataStoreResult {
 
-  private Map<DistributedMember, Set<PersistentID>> existingDataStores;
+  private final Map<DistributedMember, Set<PersistentID>> existingDataStores;
+  private final Map<DistributedMember, Set<PersistentID>> successfulMembers;
 
-  private Map<DistributedMember, Set<PersistentID>> successfulMembers;
-
-  public BackupDataStoreResult(Map<DistributedMember, Set<PersistentID>> existingDataStores,
+  BackupDataStoreResult(Map<DistributedMember, Set<PersistentID>> existingDataStores,
       Map<DistributedMember, Set<PersistentID>> successfulMembers) {
     this.existingDataStores = existingDataStores;
     this.successfulMembers = successfulMembers;
   }
 
-  public Map<DistributedMember, Set<PersistentID>> getExistingDataStores() {
-    return this.existingDataStores;
+  Map<DistributedMember, Set<PersistentID>> getExistingDataStores() {
+    return existingDataStores;
   }
 
-  public Map<DistributedMember, Set<PersistentID>> getSuccessfulMembers() {
-    return this.successfulMembers;
+  Map<DistributedMember, Set<PersistentID>> getSuccessfulMembers() {
+    return successfulMembers;
   }
 
+  @Override
   public String toString() {
     return new StringBuilder().append(getClass().getSimpleName()).append("[")
-        .append("existingDataStores=").append(this.existingDataStores)
-        .append("; successfulMembers=").append(this.successfulMembers).append("]").toString();
+        .append("existingDataStores=").append(existingDataStores)
+        .append("; successfulMembers=").append(successfulMembers).append("]").toString();
   }
 }

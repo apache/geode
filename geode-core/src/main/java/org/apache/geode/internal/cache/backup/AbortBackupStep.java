@@ -14,57 +14,57 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.IOException;
-import java.util.Properties;
+import java.util.Collections;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
+import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
 
-class PrepareBackupOperation extends BackupOperation {
-  private static final Logger logger = LogService.getLogger();
+class AbortBackupStep extends BackupStep {
 
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
-  private final PrepareBackupFactory prepareBackupFactory;
-  private final Properties properties;
+  private final AbortBackupFactory abortBackupFactory;
 
-  PrepareBackupOperation(DistributionManager dm, InternalDistributedMember member,
+  AbortBackupStep(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
-      PrepareBackupFactory prepareBackupFactory, Properties properties) {
+      AbortBackupFactory abortBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
-    this.prepareBackupFactory = prepareBackupFactory;
-    this.properties = properties;
+    this.abortBackupFactory = abortBackupFactory;
+  }
+
+  /**
+   * AbortBackupStep overrides addToResults in order to include members with empty persistentIds
+   * (such as the sender).
+   */
+  @Override
+  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
+    if (persistentIds != null) {
+      getResults().put(member, persistentIds);
+    }
   }
 
   @Override
   ReplyProcessor21 createReplyProcessor() {
-    return prepareBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
+    return abortBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
   }
 
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return prepareBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId(),
-        properties);
+    return abortBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
   }
 
   @Override
   void processLocally() {
-    try {
-      addToResults(member,
-          prepareBackupFactory.createPrepareBackup(member, cache, properties).run());
-    } catch (IOException | InterruptedException e) {
-      logger.fatal("Failed to PrepareBackup in " + member, e);
-    }
+    abortBackupFactory.createAbortBackup(cache).run();
+    addToResults(member, Collections.emptySet());
   }
 }

@@ -505,6 +505,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     return result;
   }
 
+  @Override
   public void cmnClearRegion(long drId, long clearOplogEntryId) {
     DiskRegionView drv = getDiskRegionById(drId);
     if (drv.getClearOplogEntryId() == DiskStoreImpl.INVALID_ID) {
@@ -518,6 +519,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public void cmnClearRegion(long drId,
       ConcurrentHashMap<DiskStoreID, RegionVersionHolder<DiskStoreID>> memberToVersion) {
     DiskRegionView drv = getDiskRegionById(drId);
@@ -547,6 +549,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public void cmnCreateRegion(long drId, String regName) {
     recoverDiskRegion(drId, regName);
     this.liveRegions++;
@@ -554,6 +557,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public void cmnRegionConfig(long drId, byte lruAlgorithm, byte lruAction, int lruLimit,
       int concurrencyLevel, int initialCapacity, float loadFactor, boolean statisticsEnabled,
       boolean isBucket, EnumSet<DiskRegionFlag> flags, String partitionName, int startingBucketId,
@@ -590,6 +594,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public boolean cmnPRCreate(String name, PRPersistentConfig config) {
     if (this.prMap.put(name, config) == null) {
       this.ifLiveRecordCount++;
@@ -601,10 +606,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     return false;
   }
 
+  @Override
   public void cmnGemfireVersion(Version version) {
     this.gfversion = version;
   }
 
+  @Override
   public boolean cmnPRDestroy(String name) {
     if (this.prMap.remove(name) != null) {
       this.ifLiveRecordCount--;
@@ -622,6 +629,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public void cmnRmMemberId(long drId, PersistentMemberID pmid) {
     DiskRegionView dr = getDiskRegionById(drId);
     if (dr != null) {
@@ -644,6 +652,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public void cmnOfflineMemberId(long drId, PersistentMemberID pmid) {
     DiskRegionView dr = getDiskRegionById(drId);
     if (dr != null) {
@@ -662,6 +671,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public void cmdOfflineAndEqualMemberId(long drId, PersistentMemberID pmid) {
     DiskRegionView dr = getDiskRegionById(drId);
     if (dr != null) {
@@ -688,6 +698,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public void cmnOnlineMemberId(long drId, PersistentMemberID pmid) {
     DiskRegionView dr = getDiskRegionById(drId);
     if (dr != null) {
@@ -706,6 +717,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public void cmnDataSerializerId(Class dsc) {
     if (dsc != null) {
       DataSerializer ds = InternalDataSerializer.register(dsc, /* dsId, */ true);
@@ -715,6 +727,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public void cmnInstantiatorId(int id, Class c, Class ic) {
     if (c != null && ic != null) {
       InternalInstantiator.register(c, ic, id, true);
@@ -724,6 +737,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public void cmnInstantiatorId(int id, String cn, String icn) {
     if (cn != null && icn != null) {
       InternalInstantiator.register(cn, icn, id, true);
@@ -733,24 +747,28 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public void cmnCrfCreate(long oplogId) {
     this.crfIds.add(oplogId);
     this.ifLiveRecordCount++;
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public void cmnDrfCreate(long oplogId) {
     this.drfIds.add(oplogId);
     this.ifLiveRecordCount++;
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public void cmnKrfCreate(long oplogId) {
     this.krfIds.add(oplogId);
     this.ifLiveRecordCount++;
     this.ifTotalRecordCount++;
   }
 
+  @Override
   public boolean cmnCrfDelete(long oplogId) {
     if (this.krfIds.remove(oplogId)) {
       this.ifLiveRecordCount--;
@@ -765,6 +783,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public boolean cmnDrfDelete(long oplogId) {
     if (this.drfIds.remove(oplogId)) {
       this.ifLiveRecordCount--;
@@ -1901,10 +1920,12 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         saveGemfireVersion(); // normal create diskstore
       }
       this.regListener = new InternalDataSerializer.RegistrationListener() {
+        @Override
         public void newInstantiator(Instantiator i) {
           saveInstantiator(i);
         }
 
+        @Override
         public void newDataSerializer(DataSerializer ds) {
           saveDataSerializer(ds);
         }
@@ -2376,19 +2397,6 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
-  /**
-   * Additional flags for a disk region that are persisted in its meta-data.
-   *
-   * @since GemFire 7.0
-   */
-  public enum DiskRegionFlag {
-    /**
-     * True if this disk region has entries with versioning enabled. Depending on this flag, the
-     * appropriate RegionEntryFactory gets instantiated.
-     */
-    IS_WITH_VERSIONING
-  }
-
   Collection<DiskRegionView> getKnown() {
     lock(false);
     try {
@@ -2398,27 +2406,33 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     }
   }
 
+  @Override
   public void cmnAddMyInitializingPMID(long drId, PersistentMemberID pmid) {
     cmnAddMyInitializingPMID(getDiskRegionById(drId), pmid);
 
   }
 
+  @Override
   public void cmnBeginDestroyRegion(long drId) {
     cmnBeginDestroyRegion(getDiskRegionById(drId));
   }
 
+  @Override
   public void cmnBeginPartialDestroyRegion(long drId) {
     cmnBeginPartialDestroyRegion(getDiskRegionById(drId));
   }
 
+  @Override
   public void cmnEndDestroyRegion(long drId) {
     cmnEndDestroyRegion(getDiskRegionById(drId));
   }
 
+  @Override
   public void cmnEndPartialDestroyRegion(long drId) {
     cmnEndPartialDestroyRegion(getDiskRegionById(drId));
   }
 
+  @Override
   public void cmnMarkInitialized(long drId) {
     cmnMarkInitialized(getDiskRegionById(drId));
   }
@@ -2431,14 +2445,17 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     this.parent.setDiskStoreID(diskStoreID);
   }
 
+  @Override
   public boolean cmnRevokeDiskStoreId(PersistentMemberPattern revokedPattern) {
     return this.revokedMembers.add(revokedPattern);
   }
 
+  @Override
   public String getNameForError() {
     return this.parent.toString();
   }
 
+  @Override
   public boolean isClosing() {
     return parent.isClosing();
   }
@@ -2791,5 +2808,18 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     } finally {
       unlock(true);
     }
+  }
+
+  /**
+   * Additional flags for a disk region that are persisted in its meta-data.
+   *
+   * @since GemFire 7.0
+   */
+  public enum DiskRegionFlag {
+    /**
+     * True if this disk region has entries with versioning enabled. Depending on this flag, the
+     * appropriate RegionEntryFactory gets instantiated.
+     */
+    IS_WITH_VERSIONING
   }
 }

@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-You use the `gemfire.properties` settings to join a distributed system and configure system member behavior. Distributed system members include applications, the cache server, the locator, and other <%=vars.product_name%> processes.
+You use the `gemfire.properties` settings to join a cluster and configure system member behavior. Cluster members include applications, the cache server, the locator, and other <%=vars.product_name%> processes.
 
 You can place any security-related (properties that begin with `security-*`) configuration properties in `gemfire.properties` into a separate `gfsecurity.properties` file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your `gemfire.properties` file.
 
@@ -26,7 +26,7 @@ You can also define provider-specific properties ("ssl" properties) in `gfsecuri
 You can specify non-ASCII text in your properties files by using Unicode escape sequences. See [Using Non-ASCII Strings in <%=vars.product_name_long%> Property Files](non-ascii_strings_in_config_files.html) for more details.
 
 **Note:**
-Unless otherwise indicated, these settings only affect activities within this distributed system - not activities between clients and servers or between a gateway sender and gateway receiver in a multi-site installation.
+Unless otherwise indicated, these settings only affect activities within this cluster - not activities between clients and servers or between a gateway sender and gateway receiver in a multi-site installation.
 
 <table>
 <colgroup>
@@ -46,7 +46,7 @@ Unless otherwise indicated, these settings only affect activities within this di
 <tbody>
 <tr class="odd">
 <td>ack-severe-alert-threshold</td>
-<td>Number of seconds the distributed system will wait after the <code class="ph codeph">ack-wait-threshold</code> for a message to be acknowledged before it issues an alert at severe level. A value of zero disables this feature.</td>
+<td>Number of seconds the cluster will wait after the <code class="ph codeph">ack-wait-threshold</code> for a message to be acknowledged before it issues an alert at severe level. A value of zero disables this feature.</td>
 <td>S, L</td>
 <td>0</td>
 </tr>
@@ -83,7 +83,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="even">
 <td>async-max-queue-size</td>
-<td>Affects non-conflated asynchronous queues for members that publish to this member. This is the maximum size the queue can reach (in megabytes) before the publisher asks this member to leave the distributed system.
+<td>Affects non-conflated asynchronous queues for members that publish to this member. This is the maximum size the queue can reach (in megabytes) before the publisher asks this member to leave the cluster.
 <p>Valid values are in the range 0..1024.</p>
 <div class="note note">
 **Note:**
@@ -94,7 +94,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>async-queue-timeout</td>
-<td>Affects asynchronous queues for members that publish to this member. This is the maximum milliseconds the publisher should wait with no distribution to this member before it asks this member to leave the distributed system. Used for handling slow receivers.
+<td>Affects asynchronous queues for members that publish to this member. This is the maximum milliseconds the publisher should wait with no distribution to this member before it asks this member to leave the cluster. Used for handling slow receivers.
 <div class="note note">
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
@@ -129,7 +129,7 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>conserve-sockets</td>
-<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the distributed system. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. Where possible, it is better to set conserve-sockets to true and enable the use of specific extra sockets in the application code if needed. WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always set <code class="ph codeph">conserve-sockets=false</code> for <%=vars.product_name%> members that participate in a WAN deployment.</td>
+<td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the cluster. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. Where possible, it is better to set conserve-sockets to true and enable the use of specific extra sockets in the application code if needed. WAN deployments increase the messaging demands on a <%=vars.product_name%> system. To avoid hangs related to WAN messaging, always set <code class="ph codeph">conserve-sockets=false</code> for <%=vars.product_name%> members that participate in a WAN deployment.</td>
 <td>S, L</td>
 <td>true</td>
 </tr>
@@ -141,14 +141,14 @@ Valid values are in the range 0...2147483647</td>
 </tr>
 <tr class="odd">
 <td>deploy-working-dir</td>
-<td>Working directory used when deploying JAR application files to distributed system members. This directory can be local and unique to the member or a shared resource. 
+<td>Working directory used when deploying JAR application files to cluster members. This directory can be local and unique to the member or a shared resource. 
 See <a href="../../configuring/cluster_config/deploying_application_jars.html">Deploying Application JARs to <%=vars.product_name_long%> Members</a> for more information.</td>
 <td>S</td>
 <td>. (current directory)</td>
 </tr>
 <tr class="even">
 <td>disable-auto-reconnect</td>
-<td>By default, a <%=vars.product_name%> member (both locators and servers) will attempt to reconnect and reinitialize the cache after it has been forced out of the distributed system by a network partition event or has otherwise been shunned by other members. Use this property to turn off the autoreconnect behavior. 
+<td>By default, a <%=vars.product_name%> member (both locators and servers) will attempt to reconnect and reinitialize the cache after it has been forced out of the cluster by a network partition event or has otherwise been shunned by other members. Use this property to turn off the autoreconnect behavior. 
 See <a href="../../managing/member-reconnect.html">Handling Forced Cache Disconnection Using Autoreconnect</a> for more details.</td>
 <td>S, L</td>
 <td>false</td>
@@ -161,10 +161,10 @@ See <a href="../../managing/member-reconnect.html">Handling Forced Cache Disconn
 </tr>
 <tr class="even">
 <td>distributed-system-id</td>
-<td>Identifier used to distinguish messages from different distributed systems. 
+<td>Identifier used to distinguish messages from different clusters. 
 This is required for Portable Data eXchange (PDX) data serialization. 
 Set <code class="ph codeph">distributed-system-id</code> to different values for different systems in a multi-site (WAN) configuration, and to different values for production vs. development environments.
-This setting must be the same for every member of a given distributed system and unique to each distributed system within a WAN installation. 
+This setting must be the same for every member of a given cluster and unique to each cluster within a WAN installation. 
 <br/>Valid values are integers in the range -1...255.
 -1 means no setting. 
 </td>
@@ -185,19 +185,19 @@ This setting must be the same for every member of a given distributed system and
 </tr>
 <tr class="odd">
 <td>enable-network-partition-detection</td>
-<td>Boolean instructing the system to detect and handle splits in the distributed system, typically caused by a partitioning of the network (split brain) where the distributed system is running. You must set this property to the same value across all your distributed system members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
+<td>Boolean instructing the system to detect and handle splits in the cluster, typically caused by a partitioning of the network (split brain) where the cluster is running. You must set this property to the same value across all your cluster members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
 <td>S, L</td>
 <td>true</td>
 </tr>
 <tr class="even">
 <td>enable-cluster-configuration</td>
-<td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; would serve the configuration to new members joining the distributed system and also save the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is only applicable to dedicated locators..</td>
+<td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; would serve the configuration to new members joining the cluster and also save the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is only applicable to dedicated locators..</td>
 <td>L</td>
 <td>true</td>
 </tr>
 <tr class="odd">
 <td>enable-time-statistics</td>
-<td>Boolean instructing the system to track time-based statistics for the distributed system and caching. Disabled by default for performance reasons and not recommended for production environments. You must also configure <code class="ph codeph">statistics-sampling-enabled</code> to true and specify a <code class="ph codeph">statistics-archive-file</code>.</td>
+<td>Boolean instructing the system to track time-based statistics for the cluster and caching. Disabled by default for performance reasons and not recommended for production environments. You must also configure <code class="ph codeph">statistics-sampling-enabled</code> to true and specify a <code class="ph codeph">statistics-archive-file</code>.</td>
 <td>S, L</td>
 <td>false</td>
 </tr>
@@ -282,13 +282,13 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 </tr>
 <tr class="even">
 <td>locator-wait-time</td>
-<td>The number of seconds that a member should wait for a locator to start if a locator is not available when attempting to join the distributed system. Use this setting when you are starting locators and peers all at once. This timeout allows peers to wait for the locators to finish starting up before attempting to join the distributed system.</td>
+<td>The number of seconds that a member should wait for a locator to start if a locator is not available when attempting to join the cluster. Use this setting when you are starting locators and peers all at once. This timeout allows peers to wait for the locators to finish starting up before attempting to join the cluster.</td>
 <td>S</td>
 <td>0</td>
 </tr>
 <tr class="odd">
 <td>locators</td>
-<td><p>The list of locators used by system members. The list must be configured consistently for every member of the distributed system. If the list is empty, locators are not used.</p>
+<td><p>The list of locators used by system members. The list must be configured consistently for every member of the cluster. If the list is empty, locators are not used.</p>
 <p>For each locator, provide a host name and/or address (separated by ‘@’, if you use both), followed by a port number in brackets. Examples:</p>
 <pre class="pre codeblock"><code>locators=address1[port1],address2[port2] </code></pre>
 <pre class="pre codeblock"><code>locators=hostName1@address1[port1],hostName2@address2[port2] </code></pre>
@@ -344,13 +344,13 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 </tr>
 <tr class="odd">
 <td>max-wait-time-reconnect</td>
-<td>Maximum number of milliseconds to wait for the distributed system to reconnect on each reconnect attempt.</td>
+<td>Maximum number of milliseconds to wait for the cluster to reconnect on each reconnect attempt.</td>
 <td>S, L</td>
 <td>60000</td>
 </tr>
 <tr class="even">
 <td>mcast-address</td>
-<td>Address used to discover other members of the distributed system. Only used if mcast-port is non-zero. This attribute must be consistent across the distributed system. Select different multicast addresses and different ports for different distributed systems. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.
+<td>Address used to discover other members of the cluster. Only used if mcast-port is non-zero. This attribute must be consistent across the cluster. Select different multicast addresses and different ports for different clusters. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.
 <p>This default multicast address was assigned by IANA
 (<a href="http://www.iana.org/assignments/multicast-addresses">http://www.iana.org/assignments/multicast-addresses</a>). Consult the IANA chart when selecting another multicast address to use with <%=vars.product_name%>.</p>
 <div class="note note">
@@ -374,10 +374,10 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 </tr>
 <tr class="even">
 <td>mcast-port</td>
-<td>Port used, along with the mcast-address, for multicast communication with other members of the distributed system. If zero, multicast is disabled.
+<td>Port used, along with the mcast-address, for multicast communication with other members of the cluster. If zero, multicast is disabled.
 <div class="note note">
 **Note:**
-<p>Select different multicast addresses and ports for different distributed systems. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.</p>
+<p>Select different multicast addresses and ports for different clusters. Do not just use different addresses. Some operating systems may not keep communication separate between systems that use unique addresses but the same port number.</p>
 </div>
 <p>Valid values are in the range 0..65535.</p>
 <div class="note note">
@@ -512,7 +512,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 </tr>
 <tr class="even">
 <td>security-client-auth-init</td>
-<td>Used for authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td>Used for authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a cluster. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
 </tr>
@@ -550,7 +550,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 </tr>
 <tr class="odd">
 <td>security-peer-auth-init</td>
-<td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a cluster. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
 <td>S, L</td>
 <td><em>not set</em></td>
 </tr>
@@ -686,7 +686,7 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 </tr>
 <tr class="odd">
 <td>start-locator</td>
-<td>If set, automatically starts a locator in the current process when the member connects to the distributed system and stops the locator when the member disconnects.
+<td>If set, automatically starts a locator in the current process when the member connects to the cluster and stops the locator when the member disconnects.
 <p>To use, specify the locator with an optional address or host specification and a required port number, in one of these formats:</p>
 <pre class="pre codeblock"><code>start-locator=address[port1] </code></pre>
 <pre class="pre codeblock"><code>start-locator=port1</code></pre>

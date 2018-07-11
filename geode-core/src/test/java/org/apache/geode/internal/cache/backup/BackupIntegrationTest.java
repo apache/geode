@@ -249,7 +249,8 @@ public class BackupIntegrationTest {
   }
 
   private BackupWriter getBackupWriter() {
-    Properties backupProperties = BackupUtil.createBackupProperties(backupDir.toString(), null);
+    Properties backupProperties =
+        new BackupConfigFactory().withTargetDirPath(backupDir.toString()).createBackupProperties();
     return BackupWriterFactory.FILE_SYSTEM.createWriter(backupProperties,
         cache.getMyId().toString());
   }
