@@ -24,14 +24,12 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -41,7 +39,6 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 /**
  * See also org.apache.geode.management.internal.cli.shell.StatusLocatorExitCodeAcceptanceTest
  */
-@Category(AcceptanceTest.class)
 public class StatusServerExitCodeAcceptanceTest {
   private static File toolsJar;
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();

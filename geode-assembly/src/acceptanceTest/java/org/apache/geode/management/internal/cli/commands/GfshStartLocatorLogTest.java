@@ -22,14 +22,11 @@ import java.nio.charset.StandardCharsets;
 import com.google.common.io.Files;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-@Category(AcceptanceTest.class)
 public class GfshStartLocatorLogTest {
   @Rule
   public GfshRule gfshRule = new GfshRule();

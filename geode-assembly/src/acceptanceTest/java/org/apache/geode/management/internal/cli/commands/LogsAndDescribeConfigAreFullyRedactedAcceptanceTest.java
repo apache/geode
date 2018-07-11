@@ -31,11 +31,9 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.util.test.TestUtil;
@@ -48,7 +46,6 @@ import org.apache.geode.util.test.TestUtil;
  *
  * Each password shares the string below for easier log scanning.
  */
-@Category(AcceptanceTest.class)
 public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
   private static String sharedPasswordString = "abcdefg";
 

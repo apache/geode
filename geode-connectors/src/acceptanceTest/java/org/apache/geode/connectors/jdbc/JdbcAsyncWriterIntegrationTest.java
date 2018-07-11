@@ -27,7 +27,6 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -40,9 +39,7 @@ import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 
-@Category(AcceptanceTest.class)
 public abstract class JdbcAsyncWriterIntegrationTest {
 
   static final String DB_NAME = "test";

@@ -19,13 +19,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.junit.ClassRule;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
-@Category(AcceptanceTest.class)
 public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =

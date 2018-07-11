@@ -23,17 +23,14 @@ import java.sql.Statement;
 import java.sql.Types;
 
 import org.junit.ClassRule;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 
 /**
  * End-to-end dunits for jdbc connector
  */
-@Category(AcceptanceTest.class)
 public class MySqlJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =

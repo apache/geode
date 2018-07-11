@@ -17,12 +17,9 @@ package org.apache.geode.management.internal.cli.shell;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-@Category(AcceptanceTest.class)
 public class GfshDisconnectWithinScript {
 
   @Rule
