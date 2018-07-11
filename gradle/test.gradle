@@ -102,6 +102,15 @@ subprojects {
       }
       resources.srcDir file('src/distributedTest/resources')
     }
+
+    acceptanceTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/acceptanceTest/java')
+      }
+      resources.srcDir file('src/acceptanceTest/resources')
+    }
   }
 
   task integrationTest(type:Test) {
@@ -147,6 +156,25 @@ subprojects {
     times= Integer.parseInt(repeat)
 
     useJUnit {}
+
+    outputs.upToDateWhen{false}
+  }
+
+  task acceptanceTest(type:Test) {
+    testClassesDirs = sourceSets.acceptanceTest.output.classesDirs
+    classpath = sourceSets.acceptanceTest.runtimeClasspath
+
+
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
+    }
+
+    forkEvery 1
+
+    if (project.hasProperty('maxParallelForks'))
+      maxParallelForks = project.maxParallelForks as int
+    if (project.hasProperty('forkEvery'))
+      forkEvery = project.forkEvery as int
 
     outputs.upToDateWhen{false}
   }
@@ -359,14 +387,6 @@ subprojects {
     }
 
     forkEvery 30
-  }
-
-  task acceptanceTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-    forkEvery 1
-    outputs.upToDateWhen{false}
   }
 
   // apply common test configuration
