@@ -157,3 +157,26 @@ jobs:
       run:
         args: [workspace]
         path: geode-ci/ci/scripts/concourse_job_performance.sh
+- name: GeodeUITestsMetrics
+  serial: true
+  public: true
+  plan:
+  - get: geode-ci
+  - get: once-a-day
+    trigger: true
+  - task: get_metrics
+    config:
+      inputs:
+        - name: geode-ci
+      outputs:
+        - name: workspace
+      platform: linux
+      image_resource: *docker-geode-build-image
+      params:
+        CONCOURSE_URL: https://concourse.apachegeode-ci.info
+        CONCOURSE_PIPELINE: develop
+        CONCOURSE_JOB: UITests
+        COUNT: 50
+      run:
+        args: [workspace]
+        path: geode-ci/ci/scripts/concourse_job_performance.sh
