@@ -33,7 +33,7 @@ public class TXFailoverOp {
     // no instance
   }
 
-  private static class TXFailoverOpImpl extends AbstractOp {
+  protected static class TXFailoverOpImpl extends AbstractOp {
     int txId;
 
     protected TXFailoverOpImpl(int txId) {

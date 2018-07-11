@@ -75,7 +75,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   private static final boolean TRY_SERVERS_ONCE =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.TRY_SERVERS_ONCE");
-  private static final int TX_RETRY_ATTEMPT =
+  static final int TX_RETRY_ATTEMPT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "txRetryAttempt", 500);
 
   private final ConnectionManager connectionManager;
@@ -102,6 +102,7 @@ public class OpExecutorImpl implements ExecutablePool {
   private boolean serverAffinityFailover = false;
   private final ThreadLocal<ServerLocation> affinityServerLocation =
       new ThreadLocal<ServerLocation>();
+
   private final ThreadLocal<Integer> affinityRetryCount = new ThreadLocal<Integer>() {
     protected Integer initialValue() {
       return 0;
@@ -226,53 +227,53 @@ public class OpExecutorImpl implements ExecutablePool {
    * @param op the op to execute
    * @return the result of execution
    */
-  private Object executeWithServerAffinity(ServerLocation loc, Op op) {
+  Object executeWithServerAffinity(ServerLocation loc, Op op) {
+    final int initialRetryCount = getAffinityRetryCount();
     try {
-      Object retVal = executeOnServer(loc, op, true, false);
-      affinityRetryCount.set(0);
-      return retVal;
-    } catch (ServerConnectivityException e) {
+      try {
+        return executeOnServer(loc, op, true, false);
+      } catch (ServerConnectivityException e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("caught exception while executing with affinity:{}", e.getMessage(), e);
+        }
+        if (!this.serverAffinityFailover || e instanceof ServerOperationException) {
+          throw e;
+        }
+        int retryCount = getAffinityRetryCount();
+        if ((retryAttempts != -1 && retryCount >= retryAttempts)
+            || retryCount > TX_RETRY_ATTEMPT) {
+          // prevent stack overflow
+          throw e;
+        }
+        setAffinityRetryCount(retryCount + 1);
+      }
+      this.affinityServerLocation.set(null);
       if (logger.isDebugEnabled()) {
-        logger.debug("caught exception while executing with affinity:{}", e.getMessage(), e);
+        logger.debug("reset server affinity: attempting txFailover");
       }
-      if (!this.serverAffinityFailover || e instanceof ServerOperationException) {
-        affinityRetryCount.set(0);
-        throw e;
-      }
-      int retryCount = affinityRetryCount.get();
-      if ((retryAttempts != -1 && retryCount >= retryAttempts) || retryCount > TX_RETRY_ATTEMPT) { // prevent
-                                                                                                   // stack
-                                                                                                   // overflow
-                                                                                                   // fixes
-                                                                                                   // bug
-                                                                                                   // 46535
-        affinityRetryCount.set(0);
-        throw e;
-      }
-      affinityRetryCount.set(retryCount + 1);
-    }
-    this.affinityServerLocation.set(null);
-    if (logger.isDebugEnabled()) {
-      logger.debug("reset server affinity: attempting txFailover");
-    }
-    // send TXFailoverOp, so that new server can
-    // do bootstrapping, then re-execute original op
-    AbstractOp absOp = (AbstractOp) op;
-    absOp.getMessage().setIsRetry();
-    int transactionId = absOp.getMessage().getTransactionId();
-    // for CommitOp we do not have transactionId in AbstractOp
-    // so set it explicitly for TXFailoverOp
-    TXFailoverOp.execute(this.pool, transactionId);
+      // send TXFailoverOp, so that new server can
+      // do bootstrapping, then re-execute original op
+      AbstractOp absOp = (AbstractOp) op;
+      absOp.getMessage().setIsRetry();
+      int transactionId = absOp.getMessage().getTransactionId();
+      // for CommitOp we do not have transactionId in AbstractOp
+      // so set it explicitly for TXFailoverOp
+      TXFailoverOp.execute(this.pool, transactionId);
 
-    if (op instanceof ExecuteRegionFunctionOpImpl) {
-      op = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
-          (byte) 1/* isReExecute */, new HashSet<String>());
-      ((ExecuteRegionFunctionOpImpl) op).getMessage().setTransactionId(transactionId);
-    } else if (op instanceof ExecuteFunctionOpImpl) {
-      op = new ExecuteFunctionOpImpl((ExecuteFunctionOpImpl) op, (byte) 1/* isReExecute */);
-      ((ExecuteFunctionOpImpl) op).getMessage().setTransactionId(transactionId);
+      if (op instanceof ExecuteRegionFunctionOpImpl) {
+        op = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
+            (byte) 1/* isReExecute */, new HashSet<String>());
+        ((ExecuteRegionFunctionOpImpl) op).getMessage().setTransactionId(transactionId);
+      } else if (op instanceof ExecuteFunctionOpImpl) {
+        op = new ExecuteFunctionOpImpl((ExecuteFunctionOpImpl) op, (byte) 1/* isReExecute */);
+        ((ExecuteFunctionOpImpl) op).getMessage().setTransactionId(transactionId);
+      }
+      return this.pool.execute(op);
+    } finally {
+      if (initialRetryCount == 0) {
+        setAffinityRetryCount(0);
+      }
     }
-    return this.pool.execute(op);
   }
 
   public void setupServerAffinity(boolean allowFailover) {
@@ -293,6 +294,14 @@ public class OpExecutorImpl implements ExecutablePool {
 
   public ServerLocation getServerAffinityLocation() {
     return this.affinityServerLocation.get();
+  }
+
+  int getAffinityRetryCount() {
+    return affinityRetryCount.get();
+  }
+
+  void setAffinityRetryCount(int retryCount) {
+    affinityRetryCount.set(retryCount);
   }
 
   public void setServerAffinityLocation(ServerLocation serverLocation) {
