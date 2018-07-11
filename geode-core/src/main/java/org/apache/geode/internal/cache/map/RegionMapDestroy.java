@@ -521,9 +521,7 @@ public class RegionMapDestroy {
     if (inTokenMode && !duringRI) {
       event.inhibitCacheListenerNotification(true);
     }
-    doPart3 = true;
-    internalRegion.basicDestroyPart2(regionEntry, event, inTokenMode,
-        false /* conflict with clear */, duringRI, true);
+    doDestroyPart2(regionEntry, false);
     focusedRegionMap.lruEntryDestroy(regionEntry);
   }
 
@@ -598,8 +596,10 @@ public class RegionMapDestroy {
     }
     internalRegion.recordEvent(event);
     internalRegion.rescheduleTombstone(tombstoneRegionEntry, event.getVersionTag());
-    internalRegion.basicDestroyPart2(tombstoneRegionEntry, event, inTokenMode,
-        true /* conflict with clear */, duringRI, true);
+    // TODO is it correct that the following code always says "true" for conflictWithClear?
+    // Seems like it should only be true if we caught RegionClearedException above.
+    doDestroyPart2(tombstoneRegionEntry, true);
+    doPart3 = false;
     opCompleted = true;
   }
 
@@ -791,9 +791,7 @@ public class RegionMapDestroy {
     } catch (RegionClearedException rce) { // TODO coverage
       conflictWithClear = true;
     }
-    internalRegion.basicDestroyPart2(existingRegionEntry, event, inTokenMode, conflictWithClear,
-        duringRI, true);
-    doPart3 = true;
+    doDestroyPart2(existingRegionEntry, conflictWithClear);
     if (!conflictWithClear) {
       focusedRegionMap.lruEntryDestroy(existingRegionEntry);
     }
@@ -803,7 +801,11 @@ public class RegionMapDestroy {
     // Ignore. The exception will ensure that we do not update the LRU List
     opCompleted = true;
     EntryLogger.logDestroy(event);
-    internalRegion.basicDestroyPart2(entry, event, inTokenMode, true, duringRI, true);
+    doDestroyPart2(entry, true);
+  }
+
+  private void doDestroyPart2(RegionEntry entry, boolean regionCleared) {
+    internalRegion.basicDestroyPart2(entry, event, inTokenMode, regionCleared, duringRI, true);
     doPart3 = true;
   }
 
@@ -817,8 +819,7 @@ public class RegionMapDestroy {
     // a tombstone. There is no oldValue, so we don't need to
     // call updateSizeOnRemove
     event.setIsRedestroyedEntry(true); // native clients need to know if the entry didn't exist
-    internalRegion.basicDestroyPart2(entry, event, inTokenMode, false, duringRI, true);
-    doPart3 = true;
+    doDestroyPart2(entry, false);
   }
 
   private boolean destroyEntry(RegionEntry entry, boolean forceDestroy)
