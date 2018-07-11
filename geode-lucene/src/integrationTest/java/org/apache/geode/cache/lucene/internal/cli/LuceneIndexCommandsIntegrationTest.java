@@ -58,13 +58,12 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category(LuceneTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class LuceneIndexCommandsIntegrationTest {

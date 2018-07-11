@@ -39,10 +39,9 @@ import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category({IntegrationTest.class, LuceneTest.class})
+@Category(LuceneTest.class)
 public class LuceneIndexCommandsWithReindexAllowedIntegrationTest
     extends LuceneIndexCommandsIntegrationTest {
 
