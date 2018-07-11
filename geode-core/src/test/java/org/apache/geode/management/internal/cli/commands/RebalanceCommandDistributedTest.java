@@ -14,143 +14,76 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.management.DistributedRegionMXBean;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@Category({DistributedTest.class})
 @SuppressWarnings("serial")
-public class RebalanceCommandDistributedTest extends CliCommandTestBase {
+public class RebalanceCommandDistributedTest {
 
-  private static final String REBALANCE_REGION_NAME =
-      RebalanceCommandDistributedTest.class.getSimpleName() + "Region";
+  private static final String REBALANCE_REGION_NAME1 =
+      RebalanceCommandDistributedTest.class.getSimpleName() + "Region1";
+
+  private static final String REBALANCE_REGION_NAME2 =
+      RebalanceCommandDistributedTest.class.getSimpleName() + "Region2";
 
   @ClassRule
-  public static ProvideSystemProperty provideSystemProperty =
-      new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "false");
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
+
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
+
+  private static MemberVM locator, server1, server2;
 
   @Before
   public void before() throws Exception {
-    setUpJmxManagerOnVm0ThenConnect(null);
-    setupTestRebalanceForEntireDS();
+    locator = cluster.startLocatorVM(0);
+
+    int locatorPort = locator.getPort();
+    server1 = cluster.startServerVM(1, "localhost", locatorPort);
+    server2 = cluster.startServerVM(2, "localhost", locatorPort);
+
+    MemberVM.invokeInEveryMember(() -> setUpRegion(), server1, server2);
+
+    gfsh.connectAndVerify(locator);
   }
 
   @Test
   public void testSimulateForEntireDSWithTimeout() {
     // check if DistributedRegionMXBean is available so that command will not fail
-    final VM manager = Host.getHost(0).getVM(0);
-    manager.invoke(() -> checkRegionMBeans());
-
-    getLogWriter().info("testSimulateForEntireDS verified MBean and executing command");
+    locator.waitTillRegionsAreReadyOnServers("/" + REBALANCE_REGION_NAME1, 2);
+    locator.waitTillRegionsAreReadyOnServers("/" + REBALANCE_REGION_NAME2, 2);
 
     String command = "rebalance --simulate=true --time-out=-1";
 
-    CommandResult cmdResult = executeCommand(command);
-
-    getLogWriter().info("testSimulateForEntireDS just after executing " + cmdResult);
-
-    assertThat(cmdResult).isNotNull();
-
-    String stringResult = commandResultToString(cmdResult);
-    getLogWriter().info("testSimulateForEntireDS stringResult : " + stringResult);
-    assertThat(cmdResult.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 
-  private void checkRegionMBeans() {
-    WaitCriterion waitForManagerMBean = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        final ManagementService service = ManagementService.getManagementService(getCache());
-        final DistributedRegionMXBean bean =
-            service.getDistributedRegionMXBean(Region.SEPARATOR + REBALANCE_REGION_NAME);
-        if (bean == null) {
-          getLogWriter().info("Still probing for checkRegionMBeans ManagerMBean");
-          return false;
-        } else {
-          // verify that bean is proper before executing tests
-          return bean.getMembers() != null && bean.getMembers().length > 1
-              && bean.getMemberCount() > 0
-              && service.getDistributedSystemMXBean().listRegions().length >= 2;
-        }
-      }
+  private static void setUpRegion() {
+    Cache cache = ClusterStartupRule.getCache();
 
-      @Override
-      public String description() {
-        return "Probing for testRebalanceCommandForSimulateWithNoMember ManagerMBean";
-      }
-    };
+    RegionFactory<Integer, Integer> dataRegionFactory =
+        cache.createRegionFactory(RegionShortcut.PARTITION);
+    Region region = dataRegionFactory.create(REBALANCE_REGION_NAME1);
 
-    waitForCriterion(waitForManagerMBean, 2 * 60 * 1000, 2000, true);
-
-    DistributedRegionMXBean bean = ManagementService.getManagementService(getCache())
-        .getDistributedRegionMXBean("/" + REBALANCE_REGION_NAME);
-    assertThat(bean).isNotNull();
+    for (int i = 0; i < 10; i++) {
+      region.put("key" + (i + 200), "value" + (i + 200));
+    }
+    region = dataRegionFactory.create(REBALANCE_REGION_NAME2);
+    for (int i = 0; i < 100; i++) {
+      region.put("key" + (i + 200), "value" + (i + 200));
+    }
   }
-
-  private void setupTestRebalanceForEntireDS() {
-    VM vm1 = Host.getHost(0).getVM(1);
-    VM vm2 = Host.getHost(0).getVM(2);
-
-    vm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-
-        // no need to close cache as it will be closed as part of teardown2
-        Cache cache = getCache();
-
-        RegionFactory<Integer, Integer> dataRegionFactory =
-            cache.createRegionFactory(RegionShortcut.PARTITION);
-        Region region = dataRegionFactory.create(REBALANCE_REGION_NAME);
-        for (int i = 0; i < 10; i++) {
-          region.put("key" + (i + 200), "value" + (i + 200));
-        }
-        region = dataRegionFactory.create(REBALANCE_REGION_NAME + "Another1");
-        for (int i = 0; i < 100; i++) {
-          region.put("key" + (i + 200), "value" + (i + 200));
-        }
-      }
-    });
-
-    vm2.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-
-        // no need to close cache as it will be closed as part of teardown2
-        Cache cache = getCache();
-
-        RegionFactory<Integer, Integer> dataRegionFactory =
-            cache.createRegionFactory(RegionShortcut.PARTITION);
-        Region region = dataRegionFactory.create(REBALANCE_REGION_NAME);
-        for (int i = 0; i < 100; i++) {
-          region.put("key" + (i + 400), "value" + (i + 400));
-        }
-        region = dataRegionFactory.create(REBALANCE_REGION_NAME + "Another2");
-        for (int i = 0; i < 10; i++) {
-          region.put("key" + (i + 200), "value" + (i + 200));
-        }
-      }
-    });
-  }
-
 }

@@ -19,14 +19,13 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 
-@Category({DistributedTest.class, FlakyTest.class, GfshTest.class}) // GEODE-3530
+@Category({DistributedTest.class, GfshTest.class})
 @SuppressWarnings("serial")
 public class RebalanceCommandOverHttpDistributedTest extends RebalanceCommandDistributedTest {
 
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =
-      new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
+      new ProvideSystemProperty("useHTTP", "true");
 }
