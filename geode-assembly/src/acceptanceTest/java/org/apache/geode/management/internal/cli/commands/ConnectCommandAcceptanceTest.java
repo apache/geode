@@ -24,13 +24,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.standalone.VersionManager;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-@Category({AcceptanceTest.class, GfshTest.class})
+@Category(GfshTest.class)
 public class ConnectCommandAcceptanceTest {
   @Rule
   public GfshRule gfsh130 = new GfshRule(VersionManager.GEODE_130);
