@@ -742,10 +742,13 @@ public class RegionMapDestroy {
     regionEntry = newRegionEntry;
     event.setRegionEntry(newRegionEntry);
     if (isEviction) {
-      cancelDestroy();
-      removeNewRegionEntryFromMap();
-      return;
+      evictDestroyNewRegionEntry();
+    } else {
+      normalDestroyNewRegionEntry();
     }
+  }
+
+  private void normalDestroyNewRegionEntry() {
     try {
       // if concurrency checks are enabled, destroy will set the version tag
       destroyEntryAndDoPart2(newRegionEntry);
@@ -758,6 +761,11 @@ public class RegionMapDestroy {
         removeNewRegionEntryFromMap(); // TODO coverage
       }
     }
+  }
+
+  private void evictDestroyNewRegionEntry() {
+    cancelDestroy();
+    removeNewRegionEntryFromMap();
   }
 
   /**
