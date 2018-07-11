@@ -43,13 +43,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
  * Test sending ProtoBuf messages to the locator, with a security manager configured on the locator
  */
-@Category({AcceptanceTest.class, ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCase {
   @Rule
   public final DistributedRestoreSystemProperties restoreSystemProperties =

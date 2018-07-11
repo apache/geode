@@ -39,7 +39,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
@@ -57,12 +56,10 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
-import org.apache.geode.test.junit.categories.AcceptanceTest;
 
 /**
  * Test that using the magic byte to indicate intend to use ProtoBuf messages works
  */
-@Category({AcceptanceTest.class})
 public class CacheMaxConnectionJUnitTest {
   private static final String TEST_KEY = "testKey";
   private static final String TEST_VALUE = "testValue";
