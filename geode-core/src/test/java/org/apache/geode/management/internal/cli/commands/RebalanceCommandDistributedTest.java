@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -33,12 +34,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @SuppressWarnings("serial")
 public class RebalanceCommandDistributedTest {
 
-  private static final String REBALANCE_REGION_NAME1 =
-      RebalanceCommandDistributedTest.class.getSimpleName() + "Region1";
-
-  private static final String REBALANCE_REGION_NAME2 =
-      RebalanceCommandDistributedTest.class.getSimpleName() + "Region2";
-
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
@@ -47,15 +42,15 @@ public class RebalanceCommandDistributedTest {
 
   private static MemberVM locator, server1, server2;
 
-  @Before
-  public void before() throws Exception {
+  @BeforeClass
+  public static void before() throws Exception {
     locator = cluster.startLocatorVM(0);
 
     int locatorPort = locator.getPort();
     server1 = cluster.startServerVM(1, "localhost", locatorPort);
     server2 = cluster.startServerVM(2, "localhost", locatorPort);
 
-    MemberVM.invokeInEveryMember(() -> setUpRegion(), server1, server2);
+    setUpRegions();
 
     gfsh.connectAndVerify(locator);
   }
@@ -63,27 +58,42 @@ public class RebalanceCommandDistributedTest {
   @Test
   public void testSimulateForEntireDSWithTimeout() {
     // check if DistributedRegionMXBean is available so that command will not fail
-    locator.waitTillRegionsAreReadyOnServers("/" + REBALANCE_REGION_NAME1, 2);
-    locator.waitTillRegionsAreReadyOnServers("/" + REBALANCE_REGION_NAME2, 2);
+    locator.waitTillRegionsAreReadyOnServers("/" + "region-1", 2);
+    locator.waitTillRegionsAreReadyOnServers("/" + "region-2", 1);
+    locator.waitTillRegionsAreReadyOnServers("/" + "region-3", 1);
 
     String command = "rebalance --simulate=true --time-out=-1";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 
-  private static void setUpRegion() {
-    Cache cache = ClusterStartupRule.getCache();
-
-    RegionFactory<Integer, Integer> dataRegionFactory =
-        cache.createRegionFactory(RegionShortcut.PARTITION);
-    Region region = dataRegionFactory.create(REBALANCE_REGION_NAME1);
-
-    for (int i = 0; i < 10; i++) {
-      region.put("key" + (i + 200), "value" + (i + 200));
-    }
-    region = dataRegionFactory.create(REBALANCE_REGION_NAME2);
-    for (int i = 0; i < 100; i++) {
-      region.put("key" + (i + 200), "value" + (i + 200));
-    }
+  private static void setUpRegions() {
+    server1.invoke(() -> {
+        Cache cache = ClusterStartupRule.getCache();
+        RegionFactory<Integer, Integer> dataRegionFactory =
+           cache.createRegionFactory(RegionShortcut.PARTITION);
+        Region region = dataRegionFactory.create("region-1");
+         for (int i = 0; i < 10; i++) {
+           region.put("key" + (i + 200), "value" + (i + 200));
+         }
+         region = dataRegionFactory.create("region-2");
+         for (int i = 0; i < 100; i++) {
+           region.put("key" + (i + 200), "value" + (i + 200));
+         }
+    });
+    server2.invoke(() -> {
+      // no need to close cache as it will be closed as part of teardown2
+        Cache cache = ClusterStartupRule.getCache();
+      RegionFactory<Integer, Integer> dataRegionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+        Region region = dataRegionFactory.create("region-1");
+        for (int i = 0; i < 100; i++) {
+          region.put("key" + (i + 400), "value" + (i + 400));
+        }
+        region = dataRegionFactory.create("region-3");
+        for (int i = 0; i < 10; i++) {
+          region.put("key" + (i + 200), "value" + (i + 200));
+        }
+    });
   }
 }
