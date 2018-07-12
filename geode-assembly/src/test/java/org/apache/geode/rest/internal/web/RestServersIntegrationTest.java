@@ -19,8 +19,8 @@ import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertRespons
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpStatus;
-import org.json.JSONArray;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -64,9 +64,10 @@ public class RestServersIntegrationTest {
 
   @Test
   public void testServerStartedOnDefaultPort() throws Exception {
-    JSONArray jsonArray = assertResponse(restClient.doGet("/servers", null, null))
-        .hasStatusCode(HttpStatus.SC_OK).getJsonArray();
-    assertThat(jsonArray.length()).isEqualTo(1);
-    assertThat(jsonArray.getString(0)).isEqualTo("http://localhost:" + DEFAULT_HTTP_SERVICE_PORT);
+    JsonNode jsonArray = assertResponse(restClient.doGet("/servers", null, null))
+        .hasStatusCode(HttpStatus.SC_OK).getJsonObject();
+    assertThat(jsonArray.size()).isEqualTo(1);
+    assertThat(jsonArray.get(0).asText())
+        .isEqualTo("http://localhost:" + DEFAULT_HTTP_SERVICE_PORT);
   }
 }

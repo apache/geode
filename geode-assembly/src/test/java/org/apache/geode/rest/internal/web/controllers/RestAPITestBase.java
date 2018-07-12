@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -40,7 +42,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -192,8 +193,9 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
       response.close();
       System.out.println("Response : " + httpResponseString);
       // verify function execution result
-      JSONArray resultArray = new JSONArray(httpResponseString);
-      assertEquals(expectedServerResponses, resultArray.length());
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode json = mapper.readTree(httpResponseString);
+      assertEquals(expectedServerResponses, json.size());
     } catch (Exception e) {
       // fail("exception", e);
     }

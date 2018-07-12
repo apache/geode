@@ -18,7 +18,6 @@ package org.apache.geode.rest.internal.web;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -30,10 +29,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -96,27 +95,27 @@ public class RestRegionAPIDUnitTest {
   }
 
   @Test
-  public void getRegionAWhenHasData() {
+  public void getRegionAWhenHasData() throws Exception {
     Region region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
     region.put("customer2", new Customer(2L, "jane", "doe", "123-456-999"));
 
-    JSONObject jsonObject = restClient.doGetAndAssert("/regionA")
+    JsonNode jsonObject = restClient.doGetAndAssert("/regionA")
         .statusIsOk().getJsonObject();
 
-    assertThat(jsonObject.getJSONArray("regionA").length()).isEqualTo(2);
+    assertThat(jsonObject.get("regionA").size()).isEqualTo(2);
   }
 
 
   @Test
-  public void getSingleKey() {
+  public void getSingleKey() throws Exception {
     Region region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
 
-    JSONObject jsonObject = restClient.doGetAndAssert("/regionA/customer1")
+    JsonNode jsonObject = restClient.doGetAndAssert("/regionA/customer1")
         .statusIsOk().getJsonObject();
     System.out.println(jsonObject.toString());
-    assertThat(jsonObject.get("firstName").toString()).isEqualTo("jon");
+    assertThat(jsonObject.get("firstName").asText()).isEqualTo("jon");
   }
 
   @Test
@@ -250,18 +249,18 @@ public class RestRegionAPIDUnitTest {
   }
 
   @Test
-  public void listKeys() {
+  public void listKeys() throws Exception {
     Region region = getRegionA();
     region.put("customer1", new Customer(1L, "jon", "doe", "123-456-789"));
     region.put("customer2", new Customer(2L, "jane", "doe", "123-456-999"));
 
-    JSONObject jsonObject =
+    JsonNode jsonObject =
         restClient.doGetAndAssert("/regionA/keys").statusIsOk().getJsonObject();
     assertThat(jsonObject.get("keys").toString()).isEqualTo("[\"customer1\",\"customer2\"]");
   }
 
   @Test
-  public void adhocQuery() throws UnsupportedEncodingException {
+  public void adhocQuery() throws Exception {
     restClient.doPutAndAssert("/regionA/1", DOCUMENT).statusIsOk();
     restClient.doPutAndAssert("/regionA/2", DOCUMENT1).statusIsOk();
     restClient.doPutAndAssert("/regionA/3", DOCUMENT2).statusIsOk();
@@ -271,13 +270,13 @@ public class RestRegionAPIDUnitTest {
             "SELECT book.displayprice FROM /regionA e, e.store.book book  WHERE book.displayprice > 5",
             "UTF-8");
 
-    restClient.doGetAndAssert(urlPrefix).statusIsOk().hasJsonArray().hasSize(12)
+    restClient.doGetAndAssert(urlPrefix).statusIsOk().hasJsonArrayOfDoubles().hasSize(12)
         .containsExactlyInAnyOrder(18.95, 18.95, 8.99, 8.99, 8.99, 8.95, 22.99, 22.99, 22.99, 12.99,
             112.99, 112.99);
   }
 
   @Test
-  public void preparedQuery() throws UnsupportedEncodingException {
+  public void preparedQuery() throws Exception {
     restClient.doPutAndAssert("/regionA/1", DOCUMENT).statusIsOk();
     restClient.doPutAndAssert("/regionA/2", DOCUMENT1).statusIsOk();
     restClient.doPutAndAssert("/regionA/3", DOCUMENT2).statusIsOk();
@@ -291,15 +290,14 @@ public class RestRegionAPIDUnitTest {
     }
 
     // get the list of defined queries and verify the size of them
-    JSONObject jsonObject = restClient.doGetAndAssert("/queries").statusIsOk().getJsonObject();
-    JSONArray queriesArray = (JSONArray) jsonObject.get("queries");
-    assertThat(queriesArray.length()).isEqualTo(5);
+    JsonNode jsonObject = restClient.doGetAndAssert("/queries").statusIsOk().getJsonObject();
+    assertThat(jsonObject.get("queries").size()).isEqualTo(5);
 
     // execute each defined queries
     for (int i = 0; i < 5; i++) {
       restClient.doPostAndAssert("/queries/Query" + i, "[{\"@type\":\"double\",\"@value\":8.99}]")
           .statusIsOk()
-          .hasJsonArray().hasSize(8)
+          .hasJsonArrayOfDoubles().hasSize(8)
           .containsExactlyInAnyOrder(18.95, 18.95, 22.99, 22.99, 22.99, 12.99, 112.99, 112.99);
     }
   }
@@ -366,12 +364,13 @@ public class RestRegionAPIDUnitTest {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     URI uri = classLoader.getResource("sampleJson.json").toURI();
 
-    String json = IOUtils.toString(uri, Charset.defaultCharset());
+    String rawJson = IOUtils.toString(uri, Charset.defaultCharset());
 
-    JSONArray jsonArray = new JSONArray(json);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode json = mapper.readTree(rawJson);
 
-    for (int i = 0; i < jsonArray.length(); i++) {
-      jsonDocuments.add(jsonArray.get(i).toString());
+    for (int i = 0; i < json.size(); i++) {
+      jsonDocuments.add(json.get(i).toString());
     }
   }
 

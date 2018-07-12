@@ -21,15 +21,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -87,23 +86,17 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     return this;
   }
 
-  public JSONObject getJsonObject() {
-    JSONTokener tokener = new JSONTokener(responseBody);
-    return new JSONObject(tokener);
+  public JsonNode getJsonObject() throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.readTree(responseBody);
   }
 
-  public JSONArray getJsonArray() {
-    JSONTokener tokener = new JSONTokener(responseBody);
-    JSONArray array = new JSONArray(tokener);
-    return array;
-  }
-
-  public ListAssert<Object> hasJsonArray() {
-    JSONTokener tokener = new JSONTokener(responseBody);
-    JSONArray array = new JSONArray(tokener);
+  public ListAssert<Object> hasJsonArrayOfDoubles() throws IOException {
+    JsonNode array = getJsonObject();
     List<Object> list = new ArrayList<>();
-    for (int i = 0; i < array.length(); i++) {
-      list.add(array.get(i));
+
+    for (int i = 0; i < array.size(); i++) {
+      list.add(array.get(i).doubleValue());
     }
     return assertThat(list);
   }
