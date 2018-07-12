@@ -59,6 +59,7 @@ groups:
 jobs:
 - name: Build
   serial: false
+  max_in_flight: (( grab metadata.max_in_flight ))
   public: true
   plan:
   - aggregate:
@@ -86,6 +87,7 @@ jobs:
         status: pending
 
     - task: build
+      tags: [pr]
       image: docker-geode-build-image
       config:
         platform: linux
@@ -117,6 +119,7 @@ jobs:
 
 - name: DistributedTest
   serial: false
+  max_in_flight: (( grab metadata.max_in_flight ))
   public: true
   plan:
   - aggregate:
@@ -146,7 +149,7 @@ jobs:
 
     - task: run-distributed-core
       image: docker-geode-build-image
-      tags: [large]
+      tags: [pr-large]
       privileged: true
       timeout: 8h
       config:
@@ -189,7 +192,7 @@ jobs:
               path: geode/ci/scripts/test-archive.sh
     - task: run-distributed-everything-else
       image: docker-geode-build-image
-      tags: [large]
+      tags: [pr-large]
       privileged: true
       timeout: 8h
       config:
