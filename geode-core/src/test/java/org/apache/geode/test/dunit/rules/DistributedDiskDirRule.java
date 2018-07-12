@@ -176,6 +176,10 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   }
 
   private void doAfter() {
+    if (data == null) {
+      throw new Error("Failed to invoke " + getClass().getSimpleName() + ".before in VM-"
+          + VM.getCurrentVMNum() + ". Rule does not support VM.bounce().");
+    }
     if (data.originalValue() == null) {
       System.clearProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
     } else {
