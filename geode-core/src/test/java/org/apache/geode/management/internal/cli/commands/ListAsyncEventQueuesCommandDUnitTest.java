@@ -61,8 +61,8 @@ public class ListAsyncEventQueuesCommandDUnitTest {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue2 --group=group2 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue2", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue2", 1);
 
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount("Member", 2).tableHasRowWithValues("Member", "ID", "server-1", "queue1")

@@ -75,13 +75,13 @@ public class DestroyGatewaySenderCommandDUnitTest {
     gfsh.executeAndAssertThat(CREATE).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
         "Status", "GatewaySender \"sender\" created on \"happyserver1\"");
 
-    locatorSite1.waitTilGatewaySendersAreReady(1);
+    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
         "Status", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
 
-    locatorSite1.waitTilGatewaySendersAreReady(0);
+    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
 
     gfsh.executeAndAssertThat("list gateways").statusIsError()
         .containsOutput("GatewaySenders or GatewayReceivers are not available in cluster");
@@ -93,13 +93,13 @@ public class DestroyGatewaySenderCommandDUnitTest {
         .tableHasColumnWithExactValuesInAnyOrder("Status",
             "GatewaySender \"sender\" created on \"happyserver1\"");
 
-    locatorSite1.waitTilGatewaySendersAreReady(1);
+    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
         "Status", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
 
-    locatorSite1.waitTilGatewaySendersAreReady(0);
+    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
 
     gfsh.executeAndAssertThat("list gateways").statusIsError()
         .containsOutput("GatewaySenders or GatewayReceivers are not available in cluster");

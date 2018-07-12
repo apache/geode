@@ -98,7 +98,7 @@ public class JMXMBeanFederationDUnitTest {
         .statusIsSuccess();
     gfsh.disconnect();
 
-    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 
     bb = InternalBlackboardImpl.getInstance();
   }
@@ -109,7 +109,7 @@ public class JMXMBeanFederationDUnitTest {
 
     server3 = lsRule.startServerVM(SERVER_3_VM_INDEX, locator1.getPort());
     SERVER_COUNT++;
-    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
     List keyset = server3.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       DistributedMember member =
@@ -131,7 +131,7 @@ public class JMXMBeanFederationDUnitTest {
 
     lsRule.stopMember(SERVER_3_VM_INDEX);
     SERVER_COUNT--;
-    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 
     List<String> finalMBeans = getFederatedGemfireBeansFrom(locator1);
 

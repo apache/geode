@@ -143,7 +143,7 @@ public class DescribeRegionDUnitTest {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 "
         + "--listener=org.apache.geode.internal.cache.wan.MyAsyncEventListener").statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
     gfsh.executeAndAssertThat(
         "create region --name=region4 --type=REPLICATE --async-event-queue-id=queue1")
         .statusIsSuccess();

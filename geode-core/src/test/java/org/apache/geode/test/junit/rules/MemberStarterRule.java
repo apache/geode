@@ -27,17 +27,24 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.assertj.core.api.Assertions;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.DistributedSystem;
@@ -72,6 +79,12 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected Properties properties = new Properties();
 
   protected boolean autoStart = false;
+
+  public static void setWaitUntilTimeout(int waitUntilTimeout) {
+    WAIT_UNTIL_TIMEOUT = waitUntilTimeout;
+  }
+
+  private static int WAIT_UNTIL_TIMEOUT = 30;
 
   public MemberStarterRule() {
     oldUserDir = System.getProperty("user.dir");
@@ -261,37 +274,130 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public abstract InternalCache getCache();
 
-  public void waitTillRegionIsReadyOnServers(String regionName, int serverCount) {
-    await().atMost(30, TimeUnit.SECONDS).until(() -> getRegionMBean(regionName) != null);
-    await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> getRegionMBean(regionName).getMembers() != null
-            && getRegionMBean(regionName).getMembers().length == serverCount);
+  public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionName,
+      int exactServerCount) throws Exception {
+    // First wait until the region mbean is not null...
+    waitUntilEqual(
+        () -> getRegionMBean(regionName),
+        Objects::nonNull,
+        true,
+        String.format("Expecting to find an mbean for region '%s'", regionName),
+        WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
+
+    // Now actually wait for the members to receive the region
+    String assertionConditionDescription = String.format(
+        "Expecting region '%s' to be found on exactly %d servers", regionName, exactServerCount);
+    waitUntilSatisfied(
+        () -> Arrays.asList(getRegionMBean(regionName).getMembers()),
+        Function.identity(),
+        members -> Assertions.assertThat(members).isNotNull().hasSize(exactServerCount),
+        assertionConditionDescription,
+        WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
   }
 
-  private long getDiskStoreCount(String diskStoreName) {
+  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(int exactGatewaySenderCount)
+      throws Exception {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    Map<String, String[]> diskstores = dsMXBean.listMemberDiskstore();
-    long count =
-        diskstores.values().stream().filter(x -> ArrayUtils.contains(x, diskStoreName)).count();
+    String predicateDescription = String.format(
+        "Expecting to find exactly %d gateway sender beans.", exactGatewaySenderCount);
 
-    return count;
+    waitUntilEqual(() -> dsMXBean.listGatewaySenderObjectNames(),
+        array -> array.length, exactGatewaySenderCount, predicateDescription, WAIT_UNTIL_TIMEOUT,
+        TimeUnit.SECONDS);
   }
 
-  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) throws Exception {
-    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> assertThat(dsMXBean.listGatewaySenderObjectNames().length,
-            is(expectedGatewayObjectCount)));
+  public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskStoreName,
+      int exactServerCount) throws Exception {
+    final Supplier<DistributedSystemMXBean> distributedSystemMXBeanSupplier =
+        () -> getManagementService().getDistributedSystemMXBean();
+
+    waitUntilSatisfied(distributedSystemMXBeanSupplier,
+        Function.identity(),
+        bean -> assertThat(bean, notNullValue()),
+        "Distributed System MXBean should not be null",
+        WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
+
+    DistributedSystemMXBean dsMXBean = distributedSystemMXBeanSupplier.get();
+
+    String predicateDescription = String.format(
+        "Expecting exactly %d servers to present mbeans for a disk store with name %s.",
+        exactServerCount, diskStoreName);
+    Supplier<List<String[]>> diskStoreSupplier = () -> dsMXBean.listMemberDiskstore()
+        .values().stream().filter(x1 -> ArrayUtils.contains(x1, diskStoreName))
+        .collect(Collectors.toList());
+
+    waitUntilEqual(diskStoreSupplier,
+        x -> x.size(),
+        exactServerCount,
+        predicateDescription,
+        WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
   }
 
-  public void waitTillDiskStoreIsReady(String diskstoreName, int serverCount) {
-    await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> getDiskStoreCount(diskstoreName) == serverCount);
+  public void waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(String queueId,
+      int exactServerCount)
+      throws Exception {
+    String examinerDescription = String.format(
+        "Expecting exactly %d servers to have an AEQ with id '%s'.", exactServerCount, queueId);
+    waitUntilEqual(
+        () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId),
+        membersWithAEQ -> membersWithAEQ.size(),
+        exactServerCount,
+        examinerDescription,
+        WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
   }
 
-  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
-    await().atMost(30, TimeUnit.SECONDS).until(
-        () -> CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId).size() == serverCount);
+
+  /**
+   * This method wraps an {@link org.awaitility.Awaitility#await} call for more meaningful error
+   * reporting.
+   *
+   * @param supplier Method to retrieve the result to be tested, e.g.,
+   *        get a list of visible region mbeans
+   * @param examiner Method to evaluate the result provided by {@code provider}, e.g.,
+   *        get the length of the provided list.
+   *        Use {@link java.util.function.Function#identity()} if {@code assertionConsumer}
+   *        directly tests the value provided by {@code supplier}.
+   * @param assertionConsumer assertThat styled condition on the output of {@code examiner} against
+   *        which
+   *        the {@code await().until(...)} will be called. E.g.,
+   *        {@code beanCount -> assertThat(beanCount, is(5))}
+   * @param assertionConsumerDescription A description of the {@code assertionConsumer} method,
+   *        for additional failure information should this call time out.
+   *        E.g., "Visible region mbean count should be 5"
+   * @param timeout With {@code unit}, the maximum time to wait before raising an exception.
+   * @param unit With {@code timeout}, the maximum time to wait before raising an exception.
+   * @throws org.awaitility.core.ConditionTimeoutException The timeout has been reached
+   * @throws Exception Any exception produced by {@code provider.call()}
+   */
+  public <K, J> void waitUntilSatisfied(Supplier<K> supplier, Function<K, J> examiner,
+      Consumer<J> assertionConsumer, String assertionConsumerDescription, long timeout,
+      TimeUnit unit)
+      throws Exception {
+    try {
+      await(assertionConsumerDescription)
+          .atMost(timeout, unit)
+          .until(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
+    } catch (ConditionTimeoutException e) {
+      // There is a very slight race condition here, where the above could conceivably time out,
+      // and become satisfied before the next supplier.get()
+      throw new ConditionTimeoutException(
+          "The observed result '" + String.valueOf(supplier.get())
+              + "' does not satisfy the provided assertionConsumer. \n" + e.getMessage());
+    }
+  }
+
+  /**
+   * Convenience alias for {@link #waitUntilSatisfied},
+   * requiring equality rather than a generic assertion.
+   */
+  public <K, J> void waitUntilEqual(Supplier<K> provider,
+      Function<K, J> examiner,
+      J expectation,
+      String expectationDesription,
+      long timeout, TimeUnit unit)
+      throws Exception {
+    Consumer<J> assertionConsumer = examined -> assertThat(examined, is(expectation));
+    waitUntilSatisfied(provider, examiner, assertionConsumer, expectationDesription, timeout, unit);
   }
 
   abstract void stopMember();
