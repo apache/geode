@@ -171,7 +171,7 @@ public class MemberVM extends VMProvider implements Member {
     vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillClientsAreReadyOnServer(serverName,
         serverPort, clientCount));
   }
-  
+
   public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskstoreName,
       int serverCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
