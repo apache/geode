@@ -39,11 +39,11 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
   protected long revokedTime;
 
   public PersistentMemberPattern(PersistentMemberID id) {
-    this(id.host, id.directory, id.diskStoreId.toUUID(), -1);
+    this(id.host, id.directory, id.diskStoreId.toUUID(), 0);
   }
 
   public PersistentMemberPattern(InetAddress host, String directory) {
-    this(host, directory, null, -1);
+    this(host, directory, null, 0);
   }
 
   public PersistentMemberPattern(InetAddress host, String directory, long revokedTime) {
@@ -51,7 +51,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
   }
 
   public PersistentMemberPattern(UUID id) {
-    this(null, null, id, -1);
+    this(null, null, id, 0);
   }
 
   public PersistentMemberPattern(InetAddress host, String directory, UUID diskStoreID,
@@ -96,6 +96,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
       result.append(SocketCreator.getHostName(host));
       result.append(":");
       result.append(directory);
+      result.append(",revokedTime").append(revokedTime);
       result.append("]");
     }
 
