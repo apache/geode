@@ -761,8 +761,8 @@ public class RegionMapDestroy {
       throws CacheWriterException, TimeoutException,
       EntryNotFoundException, RegionClearedException {
     processVersionTag(entry);
-    final int oldSize = calculateEntryValueSize(entry);
     final boolean wasAlreadyRemoved = entry.isDestroyedOrRemoved();
+    final int oldSize = wasAlreadyRemoved ? 0 : calculateEntryValueSize(entry);
     if (destroyEntryHandleConflict(entry, forceDestroy)) {
       EntryLogger.logDestroy(event);
       if (!wasAlreadyRemoved) {
