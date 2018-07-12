@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_RES
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -195,7 +196,15 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
       // verify function execution result
       ObjectMapper mapper = new ObjectMapper();
       JsonNode json = mapper.readTree(httpResponseString);
-      assertEquals(expectedServerResponses, json.size());
+
+      if (json.isArray()) {
+        assertEquals(expectedServerResponses, json.size());
+      } else {
+        assertThat(expectedServerResponses)
+            .as("Did not receive an expected JSON array. Instead, received a %s type.",
+                json.getNodeType().name())
+            .isEqualTo(0);
+      }
     } catch (Exception e) {
       // fail("exception", e);
     }
