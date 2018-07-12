@@ -288,13 +288,13 @@ public class LuceneIndexCommands extends InternalGfshCommand {
 
     authorize(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET);
 
-    // Get members >= 1.7
+    // Get members >= Geode 1.8 (when the new destroy code path went into the product)
     Set<DistributedMember> validVersionMembers =
-        getNormalMembersWithSameOrNewerVersion(Version.GEODE_170);
+        getNormalMembersWithSameOrNewerVersion(Version.GEODE_180);
     if (validVersionMembers.isEmpty()) {
       return ResultBuilder.createInfoResult(CliStrings.format(
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-          Version.GEODE_170));
+          Version.GEODE_180));
     }
 
     // Execute the destroy index function
