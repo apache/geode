@@ -111,6 +111,13 @@ public class VM implements Serializable {
   }
 
   /**
+   * Returns the DistributedTest Locator VM.
+   */
+  public static VM getController() {
+    return getVM(CONTROLLER_VM);
+  }
+
+  /**
    * Returns the machine name hosting this DistributedTest.
    */
   public static String getHostName() {
