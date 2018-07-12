@@ -1059,6 +1059,22 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void validateNoDestroyInvocationsOnRegionDoesNotDoDestroyIfEntryDestroyReturnsFalse()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    when(factory.createEntry(any(), any(), any())).thenReturn(evictableEntry);
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(false);
+
+    assertThat(doDestroy()).isFalse();
+
+    validateNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndEventFromServerAddsATombstone() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();

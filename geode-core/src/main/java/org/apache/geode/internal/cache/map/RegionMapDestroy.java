@@ -727,7 +727,7 @@ public class RegionMapDestroy {
   private void destroyEntryAndDoPart2(RegionEntry entry) throws RegionClearedException {
     opCompleted = destroyEntry(entry, true);
     if (!opCompleted) {
-      return; // TODO coverage
+      return;
     }
     // This is a new entry that was created because we are in
     // token mode or are accepting a destroy operation by adding
