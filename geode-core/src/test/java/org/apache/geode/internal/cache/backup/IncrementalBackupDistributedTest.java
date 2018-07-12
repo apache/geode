@@ -14,24 +14,23 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.commons.io.FileUtils.listFiles;
+import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.awaitility.Awaitility.await;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,1026 +39,441 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.process.ProcessStreamReader;
+import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.management.BackupStatus;
-import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Tests for the incremental backup feature.
+ * Distributed tests for incremental backup.
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
-public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
-
+public class IncrementalBackupDistributedTest implements Serializable {
   private static final Logger logger = LogService.getLogger();
 
-  /**
-   * Data load increment.
-   */
-  private static final int DATA_INCREMENT = 10000;
+  private static final int DATA_INCREMENT = 10_000;
+  private static final RegexFileFilter OPLOG_FILTER = new RegexFileFilter(".*\\.[kdc]rf$");
 
-  /**
-   * Start value for data load.
-   */
-  private int dataStart = 0;
+  private int dataStart;
+  private int dataEnd = dataStart + DATA_INCREMENT;
 
-  /**
-   * End value for data load.
-   */
-  private int dataEnd = this.dataStart + DATA_INCREMENT;
+  private String uniqueName;
+  private String diskStoreName1;
+  private String diskStoreName2;
+  private String regionName1;
+  private String regionName2;
 
-  /**
-   * Regular expression used to search for member operation log files.
-   */
-  private static final String OPLOG_REGEX = ".*\\.[kdc]rf$";
+  private VM vm0;
+  private VM vm1;
+
+  private transient Process process;
+  private transient ProcessStreamReader processReader;
 
   @Rule
-  public SerializableTemporaryFolder tempDir = new SerializableTemporaryFolder();
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
-  private final Map<Integer, File> baseDirectoryByVm = new HashMap<>();
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
 
-  /**
-   * Creates test regions for a member.
-   */
-  private void createRegions(File baseDirectory, int vmNumber) throws IOException {
-    Cache cache = getCache(new CacheFactory().set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel()));
-    cache.createDiskStoreFactory().setDiskDirs(getDiskDirectory(baseDirectory, vmNumber))
-        .create("fooStore");
-    cache.createDiskStoreFactory().setDiskDirs(getDiskDirectory(baseDirectory, vmNumber))
-        .create("barStore");
-    getRegionFactory(cache).setDiskStoreName("fooStore").create("fooRegion");
-    getRegionFactory(cache).setDiskStoreName("barStore").create("barRegion");
+  @Rule
+  public DistributedDiskDirRule diskDirRule = new DistributedDiskDirRule();
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
+
+  @Before
+  public void setUp() throws Exception {
+    vm0 = getVM(0);
+    vm1 = getVM(1);
+
+    uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
+
+    diskStoreName1 = uniqueName + "_diskStore-1";
+    diskStoreName2 = uniqueName + "_diskStore-2";
+    regionName1 = uniqueName + "_region-1";
+    regionName2 = uniqueName + "_region-2";
+
+    vm0.invoke(() -> createCache(diskDirRule.getDiskDirFor(vm0)));
+    vm1.invoke(() -> createCache(diskDirRule.getDiskDirFor(vm1)));
+
+    createCache(diskDirRule.getDiskDirFor(getController()));
+
+    performPuts();
   }
 
-  private File[] getDiskDirectory(File parent, int vmNumber) throws IOException {
-    File dir = new File(parent, "disk" + String.valueOf(vmNumber)).getAbsoluteFile();
-    dir.mkdirs();
-    return new File[] {dir};
-  }
-
-  private RegionFactory<Integer, String> getRegionFactory(Cache cache) {
-    PartitionAttributes<Integer, String> attributes =
-        new PartitionAttributesFactory<Integer, String>().setTotalNumBuckets(5).create();
-    RegionFactory<Integer, String> factory =
-        cache.<Integer, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-            .setPartitionAttributes(attributes);
-    return factory;
-  }
-
-  /**
-   * A FileFilter that looks for a timestamped gemfire backup directory.
-   */
-  private static final FileFilter backupDirFilter = file -> {
-    // This will break in about 90 years...
-    return file.isDirectory() && file.getName().startsWith("20");
-  };
-
-  /**
-   * @return the baseline backup directory.
-   */
-  private static File getBaselineDir() {
-    File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-    File dir = new File(tmpDir, "baseline");
-    if (!dir.exists()) {
-      dir.mkdirs();
+  @After
+  public void tearDown() throws Exception {
+    if (process != null && process.isAlive()) {
+      process.destroyForcibly();
+      process.waitFor(2, MINUTES);
     }
-
-    return dir;
-  }
-
-  /**
-   * @return the second incremental backup directory.
-   */
-  private static File getIncremental2Dir() {
-    File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-    File dir = new File(tmpDir, "incremental2");
-    if (!dir.exists()) {
-      dir.mkdirs();
-    }
-
-    return dir;
-  }
-
-  /**
-   * @return the incremental backup directory.
-   */
-  private static File getIncrementalDir() {
-    File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-    File dir = new File(tmpDir, "incremental");
-    if (!dir.exists()) {
-      dir.mkdirs();
-    }
-
-    return dir;
-  }
-
-  /**
-   * Invokes {@link AdminDistributedSystem#getMissingPersistentMembers()} on a member.
-   *
-   * @param vm a member of the distributed system.
-   * @return a set of missing members for the distributed system.
-   */
-  @SuppressWarnings("unchecked")
-  private Set<PersistentID> getMissingMembers(VM vm) {
-    return (Set<PersistentID>) vm.invoke(new SerializableCallable("getMissingMembers") {
-      @Override
-      public Object call() {
-        return AdminDistributedSystemImpl
-            .getMissingPersistentMembers(getSystem().getDistributionManager());
-      }
-    });
-  }
-
-  private BackupStatus baseline(VM vm) {
-    return vm.invoke(() -> {
-      try {
-        return new BackupOperation(getSystem().getDistributionManager(), getCache())
-            .backupAllMembers(
-                getBaselineDir().toString(), null);
-      } catch (ManagementException e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
-
-  private BackupStatus incremental(VM vm) {
-    return vm.invoke(() -> {
-      try {
-        return new BackupOperation(getSystem().getDistributionManager(), getCache())
-            .backupAllMembers(
-                getIncrementalDir().toString(), getBaselineBackupDir().toString());
-      } catch (ManagementException e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
-
-  private BackupStatus incremental2(VM vm) {
-    return vm.invoke(() -> {
-      try {
-        return new BackupOperation(getSystem().getDistributionManager(), getCache())
-            .backupAllMembers(
-                getIncremental2Dir().toString(), getIncrementalBackupDir().toString());
-      } catch (ManagementException e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
-
-  /**
-   * Invokes {@link DistributedSystem#getDistributedMember()} on a member.
-   *
-   * @param vm a distributed system member.
-   * @return the member's id.
-   */
-  private String getMemberId(VM vm) {
-    return vm.invoke(() -> getCache().getDistributedSystem().getDistributedMember().toString()
-        .replaceAll("[^\\w]+", "_"));
-  }
-
-  /**
-   * Invokes {@link Cache#close()} on a member.
-   */
-  private void closeCache(final VM closeVM) {
-    closeVM.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        getCache().close();
-      }
-    });
-  }
-
-  /**
-   * Locates the PersistentID for the testStore disk store for a distributed member.
-   *
-   * @param vm a distributed member.
-   * @return a PersistentID for a member's disk store.
-   */
-  private PersistentID getPersistentID(final VM vm, final String diskStoreName) {
-    return vm.invoke(() -> {
-      PersistentID id = null;
-      Collection<DiskStore> diskStores = ((InternalCache) getCache()).listDiskStores();
-      for (DiskStore diskStore : diskStores) {
-        if (diskStore.getName().equals(diskStoreName)) {
-          id = ((DiskStoreImpl) diskStore).getPersistentID();
-          break;
-        }
-      }
-      return id;
-    });
-  }
-
-  /**
-   * Locates the PersistentID for the testStore disk store for a distributed member.
-   *
-   * @param vm a distributed member.
-   * @return a PersistentID for a member's disk store.
-   */
-  private PersistentID getPersistentID(final VM vm) {
-    return getPersistentID(vm, "fooStore");
-  }
-
-  /**
-   * Invokes {@link DistributedSystem#disconnect()} on a member.
-   *
-   * @param disconnectVM a member of the distributed system to disconnect.
-   * @param testVM a member of the distributed system to test for the missing member (just
-   *        disconnected).
-   */
-  private PersistentID disconnect(final VM disconnectVM, final VM testVM) {
-    final PersistentID id = disconnectVM.invoke(() -> {
-      PersistentID persistentID = null;
-      Collection<DiskStore> diskStores = getCache().listDiskStores();
-      for (DiskStore diskStore : diskStores) {
-        if (diskStore.getName().equals("fooStore")) {
-          persistentID = ((DiskStoreImpl) diskStore).getPersistentID();
-          break;
-        }
-      }
-
-      getSystem().disconnect();
-
-      return persistentID;
-    });
-
-    final Set<PersistentID> missingMembers = new HashSet<>();
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        missingMembers.clear();
-        missingMembers.addAll(getMissingMembers(testVM));
-
-        return missingMembers.contains(id);
-      }
-
-      @Override
-      public String description() {
-        return "[IncrementalBackupDistributedTest] Waiting for missing member " + id;
-      }
-    }, 10000, 500, false);
-
-    return id;
-  }
-
-  /**
-   * Invokes {@link CacheFactory#create()} on a member.
-   *
-   * @param vm a member of the distributed system.
-   */
-  private void openCache(VM vm) throws IOException {
-    int vmNumber = vm.getId();
-    File vmDir = getBaseDir(vmNumber);
-    vm.invoke(() -> createRegions(vmDir, vmNumber));
-  }
-
-  private File getBaseDir(int vmNumber) throws IOException {
-    File baseDir = baseDirectoryByVm.get(vmNumber);
-    if (baseDir == null) {
-      baseDir = tempDir.newFolder("vm" + vmNumber);
-      baseDirectoryByVm.put(vmNumber, baseDir);
-    }
-    return baseDir;
-  }
-
-  /**
-   * Blocks and waits for a backup operation to finish on a distributed member.
-   *
-   * @param vm a member of the distributed system.
-   */
-  private void waitForBackup(VM vm) {
-    vm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Collection<DiskStore> backupInProgress = ((InternalCache) getCache()).listDiskStores();
-        List<DiskStoreImpl> backupCompleteList = new LinkedList<>();
-
-        while (backupCompleteList.size() < backupInProgress.size()) {
-          for (DiskStore diskStore : backupInProgress) {
-            if (((DiskStoreImpl) diskStore).getInProgressBackup() == null
-                && !backupCompleteList.contains(diskStore)) {
-              backupCompleteList.add((DiskStoreImpl) diskStore);
-            }
-          }
-        }
-      }
-    });
-  }
-
-  /**
-   * Performs a full backup.
-   *
-   * @return the backup status.
-   */
-  private BackupStatus performBaseline() {
-    return baseline(Host.getHost(0).getVM(1));
-  }
-
-  /**
-   * Performs an incremental backup.
-   *
-   * @return the backup status.
-   */
-  private BackupStatus performIncremental() {
-    return incremental(Host.getHost(0).getVM(1));
-  }
-
-  /**
-   * Performs a second incremental backup.
-   */
-  private BackupStatus performIncremental2() {
-    return incremental2(Host.getHost(0).getVM(1));
-  }
-
-  /**
-   * @return the directory for the completed baseline backup.
-   */
-  private static File getBaselineBackupDir() {
-    File[] dirs = getBaselineDir().listFiles(backupDirFilter);
-    assertEquals(1, dirs.length);
-    return dirs[0];
-  }
-
-  /**
-   * @return the directory for the completed baseline backup.
-   */
-  private static File getIncrementalBackupDir() {
-    File[] dirs = getIncrementalDir().listFiles(backupDirFilter);
-    assertEquals(1, dirs.length);
-    return dirs[0];
-  }
-
-  /**
-   * Returns an individual member's backup directory.
-   *
-   * @param rootDir the directory to begin searching for the member's backup dir from.
-   * @param memberId the member's identifier.
-   * @return the member's backup directory.
-   */
-  private File getBackupDirForMember(final File rootDir, final String memberId) {
-    File[] dateDirs = rootDir.listFiles(backupDirFilter);
-    assertEquals(1, dateDirs.length);
-
-    File[] memberDirs = dateDirs[0].listFiles(new FileFilter() {
-      @Override
-      public boolean accept(File file) {
-        return file.isDirectory() && file.getName().contains(memberId);
-      }
-    });
-
-    assertEquals(1, memberDirs.length);
-
-    return memberDirs[0];
-  }
-
-  /**
-   * Adds the data region to every participating VM.
-   */
-  @SuppressWarnings("serial")
-  private void createDataRegions() throws IOException {
-    Host host = Host.getHost(0);
-    int numberOfVms = host.getVMCount();
-
-    for (int i = 0; i < numberOfVms; ++i) {
-      openCache(host.getVM(i));
+    if (processReader != null && processReader.isRunning()) {
+      processReader.stop();
     }
   }
 
   /**
-   * Executes a shell command in an external process.
-   *
-   * @param command a shell command.
-   * @return the exit value of processing the shell command.
-   */
-  private int execute(String command) throws IOException, InterruptedException {
-    final ProcessBuilder builder = new ProcessBuilder(command);
-    builder.redirectErrorStream(true);
-    final Process process = builder.start();
-
-    /*
-     * Consume standard out.
-     */
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-
-        try {
-          BufferedReader reader =
-              new BufferedReader(new InputStreamReader(process.getInputStream()));
-          String line;
-
-          do {
-            line = reader.readLine();
-          } while (null != line);
-
-          reader.close();
-        } catch (IOException e) {
-          logger.info(e);
-        }
-      }
-    }).start();
-
-    /*
-     * Consume standard error.
-     */
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          BufferedReader reader =
-              new BufferedReader(new InputStreamReader(process.getErrorStream()));
-          String line;
-
-          do {
-            line = reader.readLine();
-          } while (null != line);
-
-          reader.close();
-        } catch (IOException e) {
-          logger.info(e);
-        }
-      }
-    }).start();
-
-    return process.waitFor();
-  }
-
-  /**
-   * Peforms an operation log restore for a member.
-   *
-   * @param backupDir the member's backup directory containing the restore script.
-   */
-  private void performRestore(File memberDir, File backupDir)
-      throws IOException, InterruptedException {
-    /*
-     * The restore script will not restore if there is an if file in the copy to directory. Remove
-     * these files first.
-     */
-    Collection<File> ifFiles = FileUtils.listFiles(memberDir, new RegexFileFilter(".*\\.if$"),
-        DirectoryFileFilter.DIRECTORY);
-    for (File file : ifFiles) {
-      file.delete();
-    }
-
-    /*
-     * Remove all operation logs.
-     */
-    Collection<File> oplogs = FileUtils.listFiles(memberDir, new RegexFileFilter(OPLOG_REGEX),
-        DirectoryFileFilter.DIRECTORY);
-    for (File file : oplogs) {
-      file.delete();
-    }
-
-    /*
-     * Get a hold of the restore script and make sure it is there.
-     */
-    File restoreScript = new File(backupDir, "restore.sh");
-    if (!restoreScript.exists()) {
-      restoreScript = new File(backupDir, "restore.bat");
-    }
-    assertTrue(restoreScript.exists());
-
-    assertEquals(0, execute(restoreScript.getAbsolutePath()));
-  }
-
-  /**
-   * Adds an incomplete marker to the baseline backup for a member.
-   *
-   * @param vm a distributed system member.
-   */
-  private void markAsIncomplete(VM vm) throws IOException {
-    File backupDir = getBackupDirForMember(getBaselineDir(), getMemberId(vm));
-    assertTrue(backupDir.exists());
-
-    File incomplete = new File(backupDir, BackupWriter.INCOMPLETE_BACKUP_FILE);
-    incomplete.createNewFile();
-  }
-
-  /**
-   * Loads additional data into the test regions.
-   */
-  private void loadMoreData() {
-    Region<Integer, String> fooRegion = getCache().getRegion("fooRegion");
-
-    // Fill our region data
-    for (int i = this.dataStart; i < this.dataEnd; ++i) {
-      fooRegion.put(i, Integer.toString(i));
-    }
-
-    Region<Integer, String> barRegion = getCache().getRegion("barRegion");
-
-    // Fill our region data
-    for (int i = this.dataStart; i < this.dataEnd; ++i) {
-      barRegion.put(i, Integer.toString(i));
-    }
-
-    this.dataStart += DATA_INCREMENT;
-    this.dataEnd += DATA_INCREMENT;
-  }
-
-  /**
-   * Used to confirm valid BackupStatus data. Confirms fix for defect #45657
-   *
-   * @param backupStatus contains a list of members that were backed up.
-   */
-  private void assertBackupStatus(final BackupStatus backupStatus) {
-    Map<DistributedMember, Set<PersistentID>> backupMap = backupStatus.getBackedUpDiskStores();
-    assertFalse(backupMap.isEmpty());
-
-    for (DistributedMember member : backupMap.keySet()) {
-      for (PersistentID id : backupMap.get(member)) {
-        assertNotNull(id.getHost());
-        assertNotNull(id.getUUID());
-        assertNotNull(id.getDirectory());
-      }
-    }
-  }
-
-  /**
-   * 1. Add partitioned persistent region to all members. 2. Fills region with data.
-   */
-  @Override
-  public final void postSetUp() throws Exception {
-    createDataRegions();
-    File dir = getBaseDir(-1);
-    createRegions(dir, -1);
-    loadMoreData();
-  }
-
-  /**
-   * Removes backup directories (and all backup data).
-   */
-  @Override
-  public final void preTearDownCacheTestCase() throws Exception {
-    FileUtils.deleteDirectory(getIncremental2Dir());
-    FileUtils.deleteDirectory(getIncrementalDir());
-    FileUtils.deleteDirectory(getBaselineDir());
-  }
-
-  /**
-   * This tests the basic features of incremental backup. This means that operation logs that are
-   * present in both the baseline and member's disk store should not be copied during the
-   * incremental backup. Additionally, the restore script should reference and copy operation logs
-   * from the baseline backup.
+   * This tests the basic features of performBackupIncremental backup. This means that operation
+   * logs that are present in both the performBackupBaseline and member's disk store should not be
+   * copied during the performBackupIncremental backup. Additionally, the restore script should
+   * reference and copy operation logs from the performBackupBaseline backup.
    */
   @Test
   public void testIncrementalBackup() throws Exception {
-    String memberId = getMemberId(Host.getHost(0).getVM(1));
+    String memberId = vm1.invoke(() -> getModifiedMemberId());
 
-    File memberDir = baseDirectoryByVm.get(1);
-    // getVMDir(Host.getHost(0).getVM(1));
-    assertNotNull(memberDir);
+    File memberDir = diskDirRule.getDiskDirFor(vm1);
 
     // Find all of the member's oplogs in the disk directory (*.crf,*.krf,*.drf)
-    Collection<File> memberOplogFiles = FileUtils.listFiles(memberDir,
-        new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberOplogFiles.isEmpty());
+    Collection<File> memberOplogFiles = listFiles(memberDir, OPLOG_FILTER, DIRECTORY);
+    assertThat(memberOplogFiles).isNotEmpty();
 
     // Perform a full backup and wait for it to finish
-    assertBackupStatus(performBaseline());
-    waitForBackup(Host.getHost(0).getVM(1));
+    validateBackupStatus(vm1.invoke(() -> performBackup(getBaselinePath())));
+    vm1.invoke(() -> waitForBackup());
 
-    // Find all of the member's oplogs in the baseline (*.crf,*.krf,*.drf)
+    // Find all of the member's oplogs in the performBackupBaseline (*.crf,*.krf,*.drf)
     Collection<File> memberBaselineOplogs =
-        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), memberId),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberBaselineOplogs.isEmpty());
+        listFiles(getBackupDirForMember(getBaselineDir(), memberId), OPLOG_FILTER, DIRECTORY);
+    assertThat(memberBaselineOplogs).isNotEmpty();
 
     List<String> memberBaselineOplogNames = new LinkedList<>();
     TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
         TransformUtils.fileNameTransformer);
 
-    // Peform and incremental backup and wait for it to finish
-    loadMoreData(); // Doing this preserves the new oplogs created by the baseline backup
-    assertBackupStatus(performIncremental());
-    waitForBackup(Host.getHost(0).getVM(1));
+    // Perform and performBackupIncremental backup and wait for it to finish
+    performPuts(); // This preserves the new oplogs created by the performBackupBaseline backup
+    validateBackupStatus(
+        vm1.invoke(() -> performBackup(getIncrementalPath(), getBaselineBackupPath())));
+    vm1.invoke(() -> waitForBackup());
 
-    // Find all of the member's oplogs in the incremental (*.crf,*.krf,*.drf)
+    // Find all of the member's oplogs in the performBackupIncremental (*.crf,*.krf,*.drf)
     Collection<File> memberIncrementalOplogs =
-        FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberIncrementalOplogs.isEmpty());
-
-    List<String> memberIncrementalOplogNames = new LinkedList<>();
-    TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
-        TransformUtils.fileNameTransformer);
-
-    /*
-     * Assert that the incremental backup does not contain baseline operation logs that the member
-     * still has copies of.
-     */
-    for (String oplog : memberBaselineOplogNames) {
-      assertFalse(memberIncrementalOplogNames.contains(oplog));
-    }
-
-    // Perform a second incremental and wait for it to finish.
-    loadMoreData(); // Doing this preserves the new oplogs created by the incremental backup
-    assertBackupStatus(performIncremental2());
-    waitForBackup(Host.getHost(0).getVM(1));
-
-    Collection<File> memberIncremental2Oplogs =
-        FileUtils.listFiles(getBackupDirForMember(getIncremental2Dir(), memberId),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberIncremental2Oplogs.isEmpty());
-
-    List<String> memberIncremental2OplogNames = new LinkedList<>();
-    TransformUtils.transform(memberIncremental2Oplogs, memberIncremental2OplogNames,
-        TransformUtils.fileNameTransformer);
-
-    /*
-     * Assert that the second incremental backup does not contain operation logs copied into the
-     * baseline.
-     */
-    for (String oplog : memberBaselineOplogNames) {
-      assertFalse(memberIncremental2OplogNames.contains(oplog));
-    }
-
-    /*
-     * Also assert that the second incremental backup does not contain operation logs copied into
-     * the member's first incremental backup.
-     */
-    for (String oplog : memberIncrementalOplogNames) {
-      assertFalse(memberIncremental2OplogNames.contains(oplog));
-    }
-
-    // Shut down our member so we can perform a restore
-    PersistentID id = getPersistentID(Host.getHost(0).getVM(1));
-    closeCache(Host.getHost(0).getVM(1));
-
-    // Execute the restore
-    performRestore(new File(id.getDirectory()),
-        getBackupDirForMember(getIncremental2Dir(), memberId));
-
-    /*
-     * Collect all of the restored operation logs.
-     */
-    Collection<File> restoredOplogs = FileUtils.listFiles(new File(id.getDirectory()),
-        new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(restoredOplogs.isEmpty());
-    List<String> restoredOplogNames = new LinkedList<>();
-    TransformUtils.transform(restoredOplogs, restoredOplogNames,
-        TransformUtils.fileNameTransformer);
-
-    /*
-     * Assert that baseline operation logs have been copied over to the member's disk directory.
-     */
-    for (String oplog : memberBaselineOplogNames) {
-      assertTrue(restoredOplogNames.contains(oplog));
-    }
-
-    /*
-     * Assert that the incremental operation logs have been copied over to the member's disk
-     * directory.
-     */
-    for (String oplog : memberIncrementalOplogNames) {
-      assertTrue(restoredOplogNames.contains(oplog));
-    }
-
-    /*
-     * Assert that the second incremental operation logs have been copied over to the member's disk
-     * directory.
-     */
-    for (String oplog : memberIncremental2OplogNames) {
-      assertTrue(restoredOplogNames.contains(oplog));
-    }
-
-    /*
-     * Reconnect the member.
-     */
-    openCache(Host.getHost(0).getVM(1));
-  }
-
-  /**
-   * Successful if a member performs a full backup when its backup data is not present in the
-   * baseline (for whatever reason). This also tests what happens when a member is offline during
-   * the baseline backup.
-   *
-   * The test is regarded as successful when all of the missing members oplog files are backed up
-   * during an incremental backup. This means that the member peformed a full backup because its
-   * oplogs were missing in the baseline.
-   */
-  @Test
-  public void testMissingMemberInBaseline() throws Exception {
-    // Simulate the missing member by forcing a persistent member
-    // to go offline.
-    final PersistentID missingMember =
-        disconnect(Host.getHost(0).getVM(0), Host.getHost(0).getVM(1));
-
-    /*
-     * Perform baseline and make sure that the list of offline disk stores contains our missing
-     * member.
-     */
-    BackupStatus baselineStatus = performBaseline();
-    assertBackupStatus(baselineStatus);
-    assertNotNull(baselineStatus.getOfflineDiskStores());
-    assertEquals(2, baselineStatus.getOfflineDiskStores().size());
-
-    // Find all of the member's oplogs in the missing member's diskstore directory structure
-    // (*.crf,*.krf,*.drf)
-    Collection<File> missingMemberOplogFiles =
-        FileUtils.listFiles(new File(missingMember.getDirectory()),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(missingMemberOplogFiles.isEmpty());
-
-    /*
-     * Restart our missing member and make sure it is back online and part of the distributed system
-     */
-    openCache(Host.getHost(0).getVM(0));
-
-    /*
-     * After reconnecting make sure the other members agree that the missing member is back online.
-     */
-    final Set<PersistentID> missingMembers = new HashSet<>();
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        missingMembers.clear();
-        missingMembers.addAll(getMissingMembers(Host.getHost(0).getVM(1)));
-        return !missingMembers.contains(missingMember);
-      }
-
-      @Override
-      public String description() {
-        return "[testMissingMemberInBasline] Wait for missing member.";
-      }
-    }, 10000, 500, false);
-
-    assertEquals(0, missingMembers.size());
-
-    /*
-     * Peform incremental and make sure we have no offline disk stores.
-     */
-    BackupStatus incrementalStatus = performIncremental();
-    assertBackupStatus(incrementalStatus);
-    assertNotNull(incrementalStatus.getOfflineDiskStores());
-    assertEquals(0, incrementalStatus.getOfflineDiskStores().size());
-
-    // Get the missing member's member id which is different from the PersistentID
-    String memberId = getMemberId(Host.getHost(0).getVM(0));
-    assertNotNull(memberId);
-
-    // Get list of backed up oplog files in the incremental backup for the missing member
-    File incrementalMemberDir = getBackupDirForMember(getIncrementalDir(), memberId);
-    Collection<File> backupOplogFiles = FileUtils.listFiles(incrementalMemberDir,
-        new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(backupOplogFiles.isEmpty());
-
-    // Transform missing member oplogs to just their file names.
-    List<String> missingMemberOplogNames = new LinkedList<>();
-    TransformUtils.transform(missingMemberOplogFiles, missingMemberOplogNames,
-        TransformUtils.fileNameTransformer);
-
-    // Transform missing member's incremental backup oplogs to just their file names.
-    List<String> backupOplogNames = new LinkedList<>();
-    TransformUtils.transform(backupOplogFiles, backupOplogNames,
-        TransformUtils.fileNameTransformer);
-
-    /*
-     * Make sure that the incremental backup for the missing member contains all of the operation
-     * logs for that member. This proves that a full backup was performed for that member.
-     */
-    assertTrue(backupOplogNames.containsAll(missingMemberOplogNames));
-  }
-
-  /**
-   * Successful if a member performs a full backup if their backup is marked as incomplete in the
-   * baseline.
-   */
-  @Test
-  public void testIncompleteInBaseline() throws Exception {
-    /*
-     * Get the member ID for VM 1 and perform a baseline.
-     */
-    String memberId = getMemberId(Host.getHost(0).getVM(1));
-    assertBackupStatus(performBaseline());
-
-    /*
-     * Find all of the member's oplogs in the baseline (*.crf,*.krf,*.drf)
-     */
-    Collection<File> memberBaselineOplogs =
-        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), memberId),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberBaselineOplogs.isEmpty());
-
-    List<String> memberBaselineOplogNames = new LinkedList<>();
-    TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
-        TransformUtils.fileNameTransformer);
-
-    // Mark the baseline as incomplete (even though it really isn't)
-    markAsIncomplete(Host.getHost(0).getVM(1));
-
-    /*
-     * Do an incremental. It should discover that the baseline is incomplete and backup all of the
-     * operation logs that are in the baseline.
-     */
-    assertBackupStatus(performIncremental());
-
-    /*
-     * Find all of the member's oplogs in the incremental (*.crf,*.krf,*.drf)
-     */
-    Collection<File> memberIncrementalOplogs =
-        FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberIncrementalOplogs.isEmpty());
-
-    List<String> memberIncrementalOplogNames = new LinkedList<>();
-    TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
-        TransformUtils.fileNameTransformer);
-
-    /*
-     * Assert that all of the baseline operation logs are in the incremental backup. If so, then the
-     * incomplete marker was discovered in the baseline by the incremental backup process.
-     */
-    for (String oplog : memberBaselineOplogNames) {
-      assertTrue(memberIncrementalOplogNames.contains(oplog));
-    }
-  }
-
-  /**
-   * Successful if all members perform a full backup when they share the baseline directory and it
-   * is missing.
-   */
-  @Test
-  public void testMissingBaseline() throws Exception {
-    /*
-     * Get the member ID for VM 1 and perform a baseline.
-     */
-    String memberId = getMemberId(Host.getHost(0).getVM(1));
-    assertBackupStatus(performBaseline());
-
-    /*
-     * Find all of the member's oplogs in the baseline (*.crf,*.krf,*.drf)
-     */
-    Collection<File> memberBaselineOplogs =
-        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), memberId),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberBaselineOplogs.isEmpty());
-
-    List<String> memberBaselineOplogNames = new LinkedList<>();
-    TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
-        TransformUtils.fileNameTransformer);
-
-    /*
-     * Custom incremental backup callable that retrieves the current baseline before deletion.
-     */
-    SerializableCallable callable = new SerializableCallable("Backup all members.") {
-      private final File baselineDir = getBaselineBackupDir();
-
-      @Override
-      public Object call() {
-        try {
-          return new BackupOperation(getSystem().getDistributionManager(), getCache())
-              .backupAllMembers(
-                  getIncrementalDir().toString(), this.baselineDir.toString());
-
-        } catch (ManagementException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
-
-    /*
-     * Do an incremental after deleting the baseline. It should discover that the baseline is gone
-     * and backup all of the operation logs that are in the baseline.
-     */
-    FileUtils.deleteDirectory(getBaselineDir());
-    Host.getHost(0).getVM(1).invoke(callable);
-
-    /*
-     * Find all of the member's oplogs in the incremental (*.crf,*.krf,*.drf)
-     */
-    Collection<File> memberIncrementalOplogs =
-        FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
-            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
+        listFiles(getBackupDirForMember(getIncrementalDir(), memberId), OPLOG_FILTER, DIRECTORY);
     assertThat(memberIncrementalOplogs).isNotEmpty();
 
     List<String> memberIncrementalOplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
         TransformUtils.fileNameTransformer);
 
-    /*
-     * Assert that all of the baseline operation logs are in the incremental backup. If so, then the
-     * missing baseline was discovered by the incremental backup process.
-     */
-    for (String oplog : memberBaselineOplogNames) {
-      assertTrue(memberIncrementalOplogNames.contains(oplog));
-    }
+    // Assert that the performBackupIncremental backup does not contain performBackupBaseline
+    // operation logs that the member still has copies of.
+    assertThat(memberIncrementalOplogNames).doesNotContainAnyElementsOf(memberBaselineOplogNames);
+
+    // Perform a second performBackupIncremental and wait for it to finish.
+
+    // Doing this preserves the new oplogs created by the performBackupIncremental backup
+    performPuts();
+    validateBackupStatus(
+        vm1.invoke(() -> performBackup(getIncremental2Path(), getIncrementalBackupPath())));
+    vm1.invoke(() -> waitForBackup());
+
+    Collection<File> memberIncremental2Oplogs =
+        listFiles(getBackupDirForMember(getIncremental2Dir(), memberId), OPLOG_FILTER, DIRECTORY);
+    assertThat(memberIncremental2Oplogs).isNotEmpty();
+
+    List<String> memberIncremental2OplogNames = new LinkedList<>();
+    TransformUtils.transform(memberIncremental2Oplogs, memberIncremental2OplogNames,
+        TransformUtils.fileNameTransformer);
+
+    // Assert that the second performBackupIncremental backup does not contain operation logs copied
+    // into the performBackupBaseline.
+    assertThat(memberIncremental2OplogNames).doesNotContainAnyElementsOf(memberBaselineOplogNames);
+
+    // Also assert that the second performBackupIncremental backup does not contain operation logs
+    // copied into the member's first performBackupIncremental backup.
+    assertThat(memberIncremental2OplogNames)
+        .doesNotContainAnyElementsOf(memberIncrementalOplogNames);
+
+    // Shut down our member so we can perform a restore
+    PersistentID id = vm1.invoke(() -> getPersistentID(diskStoreName1));
+    vm1.invoke(() -> cacheRule.getCache().close());
+
+    // Execute the restore
+    performRestore(new File(id.getDirectory()),
+        getBackupDirForMember(getIncremental2Dir(), memberId));
+
+    // Collect all of the restored operation logs.
+    Collection<File> restoredOplogs =
+        listFiles(new File(id.getDirectory()), OPLOG_FILTER, DIRECTORY);
+    assertThat(restoredOplogs).isNotEmpty();
+
+    List<String> restoredOplogNames = new LinkedList<>();
+    TransformUtils.transform(restoredOplogs, restoredOplogNames,
+        TransformUtils.fileNameTransformer);
+
+    // Assert that performBackupBaseline operation logs have been copied over to the member's disk
+    // directory.
+    assertThat(restoredOplogNames).containsAll(memberBaselineOplogNames);
+
+    // Assert that the performBackupIncremental operation logs have been copied over to the member's
+    // disk directory.
+    assertThat(restoredOplogNames).containsAll(memberIncrementalOplogNames);
+
+    // Assert that the second performBackupIncremental operation logs have been copied over to the
+    // member's disk directory.
+    assertThat(restoredOplogNames).containsAll(memberIncremental2OplogNames);
+
+    // Reconnect the member.
+    vm1.invoke(() -> createCache(diskDirRule.getDiskDirFor(vm1)));
   }
 
   /**
-   * Successful if a user deployed jar file is included as part of the backup.
+   * Successful if a member performs a full backup when its backup data is not present in the
+   * performBackupBaseline (for whatever reason). This also tests what happens when a member is
+   * offline during the performBackupBaseline backup.
+   *
+   * <p>
+   * The test is regarded as successful when all of the missing members oplog files are backed up
+   * during an performBackupIncremental backup. This means that the member performed a full backup
+   * because its oplogs were missing in the performBackupBaseline.
+   */
+  @Test
+  public void testMissingMemberInBaseline() throws Exception {
+    // Simulate the missing member by forcing a persistent member to go offline.
+    PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
+    vm0.invoke(() -> cacheRule.getCache().close());
+
+    await().atMost(2, MINUTES)
+        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
+
+    // Perform performBackupBaseline and make sure that list of offline disk stores contains our
+    // missing member.
+    BackupStatus baselineStatus = vm1.invoke(() -> performBackup(getBaselinePath()));
+    validateBackupStatus(baselineStatus);
+    assertThat(baselineStatus.getOfflineDiskStores()).isNotNull().hasSize(2);
+
+    // Find all of the member's oplogs in the missing member's diskstore directory structure
+    // (*.crf,*.krf,*.drf)
+    Collection<File> missingMemberOplogFiles =
+        listFiles(new File(missingMember.getDirectory()), OPLOG_FILTER, DIRECTORY);
+    assertThat(missingMemberOplogFiles).isNotEmpty();
+
+    // Restart our missing member and make sure it is back online and part of the cluster
+    vm0.invoke(() -> createCache(diskDirRule.getDiskDirFor(vm0)));
+
+    // After reconnecting make sure the other members agree that the missing member is back online.
+    await().atMost(2, MINUTES)
+        .until(() -> assertThat(getMissingPersistentMembers()).doesNotContain(missingMember));
+
+    // Perform performBackupIncremental and make sure we have no offline disk stores.
+    BackupStatus incrementalStatus =
+        vm1.invoke(() -> performBackup(getIncrementalPath(), getBaselineBackupPath()));
+    validateBackupStatus(incrementalStatus);
+    assertThat(incrementalStatus.getOfflineDiskStores()).isNotNull().isEmpty();
+
+    // Get the missing member's member id which is different from the PersistentID
+    String memberId = vm0.invoke(() -> getModifiedMemberId());
+
+    // Get list of backed up oplog files in the performBackupIncremental backup for the missing
+    // member
+    File incrementalMemberDir = getBackupDirForMember(getIncrementalDir(), memberId);
+    Collection<File> backupOplogFiles = listFiles(incrementalMemberDir, OPLOG_FILTER, DIRECTORY);
+    assertThat(backupOplogFiles).isNotEmpty();
+
+    // Transform missing member oplogs to just their file names.
+    List<String> missingMemberOplogNames = new LinkedList<>();
+    TransformUtils.transform(missingMemberOplogFiles, missingMemberOplogNames,
+        TransformUtils.fileNameTransformer);
+
+    // Transform missing member's performBackupIncremental backup oplogs to just their file names.
+    List<String> backupOplogNames = new LinkedList<>();
+    TransformUtils.transform(backupOplogFiles, backupOplogNames,
+        TransformUtils.fileNameTransformer);
+
+    // Make sure that the performBackupIncremental backup for the missing member contains all of the
+    // operation logs for that member. This proves that a full backup was performed for that member.
+    assertThat(backupOplogNames).containsAll(missingMemberOplogNames);
+  }
+
+  /**
+   * Successful if a member performs a full backup if their backup is marked as incomplete in the
+   * performBackupBaseline.
+   */
+  @Test
+  public void testIncompleteInBaseline() throws Exception {
+    // Get the member ID for VM 1 and perform a performBackupBaseline.
+    String memberId = vm1.invoke(() -> getModifiedMemberId());
+    validateBackupStatus(vm1.invoke(() -> performBackup(getBaselinePath())));
+
+    // Find all of the member's oplogs in the performBackupBaseline (*.crf,*.krf,*.drf)
+    Collection<File> memberBaselineOplogs =
+        listFiles(getBackupDirForMember(getBaselineDir(), memberId), OPLOG_FILTER, DIRECTORY);
+    assertThat(memberBaselineOplogs).isNotEmpty();
+
+    List<String> memberBaselineOplogNames = new LinkedList<>();
+    TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
+        TransformUtils.fileNameTransformer);
+
+    vm1.invoke(() -> {
+      File backupDir = getBackupDirForMember(getBaselineDir(), getModifiedMemberId());
+      assertThat(backupDir).exists();
+
+      // Mark the performBackupBaseline as incomplete (even though it really isn't)
+      File incomplete = new File(backupDir, BackupWriter.INCOMPLETE_BACKUP_FILE);
+      assertThat(incomplete.createNewFile()).isTrue();
+    });
+
+    // Do an performBackupIncremental. It should discover that the performBackupBaseline is
+    // incomplete and backup all of the operation logs that are in the performBackupBaseline.
+    validateBackupStatus(
+        vm1.invoke(() -> performBackup(getIncrementalPath(), getBaselineBackupPath())));
+
+    // Find all of the member's oplogs in the performBackupIncremental (*.crf,*.krf,*.drf)
+    Collection<File> memberIncrementalOplogs =
+        listFiles(getBackupDirForMember(getIncrementalDir(), memberId), OPLOG_FILTER, DIRECTORY);
+    assertThat(memberIncrementalOplogs).isNotEmpty();
+
+    List<String> memberIncrementalOplogNames = new LinkedList<>();
+    TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
+        TransformUtils.fileNameTransformer);
+
+    // Assert that all of the performBackupBaseline operation logs are in the
+    // performBackupIncremental backup. If so, then the incomplete marker was discovered in the
+    // performBackupBaseline by the performBackupIncremental backup process.
+    assertThat(memberIncrementalOplogNames).containsAll(memberBaselineOplogNames);
+  }
+
+  /**
+   * Successful if all members perform a full backup when they share the performBackupBaseline
+   * directory and it is missing.
+   */
+  @Test
+  public void testMissingBaseline() throws Exception {
+    // Get the member ID for VM 1 and perform a performBackupBaseline.
+    String memberId = vm1.invoke(() -> getModifiedMemberId());
+    validateBackupStatus(vm1.invoke(() -> performBackup(getBaselinePath())));
+
+    // Find all of the member's oplogs in the performBackupBaseline (*.crf,*.krf,*.drf)
+    Collection<File> memberBaselineOplogs =
+        listFiles(getBackupDirForMember(getBaselineDir(), memberId), OPLOG_FILTER, DIRECTORY);
+    assertThat(memberBaselineOplogs).isNotEmpty();
+
+    List<String> memberBaselineOplogNames = new LinkedList<>();
+    TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
+        TransformUtils.fileNameTransformer);
+
+    // Do an performBackupIncremental after deleting the performBackupBaseline. It should discover
+    // that the performBackupBaseline is gone and backup all of the operation logs that are in the
+    // performBackupBaseline.
+    FileUtils.deleteDirectory(getBaselineDir());
+
+    // Custom performBackupIncremental backup callable that retrieves the current
+    // performBackupBaseline before deletion.
+    vm1.invoke(() -> {
+      new BackupOperation(cacheRule.getSystem().getDistributionManager(), cacheRule.getCache())
+          .backupAllMembers(getIncrementalPath(), getBaselinePath());
+    });
+
+    // Find all of the member's oplogs in the performBackupIncremental (*.crf,*.krf,*.drf)
+    Collection<File> memberIncrementalOplogs =
+        listFiles(getBackupDirForMember(getIncrementalDir(), memberId), OPLOG_FILTER, DIRECTORY);
+    assertThat(memberIncrementalOplogs).isNotEmpty();
+
+    List<String> memberIncrementalOplogNames = new LinkedList<>();
+    TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
+        TransformUtils.fileNameTransformer);
+
+    // Assert that all of the performBackupBaseline operation logs are in the
+    // performBackupIncremental backup. If so, then the missing performBackupBaseline was discovered
+    // by the performBackupIncremental backup process.
+    assertThat(memberIncrementalOplogNames).containsAll(memberBaselineOplogNames);
+  }
+
+  /**
+   * Verifies that a user deployed jar file is included as part of the backup.
    */
   @Test
   public void testBackupUserDeployedJarFiles() throws Exception {
-    final String jarName = "BackupJarDeploymentDUnit";
-    final String jarNameRegex = ".*" + jarName + ".*";
-    final ClassBuilder classBuilder = new ClassBuilder();
-    final byte[] classBytes = classBuilder.createJarFromName(jarName);
+    String jarName = "BackupJarDeploymentDUnit";
+    byte[] classBytes = new ClassBuilder().createJarFromName(jarName);
 
-    File jarFile = tempDir.newFile();
+    File jarFile = temporaryFolder.newFile();
     IOUtils.copyLarge(new ByteArrayInputStream(classBytes), new FileOutputStream(jarFile));
 
-    VM vm0 = Host.getHost(0).getVM(0);
-
-    /*
-     * Deploy a "dummy" jar to the VM.
-     */
+    // Deploy a "dummy" jar to the VM.
     File deployedJarFile = vm0.invoke(() -> {
       DeployedJar deployedJar =
           ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile);
       return deployedJar.getFile();
     });
 
-    assertTrue(deployedJarFile.exists());
-    /*
-     * Perform backup. Make sure it is successful.
-     */
-    assertBackupStatus(baseline(vm0));
+    assertThat(deployedJarFile).exists();
 
-    /*
-     * Make sure the user deployed jar is part of the backup.
-     */
+    // Perform backup. Make sure it is successful.
+    validateBackupStatus(vm0.invoke(() -> performBackup(getBaselinePath())));
+
+    // Make sure the user deployed jar is part of the backup.
     Collection<File> memberDeployedJarFiles =
-        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), getMemberId(vm0)),
-            new RegexFileFilter(jarNameRegex), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberDeployedJarFiles.isEmpty());
+        listFiles(getBackupDirForMember(getBaselineDir(), vm0.invoke(() -> getModifiedMemberId())),
+            new RegexFileFilter(".*" + jarName + ".*"), DIRECTORY);
+    assertThat(memberDeployedJarFiles).isNotEmpty();
 
     // Shut down our member so we can perform a restore
-    PersistentID id = getPersistentID(vm0);
-    closeCache(vm0);
+    PersistentID id = vm0.invoke(() -> getPersistentID(diskStoreName1));
+    vm0.invoke(() -> cacheRule.getCache().close());
 
-    /*
-     * Get the VM's user directory.
-     */
-    final String vmDir = vm0.invoke(() -> System.getProperty("user.dir"));
+    // Get the VM's user directory.
+    String vmDir = vm0.invoke(() -> System.getProperty("user.dir"));
 
-    File backupDir = getBackupDirForMember(getBaselineDir(), getMemberId(vm0));
+    File backupDir =
+        getBackupDirForMember(getBaselineDir(), vm0.invoke(() -> getModifiedMemberId()));
 
-    vm0.bounce();
-
-    /*
-     * Cleanup "dummy" jar from file system.
-     */
-    Pattern pattern = Pattern.compile('^' + jarName + ".*#\\d++$");
-    deleteMatching(new File("."), pattern);
+    // Cleanup "dummy" jar from file system.
+    deleteMatching(new File("."), Pattern.compile('^' + jarName + ".*#\\d++$"));
 
     // Execute the restore
     performRestore(new File(id.getDirectory()), backupDir);
 
-    /*
-     * Make sure the user deployed jar is part of the restore.
-     */
-    Collection<File> restoredJars = FileUtils.listFiles(new File(vmDir),
-        new RegexFileFilter(jarNameRegex), DirectoryFileFilter.DIRECTORY);
-    assertFalse(restoredJars.isEmpty());
+    // Make sure the user deployed jar is part of the restore.
+    Collection<File> restoredJars =
+        listFiles(new File(vmDir), new RegexFileFilter(".*" + jarName + ".*"), DIRECTORY);
+    assertThat(restoredJars).isNotEmpty();
+
     List<String> restoredJarNames = new LinkedList<>();
     TransformUtils.transform(memberDeployedJarFiles, restoredJarNames,
         TransformUtils.fileNameTransformer);
     for (String name : restoredJarNames) {
-      assertTrue(name.contains(jarName));
+      assertThat(name).contains(jarName);
     }
 
     // Restart the member
-    openCache(vm0);
+    vm0.invoke(() -> createCache(diskDirRule.getDiskDirFor(vm0)));
 
-    /*
-     * Remove the "dummy" jar from the VM.
-     */
+    // Remove the "dummy" jar from the VM.
     vm0.invoke(() -> {
       for (DeployedJar jarClassLoader : ClassPathLoader.getLatest().getJarDeployer()
           .findDeployedJars()) {
@@ -1069,16 +483,217 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
       }
     });
 
-    /*
-     * Cleanup "dummy" jar from file system.
-     */
-    pattern = Pattern.compile('^' + jarName + ".*#\\d++$");
-    deleteMatching(new File(vmDir), pattern);
+    // Cleanup "dummy" jar from file system.
+    deleteMatching(new File(vmDir), Pattern.compile('^' + jarName + ".*#\\d++$"));
   }
 
-  private void deleteMatching(File dir, final Pattern pattern) throws IOException {
-    Collection<File> files =
-        FileUtils.listFiles(dir, new RegexFileFilter(pattern), DirectoryFileFilter.DIRECTORY);
+  private void createCache(final File diskDir) {
+    cacheRule.getOrCreateCache();
+
+    createDiskStore(diskStoreName1, diskDir);
+    createDiskStore(diskStoreName2, diskDir);
+
+    createRegion(regionName1, diskStoreName1);
+    createRegion(regionName2, diskStoreName2);
+  }
+
+  private void createDiskStore(final String diskStoreName, final File diskDir) {
+    DiskStoreFactory diskStoreFactory = cacheRule.getCache().createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(new File[] {diskDir});
+    diskStoreFactory.create(diskStoreName);
+  }
+
+  private void createRegion(final String regionName, final String diskStoreName) {
+    PartitionAttributesFactory<Integer, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
+    partitionAttributesFactory.setTotalNumBuckets(5);
+
+    RegionFactory<Integer, String> regionFactory =
+        cacheRule.getCache().createRegionFactory(PARTITION_PERSISTENT);
+    regionFactory.setDiskStoreName(diskStoreName);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+    regionFactory.create(regionName);
+  }
+
+  private File getBaselineDir() {
+    File dir = new File(temporaryFolder.getRoot(), "baseline");
+    if (!dir.exists()) {
+      dir.mkdirs();
+    }
+
+    return dir;
+  }
+
+  private String getBaselinePath() {
+    return getBaselineDir().getAbsolutePath();
+  }
+
+  private File getIncrementalDir() {
+    File dir = new File(temporaryFolder.getRoot(), "incremental");
+    if (!dir.exists()) {
+      dir.mkdirs();
+    }
+
+    return dir;
+  }
+
+  private String getIncrementalPath() {
+    return getIncrementalDir().getAbsolutePath();
+  }
+
+  private File getIncremental2Dir() {
+    File dir = new File(temporaryFolder.getRoot(), "incremental2");
+    if (!dir.exists()) {
+      dir.mkdirs();
+    }
+
+    return dir;
+  }
+
+  private String getIncremental2Path() {
+    return getIncremental2Dir().getAbsolutePath();
+  }
+
+  private Set<PersistentID> getMissingPersistentMembers() {
+    return AdminDistributedSystemImpl
+        .getMissingPersistentMembers(cacheRule.getCache().getDistributionManager());
+  }
+
+  private BackupStatus performBackup(final String targetDirPath) {
+    return performBackup(targetDirPath, null);
+  }
+
+  private BackupStatus performBackup(final String targetDirPath, final String baselineDirPath) {
+    return new BackupOperation(cacheRule.getCache().getDistributionManager(), cacheRule.getCache())
+        .backupAllMembers(targetDirPath, baselineDirPath);
+  }
+
+  private String getModifiedMemberId() {
+    return cacheRule.getCache().getDistributedSystem().getDistributedMember().toString()
+        .replaceAll("[^\\w]+", "_");
+  }
+
+  private PersistentID getPersistentID(final String diskStoreName) {
+    for (DiskStore diskStore : cacheRule.getCache().listDiskStores()) {
+      if (diskStore.getName().equals(diskStoreName)) {
+        return ((DiskStoreImpl) diskStore).getPersistentID();
+      }
+    }
+    throw new Error("Failed to find disk store " + diskStoreName);
+  }
+
+  private void waitForBackup() {
+    Collection<DiskStore> backupInProgress = cacheRule.getCache().listDiskStores();
+    List<DiskStoreImpl> backupCompleteList = new LinkedList<>();
+
+    while (backupCompleteList.size() < backupInProgress.size()) {
+      for (DiskStore diskStore : backupInProgress) {
+        if (((DiskStoreImpl) diskStore).getInProgressBackup() == null
+            && !backupCompleteList.contains(diskStore)) {
+          backupCompleteList.add((DiskStoreImpl) diskStore);
+        }
+      }
+    }
+  }
+
+  private String getBaselineBackupPath() {
+    File[] dirs = getBaselineDir().listFiles((FileFilter) DIRECTORY);
+    assertThat(dirs).hasSize(1);
+    return dirs[0].getAbsolutePath();
+  }
+
+  private String getIncrementalBackupPath() {
+    File[] dirs = getIncrementalDir().listFiles((FileFilter) DIRECTORY);
+    assertThat(dirs).hasSize(1);
+    return dirs[0].getAbsolutePath();
+  }
+
+  private File getBackupDirForMember(final File rootDir, final String memberId) {
+    File[] dateDirs = rootDir.listFiles((FileFilter) DIRECTORY);
+    assertThat(dateDirs).hasSize(1);
+
+    File[] memberDirs =
+        dateDirs[0].listFiles(file -> file.isDirectory() && file.getName().contains(memberId));
+    assertThat(memberDirs).hasSize(1);
+
+    return memberDirs[0];
+  }
+
+  private ReadingMode getReadingMode() {
+    return SystemUtils.isWindows() ? ReadingMode.NON_BLOCKING : ReadingMode.BLOCKING;
+  }
+
+  private void execute(final String command) throws IOException, InterruptedException {
+    process = new ProcessBuilder(command).redirectErrorStream(true).start();
+
+    processReader = new ProcessStreamReader.Builder(process).inputStream(process.getInputStream())
+        .inputListener(line -> logger.info("OUTPUT: {}", line))
+        .readingMode(getReadingMode()).continueReadingMillis(2 * 1000).build().start();
+
+    assertThat(process.waitFor(5, MINUTES)).isTrue();
+    assertThat(process.exitValue()).isEqualTo(0);
+  }
+
+  private void performRestore(final File memberDir, final File backupDir)
+      throws IOException, InterruptedException {
+    // The restore script will not restore if there is an if file in the copy to directory. Remove
+    // these files first.
+    Collection<File> ifFiles = listFiles(memberDir, new RegexFileFilter(".*\\.if$"), DIRECTORY);
+    for (File file : ifFiles) {
+      assertThat(file.delete()).isTrue();
+    }
+
+    // Remove all operation logs.
+    Collection<File> oplogs = listFiles(memberDir, OPLOG_FILTER, DIRECTORY);
+    for (File file : oplogs) {
+      assertThat(file.delete()).isTrue();
+    }
+
+    // Get a hold of the restore script and make sure it is there.
+    File restoreScript = new File(backupDir, "restore.sh");
+    if (!restoreScript.exists()) {
+      restoreScript = new File(backupDir, "restore.bat");
+    }
+    assertThat(restoreScript).exists();
+
+    execute(restoreScript.getAbsolutePath());
+  }
+
+  private void performPuts() {
+    Region<Integer, String> region = cacheRule.getCache().getRegion(regionName1);
+
+    // Fill our region data
+    for (int i = dataStart; i < dataEnd; ++i) {
+      region.put(i, Integer.toString(i));
+    }
+
+    Region<Integer, String> barRegion = cacheRule.getCache().getRegion(regionName2);
+
+    // Fill our region data
+    for (int i = dataStart; i < dataEnd; ++i) {
+      barRegion.put(i, Integer.toString(i));
+    }
+
+    dataStart += DATA_INCREMENT;
+    dataEnd += DATA_INCREMENT;
+  }
+
+  private void validateBackupStatus(final BackupStatus backupStatus) {
+    Map<DistributedMember, Set<PersistentID>> backupMap = backupStatus.getBackedUpDiskStores();
+    assertThat(backupMap).isNotEmpty();
+
+    for (DistributedMember member : backupMap.keySet()) {
+      assertThat(backupMap.get(member)).isNotEmpty();
+      for (PersistentID id : backupMap.get(member)) {
+        assertThat(id.getHost()).isNotNull();
+        assertThat(id.getUUID()).isNotNull();
+        assertThat(id.getDirectory()).isNotNull();
+      }
+    }
+  }
+
+  private void deleteMatching(final File dir, final Pattern pattern) throws IOException {
+    Collection<File> files = listFiles(dir, new RegexFileFilter(pattern), DIRECTORY);
     for (File file : files) {
       Files.delete(file.toPath());
     }
