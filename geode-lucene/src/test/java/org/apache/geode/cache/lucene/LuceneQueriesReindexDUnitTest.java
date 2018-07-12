@@ -16,14 +16,11 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.awaitility.Awaitility;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -51,11 +48,15 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     luceneService.destroyIndex(INDEX_NAME, REGION_NAME);
   }
 
-  private void recreateIndex() {
+  private void createIndex(String fieldName) {
+    createIndex(INDEX_NAME, fieldName);
+  };
+
+  private void createIndex(String indexName, String fieldName) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     LuceneIndexFactoryImpl indexFactory =
-        (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text");
-    indexFactory.create(INDEX_NAME, REGION_NAME, true);
+        (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField(fieldName);
+    indexFactory.create(indexName, REGION_NAME, true);
   };
 
   @Test
@@ -78,11 +79,11 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
     // re-index stored data
     AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
-      recreateIndex();
+      createIndex("text");
     });
 
     AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
-      recreateIndex();
+      createIndex("text");
     });
 
     ai1.join();
@@ -97,7 +98,8 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
-  public void dropAndRecreateIndexWithDifferentFieldsShouldFail(RegionTestableType regionTestType) {
+  public void dropAndRecreateIndexWithDifferentFieldsShouldFail(RegionTestableType regionTestType)
+      throws Exception {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
@@ -113,30 +115,14 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
     dataStore1.invoke(() -> destroyIndex());
 
-
     // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text");
-      indexFactory.create(INDEX_NAME, REGION_NAME, true);
-    });
-
-    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text2");
-      indexFactory.create(INDEX_NAME, REGION_NAME, true);
-    });
-
-    waitAndVerifyThatIndexCreationFails(ai1, ai2);
-
+    verifyCreateIndexWithDifferentFieldShouldFail();
   }
 
-  @Ignore
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
-  public void recreateIndexWithDifferentFieldsShouldFail(RegionTestableType regionTestType) {
+  public void recreateIndexWithDifferentFieldsShouldFail(RegionTestableType regionTestType)
+      throws Exception {
 
     dataStore1.invoke(() -> {
       regionTestType.createDataStore(getCache(), REGION_NAME);
@@ -150,23 +136,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
     putDataInRegion(accessor);
 
-    // re-index stored data
-    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text");
-      indexFactory.create(INDEX_NAME, REGION_NAME, true);
-    });
-
-    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text2");
-      indexFactory.create(INDEX_NAME, REGION_NAME, true);
-    });
-
-    waitAndVerifyThatIndexCreationFails(ai1, ai2);
-
+    verifyCreateIndexWithDifferentFieldShouldFail();
   }
 
   @Test
@@ -188,48 +158,30 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
     // re-index stored data
     AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text");
-      indexFactory.create(INDEX_NAME, REGION_NAME, true);
+      createIndex("text");
     });
 
     AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text2");
-      indexFactory.create(INDEX_NAME + "2", REGION_NAME, true);
+      createIndex(INDEX_NAME + "2", "text2");
     });
 
     AsyncInvocation ai3 = dataStore1.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text2");
-      indexFactory.create(INDEX_NAME + "2", REGION_NAME, true);
+      createIndex(INDEX_NAME + "2", "text2");
     });
 
     AsyncInvocation ai4 = dataStore2.invokeAsync(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      LuceneIndexFactoryImpl indexFactory =
-          (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text");
-      indexFactory.create(INDEX_NAME, REGION_NAME, true);
+      createIndex("text");
     });
 
     AsyncInvocation ai5 = accessor.invokeAsync(() -> {
       if (getCache().getRegion(REGION_NAME) instanceof PartitionedRegion) {
-        LuceneService luceneService = LuceneServiceProvider.get(getCache());
-        LuceneIndexFactoryImpl indexFactory =
-            (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text");
-        indexFactory.create(INDEX_NAME + "1", REGION_NAME, true);
+        createIndex(INDEX_NAME + "1", "text");
       }
     });
 
     AsyncInvocation ai6 = accessor.invokeAsync(() -> {
       if (getCache().getRegion(REGION_NAME) instanceof PartitionedRegion) {
-        LuceneService luceneService = LuceneServiceProvider.get(getCache());
-        LuceneIndexFactoryImpl indexFactory =
-            (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField("text2");
-        indexFactory.create(INDEX_NAME + "2", REGION_NAME, true);
+        createIndex(INDEX_NAME + "2", "text2");
       }
     });
 
@@ -251,26 +203,40 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
     executeTextSearch(accessor);
   }
 
-  private void waitAndVerifyThatIndexCreationFails(AsyncInvocation ai1, AsyncInvocation ai2) {
-    try {
-      Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
-        boolean status1;
-        boolean status2;
-        try {
-          status1 = ai1.getException() instanceof UnsupportedOperationException;
-          assertTrue(status1);
-        } catch (AssertionError er) {
-          try {
-            status2 = ai2.getException() instanceof UnsupportedOperationException;
-            assertTrue(status2);
-          } catch (AssertionError er2) {
-            assertTrue(false);
-          }
-        }
+  private void verifyCreateIndexWithDifferentFieldShouldFail() throws Exception {
+    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+      createIndex("text");
+    });
+
+    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+      createIndex("text2");
+    });
+
+    // wait for at most 10 seconds first for threads to finish
+    ai1.join(10000);
+    ai2.join(10000);
+
+    // if one thread is still alive after 10 seconds, assert that they other thread throws
+    // an exception and then try to create the same index on the
+    // other datastore to unblock the thread and wait for the thread to finish
+    if (ai1.isAlive()) {
+      assertThat(ai2.getException() instanceof UnsupportedOperationException).isTrue();
+      dataStore2.invoke(() -> {
+        createIndex("text");
       });
-    } finally {
-      ai1.cancel(true);
-      ai2.cancel(true);
+      ai1.await();
+    }
+    else if (ai2.isAlive()) {
+      assertThat(ai1.getException() instanceof UnsupportedOperationException).isTrue();
+      dataStore1.invoke(() -> {
+        createIndex("text2");
+      });
+      ai2.await();
+    }
+    // if both threads finished already, assert that both threads throw exception
+    else {
+      assertThat(ai1.getException() instanceof UnsupportedOperationException).isTrue();
+      assertThat(ai2.getException() instanceof UnsupportedOperationException).isTrue();
     }
   }
 
@@ -294,12 +260,12 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
 
     // re-index stored data
     AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
-      recreateIndex();
+      createIndex("text");
     });
 
     // re-index stored data
     AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
-      recreateIndex();
+      createIndex("text");
     });
 
     ai1.join();
