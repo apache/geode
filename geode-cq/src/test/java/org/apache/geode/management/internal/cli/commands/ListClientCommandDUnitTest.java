@@ -24,6 +24,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -36,8 +37,12 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
+
+@Category({DistributedTest.class, GfshTest.class})
 public class ListClientCommandDUnitTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule(6);
@@ -45,18 +50,24 @@ public class ListClientCommandDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
+  private static final String REGION_NAME = "stocks";
+
+  public static final int locatorID = 0, server1ID = 1, server2ID = 2, client1ID = 3, client2ID = 4;
+
   private static MemberVM locator, server1, server2;
 
-  private static ClientVM client1, client2, client3;
+  private static ClientVM client1, client2;
 
   @BeforeClass
   public static void setup() throws Exception {
-    locator = cluster.startLocatorVM(0);
+    locator = cluster.startLocatorVM(locatorID);
     int locatorPort = locator.getPort();
-    server1 = cluster.startServerVM(1,
-        r -> r.withRegion(RegionShortcut.REPLICATE, "stocks").withConnectionToLocator(locatorPort));
-    server2 = cluster.startServerVM(2,
-        r -> r.withRegion(RegionShortcut.REPLICATE, "stocks").withConnectionToLocator(locatorPort));
+    server1 = cluster.startServerVM(server1ID,
+        r -> r.withRegion(RegionShortcut.REPLICATE, REGION_NAME)
+            .withConnectionToLocator(locatorPort));
+    server2 = cluster.startServerVM(server2ID,
+        r -> r.withRegion(RegionShortcut.REPLICATE, REGION_NAME)
+            .withConnectionToLocator(locatorPort));
 
     gfsh.connectAndVerify(locator);
   }
@@ -66,13 +77,13 @@ public class ListClientCommandDUnitTest {
     int server1port = server1.getPort();
     Properties client1props = new Properties();
     client1props.setProperty("name", "client-1");
-    client1 = cluster.startClientVM(3, client1props, cf -> {
+    client1 = cluster.startClientVM(client1ID, client1props, cf -> {
       cf.addPoolServer("localhost", server1port);
       cf.setPoolSubscriptionEnabled(true);
     });
     Properties client2props = new Properties();
     client2props.setProperty("name", "client-2");
-    client2 = cluster.startClientVM(4, client2props, cf -> {
+    client2 = cluster.startClientVM(client2ID, client2props, cf -> {
       cf.addPoolServer("localhost", server1port);
       cf.setPoolSubscriptionEnabled(true);
     });
@@ -82,7 +93,7 @@ public class ListClientCommandDUnitTest {
       ClientRegionFactory<Object, Object> regionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.LOCAL)
               .setPoolName(clientCache.getDefaultPool().getName());
-      Region<Object, Object> dataRegion = regionFactory.create("stocks");
+      Region<Object, Object> dataRegion = regionFactory.create(REGION_NAME);
       assertNotNull(dataRegion);
       dataRegion.put("k1", "v1");
       dataRegion.put("k2", "v2");
@@ -111,8 +122,8 @@ public class ListClientCommandDUnitTest {
                 "member=server-1,port=" + server1port);
 
     // shutdown the clients
-    cluster.stopMember(3);
-    cluster.stopMember(4);
+    cluster.stopMember(client1ID);
+    cluster.stopMember(client2ID);
   }
 
   @Test
@@ -121,7 +132,7 @@ public class ListClientCommandDUnitTest {
     int server2port = server2.getPort();
     Properties client1props = new Properties();
     client1props.setProperty("name", "client-1");
-    client1 = cluster.startClientVM(3, client1props, cf -> {
+    client1 = cluster.startClientVM(client1ID, client1props, cf -> {
       cf.addPoolServer("localhost", server1port);
       cf.setPoolSubscriptionEnabled(true);
     });
@@ -145,7 +156,7 @@ public class ListClientCommandDUnitTest {
       ClientRegionFactory<Object, Object> regionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.LOCAL)
               .setPoolName(clientCache.getDefaultPool().getName());
-      Region<Object, Object> dataRegion = regionFactory.create("stocks");
+      Region<Object, Object> dataRegion = regionFactory.create(REGION_NAME);
       assertNotNull(dataRegion);
       dataRegion.put("k1", "v1");
       dataRegion.put("k2", "v2");
@@ -168,6 +179,6 @@ public class ListClientCommandDUnitTest {
     assertThat(serverList.get(0)).contains("server-1").contains("server-2");
 
     // shutdown the clients
-    cluster.stopMember(3);
+    cluster.stopMember(client1ID);
   }
 }
