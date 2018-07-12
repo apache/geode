@@ -32,7 +32,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class WebDriverRule extends ExternalResource {
   private WebDriver driver;
-
+  static final int MAX_RETRIES = 10;
   private String pulseUrl;
   private String username;
   private String password;
@@ -58,10 +58,25 @@ public class WebDriverRule extends ExternalResource {
   @Override
   public void before() throws Throwable {
     setUpWebDriver();
-    driver.get(getPulseURL() + "login.html");
-    if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
-      login();
+
+    try {
+      driver.get(getPulseURL() + "login.html");
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.out.println("before: driver get exception " + e.getMessage());
+      throw e;
     }
+
+    if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+      try {
+        login();
+      } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("before: login exception " + e.getMessage());
+        throw e;
+      }
+    }
+
     driver.navigate().refresh();
   }
 
@@ -79,12 +94,8 @@ public class WebDriverRule extends ExternalResource {
 
     driver.get(getPulseURL() + "clusterDetail.html");
     WebElement userNameOnPulsePage =
-        (new WebDriverWait(driver, 30)).until(new ExpectedCondition<WebElement>() {
-          @Override
-          public WebElement apply(WebDriver d) {
-            return d.findElement(By.id("userName"));
-          }
-        });
+        (new WebDriverWait(driver, 30, 1000)).until(
+            (ExpectedCondition<WebElement>) d -> d.findElement(By.id("userName")));
     assertNotNull(userNameOnPulsePage);
   }
 
@@ -95,22 +106,18 @@ public class WebDriverRule extends ExternalResource {
     options.addArguments("window-size=1200x600");
     driver = new ChromeDriver(options);
     driver.manage().window().maximize();
-    driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
     driver.manage().timeouts().pageLoadTimeout(300, TimeUnit.SECONDS);
   }
 
-  public WebElement waitForElementById(final String id) {
+  private WebElement waitForElementById(final String id) {
     return waitForElementById(id, 10);
   }
 
-  public WebElement waitForElementById(final String id, int timeoutInSeconds) {
+  private WebElement waitForElementById(final String id, int timeoutInSeconds) {
     WebElement element =
-        (new WebDriverWait(driver, timeoutInSeconds)).until(new ExpectedCondition<WebElement>() {
-          @Override
-          public WebElement apply(WebDriver d) {
-            return d.findElement(By.id(id));
-          }
-        });
+        (new WebDriverWait(driver, timeoutInSeconds, 1000))
+            .until((ExpectedCondition<WebElement>) d -> d.findElement(By.id(id)));
     assertNotNull(element);
     return element;
   }
