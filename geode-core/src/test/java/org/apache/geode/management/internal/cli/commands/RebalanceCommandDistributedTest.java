@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -29,8 +30,15 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 
 @Category({DistributedTest.class})
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
 public class RebalanceCommandDistributedTest {
 
@@ -42,6 +50,14 @@ public class RebalanceCommandDistributedTest {
 
   private static MemberVM locator, server1, server2;
 
+  @Parameterized.Parameter
+  public static boolean useHttp;
+
+  @Parameterized.Parameters
+  public static Object[] data() {
+    return new Object[] {true, false};
+  }
+
   @BeforeClass
   public static void before() throws Exception {
     locator = cluster.startLocatorVM(0);
@@ -52,7 +68,11 @@ public class RebalanceCommandDistributedTest {
 
     setUpRegions();
 
-    gfsh.connectAndVerify(locator);
+    if (useHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
+    }
   }
 
   @Test
