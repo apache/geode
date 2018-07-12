@@ -24,9 +24,9 @@ limitations under the License.
 
 ## <a id="concept_3B5E445B19884680900161BDF25E32C9__section_0031B81824874FC18F0828DB66150833" class="no-quick-link"></a>Main Concepts and Components
 
-*Caches* are an abstraction that describe a node in a <%=vars.product_name%> distributed system. Application architects can arrange these nodes in peer-to-peer or client/server topologies.
+*Caches* are an abstraction that describe a node in a <%=vars.product_name%> cluster. Application architects can arrange these nodes in peer-to-peer or client/server topologies.
 
-Within each cache, you define data *regions*. Data regions are analogous to tables in a relational database and manage data in a distributed fashion as name/value pairs. A *replicated* region stores identical copies of the data on each cache member of a distributed system. A *partitioned* region spreads the data among cache members. After the system is configured, client applications can access the distributed data in regions without knowledge of the underlying system architecture. You can define listeners to create notifications about when data has changed, and you can define expiration criteria to delete obsolete data in a region.
+Within each cache, you define data *regions*. Data regions are analogous to tables in a relational database and manage data in a distributed fashion as name/value pairs. A *replicated* region stores identical copies of the data on each cache member of a cluster. A *partitioned* region spreads the data among cache members. After the system is configured, client applications can access the distributed data in regions without knowledge of the underlying system architecture. You can define listeners to create notifications about when data has changed, and you can define expiration criteria to delete obsolete data in a region.
 
 For large production systems, <%=vars.product_name%> provides *locators*. Locators provide both discovery and load balancing services. You configure clients with a list of locator services and the locators maintain a dynamic list of member servers. By default, <%=vars.product_name%> clients and servers use port 40404 to discover each other.
 

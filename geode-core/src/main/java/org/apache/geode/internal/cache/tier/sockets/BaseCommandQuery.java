@@ -364,7 +364,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
       Object[] results = new Object[MAXIMUM_CHUNK_SIZE];
       for (int i = 0; i < MAXIMUM_CHUNK_SIZE; i++) {
-        if ((resultIndex) == selectResults.size()) {
+        if ((resultIndex) == objs.length) {
           incompleteArray = true;
           break;
         }
@@ -425,7 +425,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
 
       if (sendResults) {
-        writeQueryResponseChunk(results, collectionType, (resultIndex == selectResults.size()),
+        writeQueryResponseChunk(results, collectionType, (resultIndex == objs.length),
             servConn);
 
         if (logger.isDebugEnabled()) {
@@ -435,7 +435,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
       // If we have reached the last element of SelectResults then we should
       // break out of loop here only.
-      if (resultIndex == selectResults.size()) {
+      if (resultIndex == objs.length) {
         break;
       }
     }

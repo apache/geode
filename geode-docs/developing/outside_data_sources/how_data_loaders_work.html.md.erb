@@ -43,7 +43,7 @@ Partitioned regions generally require more JDBC connections than distributed reg
 
 In a non-partitioned distributed region, a cache loader defined in one member is available to all members that have the region defined. Loaders are usually defined in just a subset of the caches holding the region. When a loader is needed, all available loaders for the region are invoked, starting with the most convenient loader, until the data is loaded or all loaders have been tried.
 
-In the following figure, these members of one distributed system can be running on different machines. Loading for the distributed region is performed from M1.
+In the following figure, these members of one cluster can be running on different machines. Loading for the distributed region is performed from M1.
 
 <img src="../../images_svg/cache_data_loader_2.svg" id="how_data_loaders_work__image_3C39A50218D64EF28A5448EB01A4C6EC" class="image" />
 

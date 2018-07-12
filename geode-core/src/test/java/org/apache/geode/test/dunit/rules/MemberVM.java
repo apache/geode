@@ -21,11 +21,13 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.Member;
@@ -33,6 +35,7 @@ import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 public class MemberVM extends VMProvider implements Member {
+  private Logger logger = LogService.getLogger();
   protected Member member;
   protected VM vm;
 
@@ -106,50 +109,79 @@ public class MemberVM extends VMProvider implements Member {
    * reconnect after 5 seconds.
    */
   public void forceDisconnectMember() {
-    vm.invoke(() -> ClusterStartupRule.memberStarter.forceDisconnectMember());
+    vm.invoke("force disconnect", () -> ClusterStartupRule.memberStarter.forceDisconnectMember());
   }
 
   public void waitTilLocatorFullyReconnected() {
-    vm.invoke(() -> Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> {
-      InternalLocator intLocator = InternalLocator.getLocator();
-      InternalCache cache = ClusterStartupRule.getCache();
-      return intLocator != null && cache != null && intLocator.getDistributedSystem().isConnected()
-          && intLocator.isReconnected();
-    }));
+    vm.invoke(() -> {
+      try {
+        Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> {
+          InternalLocator intLocator = ClusterStartupRule.getLocator();
+          InternalCache cache = ClusterStartupRule.getCache();
+          return intLocator != null && cache != null && intLocator.getDistributedSystem()
+              .isConnected() && intLocator.isReconnected();
+        });
+      } catch (Exception e) {
+        // provide more information when condition is not satisfied after one minute
+        InternalLocator intLocator = ClusterStartupRule.getLocator();
+        InternalCache cache = ClusterStartupRule.getCache();
+        logger.info("locator is not null: " + (intLocator != null));
+        logger.info("cache is not null: " + (cache != null));
+        logger.info("ds is connected: " + (intLocator.getDistributedSystem().isConnected()));
+        logger.info("locator is reconnected: " + (intLocator.isReconnected()));
+        throw e;
+      }
+
+    });
   }
 
   public void waitTilServerFullyReconnected() {
-    vm.invoke(() -> Awaitility.waitAtMost(30, SECONDS).until(() -> {
-      InternalDistributedSystem internalDistributedSystem =
-          InternalDistributedSystem.getConnectedInstance();
-      return internalDistributedSystem != null
-          && internalDistributedSystem.getCache() != null
-          && !internalDistributedSystem.getCache().getCacheServers().isEmpty();
-    }));
-
+    vm.invoke(() -> {
+      try {
+        Awaitility.waitAtMost(60, SECONDS).until(() -> {
+          InternalDistributedSystem internalDistributedSystem =
+              InternalDistributedSystem.getConnectedInstance();
+          return internalDistributedSystem != null
+              && internalDistributedSystem.getCache() != null
+              && !internalDistributedSystem.getCache().getCacheServers().isEmpty();
+        });
+      } catch (Exception e) {
+        // provide more information when condition is not satisfied after one minute
+        InternalDistributedSystem internalDistributedSystem =
+            InternalDistributedSystem.getConnectedInstance();
+        logger.info("ds is not null: " + (internalDistributedSystem != null));
+        logger.info("cache is not null: " + (internalDistributedSystem.getCache() != null));
+        logger.info("has cache server: "
+            + (!internalDistributedSystem.getCache().getCacheServers().isEmpty()));
+        throw e;
+      }
+    });
   }
 
   /**
    * this should called on a locatorVM or a serverVM with jmxManager enabled
    */
-  public void waitTillRegionsAreReadyOnServers(String regionPath, int serverCount) {
-    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillRegionIsReadyOnServers(regionPath,
-        serverCount));
-  }
-
-  public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
-    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
-        serverCount));
-  }
-
-  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
+  public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionPath, int serverCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
-        .waitTillAsyncEventQueuesAreReadyOnServers(queueId, serverCount));
+        .waitUntilRegionIsReadyOnExactlyThisManyServers(regionPath, serverCount));
   }
 
-  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) {
+  public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskstoreName,
+      int serverCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
-        .waitTilGatewaySendersAreReady(expectedGatewayObjectCount));
+        .waitUntilDiskStoreIsReadyOnExactlyThisManyServers(diskstoreName, serverCount));
+  }
+
+  public void waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(String queueId,
+      int serverCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter
+        .waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(queueId, serverCount));
+  }
+
+  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(
+      int expectedGatewayObjectCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter
+        .waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(expectedGatewayObjectCount));
   }
 
 }

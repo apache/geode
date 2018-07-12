@@ -59,8 +59,8 @@ public class RemoveCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create region --name=" + PARTITIONED_REGION_NAME + " --type=PARTITION").statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/" + REPLICATE_REGION_NAME, 2);
-    locator.waitTillRegionsAreReadyOnServers("/" + PARTITIONED_REGION_NAME, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + REPLICATE_REGION_NAME, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + PARTITIONED_REGION_NAME, 2);
 
     VMProvider.invokeInEveryMember(RemoveCommandDUnitTest::populateTestRegions, server1, server2);
   }

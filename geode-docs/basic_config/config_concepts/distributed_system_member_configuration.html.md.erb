@@ -1,5 +1,5 @@
 ---
-title:  Distributed System Members
+title:  Cluster Members
 ---
 
 <!--
@@ -19,39 +19,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Distributed system members are programs that connect to a <%=vars.product_name%> distributed system. You configure members to belong to a single distributed system, and you can optionally configure them to be clients or servers to members in other distributed systems, and to communicate with other distributed systems.
+Cluster members are programs that connect to a <%=vars.product_name%> cluster. You configure members to belong to a single cluster, and you can optionally configure them to be clients or servers to members in other clusters, and to communicate with other clusters.
 
 ## <a id="distributed_system_member_configuration__section_326B2609B67E4FBE9BF2074C3B211E50" class="no-quick-link"></a>Member Overview
 
-Distributed system members (or simply "members") connect to the <%=vars.product_name%> system when they create the <%=vars.product_name%> data cache. The members' distributed system is configured through <%=vars.product_name%> properties. See [gemfire.properties and gfsecurity.properties (<%=vars.product_name%> Properties)](../../reference/topics/gemfire_properties.html). <%=vars.product_name%> properties specify all necessary information for system member startup, initialization, and communication.
+Cluster members (or simply "members") connect to the <%=vars.product_name%> cluster when they create the <%=vars.product_name%> data cache. The members' cluster is configured through <%=vars.product_name%> properties. See [gemfire.properties and gfsecurity.properties (<%=vars.product_name%> Properties)](../../reference/topics/gemfire_properties.html). <%=vars.product_name%> properties specify all necessary information for member startup, initialization, and communication.
 
 **Note:**
-You cannot change a member's properties while the member is connected to the distributed system.
+You cannot change a member's properties while the member is connected to the cluster.
 
 Use the properties to define:
 
--   How to find and communicate with other system members
+-   How to find and communicate with other members
 -   How to perform logging and statistics activities
 -   Which persistent configuration or `cache.xml` file to use for cache and data region initialization
 -   Other options, including event conflation, how to handle network loss, and security settings
 
-## <a id="distributed_system_member_configuration__section_E755E9E4A31149C980561D617A99A002" class="no-quick-link"></a>Distributed System Membership and System Topologies
+## <a id="distributed_system_member_configuration__section_E755E9E4A31149C980561D617A99A002" class="no-quick-link"></a>Membership and System Topologies
 
-Every <%=vars.product_name%> process is a member of a distributed system, even if the distributed system is defined as standalone, with just one member. You can run an individual distributed system in isolation or you can combine systems for vertical and horizontal scaling. See [Topology and Communication General Concepts](../../topologies_and_comm/topology_concepts/chapter_overview.html).
+Every <%=vars.product_name%> process is a member of a cluster, even if the cluster is defined as standalone, with just one member. You can run an individual cluster in isolation or you can combine clusters for vertical and horizontal scaling. See [Topology and Communication General Concepts](../../topologies_and_comm/topology_concepts/chapter_overview.html).
 
--   **Peer-to-Peer Distributed Systems**. Members that define the same member discovery properties belong to the same distributed system and are peers to one another.
--   **Client/Server Installations**. The client/server topology uses relationships that you configure between members of multiple distributed systems. You configure some or all of the peers in one distributed system to act as cache servers to clients connecting from outside the system. Each server can host many client processes, managing cache access for all in an efficient, vertically hierarchical cache configuration. You configure the client applications to connect to the servers, using a client cache configuration. Clients run as members of standalone <%=vars.product_name%> distributed systems, with no peers, so all data updates and requests go to the servers.
+-   **Peer-to-Peer Clusters**. Members that define the same member discovery properties belong to the same cluster and are peers to one another.
+-   **Client/Server Installations**. The client/server topology uses relationships that you configure between members of multiple clusters. You configure some or all of the peers in one cluster to act as cache servers to clients connecting from outside the cluster. Each server can host many client processes, managing cache access for all in an efficient, vertically hierarchical cache configuration. You configure the client applications to connect to the servers, using a client cache configuration. Clients run as members of standalone <%=vars.product_name%> clusters, with no peers, so all data updates and requests go to the servers.
 
-## **Multi-site Installations**
+## Multi-site Installations
 
-The multi-site topology uses relationships that you configure between members of multiple distributed systems. Through this configuration, you loosely couple two or more distributed systems for automated data distribution. This is usually done for sites at geographically separate locations. You configure a subset of peers in each distributed system site with gateway senders and/or gateway receivers to manage events that are distributed between the sites.
+The multi-site topology uses relationships that you configure between members of multiple clusters. Through this configuration, you loosely couple two or more clusters for automated data distribution. This is usually done for sites at geographically separate locations. You configure a subset of peers in each cluster site with gateway senders and/or gateway receivers to manage events that are distributed between the sites.
 
-In the context of a single distributed system, unless otherwise specified, "remote member" refers to
-another member of the same distributed system. In client/server and multi-site installations, "remote"
-generally refers to members in other distributed systems. For example, all servers are "remote" to the
+In the context of a single cluster, unless otherwise specified, "remote member" refers to
+another member of the same cluster. In client/server and multi-site installations, "remote"
+generally refers to members in other clusters. For example, all servers are "remote" to the
 clients that connect to them. Each client runs standalone, with connections only to the server tier,
 so all servers and their other clients are "remote" to the individual client. All gateway receivers
-are "remote" to the gateway senders that connect to them from other distributed systems, and to those
+are "remote" to the gateway senders that connect to them from other clusters, and to those
 gateway senders' peers.
 
 

@@ -44,7 +44,7 @@ A permission contains the `Resource` data member,
 which classifies whether the operation as working on
 
 - cache data; value is `DATA`
-- the distributed system; value is `CLUSTER`
+- the cluster; value is `CLUSTER`
 
 A permission also contains the `Operation` data member, 
 which classifies whether the operation as
@@ -199,7 +199,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 The `gfsh connect` does not have a permission,
 as it is the operation that invokes authentication. 
 These `gfsh` commands do not have permission defined,
-as they do not interact with the distributed system:
+as they do not interact with the cluster:
 
 -  `gfsh describe connection`, which describes the `gfsh` end of the connection
 -  `gfsh debug`, which toggles the mode within `gfsh`
