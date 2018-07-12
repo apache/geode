@@ -40,8 +40,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -105,7 +103,7 @@ public class GemfireDataCommandsDUnitTest {
       "/GemfireDataCommandsTestRegion/ChildRegionRegion1/ChildRegionRegion12";
 
   private static final String SERIALIZATION_FILTER =
-      "org.apache.geode.management.internal.cli.dto.**";
+      "org.apache.geode.management.internal.cli.**";
 
   static final int COUNT = 5;
 
@@ -128,8 +126,7 @@ public class GemfireDataCommandsDUnitTest {
   private static void setupRegions(String regionName, String parRegionName) {
     InternalCache cache = ClusterStartupRule.getCache();
     RegionFactory regionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE).setEvictionAttributes(
-            EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
+        cache.createRegionFactory(RegionShortcut.REPLICATE);
 
     Region dataRegion = regionFactory.create(DATA_REGION_NAME);
     assertNotNull(dataRegion);

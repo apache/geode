@@ -16,8 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -58,7 +56,7 @@ public class RegionMembershipMBeanDUnitTest {
       "/GemfireDataCommandsTestRegion/ChildRegionRegion1/ChildRegionRegion12";
 
   private static final String SERIALIZATION_FILTER =
-      "org.apache.geode.management.internal.cli.dto.**";
+      "org.apache.geode.management.internal.cli.**";
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -85,10 +83,7 @@ public class RegionMembershipMBeanDUnitTest {
 
   private static void setupDataRegionAndSubregions() {
     InternalCache cache = ClusterStartupRule.getCache();
-    EvictionAttributes evictionAttrs =
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
     RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    regionFactory.setEvictionAttributes(evictionAttrs);
 
     Region dataRegion = regionFactory.create(DATA_REGION_NAME);
     assertThat(dataRegion).isNotNull();
@@ -103,10 +98,7 @@ public class RegionMembershipMBeanDUnitTest {
 
   private static void setupReplicatedRegion(String regionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    EvictionAttributes evictionAttrs =
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
     RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    regionFactory.setEvictionAttributes(evictionAttrs);
 
     Region dataRegion = regionFactory.create(regionName);
     assertThat(dataRegion).isNotNull();
