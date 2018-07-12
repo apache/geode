@@ -730,7 +730,7 @@ public class RegionMapDestroy {
         // So we need putIfAbsent to return an existing entry when getEntry returned null.
         destroyBeforeRemoval(existingRegionEntry);
       }
-    } catch (RegionClearedException rce) { // TODO coverage
+    } catch (RegionClearedException rce) {
       conflictWithClear = true;
     }
     doDestroyPart2(existingRegionEntry, conflictWithClear);

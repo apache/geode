@@ -433,6 +433,22 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWithInTokenModeAndTombstoneCallsDestroyWhichThrowsRegionClearedStillDoesDestroy()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    givenInTokenMode();
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenThrow(RegionClearedException.class);
+
+    assertThat(doDestroy()).isTrue();
+
+    validateInvokedDestroyMethodsOnRegion(true);
+  }
+
+  @Test
   public void destroyWithInTokenModeCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
