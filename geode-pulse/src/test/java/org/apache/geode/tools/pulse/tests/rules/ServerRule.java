@@ -17,6 +17,7 @@ package org.apache.geode.tools.pulse.tests.rules;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
@@ -34,22 +35,10 @@ public class ServerRule extends ExternalResource {
   private org.eclipse.jetty.server.Server jetty;
   private Server server;
   private String pulseURL;
+  private String jsonAuthFile;
 
   public ServerRule(String jsonAuthFile) {
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    String jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
-
-    int jmxPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server = Server.createServer(jmxPort, jmxPropertiesFile, jsonAuthFile);
-    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST, LOCALHOST);
-    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT, Integer.toString(jmxPort));
-    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED, String.valueOf(Boolean.TRUE));
-
-    int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    jetty = JettyHelper.initJetty(LOCALHOST, httpPort, new SSLConfig());
-    JettyHelper.addWebApplication(jetty, PULSE_CONTEXT, getPulseWarPath(), null, null);
-    pulseURL = "http://" + LOCALHOST + ":" + httpPort + PULSE_CONTEXT;
-    System.out.println("Pulse started at " + pulseURL);
+    this.jsonAuthFile = jsonAuthFile;
   }
 
   public String getPulseURL() {
@@ -59,8 +48,9 @@ public class ServerRule extends ExternalResource {
 
   @Override
   protected void before() throws Throwable {
-    jetty.start();
-    Awaitility.await().until(() -> jetty.isStarted());
+    startServer();
+    startJetty();
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> jetty.isStarted());
   }
 
   @Override
@@ -72,6 +62,41 @@ public class ServerRule extends ExternalResource {
     }
   }
 
+  private void startServer() {
+    try {
+      server = null;
+      ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+      String jmxPropertiesFile = classLoader.getResource("test.properties").getPath();
+      int jmxPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+      System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT, Integer.toString(jmxPort));
+      server = Server.createServer(jmxPort, jmxPropertiesFile, jsonAuthFile);
+      server.start();
+    } catch (Exception e) {
+      throw new Error(e);
+    }
+  }
+
+  private void startJetty() throws Throwable {
+    try {
+      System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST, LOCALHOST);
+      System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED,
+          String.valueOf(Boolean.TRUE));
+
+      int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+      jetty = JettyHelper.initJetty(LOCALHOST, httpPort, new SSLConfig());
+      JettyHelper.addWebApplication(jetty, PULSE_CONTEXT, getPulseWarPath(), null, null);
+      pulseURL = "http://" + LOCALHOST + ":" + httpPort + PULSE_CONTEXT;
+      System.out.println("Pulse started at " + pulseURL);
+
+      if (jetty != null) {
+        jetty.start();
+      }
+    } catch (Exception e) {
+      throw new Error(e);
+    }
+  }
+
+  // Until we straighten out the Server Code properly, this should be commented out.
   private void stopServer() {
     try {
       if (server != null) {
