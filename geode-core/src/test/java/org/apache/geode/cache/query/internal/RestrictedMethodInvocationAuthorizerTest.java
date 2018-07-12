@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -481,6 +482,19 @@ public class RestrictedMethodInvocationAuthorizerTest {
   @Test
   public void numberMethodsForAtomicLongAreWhiteListed() throws Exception {
     testNumberMethods(AtomicLong.class);
+  }
+
+  @Test
+  public void verifyAuthorizersUseDefaultWhiteList() {
+    RestrictedMethodInvocationAuthorizer authorizer1 =
+        new RestrictedMethodInvocationAuthorizer(null);
+    RestrictedMethodInvocationAuthorizer authorizer2 =
+        new RestrictedMethodInvocationAuthorizer(null);
+    assertThat(authorizer1.getWhiteList()).isSameAs(authorizer2.getWhiteList());
+    assertThat(authorizer1.getWhiteList())
+        .isSameAs(RestrictedMethodInvocationAuthorizer.DEFAULT_WHITELIST);
+    assertThat(authorizer2.getWhiteList())
+        .isSameAs(RestrictedMethodInvocationAuthorizer.DEFAULT_WHITELIST);
   }
 
   private void testNumberMethods(Class<?> clazz) throws NoSuchMethodException {

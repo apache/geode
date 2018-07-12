@@ -161,29 +161,33 @@ public class MemberVM extends VMProvider implements Member {
   /**
    * this should called on a locatorVM or a serverVM with jmxManager enabled
    */
-  public void waitTillRegionsAreReadyOnServers(String regionPath, int serverCount) {
-    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillRegionIsReadyOnServers(regionPath,
-        serverCount));
+  public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionPath, int serverCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter
+        .waitUntilRegionIsReadyOnExactlyThisManyServers(regionPath, serverCount));
   }
+
 
   public void waitTillClientsAreReadyOnServers(String serverName, int serverPort, int clientCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillClientsAreReadyOnServer(serverName,
         serverPort, clientCount));
   }
-
-  public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
-    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
-        serverCount));
+  
+  public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskstoreName,
+      int serverCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter
+        .waitUntilDiskStoreIsReadyOnExactlyThisManyServers(diskstoreName, serverCount));
   }
 
-  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
+  public void waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(String queueId,
+      int serverCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
-        .waitTillAsyncEventQueuesAreReadyOnServers(queueId, serverCount));
+        .waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(queueId, serverCount));
   }
 
-  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) {
+  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(
+      int expectedGatewayObjectCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
-        .waitTilGatewaySendersAreReady(expectedGatewayObjectCount));
+        .waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(expectedGatewayObjectCount));
   }
 
 }

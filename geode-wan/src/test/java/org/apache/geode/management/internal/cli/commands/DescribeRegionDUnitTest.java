@@ -56,8 +56,8 @@ public class DescribeRegionDUnitTest {
         + "--listener=org.apache.geode.internal.cache.wan.MyAsyncEventListener").statusIsSuccess();
     gfsh.executeAndAssertThat("create gateway-sender --id=sender1 --remote-distributed-system-id=2")
         .statusIsSuccess();
-    sending_locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
-    sending_locator.waitTilGatewaySendersAreReady(2);
+    sending_locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
+    sending_locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(2);
 
     gfsh.executeAndAssertThat(
         "create region --name=region4 --type=REPLICATE --async-event-queue-id=queue1 --gateway-sender-id=sender1")
