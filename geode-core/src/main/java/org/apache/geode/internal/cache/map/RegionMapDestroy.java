@@ -450,7 +450,7 @@ public class RegionMapDestroy {
       }
     } catch (RegionClearedException rce) { // TODO coverage
       recordEvent();
-      inhibitCacheListenerNotificaiton();
+      inhibitCacheListenerNotification();
       handleRegionClearedException(regionEntry);
     } finally {
       if (isRemoved(regionEntry) && !isTombstone(regionEntry)) {
@@ -471,7 +471,7 @@ public class RegionMapDestroy {
         removePhase2(regionEntry);
       }
     }
-    inhibitCacheListenerNotificaiton();
+    inhibitCacheListenerNotification();
     doDestroyPart2(regionEntry, false);
     lruEntryDestroy(regionEntry);
   }
@@ -917,7 +917,7 @@ public class RegionMapDestroy {
     event.setIsRedestroyedEntry(true);
   }
 
-  private void inhibitCacheListenerNotificaiton() {
+  private void inhibitCacheListenerNotification() {
     if (inTokenMode && !duringRI) {
       event.inhibitCacheListenerNotification(true);
     }
