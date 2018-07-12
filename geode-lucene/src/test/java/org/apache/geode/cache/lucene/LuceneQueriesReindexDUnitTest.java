@@ -225,8 +225,7 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
         createIndex("text");
       });
       ai1.await();
-    }
-    else if (ai2.isAlive()) {
+    } else if (ai2.isAlive()) {
       assertThat(ai1.getException() instanceof UnsupportedOperationException).isTrue();
       dataStore1.invoke(() -> {
         createIndex("text2");
