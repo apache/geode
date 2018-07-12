@@ -720,7 +720,9 @@ public class RegionMapDestroy {
     try {
       // if concurrency checks are enabled, destroy will set the version tag
       if (!destroyEntry(existingRegionEntry, false)) {
-        return; // TODO coverage
+        // TODO: is this correct? The caller will always set opCompleted to true
+        // indicating that this destroy was done even though destroyEntry returned false.
+        return;
       }
       if (retainForConcurrency) {
         // TODO coverage: this will only happen if we find an existing entry after the initial

@@ -416,6 +416,23 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWithInTokenModeAndTombstoneCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    givenInTokenMode();
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), anyBoolean(), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+
+    assertThat(doDestroy()).isTrue(); // TODO since destroy returns false it seems like doDestroy
+                                      // should return true
+
+    validateNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void destroyWithInTokenModeCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
