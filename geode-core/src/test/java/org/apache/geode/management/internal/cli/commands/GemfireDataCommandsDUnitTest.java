@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.fail;
@@ -33,9 +34,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,7 +57,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.ManagerMXBean;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
@@ -82,8 +80,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @SuppressWarnings("serial")
 public class GemfireDataCommandsDUnitTest {
 
-  private static final String REBALANCE_REGION_NAME = "GemfireDataCommandsDUnitTestRegion";
-  private static final String REBALANCE_REGION2_NAME = "GemfireDataCommandsDUnitTestRegion2";
+
   private static final String DATA_REGION_NAME = "GemfireDataCommandsTestRegion";
   private static final String DATA_REGION_NAME_VM1 = "GemfireDataCommandsTestRegion_Vm1";
   private static final String DATA_REGION_NAME_VM2 = "GemfireDataCommandsTestRegion_Vm2";
@@ -106,6 +103,9 @@ public class GemfireDataCommandsDUnitTest {
   private static final String DATA_REGION_NAME_CHILD_1_2 = "ChildRegionRegion12";
   private static final String DATA_REGION_NAME_CHILD_1_2_PATH =
       "/GemfireDataCommandsTestRegion/ChildRegionRegion1/ChildRegionRegion12";
+
+  private static final String SERIALIZATION_FILTER =
+      "org.apache.geode.management.internal.cli.dto.**";
 
   static final int COUNT = 5;
 
@@ -156,51 +156,18 @@ public class GemfireDataCommandsDUnitTest {
     assertNotNull(dataParRegion);
   }
 
-  private void setupWith2Regions() throws Exception {
-    before();
-
-    server1.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
-          cache.createRegionFactory(RegionShortcut.PARTITION);
-
-      Region region = dataRegionFactory.create(REBALANCE_REGION_NAME);
-      for (int i = 0; i < 10; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-
-      region = dataRegionFactory.create(REBALANCE_REGION2_NAME);
-      for (int i = 0; i < 50; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-    });
-
-    server2.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
-          cache.createRegionFactory(RegionShortcut.PARTITION);
-
-      Region region = dataRegionFactory.create(REBALANCE_REGION_NAME);
-      for (int i = 0; i < 150; i++) {
-        region.put("key" + (i + 400), "value" + (i + 400));
-      }
-
-      region = dataRegionFactory.create(REBALANCE_REGION2_NAME);
-      for (int i = 0; i < 100; i++) {
-        region.put("key" + (i + 200), "value" + (i + 200));
-      }
-    });
-  }
 
 
   void setupForGetPutRemoveLocateEntry(String testName) throws Exception {
     Properties props = locatorProperties();
-    props.setProperty("serializable-object-filter",
-        "org.apache.geode.management.internal.cli.dto.**");
+    props.setProperty(SERIALIZABLE_OBJECT_FILTER, SERIALIZATION_FILTER);
     props.setProperty(NAME, testName + "Manager");
+
+    Properties serverProps = new Properties();
+    serverProps.setProperty(SERIALIZABLE_OBJECT_FILTER, SERIALIZATION_FILTER);
     locator = cluster.startLocatorVM(0, props);
-    server1 = cluster.startServerVM(1, locator.getPort());
-    server2 = cluster.startServerVM(2, locator.getPort());
+    server1 = cluster.startServerVM(1, serverProps, locator.getPort());
+    server2 = cluster.startServerVM(2, serverProps, locator.getPort());
 
     gfsh.connectAndVerify(locator);
 
@@ -323,34 +290,6 @@ public class GemfireDataCommandsDUnitTest {
     testGetPutLocateEntryFromShellAndGemfire(doubleKey, doubleValue, Double.class, true, true);
   }
 
-
-
-  @Test
-  public void testRegionsViaMbeanAndFunctions() throws Exception {
-    setupForGetPutRemoveLocateEntry("testSimplePut");
-    waitForListClientMbean(DATA_REGION_NAME);
-
-    Integer memSizeFromMbean = distributedRegionMembersSizeFromMBean(DATA_REGION_NAME);
-
-    Integer memSizeFromFunctionCall = distributedRegionMembersSizeFromFunction(DATA_REGION_NAME);
-
-    assertThat(memSizeFromFunctionCall).isEqualTo(memSizeFromMbean);
-  }
-
-  @Test
-  public void testPartitionedRegionsViaMbeanAndFunctions() throws Exception {
-    setupWith2Regions();
-
-    locator.waitTillRegionsAreReadyOnServers("/" + REBALANCE_REGION2_NAME, 2);
-    locator.waitTillRegionsAreReadyOnServers("/" + REBALANCE_REGION_NAME, 2);
-
-    Integer memSizeFromMbean = distributedRegionMembersSizeFromMBean(REBALANCE_REGION_NAME);
-
-    Integer memSizeFromFunctionCall =
-        distributedRegionMembersSizeFromFunction(REBALANCE_REGION_NAME);
-
-    assertThat(memSizeFromFunctionCall).isEqualTo(memSizeFromMbean);
-  }
 
 
   private void testGetPutLocateEntryFromShellAndGemfire(final Serializable key,
@@ -662,51 +601,6 @@ public class GemfireDataCommandsDUnitTest {
     } else {
       fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
     }
-  }
-
-
-  private Integer distributedRegionMembersSizeFromFunction(String regionName) {
-    return locator.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      Set<DistributedMember> distributedMembers =
-          CliUtil.getRegionAssociatedMembers(regionName, cache, true);
-
-      return distributedMembers.size();
-    });
-  }
-
-  private Integer distributedRegionMembersSizeFromMBean(String regionName) {
-    return locator.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
-        DistributedRegionMXBean bean = ManagementService.getManagementService(cache)
-            .getDistributedRegionMXBean("/" + regionName);
-        assertThat(bean).isNotNull();
-      });
-
-      DistributedRegionMXBean bean = ManagementService.getManagementService(cache)
-          .getDistributedRegionMXBean("/" + regionName);
-      String[] membersName = bean.getMembers();
-      return membersName.length;
-    });
-  }
-
-  public void waitForListClientMbean(final String regionName) {
-    locator.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      final ManagementService service = ManagementService.getManagementService(cache);
-      Awaitility.waitAtMost(30, TimeUnit.SECONDS).until(() -> {
-        ManagerMXBean managerMBean = service.getManagerMXBean();
-        DistributedRegionMXBean regionMBean = service.getDistributedRegionMXBean("/" + regionName);
-        assertThat(managerMBean).isNotNull();
-        assertThat(regionMBean).isNotNull();
-        assertThat(regionMBean.getMembers().length).isGreaterThan(1);
-      });
-
-      DistributedRegionMXBean bean = service.getDistributedRegionMXBean("/" + regionName);
-      assertNotNull(bean);
-    });
   }
 
   private Properties locatorProperties() {
