@@ -27,7 +27,7 @@ public class LuceneIndexDestroyedException extends GemFireException {
   private final String regionPath;
 
   public LuceneIndexDestroyedException(String indexName, String regionPath) {
-    super();
+    super("Lucene index " + indexName + " on region " + regionPath + " has been destroyed");
     this.indexName = indexName;
     this.regionPath = regionPath;
   }
