@@ -64,6 +64,9 @@ public class ConcurrentRegionOperationIntegrationTest {
     region.put(1, "value");
     region.put(2, "value");
 
+    DiskStore diskStore = cache.findDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
+    diskStore.flush();
+
     ConcurrentMapWithReusableEntries<Object, Object> underlyingMap =
         ((LocalRegion) region).getRegionMap().getCustomEntryConcurrentHashMap();
     RegionEntry spyEntry = spy((RegionEntry) underlyingMap.get(1));
