@@ -876,6 +876,16 @@ public abstract class AbstractRegionMap
                   final boolean oldIsDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
                   final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
                   try {
+                    if (owner.getIndexManager() != null) {
+                      // Due to having no reverse map, we need to be able to generate the oldkey
+                      // before doing an update
+                      // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index
+                      // as the update could not locate the old key
+                      if (!oldRe.isRemoved()) {
+                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
+                            IndexProtocol.BEFORE_UPDATE_OP);
+                      }
+                    }
                     result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered,
                         acceptedVersionTag);
                     if (result) {
@@ -895,6 +905,10 @@ public abstract class AbstractRegionMap
                             && owner.getVersionVector().isTombstoneTooOld(
                                 entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
                           // the received tombstone has already been reaped, so don't retain it
+                          if (owner.getIndexManager() != null) {
+                            owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
+                                IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
+                          }
                           removeTombstone(oldRe, entryVersion, false, false);
                           return false;
                         } else {
@@ -912,18 +926,17 @@ public abstract class AbstractRegionMap
                       }
                     }
                     if (owner.getIndexManager() != null) {
-                      // Due to having no reverse map, we need to be able to generate the oldkey
-                      // before doing an update
-                      // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index
-                      // as the update could not locate the old key
-                      if (!oldRe.isRemoved()) {
+                      // if existing/current re is a tombstone
+                      if (oldRe.isRemoved()) {
                         owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                            IndexProtocol.BEFORE_UPDATE_OP);
+                            IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
+                      } else {
+                        owner.getIndexManager().updateIndexes(oldRe,
+                            oldIsDestroyedOrRemoved ? IndexManager.ADD_ENTRY
+                                : IndexManager.UPDATE_ENTRY,
+                            oldIsDestroyedOrRemoved ? IndexProtocol.OTHER_OP
+                                : IndexProtocol.AFTER_UPDATE_OP);
                       }
-                      owner.getIndexManager().updateIndexes(oldRe,
-                          oldRe.isRemoved() ? IndexManager.ADD_ENTRY : IndexManager.UPDATE_ENTRY,
-                          oldRe.isRemoved() ? IndexProtocol.OTHER_OP
-                              : IndexProtocol.AFTER_UPDATE_OP);
                     }
                     done = true;
                   } finally {
@@ -964,18 +977,10 @@ public abstract class AbstractRegionMap
                 }
 
                 // Update local indexes
-                if (owner.getIndexManager() != null) {
-                  // Due to having no reverse map, we need to be able to generate the oldkey before
-                  // doing an update
-                  // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index as
-                  // the update could not locate the old key
-                  if (oldRe != null && !oldRe.isRemoved()) {
-                    owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                        IndexProtocol.BEFORE_UPDATE_OP);
-                  }
+                if (owner.getIndexManager() != null && !newRe.isRemoved()) {
                   owner.getIndexManager().updateIndexes(newRe,
-                      newRe.isRemoved() ? IndexManager.REMOVE_ENTRY : IndexManager.UPDATE_ENTRY,
-                      newRe.isRemoved() ? IndexProtocol.OTHER_OP : IndexProtocol.AFTER_UPDATE_OP);
+                      IndexManager.ADD_ENTRY,
+                      IndexProtocol.OTHER_OP);
                 }
                 done = true;
               } finally {
@@ -987,7 +992,6 @@ public abstract class AbstractRegionMap
             }
           } finally {
             if (done && result) {
-              initialImagePutEntry(newRe);
               if (owner instanceof BucketRegionQueue) {
                 BucketRegionQueue brq = (BucketRegionQueue) owner;
                 brq.addToEventQueue(key, done, event);
@@ -995,10 +999,6 @@ public abstract class AbstractRegionMap
             }
             if (!done) {
               removeEntry(key, newRe, false);
-              if (owner.getIndexManager() != null) {
-                owner.getIndexManager().updateIndexes(newRe, IndexManager.REMOVE_ENTRY,
-                    IndexProtocol.OTHER_OP);
-              }
             }
           }
         } // synchronized
@@ -1008,7 +1008,6 @@ public abstract class AbstractRegionMap
         OffHeapHelper.release(oldValue);
       }
     } catch (RegionClearedException rce) {
-      // Asif: do not issue any sort of callbacks
       done = false;
       cleared = true;
     } catch (QueryException qe) {
@@ -1023,8 +1022,6 @@ public abstract class AbstractRegionMap
     }
     return result;
   }
-
-  private void initialImagePutEntry(RegionEntry newRe) {}
 
   @Override
   public boolean confirmEvictionDestroy(RegionEntry regionEntry) {
