@@ -182,7 +182,7 @@ public class RegionMapDestroyTest {
 
   private void givenExistingEvictableEntryWithMockedIsTombstone() throws RegionClearedException {
     givenExistingEvictableEntry("value");
-    when(evictableEntry.isTombstone()).thenReturn(true).thenReturn(false);
+    when(evictableEntry.isTombstone()).thenReturn(true);
     when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
         anyBoolean())).thenReturn(true);
   }
@@ -272,8 +272,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.DESTROYED);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.DESTROYED);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -297,7 +297,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateInvokedDestroyMethodsOnRegion(true);
+    verifyInvokedDestroyMethodsOnRegion(true);
   }
 
   @Test
@@ -308,8 +308,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateNoDestroyInvocationsOnRegion();
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -321,8 +321,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.DESTROYED);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.DESTROYED);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -348,8 +348,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateNoDestroyInvocationsOnEvictableEntry();
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnEvictableEntry();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -363,8 +363,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateNoDestroyInvocationsOnEvictableEntry();
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnEvictableEntry();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -378,8 +378,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateInvokedDestroyMethodOnEvictableEntry();
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyInvokedDestroyMethodOnEvictableEntry();
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -395,7 +395,7 @@ public class RegionMapDestroyTest {
     isEviction = false;
 
     assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -412,7 +412,7 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isTrue();
 
     verify(evictableEntry, times(1)).removePhase2();
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -429,7 +429,7 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isTrue(); // TODO since destroy returns false it seems like doDestroy
                                       // should return true
 
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -445,7 +445,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateInvokedDestroyMethodsOnRegion(true);
+    verifyInvokedDestroyMethodsOnRegion(true);
   }
 
   @Test
@@ -462,7 +462,7 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isFalse();
 
     verify(evictableEntry, never()).removePhase2();
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -481,7 +481,7 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isTrue();
 
     verify(evictableEntry, never()).removePhase2();
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -521,7 +521,7 @@ public class RegionMapDestroyTest {
     verify(evictableEntry, never()).destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
         eq(expectedOldValue), anyBoolean(), anyBoolean());
 
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -554,8 +554,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.DESTROYED);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.DESTROYED);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -580,8 +580,8 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isTrue();
 
     // why not DESTROY token? since it was already destroyed why do we do the parts?
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -656,8 +656,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -669,8 +669,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -771,8 +771,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -784,7 +784,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validatePart3();
+    verifyPart3();
   }
 
   @Test
@@ -798,7 +798,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateNoPart3();
+    verifyNoPart3();
   }
 
   @Test
@@ -837,7 +837,7 @@ public class RegionMapDestroyTest {
 
     verify(evictableEntry, never()).destroy(any(), any(), anyBoolean(), anyBoolean(), anyBoolean(),
         anyBoolean(), anyBoolean());
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
 
@@ -864,8 +864,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -876,8 +876,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -888,8 +888,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -960,9 +960,9 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateNoPart2();
-    validatePart3();
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyNoPart2();
+    verifyPart3();
   }
 
   @Test
@@ -977,9 +977,9 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateNoPart2();
-    validatePart3();
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyNoPart2();
+    verifyPart3();
   }
 
   /**
@@ -993,8 +993,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateMapDoesNotContainKey(KEY);
-    validateNoDestroyInvocationsOnRegion();
+    verifyMapDoesNotContainKey(KEY);
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -1005,8 +1005,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateMapDoesNotContainKey(KEY);
-    validateNoDestroyInvocationsOnRegion();
+    verifyMapDoesNotContainKey(KEY);
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -1016,8 +1016,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateNoDestroyInvocationsOnRegion();
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -1028,8 +1028,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -1041,8 +1041,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -1054,8 +1054,36 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void validateNoDestroyWhenExistingTombstoneAndNewEntryDestroyFails()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    RegionEntry existingTombstone = mock(RegionEntry.class);
+    when(existingTombstone.isTombstone()).thenReturn(true);
+    when(existingTombstone.getValue()).thenReturn(Token.TOMBSTONE);
+    when(entryMap.get(KEY)).thenReturn(existingTombstone);
+    when(entryMap.putIfAbsent(eq(KEY), any())).thenReturn(null);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(factory.createEntry(any(), any(), any())).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(false);
+    inTokenMode = true;
+
+    assertThat(doDestroy()).isFalse();
+
+    verifyNoDestroyInvocationsOnRegion();
+    verify(entryMap, never()).remove(KEY, evictableEntry); // TODO: this seems like a bug. This
+                                                           // should be called once.
   }
 
   @Test
@@ -1071,7 +1099,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isFalse();
 
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -1084,8 +1112,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -1098,9 +1126,9 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validatePart2(false);
-    validateNoPart3();
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyPart2(false);
+    verifyNoPart3();
   }
 
   @Test
@@ -1112,8 +1140,8 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -1148,61 +1176,61 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    validateMapContainsKey(event.getKey());
-    validateMapContainsTokenValue(Token.REMOVED_PHASE1);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsKey(event.getKey());
+    verifyMapContainsTokenValue(Token.REMOVED_PHASE1);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
-  private void validateInvokedDestroyMethodOnEvictableEntry() throws RegionClearedException {
+  private void verifyInvokedDestroyMethodOnEvictableEntry() throws RegionClearedException {
     verify(evictableEntry, times(1)).destroy(eq(arm._getOwner()), eq(event), eq(false),
         anyBoolean(), eq(expectedOldValue), anyBoolean(), anyBoolean());
   }
 
-  private void validateMapContainsKey(Object key) {
+  private void verifyMapContainsKey(Object key) {
     assertThat(arm.getEntryMap()).containsKey(key);
   }
 
-  private void validateMapDoesNotContainKey(Object key) {
+  private void verifyMapDoesNotContainKey(Object key) {
     assertThat(arm.getEntryMap()).doesNotContainKey(key);
   }
 
-  private void validateNoDestroyInvocationsOnEvictableEntry() throws RegionClearedException {
+  private void verifyNoDestroyInvocationsOnEvictableEntry() throws RegionClearedException {
     verify(evictableEntry, never()).destroy(any(), any(), anyBoolean(), anyBoolean(), any(),
         anyBoolean(), anyBoolean());
   }
 
-  private void validateMapContainsTokenValue(Token token) {
+  private void verifyMapContainsTokenValue(Token token) {
     assertThat(arm.getEntryMap()).containsKey(event.getKey());
     RegionEntry re = (RegionEntry) arm.getEntryMap().get(event.getKey());
     assertThat(re.getValueAsToken()).isEqualTo(token);
   }
 
-  private void validateInvokedDestroyMethodsOnRegion(boolean conflictWithClear) {
-    validatePart2(conflictWithClear);
-    validatePart3();
+  private void verifyInvokedDestroyMethodsOnRegion(boolean conflictWithClear) {
+    verifyPart2(conflictWithClear);
+    verifyPart3();
   }
 
-  private void validatePart3() {
+  private void verifyPart3() {
     verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
         eq(duringRI), eq(true), eq(expectedOldValue));
   }
 
-  private void validatePart2(boolean conflictWithClear) {
+  private void verifyPart2(boolean conflictWithClear) {
     verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
         eq(conflictWithClear), eq(duringRI), eq(true));
   }
 
-  private void validateNoDestroyInvocationsOnRegion() {
-    validateNoPart2();
-    validateNoPart3();
+  private void verifyNoDestroyInvocationsOnRegion() {
+    verifyNoPart2();
+    verifyNoPart3();
   }
 
-  private void validateNoPart2() {
+  private void verifyNoPart2() {
     verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), anyBoolean());
   }
 
-  private void validateNoPart3() {
+  private void verifyNoPart3() {
     verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), any());
   }

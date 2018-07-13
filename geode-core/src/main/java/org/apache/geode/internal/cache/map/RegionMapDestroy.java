@@ -660,9 +660,22 @@ public class RegionMapDestroy {
     } catch (RegionClearedException rce) {
       handleRegionClearedException(newRegionEntry);
     } finally {
-      if (!opCompleted && !hasTombstone()) {
-        removeNewRegionEntryFromMap(); // TODO coverage
+      if (opCompleted) {
+        return;
       }
+      if (hasTombstone()) {
+        // TODO: why leave the newRegionEntry in the map
+        // if we originally had a tombstone?
+        // If we get this far with adding newRegionEntry
+        // then the original tombstone we saw was gone
+        // (because putIfAbsent did not find it in the map
+        // if we get here). And since the op did not complete
+        // we should then leave newRegionEntry in the map?
+        // I think it would be better to just call
+        // removeNewRegionEntryFromMap if !opCompleted.
+        return;
+      }
+      removeNewRegionEntryFromMap();
     }
   }
 
