@@ -91,9 +91,9 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     return mapper.readTree(responseBody);
   }
 
-  public ListAssert<Object> hasJsonArrayOfDoubles() throws IOException {
+  public ListAssert<Double> hasJsonArrayOfDoubles() throws IOException {
     JsonNode array = getJsonObject();
-    List<Object> list = new ArrayList<>();
+    List<Double> list = new ArrayList<>();
 
     for (int i = 0; i < array.size(); i++) {
       list.add(array.get(i).doubleValue());
