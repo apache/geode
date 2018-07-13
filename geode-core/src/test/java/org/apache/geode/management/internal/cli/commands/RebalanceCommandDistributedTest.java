@@ -53,7 +53,7 @@ public class RebalanceCommandDistributedTest {
   @Parameterized.Parameter
   public static boolean useHttp;
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "useHttp={0}")
   public static Object[] data() {
     return new Object[] {true, false};
   }
