@@ -21,10 +21,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -40,14 +42,21 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class PersistenceAdvisorImplTest {
 
-  public static final long TIME_STAMP_1 = 1530300988488L;
-  public static final long TIME_STAMP_2 = 1530301340401L;
-  public static final long TIME_STAMP_3 = 1530301598541L;
-  public static final long TIME_STAMP_4 = 1530301598616L;
+  private static final long TIME_STAMP_1 = 1530300988488L;
+  private static final long TIME_STAMP_2 = 1530301340401L;
+  private static final long TIME_STAMP_3 = 1530301598541L;
+  private static final long TIME_STAMP_4 = 1530301598616L;
+
+  private static final String SET_POSITION_1 = "a";
+  private static final String SET_POSITION_2 = "b";
+  private static final String SET_POSITION_3 = "c";
+  private static final String SET_POSITION_4 = "d";
+  private static final String SET_POSITION_5 = "e";
+  private static final String SET_POSITION_6 = "f";
+  private static final String SET_POSITION_7 = "g";
+
   private CacheDistributionAdvisor cacheDistributionAdvisor;
   private PersistentMemberView persistentMemberView;
-  private PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory;
-  private PersistentStateQueryMessage persistentStateQueryMessage;
   private PersistentStateQueryResults persistentStateQueryResults;
 
   private PersistenceAdvisorImpl persistenceAdvisorImpl;
@@ -58,8 +67,10 @@ public class PersistenceAdvisorImplTest {
   public void setUp() throws Exception {
     cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class);
     persistentMemberView = mock(DiskRegion.class);
-    persistentStateQueryMessageSenderFactory = mock(PersistentStateQueryMessageSenderFactory.class);
-    persistentStateQueryMessage = mock(PersistentStateQueryMessage.class);
+    PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory =
+        mock(PersistentStateQueryMessageSenderFactory.class);
+    PersistentStateQueryMessage persistentStateQueryMessage =
+        mock(PersistentStateQueryMessage.class);
     persistentStateQueryResults = mock(PersistentStateQueryResults.class);
 
     when(persistentStateQueryMessageSenderFactory.createPersistentStateQueryReplyProcessor(any(),
@@ -81,8 +92,100 @@ public class PersistenceAdvisorImplTest {
    */
   @Test
   public void getMembersToWaitForRemovesAllMembersWhenDiskStoreListedTwice() {
+    getMembersToWaitForRemovesAllMembers(false);
+  }
+
+  @Test
+  public void getMembersToWaitForRemovesAllMembersWhenDiskStoreListedTwiceAndInitializingIDIsNull() {
+    getMembersToWaitForRemovesAllMembers(true);
+  }
+
+  @Test
+  public void removeOlderMembersHandlesEmptySet() {
+    Set<PersistentMemberID> aSet = new HashSet<>();
+
+    persistenceAdvisorImpl.removeOlderMembers(aSet);
+
+    assertThat(aSet).isEmpty();
+  }
+
+  @Test
+  public void removeOlderMembersWithEqualTimeStampsInDifferentDiskStores() {
+    long timeStamp = 239874; // anything
+    // all diskStoreIDs in set are different so nothing to remove
+    Set<PersistentMemberID> aSet = new HashSet<>();
+    aSet.add(createPersistentMemberID(getNewDiskStoreID(), timeStamp));
+    aSet.add(createPersistentMemberID(getNewDiskStoreID(), timeStamp));
+    aSet.add(createPersistentMemberID(getNewDiskStoreID(), timeStamp));
+    aSet.add(createPersistentMemberID(getNewDiskStoreID(), timeStamp));
+
+    persistenceAdvisorImpl.removeOlderMembers(aSet);
+
+    assertThat(aSet).hasSize(4);
+  }
+
+  @Test
+  public void removeOlderMembersWhenFirstInSetIsOlder() {
     DiskStoreID diskStoreID = getNewDiskStoreID();
-    InternalDistributedMember member = createInternalDistributedMember();
+    Set<PersistentMemberID> aSet = new TreeSet<>(new PersistentMemberIDComparator());
+    aSet.add(createPersistentMemberID(diskStoreID, 1, SET_POSITION_1));
+    PersistentMemberID newest = createPersistentMemberID(diskStoreID, 2, SET_POSITION_2);
+    aSet.add(newest);
+
+    persistenceAdvisorImpl.removeOlderMembers(aSet);
+
+    assertThat(aSet).containsExactly(newest);
+  }
+
+  @Test
+  public void removeOlderMembersWhenFirstInSetIsNewer() {
+    DiskStoreID diskStoreID = getNewDiskStoreID();
+    Set<PersistentMemberID> aSet = new TreeSet<>(new PersistentMemberIDComparator());
+    PersistentMemberID newest = createPersistentMemberID(diskStoreID, 2, SET_POSITION_1);
+    aSet.add(newest);
+    aSet.add(createPersistentMemberID(diskStoreID, 1, SET_POSITION_2));
+
+    persistenceAdvisorImpl.removeOlderMembers(aSet);
+
+    assertThat(aSet).containsExactly(newest);
+  }
+
+  @Test
+  public void removeOlderMembersWithMultipleRemovals() {
+    DiskStoreID diskStoreID1 = getNewDiskStoreID();
+    DiskStoreID diskStoreID2 = getNewDiskStoreID();
+    DiskStoreID diskStoreID3 = getNewDiskStoreID();
+    Set<PersistentMemberID> aSet = new TreeSet<>(new PersistentMemberIDComparator());
+    PersistentMemberID id_1 = createPersistentMemberID(diskStoreID1, 10, SET_POSITION_1);
+    PersistentMemberID id_2 = createPersistentMemberID(diskStoreID2, 10, SET_POSITION_2);
+    PersistentMemberID id_3 = createPersistentMemberID(diskStoreID3, 40, SET_POSITION_3);
+    PersistentMemberID id_4 = createPersistentMemberID(diskStoreID3, 10, SET_POSITION_4);
+    PersistentMemberID id_5 = createPersistentMemberID(diskStoreID2, 50, SET_POSITION_5);
+    PersistentMemberID id_6 = createPersistentMemberID(diskStoreID2, 70, SET_POSITION_6);
+    PersistentMemberID id_7 = createPersistentMemberID(diskStoreID2, 60, SET_POSITION_7);
+    aSet.add(id_1);
+    aSet.add(id_2);
+    aSet.add(id_3);
+    aSet.add(id_4);
+    aSet.add(id_5);
+    aSet.add(id_6);
+    aSet.add(id_7);
+
+    persistenceAdvisorImpl.removeOlderMembers(aSet);
+
+    assertThat(aSet).containsExactly(id_1, id_3, id_6);
+  }
+
+  private class PersistentMemberIDComparator implements Comparator<PersistentMemberID> {
+    @Override
+    public int compare(PersistentMemberID id1, PersistentMemberID id2) {
+      return id1.getName().compareTo(id2.getName());
+    }
+  }
+
+  private void getMembersToWaitForRemovesAllMembers(boolean initializingIdIsNull) {
+    DiskStoreID diskStoreID = getNewDiskStoreID();
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
 
     Set<PersistentMemberID> previouslyOnlineMembers = new HashSet<>();
     Map<InternalDistributedMember, PersistentMemberState> stateOnPeers = new HashMap<>();
@@ -95,7 +198,9 @@ public class PersistenceAdvisorImplTest {
 
     stateOnPeers.put(member, PersistentMemberState.ONLINE);
     persistentIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_2));
-    initializingIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_3));
+    if (!initializingIdIsNull) {
+      initializingIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_3));
+    }
     diskStoreIds.put(member, diskStoreID);
 
     when(cacheDistributionAdvisor.adviseGeneric()).thenReturn(createMemberSet(member));
@@ -123,8 +228,9 @@ public class PersistenceAdvisorImplTest {
     return new PersistentMemberID(diskStoreID, null, null, timeStamp, (short) 0);
   }
 
-  private InternalDistributedMember createInternalDistributedMember() {
-    return mock(InternalDistributedMember.class);
+  private PersistentMemberID createPersistentMemberID(DiskStoreID diskStoreID, long timeStamp,
+      String name) {
+    return new PersistentMemberID(diskStoreID, null, null, name, timeStamp, (short) 0);
   }
 
   private DiskStoreID getNewDiskStoreID() {

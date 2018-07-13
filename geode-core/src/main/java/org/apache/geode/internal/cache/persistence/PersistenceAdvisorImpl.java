@@ -14,10 +14,13 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -255,7 +258,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       for (PersistentMemberID id : peersOnlineMembers.values()) {
         if (!isRevoked(id) && !removedMembers.contains(id)) {
           if (!id.equals(myId) && !recoveredMembers.remove(id)
-              && !id.diskStoreId.equals(getDiskStoreID())) {
+              && !id.getDiskStoreId().equals(getDiskStoreID())) {
             if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
               logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
                   "{}-{}: Processing membership view from peer. Marking {} as online because {} says its online",
@@ -274,7 +277,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           // *newer* than the current member. So mark that member as online (meaning, online later
           // than the current member).
           if (!id.equals(myId) && !recoveredMembers.remove(id)
-              && !id.diskStoreId.equals(getDiskStoreID())) {
+              && !id.getDiskStoreId().equals(getDiskStoreID())) {
             if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
               logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
                   "{}-{}: Processing membership view from peer. Marking {} as online because {} says its offline, but we have never seen it",
@@ -350,11 +353,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
             cacheDistributionAdvisor.advisePersistentMembers().values();
         Set<DiskStoreID> runningDiskStores = new HashSet<>();
         for (PersistentMemberID mem : allMembers) {
-          runningDiskStores.add(mem.diskStoreId);
+          runningDiskStores.add(mem.getDiskStoreId());
         }
         // Remove any equal members which are not actually running right now.
         for (PersistentMemberID id : equalMembers) {
-          if (!runningDiskStores.contains(id.diskStoreId)) {
+          if (!runningDiskStores.contains(id.getDiskStoreId())) {
             equalMembers.remove(id);
           }
         }
@@ -875,7 +878,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
               || membersToWaitFor.contains(initializingID)) {
             for (PersistentMemberID peerOnlineMember : peersOnlineMembers) {
               if (!isRevoked(peerOnlineMember)
-                  && !peerOnlineMember.diskStoreId.equals(getDiskStoreID())
+                  && !peerOnlineMember.getDiskStoreId().equals(getDiskStoreID())
                   && !persistentMemberView.getOfflineMembers().contains(peerOnlineMember)) {
                 if (membersToWaitFor.add(peerOnlineMember)) {
                   addedMembers = true;
@@ -892,6 +895,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           }
         }
       }
+      removeOlderMembers(membersToWaitFor);
       if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
         logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
             "{}-{}: Initial state of membersToWaitFor, before pruning {}", shortDiskStoreId(),
@@ -959,6 +963,34 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   }
 
   /**
+   * Given a set of persistent members, if the same member occurs more than once in the set but
+   * with different timestamps, remove the older ones leaving only the most recent.
+   *
+   * @param persistentMemberSet The set of persistent members, possibly modified by this method.
+   */
+  protected void removeOlderMembers(Set<PersistentMemberID> persistentMemberSet) {
+    Map<DiskStoreID, PersistentMemberID> mostRecentMap = new HashMap<>();
+    List<PersistentMemberID> idsToRemove = new ArrayList<>();
+    for (PersistentMemberID persistentMember : persistentMemberSet) {
+      DiskStoreID diskStoreId = persistentMember.getDiskStoreId();
+      PersistentMemberID mostRecent = mostRecentMap.get(diskStoreId);
+      if (mostRecent == null) {
+        mostRecentMap.put(diskStoreId, persistentMember);
+      } else {
+        PersistentMemberID older = persistentMember;
+        boolean persistentMemberIsNewer =
+            !persistentMember.isOlderOrEqualVersionOf(mostRecent);
+        if (persistentMemberIsNewer) {
+          older = mostRecent;
+          mostRecentMap.put(diskStoreId, persistentMember);
+        }
+        idsToRemove.add(older);
+      }
+    }
+    persistentMemberSet.removeAll(idsToRemove);
+  }
+
+  /**
    * Remove all members with a given disk store id from the set of members to wait for, who is newer
    * than the real one. The reason is: A is waiting for B2, but B sends B1<=A to A. That means A
    * knows more than B in both B1 and B2. B itself knows nothing about B2. So we don't need to wait
@@ -986,7 +1018,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       DiskStoreID diskStoreID, boolean updateAdvisor) {
     for (Iterator<PersistentMemberID> itr = membersToWaitFor.iterator(); itr.hasNext();) {
       PersistentMemberID id = itr.next();
-      if (id.diskStoreId.equals(diskStoreID)) {
+      if (id.getDiskStoreId().equals(diskStoreID)) {
         if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
           logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
               "{}-{}: Not waiting for {} because it no longer has this region in its disk store",

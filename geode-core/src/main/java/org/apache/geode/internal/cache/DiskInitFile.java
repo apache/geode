@@ -2573,13 +2573,13 @@ public class DiskInitFile implements DiskInitFileInterpreter {
       Map<DiskStoreID, String> equal = new HashMap<DiskStoreID, String>();
       for (PlaceHolderDiskRegion region : regions) {
         for (PersistentMemberID mem : region.getOnlineMembers()) {
-          online.put(mem.diskStoreId, mem.host + ":" + mem.directory);
+          online.put(mem.getDiskStoreId(), mem.getHost() + ":" + mem.getDirectory());
         }
         for (PersistentMemberID mem : region.getOfflineMembers()) {
-          offline.put(mem.diskStoreId, mem.host + ":" + mem.directory);
+          offline.put(mem.getDiskStoreId(), mem.getHost() + ":" + mem.getDirectory());
         }
         for (PersistentMemberID mem : region.getOfflineAndEqualMembers()) {
-          equal.put(mem.diskStoreId, mem.host + ":" + mem.directory);
+          equal.put(mem.getDiskStoreId(), mem.getHost() + ":" + mem.getDirectory());
         }
       }
 
