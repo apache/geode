@@ -92,6 +92,7 @@ subprojects {
         srcDir file('src/integrationTest/java')
       }
       resources.srcDir file('src/integrationTest/resources')
+      compiledBy(assemble)
     }
 
     distributedTest {
@@ -112,7 +113,7 @@ subprojects {
       resources.srcDir file('src/acceptanceTest/resources')
     }
 
-      uiTest {
+    uiTest {
       java {
         compileClasspath += main.output + test.output
         runtimeClasspath += main.output + test.output
@@ -456,3 +457,8 @@ subprojects {
   combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest
   [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest].each {it.finalizedBy combineReports}
 }
+
+classes.dependsOn subprojects.compileIntegrationTestJava
+classes.dependsOn subprojects.compileDistributedTestJava
+classes.dependsOn subprojects.compileAcceptanceTestJava
+classes.dependsOn subprojects.compileUiTestJava
