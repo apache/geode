@@ -15,12 +15,15 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.junit.Before;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -30,11 +33,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({DistributedTest.class})
 @RunWith(Parameterized.class)
@@ -78,9 +77,9 @@ public class RebalanceCommandDistributedTest {
   @Test
   public void testSimulateForEntireDSWithTimeout() {
     // check if DistributedRegionMXBean is available so that command will not fail
-    locator.waitTillRegionsAreReadyOnServers("/" + "region-1", 2);
-    locator.waitTillRegionsAreReadyOnServers("/" + "region-2", 1);
-    locator.waitTillRegionsAreReadyOnServers("/" + "region-3", 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-1", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-2", 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-3", 1);
 
     String command = "rebalance --simulate=true --time-out=-1";
 
@@ -89,31 +88,31 @@ public class RebalanceCommandDistributedTest {
 
   private static void setUpRegions() {
     server1.invoke(() -> {
-        Cache cache = ClusterStartupRule.getCache();
-        RegionFactory<Integer, Integer> dataRegionFactory =
-           cache.createRegionFactory(RegionShortcut.PARTITION);
-        Region region = dataRegionFactory.create("region-1");
-         for (int i = 0; i < 10; i++) {
-           region.put("key" + (i + 200), "value" + (i + 200));
-         }
-         region = dataRegionFactory.create("region-2");
-         for (int i = 0; i < 100; i++) {
-           region.put("key" + (i + 200), "value" + (i + 200));
-         }
+      Cache cache = ClusterStartupRule.getCache();
+      RegionFactory<Integer, Integer> dataRegionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+      Region region = dataRegionFactory.create("region-1");
+      for (int i = 0; i < 10; i++) {
+        region.put("key" + (i + 200), "value" + (i + 200));
+      }
+      region = dataRegionFactory.create("region-2");
+      for (int i = 0; i < 100; i++) {
+        region.put("key" + (i + 200), "value" + (i + 200));
+      }
     });
     server2.invoke(() -> {
       // no need to close cache as it will be closed as part of teardown2
-        Cache cache = ClusterStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
-        Region region = dataRegionFactory.create("region-1");
-        for (int i = 0; i < 100; i++) {
-          region.put("key" + (i + 400), "value" + (i + 400));
-        }
-        region = dataRegionFactory.create("region-3");
-        for (int i = 0; i < 10; i++) {
-          region.put("key" + (i + 200), "value" + (i + 200));
-        }
+      Region region = dataRegionFactory.create("region-1");
+      for (int i = 0; i < 100; i++) {
+        region.put("key" + (i + 400), "value" + (i + 400));
+      }
+      region = dataRegionFactory.create("region-3");
+      for (int i = 0; i < 10; i++) {
+        region.put("key" + (i + 200), "value" + (i + 200));
+      }
     });
   }
 }

@@ -71,7 +71,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("list disk-stores").statusIsSuccess()
         .tableHasColumnWithValuesContaining("Disk Store Name", diskStores.toArray(new String[0]));
 
-    jmxManager.waitTillDiskstoreIsReady(DISKSTORE, serverCount);
+    jmxManager.waitUntilDiskStoreIsReadyOnExactlyThisManyServers(DISKSTORE, serverCount);
 
     gfsh.executeAndAssertThat(String.format(
         "create region --name=%s --type=REPLICATE_PERSISTENT --disk-store=%s --group=%s --eviction-action=overflow-to-disk",
@@ -119,7 +119,7 @@ public class DiskStoreCommandsDUnitTest {
       serverRule.before();
     });
 
-    locator.waitTillDiskstoreIsReady(DISKSTORE, 1);
+    locator.waitUntilDiskStoreIsReadyOnExactlyThisManyServers(DISKSTORE, 1);
 
     gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
         .containsOutput("Missing Disk Stores", "No missing colocated region found");
@@ -130,7 +130,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
         .statusIsSuccess().containsOutput("Missing disk store successfully revoked");
 
-    locator.waitTillRegionsAreReadyOnServers("/" + REGION_1, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + REGION_1, 1);
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
