@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -174,6 +175,53 @@ public class CliUtilDUnitTest {
       regions = Arrays.stream("group1Region,group2Region".split(",")).collect(Collectors.toSet());
       members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, true);
       assertThat(getNames(members)).isEmpty();
+    });
+  }
+
+  @Test
+  public void getRegionsAssociatedMembersInvalidRegion() {
+    locator.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      Set<String> regions = new HashSet<String>();
+      regions.add("/asdfghjkl");
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, true);
+      assertThat(members).isEmpty();
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, false);
+      assertThat(members).isEmpty();
+    });
+  }
+
+  @Test
+  public void getRegionsAssociatedMembersInvalidRegions() {
+    locator.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      Set<String> regions = new HashSet<String>();
+      regions.add("/asdfghjkl");
+      regions.add("/asdfghjklmn");
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, true);
+      assertThat(members).isEmpty();
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, false);
+      assertThat(members).isEmpty();
+    });
+  }
+
+  @Test
+  public void getRegionsAssociatedMembersInvalidAndValidRegions() {
+    locator.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      Set<String> regions = new HashSet<String>();
+      regions.add("/asdfghjkl");
+      regions.add("/commonRegion");
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, true);
+      assertThat(members).isEmpty();
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, false);
+      assertThat(members).isEmpty();
     });
   }
 

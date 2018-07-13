@@ -32,7 +32,8 @@ import org.apache.geode.test.junit.runners.SuiteRunner;
 @Category({DistributedTest.class, SecurityTest.class, GfshTest.class})
 @RunWith(SuiteRunner.class)
 @Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class, ShellCommandsDUnitTest.class,
-    RebalanceCommandDUnitTest.class, RegionMembershipMBeanDUnitTest.class})
+    RebalanceCommandDUnitTest.class, RegionMembershipMBeanDUnitTest.class,
+    QueryCommandDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =
