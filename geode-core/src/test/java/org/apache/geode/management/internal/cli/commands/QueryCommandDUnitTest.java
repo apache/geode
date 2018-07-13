@@ -90,8 +90,8 @@ public class QueryCommandDUnitTest {
     server2.invoke(() -> setupReplicatedRegion(DATA_REGION_NAME));
     server1.invoke(() -> setupPartitionedRegion(DATA_PAR_REGION_NAME));
 
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_PATH, 1);
 
     gfsh.connectAndVerify(locator);
   }
@@ -162,7 +162,7 @@ public class QueryCommandDUnitTest {
   @Test
   public void testQueryEvictedDataDeserializable() {
     server1.invoke(() -> setupReplicatedRegionWithEviction(DATA_REGION_WITH_EVICTION_NAME));
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
     server1.invoke(() -> prepareDeserializableDataForRegion(DATA_REGION_WITH_EVICTION_NAME_PATH));
 
     String query = "query --query=\"select Value from " + DATA_REGION_WITH_EVICTION_NAME_PATH
@@ -177,7 +177,7 @@ public class QueryCommandDUnitTest {
         addIgnoredException(Exception.class.getSimpleName(), locator.getVM());
 
     server1.invoke(() -> setupReplicatedRegionWithEviction(DATA_REGION_WITH_EVICTION_NAME));
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_WITH_EVICTION_NAME_PATH, 1);
     server1
         .invoke(() -> prepareNotDeserializableDataForRegion(DATA_REGION_WITH_EVICTION_NAME_PATH));
 

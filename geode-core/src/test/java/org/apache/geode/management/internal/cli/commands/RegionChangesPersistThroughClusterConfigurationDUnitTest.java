@@ -87,7 +87,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     gfsh.executeAndAssertThat(
         "create region --type=REPLICATE --enable-statistics=true --name=" + REGION_PATH)
         .statusIsSuccess();
-    locator.waitTillRegionsAreReadyOnServers(REGION_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
 
   }
 
@@ -104,7 +104,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     server2.forceDisconnectMember();
 
     server2.waitTilServerFullyReconnected();
-    locator.waitTillRegionsAreReadyOnServers(REGION_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
 
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
@@ -136,7 +136,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     server2.forceDisconnectMember();
 
     server2.waitTilServerFullyReconnected();
-    locator.waitTillRegionsAreReadyOnServers(REGION_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
 
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();

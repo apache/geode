@@ -153,13 +153,13 @@ public class GemfireDataCommandsDUnitTest {
       setupRegions(DATA_REGION_NAME_VM2, DATA_PAR_REGION_NAME_VM2);
     });
 
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_VM1_PATH, 1);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_VM2_PATH, 1);
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_VM1_PATH, 1);
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_VM2_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_VM1_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_VM2_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_VM1_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_VM2_PATH, 1);
 
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();

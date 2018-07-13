@@ -136,7 +136,7 @@ public class RegionMembershipMBeanDUnitTest {
   @Test
   public void testReplicatedRegionOnOneMember() {
     server1.invoke(() -> setupReplicatedRegion(DATA_REGION_NAME));
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 1);
 
     Integer memSizeFromMBean = distributedRegionMembersSizeFromMBean(DATA_REGION_NAME_PATH);
     Integer memSizeFromFunctionCall =
@@ -152,11 +152,11 @@ public class RegionMembershipMBeanDUnitTest {
     server2.invoke(() -> setupDataRegionAndSubregions());
     server2.invoke(() -> setupReplicatedRegion(DATA_REGION_NAME_VM2));
 
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_2_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_VM1_PATH, 1);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_VM2_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_2_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_VM1_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_VM2_PATH, 1);
 
     Integer memSizeFromMBean = distributedRegionMembersSizeFromMBean(DATA_REGION_NAME_PATH);
     Integer memSizeFromFunctionCall =
@@ -187,9 +187,9 @@ public class RegionMembershipMBeanDUnitTest {
     server1.invoke(() -> setupDataRegionAndSubregions());
     server2.invoke(() -> setupDataRegionAndSubregions());
 
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_2_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_2_PATH, 2);
 
     Integer initialMemberSizeFromMBean =
         distributedRegionMembersSizeFromMBean(DATA_REGION_NAME_PATH);
@@ -212,9 +212,9 @@ public class RegionMembershipMBeanDUnitTest {
     MemberVM server3 = cluster.startServerVM(3, locator.getPort());
     server3.invoke(() -> setupDataRegionAndSubregions());
 
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 3);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_PATH, 3);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_2_PATH, 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_PATH, 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_2_PATH, 3);
 
     Integer intermediateMemberSizeFromMBean =
         distributedRegionMembersSizeFromMBean(DATA_REGION_NAME_PATH);
@@ -241,9 +241,9 @@ public class RegionMembershipMBeanDUnitTest {
 
     server3.stopMember(Boolean.TRUE);
 
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_REGION_NAME_CHILD_1_2_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_2_PATH, 2);
 
     Integer finalMemberSizeFromMBean = distributedRegionMembersSizeFromMBean(DATA_REGION_NAME_PATH);
     Integer finalMemberSizeFromFunction =
@@ -269,7 +269,7 @@ public class RegionMembershipMBeanDUnitTest {
   @Test
   public void testPartitionedRegionOnOneMember() {
     server1.invoke(() -> setupPartitionedRegion(DATA_PAR_REGION_NAME));
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_PATH, 1);
 
     Integer memSizeFromMBean = distributedRegionMembersSizeFromMBean(DATA_PAR_REGION_NAME_PATH);
     Integer memSizeFromFunctionCall =
@@ -285,9 +285,9 @@ public class RegionMembershipMBeanDUnitTest {
     server2.invoke(() -> setupPartitionedRegion(DATA_PAR_REGION_NAME));
     server2.invoke(() -> setupReplicatedRegion(DATA_PAR_REGION_NAME_VM2));
 
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_PATH, 2);
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_VM1_PATH, 1);
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_VM2_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_VM1_PATH, 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_VM2_PATH, 1);
 
     Integer memSizeFromMBean = distributedRegionMembersSizeFromMBean(DATA_PAR_REGION_NAME_PATH);
     Integer memSizeFromFunctionCall =
@@ -309,7 +309,7 @@ public class RegionMembershipMBeanDUnitTest {
   public void testAddRmNewMemberWithPartitionedRegions() {
     server1.invoke(() -> setupPartitionedRegion(DATA_PAR_REGION_NAME));
     server2.invoke(() -> setupPartitionedRegion(DATA_PAR_REGION_NAME));
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_PATH, 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_PATH, 2);
 
     Integer initialMemberSizeFromMBean =
         distributedRegionMembersSizeFromMBean(DATA_PAR_REGION_NAME_PATH);
@@ -319,7 +319,7 @@ public class RegionMembershipMBeanDUnitTest {
 
     MemberVM server3 = cluster.startServerVM(3, locator.getPort());
     server3.invoke(() -> setupPartitionedRegion(DATA_PAR_REGION_NAME));
-    locator.waitTillRegionsAreReadyOnServers(DATA_PAR_REGION_NAME_PATH, 3);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_PATH, 3);
 
     Integer intermediateMemberSizeFromMBean =
         distributedRegionMembersSizeFromMBean(DATA_PAR_REGION_NAME_PATH);
