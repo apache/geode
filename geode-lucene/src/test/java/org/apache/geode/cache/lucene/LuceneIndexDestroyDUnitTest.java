@@ -141,6 +141,43 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   }
 
   @Test
+  @Parameters(method = "parametersForIndexDestroys")
+  public void verifyDestroySingleIndexWithDefinedIndexes(boolean destroyDataRegion,
+      RegionTestableType regionType) {
+    // Create index in both members
+    dataStore1.invoke(createIndex());
+    dataStore2.invoke(createIndex());
+
+    // Verify index defined
+    dataStore1.invoke(() -> verifyDefinedIndexCreated());
+    dataStore2.invoke(() -> verifyDefinedIndexCreated());
+
+    // Create region in one member
+    dataStore1.invoke(() -> initDataStore(regionType));
+
+    // Verify index created in one member and defined in the other
+    dataStore1.invoke(() -> verifyIndexCreated());
+    dataStore2.invoke(() -> verifyDefinedIndexCreated());
+
+    // Attempt to destroy data region (should fail)
+    if (destroyDataRegion) {
+      dataStore1.invoke(() -> destroyDataRegion(false, INDEX_NAME));
+    }
+
+    // Destroy index (only needs to be done on one member)
+    dataStore1.invoke(() -> destroyIndex());
+
+    // Verify index destroyed in one member and defined index destroyed in the other
+    dataStore1.invoke(() -> verifyIndexDestroyed());
+    dataStore2.invoke(() -> verifyDefinedIndexDestroyed());
+
+    // Attempt to destroy data region (should succeed)
+    if (destroyDataRegion) {
+      dataStore1.invoke(() -> destroyDataRegion(true));
+    }
+  }
+
+  @Test
   @Parameters(method = "getListOfRegionTestTypes")
   public void verifyDestroySingleIndexWhileDoingPuts(RegionTestableType regionType)
       throws Exception {
@@ -517,10 +554,18 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     assertNotNull(luceneService.getIndex(INDEX2_NAME, REGION_NAME));
   }
 
+  private void verifyDefinedIndexCreated() {
+    verifyDefinedIndexCreated(INDEX_NAME, REGION_NAME);
+  }
+
   private void verifyDefinedIndexCreated(String indexName, String regionName) {
     LuceneServiceImpl luceneService = (LuceneServiceImpl) LuceneServiceProvider.get(getCache());
     assertNotNull(luceneService.getDefinedIndex(indexName, regionName));
     assertEquals(1, getCache().getRegionListeners().size());
+  }
+
+  private void verifyDefinedIndexDestroyed() {
+    verifyDefinedIndexDestroyed(INDEX_NAME, REGION_NAME);
   }
 
   private void verifyDefinedIndexDestroyed(String indexName, String regionName) {

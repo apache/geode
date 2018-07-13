@@ -19,13 +19,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-In a distributed system with minimal contention to the concurrent threads reading or updating from the members, you can use rebalancing to dynamically increase or decrease your data and processing capacity.
+In a cluster with minimal contention to the concurrent threads reading or updating from the members, you can use rebalancing to dynamically increase or decrease your data and processing capacity.
 
 <a id="rebalancing_pr_data__section_D3649ADD28DB4FF78C47A3E428C80510"></a>
 Rebalancing is a member operation. It affects all partitioned regions defined by the member, regardless of whether the member hosts data for the regions. The rebalancing operation performs two tasks:
 
 1.  If the configured partition region redundancy is not satisfied, rebalancing does what it can to recover redundancy. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
-2.  Rebalancing moves the partitioned region data buckets between host members as needed to establish the most fair balance of data and behavior across the distributed system.
+2.  Rebalancing moves the partitioned region data buckets between host members as needed to establish the most fair balance of data and behavior across the cluster.
 
 For efficiency, when starting multiple members, trigger the rebalance a single time, after you have added all members.
 
@@ -34,7 +34,7 @@ If you have transactions running in your system, be careful in planning your reb
 
 Kick off a rebalance using one of the following:
 
--   `gfsh` command. First, starting a `gfsh` prompt and connect to the <%=vars.product_name%> distributed system. Then type the following command:
+-   `gfsh` command. First, starting a `gfsh` prompt and connect to the cluster. Then type the following command:
 
     ``` pre
     gfsh>rebalance

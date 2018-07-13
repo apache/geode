@@ -30,6 +30,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
@@ -122,6 +123,13 @@ public abstract class GfshCommand implements CommandMarker {
    */
   public Set<DistributedMember> getAllNormalMembers() {
     return CliUtil.getAllNormalMembers(cache);
+  }
+
+  /**
+   * Get All members >= a specific version, excluding locators
+   */
+  public Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(Version version) {
+    return CliUtil.getNormalMembersWithSameOrNewerVersion(cache, version);
   }
 
   public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {

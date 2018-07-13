@@ -81,9 +81,9 @@ public class CliUtilDUnitTest {
     gfsh.executeAndAssertThat("create region --name=group2Region --group=group2 --type=REPLICATE")
         .statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/commonRegion", 4);
-    locator.waitTillRegionsAreReadyOnServers("/group1Region", 2);
-    locator.waitTillRegionsAreReadyOnServers("/group2Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/commonRegion", 4);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group1Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group2Region", 2);
   }
 
   @Test
@@ -250,9 +250,9 @@ public class CliUtilDUnitTest {
         "create async-event-queue --id=queue --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 2);
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue2", 2);
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue", 4);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue2", 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue", 4);
 
     locator.invoke(() -> {
       members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue1");
