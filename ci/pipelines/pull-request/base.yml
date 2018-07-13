@@ -149,7 +149,7 @@ jobs:
 
     - task: run-distributed-core
       image: docker-geode-build-image
-      tags: [pr-large]
+      tags: [pr_large]
       privileged: true
       timeout: 8h
       config:
@@ -192,7 +192,7 @@ jobs:
               path: geode/ci/scripts/test-archive.sh
     - task: run-distributed-everything-else
       image: docker-geode-build-image
-      tags: [pr-large]
+      tags: [pr_large]
       privileged: true
       timeout: 8h
       config:
