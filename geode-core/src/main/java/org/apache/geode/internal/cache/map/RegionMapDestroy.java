@@ -63,7 +63,6 @@ public class RegionMapDestroy {
   private boolean doPart3;
   private boolean retainForConcurrency;
 
-  private RegionEntry newRegionEntry;
   private RegionEntry regionEntry;
   private RegionEntry tombstoneRegionEntry;
 
@@ -153,7 +152,6 @@ public class RegionMapDestroy {
     doPart3 = false;
     retainForConcurrency = false;
     tombstoneRegionEntry = null;
-    newRegionEntry = null;
   }
 
   private void handleNullRegionEntry() {
@@ -393,17 +391,17 @@ public class RegionMapDestroy {
   }
 
   private void finishEntryNotFound() {
-    newRegionEntry = createNewRegionEntry();
-    synchronized (newRegionEntry) {
-      if (getExistingOrAddEntry(newRegionEntry) != null) {
+    RegionEntry newEntry = createNewRegionEntry();
+    synchronized (newEntry) {
+      if (getExistingOrAddEntry(newEntry) != null) {
         // concurrent change - try again
         retry = true;
         return;
       }
       try {
-        handleEntryNotFound(newRegionEntry);
+        handleEntryNotFound(newEntry);
       } finally {
-        removeEntryOrLeaveTombstone();
+        makeTombstoneOrRemove(newEntry);
       }
     }
   }
@@ -501,11 +499,11 @@ public class RegionMapDestroy {
     return true; // TODO coverage
   }
 
-  private void removeEntryOrLeaveTombstone() {
+  private void makeTombstoneOrRemove(RegionEntry entry) {
     if (destroyUsingTombstone()) {
-      makeNewRegionEntryTombstone();
+      makeTombstone(entry);
     } else {
-      removeNewEntry();
+      remove(entry);
     }
   }
 
@@ -522,10 +520,10 @@ public class RegionMapDestroy {
     return true;
   }
 
-  private void removeNewEntry() {
-    assert newRegionEntry != tombstoneRegionEntry;
-    setValue(newRegionEntry, Token.REMOVED_PHASE2);
-    removeNewRegionEntryFromMap();
+  private void remove(RegionEntry entry) {
+    assert entry != tombstoneRegionEntry;
+    setValue(entry, Token.REMOVED_PHASE2);
+    removeFromMap(entry);
   }
 
   private void updateTombstoneVersionTag() {
@@ -545,15 +543,15 @@ public class RegionMapDestroy {
     opCompleted = true;
   }
 
-  private void makeNewRegionEntryTombstone() {
-    processVersionTag(newRegionEntry);
+  private void makeTombstone(RegionEntry entry) {
+    processVersionTag(entry);
     if (doPart3) {
-      generateAndSetVersionTag();
+      generateAndSetVersionTag(entry);
     }
     recordEvent();
-    makeTombstone(newRegionEntry);
+    makeTombstoneAndIgnoreClear(entry);
     opCompleted = true;
-    // lruEntryCreate(newRegionEntry);
+    // lruEntryCreate(entry);
   }
 
   private void handleEntryNotFound(RegionEntry entryForDistribution) {
@@ -637,38 +635,38 @@ public class RegionMapDestroy {
 
   private void destroyExistingOrAddDestroyedEntryWhileInIndexUpdateMode() {
     // removeRecoveredEntry should be false in this case
-    newRegionEntry = createNewRegionEntry();
-    synchronized (newRegionEntry) {
-      if (handleExistingOrAddNewEntry()) {
+    RegionEntry newEntry = createNewRegionEntry();
+    synchronized (newEntry) {
+      if (destroyExistingOrAddNew(newEntry)) {
         return;
       }
-      destroyNewRegionEntry();
+      destroy(newEntry);
     }
   }
 
-  private void destroyNewRegionEntry() {
-    regionEntry = newRegionEntry;
-    setRegionEntry(newRegionEntry);
+  private void destroy(RegionEntry entry) {
+    regionEntry = entry;
+    setRegionEntry(entry);
     if (isEviction) {
-      evictDestroyNewRegionEntry();
+      evictDestroy(entry);
     } else {
-      normalDestroyNewRegionEntry();
+      normalDestroy(entry);
     }
   }
 
-  private void evictDestroyNewRegionEntry() {
+  private void evictDestroy(RegionEntry entry) {
     cancelDestroy();
-    removeNewRegionEntryFromMap();
+    removeFromMap(entry);
   }
 
-  private void normalDestroyNewRegionEntry() {
+  private void normalDestroy(RegionEntry entry) {
     try {
       // if concurrency checks are enabled, destroy will set the version tag
-      destroyEntryAndDoPart2(newRegionEntry);
+      destroyEntryAndDoPart2(entry);
       // Note no need for LRU work since the entry is destroyed
       // and will be removed when gii completes
     } catch (RegionClearedException rce) {
-      handleRegionClearedException(newRegionEntry);
+      handleRegionClearedException(entry);
     } finally {
       if (opCompleted) {
         return;
@@ -685,30 +683,30 @@ public class RegionMapDestroy {
         // removeNewRegionEntryFromMap if !opCompleted.
         return;
       }
-      removeNewRegionEntryFromMap();
+      removeFromMap(entry);
     }
   }
 
   /**
-   * @return true if existing entry handled; false if new entry added that caller should handle
+   * @return true if existing entry destroyed; false if new entry added that caller should destroy
    */
-  private boolean handleExistingOrAddNewEntry() {
-    RegionEntry existingRegionEntry = getExistingOrAddEntry(newRegionEntry);
-    while (!opCompleted && existingRegionEntry != null) {
-      synchronized (existingRegionEntry) {
-        if (isRemovedPhase2(existingRegionEntry)) {
-          cleanupRemovedPhase2(existingRegionEntry);
-          existingRegionEntry = getExistingOrAddEntry(newRegionEntry);
+  private boolean destroyExistingOrAddNew(RegionEntry newEntry) {
+    RegionEntry existingEntry = getExistingOrAddEntry(newEntry);
+    while (!opCompleted && existingEntry != null) {
+      synchronized (existingEntry) {
+        if (isRemovedPhase2(existingEntry)) {
+          cleanupRemovedPhase2(existingEntry);
+          existingEntry = getExistingOrAddEntry(newEntry);
         } else {
-          setRegionEntry(existingRegionEntry);
-          if (!isEntryReadyForEviction(existingRegionEntry)) {
+          setRegionEntry(existingEntry);
+          if (!isEntryReadyForEviction(existingEntry)) {
             // An entry existed but could not be destroyed by eviction.
             // So return true to let caller know to do no further work.
             cancelDestroy();
             return true;
           }
-          destroyExisting(existingRegionEntry);
-          regionEntry = existingRegionEntry;
+          destroyExisting(existingEntry);
+          regionEntry = existingEntry;
           opCompleted = true;
         }
       }
@@ -830,8 +828,8 @@ public class RegionMapDestroy {
     internalRegion.rescheduleTombstone(regionEntry, getVersionTag(regionEntry));
   }
 
-  private void generateAndSetVersionTag() {
-    internalRegion.generateAndSetVersionTag(event, newRegionEntry);
+  private void generateAndSetVersionTag(RegionEntry entry) {
+    internalRegion.generateAndSetVersionTag(event, entry);
   }
 
   private boolean bridgeWriteBeforeDestroy() {
@@ -965,8 +963,8 @@ public class RegionMapDestroy {
     focusedRegionMap.removeEntry(getKey(), regionEntry, true, event, internalRegion);
   }
 
-  private void removeNewRegionEntryFromMap() {
-    focusedRegionMap.removeEntry(getKey(), newRegionEntry, false);
+  private void removeFromMap(RegionEntry entry) {
+    focusedRegionMap.removeEntry(getKey(), entry, false);
   }
 
   private void lruEntryDestroy(RegionEntry entry) {
@@ -1041,7 +1039,7 @@ public class RegionMapDestroy {
     entry.removePhase2();
   }
 
-  private void makeTombstone(RegionEntry entry) {
+  private void makeTombstoneAndIgnoreClear(RegionEntry entry) {
     try {
       entry.makeTombstone(internalRegion, getVersionTag());
     } catch (RegionClearedException e) {
