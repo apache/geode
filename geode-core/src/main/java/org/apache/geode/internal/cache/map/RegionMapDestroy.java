@@ -484,11 +484,21 @@ public class RegionMapDestroy {
     recordEvent();
     if (!hasVersionStamp(regionEntry)) {
       removePhase2(regionEntry);
-    } else if (isTombstone(regionEntry) && isOriginRemote()) {// TODO coverage
+    } else if (isRemoteDestroyOfTombstone()) {
       rescheduleRegionEntryTombstone();
     }
     lruEntryDestroy(regionEntry);
     opCompleted = true;
+  }
+
+  private boolean isRemoteDestroyOfTombstone() {
+    if (!isTombstone(regionEntry)) {
+      return false;
+    }
+    if (!isOriginRemote()) {
+      return false; // TODO coverage
+    }
+    return true; // TODO coverage
   }
 
   private void removeEntryOrLeaveTombstone() {
