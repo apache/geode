@@ -17,15 +17,19 @@ package org.apache.geode.internal.cache.partitioned.fixed;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DuplicatePrimaryPartitionException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.partition.PartitionNotAvailableException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Assert;
@@ -447,71 +451,61 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
   }
 
-  @Category(FlakyTest.class) // GEODE-567: async actions, waitForCriterion, time sensitive,
-  // non-thread-safe test hook, eats exceptions (partially fixed)
   @Test
-  public void testBug43283() {
+  public void putWhileDataStoresAreBeingCreatedFails() throws Exception {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
 
+    getBlackboard().initBlackboard();
+    //
     member1.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
     member2.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
     member3.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
-    member4.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
     try {
+
+      member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+          null, 0, 0, 12, new QuarterPartitionResolver(), null, false));
 
       FixedPartitionAttributes fpa1 =
           FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
-      List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
-      fpaList.add(fpa1);
       AsyncInvocation inv1 = member1.invokeAsync(
-          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter", fpaList, 0,
+          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+              Arrays.asList(fpa1), 0,
               40, 12, new QuarterPartitionResolver(), null, false));
 
       FixedPartitionAttributes fpa2 =
           FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
-      fpaList.clear();
-      fpaList.add(fpa2);
       AsyncInvocation inv2 = member2.invokeAsync(
-          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter", fpaList, 0,
+          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+              Arrays.asList(fpa2), 0,
               40, 12, new QuarterPartitionResolver(), null, false));
 
       FixedPartitionAttributes fpa3 =
           FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
-      fpaList.clear();
-      fpaList.add(fpa3);
       AsyncInvocation inv3 = member3.invokeAsync(
-          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter", fpaList, 0,
+          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+              Arrays.asList(fpa3), 0,
               40, 12, new QuarterPartitionResolver(), null, false));
 
-      member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          null, 0, 0, 12, new QuarterPartitionResolver(), null, false));
-      try {
-        member4.invoke(() -> FixedPartitioningTestBase.putThorughAccessor_Immediate("Quarter"));
-      } catch (Exception e) {
-        e.printStackTrace();
-        if (!(e.getCause() instanceof PartitionNotAvailableException)) {
-          Assert.fail("exception thrown is not PartitionNotAvailableException", e);
-        }
-      }
-      try {
-        inv1.join();
-        inv2.join();
-        inv3.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        Assert.fail("Unexpected Exception", e);
-      }
+      getBlackboard().waitForGate("waiting", 1, TimeUnit.MINUTES);
+
+      Assertions.assertThatThrownBy(() -> member4
+          .invoke(() -> FixedPartitioningTestBase.putThorughAccessor_Immediate("Quarter")))
+          .hasCauseInstanceOf(PartitionedRegionStorageException.class);
+
+      getBlackboard().signalGate("done");
+
+      inv1.get();
+      inv2.get();
+      inv3.get();
     } finally {
       member1
           .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
       member2
           .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
       member3
-          .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
-      member4
           .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
     }
 
