@@ -62,9 +62,9 @@ public class RegionMapDestroy {
   private boolean opCompleted;
   private boolean doPart3;
   private boolean retainForConcurrency;
+  private boolean wasTombstone;
 
   private RegionEntry regionEntry;
-  private RegionEntry tombstoneRegionEntry;
 
   public RegionMapDestroy(InternalRegion internalRegionArg, FocusedRegionMap focusedRegionMapArg,
       CacheModificationLock cacheModificationLockArg, final EntryEventImpl eventArg,
@@ -106,7 +106,7 @@ public class RegionMapDestroy {
       invokeTestHookForConcurrentOperation();
       logDestroy();
       if (regionEntry == null) {
-        handleNullRegionEntry();
+        handleNullRegionEntry(null);
       } else {
         handleExistingRegionEntry();
       }
@@ -116,9 +116,10 @@ public class RegionMapDestroy {
   private void handleExistingRegionEntry() {
     synchronized (regionEntry) {
       if (tombstoneShouldBeTreatedAsNullEntry()) {
-        tombstoneRegionEntry = regionEntry;
+        wasTombstone = true;
+        RegionEntry tombstone = regionEntry;
         regionEntry = null;
-        handleNullRegionEntry();
+        handleNullRegionEntry(tombstone);
       } else {
         handleExistingRegionEntryWithIndexInUpdateMode();
       }
@@ -150,16 +151,20 @@ public class RegionMapDestroy {
     retry = false;
     opCompleted = false;
     doPart3 = false;
+    wasTombstone = false;
     retainForConcurrency = false;
-    tombstoneRegionEntry = null;
   }
 
-  private void handleNullRegionEntry() {
-    retainForConcurrency = isConcurrentNonTombstoneFromRemoteOnReplicaOrFromServer();
+  private void handleNullRegionEntry(RegionEntry tombstone) {
+    if (tombstone != null) {
+      retainForConcurrency = false;
+    } else {
+      retainForConcurrency = isConcurrentFromRemoteOnReplicaOrFromServer();
+    }
     if (inTokenMode || retainForConcurrency) {
       destroyExistingOrAddDestroyedEntryWithIndexInUpdateMode();
     } else {
-      finishTombstoneOrEntryNotFound();
+      finishTombstoneOrEntryNotFound(tombstone);
     }
   }
 
@@ -188,11 +193,8 @@ public class RegionMapDestroy {
     }
   }
 
-  private boolean isConcurrentNonTombstoneFromRemoteOnReplicaOrFromServer() {
+  private boolean isConcurrentFromRemoteOnReplicaOrFromServer() {
     if (!hasConcurrencyChecks()) {
-      return false;
-    }
-    if (hasTombstone()) {
       return false;
     }
     if (!isReplicaOrFromServer()) {
@@ -225,10 +227,6 @@ public class RegionMapDestroy {
       return true;
     }
     return false;
-  }
-
-  private boolean hasTombstone() {
-    return tombstoneRegionEntry != null;
   }
 
   private void handleExistingRegionEntryWithIndexInUpdateMode() {
@@ -375,7 +373,7 @@ public class RegionMapDestroy {
     incrementRetryStatistic();
   }
 
-  private void finishTombstoneOrEntryNotFound() {
+  private void finishTombstoneOrEntryNotFound(RegionEntry tombstone) {
     if (isEviction) {
       return;
     }
@@ -383,8 +381,8 @@ public class RegionMapDestroy {
     // on the entry and leaves behind a tombstone if concurrencyChecksEnabled.
     // It fixes bug #32467 by propagating the destroy to the server even though
     // the entry isn't in the client
-    if (hasTombstone()) {
-      finishTombstone();
+    if (tombstone != null) {
+      finishTombstone(tombstone);
     } else {
       finishEntryNotFound();
     }
@@ -406,25 +404,25 @@ public class RegionMapDestroy {
     }
   }
 
-  private void finishTombstone() {
+  private void finishTombstone(RegionEntry entry) {
     // Since we sync before testing the region entry to see
     // if it is a tombstone, it is impossible for it to change
     // to something else.
-    assert isTombstone(tombstoneRegionEntry);
+    assert isTombstone(entry);
     // tombstoneRegionEntry came from doing a get on the map.
     // So at this point we know it is still in the map.
     try {
-      handleEntryNotFound(tombstoneRegionEntry);
+      handleEntryNotFound(entry);
     } finally {
-      handleTombstoneVersionTag();
+      handleVersionTag(entry);
     }
   }
 
-  private void handleTombstoneVersionTag() {
+  private void handleVersionTag(RegionEntry entry) {
     if (noVersionTag()) {
-      setVersionTag();
+      setVersionTag(entry);
     } else {
-      updateTombstoneVersionTag();
+      updateVersionTag(entry);
     }
   }
 
@@ -521,24 +519,23 @@ public class RegionMapDestroy {
   }
 
   private void remove(RegionEntry entry) {
-    assert entry != tombstoneRegionEntry;
     setValue(entry, Token.REMOVED_PHASE2);
     removeFromMap(entry);
   }
 
-  private void updateTombstoneVersionTag() {
-    processVersionTag(tombstoneRegionEntry);
+  private void updateVersionTag(RegionEntry entry) {
+    processVersionTag(entry);
     // This code used to call generateAndSetVersionTag if doPart3 was true.
     // But none of the code that calls this method ever sets doPart3 to true.
     assert !doPart3;
     // This is not conflict, we need to persist the tombstone again with new
     // version tag
-    setValue(tombstoneRegionEntry, Token.TOMBSTONE);
+    setValue(entry, Token.TOMBSTONE);
     recordEvent();
-    rescheduleTombstone();
+    rescheduleTombstone(entry);
     // TODO is it correct that the following code always says "true" for conflictWithClear?
     // Seems like it should only be true if we caught RegionClearedException above.
-    doDestroyPart2(tombstoneRegionEntry, true);
+    doDestroyPart2(entry, true);
     doPart3 = false;
     opCompleted = true;
   }
@@ -671,7 +668,7 @@ public class RegionMapDestroy {
       if (opCompleted) {
         return;
       }
-      if (hasTombstone()) {
+      if (wasTombstone) {
         // TODO: why leave the newRegionEntry in the map
         // if we originally had a tombstone?
         // If we get this far with adding newRegionEntry
@@ -818,8 +815,8 @@ public class RegionMapDestroy {
     internalRegion.basicDestroyBeforeRemoval(entry, event);
   }
 
-  private void rescheduleTombstone() {
-    internalRegion.rescheduleTombstone(tombstoneRegionEntry, getVersionTag());
+  private void rescheduleTombstone(RegionEntry entry) {
+    internalRegion.rescheduleTombstone(entry, getVersionTag());
   }
 
   private void rescheduleRegionEntryTombstone() {
@@ -926,8 +923,8 @@ public class RegionMapDestroy {
     return event.getVersionTag();
   }
 
-  private void setVersionTag() {
-    event.setVersionTag(createVersionTagFromStamp(getVersionStamp(tombstoneRegionEntry)));
+  private void setVersionTag(RegionEntry entry) {
+    event.setVersionTag(createVersionTagFromStamp(getVersionStamp(entry)));
   }
 
   private void setRegionEntry(RegionEntry entry) {
