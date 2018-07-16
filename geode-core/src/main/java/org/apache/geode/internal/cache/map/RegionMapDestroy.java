@@ -117,7 +117,7 @@ public class RegionMapDestroy {
         wasTombstone = true;
         handleNullRegionEntry(existing);
       } else {
-        handleExistingWithIndexInUpdateMode(existing);
+        destroyExistingWithIndexInUpdateMode(existing);
       }
     }
   }
@@ -227,16 +227,16 @@ public class RegionMapDestroy {
     return false;
   }
 
-  private void handleExistingWithIndexInUpdateMode(RegionEntry existing) {
-    runWithIndexInUpdateMode(() -> handleExistingWhileInUpdateMode(existing));
+  private void destroyExistingWithIndexInUpdateMode(RegionEntry existing) {
+    runWithIndexInUpdateMode(() -> destroyExistingWhileInUpdateMode(existing));
     // No need to call lruUpdateCallback since the only lru action
     // we may have taken was lruEntryDestroy. This fixes bug 31759.
   }
 
-  private void handleExistingWhileInUpdateMode(RegionEntry existing) {
+  private void destroyExistingWhileInUpdateMode(RegionEntry existing) {
     checkRegionReadiness();
     if (isNotRemovedOrNeedTombstone(existing)) {
-      destroyExistingEntry(existing);
+      destroyExistingFromGetEntry(existing);
     } else {
       handleEntryAlreadyRemoved(existing);
     }
@@ -430,7 +430,7 @@ public class RegionMapDestroy {
     }
   }
 
-  private void destroyExistingEntry(RegionEntry existing) {
+  private void destroyExistingFromGetEntry(RegionEntry existing) {
     if (!destroyShouldContinue(existing)) {
       return;
     }
@@ -440,7 +440,7 @@ public class RegionMapDestroy {
       if (opCompleted) {
         handleCompletedDestroy(existing);
       } else {
-        handleIncompleteDestroyExistingEntry(existing);
+        handleIncompleteDestroy(existing);
       }
     } catch (RegionClearedException rce) { // TODO coverage
       recordEvent();
@@ -459,7 +459,7 @@ public class RegionMapDestroy {
     // the entry in the map until after distribution occurs so that other
     // threads performing a create on this entry wait until the destroy
     // distribution is finished.
-    destroyBeforeRemoval(existing);
+    distributeBucketDestroy(existing);
     if (!inTokenMode) {
       if (!hasVersionStamp(existing)) {
         removePhase2(existing);
@@ -470,7 +470,7 @@ public class RegionMapDestroy {
     lruEntryDestroy(existing);
   }
 
-  private void handleIncompleteDestroyExistingEntry(RegionEntry entry) {
+  private void handleIncompleteDestroy(RegionEntry entry) {
     if (inTokenMode) {
       return;
     }
@@ -632,16 +632,16 @@ public class RegionMapDestroy {
       if (destroyExistingOrAddNew(newEntry)) {
         return;
       }
-      destroy(newEntry);
+      destroyNewEntry(newEntry);
     }
   }
 
-  private void destroy(RegionEntry entry) {
-    setRegionEntry(entry);
+  private void destroyNewEntry(RegionEntry newEntry) {
+    setRegionEntry(newEntry);
     if (isEviction) {
-      evictDestroy(entry);
+      evictDestroy(newEntry);
     } else {
-      normalDestroy(entry);
+      normalDestroy(newEntry);
     }
   }
 
@@ -695,7 +695,7 @@ public class RegionMapDestroy {
             cancelDestroy();
             return true;
           }
-          destroyExisting(existingEntry);
+          destroyExistingFromPutIfAbsent(existingEntry);
           opCompleted = true;
         }
       }
@@ -703,7 +703,7 @@ public class RegionMapDestroy {
     return opCompleted;
   }
 
-  private void destroyExisting(RegionEntry existing) {
+  private void destroyExistingFromPutIfAbsent(RegionEntry existing) {
     boolean conflictWithClear = false;
     setRegionEntry(existing);
     try {
@@ -714,10 +714,17 @@ public class RegionMapDestroy {
         return;
       }
       if (retainForConcurrency) {
+        // TODO this seems like a possible bug that would result in destroys
+        // not happening on secondary buckets. It would only happen when an
+        // existing entry is returned by putIfAbsent which is very rare.
+        // In most cases the initial getEntry call would have found it.
+        // But when this does happen on a bucket we need to make sure and
+        // distribute that destroy to secondaries. I see no reason why we
+        // test "retainForConcurrency".
         // TODO coverage: this will only happen if we find an existing entry after the initial
         // getEntry returned null.
         // So we need putIfAbsent to return an existing entry when getEntry returned null.
-        destroyBeforeRemoval(existing);
+        distributeBucketDestroy(existing);
       }
     } catch (RegionClearedException rce) {
       conflictWithClear = true;
@@ -802,7 +809,7 @@ public class RegionMapDestroy {
     internalRegion.recordEvent(event);
   }
 
-  private void destroyBeforeRemoval(RegionEntry entry) {
+  private void distributeBucketDestroy(RegionEntry entry) {
     internalRegion.basicDestroyBeforeRemoval(entry, event);
   }
 
