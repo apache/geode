@@ -296,7 +296,10 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   /**
-   * gracefully stop the member inside this vm
+   * gracefully stop the member/client inside this vm
+   *
+   * if this vm is a server/locator, it stops them
+   * if this vm is a client, it closes the client cache.
    *
    * @param index vm index
    */
