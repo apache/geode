@@ -14,21 +14,17 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import static org.apache.geode.management.ConcurrencyTestHelper.runRunnables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CancellationException;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -124,37 +120,12 @@ public class ManagementAdapterTest {
     };
 
     List<Runnable> runnables = Arrays.asList(r1, r2, r3);
+    final List<Throwable> exceptions = runRunnables(runnables, 2);
 
-    final int numThreads = runnables.size();
-    final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
-    final ExecutorService threadPool = Executors.newFixedThreadPool(numThreads);
-    try {
-      final CountDownLatch allExecutorThreadsReady = new CountDownLatch(numThreads);
-      final CountDownLatch afterInitBlocker = new CountDownLatch(1);
-      final CountDownLatch allDone = new CountDownLatch(numThreads);
-      for (final Runnable submittedTestRunnable : runnables) {
-        threadPool.submit(() -> {
-          allExecutorThreadsReady.countDown();
-          try {
-            afterInitBlocker.await();
-            submittedTestRunnable.run();
-          } catch (final Throwable e) {
-            exceptions.add(e);
-          } finally {
-            allDone.countDown();
-          }
-        });
-      }
-      // wait until all threads are ready
-      allExecutorThreadsReady.await(runnables.size() * 10, TimeUnit.MILLISECONDS);
-      // start all test runners
-      afterInitBlocker.countDown();
-      // wait until all done or timeout
-      allDone.await(2, TimeUnit.SECONDS);
-    } finally {
-      threadPool.shutdownNow();
-    }
-    assertThat(exceptions).as("failed with exception(s)" + exceptions).isEmpty();
+    assertThat(exceptions.get(0)).isInstanceOf(CancellationException.class);
+    assertThat(exceptions.get(1)).isInstanceOf(CancellationException.class);
+    assertThat(exceptions.get(2)).isInstanceOf(CancellationException.class);
+
     assertThat(race).as("is service to be null due to race").isEqualTo(false);
   }
 }
