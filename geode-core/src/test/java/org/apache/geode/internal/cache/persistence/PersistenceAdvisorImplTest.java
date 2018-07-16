@@ -92,12 +92,21 @@ public class PersistenceAdvisorImplTest {
    */
   @Test
   public void getMembersToWaitForRemovesAllMembersWhenDiskStoreListedTwice() {
-    getMembersToWaitForRemovesAllMembers(false);
+    DiskStoreID diskStoreID = getNewDiskStoreID();
+    Set<PersistentMemberID> previouslyOnlineMembers = new HashSet<>();
+    previouslyOnlineMembers.add(createPersistentMemberID(diskStoreID, TIME_STAMP_1));
+    previouslyOnlineMembers.add(createPersistentMemberID(diskStoreID, TIME_STAMP_3));
+
+    getMembersToWaitForRemovesAllMembers(diskStoreID, previouslyOnlineMembers);
   }
 
   @Test
-  public void getMembersToWaitForRemovesAllMembersWhenDiskStoreListedTwiceAndInitializingIDIsNull() {
-    getMembersToWaitForRemovesAllMembers(true);
+  public void getMembersToWaitForDoesNotWaitForMemberWhoIsNotInitialized() {
+    DiskStoreID diskStoreID = getNewDiskStoreID();
+    Set<PersistentMemberID> previouslyOnlineMembers = new HashSet<>();
+    previouslyOnlineMembers.add(createPersistentMemberID(diskStoreID, TIME_STAMP_1));
+
+    getMembersToWaitForRemovesAllMembers(diskStoreID, previouslyOnlineMembers);
   }
 
   @Test
@@ -176,31 +185,17 @@ public class PersistenceAdvisorImplTest {
     assertThat(aSet).containsExactly(id_1, id_3, id_6);
   }
 
-  private class PersistentMemberIDComparator implements Comparator<PersistentMemberID> {
-    @Override
-    public int compare(PersistentMemberID id1, PersistentMemberID id2) {
-      return id1.getName().compareTo(id2.getName());
-    }
-  }
-
-  private void getMembersToWaitForRemovesAllMembers(boolean initializingIdIsNull) {
-    DiskStoreID diskStoreID = getNewDiskStoreID();
+  private void getMembersToWaitForRemovesAllMembers(DiskStoreID diskStoreID,
+      Set<PersistentMemberID> previouslyOnlineMembers) {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-
-    Set<PersistentMemberID> previouslyOnlineMembers = new HashSet<>();
     Map<InternalDistributedMember, PersistentMemberState> stateOnPeers = new HashMap<>();
     Map<InternalDistributedMember, PersistentMemberID> persistentIds = new HashMap<>();
     Map<InternalDistributedMember, PersistentMemberID> initializingIds = new HashMap<>();
     Map<InternalDistributedMember, DiskStoreID> diskStoreIds = new HashMap<>();
 
-    previouslyOnlineMembers.add(createPersistentMemberID(diskStoreID, TIME_STAMP_1));
-    previouslyOnlineMembers.add(createPersistentMemberID(diskStoreID, TIME_STAMP_3));
-
     stateOnPeers.put(member, PersistentMemberState.ONLINE);
     persistentIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_2));
-    if (!initializingIdIsNull) {
-      initializingIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_3));
-    }
+    initializingIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_3));
     diskStoreIds.put(member, diskStoreID);
 
     when(cacheDistributionAdvisor.adviseGeneric()).thenReturn(createMemberSet(member));
@@ -216,6 +211,13 @@ public class PersistenceAdvisorImplTest {
         persistenceAdvisorImpl.getMembersToWaitFor(previouslyOnlineMembers, new HashSet<>());
 
     assertThat(membersToWaitFor).isEmpty();
+  }
+
+  private class PersistentMemberIDComparator implements Comparator<PersistentMemberID> {
+    @Override
+    public int compare(PersistentMemberID id1, PersistentMemberID id2) {
+      return id1.getName().compareTo(id2.getName());
+    }
   }
 
   private Set<InternalDistributedMember> createMemberSet(InternalDistributedMember... member) {
