@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireIOException;

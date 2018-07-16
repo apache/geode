@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;

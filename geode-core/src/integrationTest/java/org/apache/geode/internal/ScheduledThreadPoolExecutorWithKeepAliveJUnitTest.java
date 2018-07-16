@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 
 public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;

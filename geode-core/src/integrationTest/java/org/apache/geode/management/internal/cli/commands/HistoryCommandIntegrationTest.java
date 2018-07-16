@@ -23,15 +23,12 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@Category(IntegrationTest.class)
 public class HistoryCommandIntegrationTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

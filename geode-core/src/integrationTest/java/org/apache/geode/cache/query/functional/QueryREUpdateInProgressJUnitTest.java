@@ -49,8 +49,8 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
  *
  */
 @Category({OQLIndexTest.class}) // GEODE-1059: uses
-                                                 // PRQueryHelper which
-                                                 // launches
+                                // PRQueryHelper which
+                                // launches
 // dunit vms in IntegrationTest
 public class QueryREUpdateInProgressJUnitTest {
 

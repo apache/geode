@@ -20,13 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category(IntegrationTest.class)
 public class EchoCommandIntegrationTest {
 
   @ClassRule

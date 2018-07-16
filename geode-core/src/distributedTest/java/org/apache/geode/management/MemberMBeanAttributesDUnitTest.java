@@ -23,7 +23,6 @@ import static org.junit.Assert.assertFalse;
 import java.lang.management.ManagementFactory;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
