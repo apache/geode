@@ -42,10 +42,9 @@ public class DebugCommandIntegrationTest {
 
   @Test
   public void debugWithIncorrectValues() {
-    String errorMsg = "Invalid state value : true. It should be \"ON\" or \"OFF\"";
     gfsh.executeAndAssertThat("debug --state=true").statusIsError()
-        .containsOutput(errorMsg);
+        .containsOutput("Invalid state value : true. It should be \"ON\" or \"OFF\"");
     gfsh.executeAndAssertThat("debug --state=0").statusIsError()
-        .containsOutput(errorMsg);
+        .containsOutput("Invalid state value : 0. It should be \"ON\" or \"OFF\"");
   }
 }
