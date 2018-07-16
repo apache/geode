@@ -22,8 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URLEncoder;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -76,58 +75,58 @@ public class RestSecurityPostProcessorTest {
   @Test
   public void getRegionKey() throws Exception {
     // Test a single key
-    JSONObject jsonObject =
+    JsonNode jsonNode =
         assertResponse(restClient.doGet("/customers/1", "dataReader", "1234567"))
             .hasStatusCode(200)
             .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
             .getJsonObject();
 
-    assertEquals("*********", jsonObject.getString("socialSecurityNumber"));
-    assertEquals(1L, jsonObject.getLong("customerId"));
+    assertEquals("*********", jsonNode.get("socialSecurityNumber").asText());
+    assertEquals(1L, jsonNode.get("customerId").asLong());
 
     // Try with super-user
-    jsonObject =
+    jsonNode =
         assertResponse(restClient.doGet("/customers/1", "super-user", "1234567"))
             .hasStatusCode(200)
             .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
             .getJsonObject();
-    assertEquals("555555555", jsonObject.getString("socialSecurityNumber"));
-    assertEquals(1L, jsonObject.getLong("customerId"));
+    assertEquals("555555555", jsonNode.get("socialSecurityNumber").asText());
+    assertEquals(1L, jsonNode.get("customerId").asLong());
   }
 
   // Test multiple keys
   @Test
   public void getMultipleRegionKeys() throws Exception {
-    JSONObject jsonObject =
+    JsonNode jsonNode =
         assertResponse(restClient.doGet("/customers/1,3", "dataReader", "1234567"))
             .hasStatusCode(200)
             .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
             .getJsonObject();
 
-    JSONArray jsonArray = jsonObject.getJSONArray("customers");
-    final int length = jsonArray.length();
+    JsonNode customers = jsonNode.get("customers");
+    final int length = customers.size();
     assertEquals(2, length);
-    JSONObject customer = jsonArray.getJSONObject(0);
-    assertEquals("*********", customer.getString("socialSecurityNumber"));
-    assertEquals(1, customer.getLong("customerId"));
-    customer = jsonArray.getJSONObject(1);
-    assertEquals("*********", customer.getString("socialSecurityNumber"));
-    assertEquals(3, customer.getLong("customerId"));
+    JsonNode customer = customers.get(0);
+    assertEquals("*********", customer.get("socialSecurityNumber").asText());
+    assertEquals(1, customer.get("customerId").asLong());
+    customer = customers.get(1);
+    assertEquals("*********", customer.get("socialSecurityNumber").asText());
+    assertEquals(3, customer.get("customerId").asLong());
   }
 
   @Test
   public void getRegion() throws Exception {
-    JSONObject jsonObject = assertResponse(restClient.doGet("/customers", "dataReader", "1234567"))
+    JsonNode jsonNode = assertResponse(restClient.doGet("/customers", "dataReader", "1234567"))
         .hasStatusCode(200)
         .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
         .getJsonObject();
 
-    JSONArray jsonArray = jsonObject.getJSONArray("customers");
-    final int length = jsonArray.length();
+    JsonNode customers = jsonNode.get("customers");
+    final int length = customers.size();
     for (int index = 0; index < length; ++index) {
-      JSONObject customer = jsonArray.getJSONObject(index);
-      assertEquals("*********", customer.getString("socialSecurityNumber"));
-      assertEquals((long) index + 1, customer.getLong("customerId"));
+      JsonNode customer = customers.get(index);
+      assertEquals("*********", customer.get("socialSecurityNumber").asText());
+      assertEquals((long) index + 1, customer.get("customerId").asLong());
     }
   }
 
@@ -135,16 +134,16 @@ public class RestSecurityPostProcessorTest {
   public void adhocQuery() throws Exception {
     String query = "/queries/adhoc?q="
         + URLEncoder.encode("SELECT * FROM /customers order by customerId", "UTF-8");
-    JSONArray jsonArray = assertResponse(restClient.doGet(query, "dataReader", "1234567"))
+    JsonNode jsonArray = assertResponse(restClient.doGet(query, "dataReader", "1234567"))
         .hasStatusCode(200)
         .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
-        .getJsonArray();
+        .getJsonObject();
 
-    final int length = jsonArray.length();
+    final int length = jsonArray.size();
     for (int index = 0; index < length; ++index) {
-      JSONObject customer = jsonArray.getJSONObject(index);
-      assertEquals("*********", customer.getString("socialSecurityNumber"));
-      assertEquals((long) index + 1, customer.getLong("customerId"));
+      JsonNode customer = jsonArray.get(index);
+      assertEquals("*********", customer.get("socialSecurityNumber").asText());
+      assertEquals((long) index + 1, customer.get("customerId").asLong());
     }
   }
 
@@ -166,15 +165,15 @@ public class RestSecurityPostProcessorTest {
         .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
     // Execute the query
-    JSONArray jsonArray =
+    JsonNode jsonArray =
         assertResponse(restClient.doPost("/queries/selectCustomer", "dataReader", "1234567",
             "{" + "\"@type\": \"int\"," + "\"@value\": 1" + "}"))
                 .hasStatusCode(200)
-                .getJsonArray();
+                .getJsonObject();
 
-    assertTrue(jsonArray.length() == 1);
-    JSONObject customer = jsonArray.getJSONObject(0);
-    assertEquals("*********", customer.getString("socialSecurityNumber"));
-    assertEquals(1L, customer.getLong("customerId"));
+    assertTrue(jsonArray.size() == 1);
+    JsonNode customer = jsonArray.get(0);
+    assertEquals("*********", customer.get("socialSecurityNumber").asText());
+    assertEquals(1L, customer.get("customerId").asLong());
   }
 }

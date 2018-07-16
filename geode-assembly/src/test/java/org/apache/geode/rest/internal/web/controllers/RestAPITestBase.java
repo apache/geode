@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_RES
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -40,7 +43,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -192,8 +194,17 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
       response.close();
       System.out.println("Response : " + httpResponseString);
       // verify function execution result
-      JSONArray resultArray = new JSONArray(httpResponseString);
-      assertEquals(expectedServerResponses, resultArray.length());
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode json = mapper.readTree(httpResponseString);
+
+      if (json.isArray()) {
+        assertEquals(expectedServerResponses, json.size());
+      } else {
+        assertThat(expectedServerResponses)
+            .as("Did not receive an expected JSON array. Instead, received a %s type.",
+                json.getNodeType().name())
+            .isEqualTo(0);
+      }
     } catch (Exception e) {
       // fail("exception", e);
     }

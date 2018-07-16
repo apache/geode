@@ -19,7 +19,7 @@ import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertRespons
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,19 +53,19 @@ public class SwaggerVerificationIntegrationTest {
     assertResponse(client.get("/geode/swagger-ui.html")).hasStatusCode(200);
 
     // Check the JSON
-    JSONObject json =
+    JsonNode json =
         assertResponse(client.get("/geode/v2/api-docs")).hasStatusCode(200).getJsonObject();
-    assertThat(json.get("swagger"), is("2.0"));
+    assertThat(json.get("swagger").asText(), is("2.0"));
 
-    JSONObject info = json.getJSONObject("info");
-    assertThat(info.getString("description"),
+    JsonNode info = json.get("info");
+    assertThat(info.get("description").asText(),
         is(LocalizedStrings.SwaggerConfig_DESCRIPTOR.toLocalizedString()));
-    assertThat(info.getString("title"),
+    assertThat(info.get("title").asText(),
         is(LocalizedStrings.SwaggerConfig_VENDOR_PRODUCT_LINE.toLocalizedString()));
 
-    JSONObject license = info.getJSONObject("license");
-    assertThat(license.getString("name"), is("Apache License, version 2.0"));
-    assertThat(license.getString("url"), is("http://www.apache.org/licenses/"));
+    JsonNode license = info.get("license");
+    assertThat(license.get("name").asText(), is("Apache License, version 2.0"));
+    assertThat(license.get("url").asText(), is("http://www.apache.org/licenses/"));
 
   }
 }

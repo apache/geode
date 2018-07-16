@@ -31,9 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -688,13 +687,11 @@ public class RestQueryAndFunctionIntegrationTest {
     throw new AssertionError(message, cause);
   }
 
-  private void validateGetAllResult(int index, ResponseEntity<String> result) {
+  private void validateGetAllResult(int index, ResponseEntity<String> result) throws Exception {
     if (index == 27 || index == 29 || index == 30) {
-      try {
-        new JSONObject(result.getBody()).getJSONArray("customers");
-      } catch (JSONException e) {
-        caught("Caught JSONException in validateGetAllResult :: " + e.getMessage(), e);
-      }
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode json = mapper.readTree(result.getBody());
+      assertTrue(json.get("customers").isArray());
     }
   }
 
@@ -716,25 +713,26 @@ public class RestQueryAndFunctionIntegrationTest {
       if (index == 45) {
 
         try {
-          JSONObject jsonObject = new JSONObject(result.getBody());
-          JSONArray jsonArray = new JSONArray(jsonObject.get("queries").toString());
+          ObjectMapper mapper = new ObjectMapper();
+          JsonNode jsonObject = mapper.readTree(result.getBody());
+          JsonNode queries = jsonObject.get("queries");
 
-          for (int i = 0; i < jsonArray.length(); i++) {
+          for (int i = 0; i < queries.size(); i++) {
             assertTrue("PREPARE_PARAMETERIZED_QUERY: function IDs are not matched",
-                queryResult.getResult().contains(jsonArray.getJSONObject(i).getString("id")));
+                queryResult.getResult().contains(queries.get(i).get("id").asText()));
           }
-        } catch (JSONException e) {
-          caught("Caught JSONException in validateQueryResult :: " + e.getMessage(), e);
+        } catch (Exception e) {
+          caught("Caught Exception in validateQueryResult :: " + e.getMessage(), e);
         }
       } else if (index == 46 || index == 47 || index == 48) {
 
-        JSONArray jsonArray;
         try {
-          jsonArray = new JSONArray(result.getBody());
+          ObjectMapper mapper = new ObjectMapper();
+          JsonNode json = mapper.readTree(result.getBody());
           // verify query result size
-          assertEquals(queryResult.getResultSize(), jsonArray.length());
-        } catch (JSONException e) {
-          caught("Caught JSONException in validateQueryResult :: " + e.getMessage(), e);
+          assertEquals(queryResult.getResultSize(), json.size());
+        } catch (Exception e) {
+          caught("Caught Exception in validateQueryResult :: " + e.getMessage(), e);
         }
       }
     }
