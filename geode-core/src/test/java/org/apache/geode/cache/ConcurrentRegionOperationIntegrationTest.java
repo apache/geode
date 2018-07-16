@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -59,12 +58,14 @@ public class ConcurrentRegionOperationIntegrationTest {
   }
 
   @Test
-  @Ignore("GEODE-5292: Test is failing in CI")
   public void replaceWithClearAndDestroy() throws RegionClearedException {
     Region<Integer, String> region = createRegion();
 
     region.put(1, "value");
     region.put(2, "value");
+
+    DiskStore diskStore = cache.findDiskStore(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);
+    diskStore.flush();
 
     ConcurrentMapWithReusableEntries<Object, Object> underlyingMap =
         ((LocalRegion) region).getRegionMap().getCustomEntryConcurrentHashMap();
@@ -79,12 +80,12 @@ public class ConcurrentRegionOperationIntegrationTest {
       // If we invoke clear in the replace thread, it can get locks which it will not
       // be able to get in a separate thread.
       CompletableFuture.runAsync(region::clear).get();
-      throw new RegionDestroyedException("Fake Exception", "/region");
+      CompletableFuture.runAsync(region::destroyRegion).get();
+      return invocation.callRealMethod();
     }).when(spyEntry).setValueWithTombstoneCheck(any(), any());
 
     assertThatExceptionOfType(RegionDestroyedException.class)
-        .isThrownBy(() -> region.replace(1, "value", "newvalue"))
-        .withMessageContaining("Fake Exception");
+        .isThrownBy(() -> region.replace(1, "value", "newvalue"));
 
     Awaitility.await().pollDelay(0, TimeUnit.MICROSECONDS)
         .pollInterval(1, TimeUnit.MILLISECONDS)
