@@ -55,7 +55,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the functionality of the {@linkplain org.apache.geode.internal.admin internal
@@ -118,7 +117,6 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     assertThat(agent.isConnected()).isFalse();
   }
 
-  @Category(FlakyTest.class) // GEODE-1688
   @Test
   public void testApplications() throws Exception {
     await().atMost(1, MINUTES)

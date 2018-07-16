@@ -59,7 +59,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests the reliable messaging functionality - Client sends a periodic ack to the primary server
@@ -111,7 +110,6 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
    * If the primary fails before receiving an ack from the messages it delivered then it should send
    * an ack to the new primary so that new primary can sends QRM to other redundant servers.
    */
-  @Category(FlakyTest.class) // GEODE-694: async queuing
   @Test
   public void testPeriodicAckSendByClientPrimaryFailover() throws Exception {
     IgnoredException.addIgnoredException("java.net.ConnectException");

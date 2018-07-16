@@ -76,7 +76,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 @Category({DistributedTest.class, FunctionServiceTest.class})
@@ -545,7 +544,6 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     executeFunction_SendException();
   }
 
-  @Category(FlakyTest.class) // GEODE-632: random ports, eats exceptions
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_NoLastResult() {
     VM empty1 = replicate3;

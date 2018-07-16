@@ -71,6 +71,8 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -81,7 +83,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -500,13 +501,14 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
           str.append(line);
         }
 
-        JSONObject jObject = new JSONObject(str.toString());
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode json = mapper.readTree(str.toString());
 
-        assertEquals(jObject.get("id"), 101);
-        assertEquals(jObject.get("firstName"), "Mithali");
-        assertEquals(jObject.get("middleName"), "Dorai");
-        assertEquals(jObject.get("lastName"), "Raj");
-        assertEquals(jObject.get("gender"), Gender.FEMALE.name());
+        assertEquals(json.get("id").asInt(), 101);
+        assertEquals(json.get("firstName").asText(), "Mithali");
+        assertEquals(json.get("middleName").asText(), "Dorai");
+        assertEquals(json.get("lastName").asText(), "Raj");
+        assertEquals(json.get("gender").asText(), Gender.FEMALE.name());
       }
 
     } catch (Exception e) {

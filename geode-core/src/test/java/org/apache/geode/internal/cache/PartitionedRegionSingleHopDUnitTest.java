@@ -86,7 +86,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category({DistributedTest.class, ClientServerTest.class})
 public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
@@ -652,8 +651,6 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     assertFalse(cms.isRefreshMetadataTestOnly());
   }
 
-  @Category(FlakyTest.class) // GEODE-853: random ports, pause sleeps, time sensitive, 5 second
-                             // thread sleeps
   @Test
   public void testServerLocationRemovalThroughPing() {
     Integer port0 =
@@ -758,7 +755,6 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
         .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
 
-  @Category(FlakyTest.class) // GEODE-1763
   @Test
   public void testMetadataIsSameOnAllServersAndClients() {
     Integer port0 =

@@ -29,7 +29,6 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 /**
@@ -109,7 +108,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     WANTestBase.checkSenderMBean(managing, getTestMethodName() + "_PR", false);
   }
 
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-1603
+  @Category({WanTest.class})
   @Test
   public void testReceiverMBean() throws Exception {
 
@@ -261,7 +260,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     });
   }
 
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-1629
+  @Category({WanTest.class})
   @Test
   public void testMBeanCallbackInRemoteCluster() throws Exception {
 

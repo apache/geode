@@ -68,7 +68,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
@@ -1286,8 +1285,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * In this test, GII thread will get the GIILock before tombstone GC, so tombstone GC should wait
    * for all GIIs to finish
    */
-  @Category(FlakyTest.class) // GEODE-633: SLOW_DISTRIBUTION_MS, non-thread safe test hook, async
-                             // actions, time sensitive, waitForCriterion, thread joins, forceGC
   @Test
   public void testTombstoneGCInMiddleOfGII() throws Throwable {
     prepareForEachTest();
@@ -1427,7 +1424,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * but igored at P. The deltaGII should send nothing to R since the RVVs are the same. So after
    * GII, P and R will have different tombstone number. But P's tombstones should be expired.
    */
-  @Category(FlakyTest.class)
   @Test
   public void testExpiredTombstoneSkippedAtProviderOnly() throws Throwable {
     prepareForEachTest();
@@ -1643,8 +1639,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * for both members. R off line, then run P7. Restart R. It will trigger deltaGII to chunk entry
    * P7(key1). After that, do clear(). Make sure R should not contain key1 after GII.
    */
-  @Category(FlakyTest.class) // GEODE-1068: time sensitive, SLOW_DISTRIBUTION_MS, waitForCriterion,
-                             // possible thread unsafe test hooks, async actions, depends on stats
   @Test
   public void testClearAfterChunkEntries() throws Throwable {
     prepareForEachTest();
@@ -1834,7 +1828,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * P7,R6(3-6), R's RVV is P6,R6, RVVGC are both P4,R0 By changing MAX_UNFINISHED_OPERATIONS to be
    * 1, 2. It should be fullGII then deltaGII.
    */
-  @Category(FlakyTest.class) // GEODE-686: time sensitive, SLOW_DISTRIBUTION_MS, forceGC
   @Test
   public void testFullGIITriggeredByTooManyUnfinishedOps() throws Throwable {
     prepareForEachTest();
@@ -2012,8 +2005,6 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * correct RVV on the GII recipient at the end.
    *
    */
-  @Category(FlakyTest.class) // GEODE-1137: orphaned AsyncInvocations, time sensitive, GC,
-                             // waitForCriterion, thread unsafe test hooks/observers, expiration
   @Test
   public void testTombstoneGCDuringFullGII() throws Throwable {
     prepareForEachTest();

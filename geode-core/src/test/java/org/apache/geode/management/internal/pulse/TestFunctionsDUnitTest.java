@@ -34,12 +34,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This is for testing running functions
- *
- *
  */
 @Category(DistributedTest.class)
 public class TestFunctionsDUnitTest extends ManagementTestBase {
@@ -79,7 +76,6 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     return Integer.valueOf(bean.getNumRunningFunctions());
   }
 
-  @Category(FlakyTest.class) // GEODE-2072: waitForCriterion times out
   @Test
   public void testNumOfRunningFunctions() throws Exception {
     initManagement(false);

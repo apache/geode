@@ -34,7 +34,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -128,7 +127,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
   /**
    * Enable persistence for the GatewaySender but not the region
    */
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-1670
+  @Category({WanTest.class})
   @Test
   public void testPartitionedRegionWithPersistentGatewaySender() {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));

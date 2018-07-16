@@ -62,7 +62,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
@@ -749,8 +748,6 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
    *
    * TODO: this test runs too long! Shorten run time. 1m 40s on new Mac.
    */
-  @Category(FlakyTest.class) // GEODE-690: async queuing, time sensitive, expiration,
-                             // waitForCriterion, joins
   @Test
   public void testNPEDueToHARegionQueueEscapeInConstructor() {
     // changing EXPIRY_TIME to 5 doesn't change how long the test runs!

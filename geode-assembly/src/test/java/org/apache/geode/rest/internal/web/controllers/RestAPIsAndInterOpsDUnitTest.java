@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -44,8 +46,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -307,11 +307,12 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
     // Check whether received response contains expected query IDs.
 
-    JSONObject jsonObject = new JSONObject(sb.toString());
-    JSONArray jsonArray = jsonObject.getJSONArray("queries");
-    for (int i = 0; i < jsonArray.length(); i++) {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonObject = mapper.readTree(sb.toString());
+    JsonNode queries = jsonObject.get("queries");
+    for (int i = 0; i < queries.size(); i++) {
       assertThat(Arrays.asList(PARAM_QUERY_IDS_ARRAY))
-          .contains(jsonArray.getJSONObject(i).getString("id"));
+          .contains(queries.get(i).get("id").asText());
     }
 
     // Query TestCase-3 :: Run the specified named query passing in scalar values for query
@@ -444,10 +445,11 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     // validate the status code
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
 
-    JSONArray jsonArray = new JSONArray(sb.toString());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonArray = mapper.readTree(sb.toString());
 
     // verify total number of REST service endpoints in DS
-    assertThat(jsonArray.length()).isEqualTo(2);
+    assertThat(jsonArray.size()).isEqualTo(2);
   }
 
   private void doGetsUsingRestApis(String restEndpoint) throws IOException {
@@ -468,13 +470,14 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       sb.append(line);
     }
 
-    JSONObject jObject = new JSONObject(sb.toString());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode json = mapper.readTree(sb.toString());
 
-    assertThat(jObject.get("id")).isEqualTo(101);
-    assertThat(jObject.get("firstName")).isEqualTo("Mithali");
-    assertThat(jObject.get("middleName")).isEqualTo("Dorai");
-    assertThat(jObject.get("lastName")).isEqualTo("Raj");
-    assertThat(jObject.get("gender")).isEqualTo(Gender.FEMALE.name());
+    assertThat(json.get("id").asInt()).isEqualTo(101);
+    assertThat(json.get("firstName").asText()).isEqualTo("Mithali");
+    assertThat(json.get("middleName").asText()).isEqualTo("Dorai");
+    assertThat(json.get("lastName").asText()).isEqualTo("Raj");
+    assertThat(json.get("gender").asText()).isEqualTo(Gender.FEMALE.name());
 
     // 2. Get on key="16" and validate result.
 
@@ -492,13 +495,13 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       sb.append(line);
     }
 
-    jObject = new JSONObject(sb.toString());
+    json = mapper.readTree(sb.toString());
 
-    assertThat(jObject.get("id")).isEqualTo(104);
-    assertThat(jObject.get("firstName")).isEqualTo("Shila");
-    assertThat(jObject.get("middleName")).isEqualTo("kumari");
-    assertThat(jObject.get("lastName")).isEqualTo("Dixit");
-    assertThat(jObject.get("gender")).isEqualTo(Gender.FEMALE.name());
+    assertThat(json.get("id").asInt()).isEqualTo(104);
+    assertThat(json.get("firstName").asText()).isEqualTo("Shila");
+    assertThat(json.get("middleName").asText()).isEqualTo("kumari");
+    assertThat(json.get("lastName").asText()).isEqualTo("Dixit");
+    assertThat(json.get("gender").asText()).isEqualTo(Gender.FEMALE.name());
 
     // 3. Get all (getAll) entries in Region
 
@@ -519,9 +522,8 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     }
     result.close();
 
-    jObject = new JSONObject(sb.toString());
-    JSONArray jArray = jObject.getJSONArray("People");
-    assertThat(jArray.length()).isEqualTo(16);
+    json = mapper.readTree(sb.toString());
+    assertThat(json.get("People").size()).isEqualTo(16);
 
     // 4. GetAll?limit=10 (10 entries) and verify results
 
@@ -541,9 +543,8 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       sb.append(line);
     }
 
-    jObject = new JSONObject(sb.toString());
-    jArray = jObject.getJSONArray("People");
-    assertThat(jArray.length()).isEqualTo(10);
+    json = mapper.readTree(sb.toString());
+    assertThat(json.get("People").size()).isEqualTo(10);
 
     // 5. Get keys - List all keys in region
 
@@ -563,9 +564,8 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       sb.append(line);
     }
 
-    jObject = new JSONObject(sb.toString());
-    jArray = jObject.getJSONArray("keys");
-    assertThat(jArray.length()).isEqualTo(16);
+    json = mapper.readTree(sb.toString());
+    assertThat(json.get("keys").size()).isEqualTo(16);
 
     // 6. Get data for specific keys
 
@@ -585,9 +585,8 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
       sb.append(line);
     }
 
-    jObject = new JSONObject(sb.toString());
-    jArray = jObject.getJSONArray("People");
-    assertThat(jArray.length()).isEqualTo(6);
+    json = mapper.readTree(sb.toString());
+    assertThat(json.get("People").size()).isEqualTo(6);
   }
 
   private void createRegionInClientCache() {

@@ -56,7 +56,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * We have 2 servers and One client which registers some keys with durable interest and some without
@@ -406,7 +405,6 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  @Category(FlakyTest.class) // GEODE-1537
   @Test
   public void testDurableClientWithRegistrationHA() {
 

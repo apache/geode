@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -32,6 +33,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +43,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import javax.management.ObjectName;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.assertj.core.api.Assertions;
@@ -53,9 +57,12 @@ import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHel
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
@@ -293,6 +300,25 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
         members -> Assertions.assertThat(members).isNotNull().hasSize(exactServerCount),
         assertionConditionDescription,
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
+  }
+
+  public void waitTillClientsAreReadyOnServer(String serverName, int serverPort, int clientCount) {
+    waitTillCacheServerIsReady(serverName, serverPort);
+    CacheServerMXBean bean = getCacheServerMXBean(serverName, serverPort);
+    await().atMost(1, TimeUnit.MINUTES).until(() -> bean.getClientIds().length == clientCount);
+  }
+
+  public void waitTillCacheServerIsReady(String serverName, int serverPort) {
+    await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> getCacheServerMXBean(serverName, serverPort) != null);
+  }
+
+  public CacheServerMXBean getCacheServerMXBean(String serverName, int serverPort) {
+    SystemManagementService managementService = (SystemManagementService) getManagementService();
+    String objectName = MessageFormat.format(OBJECTNAME__CLIENTSERVICE_MXBEAN,
+        String.valueOf(serverPort), serverName);
+    ObjectName cacheServerMBeanName = MBeanJMXAdapter.getObjectName(objectName);
+    return managementService.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
   }
 
   public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(int exactGatewaySenderCount)

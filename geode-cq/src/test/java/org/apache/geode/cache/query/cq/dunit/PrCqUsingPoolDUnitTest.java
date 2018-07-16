@@ -57,7 +57,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Test class for Partitioned Region and CQs
@@ -1067,8 +1066,6 @@ public class PrCqUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * inconsistent.
    *
    */
-  @Category(FlakyTest.class) // GEODE-1181, 1253: random ports, eats exceptions (fixed some), async
-                             // behavior
   @Test
   public void testEventsDuringQueryExecution() throws Exception {
     final Host host = Host.getHost(0);

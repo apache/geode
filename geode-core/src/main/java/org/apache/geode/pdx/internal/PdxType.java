@@ -33,9 +33,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxFieldAlreadyExistsException;
-import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 
 public class PdxType implements DataSerializable {
@@ -225,18 +223,6 @@ public class PdxType implements DataSerializable {
 
   public String getClassName() {
     return this.className;
-  }
-
-  public Class<?> getPdxClass() {
-    try {
-      return InternalDataSerializer.getCachedClass(getClassName());
-    } catch (Exception e) {
-      PdxSerializationException ex = new PdxSerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-              .toLocalizedString(getClassName()),
-          e);
-      throw ex;
-    }
   }
 
   public boolean getNoDomainClass() {

@@ -61,7 +61,6 @@ import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
@@ -403,7 +402,6 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   /**
    * Verifies that archive removal works correctly when archive-disk-space-limit is specified.
    */
-  @Category(FlakyTest.class) // GEODE-2286: need to rewrite with Awaitility and longer timeouts
   @Test
   public void testArchiveRemoval() throws Exception {
     final String dirName = this.testDir.getAbsolutePath();// + File.separator + this.testName;

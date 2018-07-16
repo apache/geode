@@ -49,10 +49,9 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-1165
+@Category({DistributedTest.class})
 public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   @Override

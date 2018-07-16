@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -1034,19 +1033,6 @@ public class ProxyJUnitTest {
     };
     af.addCacheListener(cl1);
 
-    // // first make sure this test is valid by confirming we see evictions
-    // // on a non-proxy lru
-    // {
-    // af.setDataPolicy(DataPolicy.NORMAL);
-    // Region r = this.c.createRegion("rLRU", af.create());
-    // clearCallbackState();
-    // assertTrue(clInvokeCount == 0);
-    // for (int i=0; i < 10; i++) {
-    // r.put("key" + i, "value" + i);
-    // }
-    // assertTrue(clInvokeCount > 0);
-    // }
-
     // now try it with a proxy region which should never to do an eviction.
     {
       af.setDataPolicy(DataPolicy.EMPTY);
@@ -1055,20 +1041,12 @@ public class ProxyJUnitTest {
         fail("expected IllegalStateException");
       } catch (IllegalStateException expected) {
       }
-      // Region r = this.c.createRegion("rEMPTY", af.create());
-      // clearCallbackState();
-      // assertTrue(clInvokeCount == 0);
-      // for (int i=0; i < 10; i++) {
-      // r.put("key" + i, "value" + i);
-      // }
-      // assertTrue(clInvokeCount == 0);
     }
   }
 
   /**
    * Make sure a proxy region expiration behaves as expected
    */
-  @Category(FlakyTest.class) // GEODE-5094
   @Test
   public void testExpiration() throws Exception {
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");

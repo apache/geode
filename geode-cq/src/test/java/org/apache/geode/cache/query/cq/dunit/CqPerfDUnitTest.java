@@ -51,7 +51,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire. This includes the test with diffetent
@@ -413,8 +412,6 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
    * CQs.
    *
    */
-  @Category(FlakyTest.class) // GEODE-1164: random ports, thread sleeps, time sensitive, eats
-                             // exceptions (fixed 1), async behavior
   @Test
   public void testMatchingCqs() throws Exception {
 

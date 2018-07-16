@@ -66,7 +66,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category({DistributedTest.class, OQLQueryTest.class})
@@ -830,7 +829,6 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-2022
   public void testRRPRLocalQueryingWithHetroIndexes() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

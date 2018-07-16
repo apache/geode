@@ -38,7 +38,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -279,7 +278,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
    * after the local site was built back.
    *
    */
-  @Category({FlakyTest.class, WanTest.class})
+  @Category({WanTest.class})
   @Test
   public void testParallelPropagationWithLocalCacheClosedAndRebuilt() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
@@ -453,7 +452,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_child2", 0));
   }
 
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-1312
+  @Category({WanTest.class})
   @Test
   public void testParallelPropagationWithOverflow() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));

@@ -72,7 +72,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests org.apache.geode.cache.control.ResourceManager.
@@ -883,8 +882,6 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-755: thread unsafe test hook (bucketReadHook), remove bucket
-                             // fails, possible product bug in rebalancing
   @Test
   public void testRemoveDuringGet() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
@@ -894,8 +891,6 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-673: thread unsafe test hook (bucketReadHook), remove bucket
-                             // fails, possible product bug in rebalancing
   @Test
   public void testRemoveDuringContainsKey() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
@@ -914,8 +909,6 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-1768: thread unsafe test hook (bucketReadHook), remove bucket
-                             // fails, possible product bug in rebalancing
   @Test
   public void testRemoveDuringKeySet() {
     doOpDuringBucketRemove(new OpDuringBucketRemove() {
@@ -1058,7 +1051,6 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
    * Creates a chain of three colocated PRs and then calls removeBucket to make sure that all
    * colocated buckets are removed together.
    */
-  @Category(FlakyTest.class) // GEODE-928: RemoveBucketMessage failure?
   @Test
   public void testRemoveColocatedBuckets() {
     final String[] regionPath = new String[] {getUniqueName() + "-PR-0", getUniqueName() + "-PR-1",

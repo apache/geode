@@ -45,7 +45,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * This class tests the ContinuousQuery mechanism in GemFire.
@@ -919,7 +918,6 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * Tests CQ Result Caching with CQ Failover.
    *
    */
-  @Category(FlakyTest.class) // GEODE-1251
   @Test
   public void testCqResultsCachingWithFailOver() throws Exception {
     final Host host = Host.getHost(0);

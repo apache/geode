@@ -449,7 +449,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   }
 
   @Category(FlakyTest.class) // GEODE-567: async actions, waitForCriterion, time sensitive,
-                             // non-thread-safe test hook, eats exceptions (partially fixed)
+  // non-thread-safe test hook, eats exceptions (partially fixed)
   @Test
   public void testBug43283() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -974,7 +974,6 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * per primary and secondary FixedPartitionAttributes defined on datastores.
    */
 
-  @Category(FlakyTest.class) // GEODE-1704
   @Test
   public void testPut_ValidateDataOnMember_PrimarySecondary_Datastore() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
