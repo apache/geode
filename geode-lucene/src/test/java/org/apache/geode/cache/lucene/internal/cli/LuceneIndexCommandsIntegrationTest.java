@@ -628,9 +628,17 @@ public class LuceneIndexCommandsIntegrationTest {
       createIndexWithoutRegion();
     }
 
+    // Verify destroy all indexes is successful
     String expectedOutput = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
         new Object[] {"/region"});
+
+    gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
+        .containsOutput(expectedOutput);
+
+    // Verify destroy all indexes again reports no indexes exist
+    expectedOutput = LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
+        .toLocalizedString(new Object[] {"/region"});
 
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);

@@ -19,8 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -171,16 +170,17 @@ public class RestSecurityIntegrationTest {
    */
   @Test
   public void getRegions() throws Exception {
-    JSONObject jsonObject = assertResponse(restClient.doGet("", "dataRead", "dataRead"))
+    JsonNode jsonObject = assertResponse(restClient.doGet("", "dataRead", "dataRead"))
         .hasStatusCode(200).hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
         .getJsonObject();
 
-    JSONArray regions = jsonObject.getJSONArray("regions");
+    JsonNode regions = jsonObject.get("regions");
     assertNotNull(regions);
-    assertTrue(regions.length() > 0);
-    JSONObject region = regions.getJSONObject(0);
-    assertEquals("AuthRegion", region.get("name"));
-    assertEquals("REPLICATE", region.get("type"));
+    assertTrue(regions.size() > 0);
+
+    JsonNode region = regions.get(0);
+    assertEquals("AuthRegion", region.get("name").asText());
+    assertEquals("REPLICATE", region.get("type").asText());
 
     // List regions with an unknown user - 401
     assertResponse(restClient.doGet("", "user", "wrongPswd"))

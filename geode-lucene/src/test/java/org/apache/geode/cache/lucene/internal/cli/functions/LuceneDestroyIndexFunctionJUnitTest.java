@@ -134,8 +134,8 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     function = spy(function);
     function.execute(this.context);
     verify(this.service).destroyIndexes(eq(regionPath));
+    verify(this.service).destroyDefinedIndexes(eq(regionPath));
     verify(function).getXmlEntity(eq(null), eq(regionPath));
-    verify(this.service, never()).destroyDefinedIndexes(eq(regionPath));
     verify(this.service, never()).destroyIndex(any(), eq(regionPath));
     verifyFunctionResult(true);
   }
@@ -148,6 +148,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     doThrow(new IllegalStateException()).when(this.service).destroyIndexes(eq(regionPath));
+    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
   }

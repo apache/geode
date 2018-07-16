@@ -35,6 +35,9 @@ buildscript {
   }
 }
 
+apply plugin: 'wrapper'
+apply plugin: 'com.gradle.build-scan'
+
 wrapper {
   gradleVersion = minimumGradleVersion
 }

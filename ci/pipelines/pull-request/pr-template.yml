@@ -19,6 +19,7 @@
 jobs:
 - name: (( grab metadata.job.name ))
   serial: false
+  max_in_flight: (( grab metadata.max_in_flight ))
   public: true
   plan:
     - aggregate:
@@ -47,7 +48,7 @@ jobs:
 
       - task: runtests
         image: docker-geode-build-image
-        tags: (( grab metadata.job.size ))
+        tags: [pr]
         privileged: true
         timeout: (( grab metadata.job.timeout ))
         config:
