@@ -30,7 +30,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @SuppressWarnings({"rawtypes", "serial"})
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
@@ -329,7 +328,6 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
    * Tests if failure occurred in Interest recovery thread, then it should select new endpoint to
    * register interest
    */
-  @Category(FlakyTest.class) // GEODE-1998
   @Test
   public void testInterestRecoveryFailure() throws Exception {
     IgnoredException.addIgnoredException("Server unreachable");

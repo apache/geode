@@ -60,7 +60,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Test to verify Startup. and failover during startup.
@@ -214,7 +213,6 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
   /**
    * verify that Primary Should Be Null And EPList Should Be Empty When All Servers Are Dead
    */
-  @Category(FlakyTest.class) // GEODE-1045: random ports, time senstive, waitForCriterion
   @Test
   public void testPrimaryShouldBeNullAndEPListShouldBeEmptyWhenAllServersAreDead()
       throws Exception {

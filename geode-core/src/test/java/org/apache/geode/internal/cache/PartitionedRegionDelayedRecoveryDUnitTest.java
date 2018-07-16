@@ -39,7 +39,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @SuppressWarnings("synthetic-access")
 @Category(DistributedTest.class)
@@ -131,9 +130,6 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     vm2.invoke(checkNoBucket);
   }
 
-  @Category(FlakyTest.class) // GEODE-860: time sensitive, thread unsafe test hook, CountDownLatch,
-                             // 1 minute timeout, waitForBucketRecovery loops eating
-                             // InterruptedException
   @Test
   public void testDelay() {
     Host host = Host.getHost(0);
@@ -202,9 +198,6 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
         elapsed >= 5000);
   }
 
-  @Category(FlakyTest.class) // GEODE-757: time sensitive, fails because event occurs 2 millis too
-                             // soon, waitForBucketRecovery wait loop eats InterruptedException,
-                             // thread unsafe test hook
   @Test
   public void testStartupDelay() {
     Host host = Host.getHost(0);

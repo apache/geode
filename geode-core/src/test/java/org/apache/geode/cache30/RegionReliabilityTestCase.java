@@ -33,7 +33,6 @@ import java.util.concurrent.locks.Lock;
 
 import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -78,7 +77,6 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests region reliability defined by MembershipAttributes.
@@ -943,8 +941,6 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   /**
    * Tests affect of FULL_ACCESS on local entry expiration actions.
    */
-  @Category(FlakyTest.class) // GEODE-447: time sensitive, expiration, waitForMemberTimeout is
-                             // unimplemented
   @Test
   public void testFullAccessWithLocalEntryExpiration() throws Exception {
     final String name = this.getUniqueName();

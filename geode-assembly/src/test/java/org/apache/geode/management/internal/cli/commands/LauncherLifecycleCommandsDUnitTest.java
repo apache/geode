@@ -104,7 +104,7 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
  * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
  * @since GemFire 7.0
  */
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-3530
+@Category(DistributedTest.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @SuppressWarnings("serial")
 public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
@@ -967,6 +967,7 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
+  @Category(FlakyTest.class) // GEODE-1866
   public void test014GemFireServerJvmProcessTerminatesOnOutOfMemoryError() throws Exception {
     int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int serverPort = ports[0];

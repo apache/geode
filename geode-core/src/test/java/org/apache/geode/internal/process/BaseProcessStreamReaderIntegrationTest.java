@@ -17,9 +17,7 @@ package org.apache.geode.internal.process;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Integration tests that should be executed under both {@link ProcessStreamReader.ReadingMode}s.
@@ -42,7 +40,6 @@ public abstract class BaseProcessStreamReaderIntegrationTest
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-3461 and GEODE-3505
   public void processTerminatesWhenDestroyed() throws Exception {
     // arrange
     givenRunningProcessWithStreamReaders(ProcessSleeps.class);

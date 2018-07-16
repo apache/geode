@@ -38,7 +38,6 @@ import org.apache.geode.internal.statistics.HostStatSampler;
 import org.apache.geode.internal.statistics.SampleCollector;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Distributed tests for {@link MemberMXBean} attributes.
@@ -77,7 +76,6 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
     validateSystemAndOSAttributes(managedNodeList.get(0));
   }
 
-  @Category(FlakyTest.class) // GEODE-1482
   @Test
   public void testConfigAttributes() throws Exception {
     initManagement(false);

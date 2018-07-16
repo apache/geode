@@ -44,7 +44,6 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  @Category(FlakyTest.class) // GEODE-693: getRandomAvailablePort
   @Test
   public void testAllPostOps() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllPostOps();
@@ -114,8 +113,8 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1009: random ports, uses Random, time sensitive,
-                             // waitForCondition (waitForCriterion)
+  // GEODE-1009: random ports, uses Random, time sensitive, waitForCondition (waitForCriterion)
+  @Category(FlakyTest.class)
   @Test
   public void testAllOpsNotifications() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllOpsNotifications();

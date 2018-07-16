@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -27,7 +26,6 @@ import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 
@@ -85,12 +83,5 @@ public class DistributedAckPersistentRegionCCEOffHeapDUnitTest
       factory.setOffHeap(true);
     }
     return factory.create();
-  }
-
-  @Category(FlakyTest.class) // GEODE-3451
-  @Override
-  @Test
-  public void testConcurrentEventsOnEmptyRegion() {
-    super.testConcurrentEventsOnEmptyRegion();
   }
 }

@@ -55,7 +55,6 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -207,8 +206,6 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
     };
   }
 
-  @Category(FlakyTest.class) // GEODE-431: time sensitive, uses PRQueryDUnitHelper whcih eats
-                             // exceptions, async actions, uses Random
   @Test
   public void testRangeIndex() {
     Host host = Host.getHost(0);

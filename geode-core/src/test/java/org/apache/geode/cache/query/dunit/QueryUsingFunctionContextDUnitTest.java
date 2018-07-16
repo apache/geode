@@ -69,7 +69,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
@@ -456,7 +455,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  @Category(FlakyTest.class) // GEODE-575: ignores lots of exceptions, non-thread-safe test hooks
   @Test
   public void testQueriesWithFilterKeysOnPRWithRebalancing() {
     IgnoredException.addIgnoredException("QueryInvocationTargetException");
@@ -563,7 +561,6 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  @Category(FlakyTest.class) // GEODE-1345
   @Test
   public void testJoinQueryPRWithMultipleIndexes() {
 

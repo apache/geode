@@ -52,7 +52,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.EvictionTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category({DistributedTest.class, EvictionTest.class})
 public class EvictionStatsDUnitTest extends CacheTestCase {
@@ -303,7 +302,6 @@ public class EvictionStatsDUnitTest extends CacheTestCase {
   }
 
   @Test
-  @Category(FlakyTest.class)
   public void testMemLRUEvictionNDestroyNNumOverflowOnDiskCount() {
     // Ignore this excetion as this can happen if pool is shutting down
     IgnoredException

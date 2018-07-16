@@ -86,7 +86,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   /**
    * Two listeners added to the same RR.
    */
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-4647
+  @Category({FlakyTest.class, WanTest.class}) // GEODE-5097
   @Test
   public void testAsyncStatsTwoListeners() throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);

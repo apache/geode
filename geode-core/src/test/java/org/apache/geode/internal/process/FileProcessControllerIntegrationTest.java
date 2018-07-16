@@ -45,7 +45,6 @@ import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
 import org.apache.geode.internal.process.io.IntegerFileWriter;
 import org.apache.geode.internal.process.io.StringFileWriter;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -189,7 +188,6 @@ public class FileProcessControllerIntegrationTest {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-3778
   public void status_withStatusRequestFileExists_doesNotFail() throws Exception {
     // arrange
     FileProcessController controller = new FileProcessController(params, pid);

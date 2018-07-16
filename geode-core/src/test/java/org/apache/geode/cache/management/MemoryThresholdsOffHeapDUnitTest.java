@@ -91,7 +91,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -517,8 +516,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * the local VM is in a critical state. Once the VM has moved to a safe state then test that they
    * are allowed.
    */
-  @Category(FlakyTest.class) // GEODE-438: test pollution, async actions, time sensitive,
-                             // waitForCriterion, TODO: consider disconnect DS in setup
   @Test
   public void testDRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
@@ -766,8 +763,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     prRemotePutRejection(true, false, true);
   }
 
-  @Category(FlakyTest.class) // GEODE-500: time sensitive, memory sensitive and GC dependent,
-                             // waitForCriterions
   @Test
   public void testPR_RemotePutRejectionWithTx() throws Exception {
     prRemotePutRejection(false, false, true);
@@ -1352,7 +1347,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     verifyProfiles(server3, 2);
   }
 
-  @Category(FlakyTest.class) // GEODE-1602
   @Test
   public void testPRClientPutRejection() throws Exception {
     doClientServerTest("parRegReject", true/* createPR */);

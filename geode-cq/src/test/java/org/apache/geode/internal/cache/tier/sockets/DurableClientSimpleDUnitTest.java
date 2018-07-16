@@ -67,7 +67,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
@@ -135,7 +134,6 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
   /**
    * Test that a durable client VM with multiple BridgeClients correctly registers on the server.
    */
-  @Category(FlakyTest.class) // GEODE-1618
   @Test
   public void testMultipleBridgeClientsInSingleDurableVM() {
     // Start a server
@@ -2965,8 +2963,6 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
   /**
    * Tests scenario where close cq will throw an exception due to a client being reactivated
    */
-  @Category(FlakyTest.class) // GEODE-1060: random ports, async actions, time sensitive, eats
-                             // exceptions (fixed 1)
   @Test
   public void testCqCloseExceptionDueToActivatingClient() throws Exception {
     try {

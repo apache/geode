@@ -25,7 +25,6 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -71,7 +70,6 @@ public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase 
     doTestInvalidCredentials(false);
   }
 
-  @Category(FlakyTest.class) // GEODE-1683
   @Test
   public void testInvalidAuthInit() throws Exception {
     doTestInvalidAuthInit(false);
@@ -97,7 +95,6 @@ public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase 
     doTestCredentialsWithFailover(false);
   }
 
-  @Category(FlakyTest.class) // GEODE-838: random ports, thread sleeps, time sensitive
   @Test
   public void testCredentialsForNotifications() throws Exception {
     doTestCredentialsForNotifications(false);

@@ -47,7 +47,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Test to verify that client side region.close() should unregister the client with the server. It
@@ -96,7 +95,6 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   }
 
 
-  @Category(FlakyTest.class) // GEODE-2051
   @Test
   public void testCloseRegionOnClient() {
     server1.invoke(() -> RegionCloseDUnitTest.VerifyClientProxyOnServerBeforeClose());
