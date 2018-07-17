@@ -70,7 +70,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.process.ProcessWrapper;
 
@@ -276,7 +275,6 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-3939
   public void testCreateBuckets() throws Exception {
     this.registry = LocateRegistry.createRegistry(this.controllerNamingPort);
     this.status = new RebalanceStatus();

@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -84,7 +83,6 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     assertEquals(2, ex.getLargestPoolSize());
   }
 
-  @Category(FlakyTest.class) // GEODE-1138: time sensitive, thread sleeps, expiration
   @Test
   public void testConcurrentExecutionAndExpiration()
       throws InterruptedException, ExecutionException {

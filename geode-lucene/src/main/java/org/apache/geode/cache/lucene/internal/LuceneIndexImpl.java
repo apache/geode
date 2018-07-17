@@ -237,6 +237,9 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
       cache.removeRegionListener(listenerToRemove);
     }
 
+    // Remove cache service profile
+    dataRegion
+        .removeCacheServiceProfile(LuceneIndexCreationProfile.generateId(indexName, regionPath));
   }
 
   private RegionListener getRegionListener() {

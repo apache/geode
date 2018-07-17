@@ -296,7 +296,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 <tr class="even">
 <td><span class="keyword parmname">\-\-bind-address</span></td>
 <td>IP address on which the locator will be bound.</td>
-<td>bound to all addresses</td>
+<td>bind to all addresses</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-force</span></td>
@@ -310,8 +310,8 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-hostname-for-clients</span></td>
-<td>Hostname or IP address that will be sent to clients so they can connect to this locator.</td>
-<td>uses the bind-address to which the locator is bound).</td>
+<td>Host name or IP address that will be sent to clients so they can connect to this locator.</td>
+<td>uses <code>bind-address</code></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-locators</span></td>
@@ -505,7 +505,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <tbody>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-name</span></td>
-<td>Member name for this <%=vars.product_name%> Cache Server service. If not specified, gfsh generates a random name.</td>
+<td>Member name for this server. If not specified, gfsh generates a random name.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -515,8 +515,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-bind-address</span></td>
-<td>The IP address on which the Server will be bound.</td>
-<td>binds to all addresses</td>
+<td>The IP address on which the server will be bound.</td>
+<td>binds to all local addresses</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-cache-xml-file</span></td>
@@ -605,8 +605,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-server-bind-address</span></td>
-<td>IP address on which the Server will be bound.</td>
-<td>binds to all addresses</td>
+<td>Overrides the <code>bind-address</code> on which this server will listen for client connections. Set this option in a multi-homed server environment to distinguish communications from clients. Setting a value of the empty string (&quot;&quot;) uses the value of <code>bind-address</code>.</td>
+<td>value of <code>bind-address</code></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-server-port</span></td>
@@ -692,7 +692,7 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-hostname-for-clients</span></td>
-<td>Sets the ip address or host name that this cache server is to listen on for client connections. Setting a specific hostname-for-clients causes server locators to use this value when telling clients how to connect to this cache server. This is useful in the case where the cache server may refer to itself with one hostname, but the clients need to use a different hostname to find the cache server. The value &quot;&quot; causes the bind-address to be given to clients. A null value will be treated the same as the default &quot;&quot;.</td>
+<td>Sets the IP address or host name that a locator will provide to clients. Clients use the address to connect to a server. Set this value when clients use a different address to connect with the server than the <code>bind-address</code>, as those clients might with servers in a private cloud or multi-homed environment. Not specifying this option or setting this option to the empty string (&quot;&quot;) causes the <code>bind-address</code> to be given to clients.</td>
 <td> </td>
 </tr>
 <tr class="even">

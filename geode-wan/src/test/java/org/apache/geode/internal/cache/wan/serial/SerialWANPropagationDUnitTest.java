@@ -39,7 +39,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({DistributedTest.class, WanTest.class})
@@ -593,7 +592,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
    * remote site. Puts to the local region are in progress. Receiver on remote site is stopped in
    * the middle by closing remote site cache.
    */
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-1552
+  @Category({WanTest.class})
   @Test
   public void testReplicatedSerialPropagationWithRemoteReceiverStopped() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));

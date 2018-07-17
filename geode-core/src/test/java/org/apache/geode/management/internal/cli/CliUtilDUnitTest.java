@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -80,9 +81,9 @@ public class CliUtilDUnitTest {
     gfsh.executeAndAssertThat("create region --name=group2Region --group=group2 --type=REPLICATE")
         .statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/commonRegion", 4);
-    locator.waitTillRegionsAreReadyOnServers("/group1Region", 2);
-    locator.waitTillRegionsAreReadyOnServers("/group2Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/commonRegion", 4);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group1Region", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/group2Region", 2);
   }
 
   @Test
@@ -178,6 +179,53 @@ public class CliUtilDUnitTest {
   }
 
   @Test
+  public void getRegionsAssociatedMembersInvalidRegion() {
+    locator.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      Set<String> regions = new HashSet<String>();
+      regions.add("/asdfghjkl");
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, true);
+      assertThat(members).isEmpty();
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, false);
+      assertThat(members).isEmpty();
+    });
+  }
+
+  @Test
+  public void getRegionsAssociatedMembersInvalidRegions() {
+    locator.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      Set<String> regions = new HashSet<String>();
+      regions.add("/asdfghjkl");
+      regions.add("/asdfghjklmn");
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, true);
+      assertThat(members).isEmpty();
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, false);
+      assertThat(members).isEmpty();
+    });
+  }
+
+  @Test
+  public void getRegionsAssociatedMembersInvalidAndValidRegions() {
+    locator.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      Set<String> regions = new HashSet<String>();
+      regions.add("/asdfghjkl");
+      regions.add("/commonRegion");
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, true);
+      assertThat(members).isEmpty();
+
+      members = CliUtil.getQueryRegionsAssociatedMembers(regions, cache, false);
+      assertThat(members).isEmpty();
+    });
+  }
+
+  @Test
   public void getMemberByNameOrId() throws Exception {
     locator.invoke(() -> {
       DistributedMember member =
@@ -202,9 +250,9 @@ public class CliUtilDUnitTest {
         "create async-event-queue --id=queue --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 2);
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue2", 2);
-    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue", 4);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue2", 2);
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue", 4);
 
     locator.invoke(() -> {
       members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue1");

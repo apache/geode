@@ -79,7 +79,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.RegionsTest;
 
 @Category({DistributedTest.class, RegionsTest.class})
@@ -2133,7 +2132,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     checkData(vm0, 0, NUM_BUCKETS, "a", "region2");
   }
 
-  @Category(FlakyTest.class) // GEODE-506: time sensitive, async actions with 30 sec max
   @Test
   public void testRebalanceWithOfflineChildRegion() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable("createParentPR") {
@@ -2304,7 +2302,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     async2.getResult();
   }
 
-  @Category(FlakyTest.class) // GEODE-1380: time sensitive, async actions with 30 sec max
   @Test
   public void testRebalanceWithOfflineChildRegionTwoDiskStores() throws Throwable {
     SerializableRunnable createParentPR = new SerializableRunnable() {
@@ -2354,7 +2351,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Test that a user is not allowed to change the colocation of a PR with persistent data.
    *
    */
-  @Category(FlakyTest.class) // GEODE-900: disk dependency, filesystem sensitive
   @Test
   public void testModifyColocation() throws Throwable {
     // Create PRs where region3 is colocated with region1.

@@ -55,7 +55,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
@@ -183,7 +182,6 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Authenticator is incorrect
    */
-  @Category(FlakyTest.class) // GEODE-1089: random port
   @Test
   public void testP2PAuthenticationWithInvalidAuthenticator() throws Exception {
     int locatorPort = getRandomAvailablePort(SOCKET);
@@ -213,7 +211,6 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1091: random port
   @Test
   public void testP2PAuthenticationWithNoCredentials() throws Exception {
     int locatorPort = getRandomAvailablePort(SOCKET);

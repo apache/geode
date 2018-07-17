@@ -161,24 +161,33 @@ public class MemberVM extends VMProvider implements Member {
   /**
    * this should called on a locatorVM or a serverVM with jmxManager enabled
    */
-  public void waitTillRegionsAreReadyOnServers(String regionPath, int serverCount) {
-    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillRegionIsReadyOnServers(regionPath,
-        serverCount));
-  }
-
-  public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
-    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
-        serverCount));
-  }
-
-  public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
+  public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionPath, int serverCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
-        .waitTillAsyncEventQueuesAreReadyOnServers(queueId, serverCount));
+        .waitUntilRegionIsReadyOnExactlyThisManyServers(regionPath, serverCount));
   }
 
-  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) {
+
+  public void waitTillClientsAreReadyOnServers(String serverName, int serverPort, int clientCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillClientsAreReadyOnServer(serverName,
+        serverPort, clientCount));
+  }
+
+  public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskstoreName,
+      int serverCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
-        .waitTilGatewaySendersAreReady(expectedGatewayObjectCount));
+        .waitUntilDiskStoreIsReadyOnExactlyThisManyServers(diskstoreName, serverCount));
+  }
+
+  public void waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(String queueId,
+      int serverCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter
+        .waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(queueId, serverCount));
+  }
+
+  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(
+      int expectedGatewayObjectCount) {
+    vm.invoke(() -> ClusterStartupRule.memberStarter
+        .waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(expectedGatewayObjectCount));
   }
 
 }

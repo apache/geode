@@ -44,7 +44,6 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  @Category(FlakyTest.class) // GEODE-693: getRandomAvailablePort
   @Test
   public void testAllPostOps() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllPostOps();

@@ -41,8 +41,35 @@ public class LuceneDestroyIndexFunction implements InternalFunction {
           ((LuceneServiceImpl) service).destroyDefinedIndexes(regionPath);
           result = new CliFunctionResult(memberId);
         } else {
-          service.destroyIndexes(regionPath);
-          result = new CliFunctionResult(memberId, getXmlEntity(indexName, regionPath));
+          // Destroy all created indexes
+          CliFunctionResult destroyIndexesResult = null;
+          Exception destroyIndexesException = null;
+          try {
+            service.destroyIndexes(regionPath);
+            destroyIndexesResult =
+                new CliFunctionResult(memberId, getXmlEntity(indexName, regionPath));
+          } catch (Exception e) {
+            destroyIndexesException = e;
+          }
+
+          // Destroy all defined indexes
+          CliFunctionResult destroyDefinedIndexesResult = null;
+          Exception destroyDefinedIndexesException = null;
+          try {
+            ((LuceneServiceImpl) service).destroyDefinedIndexes(regionPath);
+            destroyDefinedIndexesResult = new CliFunctionResult(memberId);
+          } catch (Exception e) {
+            destroyDefinedIndexesException = e;
+          }
+
+          // If there are two exceptions, throw one of them. Note: They should be the same 'No
+          // Lucene indexes were found' exception. Otherwise return the appropriate result.
+          if (destroyIndexesException != null && destroyDefinedIndexesException != null) {
+            throw destroyIndexesException;
+          } else {
+            result =
+                destroyIndexesResult == null ? destroyDefinedIndexesResult : destroyIndexesResult;
+          }
         }
       } else {
         if (indexInfo.isDefinedDestroyOnly()) {

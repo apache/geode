@@ -953,7 +953,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   }
 
   @Test
-  @Category(FlakyTest.class)
+  @Category(FlakyTest.class) // GEODE-5325
   public void recoversFromCloseDuringRegionOperation() throws Exception {
     vm0.invoke(() -> createPartitionedRegion(1, -1, 1, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 1, true));

@@ -43,7 +43,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({DistributedTest.class, MembershipTest.class})
@@ -61,7 +60,6 @@ public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
     return p;
   }
 
-  @Category(FlakyTest.class) // GEODE-3581 - test has Thread.sleep() and fails intermittently
   @Test
   public void testMembershipMonitoring() throws Exception {
     Host host = Host.getHost(0);

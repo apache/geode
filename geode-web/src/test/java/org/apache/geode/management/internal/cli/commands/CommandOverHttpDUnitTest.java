@@ -20,19 +20,19 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.SuiteRunner;
 
-/**
- * Only commands that extends CliCommandTestBase needs to be in this test suite
- */
 @Category({DistributedTest.class, SecurityTest.class, GfshTest.class})
 @RunWith(SuiteRunner.class)
-@Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class, ShellCommandsDUnitTest.class})
+@Suite.SuiteClasses({GemfireDataCommandsDUnitTest.class,
+    RebalanceCommandDUnitTest.class, RegionMembershipMBeanDUnitTest.class,
+    QueryCommandDUnitTest.class})
 public class CommandOverHttpDUnitTest {
   @ClassRule
   public static ProvideSystemProperty provideSystemProperty =
-      new ProvideSystemProperty(CliCommandTestBase.USE_HTTP_SYSTEM_PROPERTY, "true");
+      new ProvideSystemProperty(SystemPropertyHelper.USE_HTTP_SYSTEM_PROPERTY, "true");
 }

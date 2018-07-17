@@ -91,7 +91,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
@@ -543,7 +542,6 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     return p;
   }
 
-  @Category(FlakyTest.class) // GEODE-635: eats and logs exceptions, retry loops
   @Test
   public void testHighAvailabilityFeatures() throws Exception {
     IgnoredException.addIgnoredException("DistributedSystemDisconnectedException");

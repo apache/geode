@@ -7718,6 +7718,8 @@ public class LocalizedStrings {
       new StringId(6668,
           "No Cache Client Proxy found while executing CQ.");
 
+  public static final StringId LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED =
+      new StringId(6669, "Lucene index {0} on region {1} was destroyed while being created");
   /** Testing strings, messageId 90000-99999 **/
 
   /**

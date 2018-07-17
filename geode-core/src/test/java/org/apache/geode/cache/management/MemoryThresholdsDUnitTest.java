@@ -106,7 +106,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
@@ -636,9 +635,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     prRemotePutRejection(true, false, true);
   }
 
-  @Category(FlakyTest.class) // GEODE-987: random ports, failed to throw expected ResourceException,
-                             // overly complex expected exception handling, memory and GC sensitive,
-                             // expiration, waitForCriterion
   @Test
   public void testPR_RemotePutRejectionWithTx() throws Exception {
     prRemotePutRejection(false, false, true);

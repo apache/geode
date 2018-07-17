@@ -71,6 +71,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -489,7 +490,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     populateCache();
     registerInterestInBothTheRegions();
     closeBothRegions();
-    // pause(5000);
+
     assertEquals(false, pool.isDestroyed());
     pool.destroy();
     assertEquals(true, pool.isDestroyed());
@@ -880,31 +881,18 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(region2);
     assertNotNull(prRegion);
     pool = p;
-    // conn = pool.acquireConnection();
-    // assertNotNull(conn);
-    // TODO does this WaitCriterion actually help?
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
 
-      public boolean done() {
-        try {
-          conn = pool.acquireConnection();
-          if (conn == null) {
-            excuse = "acquireConnection returned null?";
-            return false;
-          }
-          return true;
-        } catch (NoAvailableServersException e) {
-          excuse = "Cannot find a server: " + e;
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(() -> {
+      try {
+        conn = pool.acquireConnection();
+        if (conn == null) {
           return false;
         }
+        return true;
+      } catch (NoAvailableServersException e) {
+        return false;
       }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
+    });
 
     return p;
   }
@@ -1034,8 +1022,8 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
       assertNotNull(r1);
       Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       assertNotNull(r2);
-      r1.registerInterest("ALL_KEYS");
-      r2.registerInterest("ALL_KEYS");
+      r1.registerInterestForAllKeys();
+      r2.registerInterestForAllKeys();
     } catch (CacheWriterException e) {
       e.printStackTrace();
       Assert.fail("Test failed due to CacheWriterException during registerInterestnBothRegions", e);
@@ -1138,27 +1126,18 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     try {
       Cache cache = new ClientServerMiscDUnitTest().getCache();
       assertEquals("More than one BridgeServer", 1, cache.getCacheServers().size());
-      CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
-      assertNotNull(bs);
-      assertNotNull(bs.getAcceptor());
-      final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
+      CacheServerImpl cacheServer = (CacheServerImpl) cache.getCacheServers().iterator().next();
+      assertNotNull(cacheServer);
+      assertNotNull(cacheServer.getAcceptor());
+      final CacheClientNotifier ccn = cacheServer.getAcceptor().getCacheClientNotifier();
 
       assertNotNull(ccn);
-      WaitCriterion wc = new WaitCriterion() {
-        String excuse;
-
-        public boolean done() {
-          return ccn.getClientProxies().size() == 0;
-        }
-
-        public String description() {
-          return excuse;
-        }
-      };
-      Wait.waitForCriterion(wc, 40 * 1000, 1000, true);
+      Awaitility.await().atMost(40, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          .until(() -> ccn.getClientProxies().size() == 0);
     } catch (Exception ex) {
-      ex.printStackTrace();
-      fail("while setting verifyNoCacheClientProxyOnServer  " + ex);
+      System.out.println("The size of the client proxies != 0");
+      OSProcess.printStacks(0);
+      throw ex;
     }
   }
 
@@ -1185,18 +1164,9 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
 
     assertNotNull(ccn);
-    WaitCriterion wc = new WaitCriterion() {
-      String excuse;
 
-      public boolean done() {
-        return ccn.getClientProxies().size() == 1;
-      }
-
-      public String description() {
-        return excuse;
-      }
-    };
-    Wait.waitForCriterion(wc, 40 * 1000, 1000, true);
+    Awaitility.await().atMost(40, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+        .until(() -> ccn.getClientProxies().size() == 1);
   }
 
   public static void populateCache() {

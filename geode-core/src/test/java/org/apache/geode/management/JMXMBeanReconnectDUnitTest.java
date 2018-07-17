@@ -94,7 +94,7 @@ public class JMXMBeanReconnectDUnitTest {
         "create region --type=REPLICATE --name=" + REGION_PATH + " --enable-statistics=true")
         .statusIsSuccess();
 
-    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
     waitForLocatorsToAgreeOnMembership();
   }
 
@@ -129,7 +129,7 @@ public class JMXMBeanReconnectDUnitTest {
         .containsExactlyElementsOf(initialLocatorBeans);
 
     server1.waitTilServerFullyReconnected();
-    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 
     List<String> finalLocatorBeans = canonicalBeanNamesFor(locator1);
 
@@ -206,7 +206,7 @@ public class JMXMBeanReconnectDUnitTest {
     });
 
     server1.waitTilServerFullyReconnected();
-    locator1.waitTillRegionsAreReadyOnServers(REGION_PATH, SERVER_COUNT);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
     waitForMBeanFederationFrom(numServerMBeans, server1);
     waitForLocatorsToAgreeOnMembership();
 

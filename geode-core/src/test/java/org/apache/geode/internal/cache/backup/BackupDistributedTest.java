@@ -14,27 +14,30 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.commons.io.FileUtils.listFiles;
 import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
+import static org.apache.geode.cache.EvictionAttributes.createLIFOEntryAttributes;
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.internal.admin.remote.AdminFailureResponse.create;
+import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,22 +49,20 @@ import junitparams.naming.TestCaseName;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
@@ -72,16 +73,20 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.DestroyRegionOperation.DestroyRegionMessage;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.partitioned.PersistentPartitionedRegionTestBase;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.process.ProcessStreamReader;
+import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.management.BackupStatus;
-import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Additional tests to consider adding:
@@ -94,115 +99,148 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
+public class BackupDistributedTest implements Serializable {
   private static final Logger logger = LogService.getLogger();
 
   private static final int NUM_BUCKETS = 15;
 
-  @Rule
-  public SerializableTemporaryFolder tempDir = new SerializableTemporaryFolder();
+  private String uniqueName;
+  private String regionName1;
+  private String regionName2;
+  private String regionName3;
+
+  private File backupBaseDir;
 
   private VM vm0;
   private VM vm1;
   private VM vm2;
   private VM vm3;
-  private Map<VM, File> workingDirByVm;
-  private File backupBaseDir;
+
+  private transient Process process;
+  private transient ProcessStreamReader processReader;
+
+  @Rule
+  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
+
+  @Rule
+  public DistributedDiskDirRule diskDirRule = new DistributedDiskDirRule();
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
   @Before
   public void setUp() throws Exception {
-    vm0 = getHost(0).getVM(0);
-    vm1 = getHost(0).getVM(1);
-    vm2 = getHost(0).getVM(2);
-    vm3 = getHost(0).getVM(3);
+    vm0 = getVM(0);
+    vm1 = getVM(1);
+    vm2 = getVM(2);
+    vm3 = getVM(3);
 
-    workingDirByVm = new HashMap<>();
-    workingDirByVm.put(vm0, tempDir.newFolder());
-    workingDirByVm.put(vm1, tempDir.newFolder());
-    workingDirByVm.put(vm2, tempDir.newFolder());
-    workingDirByVm.put(vm3, tempDir.newFolder());
+    uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
+    regionName1 = uniqueName + "_region1";
+    regionName2 = uniqueName + "_region2";
+    regionName3 = uniqueName + "_region3";
 
-    backupBaseDir = tempDir.newFolder("backupDir");
+    backupBaseDir = temporaryFolder.newFolder("backupDir");
   }
 
-  @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(null);
       disconnectFromDS();
     });
+
+    if (process != null && process.isAlive()) {
+      process.destroyForcibly();
+      process.waitFor(2, MINUTES);
+    }
+    if (processReader != null && processReader.isRunning()) {
+      processReader.stop();
+    }
   }
 
   @Test
   public void testBackupPR() throws Exception {
-    createPersistentRegions();
+    createPersistentRegions(vm0, vm1);
 
-    long lastModified0 = setBackupFiles(vm0);
-    long lastModified1 = setBackupFiles(vm1);
+    long lastModified0 = vm0.invoke(() -> setBackupFiles(getDiskDirFor(vm0)));
+    long lastModified1 = vm1.invoke(() -> setBackupFiles(getDiskDirFor(vm1)));
 
-    createData();
+    vm0.invoke(() -> {
+      createData(0, 5, "A", regionName1);
+      createData(0, 5, "B", regionName2);
+    });
 
     vm0.invoke(() -> {
       assertThat(getCache().getDistributionManager().getNormalDistributionManagerIds()).hasSize(2);
     });
 
     vm2.invoke(() -> {
-      getCache();
       assertThat(getCache().getDistributionManager().getNormalDistributionManagerIds()).hasSize(3);
     });
 
-    BackupStatus status = backupMember(vm2);
+    BackupStatus status = vm2.invoke(() -> backupMember());
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
 
     Collection<File> files = FileUtils.listFiles(backupBaseDir, new String[] {"txt"}, true);
     assertThat(files).hasSize(4);
 
-    deleteOldUserUserFile(vm0);
-    deleteOldUserUserFile(vm1);
+    vm0.invoke(() -> deleteOldUserFile(getDiskDirFor(vm0)));
+    vm1.invoke(() -> deleteOldUserFile(getDiskDirFor(vm1)));
+
     validateBackupComplete();
 
-    createData(vm0, 0, 5, "C", "region1");
-    createData(vm0, 0, 5, "C", "region2");
+    vm0.invoke(() -> {
+      createData(0, 5, "C", regionName1);
+      createData(0, 5, "C", regionName2);
+    });
 
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
 
-    closeCache(vm0);
-    closeCache(vm1);
+    vm0.invoke(() -> getCache().close());
+    vm1.invoke(() -> getCache().close());
 
     // destroy the current data
     cleanDiskDirsInEveryVM();
 
     restoreBackup(2);
 
-    createPersistentRegions();
+    createPersistentRegions(vm0, vm1);
 
-    checkData(vm0, 0, 5, "A", "region1");
-    checkData(vm0, 0, 5, "B", "region2");
-    verifyUserFileRestored(vm0, lastModified0);
-    verifyUserFileRestored(vm1, lastModified1);
-  }
+    vm0.invoke(() -> {
+      validateData(0, 5, "A", regionName1);
+      validateData(0, 5, "B", regionName2);
+    });
 
-  private void createData() {
-    createData(vm0, 0, 5, "A", "region1");
-    createData(vm0, 0, 5, "B", "region2");
+    vm0.invoke(() -> verifyUserFileRestored(getDiskDirFor(vm0), lastModified0));
+    vm1.invoke(() -> verifyUserFileRestored(getDiskDirFor(vm1), lastModified1));
   }
 
   /**
    * Test of bug 42419.
    *
    * <p>
-   * TRAC 42419: backed up disk stores map contains null key instead of member; cannot restore
+   * TRAC #42419: backed up disk stores map contains null key instead of member; cannot restore
    * backup files
    */
   @Test
   public void testBackupFromMemberWithDiskStore() throws Exception {
-    createPersistentRegions();
+    createPersistentRegions(vm0, vm1);
 
-    createData();
+    vm0.invoke(() -> {
+      createData(0, 5, "A", regionName1);
+      createData(0, 5, "B", regionName2);
+    });
 
-    BackupStatus status = backupMember(vm1);
+    BackupStatus status = vm1.invoke(() -> backupMember());
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
 
     for (DistributedMember key : status.getBackedUpDiskStores().keySet()) {
@@ -212,41 +250,45 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
 
     validateBackupComplete();
 
-    closeCache(vm0);
-    closeCache(vm1);
+    vm0.invoke(() -> getCache().close());
+    vm1.invoke(() -> getCache().close());
 
     // destroy the current data
     cleanDiskDirsInEveryVM();
 
     restoreBackup(2);
 
-    createPersistentRegions();
+    createPersistentRegions(vm0, vm1);
 
-    checkData(vm0, 0, 5, "A", "region1");
-    checkData(vm0, 0, 5, "B", "region2");
+    vm0.invoke(() -> {
+      validateData(0, 5, "A", regionName1);
+      validateData(0, 5, "B", regionName2);
+    });
   }
 
   /**
    * Test for bug 42419
    *
    * <p>
-   * TRAC 42419: backed up disk stores map contains null key instead of member; cannot restore
+   * TRAC #42419: backed up disk stores map contains null key instead of member; cannot restore
    * backup files
    */
   @Test
   public void testBackupWhileBucketIsCreated() throws Exception {
-    createPersistentRegion(vm0).await();
+    vm0.invoke(() -> createRegions(vm0));
 
     // create a bucket on vm0
-    createData(vm0, 0, 1, "A", "region1");
+    vm0.invoke(() -> createData(0, 1, "A", regionName1));
 
     // create the pr on vm1, which won't have any buckets
-    createPersistentRegion(vm1).await();
+    vm1.invoke(() -> createRegions(vm1));
 
     CompletableFuture<BackupStatus> backupStatusFuture =
-        CompletableFuture.supplyAsync(() -> backupMember(vm2));
+        CompletableFuture.supplyAsync(() -> vm2.invoke(() -> backupMember()));
+
     CompletableFuture<Void> createDataFuture =
-        CompletableFuture.runAsync(() -> createData(vm0, 1, 5, "A", "region1"));
+        CompletableFuture.runAsync(() -> vm0.invoke(() -> createData(1, 5, "A", regionName1)));
+
     CompletableFuture.allOf(backupStatusFuture, createDataFuture);
 
     BackupStatus status = backupStatusFuture.get();
@@ -255,29 +297,30 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
 
     validateBackupComplete();
 
-    createData(vm0, 0, 5, "C", "region1");
+    vm0.invoke(() -> createData(0, 5, "C", regionName1));
 
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
 
-    closeCache(vm0);
-    closeCache(vm1);
+    vm0.invoke(() -> getCache().close());
+    vm1.invoke(() -> getCache().close());
 
     // destroy the current data
     cleanDiskDirsInEveryVM();
 
     restoreBackup(2);
 
-    createPersistentRegions();
+    createPersistentRegions(vm0, vm1);
 
-    checkData(vm0, 0, 1, "A", "region1");
+    vm0.invoke(() -> validateData(0, 1, "A", regionName1));
+
   }
 
   /**
    * Test for bug 42420. Invoke a backup when a bucket is in the middle of being moved.
    *
    * <p>
-   * TRAC 42420: Online backup files sometimes cannot be restored
+   * TRAC #42420: Online backup files sometimes cannot be restored
    */
   @Test
   @Parameters({"BEFORE_SENDING_DESTROYREGIONMESSAGE", "BEFORE_PROCESSING_REPLYMESSAGE"})
@@ -294,41 +337,36 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       DistributionMessageObserver.setInstance(createTestHookToBackup(whenToInvokeBackup));
     });
 
-    createPersistentRegion(vm0).await();
+    vm0.invoke(() -> createRegions(vm0));
 
     // create twos bucket on vm0
-    createData(vm0, 0, 2, "A", "region1");
+    vm0.invoke(() -> createData(0, 2, "A", regionName1));
 
     // create the pr on vm1, which won't have any buckets
-    createPersistentRegion(vm1).await();
+    vm1.invoke(() -> createRegions(vm1));
 
     // Perform a rebalance. This will trigger the backup in the middle of the bucket move.
     vm0.invoke("Do rebalance", () -> {
       RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
-      RebalanceResults results;
-      try {
-        results = op.getResults();
-        assertEquals(1, results.getTotalBucketTransfersCompleted());
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      RebalanceResults results = op.getResults();
+      assertThat(results.getTotalBucketTransfersCompleted()).isEqualTo(1);
     });
 
     validateBackupComplete();
 
-    createData(vm0, 0, 5, "C", "region1");
+    vm0.invoke(() -> createData(0, 5, "C", regionName1));
 
-    closeCache(vm0);
-    closeCache(vm1);
+    vm0.invoke(() -> getCache().close());
+    vm1.invoke(() -> getCache().close());
 
     // Destroy the current data
     cleanDiskDirsInEveryVM();
 
     restoreBackup(2);
 
-    createPersistentRegions();
+    createPersistentRegions(vm0, vm1);
 
-    checkData(vm0, 0, 2, "A", "region1");
+    vm0.invoke(() -> validateData(0, 2, "A", regionName1));
   }
 
   @Test
@@ -345,14 +383,18 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
           createTestHookToThrowIOExceptionBeforeProcessingPrepareBackupRequest(exceptionMessage));
     });
 
-    createPersistentRegions();
+    createPersistentRegions(vm0, vm1);
 
-    createData();
+    vm0.invoke(() -> {
+      createData(0, 5, "A", regionName1);
+      createData(0, 5, "B", regionName2);
+    });
 
-    assertThatThrownBy(() -> backupMember(vm2)).hasRootCauseInstanceOf(IOException.class);
+    assertThatThrownBy(() -> vm2.invoke(() -> backupMember()))
+        .hasRootCauseInstanceOf(IOException.class);
 
     // second backup should succeed because the observer and backup state has been cleared
-    BackupStatus status = backupMember(vm2);
+    BackupStatus status = vm2.invoke(() -> backupMember());
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
   }
@@ -361,13 +403,16 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
    * Make sure we don't report members without persistent data as backed up.
    */
   @Test
-  public void testBackupOverflow() throws Exception {
-    createPersistentRegion(vm0).await();
-    createOverflowRegion(vm1);
+  public void testBackupOverflow() {
+    vm0.invoke(() -> createRegions(vm0));
+    vm1.invoke(() -> createRegionWithOverflow(getDiskStoreFor(vm1)));
 
-    createData();
+    vm0.invoke(() -> {
+      createData(0, 5, "A", regionName1);
+      createData(0, 5, "B", regionName2);
+    });
 
-    BackupStatus status = backupMember(vm2);
+    BackupStatus status = vm2.invoke(() -> backupMember());
     assertThat(status.getBackedUpDiskStores()).hasSize(1);
     assertThat(status.getBackedUpDiskStores().values().iterator().next()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).isEmpty();
@@ -376,30 +421,21 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
   }
 
   @Test
-  public void testBackupPRWithOfflineMembers() throws Exception {
-    createPersistentRegion(vm0).await();
-    createPersistentRegion(vm1).await();
-    createPersistentRegion(vm2).await();
+  public void testBackupPRWithOfflineMembers() {
+    vm0.invoke(() -> createRegions(vm0));
+    vm1.invoke(() -> createRegions(vm1));
+    vm2.invoke(() -> createRegions(vm2));
 
-    createData();
+    vm0.invoke(() -> {
+      createData(0, 5, "A", regionName1);
+      createData(0, 5, "B", regionName2);
+    });
 
-    closeCache(vm2);
+    vm1.invoke(() -> getCache().close());
 
-    BackupStatus status = backupMember(vm3);
+    BackupStatus status = vm3.invoke(() -> backupMember());
     assertThat(status.getBackedUpDiskStores()).hasSize(2);
     assertThat(status.getOfflineDiskStores()).hasSize(2);
-  }
-
-  private DistributionMessageObserver createTestHookToBackup(
-      WhenToInvokeBackup backupInvocationTestHook) {
-    switch (backupInvocationTestHook) {
-      case BEFORE_SENDING_DESTROYREGIONMESSAGE:
-        return createTestHookToBackupBeforeSendingDestroyRegionMessage(() -> backupMember(vm2));
-      case BEFORE_PROCESSING_REPLYMESSAGE:
-        return createTestHookToBackupBeforeProcessingReplyMessage(() -> backupMember(vm2));
-      default:
-        throw new AssertionError("Invalid backupInvocationTestHook " + backupInvocationTestHook);
-    }
   }
 
   /**
@@ -407,31 +443,31 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
    * performing puts.
    */
   @Test
-  public void testRecoverySystemWithConcurrentPutter() throws Throwable {
-    createColatedPersistentRegions(vm1).await();
-    createColatedPersistentRegions(vm2).await();
+  public void testRecoverySystemWithConcurrentPutter() throws Exception {
+    vm1.invoke(() -> createColocatedRegions(vm1));
+    vm2.invoke(() -> createColocatedRegions(vm2));
 
-    createAccessor(vm0);
+    vm0.invoke(() -> createAccessor());
 
-    createData(vm0, 0, NUM_BUCKETS, "a", "region1");
-    createData(vm0, 0, NUM_BUCKETS, "a", "region2");
-
+    vm0.invoke(() -> {
+      createData(0, NUM_BUCKETS, "a", regionName1);
+      createData(0, NUM_BUCKETS, "a", regionName2);
+    });
 
     // backup the system. We use this to get a snapshot of vm1 and vm2
     // when they both are online. Recovering from this backup simulates
-    // a simulataneous kill and recovery.
-    backupMember(vm3);
+    // a simultaneous kill and recovery.
+    vm3.invoke(() -> backupMember());
 
-    closeCache(vm1);
-    closeCache(vm2);
+    vm1.invoke(() -> getCache().close());
+    vm2.invoke(() -> getCache().close());
 
     cleanDiskDirsInEveryVM();
     restoreBackup(2);
 
     // in vm0, start doing a bunch of concurrent puts.
-    AsyncInvocation async0 = vm0.invokeAsync(() -> {
-      Cache cache = getCache();
-      Region region = cache.getRegion("region1");
+    AsyncInvocation putsInVM0 = vm0.invokeAsync(() -> {
+      Region region = getCache().getRegion(regionName1);
       try {
         for (int i = 0;; i++) {
           try {
@@ -445,30 +481,46 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       }
     });
 
-    AsyncInvocation async1 = createColatedPersistentRegions(vm1);
-    AsyncInvocation async2 = createColatedPersistentRegions(vm2);
-    async1.await();
-    async2.await();
+    AsyncInvocation createRegionsInVM1 = vm1.invokeAsync(() -> createColocatedRegions(vm1));
+    AsyncInvocation createRegionsInVM2 = vm2.invokeAsync(() -> createColocatedRegions(vm2));
+
+    createRegionsInVM1.await();
+    createRegionsInVM2.await();
 
     // close the cache in vm0 to stop the async puts.
-    closeCache(vm0);
+    vm0.invoke(() -> getCache().close());
 
     // make sure we didn't get an exception
-    async0.await();
+    putsInVM0.await();
+  }
+
+  private DistributionMessageObserver createTestHookToBackup(
+      WhenToInvokeBackup backupInvocationTestHook) {
+    switch (backupInvocationTestHook) {
+      case BEFORE_SENDING_DESTROYREGIONMESSAGE:
+        return createTestHookToBackupBeforeSendingDestroyRegionMessage(
+            () -> vm2.invoke(() -> backupMember()));
+      case BEFORE_PROCESSING_REPLYMESSAGE:
+        return createTestHookToBackupBeforeProcessingReplyMessage(
+            () -> vm2.invoke(() -> backupMember()));
+      default:
+        throw new RuntimeException("Invalid backupInvocationTestHook " + backupInvocationTestHook);
+    }
   }
 
   private DistributionMessageObserver createTestHookToBackupBeforeProcessingReplyMessage(
-      Runnable task) {
+      final Runnable task) {
     return new DistributionMessageObserver() {
-      private volatile boolean done;
+
       private final AtomicInteger count = new AtomicInteger();
       private volatile int replyId = -0xBAD;
+      private volatile boolean done;
 
       @Override
       public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
         // the bucket move will send a destroy region message.
         if (message instanceof DestroyRegionMessage && !done) {
-          this.replyId = message.getProcessorId();
+          replyId = message.getProcessorId();
         }
       }
 
@@ -484,8 +536,9 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
   }
 
   private DistributionMessageObserver createTestHookToBackupBeforeSendingDestroyRegionMessage(
-      Runnable task) {
+      final Runnable task) {
     return new DistributionMessageObserver() {
+
       private volatile boolean done;
 
       @Override
@@ -499,26 +552,23 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     };
   }
 
-  private void cleanDiskDirsInEveryVM() {
-    workingDirByVm.forEach((vm, file) -> {
-      try {
-        FileUtils.deleteDirectory(file);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+  private void cleanDiskDirsInEveryVM() throws IOException {
+    FileUtils.deleteDirectory(getDiskDirFor(vm0));
+    FileUtils.deleteDirectory(getDiskDirFor(vm1));
+    FileUtils.deleteDirectory(getDiskDirFor(vm2));
+    FileUtils.deleteDirectory(getDiskDirFor(vm3));
   }
 
   private DistributionMessageObserver createTestHookToThrowIOExceptionBeforeProcessingPrepareBackupRequest(
       final String exceptionMessage) {
     return new DistributionMessageObserver() {
+
       @Override
       public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
         if (message instanceof PrepareBackupRequest) {
           DistributionMessageObserver.setInstance(null);
           IOException exception = new IOException(exceptionMessage);
-          AdminFailureResponse response =
-              AdminFailureResponse.create(message.getSender(), exception);
+          AdminFailureResponse response = create(message.getSender(), exception);
           response.setMsgId(((PrepareBackupRequest) message).getMsgId());
           dm.putOutgoing(response);
           throw new RuntimeException("Stop processing");
@@ -527,227 +577,207 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
     };
   }
 
-  private void createPersistentRegions() throws ExecutionException, InterruptedException {
-    AsyncInvocation create1 = createPersistentRegion(vm0);
-    AsyncInvocation create2 = createPersistentRegion(vm1);
-    create1.await();
-    create2.await();
+  private void createPersistentRegions(final VM... vms)
+      throws ExecutionException, InterruptedException {
+    Set<AsyncInvocation> createRegionAsyncs = new HashSet<>();
+    for (VM vm : vms) {
+      createRegionAsyncs.add(vm.invokeAsync(() -> createRegions(vm)));
+    }
+    for (AsyncInvocation createRegion : createRegionAsyncs) {
+      createRegion.await();
+    }
   }
 
   private void validateBackupComplete() {
     Pattern pattern = Pattern.compile(".*INCOMPLETE.*");
-    File[] files = backupBaseDir.listFiles((dir1, name) -> pattern.matcher(name).matches());
-    assertNotNull(files);
-    assertTrue(files.length == 0);
+    File[] files = backupBaseDir.listFiles((dir, name) -> pattern.matcher(name).matches());
+
+    assertThat(files).isNotNull().hasSize(0);
   }
 
-  private void deleteOldUserUserFile(final VM vm) {
-    vm.invoke(() -> {
-      File userDir = new File(workingDirByVm.get(vm), "userbackup-");
-      FileUtils.deleteDirectory(userDir);
-    });
+  private void deleteOldUserFile(final File dir) throws IOException {
+    File userDir = new File(dir, "userbackup-");
+    FileUtils.deleteDirectory(userDir);
   }
 
-  private long setBackupFiles(final VM vm) {
-    return vm.invoke(() -> {
-      File workingDir = workingDirByVm.get(vm);
-      File test1 = new File(workingDir, "test1");
-      File test2 = new File(test1, "test2");
-      File mytext = new File(test2, "my.txt");
-      final ArrayList<File> backuplist = new ArrayList<>();
-      test2.mkdirs();
-      Files.createFile(mytext.toPath());
-      long lastModified = mytext.lastModified();
-      backuplist.add(test2);
+  private long setBackupFiles(final File dir) throws IOException {
+    File dir1 = new File(dir, "test1");
+    File dir2 = new File(dir1, "test2");
+    dir2.mkdirs();
 
-      GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-      cache.setBackupFiles(backuplist);
+    File textFile = new File(dir2, "my.txt");
+    Files.createFile(textFile.toPath());
 
-      return lastModified;
-    });
+    List<File> backupList = new ArrayList<>();
+    backupList.add(dir2);
+    getCache().setBackupFiles(backupList);
+
+    return textFile.lastModified();
   }
 
-  private void verifyUserFileRestored(VM vm, final long lm) {
-    vm.invoke(() -> {
-      File workingDir = workingDirByVm.get(vm);
-      File test1 = new File(workingDir, "test1");
-      File test2 = new File(test1, "test2");
-      File mytext = new File(test2, "my.txt");
-      assertTrue(mytext.exists());
-      assertEquals(lm, mytext.lastModified());
-    });
+  private void verifyUserFileRestored(final File dir, final long expectedLastModified) {
+    File dir1 = new File(dir, "test1");
+    File dir2 = new File(dir1, "test2");
+    File textFile = new File(dir2, "my.txt");
+
+    assertThat(textFile).exists();
+    assertThat(textFile.lastModified()).isEqualTo(expectedLastModified);
   }
 
-  private AsyncInvocation createPersistentRegion(final VM vm) {
-    return vm.invokeAsync(() -> {
-      Cache cache = getCache();
-      DiskStore diskStore1 = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_1")).setMaxOplogSize(1)
-          .create(getUniqueName());
-
-      DiskStore diskStore2 = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_2")).setMaxOplogSize(1)
-          .create(getUniqueName() + 2);
-
-      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-          .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0).create());
-
-      regionFactory.setDiskStoreName(diskStore1.getName()).setDiskSynchronous(true)
-          .create("region1");
-      regionFactory.setDiskStoreName(diskStore2.getName()).setDiskSynchronous(true)
-          .create("region2");
-    });
+  private void createRegions(final VM vm) {
+    createRegion(regionName1, getUniqueName() + "-1", getDiskStoreFor(vm, 1));
+    createRegion(regionName2, getUniqueName() + "-2", getDiskStoreFor(vm, 2));
   }
 
-  private AsyncInvocation createColatedPersistentRegions(final VM vm) {
-    return vm.invokeAsync(() -> {
-      Cache cache = getCache();
-      DiskStore diskStore1 = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_1")).setMaxOplogSize(1)
-          .create(getUniqueName());
+  private void createRegion(final String regionName, final String diskStoreName,
+      final File diskDir) {
+    DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(toArray(diskDir));
+    diskStoreFactory.setMaxOplogSize(1);
 
-      DiskStore diskStore2 = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, "vm" + vm.getId() + "diskstores_2")).setMaxOplogSize(1)
-          .create(getUniqueName() + 2);
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setRedundantCopies(0);
 
-      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
-          .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0).create());
-
-      regionFactory.setDiskStoreName(diskStore1.getName()).setDiskSynchronous(true)
-          .create("region1");
-      regionFactory.setDiskStoreName(diskStore2.getName()).setDiskSynchronous(true)
-          .setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0)
-              .setColocatedWith("region1").create())
-          .create("region2");
-    });
+    RegionFactory regionFactory = getCache().createRegionFactory(PARTITION_PERSISTENT);
+    regionFactory.setDiskStoreName(diskStoreFactory.create(diskStoreName).getName());
+    regionFactory.setDiskSynchronous(true);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+    regionFactory.create(regionName);
   }
 
-  private void createOverflowRegion(final VM vm) {
-    vm.invoke(() -> {
-      Cache cache = getCache();
-      DiskStore diskStore = cache.createDiskStoreFactory()
-          .setDiskDirs(getDiskDirs(vm, getUniqueName())).create(getUniqueName());
-
-      cache.createRegionFactory(RegionShortcut.REPLICATE).setDiskStoreName(diskStore.getName())
-          .setDiskSynchronous(true)
-          .setEvictionAttributes(
-              EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
-          .create("region3");
-    });
+  private File[] toArray(final File file) {
+    return new File[] {file};
   }
 
-  @Override
-  protected void createData(VM vm, final int startKey, final int endKey, final String value) {
-    createData(vm, startKey, endKey, value, getPartitionedRegionName());
+  private void createColocatedRegions(final VM vm) {
+    DiskStoreFactory diskStoreFactory1 = getCache().createDiskStoreFactory();
+    diskStoreFactory1.setDiskDirs(toArray(getDiskStoreFor(vm, 1)));
+    diskStoreFactory1.setMaxOplogSize(1);
+
+    DiskStoreFactory diskStoreFactory2 = getCache().createDiskStoreFactory();
+    diskStoreFactory2.setDiskDirs(toArray(getDiskStoreFor(vm, 2)));
+    diskStoreFactory2.setMaxOplogSize(1);
+
+    PartitionAttributesFactory partitionAttributesFactory1 = new PartitionAttributesFactory();
+    partitionAttributesFactory1.setRedundantCopies(0);
+
+    RegionFactory regionFactory1 = getCache().createRegionFactory(PARTITION_PERSISTENT);
+    regionFactory1.setPartitionAttributes(partitionAttributesFactory1.create());
+    regionFactory1.setDiskStoreName(diskStoreFactory1.create(getUniqueName() + "-1").getName());
+    regionFactory1.setDiskSynchronous(true);
+    regionFactory1.create(regionName1);
+
+    PartitionAttributesFactory partitionAttributesFactory2 = new PartitionAttributesFactory();
+    partitionAttributesFactory2.setColocatedWith(regionName1);
+    partitionAttributesFactory2.setRedundantCopies(0);
+
+    RegionFactory regionFactory2 = getCache().createRegionFactory(PARTITION_PERSISTENT);
+    regionFactory2.setDiskStoreName(diskStoreFactory2.create(getUniqueName() + "-2").getName());
+    regionFactory2.setDiskSynchronous(true);
+    regionFactory2.setPartitionAttributes(partitionAttributesFactory2.create());
+    regionFactory2.create(regionName2);
   }
 
-  @Override
-  protected void createData(VM vm, final int startKey, final int endKey, final String value,
+  private void createRegionWithOverflow(final File diskDir) {
+    DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(toArray(diskDir));
+
+    EvictionAttributes evictionAttributes = createLIFOEntryAttributes(1, OVERFLOW_TO_DISK);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(REPLICATE);
+    regionFactory.setDiskStoreName(diskStoreFactory.create(getUniqueName()).getName());
+    regionFactory.setDiskSynchronous(true);
+    regionFactory.setEvictionAttributes(evictionAttributes);
+    regionFactory.create(regionName3);
+  }
+
+  private void createData(final int startKey, final int endKey, final String value,
       final String regionName) {
-    vm.invoke(() -> {
-      Cache cache = getCache();
-      Region region = cache.getRegion(regionName);
+    Region<Integer, String> region = getCache().getRegion(regionName);
 
-      for (int i = startKey; i < endKey; i++) {
-        region.put(i, value);
-      }
-    });
+    for (int i = startKey; i < endKey; i++) {
+      region.put(i, value);
+    }
   }
 
-  @Override
-  protected void checkData(VM vm, final int startKey, final int endKey, final String value) {
-    checkData(vm, startKey, endKey, value, getPartitionedRegionName());
-  }
-
-  @Override
-  protected void checkData(VM vm, final int startKey, final int endKey, final String value,
+  private void validateData(final int startKey, final int endKey, final String value,
       final String regionName) {
-    vm.invoke(() -> {
-      Region region = getCache().getRegion(regionName);
+    Region region = getCache().getRegion(regionName);
 
-      for (int i = startKey; i < endKey; i++) {
-        assertEquals(value, region.get(i));
-      }
-    });
+    for (int i = startKey; i < endKey; i++) {
+      assertThat(region.get(i)).isEqualTo(value);
+    }
   }
 
-  @Override
-  protected void closeCache(final VM vm) {
-    vm.invoke(() -> getCache().close());
+  private BackupStatus backupMember() {
+    return new BackupOperation(getCache().getDistributionManager(), getCache())
+        .backupAllMembers(backupBaseDir.toString(), null);
   }
 
-  @Override
-  protected Set<Integer> getBucketList(VM vm) {
-    return getBucketList(vm, getPartitionedRegionName());
-  }
-
-  @Override
-  protected Set<Integer> getBucketList(VM vm, final String regionName) {
-    return vm.invoke(() -> {
-      Cache cache = getCache();
-      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-      return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
-    });
-  }
-
-  private File[] getDiskDirs(VM vm, String dsName) {
-    File[] diskStoreDirs = new File[1];
-    diskStoreDirs[0] = new File(workingDirByVm.get(vm), dsName);
-    diskStoreDirs[0].mkdirs();
-    return diskStoreDirs;
-  }
-
-  private BackupStatus backupMember(final VM vm) {
-    return vm.invoke("backup", () -> {
-      try {
-        return new BackupOperation(getCache().getDistributionManager(), getCache())
-            .backupAllMembers(
-                backupBaseDir.toString(), null);
-      } catch (ManagementException e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
-
-  protected void restoreBackup(final int expectedNumScripts)
+  private void restoreBackup(final int expectedScriptCount)
       throws IOException, InterruptedException {
     Collection<File> restoreScripts =
         listFiles(backupBaseDir, new RegexFileFilter(".*restore.*"), DIRECTORY);
-    assertThat(restoreScripts).hasSize(expectedNumScripts);
+
+    assertThat(restoreScripts).hasSize(expectedScriptCount);
+
     for (File script : restoreScripts) {
-      execute(script);
+      executeScript(script);
     }
   }
 
-  private void execute(final File script) throws IOException, InterruptedException {
-    ProcessBuilder processBuilder = new ProcessBuilder(script.getAbsolutePath());
-    processBuilder.redirectErrorStream(true);
-    Process process = processBuilder.start();
+  private void executeScript(final File script) throws IOException, InterruptedException {
+    process = new ProcessBuilder(script.getAbsolutePath()).redirectErrorStream(true).start();
 
-    try (BufferedReader reader =
-        new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        logger.info("OUTPUT:" + line);
-      }
-    }
+    processReader = new ProcessStreamReader.Builder(process).inputStream(process.getInputStream())
+        .inputListener(line -> logger.info("OUTPUT: {}", line))
+        .readingMode(getReadingMode()).continueReadingMillis(2 * 1000).build().start();
 
-    assertThat(process.waitFor()).isEqualTo(0);
+    assertThat(process.waitFor(5, MINUTES)).isTrue();
+    assertThat(process.exitValue()).isEqualTo(0);
   }
 
-  private void createAccessor(VM vm) {
-    vm.invoke(() -> {
-      Cache cache = getCache();
+  private void createAccessor() {
+    PartitionAttributesFactory partitionAttributesFactory1 = new PartitionAttributesFactory();
+    partitionAttributesFactory1.setLocalMaxMemory(0);
+    partitionAttributesFactory1.setRedundantCopies(0);
 
-      cache.createRegionFactory(RegionShortcut.PARTITION)
-          .setPartitionAttributes(
-              new PartitionAttributesFactory().setRedundantCopies(0).setLocalMaxMemory(0).create())
-          .create("region1");
-      cache.createRegionFactory(RegionShortcut.PARTITION)
-          .setPartitionAttributes(new PartitionAttributesFactory().setColocatedWith("region1")
-              .setRedundantCopies(0).setLocalMaxMemory(0).create())
-          .create("region2");
-    });
+    RegionFactory regionFactory1 = getCache().createRegionFactory(PARTITION);
+    regionFactory1.setPartitionAttributes(partitionAttributesFactory1.create());
+    regionFactory1.create(regionName1);
+
+    PartitionAttributesFactory partitionAttributesFactory2 = new PartitionAttributesFactory();
+    partitionAttributesFactory2.setLocalMaxMemory(0);
+    partitionAttributesFactory2.setRedundantCopies(0);
+    partitionAttributesFactory2.setColocatedWith(regionName1);
+
+    RegionFactory regionFactory2 = getCache().createRegionFactory(PARTITION);
+    regionFactory2.setPartitionAttributes(partitionAttributesFactory2.create());
+    regionFactory2.create(regionName2);
+  }
+
+  private InternalCache getCache() {
+    return cacheRule.getOrCreateCache();
+  }
+
+  private String getUniqueName() {
+    return uniqueName;
+  }
+
+  private File getDiskStoreFor(final VM vm) {
+    return new File(getDiskDirFor(vm), getUniqueName());
+  }
+
+  private File getDiskStoreFor(final VM vm, final int which) {
+    return new File(getDiskDirFor(vm), "vm-" + vm.getId() + "-diskstores-" + which);
+  }
+
+  private File getDiskDirFor(final VM vm) {
+    return diskDirRule.getDiskDirFor(vm);
+  }
+
+  private ReadingMode getReadingMode() {
+    return SystemUtils.isWindows() ? ReadingMode.NON_BLOCKING : ReadingMode.BLOCKING;
   }
 
   enum WhenToInvokeBackup {

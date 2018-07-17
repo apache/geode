@@ -74,9 +74,9 @@ public class LocateEntryDUnitTest {
     gfsh.executeAndAssertThat("put --region=regionB/regionBB --key=key --value=value")
         .statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/regionA", 2);
-    locator.waitTillRegionsAreReadyOnServers("/regionB", 2);
-    locator.waitTillRegionsAreReadyOnServers("/regionB/regionBB", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB/regionBB", 2);
   }
 
   @Test

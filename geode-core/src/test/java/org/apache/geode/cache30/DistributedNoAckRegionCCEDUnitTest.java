@@ -46,7 +46,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDUnitTest {
@@ -132,9 +131,6 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     waitForAsyncProcessing(vm1Ops, "");
     waitForAsyncProcessing(vm2Ops, "");
 
-    // if (a0failed && a1failed) {
-    // fail("neither member saw event conflation - check stats for " + name);
-    // }
     Wait.pause(2000);// this test has with noack, thus we should wait before validating entries
     // check consistency of the regions
     Map r0Contents = (Map) vm0.invoke(() -> this.getCCRegionContents());
@@ -278,14 +274,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
   @Test
   public void testTombstones() throws Exception {
-    // for (int i=0; i<1000; i++) {
-    // System.out.println("starting run #"+i);
     versionTestTombstones();
-    // if (i < 999) {
-    // tearDown();
-    // setUp();
-    // }
-    // }
   }
 
 
@@ -370,7 +359,6 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
    * This tests the concurrency versioning system to ensure that event conflation happens correctly
    * and that the statistic is being updated properly
    */
-  @Category(FlakyTest.class) // GEODE-976: time sensitive, thread sleeps, relies on stat values
   @Test
   public void testConcurrentEventsOnEmptyRegion() {
     versionTestConcurrentEventsOnEmptyRegion();
@@ -390,207 +378,4 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
   public void testGetAllWithVersions() {
     versionTestGetAllWithVersions();
   }
-
-
-
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // these methods can be uncommented to inhibit test execution
-  // when new tests are added
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  // @Override
-  // public void testNonblockingGetInitialImage() throws Throwable {
-  // }
-  // @Override
-  // public void testConcurrentOperations() throws Exception {
-  // }
-  //
-  // @Override
-  // public void testDistributedUpdate() {
-  // }
-  //
-  // @Override
-  // public void testDistributedGet() {
-  // }
-  //
-  // @Override
-  // public void testDistributedPutNoUpdate() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testDefinedEntryUpdated() {
-  // }
-  //
-  // @Override
-  // public void testDistributedDestroy() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testDistributedRegionDestroy() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testLocalRegionDestroy() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testDistributedInvalidate() {
-  // }
-  //
-  // @Override
-  // public void testDistributedInvalidate4() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testDistributedRegionInvalidate() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testRemoteCacheListener() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testRemoteCacheListenerInSubregion() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testRemoteCacheLoader() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testRemoteCacheLoaderArg() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testRemoteCacheLoaderException() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testCacheLoaderWithNetSearch() throws CacheException {
-  // }
-  //
-  // @Override
-  // public void testCacheLoaderWithNetLoad() throws CacheException {
-  // }
-  //
-  // @Override
-  // public void testNoRemoteCacheLoader() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testNoLoaderWithInvalidEntry() {
-  // }
-  //
-  // @Override
-  // public void testRemoteCacheWriter() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testLocalAndRemoteCacheWriters() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testCacheLoaderModifyingArgument() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testRemoteLoaderNetSearch() throws CacheException {
-  // }
-  //
-  // @Override
-  // public void testLocalCacheLoader() {
-  // }
-  //
-  // @Override
-  // public void testDistributedPut() throws Exception {
-  // }
-  //
-  // @Override
-  // public void testReplicate() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testDeltaWithReplicate() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testGetInitialImage() {
-  // }
-  //
-  // @Override
-  // public void testLargeGetInitialImage() {
-  // }
-  //
-  // @Override
-  // public void testMirroredDataFromNonMirrored() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testNoMirroredDataToNonMirrored() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testMirroredLocalLoad() {
-  // }
-  //
-  // @Override
-  // public void testMirroredNetLoad() {
-  // }
-  //
-  // @Override
-  // public void testNoRegionKeepAlive() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testNetSearchObservesTtl() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testNetSearchObservesIdleTime() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testEntryTtlDestroyEvent() throws InterruptedException {
-  // }
-  //
-  // @Override
-  // public void testUpdateResetsIdleTime() throws InterruptedException {
-  // }
-  // @Override
-  // public void testTXNonblockingGetInitialImage() throws Throwable {
-  // }
-  //
-  // @Override
-  // public void testNBRegionInvalidationDuringGetInitialImage() throws Throwable {
-  // }
-  //
-  // @Override
-  // public void testNBRegionDestructionDuringGetInitialImage() throws Throwable {
-  // }
-  //
-  // @Override
-  // public void testNoDataSerializer() {
-  // }
-  //
-  // @Override
-  // public void testNoInstantiator() {
-  // }
-  //
-  // @Override
-  // public void testTXSimpleOps() throws Exception {
-  // }
-  //
-  // @Override
-  // public void testTXUpdateLoadNoConflict() throws Exception {
-  // }
-  //
-  // @Override
-  // public void testTXMultiRegion() throws Exception {
-  // }
-  //
-  // @Override
-  // public void testTXRmtMirror() throws Exception {
-  // }
-
-
 }

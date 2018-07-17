@@ -71,7 +71,7 @@ public class ExecuteFunctionCommandDUnitTest {
         .statusIsSuccess()
         .tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
-    locator.waitTillRegionsAreReadyOnServers("/regionA", 2);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 2);
 
     server1.invoke(() -> {
       Region region = ClusterStartupRule.getCache().getRegion("/regionA");

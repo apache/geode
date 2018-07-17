@@ -55,7 +55,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -259,7 +258,6 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
     Awaitility.await().until(joinThread(putThread));
   }
 
-  @Category(FlakyTest.class) // GEODE-925: time sensitive, async actions, short timeouts
   @Test
   public void testRangeIndexWithIndexAndQueryFromClauseMisMatch() {
     // Create caches

@@ -33,17 +33,18 @@ import org.apache.geode.internal.net.SocketCreator;
  * @since GemFire prPersistSprint1
  */
 public class PersistentMemberPattern implements PersistentID, Comparable<PersistentMemberPattern> {
-  protected InetAddress host;
-  protected String directory;
-  protected UUID diskStoreID;
-  protected long revokedTime;
+
+  private InetAddress host;
+  private String directory;
+  private UUID diskStoreID;
+  private long revokedTime;
 
   public PersistentMemberPattern(PersistentMemberID id) {
-    this(id.host, id.directory, id.diskStoreId.toUUID(), -1);
+    this(id.host, id.directory, id.diskStoreId.toUUID(), 0);
   }
 
   public PersistentMemberPattern(InetAddress host, String directory) {
-    this(host, directory, null, -1);
+    this(host, directory, null, 0);
   }
 
   public PersistentMemberPattern(InetAddress host, String directory, long revokedTime) {
@@ -51,7 +52,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
   }
 
   public PersistentMemberPattern(UUID id) {
-    this(null, null, id, -1);
+    this(null, null, id, 0);
   }
 
   public PersistentMemberPattern(InetAddress host, String directory, UUID diskStoreID,
@@ -62,14 +63,15 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     this.diskStoreID = diskStoreID;
   }
 
-  // Used for deserialization only
-  public PersistentMemberPattern() {}
+  public PersistentMemberPattern() {
+    // Used for deserialization only
+  }
 
   public boolean matches(PersistentMemberID id) {
-    boolean matches = true;
     if (id == null) {
       return false;
     }
+    boolean matches = true;
     matches &= host == null || host.equals(id.host);
     matches &= directory == null || directory.equals(id.directory);
     matches &= diskStoreID == null
@@ -96,6 +98,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
       result.append(SocketCreator.getHostName(host));
       result.append(":");
       result.append(directory);
+      result.append(",revoked@").append(revokedTime);
       result.append("]");
     }
 
@@ -142,18 +145,22 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     return true;
   }
 
+  @Override
   public InetAddress getHost() {
     return host;
   }
 
+  @Override
   public String getDirectory() {
     return directory;
   }
 
+  @Override
   public UUID getUUID() {
     return diskStoreID;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     boolean hasHost = in.readBoolean();
     if (hasHost) {
@@ -167,6 +174,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     revokedTime = in.readLong();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeBoolean(host != null);
     if (host != null) {
@@ -181,6 +189,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     out.writeLong(revokedTime);
   }
 
+  @Override
   public int compareTo(PersistentMemberPattern o) {
     int result = compare(diskStoreID, o.diskStoreID);
     if (result != 0) {

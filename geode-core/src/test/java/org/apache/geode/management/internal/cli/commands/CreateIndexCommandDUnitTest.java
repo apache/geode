@@ -108,7 +108,7 @@ public class CreateIndexCommandDUnitTest {
   @Test
   public void regionExistInClusterConfig() {
     gfsh.executeAndAssertThat("create region --name=regionB --type=REPLICATE").statusIsSuccess();
-    locator.waitTillRegionsAreReadyOnServers("/regionB", 1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB", 1);
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
