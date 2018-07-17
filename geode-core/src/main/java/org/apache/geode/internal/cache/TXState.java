@@ -53,7 +53,6 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.TXManagerCancelledException;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
@@ -106,10 +105,7 @@ public class TXState implements TXStateInterface {
    * and afterCompletion so that beforeCompletion can obtain locks for the afterCompletion step.
    * This is that thread
    */
-  protected volatile TXStateSynchronizationRunnable syncRunnable;
-
-  private volatile SynchronizationCommitConflictException beforeCompletionException;
-  private volatile RuntimeException afterCompletionException;
+  private volatile TXStateSynchronizationRunnable syncRunnable;
 
   // Internal testing hooks
   private Runnable internalAfterReservation;
@@ -1028,9 +1024,6 @@ public class TXState implements TXStateInterface {
     Executor exec = getExecutor();
     exec.execute(sync);
     sync.waitForFirstExecution();
-    if (getBeforeCompletionException() != null) {
-      throw getBeforeCompletionException();
-    }
   }
 
   TXStateSynchronizationRunnable createTxStateSynchronizationRunnable() {
@@ -1046,12 +1039,7 @@ public class TXState implements TXStateInterface {
   }
 
   Executor getExecutor() {
-    return InternalDistributedSystem.getConnectedInstance().getDistributionManager()
-        .getWaitingThreadPool();
-  }
-
-  SynchronizationCommitConflictException getBeforeCompletionException() {
-    return beforeCompletionException;
+    return getCache().getDistributionManager().getWaitingThreadPool();
   }
 
   private void setSynchronizationRunnable(TXStateSynchronizationRunnable synchronizationRunnable) {
@@ -1099,10 +1087,11 @@ public class TXState implements TXStateInterface {
     } catch (CommitConflictException commitConflict) {
       cleanup(true);
       proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
-      beforeCompletionException = new SynchronizationCommitConflictException(
-          LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
-              .toLocalizedString(getTransactionId()),
-          commitConflict);
+      getSynchronizationRunnable()
+          .setBeforeCompletionException(new SynchronizationCommitConflictException(
+              LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
+                  .toLocalizedString(getTransactionId()),
+              commitConflict));
     }
   }
 
@@ -1127,9 +1116,6 @@ public class TXState implements TXStateInterface {
     TXStateSynchronizationRunnable sync = getSynchronizationRunnable();
     if (sync != null) {
       sync.runSecondRunnable(afterCompletion);
-      if (getAfterCompletionException() != null) {
-        throw getAfterCompletionException();
-      }
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {
@@ -1142,10 +1128,6 @@ public class TXState implements TXStateInterface {
 
   TXStateSynchronizationRunnable getSynchronizationRunnable() {
     return this.syncRunnable;
-  }
-
-  RuntimeException getAfterCompletionException() {
-    return afterCompletionException;
   }
 
   void doAfterCompletion(int status) {
@@ -1176,10 +1158,10 @@ public class TXState implements TXStateInterface {
           Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
       }
     } catch (RuntimeException exception) {
-      afterCompletionException = exception;
+      getSynchronizationRunnable().setAfterCompletionException(exception);
     } catch (InternalGemFireError error) {
       TransactionException exception = new TransactionException(error);
-      afterCompletionException = exception;
+      getSynchronizationRunnable().setAfterCompletionException(exception);
     }
 
   }
