@@ -46,6 +46,8 @@ import org.apache.geode.test.junit.categories.PartitioningTest;
 @Category({PartitioningTest.class})
 public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
+  public static final String REGION_NAME = "Quarter";
+
   public FixedPartitioningDUnitTest() {
     super();
   }
@@ -71,7 +73,8 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition(null, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa);
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(
+          REGION_NAME,
           fpaList, 0, 40, 3, new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     } catch (Exception illegal) {
@@ -459,7 +462,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
 
     getBlackboard().initBlackboard();
-    //
+
     member1.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
     member2.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
     member3.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
