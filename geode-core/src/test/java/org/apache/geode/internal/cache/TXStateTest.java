@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -26,107 +25,66 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.Executor;
-
 import javax.transaction.Status;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TXStateTest {
-  private CancelCriterion cancelCriterion;
-
   private TXStateProxyImpl txStateProxy;
   private CommitConflictException exception;
-  private TXStateSynchronizationRunnable txStateSynch;
-  private SynchronizationCommitConflictException synchronizationCommitConflictException;
-  private RuntimeException runtimeException;
   private TransactionDataNodeHasDepartedException transactionDataNodeHasDepartedException;
 
   @Before
   public void setup() {
     txStateProxy = mock(TXStateProxyImpl.class);
-
-    cancelCriterion = mock(CancelCriterion.class);
     exception = new CommitConflictException("");
-    txStateSynch = mock(TXStateSynchronizationRunnable.class);
-    synchronizationCommitConflictException = new SynchronizationCommitConflictException("");
-    runtimeException = new RuntimeException();
     transactionDataNodeHasDepartedException = new TransactionDataNodeHasDepartedException("");
 
     when(txStateProxy.getTxMgr()).thenReturn(mock(TXManagerImpl.class));
   }
 
-  @Test
-  public void beforeCompletionThrowsSynchronizationCommitConflictExceptionIfBeforeCompletionExceptionIsSet() {
-    TXState txState = spy(new TXState(txStateProxy, true));
-
-    doReturn(mock(Executor.class)).when(txState).getExecutor();
-    doReturn(txStateSynch).when(txState).createTxStateSynchronizationRunnable();
-    doThrow(synchronizationCommitConflictException).when(txStateSynch).waitForFirstExecution();
-
-    assertThatThrownBy(() -> txState.beforeCompletion())
-        .isSameAs(synchronizationCommitConflictException);
-  }
 
   @Test
-  public void beforeCompletionExceptionIsSetWhenDoBeforeCompletionCouldNotLockKeys() {
+  public void beforeCompletionThrowsIfReserveAndCheckFails() {
     TXState txState = spy(new TXState(txStateProxy, true));
     doThrow(exception).when(txState).reserveAndCheck();
-    doReturn(txStateSynch).when(txState).getSynchronizationRunnable();
 
-    txState.doBeforeCompletion();
-    verify(txStateSynch, times(1)).setBeforeCompletionException(any());
+    assertThatThrownBy(() -> txState.beforeCompletion())
+        .isInstanceOf(SynchronizationCommitConflictException.class);
   }
 
 
   @Test
-  public void afterCompletionThrowsExceptionIfAfterCompletionExceptionIsSet() {
-    TXState txState = spy(new TXState(txStateProxy, true));
-
-    doReturn(txStateSynch).when(txState).getSynchronizationRunnable();
-    doThrow(runtimeException).when(txStateSynch).runSecondRunnable(any());
-
-    assertThatThrownBy(() -> txState.afterCompletion(Status.STATUS_COMMITTED))
-        .isSameAs(runtimeException);
-  }
-
-  @Test
-  public void afterCompletionExceptionIsSetWhenCommitFailedWithTransactionDataNodeHasDepartedException() {
+  public void afterCompletionThrowsIfCommitFails() {
     TXState txState = spy(new TXState(txStateProxy, true));
     doReturn(mock(InternalCache.class)).when(txState).getCache();
-    // txState.reserveAndCheck();
-    doReturn(txStateSynch).when(txState).getSynchronizationRunnable();
+    doReturn(true).when(txState).wasBeforeCompletionCalled();
+    txState.reserveAndCheck();
     doThrow(transactionDataNodeHasDepartedException).when(txState).commit();
 
-    txState.doAfterCompletion(Status.STATUS_COMMITTED);
-    verify(txStateSynch, times(1)).setAfterCompletionException(any());
+    assertThatThrownBy(() -> txState.afterCompletion(Status.STATUS_COMMITTED))
+        .isSameAs(transactionDataNodeHasDepartedException);
   }
 
   @Test
-  public void afterCompletionExceptionIsSetToTransactionExceptionWhenCommitFailedWithCommitConflictException() {
+  public void afterCompletionThrowsTransactionExceptionIfCommitFailedCommitConflictException() {
     TXState txState = spy(new TXState(txStateProxy, true));
     doReturn(mock(InternalCache.class)).when(txState).getCache();
-    doReturn(txStateSynch).when(txState).getSynchronizationRunnable();
+    doReturn(true).when(txState).wasBeforeCompletionCalled();
     doThrow(exception).when(txState).commit();
 
-    txState.doAfterCompletion(Status.STATUS_COMMITTED);
-
-    verify(txStateSynch, times(1)).setAfterCompletionException(any());
-    // TODO check InternalGemFireError
-    // TransactionException transactionException =
-    // (TransactionException) txState.getAfterCompletionException();
-    // assertThat(transactionException.getCause()).isInstanceOf(InternalGemFireError.class);
+    assertThatThrownBy(() -> txState.afterCompletion(Status.STATUS_COMMITTED))
+        .isInstanceOf(TransactionException.class);
   }
-
 
   @Test
   public void afterCompletionCanCommitJTA() {
@@ -134,7 +92,8 @@ public class TXStateTest {
     doReturn(mock(InternalCache.class)).when(txState).getCache();
     txState.reserveAndCheck();
     txState.closed = true;
-    txState.doAfterCompletion(Status.STATUS_COMMITTED);
+    doReturn(true).when(txState).wasBeforeCompletionCalled();
+    txState.afterCompletion(Status.STATUS_COMMITTED);
 
     assertThat(txState.locks).isNull();
     verify(txState, times(1)).saveTXCommitMessageForClientFailover();

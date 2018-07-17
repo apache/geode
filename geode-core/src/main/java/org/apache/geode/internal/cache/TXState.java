@@ -24,12 +24,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Status;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -100,12 +98,7 @@ public class TXState implements TXStateInterface {
    */
   private int modSerialNum;
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<EntryEventImpl>();
-  /**
-   * for client/server JTA transactions we need to have a single thread handle both beforeCompletion
-   * and afterCompletion so that beforeCompletion can obtain locks for the afterCompletion step.
-   * This is that thread
-   */
-  private volatile TXStateSynchronizationRunnable syncRunnable;
+  private volatile boolean beforeCompletionCalled;
 
   // Internal testing hooks
   private Runnable internalAfterReservation;
@@ -859,10 +852,6 @@ public class TXState implements TXStateInterface {
   }
 
   protected void cleanup() {
-    cleanup(false);
-  }
-
-  protected void cleanup(boolean isBeforeCompletion) {
     IllegalArgumentException iae = null;
     try {
       this.closed = true;
@@ -915,9 +904,6 @@ public class TXState implements TXStateInterface {
     } finally {
       synchronized (this.completionGuard) {
         this.completionGuard.notifyAll();
-      }
-      if (this.syncRunnable != null && !isBeforeCompletion) {
-        this.syncRunnable.abort();
       }
       if (iae != null && !this.proxy.getCache().isClosed()) {
         throw iae;
@@ -1018,35 +1004,15 @@ public class TXState implements TXStateInterface {
     if (this.closed) {
       throw new TXManagerCancelledException();
     }
-    TXStateSynchronizationRunnable sync = createTxStateSynchronizationRunnable();
-    setSynchronizationRunnable(sync);
-
-    Executor exec = getExecutor();
-    exec.execute(sync);
-    sync.waitForFirstExecution();
+    if (beforeCompletionCalled) {
+      // do not re-execute beforeCompletion again
+      return;
+    }
+    beforeCompletionCalled = true;
+    doBeforeCompletion();
   }
 
-  TXStateSynchronizationRunnable createTxStateSynchronizationRunnable() {
-    Runnable beforeCompletion = new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      public void run() {
-        doBeforeCompletion();
-      }
-    };
-
-    return new TXStateSynchronizationRunnable(getCache().getCancelCriterion(),
-        beforeCompletion);
-  }
-
-  Executor getExecutor() {
-    return getCache().getDistributionManager().getWaitingThreadPool();
-  }
-
-  private void setSynchronizationRunnable(TXStateSynchronizationRunnable synchronizationRunnable) {
-    syncRunnable = synchronizationRunnable;
-  }
-
-  void doBeforeCompletion() {
+  private void doBeforeCompletion() {
     final long opStart = CachePerfStats.getStatTime();
     this.jtaLifeTime = opStart - getBeginTime();
     try {
@@ -1085,13 +1051,12 @@ public class TXState implements TXStateInterface {
         }
       }
     } catch (CommitConflictException commitConflict) {
-      cleanup(true);
+      cleanup();
       proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
-      getSynchronizationRunnable()
-          .setBeforeCompletionException(new SynchronizationCommitConflictException(
-              LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
-                  .toLocalizedString(getTransactionId()),
-              commitConflict));
+      throw new SynchronizationCommitConflictException(
+          LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
+              .toLocalizedString(getTransactionId()),
+          commitConflict);
     }
   }
 
@@ -1103,19 +1068,11 @@ public class TXState implements TXStateInterface {
   @Override
   public void afterCompletion(int status) {
     this.proxy.getTxMgr().setTXState(null);
-
-    Runnable afterCompletion = new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      public void run() {
-        doAfterCompletion(status);
-      }
-    };
     // if there was a beforeCompletion call then there will be a thread
     // sitting in the waiting pool to execute afterCompletion. Otherwise
     // throw FailedSynchronizationException().
-    TXStateSynchronizationRunnable sync = getSynchronizationRunnable();
-    if (sync != null) {
-      sync.runSecondRunnable(afterCompletion);
+    if (wasBeforeCompletionCalled()) {
+      doAfterCompletion(status);
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {
@@ -1126,11 +1083,7 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  TXStateSynchronizationRunnable getSynchronizationRunnable() {
-    return this.syncRunnable;
-  }
-
-  void doAfterCompletion(int status) {
+  private void doAfterCompletion(int status) {
     final long opStart = CachePerfStats.getStatTime();
     try {
       switch (status) {
@@ -1157,13 +1110,13 @@ public class TXState implements TXStateInterface {
         default:
           Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
       }
-    } catch (RuntimeException exception) {
-      getSynchronizationRunnable().setAfterCompletionException(exception);
     } catch (InternalGemFireError error) {
-      TransactionException exception = new TransactionException(error);
-      getSynchronizationRunnable().setAfterCompletionException(exception);
+      throw new TransactionException(error);
     }
+  }
 
+  boolean wasBeforeCompletionCalled() {
+    return beforeCompletionCalled;
   }
 
   void saveTXCommitMessageForClientFailover() {
