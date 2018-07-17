@@ -27,15 +27,12 @@ import java.util.Arrays;
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SerializableTemporaryFolder}.
  */
-@Category(UnitTest.class)
 public class SerializableTemporaryFolderTest {
 
   @Rule

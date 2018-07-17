@@ -40,7 +40,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 
@@ -54,10 +53,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @SuppressWarnings("unchecked")
-@Category(UnitTest.class)
 public class AbstractRegionMapTxApplyDestroyTest {
   // parameters
   private Object key = "key";

@@ -56,7 +56,6 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.test.dunit.VM;
 
 public class LuceneTestUtilities {
   public static final String INDEX_NAME = "index";
@@ -149,28 +148,6 @@ public class LuceneTestUtilities {
       System.out.println("IntRangeQueryProvider, using java serializable");
       return luceneQuery;
     }
-  }
-
-  public static Region initDataStoreForFixedPR(final Cache cache) throws Exception {
-    List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
-    int vmNum = VM.getCurrentVMNum();
-    if (vmNum % 2 == 0) {
-      FixedPartitionAttributes fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter1, true);
-      FixedPartitionAttributes fpa2 =
-          FixedPartitionAttributes.createFixedPartition(Quarter2, false);
-      fpaList.clear();
-      fpaList.add(fpa1);
-      fpaList.add(fpa2);
-    } else {
-      FixedPartitionAttributes fpa1 =
-          FixedPartitionAttributes.createFixedPartition(Quarter1, false);
-      FixedPartitionAttributes fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter2, true);
-      fpaList.clear();
-      fpaList.add(fpa1);
-      fpaList.add(fpa2);
-    }
-
-    return createFixedPartitionedRegion(cache, REGION_NAME, fpaList, 40);
   }
 
   public static Region createFixedPartitionedRegion(final Cache cache, String regionName,

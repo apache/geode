@@ -25,13 +25,11 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The JettyHelperJUnitTest class is a test suite of test cases testing the contract and
@@ -42,7 +40,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Assert
  * @see org.junit.Test
  */
-@Category(UnitTest.class)
 public class JettyHelperJUnitTest {
 
   @Before

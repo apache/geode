@@ -31,6 +31,12 @@ sourceSets {
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+  distributedTestCompile.extendsFrom integrationTestCompile
+  distributedTestRuntime.extendsFrom integrationTestRuntime
+  performanceTestCompile.extendsFrom testCompile
+  performanceTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -161,6 +167,7 @@ dependencies {
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
+
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -172,11 +179,43 @@ sourceSets {
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integrationTest/java')
+    }
+    resources.srcDir file('src/integrationTest/resources')
+  }
+  distributedTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/distributedTest/java')
+    }
+    resources.srcDir file('src/distributedTest/resources')
+  }
+  performanceTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/performanceTest/java')
+    }
+    resources.srcDir file('src/performanceTest/resources')
+  }
 }
 
 jmh {
   include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
   duplicateClassesStrategy = 'warn'
+}
+
+dependencies {
+  // Integration Tests
+  integrationTestCompile sourceSets.test.output
+
+  // Distributed Tests
+  distributedTestCompile sourceSets.integrationTest.output
 }
 
 // Creates the version properties file and writes it to the classes dir
@@ -248,3 +287,7 @@ dependencies {
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
+distributedTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}

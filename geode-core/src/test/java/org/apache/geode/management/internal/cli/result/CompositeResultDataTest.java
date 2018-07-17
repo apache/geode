@@ -18,12 +18,9 @@ package org.apache.geode.management.internal.cli.result;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CompositeResultDataTest {
 
   @Test

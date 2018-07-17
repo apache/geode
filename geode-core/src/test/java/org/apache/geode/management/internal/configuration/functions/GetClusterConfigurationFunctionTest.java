@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.powermock.api.mockito.PowerMockito;
@@ -42,9 +41,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @PowerMockIgnore("*.UnitTest")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(InternalLocator.class)

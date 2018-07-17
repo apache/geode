@@ -35,9 +35,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SerializationTest.class})
+@Category(SerializationTest.class)
 public class PdxFieldTest {
   static final String FIELD_NAME = "fieldName";
   static final int FIELD_INDEX = 13;

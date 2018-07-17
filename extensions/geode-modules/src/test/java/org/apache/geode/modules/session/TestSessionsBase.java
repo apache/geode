@@ -60,7 +60,7 @@ public abstract class TestSessionsBase {
 
   // Set up the servers we need
   public static void setupServer(DeltaSessionManager manager) throws Exception {
-    FileUtils.copyDirectory(Paths.get("..", "resources", "test", "tomcat").toFile(),
+    FileUtils.copyDirectory(Paths.get("..", "resources", "integrationTest", "tomcat").toFile(),
         new File("./tomcat"));
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new EmbeddedTomcat("/test", port, "JVM-1");

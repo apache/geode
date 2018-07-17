@@ -27,11 +27,8 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ColocatedRegionDetailsJUnitTest {
 
   @Test

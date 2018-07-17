@@ -23,14 +23,11 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests LifecycleListener
  */
-@Category(UnitTest.class)
 public class LifecycleListenerJUnitTest {
 
   private final List<LifecycleListenerCallback> afterCreateCallbacks =

@@ -20,12 +20,9 @@ import java.sql.SQLException;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JdbcConnectorExceptionTest {
   @Rule
   public TestName testName = new TestName();

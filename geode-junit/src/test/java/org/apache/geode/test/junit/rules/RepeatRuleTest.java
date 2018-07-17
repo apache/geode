@@ -22,18 +22,15 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.junit.Repeat;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
  * Unit tests for {@link RepeatRule}.
  */
-@Category(UnitTest.class)
 public class RepeatRuleTest {
 
   private static final String ASSERTION_ERROR_MESSAGE = "failing test";

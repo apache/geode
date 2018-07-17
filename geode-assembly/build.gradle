@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
+
+evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
 
@@ -437,14 +440,6 @@ def dependOnInstalledProduct = {
   environment ('GEODE_HOME', install)
 }
 
-task uiTest(type: Test) {
-    useJUnit {
-        includeCategories 'org.apache.geode.test.junit.categories.UITest'
-        excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    forkEvery(1)
-}
-
 // Add the configuration closure to the test targets so they depend on the install directory
 test dependOnInstalledProduct
 acceptanceTest dependOnInstalledProduct
@@ -489,4 +484,60 @@ task dumpInstalledJars(dependsOn: installDist) {
       }
     };
   }
+}
+
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+  distributedTestCompile.extendsFrom testCompile
+  distributedTestRuntime.extendsFrom testRuntime
+  acceptanceTestCompile.extendsFrom testCompile
+  acceptanceTestRuntime.extendsFrom testRuntime
+  uiTestCompile.extendsFrom testCompile
+  uiTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integrationTest/java')
+    }
+    resources.srcDir file('src/integrationTest/resources')
+  }
+  distributedTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/distributedTest/java')
+    }
+    resources.srcDir file('src/distributedTest/resources')
+  }
+  acceptanceTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/acceptanceTest/java')
+    }
+    resources.srcDir file('src/acceptanceTest/resources')
+  }
+  uiTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/uiTest/java')
+    }
+    resources.srcDir file('src/uiTest/resources')
+  }
+}
+
+dependencies {
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  acceptanceTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  uiTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  uiTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }

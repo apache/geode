@@ -37,7 +37,6 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -60,8 +59,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The DescribeDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of
@@ -77,7 +74,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @since GemFire 7.0
  */
 @SuppressWarnings({"null", "unused"})
-@Category(UnitTest.class)
 public class DescribeDiskStoreFunctionJUnitTest {
 
   private static final Logger logger = LogService.getLogger();
@@ -699,16 +695,6 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
   @Test
   public void testExecuteWithDiskDirsAndDiskSizesMismatch() throws Exception {
-    IgnoredException ignoredException =
-        IgnoredException.addIgnoredException(IllegalStateException.class.getName());
-    try {
-      doTestExecuteWithDiskDirsAndDiskSizesMismatch();
-    } finally {
-      ignoredException.remove();
-    }
-  }
-
-  private void doTestExecuteWithDiskDirsAndDiskSizesMismatch() throws Exception {
     final String diskStoreName = "mockDiskStore";
     final String memberId = "mockMemberId";
     final String memberName = "mockMemberName";

@@ -20,14 +20,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test verifies the setting and getting of disk id values are correctly
  */
-@Category(UnitTest.class)
 public class DiskIdJUnitTest {
 
   /**
