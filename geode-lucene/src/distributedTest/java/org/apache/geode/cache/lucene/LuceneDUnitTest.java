@@ -27,6 +27,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.lucene.test.LuceneDistributedTestUtilities;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Host;
@@ -166,7 +167,7 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
     public Region createDataStore(Cache cache, String regionName) {
       if (this.equals(FIXED_PARTITION)) {
         try {
-          return LuceneTestUtilities.initDataStoreForFixedPR(cache);
+          return LuceneDistributedTestUtilities.initDataStoreForFixedPR(cache);
         } catch (Exception e) {
           e.printStackTrace();
           return null;
