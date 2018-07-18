@@ -63,6 +63,11 @@ dependencies {
   testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   compileOnly project(':geode-core')
   testCompile project(':geode-core')
+
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 war {
@@ -71,37 +76,4 @@ war {
   // this shouldn't be necessary but if it's not specified we're missing some of the jars
   // from the runtime classpath
   classpath configurations.runtime
-}
-
-configurations {
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-  distributedTestCompile.extendsFrom testCompile
-  distributedTestRuntime.extendsFrom testRuntime
-}
-
-sourceSets {
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-  distributedTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/distributedTest/java')
-    }
-    resources.srcDir file('src/distributedTest/resources')
-  }
-}
-
-dependencies {
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }

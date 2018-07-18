@@ -31,12 +31,6 @@ sourceSets {
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-  distributedTestCompile.extendsFrom integrationTestCompile
-  distributedTestRuntime.extendsFrom integrationTestRuntime
-  performanceTestCompile.extendsFrom testCompile
-  performanceTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -178,30 +172,6 @@ sourceSets {
   }
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
-  }
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-  distributedTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/distributedTest/java')
-    }
-    resources.srcDir file('src/distributedTest/resources')
-  }
-  performanceTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/performanceTest/java')
-    }
-    resources.srcDir file('src/performanceTest/resources')
   }
 }
 
