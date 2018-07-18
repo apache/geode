@@ -93,6 +93,7 @@ public class Coder {
   public static final String CHARSET = "UTF-8";
 
   protected static final DecimalFormat decimalFormatter = new DecimalFormat("#");
+
   static {
     decimalFormatter.setMaximumFractionDigits(10);
   }
@@ -148,11 +149,15 @@ public class Coder {
     response.writeBytes(CRLFar);
     while (it.hasNext()) {
       String next = it.next();
-      response.writeByte(BULK_STRING_ID);
-      response.writeBytes(intToBytes(next.length()));
-      response.writeBytes(CRLFar);
-      response.writeBytes(stringToBytes(next));
-      response.writeBytes(CRLFar);
+      if (next == null) {
+        response.writeBytes(bNIL);
+      } else {
+        response.writeByte(BULK_STRING_ID);
+        response.writeBytes(intToBytes(next.length()));
+        response.writeBytes(CRLFar);
+        response.writeBytes(stringToBytes(next));
+        response.writeBytes(CRLFar);
+      }
     }
     return response;
   }
