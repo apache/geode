@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -106,6 +107,39 @@ public class ExportLogsDUnitTest {
     gfshConnector.connectAndVerify(locator);
   }
 
+  @Test
+  public void withFiles_savedToLocatorWorkingDir() {
+    String[] extensions = {"zip"};
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfshConnector.executeCommand("export logs");
+    assertThat(FileUtils.listFiles(locator.getWorkingDir(), extensions, false)).isNotEmpty();
+  }
+
+  @Test
+  public void withFiles_savedToLocatorSpecifiedRelativeDir() throws Exception {
+    String[] extensions = {"zip"};
+    Path workingDirPath = locator.getWorkingDir().toPath();
+    Path subdirPath = workingDirPath.resolve("some").resolve("test").resolve("directory");
+    Path relativeDir = workingDirPath.relativize(subdirPath);
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfshConnector.executeCommand("export logs --dir=" + relativeDir.toString());
+    assertThat(FileUtils.listFiles(locator.getWorkingDir(), extensions, false)).isEmpty();
+    assertThat(FileUtils.listFiles(locator.getWorkingDir(), extensions, true)).isNotEmpty();
+    assertThat(FileUtils.listFiles(subdirPath.toFile(), extensions, false)).isNotEmpty();
+  }
+
+  @Test
+  public void withFiles_savedToLocatorSpecifiedAbsoluteDir() throws Exception {
+    String[] extensions = {"zip"};
+    Path workingDirPath = locator.getWorkingDir().toPath();
+    Path absoluteDirPath =
+        workingDirPath.resolve("some").resolve("test").resolve("directory").toAbsolutePath();
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfshConnector.executeCommand("export logs --dir=" + absoluteDirPath.toString());
+    assertThat(FileUtils.listFiles(locator.getWorkingDir(), extensions, false)).isEmpty();
+    assertThat(FileUtils.listFiles(locator.getWorkingDir(), extensions, true)).isNotEmpty();
+    assertThat(FileUtils.listFiles(absoluteDirPath.toFile(), extensions, false)).isNotEmpty();
+  }
   @Test
   public void startAndEndDateCanIncludeLogs() throws Exception {
     ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
