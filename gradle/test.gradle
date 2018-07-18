@@ -176,6 +176,11 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
+  upgradeTest {
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
 
   task repeatTest(type:RepeatTest) {
     times= Integer.parseInt(repeat)

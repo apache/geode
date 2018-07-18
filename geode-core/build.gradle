@@ -169,6 +169,7 @@ dependencies {
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
 
+  // TODO build - move dunit framework to shared module.
   distributedTestCompile files(sourceSets.integrationTest.output)
   upgradeTestCompile files(sourceSets.distributedTest.output)
   upgradeTestCompile files(sourceSets.integrationTest.output)
