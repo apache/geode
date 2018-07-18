@@ -204,7 +204,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     return dir;
   }
 
-  public static void putThorughAccessor(String regionName) {
+  public static void putThroughAccessor(String regionName) {
     region_FPR = (PartitionedRegion) cache.getRegion(regionName);
     assertNotNull(region_FPR);
     for (Months_Accessor month : Months_Accessor.values()) {
@@ -216,7 +216,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void putThorughAccessor_Immediate(String regionName) {
+  public static void putThroughAccessor_Immediate(String regionName) {
     region_FPR = (PartitionedRegion) cache.getRegion(regionName);
     assertNotNull(region_FPR);
     for (int i = 1; i < 10; i++) {
@@ -1192,7 +1192,8 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
             try {
               getBlackboard().waitForGate("done", 1, TimeUnit.MINUTES);
             } catch (Exception e) {
-              throw new RuntimeException(e);
+              throw new RuntimeException("Failed waiting to be signaled to continue in PR observer",
+                  e);
             }
           }
         });
