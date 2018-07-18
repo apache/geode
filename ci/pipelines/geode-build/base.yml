@@ -33,7 +33,7 @@ resources:
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
     tag: latest
 - name: geode
   type: git
@@ -49,7 +49,8 @@ resources:
     uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
     branch: (( grab metadata.geode-build-branch ))
     paths:
-    - ci/*
+    - ci/pipelines/geode-build/*
+    - ci/scripts/*
 - name: geode-examples
   type: git
   source:

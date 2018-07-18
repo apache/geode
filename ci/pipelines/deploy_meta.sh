@@ -23,17 +23,35 @@ TEAM=$(fly targets | grep ^${TARGET} | awk '{print $3}')
 
 PUBLIC=true
 
-echo "Deploying pipline for ${GEODE_FORK}/${GEODE_BRANCH}"
+echo "Deploying pipline for ${GEODE_FORK}/${GEODE_BRANCH} on team ${TEAM}"
 
 if [ "${TEAM}" = "staging" ]; then
   PUBLIC=false
 fi
 
+if [[ "${GEODE_FORK}" == "apache" ]]; then
+  META_PIPELINE="meta-${SANITIZED_GEODE_BRANCH}"
+  PIPELINE_PREFIX=""
+else
+  META_PIPELINE="meta-${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
+  PIPELINE_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+fi
 set -x
 fly -t ${TARGET} set-pipeline \
-  -p meta-${SANITIZED_GEODE_BRANCH} \
+  -p ${META_PIPELINE} \
   -c meta.yml \
   --var geode-build-branch=${GEODE_BRANCH} \
   --var geode-fork=${GEODE_FORK} \
+  --var pipeline-prefix=${PIPELINE_PREFIX} \
   --var concourse-team=${TEAM} \
   --yaml-var public-pipelines=${PUBLIC}
+set +x
+if [[ "${GEODE_FORK}" != "apache" ]]; then
+  echo "Disabling unnecessary jobs for forks."
+  set -x
+  fly -t ${TARGET} pause-job \
+  -j ${META_PIPELINE}/set-pr-pipeline
+  fly -t ${TARGET} pause-job \
+  -j ${META_PIPELINE}/set-metrics-pipeline
+  set +x
+fi

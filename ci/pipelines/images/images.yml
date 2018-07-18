@@ -21,8 +21,8 @@ resources:
 - name: apachegeode-build-concourse-dockerfile
   type: git
   source:
-    uri: https://github.com/apache/geode.git
-    branch: develop
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
     paths:
     - ci/docker/*
 
@@ -31,7 +31,7 @@ resources:
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
 
 - name: openjdk8-docker-image
   type: docker-image
@@ -39,10 +39,19 @@ resources:
     repository: openjdk
     tag: 8
     skip_download: true
+
+- name: google-geode-builder
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/google-geode-builder
+
 jobs:
 # apachegeode-build-concourse
 - name: build-apachegeode-build-concourse-docker-image
-  public: true
+  public: ((!public-pipelines))
   serial: true
   plan:
   - aggregate:
@@ -54,3 +63,24 @@ jobs:
     params:
       build: apachegeode-build-concourse-dockerfile/ci/docker
       tag_as_latest: true
+
+- name: build-google-geode-builder
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: google-geode-builder
+      trigger: true
+    - get: apachegeode-build-concourse-docker-image
+  - task: build-image
+    image: apachegeode-build-concourse-docker-image
+    config:
+      inputs:
+      - name: google-geode-builder
+      outputs:
+      - name: results
+      platform: linux
+      params:
+        GCP_CONCOURSE_KEY: ((!concourse-gcp-key-encoded))
+      run:
+        path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
