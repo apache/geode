@@ -814,9 +814,9 @@ public class InitialImageOperation {
     // only once during GII life cycle & so it does not matter if the HTree ref changes after the
     // clear
     // whenever a conflict is detected in DiskRegion it is Ok to abort the operation
-    final DiskRegion dr = this.region.getDiskRegion();
-    if (dr != null) {
-      dr.setClearCountReference();
+    final DiskRegion diskRegion = this.region.getDiskRegion();
+    if (diskRegion != null) {
+      diskRegion.setClearCountReference();
     }
     try {
       int entryCount = entries.size();
@@ -885,16 +885,16 @@ public class InitialImageOperation {
 
         VersionTag tag = entry.getVersionTag();
 
-        if (dr != null) {
+        if (diskRegion != null) {
           // verify if entry from GII is the same as the one from recovery
-          RegionEntry re = this.entries.getEntry(entry.key);
+          RegionEntry regionEntry = this.entries.getEntry(entry.key);
           if (isTraceEnabled) {
-            logger.trace("processChunk:entry={},tag={},re={}", entry, tag, re);
+            logger.trace("processChunk:entry={},tag={},re={}", entry, tag, regionEntry);
           }
           // re will be null if the gii chunk gives us a create
-          if (re != null) {
-            synchronized (re) { // fixes bug 41409
-              if (dr.testIsRecoveredAndClear(re)) {
+          if (regionEntry != null) {
+            synchronized (regionEntry) { // fixes bug 41409
+              if (diskRegion.testIsRecoveredAndClear(regionEntry)) {
                 wasRecovered = true;
                 if (tmpValue == null) {
                   tmpValue = entry.isLocalInvalid() ? Token.LOCAL_INVALID : Token.INVALID;
@@ -902,7 +902,7 @@ public class InitialImageOperation {
 
                 // Compare the version stamps, and if they are equal
                 // we can skip adding the entry we receive as part of GII.
-                VersionStamp stamp = re.getVersionStamp();
+                VersionStamp stamp = regionEntry.getVersionStamp();
                 boolean entriesEqual = stamp != null && stamp.asVersionTag().equals(tag);
 
                 // If the received entry and what we have in the cache
@@ -1008,8 +1008,8 @@ public class InitialImageOperation {
       }
       return true;
     } finally {
-      if (dr != null) {
-        dr.removeClearCountReference();
+      if (diskRegion != null) {
+        diskRegion.removeClearCountReference();
       }
     }
   }
@@ -1775,12 +1775,13 @@ public class InitialImageOperation {
                   try {
                     boolean abort = rgn.isDestroyed();
                     if (!abort) {
-                      int fid = flowControl.getId();
+                      int flowControlId = flowControl.getId();
                       Map<VersionSource, Long> gcVersions = null;
                       if (this.last && rgn.getVersionVector() != null) {
                         gcVersions = rgn.getVersionVector().getMemberToGCVersion();
                       }
-                      replyWithData(dm, entries, seriesNum, msgNum++, numSeries, this.last, fid,
+                      replyWithData(dm, entries, seriesNum, msgNum++, numSeries, this.last,
+                          flowControlId,
                           versionVector != null, holderToSend, gcVersions);
                     }
                     return !abort;

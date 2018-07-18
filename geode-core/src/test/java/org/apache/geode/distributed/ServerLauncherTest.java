@@ -29,21 +29,18 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ServerLauncher}.
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class ServerLauncherTest {
 
   @Before

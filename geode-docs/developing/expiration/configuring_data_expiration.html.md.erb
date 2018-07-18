@@ -21,13 +21,12 @@ limitations under the License.
 
 Configure the type of expiration and the expiration action to use.
 
-<a id="configuring_data_expiration__section_ADB8302125624E01A808EA5E4FF79A5C"></a>
+-   Expiration actions require setting the region attribute of `statistics-enabled` to `true`. This can be done in the region element of a `cache.xml` file, the `gfsh` command line, or through the API.
 
--   Set the region's `statistics-enabled` attribute to true.
-
-    The statistics used for expiration are available directly to the application through the `CacheStatistics` object returned by the `Region` and `Region.Entry` `getStatistics` methods. The `CacheStatistics` object also provides a method for resetting the statistics counters.
 
 -   Set the expiration attributes by expiration type, with the max times and expiration actions. See the region attributes listings for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, and `region-idle-time` in [&lt;region-attributes&gt;](../../reference/topics/cache_xml.html#region-attributes).
+
+The statistics used for expiration are available directly to the application through the `CacheStatistics` object returned by the `Region` and `Region.Entry` `getStatistics` methods. The `CacheStatistics` object also provides a method for resetting the statistics counters.
 
 **For partitioned regions:**
 

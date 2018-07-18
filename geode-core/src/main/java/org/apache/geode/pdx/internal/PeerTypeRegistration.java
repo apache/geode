@@ -206,7 +206,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  private DistributedLockService getLockService() {
+  protected DistributedLockService getLockService() {
     if (this.dls != null) {
       return this.dls;
     }

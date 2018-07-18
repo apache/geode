@@ -73,10 +73,6 @@ public class TXRegionState {
           LocalizedStrings.TXRegionState_OPERATIONS_ON_GLOBAL_REGIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION
               .toLocalizedString());
     }
-    if (r.hasServerProxy()) {
-      // throw new
-      // UnsupportedOperationException(LocalizedStrings.TXRegionState_OPERATIONS_ON_REGION_WITH_CLIENT_POOL_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION.toLocalizedString());
-    }
     this.entryMods = new HashMap<Object, TXEntryState>();
     this.uaMods = null;
     this.region = r;

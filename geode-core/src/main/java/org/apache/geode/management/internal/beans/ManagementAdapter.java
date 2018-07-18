@@ -135,7 +135,7 @@ public class ManagementAdapter {
    *
    * @param cache gemfire cache
    */
-  public void handleCacheCreation(InternalCache cache) throws ManagementException {
+  protected void handleCacheCreation(InternalCache cache) throws ManagementException {
     try {
       this.internalCache = cache;
       this.service =
@@ -193,7 +193,7 @@ public class ManagementAdapter {
   /**
    * Handles all the distributed mbean creation part when a Manager is started
    */
-  public void handleManagerStart() throws ManagementException {
+  protected void handleManagerStart() throws ManagementException {
     if (!isServiceInitialised("handleManagerStart")) {
       return;
     }
@@ -255,7 +255,7 @@ public class ManagementAdapter {
    * Handles all the clean up activities when a Manager is stopped It clears the distributed mbeans
    * and underlying data structures
    */
-  public void handleManagerStop() throws ManagementException {
+  protected void handleManagerStop() throws ManagementException {
     if (!isServiceInitialised("handleManagerStop")) {
       return;
     }
@@ -312,7 +312,7 @@ public class ManagementAdapter {
   /**
    * Assumption is always cache and MemberMbean has been will be created first
    */
-  public void handleManagerCreation() throws ManagementException {
+  protected void handleManagerCreation() throws ManagementException {
     if (!isServiceInitialised("handleManagerCreation")) {
       return;
     }
@@ -367,7 +367,7 @@ public class ManagementAdapter {
    *
    * @param disk the disk store for which the call back is invoked
    */
-  public void handleDiskCreation(DiskStore disk) throws ManagementException {
+  protected void handleDiskCreation(DiskStore disk) throws ManagementException {
     if (!isServiceInitialised("handleDiskCreation")) {
       return;
     }
@@ -390,7 +390,7 @@ public class ManagementAdapter {
    * Handles LockService Creation
    *
    */
-  public void handleLockServiceCreation(DLockService lockService) throws ManagementException {
+  protected void handleLockServiceCreation(DLockService lockService) throws ManagementException {
     if (!isServiceInitialised("handleLockServiceCreation")) {
       return;
     }
@@ -422,7 +422,7 @@ public class ManagementAdapter {
    *
    * @param sender the specific gateway sender
    */
-  public void handleGatewaySenderCreation(GatewaySender sender) throws ManagementException {
+  protected void handleGatewaySenderCreation(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderCreation")) {
       return;
     }
@@ -447,7 +447,7 @@ public class ManagementAdapter {
    *
    * @param recv specific gateway receiver
    */
-  public void handleGatewayReceiverCreate(GatewayReceiver recv) throws ManagementException {
+  protected void handleGatewayReceiverCreate(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverCreate")) {
       return;
     }
@@ -480,7 +480,7 @@ public class ManagementAdapter {
    *
    * @param recv specific gateway receiver
    */
-  public void handleGatewayReceiverDestroy(GatewayReceiver recv) throws ManagementException {
+  protected void handleGatewayReceiverDestroy(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverDestroy")) {
       return;
     }
@@ -504,7 +504,7 @@ public class ManagementAdapter {
    *
    * @param recv specific gateway receiver
    */
-  public void handleGatewayReceiverStart(GatewayReceiver recv) throws ManagementException {
+  protected void handleGatewayReceiverStart(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverStart")) {
       return;
     }
@@ -529,7 +529,7 @@ public class ManagementAdapter {
    *
    * @param recv specific gateway receiver
    */
-  public void handleGatewayReceiverStop(GatewayReceiver recv) throws ManagementException {
+  protected void handleGatewayReceiverStop(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverStop")) {
       return;
     }
@@ -544,7 +544,7 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
-  public void handleAsyncEventQueueCreation(AsyncEventQueue queue) throws ManagementException {
+  protected void handleAsyncEventQueueCreation(AsyncEventQueue queue) throws ManagementException {
     if (!isServiceInitialised("handleAsyncEventQueueCreation")) {
       return;
     }
@@ -568,7 +568,7 @@ public class ManagementAdapter {
    *
    * @param queue The AsyncEventQueue being removed
    */
-  public void handleAsyncEventQueueRemoval(AsyncEventQueue queue) throws ManagementException {
+  protected void handleAsyncEventQueueRemoval(AsyncEventQueue queue) throws ManagementException {
     if (!isServiceInitialised("handleAsyncEventQueueRemoval")) {
       return;
     }
@@ -604,7 +604,7 @@ public class ManagementAdapter {
    * particular alert level
    *
    */
-  public void handleSystemNotification(AlertDetails details) {
+  protected void handleSystemNotification(AlertDetails details) {
     if (!isServiceInitialised("handleSystemNotification")) {
       return;
     }
@@ -647,7 +647,7 @@ public class ManagementAdapter {
    *
    * @param cacheServer cache server instance
    */
-  public void handleCacheServerStart(CacheServer cacheServer) {
+  protected void handleCacheServerStart(CacheServer cacheServer) {
     if (!isServiceInitialised("handleCacheServerStart")) {
       return;
     }
@@ -685,7 +685,7 @@ public class ManagementAdapter {
    *
    * @param server cache server instance
    */
-  public void handleCacheServerStop(CacheServer server) {
+  protected void handleCacheServerStop(CacheServer server) {
     if (!isServiceInitialised("handleCacheServerStop")) {
       return;
     }
@@ -718,7 +718,7 @@ public class ManagementAdapter {
    *
    * @param cache GemFire Cache instance. For now client cache is not supported
    */
-  public void handleCacheRemoval(Cache cache) throws ManagementException {
+  protected void handleCacheRemoval(Cache cache) throws ManagementException {
     if (!isServiceInitialised("handleCacheRemoval")) {
       return;
     }
@@ -793,7 +793,7 @@ public class ManagementAdapter {
    * Handles particular region destroy or close operation it will remove the corresponding MBean
    *
    */
-  public void handleRegionRemoval(Region region) throws ManagementException {
+  protected void handleRegionRemoval(Region region) throws ManagementException {
     if (!isServiceInitialised("handleRegionRemoval")) {
       return;
     }
@@ -835,7 +835,7 @@ public class ManagementAdapter {
    * Handles DiskStore Removal
    *
    */
-  public void handleDiskRemoval(DiskStore disk) throws ManagementException {
+  protected void handleDiskRemoval(DiskStore disk) throws ManagementException {
     if (!isServiceInitialised("handleDiskRemoval")) {
       return;
     }
@@ -873,7 +873,7 @@ public class ManagementAdapter {
    *
    * @param lockService lock service instance
    */
-  public void handleLockServiceRemoval(DLockService lockService) throws ManagementException {
+  protected void handleLockServiceRemoval(DLockService lockService) throws ManagementException {
     if (!isServiceInitialised("handleLockServiceRemoval")) {
       return;
     }
@@ -900,7 +900,7 @@ public class ManagementAdapter {
    *
    * @param locator instance of locator which is getting started
    */
-  public void handleLocatorStart(Locator locator) throws ManagementException {
+  protected void handleLocatorStart(Locator locator) throws ManagementException {
     if (!isServiceInitialised("handleLocatorCreation")) {
       return;
     }
@@ -923,7 +923,7 @@ public class ManagementAdapter {
 
   }
 
-  public void handleGatewaySenderStart(GatewaySender sender) throws ManagementException {
+  protected void handleGatewaySenderStart(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderStart")) {
       return;
     }
@@ -942,7 +942,7 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
-  public void handleGatewaySenderStop(GatewaySender sender) throws ManagementException {
+  protected void handleGatewaySenderStop(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderStop")) {
       return;
     }
@@ -954,7 +954,7 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
-  public void handleGatewaySenderPaused(GatewaySender sender) throws ManagementException {
+  protected void handleGatewaySenderPaused(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderPaused")) {
       return;
     }
@@ -966,7 +966,7 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
-  public void handleGatewaySenderResumed(GatewaySender sender) throws ManagementException {
+  protected void handleGatewaySenderResumed(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderResumed")) {
       return;
     }
@@ -978,7 +978,7 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
-  public void handleGatewaySenderRemoved(GatewaySender sender) throws ManagementException {
+  protected void handleGatewaySenderRemoved(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderRemoved")) {
       return;
     }
@@ -1000,7 +1000,7 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
-  public void handleCacheServiceCreation(CacheService cacheService) throws ManagementException {
+  protected void handleCacheServiceCreation(CacheService cacheService) throws ManagementException {
     if (!isServiceInitialised("handleCacheServiceCreation")) {
       return;
     }

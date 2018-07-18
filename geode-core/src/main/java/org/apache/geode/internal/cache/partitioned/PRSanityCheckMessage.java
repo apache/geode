@@ -95,7 +95,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
    * gemfire.PRSanityCheckEnabled=true.
    */
   public static void schedule(final PartitionedRegion pr) {
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckEnabled")) {
+    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckDisabled")) {
       final DistributionManager dm = pr.getDistributionManager();
       // RegionAdvisor ra = pr.getRegionAdvisor();
       // final Set recipients = ra.adviseAllPRNodes();

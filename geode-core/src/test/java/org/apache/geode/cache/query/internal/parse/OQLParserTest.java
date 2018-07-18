@@ -19,14 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.StringReader;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * TODO: class created to fix GEODE-3938. Add more tests for other queries, parameters, etc.
  */
-@Category(UnitTest.class)
 public class OQLParserTest {
 
   @Test

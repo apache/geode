@@ -2239,13 +2239,26 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    */
   public boolean waitForDeparture(DistributedMember mbr)
       throws TimeoutException, InterruptedException {
+    int memberTimeout = this.services.getConfig().getDistributionConfig().getMemberTimeout();
+    return waitForDeparture(mbr, memberTimeout * 4);
+  }
+
+  /*
+   * (non-Javadoc) MembershipManager method: wait for the given member to be gone. Throws
+   * TimeoutException if the wait goes too long
+   *
+   * @see
+   * org.apache.geode.distributed.internal.membership.MembershipManager#waitForDeparture(org.apache.
+   * geode.distributed.DistributedMember)
+   */
+  public boolean waitForDeparture(DistributedMember mbr, int timeoutMs)
+      throws TimeoutException, InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
     boolean result = false;
     DirectChannel dc = directChannel;
     InternalDistributedMember idm = (InternalDistributedMember) mbr;
-    int memberTimeout = this.services.getConfig().getDistributionConfig().getMemberTimeout();
-    long pauseTime = (memberTimeout < 1000) ? 100 : memberTimeout / 10;
+    long pauseTime = (timeoutMs < 4000) ? 100 : timeoutMs / 40;
     boolean wait;
     int numWaits = 0;
     do {
@@ -2277,7 +2290,6 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       if (wait) {
         numWaits++;
         if (numWaits > 40) {
-          // waited over 4 * memberTimeout ms. Give up at this point
           throw new TimeoutException("waited too long for " + idm + " to be removed");
         }
         Thread.sleep(pauseTime);

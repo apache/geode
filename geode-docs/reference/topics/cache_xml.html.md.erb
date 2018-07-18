@@ -474,7 +474,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 ## <a id="gateway-conflict-resolver" class="no-quick-link"></a>&lt;gateway-conflict-resolver&gt;
 
-An event-handler plug-in that is called in order to determine whether a potentially conflicting WAN update should be applied to the local cache. A GatewayConflictResolver is invoked if the current value in a cache entry was established by a different distributed system (with a different distributed-system-id) than an event that is attempting to modify the entry. It is not invoked if the event has the same distributed system ID as the event that last changed the entry. See [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542)
+An event-handler plug-in that is called in order to determine whether a potentially conflicting WAN update should be applied to the local cache. A GatewayConflictResolver is invoked if the current value in a cache entry was established by a different cluster (with a different distributed-system-id) than an event that is attempting to modify the entry. It is not invoked if the event has the same distributed system ID as the event that last changed the entry. See [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542)
 
 Specify the Java class for the gateway conflict resolver plug-in and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](#class-name_parameter).
 
@@ -794,7 +794,7 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 ## <a id="pool" class="no-quick-link"></a>&lt;pool&gt;
 
-Use for client caches. Defines a client's server pool used to communicate with servers running in a different distributed system.
+Use for client caches. Defines a client's server pool used to communicate with servers running in a different cluster.
 
 **API:** `org.apache.geode.cache.client.PoolFactory`
 
@@ -1399,7 +1399,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 </tr>
 <tr class="even">
 <td>multicast-enabled</td>
-<td><p>Boolean that specifies whether distributed operations on a region should use multicasting. To enable this, multicast must be enabled for the distributed system with the <code class="ph codeph">mcast-port</code> <code class="ph codeph">gemfire.properties</code> setting.</p>
+<td><p>Boolean that specifies whether distributed operations on a region should use multicasting. To enable this, multicast must be enabled for the cluster with the <code class="ph codeph">mcast-port</code> <code class="ph codeph">gemfire.properties</code> setting.</p>
 <p><strong>API:</strong> <code class="ph codeph">setMulticastEnabled</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -1478,7 +1478,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 </tr>
 <tr class="odd">
 <td>scope</td>
-<td><p>Definition: Determines how updates to region entries are distributed to the other caches in the distributed system where the region and entry are defined. Scope also determines whether to allow remote invocation of some of the region’s event handlers, and whether to use region entry versions to provide consistent updates across replicated regions.</p>
+<td><p>Definition: Determines how updates to region entries are distributed to the other caches in the cluster where the region and entry are defined. Scope also determines whether to allow remote invocation of some of the region’s event handlers, and whether to use region entry versions to provide consistent updates across replicated regions.</p>
 <p>
 <b>Note:</b>
 <p>You can configure the most common of these options with <%=vars.product_name%> region shortcuts in <code class="ph codeph">RegionShortcut</code> and <code class="ph codeph">ClientRegionShortcut</code>.</p>
@@ -1499,7 +1499,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 </tr>
 <tr class="odd">
 <td>distributed-ack</td>
-<td>Events are distributed to remote caches with receipt acknowledgement required. Region entry versions are used to provide consistent updates across members of the distributed system.</td>
+<td>Events are distributed to remote caches with receipt acknowledgement required. Region entry versions are used to provide consistent updates across members of the cluster.</td>
 </tr>
 <tr class="even">
 <td>global</td>
@@ -1517,7 +1517,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 </tr>
 <tr class="even">
 <td>statistics-enabled</td>
-<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. <%=vars.product_name%> provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your distributed system. Unlike other <%=vars.product_name%> statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">org.apache.geode.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
+<td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. <%=vars.product_name%> provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your cluster. Unlike other <%=vars.product_name%> statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">org.apache.geode.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
 <p><strong>API:</strong> <code class="ph codeph">setStatisticsEnabled</code></p>
 <p><strong>Example:</strong></p>
 <pre class="pre codeblock language-xml"><code>&lt;region-attributes 
@@ -1566,7 +1566,7 @@ Applications that use a <code class="ph codeph">client-cache</code> may want to 
 Defines the type of object to be allowed for the region entry keys. This must be a fully-qualified class name. The attribute ensures that the keys for the region entries are all of the same class. If key-constraint is not used, the region’s keys can be of any class. This attribute, along with value-constraint, is useful for querying and indexing because it provides object type information to the query engine.
 
 **Note:**
-Set the constraint in every cache where you create or update the region entries. For client/server installations, match constraints between client and server and between distributed systems. The constraint is only checked in the cache that does the entry `put` or `create` operation. To avoid deserializing the object, the constraint is not checked when the entry is distributed to other caches.
+Set the constraint in every cache where you create or update the region entries. For client/server installations, match constraints between client and server and between clusters. The constraint is only checked in the cache that does the entry `put` or `create` operation. To avoid deserializing the object, the constraint is not checked when the entry is distributed to other caches.
 
 **Default:** not set
 
@@ -1587,7 +1587,7 @@ Set the constraint in every cache where you create or update the region entries.
 Defines the type of object to be allowed for the region entry values. This must be a fully-qualified class name. If value constraint isn’t used, the region’s value can be of any class. This attribute, along with `key-constraint`, is useful for querying and indexing because it provides object type information to the query engine.
 
 **Note:**
-Set the constraint in every cache where you create or update the region entries. For client/server installations, match constraints between client and server and between distributed systems. The constraint is only checked in the cache that does the entry `put` or `create` operation. To avoid deserializing the object, the constraint is not checked when the entry is distributed to other caches.
+Set the constraint in every cache where you create or update the region entries. For client/server installations, match constraints between client and server and between clusters. The constraint is only checked in the cache that does the entry `put` or `create` operation. To avoid deserializing the object, the constraint is not checked when the entry is distributed to other caches.
 
 **Default:** not set
 
@@ -1626,7 +1626,7 @@ Expiration setting that specifies how long the region can remain in the cache wi
 
 ## <a id="expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
-Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
+Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the cluster. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
@@ -1664,11 +1664,11 @@ Select one of the following expiration actions:
 </tr>
 <tr class="even">
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
 <tr class="even">
 <td><span class="keyword option">local-invalidate</span></td>
@@ -1745,7 +1745,7 @@ To ensure reliable read behavior across the partitioned region, use `region-time
 
 ## <a id="region-idle-time_expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
-Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
+Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the cluster. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
@@ -1783,11 +1783,11 @@ Select one of the following expiration actions:
 </tr>
 <tr class="even">
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
 <tr class="even">
 <td><span class="keyword option">local-invalidate</span></td>
@@ -1862,7 +1862,7 @@ Expiration setting that specifies how long the region’s entries can remain in 
 
 ## <a id="entry-time-to-live_expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
-Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
+Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the cluster. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
@@ -1900,11 +1900,11 @@ Select one of the following expiration actions:
 </tr>
 <tr class="even">
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
 <tr class="even">
 <td><span class="keyword option">local-invalidate</span></td>
@@ -1981,7 +1981,7 @@ To ensure reliable read behavior across the partitioned region, use `entry-time-
 
 ## <a id="entry-idle-time_expiration-attributes" class="no-quick-link"></a>&lt;expiration-attributes&gt;
 
-Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the distributed system. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
+Within the `entry-time-to-live` or `entry-idle-time` element, this element specifies the expiration rules for removing old region entries that you are not using. You can destroy or invalidate entries, either locally or across the cluster. Within the `region-time-to-live` or `region-idle-time` element, this element specifies the expiration rules for the entire region.
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
@@ -2019,11 +2019,11 @@ Select one of the following expiration actions:
 </tr>
 <tr class="even">
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
 <tr class="odd">
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
 <tr class="even">
 <td><span class="keyword option">local-invalidate</span></td>
@@ -2609,7 +2609,7 @@ entry's key is retained in the cache.</td>
 
 ## <a id="jndi-bindings" class="no-quick-link"></a>&lt;jndi-bindings&gt;
 
-Specifies the binding for a data-source used in transaction management. See [Configuring Database Connections Using JNDI](../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494).
+Specifies the binding for a data-source used in transaction management. See [Configuring Database Connections Using JNDI](../../developing/outside_data_sources/configuring_db_connections_using_JNDI.html).
 
 **Example:**
 
@@ -2807,7 +2807,7 @@ A configuration property of the datasource. Use the sub-elements to identify the
 </config-property>
 ```
 
-Configuration properties vary depending on the database vendor. See [Configuring Database Connections Using JNDI](../../developing/transactions/configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) for examples of different configuration property configurations.
+Configuration properties vary depending on the database vendor. See [Configuring Database Connections Using JNDI](../../developing/outside_data_sources/configuring_db_connections_using_JNDI.html) for examples of different configuration property configurations.
 
 ## <a id="config-property-name" class="no-quick-link"></a>&lt;config-property-name&gt;
 

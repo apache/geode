@@ -322,7 +322,7 @@ public class DirectChannel {
 
     try {
       do {
-        interrupted = interrupted || Thread.interrupted();
+        interrupted = Thread.interrupted() || interrupted;
         /**
          * Exceptions that happened during one attempt to send
          */

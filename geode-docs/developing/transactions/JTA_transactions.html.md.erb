@@ -18,26 +18,36 @@ limitations under the License.
 -->
 
 
-Use JTA global transactions to coordinate <%=vars.product_name%> cache transactions and JDBC transactions.
+The Java Transaction API, JTA, is a standard Java interface you can use to coordinate
+<%=vars.product_name%> transactions and JDBC transactions globally under one umbrella. 
 
-JTA is a standard Java interface you can use to coordinate <%=vars.product_name%> cache transactions and JDBC transactions globally under one umbrella. JTA provides direct coordination between the <%=vars.product_name%> cache and another transactional resource, such as a database. The parties involved in a JTA transaction include:
+You can use JTA global transactions to coordinate <%=vars.product_name%> transactions and JDBC transactions.
+
+JTA provides direct coordination between the <%=vars.product_name%> cache and another transactional
+resource, such as a database. The parties involved in a JTA transaction include:
 
 -   The Java application, responsible for starting the global transaction
 -   The JTA transaction manager, responsible for opening, committing, and rolling back transactions
--   The transaction resource managers, including the <%=vars.product_name%> cache transaction manager and the JDBC resource manager, responsible for managing operations in the cache and database respectively
+- The transaction resource managers, including the <%=vars.product_name%> transaction manager
+and the JDBC resource manager, responsible for managing operations in the <%=vars.product_name%> cache and database, respectively
 
-Using JTA, your application controls all transactions in the same standard way, whether the transactions act on the <%=vars.product_name%> cache, a JDBC resource, or both together. When a JTA global transaction is done, the <%=vars.product_name%> transaction and the database transaction are both complete.
+Using JTA, your application controls all transactions in the same standard way, whether the
+transactions act on the <%=vars.product_name%> cache, a JDBC resource, or both together. When a JTA
+global transaction is finished, the <%=vars.product_name%> transaction and the database transaction are
+both complete.
 
-When using JTA global transactions with <%=vars.product_name%>, you have three options:
+When using JTA global transactions with <%=vars.product_name%>, you have two options:
 
-1.  Coordinate with an external JTA transaction manager in a container (such as WebLogic or JBoss)
-2.  Set <%=vars.product_name%> as the “last resource” while using a container (such as WebLogic or JBoss) as the JTA transaction manager
-3.  Have <%=vars.product_name%> act as the JTA transaction manager
+-  Coordinate with an external JTA transaction manager in a container (such as WebLogic or JBoss)
+-  Set <%=vars.product_name%> as the “last resource” while using a container (such as WebLogic or JBoss) as the JTA transaction manager
 
-An application creates a global transaction by using `javax.transaction.UserTransaction` bound to the JNDI context `java:/UserTransaction` to start and terminate transactions. During the transaction, cache operations are done through <%=vars.product_name%> as usual as described in [<%=vars.product_name%> Cache Transactions](cache_transactions.html#topic_e15_mr3_5k).
+An application creates a global transaction by using `javax.transaction.UserTransaction` bound to
+the JNDI context `java:/UserTransaction` to start and terminate transactions. During the
+transaction, cache operations are done through <%=vars.product_name%> as usual as described in
+[<%=vars.product_name%> Transactions](cache_transactions.html).
 
 **Note:**
-See the Sun documentation for more information on topics such as JTA, `javax.transaction`, committing and rolling back global transactions, and the related exceptions.
+See the Java documentation for more information on topics such as JTA, `javax.transaction`, committing and rolling back global transactions, and the related exceptions.
 
 -   **[Coordinating with External JTA Transactions Managers](#concept_cp1_zx1_wk)**
 
@@ -45,11 +55,7 @@ See the Sun documentation for more information on topics such as JTA, `javax.tra
 
 -   **[Using <%=vars.product_name%> as the "Last Resource" in a Container-Managed JTA Transaction](#concept_csy_vfb_wk)**
 
-    The "last resource" feature in certain 3rd party containers such as WebLogic allow the use one non-XAResource (such as <%=vars.product_name%>) in a transaction with multiple XAResources while ensuring consistency.
-
--   **[Using <%=vars.product_name%> as the JTA Transaction Manager](#concept_8567sdkbigige)**
-
-    You can also use <%=vars.product_name%> as the JTA transaction manager.
+    The "last resource" feature in certain third party containers such as WebLogic allow the use one non-XAResource (such as <%=vars.product_name%>) in a transaction with multiple XAResources while ensuring consistency.
 
 -   **[Behavior of <%=vars.product_name%> Cache Writers and Loaders Under JTA](cache_plugins_with_jta.html)**
 
@@ -61,11 +67,15 @@ See the Sun documentation for more information on topics such as JTA, `javax.tra
 
 <a id="concept_cp1_zx1_wk"></a>
 
-# Coordinating with External JTA Transactions Managers
+# Coordinating with External JTA Transaction Managers
 
-<%=vars.product_name%> can work with the JTA transaction managers of several containers like JBoss, WebLogic, GlassFish, and so on.
+<%=vars.product_name%> can work with the JTA transaction managers of several containers such as JBoss, WebLogic, GlassFish, and so on.
 
-At startup <%=vars.product_name%> looks for a TransactionManager (`javax.transaction.TransactionManager`) that has been bound to its JNDI context. When <%=vars.product_name%> finds such an external transaction manager, all <%=vars.product_name%> region operations (such as get and put) will participate in global transactions hosted by this external JTA transaction manager.
+At startup <%=vars.product_name%> looks for a TransactionManager
+(`javax.transaction.TransactionManager`) that has been bound to its JNDI context. When
+<%=vars.product_name%> finds such an external transaction manager, all <%=vars.product_name%> region
+operations (such as get and put) will participate in global transactions hosted by this external JTA
+transaction manager.
 
 This figure shows the high-level operation of a JTA global transaction whose resources include a <%=vars.product_name%> cache and a database.
 
@@ -108,17 +118,31 @@ Use the following procedure to run a <%=vars.product_name%> global JTA transacti
 
 # Using <%=vars.product_name%> as the "Last Resource" in a Container-Managed JTA Transaction
 
-The "last resource" feature in certain 3rd party containers such as WebLogic allow the use one non-XAResource (such as <%=vars.product_name%>) in a transaction with multiple XAResources while ensuring consistency.
+The "last resource" feature in certain third party containers such as WebLogic allow the use of one
+non-XAResource (such as <%=vars.product_name%>) in a transaction with multiple XAResources while
+ensuring consistency.
 
-In the previous two JTA transaction use cases, if the <%=vars.product_name%> member fails after the other data sources commit but before <%=vars.product_name%> receives the `afterCommit` callback, <%=vars.product_name%> and the other data sources may become inconsistent. To prevent this from occurring, you can use the container's "last resource optimization" feature, with <%=vars.product_name%> set as the "last resource". Using <%=vars.product_name%> as the last resource ensures that in the event of failure, <%=vars.product_name%> remains consistent with the other XAResources involved in the transaction.
+In the previous two JTA transaction use cases, if the <%=vars.product_name%> member fails after the
+other data sources commit but before <%=vars.product_name%> receives the `afterCommit` callback,
+<%=vars.product_name%> and the other data sources may become inconsistent. To prevent this from
+occurring, you can use the container's "last resource optimization" feature, with
+<%=vars.product_name%> set as the "last resource". Using <%=vars.product_name%> as the last resource
+ensures that in the event of failure, <%=vars.product_name%> remains consistent with the other
+XAResources involved in the transaction.
 
-To accomplish this, the application server container must use a JCA Resource Adapter to accomodate <%=vars.product_name%> as the transaction's last resource. The transaction manager of the container first issues a "prepare" message to the participating XAResources. If the XAResources all accept the transaction, then the manager issues a "commit" instruction to the non-XAResource (in this case, <%=vars.product_name%>). The non-XAResource (in this case, <%=vars.product_name%>) participates as a local transaction resource. If the non-XAResource fails, then the transaction manager can rollback the XAResources.
+To accomplish this, the application server container must use a JCA Resource Adapter to accomodate
+<%=vars.product_name%> as the transaction's last resource. The transaction manager of the container
+first issues a "prepare" message to the participating XAResources. If the XAResources all accept the
+transaction, then the manager issues a "commit" instruction to the non-XAResource (in this case,
+<%=vars.product_name%>). The non-XAResource (in this case, <%=vars.product_name%>) participates as a
+local transaction resource. If the non-XAResource fails, then the transaction manager can rollback
+the XAResources.
 
 <img src="../../images/transactions_jca_adapter.png" id="concept_csy_vfb_wk__image_opb_sgb_wk" class="image" />
 
 <a id="task_sln_x3b_wk"></a>
 
-# How to Run JTA Transactions with <%=vars.product_name%> as a "Last Resource"
+## How to Run JTA Transactions with <%=vars.product_name%> as a "Last Resource"
 
 1.  Locate the version-specific `geode-jca` RAR file within 
 the `lib` directory of your <%=vars.product_name%> installation. 
@@ -151,12 +175,10 @@ path and file names:
     ```
 </li>
 </ol>
-3.  Make sure that the `geode-dependencies.jar` is accessible in 
-the CLASSPATH of the JTA transaction coordinator container.
-4.  Deploy the version-specific `geode-jca` RAR file on 
-the JTA transaction coordinator container.
-When deploying the file, you specify the JNDI name and so on. 
-5.  Configure <%=vars.product_name%> for any necessary transactional behavior. Enable `copy-on-read` and specify a transaction listener, if you need one. See [Setting Global Copy on Read](working_with_transactions.html#concept_vx2_gs4_5k) and [Configuring Transaction Plug-In Event Handlers](working_with_transactions.html#concept_ocw_vf1_wk) for details.
+3.  Make sure that the `geode-dependencies.jar` is accessible in the CLASSPATH of the JTA transaction coordinator container.
+4.  Deploy the version-specific `geode-jca` RAR file on the JTA transaction coordinator container. When deploying the file, you specify the JNDI name and so on. 
+5.  Configure <%=vars.product_name%> for any necessary transactional behavior. Enable `copy-on-read` and specify a transaction listener, if you need one.
+See [Setting Global Copy on Read](working_with_transactions.html#concept_vx2_gs4_5k) and [Configuring Transaction Plug-In Event Handlers](working_with_transactions.html#concept_ocw_vf1_wk) for details.
 6.  Get an initial context through `org.apache.geode.cache.GemFireCache.getJNDIContext`. For example:
 
     ``` pre
@@ -183,65 +205,4 @@ When deploying the file, you specify the JNDI name and so on.
     GFConnection gemfireConn = (GFConnection)cf.getConnection();
     ```
 
-See [JCA Resource Adapter Example](jca_adapter_example.html#concept_swv_z2p_wk) for an example of how to set up a transaction using the JCA Resource Adapter.
-
-## <a id="concept_8567sdkbigige" class="no-quick-link"></a>Using <%=vars.product_name%> as the JTA Transaction Manager
-
-You can also use <%=vars.product_name%> as the JTA transaction manager.
-As of <%=vars.product_name%> 1.2, <%=vars.product_name%>'s JTA transaction manager is deprecated.
-
-<%=vars.product_name%> ships with its own implementation of a JTA transaction manager. However, note that this implementation is not XA-compliant; therefore, it does not persist any state, which could lead to an inconsistent state after recovering a crashed member.
-
-<img src="../../images/transactions_jta.png" id="concept_8567sdkbigige__image_C8D94070E55F4BCC8B5FF3D5BEBA99ED" class="image" />
-
-The <%=vars.product_name%> JTA transaction manager is initialized when the <%=vars.product_name%> cache is initialized. Until then, JTA is not available for use. The application starts a JTA transaction by using the `UserTransaction.begin` method. The `UserTransaction` object is the application’s handle to instruct the JTA transaction manager on what to do.
-
-The <%=vars.product_name%> JTA implementation also supports the J2EE Connector Architecture (JCA) `ManagedConnectionFactory`.
-
-The <%=vars.product_name%> implementation of JTA has the following limitations:
-
--   Only one JDBC database instance per transaction is allowed, although you can have multiple connections to that database.
--   Multiple threads cannot participate in a transaction.
--   Transaction recovery after a crash is not supported.
-
-In addition, JTA transactions are subject to the limitations of <%=vars.product_name%> cache transactions such as not being supported on regions with global scope. When a global transaction needs to access the <%=vars.product_name%> cache, JTA silently starts a <%=vars.product_name%> cache transaction.
-
-<a id="task_qjv_khb_wk"></a>
-
-# How to Run a JTA Global Transaction Using <%=vars.product_name%> as the JTA Transaction Manager
-
-This topic describes how to run a JTA global transaction in <%=vars.product_name%> .
-
-To run a global transaction, perform the following steps:
-
-1. Configure the external data sources in the `cache.xml` file. See [Configuring Database Connections Using JNDI](configuring_db_connections_using_JNDI.html#topic_A5E3A67C808D48C08E1F0DC167C5C494) for examples. 
-2. Include the JAR file for any data sources in your CLASSPATH. 
-3.  Configure <%=vars.product_name%> for any necessary transactional behavior. Enable `copy-on-read` for your cache and specify a transaction listener, if you need one. See [Setting Global Copy on Read](working_with_transactions.html#concept_vx2_gs4_5k) and [Configuring Transaction Plug-In Event Handlers](working_with_transactions.html#concept_ocw_vf1_wk) for details. 
-4.  Make sure that JTA transactions are not disabled in the `cache.xml` file or the application code. 
-5.  Initialize the <%=vars.product_name%> cache. 
-6.  Get an initial context through `org.apache.geode.cache.GemFireCache.getJNDIContext`. For example: 
-
-    ``` pre
-    Context ctx = cache.getJNDIContext();
-    ```
-
-    This returns `javax.naming.Context` and gives you the JNDI associated with the cache. The context contains the `TransactionManager`, `UserTransaction`, and any configured JDBC resource manager.
-
-7.  Look up the `UserTransaction` context: 
-
-    ``` pre
-    UserTransaction txManager = (UserTransaction) ctx.lookup("java:/UserTransaction");
-    ```
-
-    With `UserTransaction`, you can begin, commit, and rollback transactions.
-    If a global transaction exists when you use the cache, it automatically joins the transaction. Operations on a region automatically detect and become associated with the existing global transaction through JTA synchronization. If the global transaction has been marked for rollback, however, the <%=vars.product_name%> cache is not allowed to enlist with that transaction. Any cache operation that causes an attempt to enlist throws a `FailedSynchronizationException`.
-
-    The <%=vars.product_name%> cache transaction’s commit or rollback is triggered when the global transaction commits or rolls back. When the global transaction is committed using the `UserTransaction` interface, the transactions of any registered JTA resources are committed, including the <%=vars.product_name%> cache transaction. If the cache or database transaction fails to commit, the `UserTransaction` call throws a `TransactionRolledBackException`. If a commit or rollback is attempted directly on a <%=vars.product_name%> transaction that is registered with JTA, that action throws an `IllegalStateException`.
-
-See [<%=vars.product_name%> JTA Transaction Example](transaction_jta_gemfire_example.html#concept_ffg_sj5_1l).
-
--   **[Configuring Database Connections Using JNDI](configuring_db_connections_using_JNDI.html)**
-
--   **[Example DataSource Configurations in cache.xml](configuring_db_connections_using_JNDI.html#topic_F67EC20067124A618A8099AB4CBF634C)**
-
-
+See [JCA Resource Adapter Example](transaction_coding_examples.html#jca_adapter_example) for an example of how to set up a transaction using the JCA Resource Adapter.

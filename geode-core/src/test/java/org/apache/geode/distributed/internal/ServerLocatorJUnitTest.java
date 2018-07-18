@@ -27,7 +27,6 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ServerLocatorJUnitTest class is a test suite of test cases testing the contract and
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class ServerLocatorJUnitTest {
 
   @Test

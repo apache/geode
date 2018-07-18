@@ -2035,7 +2035,7 @@ public class DiskStoreImpl implements DiskStore {
         try (Stream<Path> stream = Files.list(directoryHolder.getDir().toPath())) {
           backupDirectories = stream
               .filter((path) -> path.getFileName().toString()
-                  .startsWith(BackupService.DATA_STORES_TEMPORARY_DIRECTORY))
+                  .startsWith(BackupService.TEMPORARY_DIRECTORY_FOR_BACKUPS))
               .filter(p -> Files.isDirectory(p)).collect(Collectors.toList());
         }
         for (Path backupDirectory : backupDirectories) {

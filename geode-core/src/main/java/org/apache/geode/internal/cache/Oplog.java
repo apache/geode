@@ -216,16 +216,16 @@ public class Oplog implements CompactableOplog, Flushable {
    * Written to CRF, and DRF.
    */
   private static final byte OPLOG_EOF_ID = 0;
-  private static final byte END_OF_RECORD_ID = 21;
 
+  private static final byte END_OF_RECORD_ID = 21;
   /**
    * Written to CRF and DRF. Followed by 16 bytes which is the leastSigBits and mostSigBits of a
    * UUID for the disk store we belong to. 1: EndOfRecord Is written once at the beginning of every
    * oplog file.
    */
   private static final byte OPLOG_DISK_STORE_ID = 62;
-  static final int OPLOG_DISK_STORE_REC_SIZE = 1 + 16 + 1;
 
+  static final int OPLOG_DISK_STORE_REC_SIZE = 1 + 16 + 1;
   /**
    * Written to CRF. Followed by 8 bytes which is the BASE_ID to use for any NEW_ENTRY records. 1:
    * EndOfRecord Only needs to be written once per oplog and must preceed any OPLOG_NEW_ENTRY_0ID
@@ -413,6 +413,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_1ID = 81;
+
   /**
    * Written to DRF. The OplogEntryId is relative to the previous del_entry OplogEntryId. The signed
    * difference is encoded in 2 bytes. Byte Format: 2: OplogEntryId 1: EndOfRecord
@@ -420,7 +421,6 @@ public class Oplog implements CompactableOplog, Flushable {
    * @since GemFire prPersistSprint1
    */
   private static final byte OPLOG_DEL_ENTRY_2ID = 82;
-
   /**
    * Written to DRF. The OplogEntryId is relative to the previous del_entry OplogEntryId. The signed
    * difference is encoded in 3 bytes. Byte Format: 3: OplogEntryId 1: EndOfRecord
@@ -507,28 +507,6 @@ public class Oplog implements CompactableOplog, Flushable {
    * @since GemFire 8.0
    */
   static final byte OPLOG_MAGIC_SEQ_ID = 92;
-
-  public enum OPLOG_TYPE {
-    CRF(new byte[] {0x47, 0x46, 0x43, 0x52, 0x46, 0x31}), // GFCRF1
-    DRF(new byte[] {0x47, 0x46, 0x44, 0x52, 0x46, 0x31}), // GFDRF1
-    IRF(new byte[] {0x47, 0x46, 0x49, 0x52, 0x46, 0x31}), // GFIRF1
-    KRF(new byte[] {0x47, 0x46, 0x4b, 0x52, 0x46, 0x31}), // GFKRF1
-    IF(new byte[] {0x47, 0x46, 0x49, 0x46, 0x30, 0x31}); // GFIF01
-
-    private final byte[] bytes;
-
-    OPLOG_TYPE(byte[] byteSeq) {
-      this.bytes = byteSeq;
-    }
-
-    public byte[] getBytes() {
-      return bytes;
-    }
-
-    public static int getLen() {
-      return 6;
-    }
-  }
 
   public static final int OPLOG_MAGIC_SEQ_REC_SIZE = 1 + OPLOG_TYPE.getLen() + 1;
 
@@ -2182,7 +2160,7 @@ public class Oplog implements CompactableOplog, Flushable {
             drs.recordRecoveredVersonHolder((VersionSource) member, versionHolder, latestOplog);
             if (isPersistRecoveryDebugEnabled) {
               logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
-                  "adding RVV entry drId={},member={},versionHolder={},latestOplog={},oplogId={}",
+                  "adding RVV entry drId={}, member={}, versionHolder={}, latestOplog={}, oplogId={}",
                   drId, memberId, versionHolder, latestOplog, getOplogId());
             }
           } else {
@@ -3803,40 +3781,6 @@ public class Oplog implements CompactableOplog, Flushable {
         createKrf(false);
       }
     });
-  }
-
-  /**
-   * Used when creating a KRF to keep track of what DiskRegionView a DiskEntry belongs to.
-   */
-  private static class KRFEntry {
-    private final DiskEntry de;
-    private final DiskRegionView drv;
-    /**
-     * Fix for 42733 - a stable snapshot of the offset so we can sort It doesn't matter that this is
-     * stale, we'll filter out these entries later.
-     */
-    private final long offsetInOplog;
-    private VersionHolder versionTag;
-
-    public KRFEntry(DiskRegionView drv, DiskEntry de, VersionHolder tag) {
-      this.de = de;
-      this.drv = drv;
-      DiskId diskId = de.getDiskId();
-      this.offsetInOplog = diskId != null ? diskId.getOffsetInOplog() : 0;
-      this.versionTag = tag;
-    }
-
-    public DiskEntry getDiskEntry() {
-      return this.de;
-    }
-
-    public DiskRegionView getDiskRegionView() {
-      return this.drv;
-    }
-
-    public long getOffsetInOplogForSorting() {
-      return offsetInOplog;
-    }
   }
 
   private void writeOneKeyEntryForKRF(KRFEntry ke) throws IOException {
@@ -5854,14 +5798,14 @@ public class Oplog implements CompactableOplog, Flushable {
 
   private static final ThreadLocal isCompactorThread = new ThreadLocal();
 
-  private boolean calledByCompactorThread() {
+  boolean calledByCompactorThread() {
     if (!this.compacting)
       return false;
     Object v = isCompactorThread.get();
     return v != null && v == Boolean.TRUE;
   }
 
-  private void handleNoLiveValues() {
+  void handleNoLiveValues() {
     if (!this.doneAppending)
       return;
     if (hasNoLiveValues()) {
@@ -6062,14 +6006,7 @@ public class Oplog implements CompactableOplog, Flushable {
           }
         }
 
-        if (!compactFailed) {
-          // Need to still remove the oplog even if it had nothing to compact.
-          handleNoLiveValues();
-
-          // We can't assert hasNoLiveValues() because a race condition exists
-          // in which our liveEntries list is empty but the liveCount has not
-          // yet been decremented.
-        }
+        cleanupAfterCompaction(compactFailed);
         return totalCount;
       } finally {
         unlockCompactor();
@@ -6079,6 +6016,19 @@ public class Oplog implements CompactableOplog, Flushable {
       assert calledByCompactorThread();
       isCompactorThread.remove();
     }
+  }
+
+  void cleanupAfterCompaction(boolean compactFailed) {
+    if (!compactFailed) {
+      // all data has been copied forward to new oplog so no live entries remain
+      getTotalLiveCount().set(0);
+      // Need to still remove the oplog even if it had nothing to compact.
+      handleNoLiveValues();
+    }
+  }
+
+  AtomicLong getTotalLiveCount() {
+    return totalLiveCount;
   }
 
   public static boolean isCRFFile(String filename) {
@@ -6305,26 +6255,6 @@ public class Oplog implements CompactableOplog, Flushable {
     return chPrev;
   }
 
-  private static class OplogFile {
-    public File f;
-    public UninterruptibleRandomAccessFile raf;
-    public volatile boolean RAFClosed = true;
-    public UninterruptibleFileChannel channel;
-    public ByteBuffer writeBuf;
-    public long currSize;
-    public long bytesFlushed;
-    public boolean unpreblown;
-  }
-
-  private static class KRFile {
-    public File f;
-    FileOutputStream fos;
-    BufferedOutputStream bos;
-    DataOutputStream dos;
-    long lastOffset = 0;
-    int keyNum = 0;
-  }
-
   private static String baToString(byte[] ba) {
     return baToString(ba, ba != null ? ba.length : 0);
   }
@@ -6382,6 +6312,168 @@ public class Oplog implements CompactableOplog, Flushable {
     InternalDataSerializer.writeUnsignedVL(memberId, out);
     InternalDataSerializer.writeUnsignedVL(timestamp, out);
     InternalDataSerializer.writeSignedVL(dsId, out);
+  }
+
+  public void finishKrf() {
+    createKrf(false);
+  }
+
+  void prepareForClose() {
+    try {
+      finishKrf();
+    } catch (CancelException e) {
+      // workaround for 50465
+      if (logger.isDebugEnabled()) {
+        logger.debug("Got a cancel exception while creating a krf during shutown", e);
+      }
+    }
+  }
+
+  private Object deserializeKey(byte[] keyBytes, final Version version,
+      final ByteArrayDataInput in) {
+    if (!getParent().isOffline() || !PdxWriterImpl.isPdx(keyBytes)) {
+      return EntryEventImpl.deserialize(keyBytes, version, in);
+    } else {
+      return new RawByteKey(keyBytes);
+    }
+  }
+
+  /**
+   * If this OpLog is from an older version of the product, then return that {@link Version} else
+   * return null.
+   */
+  public Version getProductVersionIfOld() {
+    final Version version = this.gfversion;
+    if (version == null) {
+      // check for the case of diskstore upgrade from 6.6 to >= 7.0
+      if (getParent().isUpgradeVersionOnly()) {
+        // assume previous release version
+        return Version.GFE_66;
+      } else {
+        return null;
+      }
+    } else if (version == Version.CURRENT) {
+      return null;
+    } else {
+      // version changed so return that for VersionedDataStream
+      return version;
+    }
+  }
+
+  /**
+   * If this OpLog has data that was written by an older version of the product, then return that
+   * {@link Version} else return null.
+   */
+  public Version getDataVersionIfOld() {
+    final Version version = this.dataVersion;
+    if (version == null) {
+      // check for the case of diskstore upgrade from 6.6 to >= 7.0
+      if (getParent().isUpgradeVersionOnly()) {
+        // assume previous release version
+        return Version.GFE_66;
+      } else {
+        return null;
+      }
+    } else if (version == Version.CURRENT) {
+      return null;
+    } else {
+      // version changed so return that for VersionedDataStream
+      return version;
+    }
+  }
+
+  public enum OPLOG_TYPE {
+    CRF(new byte[] {0x47, 0x46, 0x43, 0x52, 0x46, 0x31}), // GFCRF1
+    DRF(new byte[] {0x47, 0x46, 0x44, 0x52, 0x46, 0x31}), // GFDRF1
+    IRF(new byte[] {0x47, 0x46, 0x49, 0x52, 0x46, 0x31}), // GFIRF1
+    KRF(new byte[] {0x47, 0x46, 0x4b, 0x52, 0x46, 0x31}), // GFKRF1
+    IF(new byte[] {0x47, 0x46, 0x49, 0x46, 0x30, 0x31}); // GFIF01
+
+    private final byte[] bytes;
+
+    OPLOG_TYPE(byte[] byteSeq) {
+      this.bytes = byteSeq;
+    }
+
+    public byte[] getBytes() {
+      return bytes;
+    }
+
+    public static int getLen() {
+      return 6;
+    }
+  }
+
+  /**
+   * Enumeration of the possible results of the okToSkipModifyRecord
+   */
+  private enum OkToSkipResult {
+    SKIP_RECORD, // Skip reading the key and value
+    SKIP_VALUE, // skip reading just the value
+    DONT_SKIP; // don't skip the record
+
+    public boolean skip() {
+      return this != DONT_SKIP;
+    }
+
+    public boolean skipKey() {
+      return this == SKIP_RECORD;
+    }
+
+  }
+
+  /**
+   * Used when creating a KRF to keep track of what DiskRegionView a DiskEntry belongs to.
+   */
+  private static class KRFEntry {
+    private final DiskEntry de;
+    private final DiskRegionView drv;
+    /**
+     * Fix for 42733 - a stable snapshot of the offset so we can sort It doesn't matter that this is
+     * stale, we'll filter out these entries later.
+     */
+    private final long offsetInOplog;
+    private VersionHolder versionTag;
+
+    public KRFEntry(DiskRegionView drv, DiskEntry de, VersionHolder tag) {
+      this.de = de;
+      this.drv = drv;
+      DiskId diskId = de.getDiskId();
+      this.offsetInOplog = diskId != null ? diskId.getOffsetInOplog() : 0;
+      this.versionTag = tag;
+    }
+
+    public DiskEntry getDiskEntry() {
+      return this.de;
+    }
+
+    public DiskRegionView getDiskRegionView() {
+      return this.drv;
+    }
+
+    public long getOffsetInOplogForSorting() {
+      return offsetInOplog;
+    }
+  }
+
+  private static class OplogFile {
+    public File f;
+    public UninterruptibleRandomAccessFile raf;
+    public volatile boolean RAFClosed = true;
+    public UninterruptibleFileChannel channel;
+    public ByteBuffer writeBuf;
+    public long currSize;
+    public long bytesFlushed;
+    public boolean unpreblown;
+  }
+
+  private static class KRFile {
+    public File f;
+    FileOutputStream fos;
+    BufferedOutputStream bos;
+    DataOutputStream dos;
+    long lastOffset = 0;
+    int keyNum = 0;
   }
 
   /**
@@ -7294,7 +7386,7 @@ public class Oplog implements CompactableOplog, Flushable {
   /**
    * Used as the value in the regionMap. Tracks information about what the region has in this oplog.
    */
-  public interface DiskRegionInfo {
+  private interface DiskRegionInfo {
     DiskRegionView getDiskRegion();
 
     int addLiveEntriesToList(KRFEntry[] liveEntries, int idx);
@@ -7331,7 +7423,7 @@ public class Oplog implements CompactableOplog, Flushable {
     void afterKrfCreated();
   }
 
-  public abstract static class AbstractDiskRegionInfo implements DiskRegionInfo {
+  private abstract static class AbstractDiskRegionInfo implements DiskRegionInfo {
     private DiskRegionView dr;
     private boolean unrecovered = false;
 
@@ -7384,7 +7476,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  public static class DiskRegionInfoNoList extends AbstractDiskRegionInfo {
+  private static class DiskRegionInfoNoList extends AbstractDiskRegionInfo {
     private final AtomicInteger liveCount = new AtomicInteger();
 
     public DiskRegionInfoNoList(DiskRegionView dr) {
@@ -7431,7 +7523,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  public static class DiskRegionInfoWithList extends AbstractDiskRegionInfo {
+  private static class DiskRegionInfoWithList extends AbstractDiskRegionInfo {
     /**
      * A linked list of the live entries in this oplog. Updates to pendingKrfTags are protected by
      * synchronizing on object.
@@ -7612,7 +7704,7 @@ public class Oplog implements CompactableOplog, Flushable {
       return new Iterator();
     }
 
-    public class Iterator {
+    class Iterator {
       private boolean doingInt = true;
       ObjectIterator<Int2ObjectMap.Entry<?>> intIt = ints.int2ObjectEntrySet().fastIterator();
       ObjectIterator<Long2ObjectMap.Entry<?>> longIt = longs.long2ObjectEntrySet().fastIterator();
@@ -7654,74 +7746,6 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  public void finishKrf() {
-    createKrf(false);
-  }
-
-  void prepareForClose() {
-    try {
-      finishKrf();
-    } catch (CancelException e) {
-      // workaround for 50465
-      if (logger.isDebugEnabled()) {
-        logger.debug("Got a cancel exception while creating a krf during shutown", e);
-      }
-    }
-  }
-
-  private Object deserializeKey(byte[] keyBytes, final Version version,
-      final ByteArrayDataInput in) {
-    if (!getParent().isOffline() || !PdxWriterImpl.isPdx(keyBytes)) {
-      return EntryEventImpl.deserialize(keyBytes, version, in);
-    } else {
-      return new RawByteKey(keyBytes);
-    }
-  }
-
-  /**
-   * If this OpLog is from an older version of the product, then return that {@link Version} else
-   * return null.
-   */
-  public Version getProductVersionIfOld() {
-    final Version version = this.gfversion;
-    if (version == null) {
-      // check for the case of diskstore upgrade from 6.6 to >= 7.0
-      if (getParent().isUpgradeVersionOnly()) {
-        // assume previous release version
-        return Version.GFE_66;
-      } else {
-        return null;
-      }
-    } else if (version == Version.CURRENT) {
-      return null;
-    } else {
-      // version changed so return that for VersionedDataStream
-      return version;
-    }
-  }
-
-  /**
-   * If this OpLog has data that was written by an older version of the product, then return that
-   * {@link Version} else return null.
-   */
-  public Version getDataVersionIfOld() {
-    final Version version = this.dataVersion;
-    if (version == null) {
-      // check for the case of diskstore upgrade from 6.6 to >= 7.0
-      if (getParent().isUpgradeVersionOnly()) {
-        // assume previous release version
-        return Version.GFE_66;
-      } else {
-        return null;
-      }
-    } else if (version == Version.CURRENT) {
-      return null;
-    } else {
-      // version changed so return that for VersionedDataStream
-      return version;
-    }
-  }
-
   /**
    * Used in offline mode to prevent pdx deserialization of keys. The raw bytes are a serialized
    * pdx.
@@ -7753,36 +7777,6 @@ public class Oplog implements CompactableOplog, Flushable {
     @Override
     public void sendTo(DataOutput out) throws IOException {
       out.write(this.bytes);
-    }
-
-  }
-
-  /**
-   * Enumeration of operation log file types.
-   *
-   */
-  enum OplogFileType {
-    OPLOG_CRF, // Creates and updates
-    OPLOG_DRF, // Deletes
-    OPLOG_KRF // Keys
-  }
-
-  /**
-   * Enumeration of the possible results of the okToSkipModifyRecord
-   *
-   *
-   */
-  private static enum OkToSkipResult {
-    SKIP_RECORD, // Skip reading the key and value
-    SKIP_VALUE, // skip reading just the value
-    DONT_SKIP; // don't skip the record
-
-    public boolean skip() {
-      return this != DONT_SKIP;
-    }
-
-    public boolean skipKey() {
-      return this == SKIP_RECORD;
     }
 
   }

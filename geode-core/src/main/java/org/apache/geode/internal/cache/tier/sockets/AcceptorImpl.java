@@ -593,7 +593,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     } catch (IllegalArgumentException poolInitException) {
       this.stats.close();
       this.serverSock.close();
-      this.pool.shutdownNow();
+      this.pool.shutdown();
       throw poolInitException;
     }
   }
@@ -1697,8 +1697,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       Thread.currentThread().interrupt();
       this.pool.shutdownNow();
     }
-    this.clientQueueInitPool.shutdownNow();
-    this.hsPool.shutdownNow();
+    this.clientQueueInitPool.shutdown();
+    this.hsPool.shutdown();
   }
 
   private void shutdownSCs() {

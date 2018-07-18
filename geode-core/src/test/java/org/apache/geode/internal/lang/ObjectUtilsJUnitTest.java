@@ -20,9 +20,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ObjectUtilsJUnitTest class is a test suite of test cases for testing the contract and
@@ -33,7 +31,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Assert
  * @see org.junit.Test
  */
-@Category(UnitTest.class)
 public class ObjectUtilsJUnitTest {
 
   @Test

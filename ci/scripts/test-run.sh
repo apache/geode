@@ -28,7 +28,12 @@ export GEODE_BUILD=${DEST_DIR}/test
 export GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" geode/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
 
 GEODE_BUILD_VERSION_FILE=${BUILDROOT}/geode-build-version/number
-if [ ! -e "${GEODE_BUILD_VERSION_FILE}" ]; then
+GEODE_PULL_REQUEST_ID_FILE=${BUILDROOT}/geode/.git/id
+if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
+  GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
+fi
+
+if [ ! -e "${GEODE_BUILD_VERSION_FILE}" ] && [ -z "${GEODE_PULL_REQUEST_ID}" ]; then
   echo "${GEODE_BUILD_VERSION_FILE} file does not exist. Concourse is probably not configured correctly."
   exit 1
 fi
@@ -56,17 +61,19 @@ function error_exit() {
 }
 
 trap error_exit ERR
-
-CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
-CONCOURSE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
-GEODE_PRODUCT_VERSION=${GEODE_BUILD_VERSION_NUMBER}
-CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
-BUILD_ID=${CONCOURSE_VERSION##*.}
-FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${CONCOURSE_BUILD_SLUG}
-
-echo "Concourse VERSION is ${CONCOURSE_VERSION}"
-echo "Product VERSION is ${FULL_PRODUCT_VERSION}"
-echo "Build ID is ${BUILD_ID}"
+if [ -z "${GEODE_PULL_REQUEST_ID}" ]; then
+  CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
+  CONCOURSE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
+  GEODE_PRODUCT_VERSION=${GEODE_BUILD_VERSION_NUMBER}
+  CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
+  BUILD_ID=${CONCOURSE_VERSION##*.}
+  FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${CONCOURSE_BUILD_SLUG}
+  echo "Concourse VERSION is ${CONCOURSE_VERSION}"
+  echo "Product VERSION is ${FULL_PRODUCT_VERSION}"
+  echo "Build ID is ${BUILD_ID}"
+else
+  FULL_PRODUCT_VERSION="geode-pr-${GEODE_PULL_REQUEST_ID}"
+fi
 
 printf "\nUsing the following JDK:"
 java -version
@@ -130,7 +137,7 @@ pushd ${GEODE_BUILD}
   set -x
 #    ./gradlew --no-daemon -x javadoc -x spotlessCheck :geode-assembly:acceptanceTest --tests org.apache.geode.management.internal.cli.commands.PutCommandWithJsonTest
   ./gradlew ${PARALLEL_DUNIT} ${DUNIT_PARALLEL_FORKS} ${DUNIT_DOCKER_IMAGE} \
-      --system-prop "java.io.tmpdir=${TMPDIR}" ${DEFAULT_GRADLE_TASK_OPTIONS} ${GRADLE_TASK}
+      --system-prop "java.io.tmpdir=${TMPDIR}" ${DEFAULT_GRADLE_TASK_OPTIONS} ${GRADLE_TASK_OPTIONS} ${GRADLE_TASK}
   export GRADLE_EXIT_STATUS=$?
   set +x
 popd

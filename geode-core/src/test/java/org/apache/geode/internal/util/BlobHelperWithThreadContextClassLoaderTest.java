@@ -40,16 +40,13 @@ import org.apache.bcel.generic.Type;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link BlobHelper} with Thread Context ClassLoader.
  *
  * @since GemFire 2.0.2
  */
-@Category(UnitTest.class)
 public class BlobHelperWithThreadContextClassLoaderTest {
 
   private static final String CLASS_NAME_SERIALIZABLE_IMPL =

@@ -21,11 +21,8 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OffHeapStoredObjectWithHeapFormJUnitTest extends OffHeapStoredObjectJUnitTest {
 
   @Test

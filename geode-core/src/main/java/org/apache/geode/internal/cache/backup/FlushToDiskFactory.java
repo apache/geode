@@ -40,4 +40,9 @@ class FlushToDiskFactory {
     return new FlushToDiskResponse(sender);
   }
 
+  FlushToDiskStep createFlushToDiskStep(DistributionManager dm, InternalDistributedMember member,
+      InternalCache cache, Set<InternalDistributedMember> recipients,
+      FlushToDiskFactory flushToDiskFactory) {
+    return new FlushToDiskStep(dm, member, cache, recipients, flushToDiskFactory);
+  }
 }

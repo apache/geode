@@ -29,27 +29,27 @@ resources:
     target: https://concourse.apachegeode-ci.info
     insecure: "true"
     teams:
-    - name: main
+    - name: ((!concourse-team))
       username: ((!concourse-username))
       password: ((!concourse-password))
-- name: geode-develop-pipeline
+- name: geode-pipeline
   type: git
   source:
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
     - ci/*
 - name: geode-docker-images-pipeline
   type: git
   source:
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/docker-images.yml
 - name: geode-metrics-pipeline
   type: git
   source:
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/metrics.yml
@@ -63,7 +63,7 @@ resources:
 jobs:
 - name: set-pipeline
   serial: true
-  public: true
+  public: ((!public-pipelines))
   plan:
   - get: geode-pipeline
     trigger: true
@@ -79,14 +79,41 @@ jobs:
       params:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
+        GEODE_FORK: ((!geode-fork))
         CONCOURSE_USERNAME: ((!concourse-username))
         CONCOURSE_PASSWORD: ((!concourse-password))
+        CONCOURSE_TEAM: ((!concourse-team))
       run:
         path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
 
+- name: set-pr-pipeline
+  serial: true
+  public: ((!public-pipelines))
+  plan:
+  - get: geode-pipeline
+    trigger: true
+  - get: apachegeode-build-concourse-docker-image
+  - task: deploy-pr
+    image: apachegeode-build-concourse-docker-image
+    config:
+      inputs:
+      - name: geode-pipeline
+      outputs:
+      - name: results
+      platform: linux
+      params:
+        OUTPUT_DIRECTORY: results
+        GEODE_BRANCH: ((!geode-build-branch))
+        GEODE_FORK: ((!geode-fork))
+        CONCOURSE_USERNAME: ((!concourse-username))
+        CONCOURSE_PASSWORD: ((!concourse-password))
+        CONCOURSE_TEAM: ((!concourse-team))
+      run:
+        path: geode-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
+
 - name: set-docker-images-pipeline
   serial: true
-  public: true
+  public: ((!public-pipelines))
   plan:
   - get: geode-docker-images-pipeline
     trigger: true
@@ -94,11 +121,11 @@ jobs:
     params:
       pipelines:
       - name: docker-images
-        team: main
+        team: ((!concourse-team))
         config_file: geode-docker-images-pipeline/ci/pipelines/docker-images.yml
 - name: set-metrics-pipeline
   serial: true
-  public: true
+  public: ((!public-pipelines))
   plan:
   - get: geode-metrics-pipeline
     trigger: true
@@ -106,5 +133,5 @@ jobs:
     params:
       pipelines:
       - name: develop-metrics
-        team: main
+        team: ((!concourse-team))
         config_file: geode-metrics-pipeline/ci/pipelines/metrics.yml

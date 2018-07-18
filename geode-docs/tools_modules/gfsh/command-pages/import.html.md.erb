@@ -36,7 +36,7 @@ You can import an exported cluster configuration to create a new cluster or impo
 Imports a previously exported cluster configuration from a zip file. This command is useful when spinning up a new cluster.
 
 - In a given cluster, only one locator needs to perform the import. 
-That locator shares the imported configuration with all other connected locators in the distributed system.
+That locator shares the imported configuration with all other connected locators in the cluster.
 - Locators share the imported configuration with data members (servers) when the servers start, or if the servers have been recently started,
 have no regions defined in them, and have been given no other configuration changes since they started.
 

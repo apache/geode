@@ -36,9 +36,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION1 = "test region 1";
   private final String TEST_REGION2 = "test region 2";

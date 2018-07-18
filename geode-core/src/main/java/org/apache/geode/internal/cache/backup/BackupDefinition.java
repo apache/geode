@@ -25,11 +25,13 @@ import java.util.Set;
 import org.apache.geode.cache.DiskStore;
 
 class BackupDefinition {
+
   private final Map<DiskStore, Set<Path>> oplogFilesByDiskStore = new HashMap<>();
   private final Set<Path> configFiles = new HashSet<>();
   private final Map<Path, Path> userFiles = new HashMap<>();
   private final Map<Path, Path> deployedJars = new HashMap<>();
   private final Map<DiskStore, Path> diskInitFiles = new HashMap<>();
+
   private RestoreScript restoreScript;
 
   void addConfigFileToBackup(Path configFile) {

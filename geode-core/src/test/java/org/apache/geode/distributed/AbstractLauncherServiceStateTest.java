@@ -26,14 +26,12 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AbstractLauncher.ServiceState}. Tests marshalling of ServiceState to and
@@ -41,7 +39,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class AbstractLauncherServiceStateTest {
 
   private static String serviceName;

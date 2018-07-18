@@ -20,6 +20,7 @@ import static org.apache.geode.management.internal.cli.result.AbstractResultData
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +157,8 @@ public class ResultModel {
     files.put(fileName, fileModel);
   }
 
+
+
   /**
    * Overloaded method to create an {@code InfoResultModel} section called "info".
    */
@@ -186,6 +189,10 @@ public class ResultModel {
         .map(InfoResultModel.class::cast).collect(Collectors.toList());
   }
 
+  public InfoResultModel getInfoSection(String name) {
+    return (InfoResultModel) sections.get(name);
+  }
+
   public TabularResultModel addTable(String namedSection) {
     Object model = sections.get(namedSection);
     if (model != null) {
@@ -204,7 +211,8 @@ public class ResultModel {
   }
 
   public TabularResultModel addTableAndSetStatus(String namedSection,
-      List<CliFunctionResult> functionResults, boolean skipIgnored) {
+      List<CliFunctionResult> functionResults, boolean ignoreIgnorable,
+      boolean ignorePartialFailure) {
     Object model = sections.get(namedSection);
     if (model != null) {
       throw new IllegalStateException(
@@ -212,20 +220,29 @@ public class ResultModel {
     }
     TabularResultModel section = this.addTable(namedSection);
     boolean atLeastOneSuccess = false;
+    boolean atLeastOneFailure = false;
     section.setColumnHeader("Member", "Status", "Message");
     for (CliFunctionResult functionResult : functionResults) {
       if (functionResult == null) {
         continue;
       }
-      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(skipIgnored),
+      section.addRow(functionResult.getMemberIdOrName(), functionResult.getStatus(ignoreIgnorable),
           functionResult.getStatusMessage());
       if (functionResult.isSuccessful()) {
         atLeastOneSuccess = true;
-      } else if (functionResult.isIgnorableFailure() && skipIgnored) {
+      } else if (functionResult.isIgnorableFailure() && ignoreIgnorable) {
         atLeastOneSuccess = true;
+      } else if (functionResult.isIgnorableFailure() && !ignoreIgnorable) {
+        atLeastOneFailure = true;
+      } else if (!functionResult.isSuccessful()) {
+        atLeastOneFailure = true;
       }
     }
-    setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
+    if (ignorePartialFailure) {
+      setStatus(atLeastOneSuccess ? Result.Status.OK : Result.Status.ERROR);
+    } else {
+      setStatus(atLeastOneFailure ? Result.Status.ERROR : Result.Status.OK);
+    }
     return section;
   }
 
@@ -265,6 +282,13 @@ public class ResultModel {
   public DataResultModel getDataSection(String name) {
     return (DataResultModel) sections.get(name);
   }
+
+  public List<String> getSectionNames() {
+    List<String> sectionNames = new ArrayList<>();
+    sections.forEach((k, v) -> sectionNames.add(k));
+    return sectionNames;
+  }
+
 
   public String toJson() {
     ObjectMapper mapper = new ObjectMapper();
@@ -322,25 +346,39 @@ public class ResultModel {
     return result;
   }
 
+
+
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
-      boolean ignoreIfFailed) {
-    return createMemberStatusResult(functionResults, null, null, ignoreIfFailed);
+      boolean ignoreIgnorable, boolean ignorePartialFailure) {
+    return createMemberStatusResult(functionResults, null, null, ignoreIgnorable,
+        ignorePartialFailure);
   }
 
+  // this ignores the partial failure, but does not ignore the ignorable, if at least one success,
+  // the command status is success
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults) {
-    return createMemberStatusResult(functionResults, null, null, false);
+    return createMemberStatusResult(functionResults, null, null, false, true);
   }
+
+  // this ignores the partial failure, if at least one function result is successful, the command
+  // status is set to be successful
+  public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
+      boolean ignoreIgnorable) {
+    return createMemberStatusResult(functionResults, null, null, ignoreIgnorable, true);
+  }
+
 
   /**
    * Helper method to create an {@code TabularResultModel} named "member-status". Typically used
    * to tabulate the status from calls to a number of members.
    */
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
-      String header, String footer, boolean ignoreIfFailed) {
+      String header, String footer, boolean ignoreIgnorable, boolean ignorePartialFailure) {
     ResultModel result = new ResultModel();
 
     TabularResultModel tabularResultModel =
-        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIfFailed);
+        result.addTableAndSetStatus(MEMBER_STATUS_SECTION, functionResults, ignoreIgnorable,
+            ignorePartialFailure);
     tabularResultModel.setHeader(header);
     tabularResultModel.setFooter(footer);
     return result;

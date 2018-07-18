@@ -96,6 +96,10 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   @Override
   public String getId() {
+    return generateId(indexName, regionPath);
+  }
+
+  public static String generateId(String indexName, String regionPath) {
     return "lucene_" + LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
   }
 

@@ -125,10 +125,10 @@ limitations under the License.
                 <ul>
                     <li class="has_submenu">
                         <a href="/docs/guide/<%=vars.product_version_nodot%>/basic_config/config_concepts/chapter_overview.html">
-                            Distributed System and Cache Configuration</a>
+                            Cluster and Cache Configuration</a>
                         <ul>
                             <li>
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/basic_config/config_concepts/distributed_system_member_configuration.html">Distributed System Members</a>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/basic_config/config_concepts/distributed_system_member_configuration.html">Cluster Members</a>
                             </li>
                             <li>
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/basic_config/gemfire_properties/setting_distributed_properties.html">Setting Properties</a>
@@ -330,7 +330,7 @@ limitations under the License.
                                     Architecture and Components</a>
                             </li>
                             <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/management/jmx_manager_node.html#topic_36C918B4202D45F3AC225FFD23B12D7C">JMX Manager Operations</a>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/management/jmx_manager_node.html">JMX Manager Operations</a>
                                 <ul>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/management/jmx_manager_operations.html">Starting a JMX Manager</a>
@@ -664,7 +664,7 @@ limitations under the License.
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/system_member_performance.html">System Member Performance</a>
                                 <ul>
                                     <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/system_member_performance_distributed_system_member.html">Distributed System Member Properties</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/system_member_performance_distributed_system_member.html">Member Properties</a>
                                     </li>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/system_member_performance_jvm_mem_settings.html">JVM Memory Settings and System Performance</a>
@@ -708,6 +708,9 @@ limitations under the License.
                                     </li>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/socket_communication_tcpip_p2p_handshake_timeouts.html">TCP/IP Peer-to-Peer Handshake Timeouts</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/sockets_and_gateways.html">Configuring Sockets in Multi-Site (WAN) Deployments</a>
                                     </li>
                                 </ul>
                             </li>
@@ -1012,6 +1015,10 @@ limitations under the License.
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/outside_data_sources/chapter_overview.html">Overview of Outside Data Sources</a>
                                     </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/outside_data_sources/configuring_db_connections_using_JNDI.html">Configuring Database Connections Using JNDI</a>
+                                    </li>
+
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/outside_data_sources/how_data_loaders_work.html">How Data Loaders Work</a>
                                     </li>
@@ -1368,25 +1375,25 @@ limitations under the License.
                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/chapter_overview.html">Transactions</a>
                         <ul>
                             <li>
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/about_transactions.html">About Transactions</a>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/about_transactions.html">Introduction and the Application of ACID Semantics</a>
                             </li>
                             <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/cache_transactions.html">Geode Cache Transactions</a>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/cache_transactions.html">Geode Transactions</a>
                                 <ul>
                                     <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/cache_transaction_performance.html">Cache Transaction Performance</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/cache_transaction_performance.html">Transaction Performance</a>
                                     </li>
                                     <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/data_location_cache_transactions.html">Data Location for Cache Transactions</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/data_location_cache_transactions.html">Data Location for Transactions</a>
                                     </li>
                                     <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/run_a_cache_transaction.html">How to Run a Geode Cache Transaction</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/run_a_cache_transaction.html">How to Run a Geode Transaction</a>
                                     </li>
                                     <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/run_a_cache_transaction_with_external_db.html">How to Run a Geode Cache Transaction that Coordinates with an External Database</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/run_a_cache_transaction_with_external_db.html">How to Run a Geode Transaction that Coordinates with an External Database</a>
                                     </li>
                                     <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/working_with_transactions.html">Working with Geode Cache Transactions</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/working_with_transactions.html">Working with Geode Transactions</a>
                                         <ul>
                                             <li>
                                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/working_with_transactions.html#concept_vx2_gs4_5k">Setting Global Copy on Read
@@ -1426,7 +1433,7 @@ limitations under the License.
                                         </ul>
                                     </li>
                                     <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/how_cache_transactions_work.html#topic_fls_1j1_wk">How Geode Cache Transactions Work</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/how_cache_transactions_work.html#topic_fls_1j1_wk">How Geode Transactions Work</a>
                                         <ul>
                                             <li>
                                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/how_cache_transactions_work.html#concept_hls_1j1_wk">Transaction View</a>
@@ -1437,22 +1444,8 @@ limitations under the License.
                                             <li>
                                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/cache_transactions_by_region_type.html">Transactions by Region Type</a>
                                             </li>
-                                            <li class="has_submenu">
+                                            <li>
                                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/client_server_transactions.html">Client Transactions</a>
-                                                <ul>
-                                                    <li>
-                                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/client_server_transactions.html#how_gemfire_runs_clients">How Geode Runs Client Transactions</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/client_server_transactions.html#client_cache_access">Client Cache Access During a Transaction</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/client_server_transactions.html#client_app_plugins">Client Transactions and Client Application Plug-Ins</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/client_server_transactions.html#client_transaction_failures">Client Transaction Failures</a>
-                                                    </li>
-                                                </ul>
                                             </li>
                                             <li class="has_submenu">
                                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/transactional_and_nontransactional_ops.html#transactional_and_nontransactional_ops">Comparing Transactional and Non-Transactional Operations</a>
@@ -1477,9 +1470,6 @@ limitations under the License.
                                                     </li>
                                                 </ul>
                                             </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/transaction_semantics.html">Geode Cache Transaction Semantics</a>
-                                            </li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -1488,37 +1478,11 @@ limitations under the License.
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html">JTA Global Transactions with Geode
                                 </a>
                                 <ul>
-                                    <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html#concept_cp1_zx1_wk">Coordinating with External JTA Transactions Managers</a>
-                                        <ul>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html#task_j3g_3mn_1l">How to Run a JTA Transaction Coordinated by an External Transaction Manager</a>
-                                            </li>
-                                        </ul>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html#concept_cp1_zx1_wk">Coordinating with External JTA Transaction Managers</a>
                                     </li>
-                                    <li class="has_submenu">
+                                    <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk">Using Geode as the "Last Resource" in a Container-Managed JTA Transaction</a>
-                                        <ul>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html#task_sln_x3b_wk">How to Run JTA Transactions with Geode as a "Last Resource"</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html#concept_8567sdkbigige">Using Geode as the JTA Transaction Manager</a>
-                                        <ul>
-                                            <li class="has_submenu">
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/JTA_transactions.html#task_qjv_khb_wk">How to Run a JTA Global Transaction Using Geode as the JTA Transaction Manager</a>
-                                                <ul>
-                                                    <li>
-                                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/configuring_db_connections_using_JNDI.html">Configuring Database Connections Using JNDI</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/configuring_db_connections_using_JNDI.html#topic_F67EC20067124A618A8099AB4CBF634C">Example DataSource Configurations in cache.xml</a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
                                     </li>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/cache_plugins_with_jta.html">Behavior of Geode Cache Writers and Loaders Under JTA</a>
@@ -1532,25 +1496,8 @@ limitations under the License.
                             <li>
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/monitor_troubleshoot_transactions.html">Monitoring and Troubleshooting Transactions</a>
                             </li>
-                            <li class="has_submenu">
+                            <li>
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/transaction_coding_examples.html">Transaction Coding Examples</a>
-                                <ul>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/transactions_overview.html">Basic Transaction Example</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/transaction_suspend_resume_example.html">Basic Suspend and Resume Transaction Example</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/transactional_function_example.html">Transaction Embedded within a Function Example</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/transaction_jta_gemfire_example.html">Geode JTA Transaction Example</a>
-                                    </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/transactions/jca_adapter_example.html">JCA Resource Adapter Example</a>
-                                    </li>
-                                </ul>
                             </li>
                         </ul>
                     </li>

@@ -118,25 +118,35 @@ public class CommitCommand extends BaseCommand {
       // the transaction may still be active and hold locks. We must wait for the transaction
       // host to finish shutting down before responding to the client or it could encounter
       // conflicts in retrying the transaction
-      if ((txException instanceof TransactionInDoubtException)
-          && (txException.getCause() instanceof CancelException)) {
-        logger.info(
-            "Waiting for departure of {} before throwing TransactionInDoubtException.",
-            target);
-        try {
-          serverConnection.getCache().getDistributionManager().getMembershipManager()
-              .waitForDeparture(target);
-        } catch (TimeoutException e) {
-          // status will be logged below
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+      try {
+        if ((txException instanceof TransactionInDoubtException)
+            && (txException.getCause() instanceof CancelException)) {
+          // base the wait time on the client's read-timeout setting so that we respond before
+          // it gives up reading. Since we've already done a commit we've eaten up some time
+          // so we use a WAG of half the read-timeout
+          int timeToWait = serverConnection.getHandshake().getClientReadTimeout() / 2;
+          if (timeToWait < 0) {
+            return;
+          }
+          logger.info(
+              "Waiting up to {}ms for departure of {} before throwing TransactionInDoubtException.",
+              timeToWait, target);
+          try {
+            serverConnection.getCache().getDistributionManager().getMembershipManager()
+                .waitForDeparture(target, timeToWait);
+          } catch (TimeoutException e) {
+            // status will be logged below
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+          logger.info("Done waiting.  Transaction host {} in the cluster.",
+              serverConnection.getCache().getDistributionManager().isCurrentMember(target)
+                  ? "is still"
+                  : "is no longer");
         }
-        logger.info("Done waiting.  Transaction host {} in the cluster.",
-            serverConnection.getCache().getDistributionManager().isCurrentMember(target)
-                ? "is still"
-                : "is no longer");
+      } finally {
+        sendException(clientMessage, serverConnection, txException);
       }
-      sendException(clientMessage, serverConnection, txException);
     }
   }
 

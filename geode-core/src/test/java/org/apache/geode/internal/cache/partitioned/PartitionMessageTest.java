@@ -24,9 +24,9 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -34,9 +34,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PartitionMessageTest {
 
   private GemFireCacheImpl cache;
@@ -46,6 +44,7 @@ public class PartitionMessageTest {
   private TXManagerImpl txMgr;
   private long startTime = 1;
   private TXStateProxy tx;
+  private DistributionAdvisor advisor;
 
   @Before
   public void setUp() throws Exception {
@@ -55,6 +54,7 @@ public class PartitionMessageTest {
     pr = mock(PartitionedRegion.class);
     txMgr = mock(TXManagerImpl.class);
     tx = mock(TXStateProxyImpl.class);
+    advisor = mock(DistributionAdvisor.class);
 
     when(msg.checkCacheClosing(dm)).thenReturn(false);
     when(msg.checkDSClosing(dm)).thenReturn(false);
@@ -62,6 +62,8 @@ public class PartitionMessageTest {
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
     when(dm.getCache()).thenReturn(cache);
+    when(pr.getDistributionAdvisor()).thenReturn(advisor);
+    when(advisor.isInitialized()).thenReturn(true);
 
     doAnswer(CALLS_REAL_METHODS).when(msg).process(dm);
   }

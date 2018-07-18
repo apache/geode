@@ -367,8 +367,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * <p>
    * NOTE: the communication layer does not reliably support sending a message to oneself, so other
    * means must be used to execute the message in this VM. Typically you would set the sender of the
-   * message and then invoke its process() method in another thread. If you have questions, talk to
-   * Bruce Schuchardt.
+   * message and then invoke its process() method in another thread.
    */
   protected boolean allowReplyFromSender() {
     return false;

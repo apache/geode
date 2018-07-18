@@ -25,19 +25,16 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SimpleExtensionPoint}.
  *
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class SimpleExtensionPointJUnitTest {
 
   /**

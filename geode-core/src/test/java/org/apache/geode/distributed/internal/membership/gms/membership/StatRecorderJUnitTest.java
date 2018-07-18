@@ -48,12 +48,11 @@ import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMes
 import org.apache.geode.distributed.internal.membership.gms.messenger.StatRecorder;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * This class tests the GMS StatRecorder class, which records JGroups messaging statistics
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class StatRecorderJUnitTest {
 
   private Protocol mockDownProtocol;

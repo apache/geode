@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -28,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -237,7 +239,7 @@ public class ShutdownAllRequest extends AdminRequest {
   }
 
   private static class ShutDownAllReplyProcessor extends AdminMultipleReplyProcessor {
-    Set results = Collections.synchronizedSet(new TreeSet());
+    Set<DistributedMember> results = Collections.synchronizedSet(new TreeSet<>());
 
     ShutDownAllReplyProcessor(DistributionManager dm, Collection initMembers) {
       super(dm, initMembers);
@@ -259,8 +261,11 @@ public class ShutdownAllRequest extends AdminRequest {
       }
       if (msg instanceof ShutdownAllResponse) {
         if (((ShutdownAllResponse) msg).isToShutDown()) {
-          logger.debug("{} adding {} to result set {}", this, msg.getSender(), this.results);
-          this.results.add(msg.getSender());
+          synchronized (results) {
+            logger.debug("{} adding {} to result set {}", this, msg.getSender(),
+                results);
+            this.results.add(msg.getSender());
+          }
         } else {
           // for member without cache, we will not wait for its result
           // so no need to wait its DS to close either
@@ -285,9 +290,11 @@ public class ShutdownAllRequest extends AdminRequest {
     }
 
     public Set getResults() {
-      logger.debug("{} shutdownAll returning {}", this,
-          results/* , new Exception("stack trace") */);
-      return results;
+      synchronized (results) {
+        logger.debug("{} shutdownAll returning {}", this,
+            results);
+        return new HashSet(results);
+      }
     }
   }
 }

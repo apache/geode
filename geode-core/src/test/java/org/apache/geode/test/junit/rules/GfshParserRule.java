@@ -62,7 +62,7 @@ public class GfshParserRule extends ExternalResource {
     GfshParseResult parseResult = parse(command);
 
     if (parseResult == null) {
-      return ResultBuilder.createUserErrorResult("Invalid command: " + command);
+      return new ModelCommandResult(ResultModel.createError("Invalid command: " + command));
     }
 
     CliAroundInterceptor interceptor = null;

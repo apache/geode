@@ -24,14 +24,11 @@ import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
 
-@Category(UnitTest.class)
 public class RegionPathConverterJUnitTest {
   @ClassRule
   public static GfshParserRule parser = new GfshParserRule();

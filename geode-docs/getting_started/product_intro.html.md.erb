@@ -73,7 +73,7 @@ The fundamental premise is to route the function transparently to the applicatio
 
 ## <a id="concept_3B5E445B19884680900161BDF25E32C9__section_97CABBFF553647F6BBBC40AA7AF6D4C7" class="no-quick-link"></a>Shared-Nothing Disk Persistence
 
-Each distributed system member manages data on disk files independent of other members. Failures in disks or cache failures in one member do not affect the ability of another cache instance to operate safely on its disk files. This "shared nothing" persistence architecture allows applications to be configured such that different classes of data are persisted on different members across the system, dramatically increasing the overall throughput of the application even when disk persistence is configured for application objects.
+Each cluster member manages data on disk files independent of other members. Failures in disks or cache failures in one member do not affect the ability of another cache instance to operate safely on its disk files. This "shared nothing" persistence architecture allows applications to be configured such that different classes of data are persisted on different members across the system, dramatically increasing the overall throughput of the application even when disk persistence is configured for application objects.
 
 Unlike a traditional database system, separate files are not used to manage data and transaction logs. All data updates are appended to files that are similar to transactional logs of traditional databases. You can avoid disk-seek times if the disk is not concurrently used by other processes, and the only cost incurred is the rotational latency.
 
@@ -91,7 +91,7 @@ There may be multiple, distinct users in client applications. This feature accom
 
 ## <a id="concept_3B5E445B19884680900161BDF25E32C9__section_091A306900D7402CAE5A46B5F9BFD612" class="no-quick-link"></a>Multisite Data Distribution
 
-Scalability problems can result from data sites being spread out geographically across a wide-area network (WAN). Models address these topologies, ranging from a single peer-to-peer cluster to reliable communications between data centers across the WAN. This model allows distributed systems to scale out in an unbounded and loosely coupled fashion without loss of performance, reliability or data consistency.
+Scalability problems can result from data sites being spread out geographically across a wide-area network (WAN). Models address these topologies, ranging from a single peer-to-peer cluster to reliable communications between data centers across the WAN. This model allows clusters to scale out in an unbounded and loosely coupled fashion without loss of performance, reliability or data consistency.
 
 At the core of this architecture is the gateway sender configuration used for distributing region events to a remote site. You can deploy gateway sender instances in parallel, which enables an increase in throughput for distributing region events across the WAN. You can also configure gateway sender queues for persistence and high availability to avoid data loss in the case of a member failure.
 

@@ -101,7 +101,15 @@ public class GfshRule extends ExternalResource {
       geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
     }
 
-    return geodeHome.resolve("bin/gfsh");
+    if (isWindows()) {
+      return geodeHome.resolve("bin/gfsh.bat");
+    } else {
+      return geodeHome.resolve("bin/gfsh");
+    }
+  }
+
+  private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().contains("win");
   }
 
   public TemporaryFolder getTemporaryFolder() {
@@ -134,6 +142,11 @@ public class GfshRule extends ExternalResource {
 
   protected ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir) {
     List<String> commandsToExecute = new ArrayList<>();
+
+    if (isWindows()) {
+      commandsToExecute.add("cmd.exe");
+      commandsToExecute.add("/c");
+    }
     commandsToExecute.add(gfshPath.toAbsolutePath().toString());
 
     for (String command : gfshScript.getCommands()) {
@@ -150,7 +163,8 @@ public class GfshRule extends ExternalResource {
       String existingJavaArgs = environmentMap.get(classpathKey);
       String specified = String.join(PATH_SEPARATOR, extendedClasspath);
       String newValue =
-          String.format("%s%s", existingJavaArgs == null ? "" : existingJavaArgs + ":", specified);
+          String.format("%s%s", existingJavaArgs == null ? "" : existingJavaArgs + PATH_SEPARATOR,
+              specified);
       environmentMap.put(classpathKey, newValue);
     }
 

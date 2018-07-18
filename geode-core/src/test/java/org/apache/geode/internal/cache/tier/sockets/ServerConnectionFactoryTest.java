@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * We don't test the path where the service providing protobufProtocolHandler is actually present,
@@ -46,7 +45,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * What we are concerned with is making sure that everything stays the same when the feature flag
  * isn't set, and that we at least try to load the service when the feature flag is true.
  */
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ServerConnectionFactoryTest {
 
   @Rule

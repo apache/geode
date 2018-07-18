@@ -26,15 +26,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.TextFromStandardInputStream;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
  * Quick sanity tests to make sure MainLauncher is functional.
  */
-@Category(UnitTest.class)
 public class MainLauncherJUnitTest {
 
   private static final long TIMEOUT_SECONDS = 10;

@@ -60,7 +60,8 @@ for i in ${SCRIPTDIR}/test-stubs/*.yml; do
   echo "Merging ${i} into ${TMP_DIR}/${X}"
   ${SPRUCE} merge --prune metadata \
     <(echo "metadata:"; \
-      echo "  geode-build-branch: ${GEODE_BRANCH}") \
+      echo "  geode-build-branch: ${GEODE_BRANCH}"; \
+      echo "  geode-fork: ${GEODE_FORK}") \
     ${SCRIPTDIR}/test-template.yml \
     ${i} > ${TMP_DIR}/${X}
 done
@@ -70,6 +71,7 @@ ${SPRUCE} merge --prune metadata \
   ${SCRIPTDIR}/base.yml \
   <(echo "metadata:"; \
     echo "  geode-build-branch: ${GEODE_BRANCH}"; \
+    echo "  geode-fork: ${GEODE_FORK}"; \
     echo "  ") \
   ${TMP_DIR}/*.yml > ${TMP_DIR}/final.yml
 

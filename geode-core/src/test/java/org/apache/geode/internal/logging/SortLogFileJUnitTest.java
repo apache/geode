@@ -27,17 +27,14 @@ import java.util.Date;
 import java.util.Random;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link SortLogFile} program.
  *
  * @since GemFire 3.0
  */
-@Category(UnitTest.class)
 public class SortLogFileJUnitTest {
 
   /**

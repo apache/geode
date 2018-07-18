@@ -30,16 +30,13 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class TXManagerImplTest {
   private TXManagerImpl txMgr;
   TXId txid;
@@ -336,5 +333,32 @@ public class TXManagerImplTest {
     } finally {
       txMgr.unmasquerade(existingTx);
     }
+  }
+
+  @Test
+  public void txStateNotCleanedupIfNotRemovedFromHostedTxStatesMap() {
+    tx1 = txMgr.getOrSetHostedTXState(txid, msg);
+    TXStateProxyImpl txStateProxy = (TXStateProxyImpl) tx1;
+    assertNotNull(txStateProxy);
+    assertFalse(txStateProxy.getLocalRealDeal().isClosed());
+
+    txMgr.masqueradeAs(tx1);
+    txMgr.unmasquerade(tx1);
+    assertFalse(txStateProxy.getLocalRealDeal().isClosed());
+
+  }
+
+  @Test
+  public void txStateCleanedupIfRemovedFromHostedTxStatesMap() {
+    tx1 = txMgr.getOrSetHostedTXState(txid, msg);
+    TXStateProxyImpl txStateProxy = (TXStateProxyImpl) tx1;
+    assertNotNull(txStateProxy);
+    assertFalse(txStateProxy.getLocalRealDeal().isClosed());
+
+    txMgr.masqueradeAs(tx1);
+    // during TX failover, tx can be removed from the hostedTXStates map by FindRemoteTXMessage
+    txMgr.getHostedTXStates().remove(txid);
+    txMgr.unmasquerade(tx1);
+    assertTrue(txStateProxy.getLocalRealDeal().isClosed());
   }
 }

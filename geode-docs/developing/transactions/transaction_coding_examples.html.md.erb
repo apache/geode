@@ -21,24 +21,184 @@ limitations under the License.
 
 This section provides several code examples for writing and executing transactions.
 
--   **[Basic Transaction Example](transactions_overview.html)**
+-   **[Basic Transaction Example](#basic_transaction_example)**
 
     This example operates on two replicated regions. It begins a transaction, updates one entry in each region, and commits the result.
 
--   **[Basic Suspend and Resume Transaction Example](transaction_suspend_resume_example.html)**
+-   **[Basic Suspend and Resume Transaction Example](#suspend_resume_example)**
 
     This example suspends and resumes a transaction.
 
--   **[Transaction Embedded within a Function Example](transactional_function_example.html)**
+-   **[Transaction Embedded within a Function Example](#transactional_function_example)**
 
     This example demonstrates a function that does transactional updates to Customer and Order regions.
 
--   **[<%=vars.product_name%> JTA Transaction Example](transaction_jta_gemfire_example.html)**
-
-    An example code fragment shows how to run a JTA global transaction using <%=vars.product_name%> as the JTA transaction manager.
-
--   **[JCA Resource Adapter Example](jca_adapter_example.html)**
+-   **[JCA Resource Adapter Example](#jca_adapter_example)**
 
     This example shows how to use the JCA Resource Adapter in <%=vars.product_name%> .
+
+
+##  <a id="basic_transaction_example" class="no-quick-link"></a>Basic Transaction Example
+
+This example operates on two replicated regions. It begins a transaction, updates one entry in each region, and commits the result.
+
+If the commit fails, it will be due to a `CommitConflictException`, which implies that a concurrent access caused a change to one of the items operated on within this transaction. This code fragment catches the exception, and it repeats the transaction attempt until the commit succeeds.
+
+``` pre
+Cache c = new CacheFactory().create();
+
+Region<String, Integer> cash = c.createRegionFactory<String, Integer>()
+    .setDataPolicy(DataPolicy.REPLICATE)
+    .create("cash");
+
+Region<String, Integer> trades = c.createRegionFactory<String, Integer>()
+    .setDataPolicy(DataPolicy.REPLICATE)
+    .create("trades");
+
+CacheTransactionManager txmgr = c.getCacheTransactionManager();
+boolean commitConflict = false;
+do {
+    try {
+        txmgr.begin();
+        final String customer = "Customer1";
+        final Integer purchase = Integer.valueOf(1000);
+        // Decrement cash
+        Integer cashBalance = cash.get(customer);
+        Integer newBalance = 
+            Integer.valueOf((cashBalance != null ? cashBalance : 0) 
+                - purchase);
+        cash.put(customer, newBalance);
+        // Increment trades
+        Integer tradeBalance = trades.get(customer);
+        newBalance = 
+            Integer.valueOf((tradeBalance != null ? tradeBalance : 0) 
+                + purchase);
+
+        trades.put(customer, newBalance);
+        txmgr.commit();
+        commitConflict = false;
+    } 
+    catch (CommitConflictException conflict) {
+        commitConflict = true;
+    }
+} while (commitConflict);
+```
+
+## <a id="suspend_resume_example" class="no-quick-link"></a>Basic Suspend and Resume Transaction Example
+
+This example suspends and resumes a transaction.
+
+``` pre
+ CacheTransactionManager txMgr = cache.getCacheTransactionManager();
+
+    txMgr.begin();
+    region.put("key1", "value");
+    TransactionId txId = txMgr.suspend();
+    assert region.containsKey("key1") == false;
+    // do other operations that should not be
+    // part of a transaction
+    txMgr.resume(txId);
+    region.put("key2", "value");
+    txMgr.commit();
+```
+
+
+## <a id="transactional_function_example" class="no-quick-link"></a>Transaction Embedded within a Function Example
+
+This example demonstrates a function that does transactional updates to Customer and Order regions.
+
+``` pre
+/**
+ * This function does transactional updates to customer and order regions
+ */
+public class TransactionalFunction extends FunctionAdapter {
+
+  private Random random = new Random();
+  /* (non-Javadoc)
+   * @see org.apache.geode.cache.execute.FunctionAdapter#execute(org.apache.geode.cache.execute.FunctionContext)
+   */
+  @Override
+  public void execute(FunctionContext context) {
+    RegionFunctionContext rfc = (RegionFunctionContext)context;
+    Region<CustomerId, String> custRegion = rfc.getDataSet();
+    Region<OrderId, String> 
+        orderRegion = custRegion.getRegionService().getRegion("order");
+
+    CacheTransactionManager 
+        mgr = CacheFactory.getAnyInstance().getCacheTransactionManager();
+    CustomerId custToUpdate = (CustomerId)rfc.getFilter().iterator().next();
+    OrderId orderToUpdate = (OrderId)rfc.getArguments();
+    System.out.println("Starting a transaction...");
+    mgr.begin();
+    int randomInt = random.nextInt(1000);
+    System.out.println("for customer region updating "+custToUpdate);
+    custRegion.put(custToUpdate, 
+        "updatedCustomer_"+custToUpdate.getCustId()+"_"+randomInt);
+    System.out.println("for order region updating "+orderToUpdate);
+    orderRegion.put(orderToUpdate, 
+        "newOrder_"+orderToUpdate.getOrderId()+"_"+randomInt);
+    mgr.commit();
+    System.out.println("transaction completed");
+    context.getResultSender().lastResult(Boolean.TRUE);
+  }
+
+  /* (non-Javadoc)
+   * @see org.apache.geode.cache.execute.FunctionAdapter#getId()
+   */
+  @Override
+  public String getId() {
+    return "TxFunction";
+  }
+
+}
+```
+
+## <a id="jca_adapter_example" class="no-quick-link"></a>JCA Resource Adapter Example
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This example shows how to use the JCA Resource Adapter in <%=vars.product_name%> .
+
+``` pre
+Hashtable env = new Hashtable();
+env.put(Context.INITIAL_CONTEXT_FACTORY, “weblogic.jndi.WLInitialContextFactory”);
+env.put(Context.PROVIDER_URL, “t3://localhost:7001”);
+Context ctx = new InitialContext(env);
+UserTransaction utx = (UserTransaction) ctx.lookup(“javax.transaction.UserTransaction”);
+utx.begin();
+      // the XA Resource
+javax.sql.DataSource ds = (DataSource) ctx.lookup(“derby”);
+javax.sql.Connection derbyConn = ds.getConnection();
+Statement stmt = conn.createStatement();
+stmt.executeUpdate(“insert into test values(2,4) “);
+     // do ConnectionFactory lookup
+GFConnectionFactory cf = (GFConnectionFactory) ctx.lookup(“gfe/jca”);
+
+     // Obtaining the connection begins the LocalTransaction.
+     // If this is absent, operations will not be part of any transaction.
+GFConnection conn = cf.getConnection();
+
+testRegion.put(“foo”, “bar-”);
+utx.commit();
+
+     // the connection can also be closed within the transaction
+derbyConn.close();
+conn.close();
+```
 
 

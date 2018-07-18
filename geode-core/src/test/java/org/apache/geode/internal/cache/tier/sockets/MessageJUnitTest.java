@@ -37,9 +37,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.Version;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class MessageJUnitTest {
 
   private Message message;

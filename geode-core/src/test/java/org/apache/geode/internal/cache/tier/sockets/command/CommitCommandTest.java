@@ -38,15 +38,15 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Exposes GEODE-537: NPE in JTA AFTER_COMPLETION command processing
  */
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class CommitCommandTest {
 
   /**
@@ -83,6 +83,7 @@ public class CommitCommandTest {
     InternalCache cache = mock(InternalCache.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
     MembershipManager membershipManager = mock(MembershipManager.class);
+    ServerSideHandshake handshake = mock(ServerSideHandshake.class);
     boolean wasInProgress = false;
 
     doReturn(cache).when(serverConnection).getCache();
@@ -92,6 +93,8 @@ public class CommitCommandTest {
         InternalDistributedMember.class));
 
     doReturn(mock(Message.class)).when(serverConnection).getErrorResponseMessage();
+    doReturn(handshake).when(serverConnection).getHandshake();
+    doReturn(1000).when(handshake).getClientReadTimeout();
 
     doReturn(new InternalDistributedMember(InetAddress.getLocalHost(), 1234)).when(txProxy)
         .getTarget();
@@ -105,6 +108,7 @@ public class CommitCommandTest {
         clientMessage, serverConnection, txMgr, wasInProgress, txProxy);
 
     verify(txMgr, atLeastOnce()).commit();
-    verify(membershipManager, times(1)).waitForDeparture(isA(DistributedMember.class));
+    verify(membershipManager, times(1)).waitForDeparture(isA(DistributedMember.class),
+        isA(Integer.class));
   }
 }

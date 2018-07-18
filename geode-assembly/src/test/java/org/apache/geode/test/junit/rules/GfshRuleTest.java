@@ -25,10 +25,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-@Category({UnitTest.class, GfshTest.class})
+@Category({GfshTest.class})
 public class GfshRuleTest {
 
   @Rule

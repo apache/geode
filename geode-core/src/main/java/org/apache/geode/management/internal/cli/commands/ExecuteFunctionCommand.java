@@ -29,7 +29,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -73,7 +72,7 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
       // find the members based on the groups or members
       dsMembers = findMembers(onGroups, onMembers);
     } else {
-      dsMembers = findMembersForRegion(onRegion);
+      dsMembers = findAnyMembersForRegion(onRegion);
     }
 
     if (dsMembers.size() == 0) {
@@ -111,15 +110,7 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(new UserFunctionExecution(), args, dsMembers);
 
-    for (CliFunctionResult r : results) {
-      resultTable.accumulate("Member ID/Name", r.getMemberIdOrName());
-      resultTable.accumulate("Function Execution Result", r.getMessage());
-      if (!r.isSuccessful()) {
-        resultModel.setStatus(Result.Status.ERROR);
-      }
-    }
-
-    return resultModel;
+    return ResultModel.createMemberStatusResult(results, false, false);
   }
 
   public static class ExecuteFunctionCommandInterceptor implements CliAroundInterceptor {

@@ -2064,4 +2064,8 @@ public class TXState implements TXStateInterface {
   public DistributedMember getProxyServer() {
     return this.proxyServer;
   }
+
+  boolean isClosed() {
+    return closed;
+  }
 }

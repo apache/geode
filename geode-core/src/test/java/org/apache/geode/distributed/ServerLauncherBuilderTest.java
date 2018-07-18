@@ -26,18 +26,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ServerLauncher.Builder}. Extracted from {@link ServerLauncherTest}.
  */
-@Category(UnitTest.class)
 public class ServerLauncherBuilderTest {
 
   private InetAddress localHost;
@@ -554,7 +551,7 @@ public class ServerLauncherBuilderTest {
 
   @Test
   public void setServerBindAddressToUnknownHostThrowsIllegalArgumentException() throws Exception {
-    assertThatThrownBy(() -> new Builder().setServerBindAddress("badHostName.badCompany.com"))
+    assertThatThrownBy(() -> new Builder().setServerBindAddress("badHostName.example.com"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(UnknownHostException.class);
   }

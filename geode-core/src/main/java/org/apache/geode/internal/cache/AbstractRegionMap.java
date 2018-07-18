@@ -1126,7 +1126,8 @@ public abstract class AbstractRegionMap
                   clearOccured = true;
                 }
                 owner.txApplyDestroyPart2(re, re.getKey(), inTokenMode,
-                    clearOccured /* Clear Conflciting with the operation */);
+                    clearOccured /* Clear Conflciting with the operation */,
+                    wasDestroyedOrRemoved);
                 boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
@@ -1155,9 +1156,7 @@ public abstract class AbstractRegionMap
         // generate versions and Tombstones for destroys
         boolean dispatchListenerEvent = inTokenMode;
         boolean opCompleted = false;
-        // TODO: if inTokenMode then Token.DESTROYED is ok but what about !inTokenMode because
-        // owner.concurrencyChecksEnabled? In that case we do not want a DESTROYED token.
-        RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.DESTROYED);
+        RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
         if (oqlIndexManager != null) {
           oqlIndexManager.waitForIndexInit();
         }
@@ -1211,7 +1210,7 @@ public abstract class AbstractRegionMap
                         owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
                       }
                       owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
-                          false /* Clear Conflicting with the operation */);
+                          false /* Clear Conflicting with the operation */, wasDestroyedOrRemoved);
                       lruEntryDestroy(oldRe);
                     } finally {
                       if (!callbackEventAddedToPending)
@@ -1219,7 +1218,7 @@ public abstract class AbstractRegionMap
                     }
                   } catch (RegionClearedException rce) {
                     owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
-                        true /* Clear Conflicting with the operation */);
+                        true /* Clear Conflicting with the operation */, true);
                   }
                   if (owner.getConcurrencyChecksEnabled()
                       && callbackEvent.getVersionTag() != null) {
@@ -1235,7 +1234,6 @@ public abstract class AbstractRegionMap
               }
             }
             if (!opCompleted) {
-              // already has value set to Token.DESTROYED
               opCompleted = true;
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
               callbackEvent = createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
@@ -1264,9 +1262,11 @@ public abstract class AbstractRegionMap
                   newRe.removePhase1(owner, false); // fix for bug 43063
                   newRe.removePhase2();
                   removeEntry(key, newRe, false);
+                } else {
+                  newRe.setValue(owner, Token.DESTROYED);
                 }
                 owner.txApplyDestroyPart2(newRe, newRe.getKey(), inTokenMode,
-                    false /* clearConflict */);
+                    false /* clearConflict */, true);
                 // Note no need for LRU work since the entry is destroyed
                 // and will be removed when gii completes
               } finally {

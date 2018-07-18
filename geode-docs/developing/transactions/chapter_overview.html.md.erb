@@ -21,19 +21,19 @@ limitations under the License.
 
 <%=vars.product_name%> provides a transactions API, with `begin`, `commit`, and `rollback` methods. These methods are much the same as the familiar relational database transactions methods.
 
--   **[About Transactions](about_transactions.html)**
+-   **[Introduction and the Application of ACID Semantics](about_transactions.html)**
 
-    This section covers the features of <%=vars.product_name%> transactions.
+    This section presents the features of <%=vars.product_name%> transactions and discusses how the implementation adheres to ACID semantics.
 It also details the two kinds of transaction that <%=vars.product_name%> supports:
-**<%=vars.product_name%> cache transactions** and **JTA global transactions**.
+**<%=vars.product_name%> transactions** and **JTA global transactions**.
 
--   **[<%=vars.product_name%> Cache Transactions](cache_transactions.html)**
+-   **[<%=vars.product_name%> Transactions](cache_transactions.html)**
 
-    Use <%=vars.product_name%> cache transactions to group the execution of cache operations and to gain the control offered by transactional commit and rollback. <%=vars.product_name%> cache transactions control operations within the <%=vars.product_name%> cache while the <%=vars.product_name%> distributed system handles data distribution in the usual way.
+    Use <%=vars.product_name%> transactions to group the execution of cache operations and to gain the control offered by transactional commit and rollback. <%=vars.product_name%> transactions control operations within the <%=vars.product_name%> cache while the <%=vars.product_name%> distributed system handles data distribution in the usual way.
 
 -   **[JTA Global Transactions with <%=vars.product_name%>](JTA_transactions.html)**
 
-    Use JTA global transactions to coordinate <%=vars.product_name%> cache transactions and JDBC transactions.
+    Use JTA global transactions to coordinate <%=vars.product_name%> transactions and JDBC transactions.
 
 -   **[Monitoring and Troubleshooting Transactions](monitor_troubleshoot_transactions.html)**
 

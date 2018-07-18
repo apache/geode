@@ -44,6 +44,7 @@ public class GfshScript {
   }
 
   public GfshScript withName(String name) {
+    assertThat(name.contains(" ")).as("argument passed to withName cannot have spaces").isFalse();
     this.name = name;
 
     return this;

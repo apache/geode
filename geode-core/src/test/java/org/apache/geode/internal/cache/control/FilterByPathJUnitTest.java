@@ -23,12 +23,9 @@ import java.lang.reflect.Proxy;
 import java.util.HashSet;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FilterByPathJUnitTest {
 
   @Test

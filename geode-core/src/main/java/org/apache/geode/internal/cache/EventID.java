@@ -45,7 +45,6 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.Breadcrumbs;
 
 /**
@@ -504,7 +503,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   @Override
   public String toString() {
-    if (logger.isTraceEnabled(LogMarker.EVENT_ID_TO_STRING_VERBOSE)) {
+    if (logger.isDebugEnabled()) {
       return expensiveToString();
     } else {
       return cheapToString();
@@ -525,7 +524,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       }
       buf.append(";");
     } else {
-      buf.append("id=").append(membershipID.length).append("bytes;");
+      buf.append("[id=").append(membershipID.length).append(" bytes;");
     }
     // buf.append(this.membershipID.toString());
     buf.append("threadID=");

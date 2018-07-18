@@ -69,6 +69,8 @@ public class SystemPropertyHelper {
   public static final String PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS =
       "PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS";
 
+  public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
+
   /**
    * a comma separated string to list out the packages to scan. If not specified, the entire
    * classpath is scanned.

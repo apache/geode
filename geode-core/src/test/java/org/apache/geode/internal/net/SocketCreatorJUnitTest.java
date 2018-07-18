@@ -31,10 +31,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.util.test.TestUtil;
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class SocketCreatorJUnitTest {
 
   @Test

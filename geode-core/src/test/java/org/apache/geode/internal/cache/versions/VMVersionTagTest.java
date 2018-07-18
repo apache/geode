@@ -14,11 +14,8 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class VMVersionTagTest extends AbstractVersionTagTestBase {
 
   @SuppressWarnings("rawtypes")

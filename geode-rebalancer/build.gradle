@@ -16,8 +16,10 @@
  */
 
 dependencies {
-  provided project(':geode-common')
-  provided project(':geode-core')
+  compileOnly project(':geode-common')
+  testCompile project(':geode-common')
+  compileOnly project(':geode-core')
+  testCompile project(':geode-core')
 
   compile ('org.springframework:spring-context:' + project.'springframework.version') {
     exclude module: 'spring-beans'
@@ -25,4 +27,25 @@ dependencies {
     exclude module: 'spring-aop'
   }
   testCompile project(':geode-junit')
+}
+
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integrationTest/java')
+    }
+    resources.srcDir file('src/integrationTest/resources')
+  }
+}
+
+dependencies {
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }

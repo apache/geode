@@ -6887,13 +6887,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Called by lower levels, while still holding the write sync lock, and the low level has
    * completed its part of the basic destroy
    */
-  void txApplyDestroyPart2(RegionEntry re, Object key, boolean inTokenMode, boolean clearConflict) {
+  void txApplyDestroyPart2(RegionEntry re, Object key, boolean inTokenMode, boolean clearConflict,
+      boolean alreadyDestroyedOrRemoved) {
     if (this.testCallable != null) {
       this.testCallable.call(this, Operation.DESTROY, re);
     }
     if (inTokenMode) {
       getImageState().addDestroyedEntry(key);
-    } else {
+    } else if (!alreadyDestroyedOrRemoved) {
       updateStatsForDestroy();
     }
     if (this.entryUserAttributes != null) {

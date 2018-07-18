@@ -30,7 +30,6 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -38,10 +37,8 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class CreateIndexCommandTest {
   @Rule
   public GfshParserRule gfshParser = new GfshParserRule();
@@ -61,10 +58,10 @@ public class CreateIndexCommandTest {
 
   @Test
   public void missingName() throws Exception {
-    result = gfshParser.executeCommandWithInstance(command,
-        "create index --expression=abc --region=abc");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    gfshParser.executeAndAssertThat(command,
+        "create index --expression=abc --region=abc")
+        .statusIsError()
+        .containsOutput("Invalid command");
   }
 
   @Test

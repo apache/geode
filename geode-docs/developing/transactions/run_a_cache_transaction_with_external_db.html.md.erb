@@ -1,4 +1,4 @@
-<% set_title("How to Run a", product_name, "Cache Transaction that Coordinates with an External Database") %>
+<% set_title("How to Run a", product_name, "Transaction that Coordinates with an External Database") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,9 +17,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Coordinate a <%=vars.product_name%> cache transaction with an external database by using CacheWriter/CacheListener and TransactionWriter/TransactionListener plug-ins, **to provide an alternative to using JTA transactions**.
+Coordinate a <%=vars.product_name%> transaction with an external database by using CacheWriter/CacheListener and TransactionWriter/TransactionListener plug-ins, **to provide an alternative to using JTA transactions**.
 
-There are a few things you should be careful about while working with <%=vars.product_name%> cache transactions and external databases:
+There are a few things you should be careful about while working with <%=vars.product_name%> transactions and external databases:
 
 -   When you set up the JDBC connection, make sure that auto-commit is disabled. For example, in Java:
 
@@ -38,9 +38,9 @@ There are a few things you should be careful about while working with <%=vars.pr
     max_prepared_transactions = 1 # 1 or more enables, zero (default) disables this feature.
     ```
 
-Use the following procedure to write a <%=vars.product_name%> cache transaction that coordinates with an external database:
+Use the following procedure to write a <%=vars.product_name%> transaction that coordinates with an external database:
 
-1.  Configure <%=vars.product_name%> regions as necessary as described in [How to Run a <%=vars.product_name%> Cache Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
+1.  Configure <%=vars.product_name%> regions as necessary as described in [How to Run a <%=vars.product_name%> Transaction](run_a_cache_transaction.html#task_f15_mr3_5k).
 2.  Begin the transaction.
 3.  If you have not previously committed a previous transaction in this connection, start a database transaction by issuing a BEGIN statement.
 4.  Perform <%=vars.product_name%> cache operations; each cache operation invokes the CacheWriter. Implement the CacheWriter to perform the corresponding external database operations.

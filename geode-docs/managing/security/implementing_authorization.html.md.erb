@@ -44,7 +44,7 @@ A permission contains the `Resource` data member,
 which classifies whether the operation as working on
 
 - cache data; value is `DATA`
-- the distributed system; value is `CLUSTER`
+- the cluster; value is `CLUSTER`
 
 A permission also contains the `Operation` data member, 
 which classifies whether the operation as
@@ -127,6 +127,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | create gateway-receiver                | CLUSTER:MANAGE:GATEWAY          |
 | create gateway-sender                  | CLUSTER:MANAGE:GATEWAY          |
 | create index                           | CLUSTER:MANAGE:QUERY            |
+| create jndi-binding                    | CLUSTER:MANAGE                  |
 | create lucene index                    | CLUSTER:MANAGE:LUCENE            |
 | create region                          | DATA:MANAGE, plus CLUSTER:WRITE:DISK if the associated region is persistent |
 | define index                           | CLUSTER:MANAGE:QUERY             |
@@ -134,6 +135,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | describe client                        | CLUSTER:READ                     |
 | describe config                        | CLUSTER:READ                     |
 | describe disk-store                    | CLUSTER:READ                     |
+| describe jndi-binding                  | CLUSTER:READ                     |
 | describe lucene index                  | CLUSTER:READ:LUCENE              |
 | describe member                        | CLUSTER:READ                     |
 | describe offline-disk-store            | CLUSTER:READ                     |
@@ -141,6 +143,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | destroy disk-store                     | CLUSTER:MANAGE:DISK              |
 | destroy function                       | CLUSTER:MANAGE:DEPLOY            |
 | destroy index                          | CLUSTER:MANAGE:QUERY             |
+| destroy jndi-binding                   | CLUSTER:MANAGE                   |
 | destroy lucene index                   | CLUSTER:MANAGE:LUCENE            |
 | destroy region                         | DATA:MANAGE                      |
 | execute function                       | Defaults to DATA:WRITE. Override `Function.getRequiredPermissions` to change the permission.   |
@@ -162,6 +165,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | list functions                         | CLUSTER:READ                     |
 | list gateways                          | CLUSTER:READ                     |
 | list indexes                           | CLUSTER:READ:QUERY               |
+| list jndi-binding                      | CLUSTER:READ                     |
 | list lucene indexes                    | CLUSTER:READ:LUCENE              |
 | list members                           | CLUSTER:READ                     |
 | list regions                           | CLUSTER:READ                     |
@@ -199,7 +203,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 The `gfsh connect` does not have a permission,
 as it is the operation that invokes authentication. 
 These `gfsh` commands do not have permission defined,
-as they do not interact with the distributed system:
+as they do not interact with the cluster:
 
 -  `gfsh describe connection`, which describes the `gfsh` end of the connection
 -  `gfsh debug`, which toggles the mode within `gfsh`

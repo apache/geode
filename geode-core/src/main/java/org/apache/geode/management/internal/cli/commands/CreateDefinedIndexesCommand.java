@@ -66,7 +66,7 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         createDefinedIndexesFunction, IndexDefinition.indexDefinitions, targetMembers);
-    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION, functionResults, false);
+    result.addTableAndSetStatus(CREATE_DEFINED_INDEXES_SECTION, functionResults, false, true);
     result.setConfigObject(IndexDefinition.indexDefinitions);
 
     return result;
@@ -80,12 +80,26 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
     }
 
     for (RegionConfig.Index index : updatedIndexes) {
-      RegionConfig region = config.findRegionConfiguration(index.getFromClause());
-      if (region == null) {
+      RegionConfig regionConfig = getValidRegionConfig(index.getFromClause(), config);
+      if (regionConfig == null) {
         throw new IllegalStateException("RegionConfig is null");
       }
 
-      region.getIndexes().add(index);
+      regionConfig.getIndexes().add(index);
     }
+  }
+
+  RegionConfig getValidRegionConfig(String regionPath, CacheConfig cacheConfig) {
+    // Check to see if the region path contains an alias e.g "/region1 r1"
+    // Then the first string will be the regionPath
+    String[] regionPathTokens = regionPath.trim().split(" ");
+    regionPath = regionPathTokens[0];
+    // check to see if the region path is in the form of "--region=region.entrySet() z"
+    RegionConfig regionConfig = cacheConfig.findRegionConfiguration(regionPath);
+    while (regionPath.contains(".") && (regionConfig) == null) {
+      regionPath = regionPath.substring(0, regionPath.lastIndexOf("."));
+      regionConfig = cacheConfig.findRegionConfiguration(regionPath);
+    }
+    return regionConfig;
   }
 }
