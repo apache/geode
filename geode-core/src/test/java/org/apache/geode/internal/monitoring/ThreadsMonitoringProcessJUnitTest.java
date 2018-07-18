@@ -21,20 +21,17 @@ import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoringImpl}.
  *
  * @since Geode 1.5
  */
-@Category({UnitTest.class})
 public class ThreadsMonitoringProcessJUnitTest {
 
   private ThreadsMonitoringImpl threadsMonitoringImpl;

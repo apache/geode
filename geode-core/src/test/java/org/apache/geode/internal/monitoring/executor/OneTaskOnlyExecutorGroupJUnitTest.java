@@ -17,9 +17,6 @@ package org.apache.geode.internal.monitoring.executor;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Contains simple tests for the {@link
@@ -27,7 +24,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since Geode 1.5
  */
-@Category({UnitTest.class})
 public class OneTaskOnlyExecutorGroupJUnitTest {
 
   public static final String GROUPNAME = "OneTaskOnlyExecutor";

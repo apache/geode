@@ -22,7 +22,6 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -30,13 +29,11 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *
  * @since Geode 1.5
  */
-@Category(IntegrationTest.class)
 public class ThreadsMonitoringIntegrationTest {
 
   private Properties nonDefault;
