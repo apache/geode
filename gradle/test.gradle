@@ -92,14 +92,12 @@ subprojects {
         srcDir file('src/integrationTest/java')
       }
       resources.srcDir file('src/integrationTest/resources')
+      compiledBy(assemble)
       apply plugin: 'idea'
       idea {
         module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.integrationTestCompile ]
+          testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
+          testSourceDirs += project.sourceSets.integrationTest.resources.srcDirs
         }
       }
     }
@@ -114,11 +112,8 @@ subprojects {
       apply plugin: 'idea'
       idea {
         module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.distributedTestCompile ]
+          testSourceDirs += project.sourceSets.distributedTest.java.srcDirs
+          testSourceDirs += project.sourceSets.distributedTest.resources.srcDirs
         }
       }
     }
@@ -133,11 +128,8 @@ subprojects {
       apply plugin: 'idea'
       idea {
         module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.performanceTestCompile ]
+          testSourceDirs += project.sourceSets.performanceTest.java.srcDirs
+          testSourceDirs += project.sourceSets.performanceTest.resources.srcDirs
         }
       }
     }
@@ -152,11 +144,8 @@ subprojects {
       apply plugin: 'idea'
       idea {
         module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.acceptanceTestCompile ]
+          testSourceDirs += project.sourceSets.acceptanceTest.java.srcDirs
+          testSourceDirs += project.sourceSets.acceptanceTest.resources.srcDirs
         }
       }
     }
@@ -171,11 +160,8 @@ subprojects {
       apply plugin: 'idea'
       idea {
         module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.uiTestCompile ]
+          testSourceDirs += project.sourceSets.uiTest.java.srcDirs
+          testSourceDirs += project.sourceSets.uiTest.resources.srcDirs
         }
       }
     }
@@ -520,4 +506,3 @@ classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava
 classes.dependsOn subprojects.compileAcceptanceTestJava
 classes.dependsOn subprojects.compileUiTestJava
-

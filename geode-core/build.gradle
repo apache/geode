@@ -186,6 +186,13 @@ sourceSets {
       srcDir file('src/integrationTest/java')
     }
     resources.srcDir file('src/integrationTest/resources')
+    apply plugin: 'idea'
+    idea {
+      module {
+        testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
+        testSourceDirs += project.sourceSets.integrationTest.resources.srcDirs
+      }
+    }
   }
   distributedTest {
     java {
@@ -194,6 +201,13 @@ sourceSets {
       srcDir file('src/distributedTest/java')
     }
     resources.srcDir file('src/distributedTest/resources')
+    apply plugin: 'idea'
+    idea {
+      module {
+        testSourceDirs += project.sourceSets.distributedTest.java.srcDirs
+        testSourceDirs += project.sourceSets.distributedTest.resources.srcDirs
+      }
+    }
   }
   performanceTest {
     java {
@@ -202,6 +216,13 @@ sourceSets {
       srcDir file('src/performanceTest/java')
     }
     resources.srcDir file('src/performanceTest/resources')
+    apply plugin: 'idea'
+    idea {
+      module {
+        testSourceDirs += project.sourceSets.performanceTest.java.srcDirs
+        testSourceDirs += project.sourceSets.performanceTest.resources.srcDirs
+      }
+    }
   }
 }
 
