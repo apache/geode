@@ -23,11 +23,11 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class})
-public class ExportLogsOverHttpIntegrationTest extends ExportLogsIntegrationTest {
+public class ExportLogsOverHttpDistributedTest extends ExportLogsDUnitTest {
 
   @Override
   public void connect() throws Exception {
-    gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+    gfshConnector.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
   }
 
   public File getWorkingDirectory() throws Exception {

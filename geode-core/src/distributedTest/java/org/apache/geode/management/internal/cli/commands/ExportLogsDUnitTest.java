@@ -71,7 +71,7 @@ public class ExportLogsDUnitTest {
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
 
-  private MemberVM locator;
+  protected MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
 
@@ -104,6 +104,10 @@ public class ExportLogsDUnitTest {
       });
     }
 
+    connect();
+  }
+
+  public void connect() throws Exception {
     gfshConnector.connectAndVerify(locator);
   }
 
