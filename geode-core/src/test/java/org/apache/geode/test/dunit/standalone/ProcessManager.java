@@ -128,13 +128,17 @@ public class ProcessManager {
     return false;
   }
 
-  public synchronized void bounce(String version, int vmNum) {
+  public synchronized void bounce(String version, int vmNum, boolean force) {
     if (!processes.containsKey(vmNum)) {
       throw new IllegalStateException("No such process " + vmNum);
     }
     try {
       ProcessHolder holder = processes.remove(vmNum);
-      holder.kill();
+      if (force) {
+        holder.killForcibly();
+      } else {
+        holder.kill();
+      }
       holder.getProcess().waitFor();
       System.out.println("Old process for vm_" + vmNum + " has exited");
       launchVM(version, vmNum, true);
@@ -332,7 +336,11 @@ public class ProcessManager {
     public void kill() {
       this.killed = true;
       process.destroy();
+    }
 
+    public void killForcibly() {
+      this.killed = true;
+      process.destroyForcibly();
     }
 
     public Process getProcess() {
