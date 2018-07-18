@@ -50,6 +50,32 @@ configurations {
     performanceTestRuntime.extendsFrom testRuntime
 }
 
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+    distributedTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/distributedTest/java')
+        }
+        resources.srcDir file('src/distributedTest/resources')
+    }
+    performanceTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/performanceTest/java')
+        }
+        resources.srcDir file('src/performanceTest/resources')
+    }
+}
 
 dependencies {
     // TODO build - move dunit framework to shared module.
