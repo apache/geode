@@ -35,8 +35,13 @@ buildscript {
   }
 }
 
+plugins {
+  id "nebula.facet" version "4.0.1"
+}
+
 apply plugin: 'wrapper'
 apply plugin: 'com.gradle.build-scan'
+apply plugin: 'nebula.facet'
 
 wrapper {
   gradleVersion = minimumGradleVersion
