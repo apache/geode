@@ -43,10 +43,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.StringWrapper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RedisTest;
 
-@Category({IntegrationTest.class, RedisTest.class})
+@Category({RedisTest.class})
 public class GeoJUnitTest {
   private static Jedis jedis;
   private static GeodeRedisServer server;
