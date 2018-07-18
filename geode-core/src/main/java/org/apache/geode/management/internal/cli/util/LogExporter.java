@@ -161,7 +161,7 @@ public class LogExporter {
           break;
         }
         if (result == LogFilter.LineFilterResult.LINE_ACCEPTED) {
-          size += line.length() + File.separator.length();
+          size += line.length() + System.lineSeparator().length();
         }
       }
     }
