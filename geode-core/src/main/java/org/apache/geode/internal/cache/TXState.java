@@ -1068,8 +1068,7 @@ public class TXState implements TXStateInterface {
   @Override
   public void afterCompletion(int status) {
     this.proxy.getTxMgr().setTXState(null);
-    // if there was a beforeCompletion call then there will be a thread
-    // sitting in the waiting pool to execute afterCompletion. Otherwise
+    // For commit, beforeCompletion should be called. Otherwise
     // throw FailedSynchronizationException().
     if (wasBeforeCompletionCalled()) {
       doAfterCompletion(status);
