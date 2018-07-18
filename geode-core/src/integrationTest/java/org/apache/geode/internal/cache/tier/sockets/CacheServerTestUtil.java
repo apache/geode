@@ -483,6 +483,8 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     return cache;
   }
 
+  public static ClientCache getClientCache() { return (ClientCache) cache; }
+
   public static PoolImpl getPool() {
     return pool;
   }
