@@ -31,6 +31,12 @@ sourceSets {
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+  distributedTestCompile.extendsFrom integrationTestCompile
+  distributedTestRuntime.extendsFrom integrationTestRuntime
+  performanceTestCompile.extendsFrom testCompile
+  performanceTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -38,7 +44,8 @@ dependencies {
   antlr 'antlr:antlr:' + project.'antlr.version'
 
   // External
-  provided files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
+  testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
   compile 'org.jgroups:jgroups:' + project.'jgroups.version'
   compile 'antlr:antlr:' + project.'antlr.version'
@@ -97,7 +104,12 @@ dependencies {
   compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
     ext.optional = true
   }
-  provided ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  compileOnly ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+    ext.optional = true
+  }
+  testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
@@ -155,6 +167,7 @@ dependencies {
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
+
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -166,11 +179,64 @@ sourceSets {
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integrationTest/java')
+    }
+    resources.srcDir file('src/integrationTest/resources')
+    apply plugin: 'idea'
+    idea {
+      module {
+        testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
+        testSourceDirs += project.sourceSets.integrationTest.resources.srcDirs
+      }
+    }
+  }
+  distributedTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/distributedTest/java')
+    }
+    resources.srcDir file('src/distributedTest/resources')
+    apply plugin: 'idea'
+    idea {
+      module {
+        testSourceDirs += project.sourceSets.distributedTest.java.srcDirs
+        testSourceDirs += project.sourceSets.distributedTest.resources.srcDirs
+      }
+    }
+  }
+  performanceTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/performanceTest/java')
+    }
+    resources.srcDir file('src/performanceTest/resources')
+    apply plugin: 'idea'
+    idea {
+      module {
+        testSourceDirs += project.sourceSets.performanceTest.java.srcDirs
+        testSourceDirs += project.sourceSets.performanceTest.resources.srcDirs
+      }
+    }
+  }
 }
 
 jmh {
   include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
   duplicateClassesStrategy = 'warn'
+}
+
+dependencies {
+  // Integration Tests
+  integrationTestCompile sourceSets.test.output
+
+  // Distributed Tests
+  distributedTestCompile sourceSets.integrationTest.output
 }
 
 // Creates the version properties file and writes it to the classes dir
@@ -242,3 +308,7 @@ dependencies {
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
+distributedTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}

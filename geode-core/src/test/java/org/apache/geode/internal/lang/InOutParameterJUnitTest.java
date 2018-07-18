@@ -18,9 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The InOutParameterJUnitTest class is a test suite with test cases to test the contract and
@@ -31,7 +29,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 6.8
  */
-@Category(UnitTest.class)
 public class InOutParameterJUnitTest {
 
   @Test

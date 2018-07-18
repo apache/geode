@@ -94,11 +94,11 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
    * @param interfaceClass on which interface the proxy to be exposed
    */
   public static Object newProxyInstance(DistributedMember member,
-      Region<String, Object> monitoringRegion, ObjectName objectName, Class interfaceClass)
+      Region<String, Object> monitoringRegion, ObjectName objectName,
+      FederationComponent federationComponent, Class interfaceClass)
       throws ClassNotFoundException, IntrospectionException {
     boolean isMXBean = JMX.isMXBeanInterface(interfaceClass);
-    boolean notificationBroadcaster =
-        ((FederationComponent) monitoringRegion.get(objectName.toString())).isNotificationEmitter();
+    boolean notificationBroadcaster = federationComponent.isNotificationEmitter();
 
     InvocationHandler handler =
         new MBeanProxyInvocationHandler(member, objectName, monitoringRegion, isMXBean);

@@ -35,14 +35,13 @@ import javax.management.ObjectName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.backup.AbortBackupRequest;
-import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
+import org.apache.geode.internal.cache.backup.BackupLockService;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.backup.FinishBackupRequest;
 import org.apache.geode.internal.cache.backup.PrepareBackupRequest;
@@ -50,9 +49,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DistributedSystemBridgeJUnitTest {
 
   private GemFireCacheImpl cache;
@@ -75,7 +72,7 @@ public class DistributedSystemBridgeJUnitTest {
     DLockService dlock = mock(DLockService.class);
     when(dlock.lock(any(), anyLong(), anyLong())).thenReturn(true);
 
-    DLockService.addLockServiceForTests(BackupDataStoreHelper.LOCK_SERVICE_NAME, dlock);
+    DLockService.addLockServiceForTests(BackupLockService.LOCK_SERVICE_NAME, dlock);
 
     name1 = ObjectName
         .getInstance(MessageFormat.format(OBJECTNAME__GATEWAYSENDER_MXBEAN, "sender1", "server1"));
@@ -105,7 +102,7 @@ public class DistributedSystemBridgeJUnitTest {
 
   @After
   public void clearCache() {
-    DLockService.removeLockServiceForTests(BackupDataStoreHelper.LOCK_SERVICE_NAME);
+    DLockService.removeLockServiceForTests(BackupLockService.LOCK_SERVICE_NAME);
   }
 
   @Test

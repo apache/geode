@@ -30,14 +30,11 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * This class tests the functionality of the {@link ObjIdMap} class.
  */
-@Category(UnitTest.class)
 public class ObjIdMapJUnitTest {
 
   @Test

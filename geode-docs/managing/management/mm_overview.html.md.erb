@@ -17,15 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%> provides a variety of management tools you can use to manage a <%=vars.product_name%> distributed system.
+<%=vars.product_name%> provides a variety of management tools you can use to manage a <%=vars.product_name%> cluster.
 
-The <%=vars.product_name%> management and monitoring tools allow you to configure all members and processes of a distributed system, monitor operations in the system, and start and stop the members. Internally, <%=vars.product_name%> uses Java MBeans, specifically MXBeans, to expose management controls and monitoring features. You can monitor and control <%=vars.product_name%> by writing Java programs that use these MXBeans, or you can use one of several tools provided with <%=vars.product_name%> to monitor and manage your distributed system. The primary tool for these tasks is the gfsh command-line tool, as described in this section.
+The <%=vars.product_name%> management and monitoring tools allow you to configure all members and processes of a cluster, monitor operations in the system, and start and stop the members. Internally, <%=vars.product_name%> uses Java MBeans, specifically MXBeans, to expose management controls and monitoring features. You can monitor and control <%=vars.product_name%> by writing Java programs that use these MXBeans, or you can use one of several tools provided with <%=vars.product_name%> to monitor and manage your cluster. The primary tool for these tasks is the gfsh command-line tool, as described in this section.
 
 <%=vars.product_name%> provides the following tools to manage a <%=vars.product_name%> installation:
 
 ## gfsh Command-line tool
 
-The gfsh command line tool provides a set of commands you use to configure, manage, and monitor a <%=vars.product_name%> distributed system. gfsh is the recommended tool for managing your distributed system.
+The gfsh command line tool provides a set of commands you use to configure, manage, and monitor a cluster. gfsh is the recommended tool for managing your cluster.
 
 Use gfsh to:
 
@@ -37,13 +37,13 @@ Use gfsh to:
 -   Import and export data
 -   Monitor <%=vars.product_name%> processes
 -   Launch <%=vars.product_name%> monitoring tools
--   Shut down a distributed system
+-   Shut down a cluster
 -   Script various operations involving <%=vars.product_name%> members
--   Save the configuration for all members of a distributed system
+-   Save the configuration for all members of a cluster
 
 gfsh runs in its own shell, or you can [execute gfsh commands directly from the OS command line](../../tools_modules/gfsh/os_command_line_execution.html#topic_fpf_y1g_tp). gfsh can interact with remote systems [using the http protocol](../../configuring/cluster_config/gfsh_remote.html). You can also [write scripts that run in a gfsh shell](../../tools_modules/gfsh/command_scripting.html#concept_9B2F7550F16C4717831AD40A56922259) to automate system startup.
 
-You can use gfsh to create shared cluster configurations for your distributed system. You can define configurations that apply to the entire cluster, or that apply only to groups of similar members that all share a common configuration. <%=vars.product_name%> locators maintain these configurations as a hidden region and distribute the configuration to all locators in the distributed system. The locator also persists the shared configurations on disk as `cluster.xml` and `cluster.properties` files. You can use those shared cluster configuration files to re-start your system, migrate the system to a new environment, add new members to a distributed system, or to restore existing members after a failure.
+You can use gfsh to create shared cluster configurations for your cluster. You can define configurations that apply to the entire cluster, or that apply only to groups of similar members that all share a common configuration. <%=vars.product_name%> locators maintain these configurations as a hidden region and distribute the configuration to all locators in the cluster. The locator also persists the shared configurations on disk as `cluster.xml` and `cluster.properties` files. You can use those shared cluster configuration files to re-start your system, migrate the system to a new environment, add new members to a cluster, or to restore existing members after a failure.
 
 A basic cluster configuration consists of:
 
@@ -67,15 +67,15 @@ You can also directly create configurations using `cache.xml` and `gemfire.prope
 
 ## Java Management Extension (JMX) MBeans
 
-<%=vars.product_name%> uses a federated Open MBean strategy to manage and monitor all members of the distributed system. Your Java classes interact with a single MBeanServer that aggregates MBeans from other local and remote members. Using this strategy gives you a consolidated, single-agent view of the distributed system.
+<%=vars.product_name%> uses a federated Open MBean strategy to manage and monitor all members of the cluster. Your Java classes interact with a single MBeanServer that aggregates MBeans from other local and remote members. Using this strategy gives you a consolidated, single-agent view of the cluster.
 
-<%=vars.product_name%>'s implementation of JMX is industry-standard and friendly to generic JMX clients. You can monitor or manage the distributed system by using any third-party tool that is compliant with JMX. For example, JConsole.
+<%=vars.product_name%>'s implementation of JMX is industry-standard and friendly to generic JMX clients. You can monitor or manage the cluster by using any third-party tool that is compliant with JMX. For example, JConsole.
 
 See [<%=vars.product_name_long%> Management and Monitoring](management_and_monitoring.html)
 
 ## <%=vars.product_name%> Java API
 
-The <%=vars.product_name%> API provides a set of Java classes you can use to manage and monitor a distributed system. See the <span class="keyword apiname">org.apache.geode.management</span> package in the <%=vars.product_name%> JavaDocs .
+The <%=vars.product_name%> API provides a set of Java classes you can use to manage and monitor a cluster. See the `org.apache.geode.management` package in the javadocs.
 
 ## <%=vars.product_name%> Pulse
 

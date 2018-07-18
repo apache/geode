@@ -34,7 +34,6 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -44,7 +43,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ListDiskStoreFunctionJUnitTest test suite class tests the contract and functionality of the
@@ -60,7 +58,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class ListDiskStoresFunctionJUnitTest {
 
   private Mockery mockContext;

@@ -26,7 +26,7 @@ Java ClassMate library was originally written by Tatu Saloranta (tatu.saloranta@
   
   * Brian Langel
 
-Jackson Core 2.9.5
+Jackson Core 2.9.6
 
   # Jackson JSON processor
 
@@ -119,7 +119,7 @@ Apache Lucene
 Servlet-api.jar and javax.servlet-*.jar are under the CDDL license, the original
 source code for this can be found at http://www.eclipse.org/jetty/downloads.php
 
-Spring Framework 4.3.14.RELEASE
+Spring Framework 4.3.18.RELEASE
 Copyright (c) 2002-2017 Pivotal, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0

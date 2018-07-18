@@ -20,6 +20,9 @@ IMAGE_ROOT="$PWD/image-root"
 
 /usr/bin/cgroupfs-mount
 
+mkdir /sys/fs/cgroup/systemd
+mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+
 mkdir -p /tmp/build/graph
 mount -t tmpfs -o size=5g tmpfs /tmp/build/graph
 

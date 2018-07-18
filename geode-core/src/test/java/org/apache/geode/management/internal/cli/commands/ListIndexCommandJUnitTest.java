@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
@@ -44,7 +43,6 @@ import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
 import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ListIndexCommandJUnitTest class is a test suite of test cases testing the contract and
@@ -66,7 +64,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class ListIndexCommandJUnitTest {
   private Mockery mockContext;
 

@@ -17,6 +17,8 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +47,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ArrayUtils;
 
@@ -123,11 +124,12 @@ public class DistributionAdvisor {
   private final AtomicInteger profileVersionSequencer = new AtomicInteger(START_VERSION_NUMBER);
 
   /**
-   * This system property is not supported and disabling intelligent messaging is currently
-   * problematic
+   * The operationMonitor tracks in-progress cache operations and holds the profile set
+   * version number
    */
-  protected static final boolean disabled = Boolean.getBoolean("disable-intelligent-msg");
-
+  private final OperationMonitor operationMonitor =
+      logger.isDebugEnabled() ? new ThreadTrackingOperationMonitor(this)
+          : new OperationMonitor(this);
 
 
   /**
@@ -144,34 +146,10 @@ public class DistributionAdvisor {
   private final Object initializeLock = new Object();
 
   /**
-   * the version of the profile set
-   *
-   * @since GemFire 5.1
-   */
-  private long membershipVersion;
-
-  /**
    * whether membership ops are closed (because the DA's been closed). Access under synchronization
    * on (this)
    */
   private boolean membershipClosed;
-
-  /**
-   * opCountLock guards access to previousVersionOpCount and currentVersionOpCount
-   */
-  private final Object opCountLock = new Object();
-
-  /**
-   * the number of operations in-progress for previous versions of the profile set. Guarded by
-   * opCountLock
-   */
-  private long previousVersionOpCount;
-
-  /**
-   * the number of operations in-progress for the current version of the profile set. Guarded by
-   * opCountLock
-   */
-  private long currentVersionOpCount;
 
   /**
    * Hold onto removed profiles to compare to late-processed profiles. Fix for bug 36881. Protected
@@ -400,10 +378,7 @@ public class DistributionAdvisor {
     try {
       synchronized (this) {
         this.membershipClosed = true;
-        synchronized (this.opCountLock) {
-          this.previousVersionOpCount = 0;
-          this.currentVersionOpCount = 0;
-        }
+        operationMonitor.close();
       }
       getDistributionManager().removeMembershipListener(this.ml);
     } catch (CancelException e) {
@@ -412,6 +387,7 @@ public class DistributionAdvisor {
       // this is thrown if the listener is no longer registered
     }
   }
+
 
   /**
    * Atomically add listener to the list to receive notification when a *new* profile is added or a
@@ -617,20 +593,11 @@ public class DistributionAdvisor {
         newProfile.initialMembershipVersion = oldProfile.initialMembershipVersion;
       } else {
         if (!membershipClosed) {
-          membershipVersion++;
-          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-            logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-                "StateFlush incremented membership version: {}", membershipVersion);
-          }
-          newProfile.initialMembershipVersion = membershipVersion;
-          synchronized (this.opCountLock) {
-            previousVersionOpCount += currentVersionOpCount;
-            currentVersionOpCount = 0;
-          }
+          operationMonitor.initNewProfile(newProfile);
         }
       }
     } else {
-      forceNewMembershipVersion();
+      operationMonitor.forceNewMembershipVersion();
     }
 
     if (isTraceEnabled_DistributionAdvisor) {
@@ -720,23 +687,8 @@ public class DistributionAdvisor {
    *
    * @since GemFire 5.1
    */
-  public synchronized void forceNewMembershipVersion() {
-    if (!membershipClosed) {
-      membershipVersion++;
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-            "StateFlush forced new membership version: {}", membershipVersion);
-      }
-      synchronized (this.opCountLock) {
-        previousVersionOpCount += currentVersionOpCount;
-        currentVersionOpCount = 0;
-        if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE)) {
-          logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE,
-              "advisor for {} forced new membership version to {} previousOpCount={}", getAdvisee(),
-              membershipVersion, previousVersionOpCount);
-        }
-      }
-    }
+  public void forceNewMembershipVersion() {
+    operationMonitor.forceNewMembershipVersion();
   }
 
   /**
@@ -747,20 +699,8 @@ public class DistributionAdvisor {
    * @return the current membership version for this advisor
    * @since GemFire 5.1
    */
-  public synchronized long startOperation() {
-    if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE)) {
-      logger.trace(LogMarker.DISTRIBUTION_STATE_FLUSH_VERBOSE,
-          "startOperation() op count is now {} in view version {}", currentVersionOpCount + 1,
-          membershipVersion);
-    }
-    synchronized (this.opCountLock) {
-      currentVersionOpCount++;
-      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "StateFlush current opcount incremented: {}",
-            currentVersionOpCount);
-      }
-    }
-    return membershipVersion;
+  public long startOperation() {
+    return operationMonitor.startOperation();
   }
 
   /**
@@ -770,29 +710,8 @@ public class DistributionAdvisor {
    * @param version The membership version returned by startOperation
    * @since GemFire 5.1
    */
-  public synchronized long endOperation(long version) {
-    synchronized (this.opCountLock) {
-      if (version == membershipVersion) {
-        currentVersionOpCount--;
-        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-          logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-              "StateFlush current opcount deccremented: {}", currentVersionOpCount);
-        }
-      } else {
-        previousVersionOpCount--;
-        if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-          logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-              "StateFlush previous opcount incremented: {}", previousVersionOpCount);
-        }
-      }
-    }
-    return membershipVersion;
-  }
-
-  public void waitForCurrentOperations() {
-    long timeout =
-        1000L * this.getDistributionManager().getSystem().getConfig().getAckWaitThreshold();
-    waitForCurrentOperations(timeout);
+  public void endOperation(long version) {
+    operationMonitor.endOperation(version);
   }
 
   /**
@@ -801,56 +720,14 @@ public class DistributionAdvisor {
    *
    * @since GemFire 5.1
    */
-  public void waitForCurrentOperations(long timeout) {
-    // CacheProfile profile = (CacheProfile)getProfile(member);
-    // long targetVersion = profile.initialMembershipVersion - 1;
+  public void waitForCurrentOperations() {
+    operationMonitor.waitForCurrentOperations();
+  }
 
+  public void waitForCurrentOperations(Logger alertLogger, long warnMS, long severeAlertMS) {
     // this may wait longer than it should if the membership version changes, dumping
     // more operations into the previousVersionOpCount
-    long startTime = System.currentTimeMillis();
-    long warnTime = startTime + timeout;
-    long quitTime = warnTime + timeout - 1000L;
-    boolean warned = false;
-    final boolean isDebugEnabled_STATE_FLUSH_OP =
-        logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE);
-    while (true) {
-      long opCount;
-      synchronized (this.opCountLock) {
-        opCount = this.previousVersionOpCount;
-      }
-      if (opCount <= 0) {
-        break;
-      }
-      // The advisor's close() method will set the pVOC to zero. This loop
-      // must not terminate due to cache closure until that happens.
-      // See bug 34361 comment 79
-      if (isDebugEnabled_STATE_FLUSH_OP) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-            "Waiting for current operations to finish({})", opCount);
-      }
-      try {
-        Thread.sleep(50);
-      } catch (InterruptedException e) {
-        throw new GemFireIOException("State flush interrupted");
-      }
-      long now = System.currentTimeMillis();
-      if ((!warned) && System.currentTimeMillis() >= warnTime) {
-        warned = true;
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DistributionAdvisor_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_CURRENT_OPERATIONS_TO_DISTRIBUTE,
-            Long.toString((warnTime - startTime) / 1000L)));
-      } else if (warned && (now >= quitTime)) {
-        // OSProcess.printStacks(0);
-        throw new GemFireIOException(
-            "Current operations did not distribute within " + (now - startTime) + " milliseconds");
-      }
-    }
-    if (this.membershipClosed) {
-      if (isDebugEnabled_STATE_FLUSH_OP) {
-        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE,
-            "State Flush stopped waiting for operations to distribute because advisor has been closed");
-      }
-    }
+    operationMonitor.waitForCurrentOperations(alertLogger, warnMS, severeAlertMS);
   }
 
   /**
@@ -1278,12 +1155,6 @@ public class DistributionAdvisor {
   /** All advise methods go through this method */
   protected Set<InternalDistributedMember> adviseFilter(Filter f) {
     initializationGate();
-    if (disabled) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Intelligent Messaging Disabled");
-      }
-      return getDefaultDistributionMembers();
-    }
     Set<InternalDistributedMember> recipients = null;
     Profile[] locProfiles = this.profiles; // grab current profiles
     for (int i = 0; i < locProfiles.length; i++) {
@@ -1309,12 +1180,6 @@ public class DistributionAdvisor {
    **/
   protected boolean satisfiesFilter(Filter f) {
     initializationGate();
-    if (disabled) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Intelligent Messaging Disabled");
-      }
-      return !getDefaultDistributionMembers().isEmpty();
-    }
     Profile[] locProfiles = this.profiles; // grab current profiles
     for (Profile p : locProfiles) {
       if (f.include(p)) {
@@ -1679,4 +1544,257 @@ public class DistributionAdvisor {
       return null;
     }
   }
+
+
+
+  private static class OperationMonitor {
+    private final DistributionAdvisor distributionAdvisor;
+
+    /**
+     * the version of the profile set
+     */
+    private long membershipVersion;
+
+    /**
+     * the number of operations in-progress for previous versions of the profile set
+     */
+    private long previousVersionOpCount;
+    /**
+     * the number of operations in-progress for the current version of the profile set
+     */
+    private long currentVersionOpCount;
+
+    /**
+     * for debugging stalled state-flush operations we track threads performing operations
+     * and capture the state when startOperatiopn is invoked
+     */
+    private boolean closed;
+
+    private OperationMonitor(DistributionAdvisor distributionAdvisor) {
+      this.distributionAdvisor = distributionAdvisor;
+    }
+
+    private synchronized void incrementMembershipVersion() {
+      membershipVersion++;
+    }
+
+    /**
+     * Create a new version of the membership profile set. This is used in flushing state out of the
+     * VM for previous versions of the set.
+     *
+     * @since GemFire 5.1
+     */
+    synchronized void forceNewMembershipVersion() {
+      if (!closed) {
+        incrementMembershipVersion();
+        previousVersionOpCount += currentVersionOpCount;
+        currentVersionOpCount = 0;
+        membershipVersionChanged();
+      }
+    }
+
+    /**
+     * this method must be invoked at the start of every operation that can modify the state of
+     * resource. The return value must be recorded and sent to the advisor in an endOperation
+     * message when messages for the operation have been put in the DistributionManager's outgoing
+     * "queue".
+     *
+     * @return the current membership version for this advisor
+     * @since GemFire 5.1
+     */
+    synchronized long startOperation() {
+      logNewOperation();
+      currentVersionOpCount++;
+      return membershipVersion;
+    }
+
+    /**
+     * This method must be invoked when messages for an operation have been put in the
+     * DistributionManager's outgoing queue.
+     *
+     * @param version The membership version returned by startOperation
+     * @since GemFire 5.1
+     */
+    synchronized void endOperation(long version) {
+      if (version == membershipVersion) {
+        currentVersionOpCount--;
+        logEndOperation(true);
+      } else {
+        previousVersionOpCount--;
+        logEndOperation(false);
+      }
+    }
+
+    /**
+     * wait for the current operations being sent on views prior to the joining of the given member
+     * to be placed on communication channels before returning
+     *
+     * @since GemFire 5.1
+     */
+    void waitForCurrentOperations() {
+      long timeout =
+          1000L * distributionAdvisor.getDistributionManager().getSystem().getConfig()
+              .getAckWaitThreshold();
+      waitForCurrentOperations(logger, timeout, timeout * 2L);
+    }
+
+    void waitForCurrentOperations(Logger alertLogger, long warnMS, long severeAlertMS) {
+      // this may wait longer than it should if the membership version changes, dumping
+      // more operations into the previousVersionOpCount
+      final long startTime = System.currentTimeMillis();
+      final long warnTime = startTime + warnMS;
+      final long severeAlertTime = startTime + severeAlertMS;
+      boolean warned = false;
+      boolean severeAlertIssued = false;
+      while (operationsAreInProgress()) {
+        // The advisor's close() method will set the pVOC to zero. This loop
+        // must not terminate due to cache closure until that happens.
+        try {
+          Thread.sleep(50);
+        } catch (InterruptedException e) {
+          throw new GemFireIOException("State flush interrupted");
+        }
+        long now = System.currentTimeMillis();
+        if ((!warned) && System.currentTimeMillis() >= warnTime) {
+          warned = true;
+          logWaitOnOperationsWarning(alertLogger, warnMS);
+        } else if (warned && !severeAlertIssued && (now >= severeAlertTime)) {
+          logWaitOnOperationsSevere(alertLogger, severeAlertMS);
+          severeAlertIssued = true;
+        }
+      }
+      if (warned) {
+        alertLogger.info("Wait for current operations completed");
+      }
+    }
+
+    synchronized boolean operationsAreInProgress() {
+      return previousVersionOpCount > 0;
+    }
+
+    synchronized void initNewProfile(Profile newProfile) {
+      membershipVersion++;
+      newProfile.initialMembershipVersion = membershipVersion;
+      previousVersionOpCount =
+          previousVersionOpCount + currentVersionOpCount;
+      currentVersionOpCount = 0;
+      membershipVersionChanged();
+    }
+
+    synchronized void close() {
+      previousVersionOpCount = 0;
+      currentVersionOpCount = 0;
+      closed = true;
+    }
+
+    void logNewOperation() {}
+
+    void logEndOperation(boolean newOperation) {}
+
+    void logWaitOnOperationsSevere(Logger alertLogger, long severeAlertMS) {
+      // OSProcess.printStacks(0);
+      alertLogger.fatal("This thread has been stalled for {} milliseconds "
+          + "waiting for current operations to complete.  Something may be blocking operations.",
+          severeAlertMS);
+    }
+
+    void logWaitOnOperationsWarning(Logger alertLogger, long warnMS) {
+      alertLogger.warn("This thread has been stalled for {} milliseconds waiting for "
+          + "current operations to complete.", warnMS);
+    }
+
+    void membershipVersionChanged() {}
+
+  }
+
+  private static class ThreadTrackingOperationMonitor extends OperationMonitor {
+
+    /**
+     * for debugging stalled state-flush operations we track threads performing operations
+     * and capture the state when startOperatiopn is invoked
+     */
+    private final Map<Thread, ExceptionWrapper> currentVersionOperationThreads;
+    private final Map<Thread, ExceptionWrapper> previousVersionOperationThreads;
+
+    private ThreadTrackingOperationMonitor(
+        DistributionAdvisor distributionAdvisor) {
+      super(distributionAdvisor);
+      this.currentVersionOperationThreads = new HashMap<>();
+      this.previousVersionOperationThreads = new HashMap<>();
+    }
+
+    @Override
+    void logNewOperation() {
+      currentVersionOperationThreads.put(Thread.currentThread(),
+          new ExceptionWrapper(new Exception("stack trace")));
+    }
+
+    @Override
+    void logEndOperation(boolean newOp) {
+      if (newOp) {
+        currentVersionOperationThreads.remove(Thread.currentThread());
+      } else {
+        previousVersionOperationThreads.remove(Thread.currentThread());
+      }
+    }
+
+    @Override
+    void logWaitOnOperationsWarning(Logger alertLogger, long warnMS) {
+      super.logWaitOnOperationsWarning(alertLogger, warnMS);
+      synchronized (this) {
+        logger
+            .debug("Waiting for these threads: {}", previousVersionOperationThreads);
+        logger
+            .debug("New version threads are {}", currentVersionOperationThreads);
+      }
+    }
+
+    @Override
+    void logWaitOnOperationsSevere(Logger alertLogger, long severeAlertMS) {
+      super.logWaitOnOperationsSevere(alertLogger, severeAlertMS);
+      synchronized (this) {
+        logger
+            .debug("Waiting for these threads: {}", previousVersionOperationThreads);
+        logger
+            .debug("New version threads are {}", currentVersionOperationThreads);
+      }
+    }
+
+    @Override
+    void membershipVersionChanged() {
+      super.membershipVersionChanged();
+      previousVersionOperationThreads
+          .putAll(currentVersionOperationThreads);
+      currentVersionOperationThreads.clear();
+    }
+
+
+    /**
+     * ExceptionWrapper is used in debugging hangs in waitForCurrentOperations(). It
+     * captures the call stack of a thread invoking startOperation().
+     */
+    private static class ExceptionWrapper {
+      private Exception exception;
+
+      ExceptionWrapper(Exception exception) {
+        this.exception = exception;
+      }
+
+      @Override
+      public String toString() {
+        StringBuilder builder = new StringBuilder(500);
+        OutputStream os = new OutputStream() {
+          @Override
+          public void write(int i) {
+            builder.append((char) i);
+          }
+        };
+        PrintStream stream = new PrintStream(os);
+        exception.printStackTrace(stream);
+        return builder.toString();
+      }
+    }
+
+  }
+
 }

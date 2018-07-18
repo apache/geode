@@ -35,9 +35,27 @@ dependencies {
     testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
     testCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
+    // TODO build - move shared source to common library.
     testCompile files(project(':geode-core').sourceSets.test.output)
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+    distributedTestCompile.extendsFrom testCompile
+    distributedTestRuntime.extendsFrom testRuntime
+    performanceTestCompile.extendsFrom testCompile
+    performanceTestRuntime.extendsFrom testRuntime
+}
+
+
+dependencies {
+    // TODO build - move dunit framework to shared module.
+    integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+    distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+    distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 //The lucene integration tests don't have any issues that requiring forking

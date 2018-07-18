@@ -42,4 +42,10 @@ class FinishBackupFactory {
       HashSet<PersistentID> persistentIds) {
     return new BackupResponse(sender, persistentIds);
   }
+
+  FinishBackupStep createFinishBackupStep(DistributionManager dm, InternalDistributedMember member,
+      InternalCache cache, Set<InternalDistributedMember> recipients,
+      FinishBackupFactory finishBackupFactory) {
+    return new FinishBackupStep(dm, member, cache, recipients, finishBackupFactory);
+  }
 }

@@ -27,15 +27,12 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.membership.InternalRole;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the subclasses of RoleException to make sure they are Serializable
  */
-@Category(UnitTest.class)
 public class RoleExceptionJUnitTest {
 
   /**

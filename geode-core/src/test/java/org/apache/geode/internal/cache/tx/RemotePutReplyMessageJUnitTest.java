@@ -18,16 +18,12 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.OldValueImporterTestBase;
 import org.apache.geode.internal.cache.tx.RemotePutMessage.PutReplyMessage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RemotePutReplyMessageJUnitTest extends OldValueImporterTestBase {
 
   @Override

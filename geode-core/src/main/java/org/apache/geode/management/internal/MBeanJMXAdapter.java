@@ -97,6 +97,11 @@ public class MBeanJMXAdapter implements ManagementConstants {
         newObjectName = ObjectName.getInstance(
             OBJECTNAME__PREFIX + objectKeyProperty + KEYVAL_SEPARATOR + "member=" + member);
       }
+
+      if (isRegistered(newObjectName)) {
+        return newObjectName;
+      }
+
       mbeanServer.registerMBean(object, newObjectName);
       this.localGemFireMBean.put(newObjectName, object);
 

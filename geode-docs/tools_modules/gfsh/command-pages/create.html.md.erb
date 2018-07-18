@@ -39,7 +39,7 @@ Create async-event-queues, disk-stores, gateway receivers, gateway senders, inde
 
 -   **[create gateway-sender](#topic_hg2_bjz_ck)**
 
-    Creates a gateway sender on one or more members of a distributed system.
+    Creates a gateway sender on one or more members of a cluster.
 
 -   **[create index](#topic_960A5B6FD3D84E1881EE118E299DD12D)**
 
@@ -392,7 +392,7 @@ create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-members</span></td>
-<td>Name of the distributed system member(s) on which to create the gateway receiver.</td>
+<td>Name of the member(s) on which to create the gateway receiver.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -457,7 +457,7 @@ server1 | GatewayReceiver created on member "server1" and will listen on the por
 
 ## <a id="topic_hg2_bjz_ck" class="no-quick-link"></a>create gateway-sender
 
-Creates a gateway sender on one or more members of a distributed system.
+Creates a gateway sender on one or more members of a cluster.
 
 See [Gateway Senders](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA).
 
@@ -502,7 +502,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-remote-distributed-system-id</span></td>
-<td><em>Required.</em> ID of the remote distributed system where this gateway sender sends events.</td>
+<td><em>Required.</em> ID of the remote cluster where this gateway sender sends events.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -512,7 +512,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-members</span></td>
-<td>Name of the distributed system member(s) on which to create the gateway sender.</td>
+<td>Name of the member(s) on which to create the gateway sender.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -595,7 +595,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-gateway-event-filter</span></td>
-<td>A list of fully-qualified class names of GatewayEventFilters (separated by comma) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to remote distributed system. For example:
+<td>A list of fully-qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to a remote cluster. For example:
 <pre class="pre codeblock"><code>gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2</code></pre></td>
 <td> </td>
 </tr>

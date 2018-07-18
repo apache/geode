@@ -25,7 +25,7 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.backup.BackupUtil;
+import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -60,9 +60,10 @@ public class BackupDiskStoreCommand extends InternalGfshCommand {
       BackupStatus backupStatus;
 
       if (baselineDir != null && !baselineDir.isEmpty()) {
-        backupStatus = BackupUtil.backupAllMembers(dm, targetDir, baselineDir);
+        backupStatus =
+            new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, baselineDir);
       } else {
-        backupStatus = BackupUtil.backupAllMembers(dm, targetDir, null);
+        backupStatus = new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDir, null);
       }
 
       Map<DistributedMember, Set<PersistentID>> backedupMemberDiskstoreMap =

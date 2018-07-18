@@ -21,9 +21,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.OQLIndexTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, OQLIndexTest.class})
+@Category({OQLIndexTest.class})
 public class IndexTypeTest {
 
   @Test

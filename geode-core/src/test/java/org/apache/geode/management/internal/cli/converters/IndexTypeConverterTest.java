@@ -20,13 +20,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class IndexTypeConverterTest {
 
   IndexTypeConverter typeConverter;

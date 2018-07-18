@@ -18,12 +18,29 @@ import org.apache.geode.gradle.TestPropertiesWriter
  */
 apply plugin: 'war'
 
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+  uiTestCompile.extendsFrom testCompile
+  uiTestRuntime.extendsFrom testRuntime
+}
+
 sourceSets {
-  main {
-    resources {
-      exclude('**/gemfire*.properties')
-      exclude('**/sqlfire.properties')
+  integrationTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/integrationTest/java')
     }
+    resources.srcDir file('src/integrationTest/resources')
+  }
+  uiTest {
+    java {
+      compileClasspath += main.output + test.output
+      runtimeClasspath += main.output + test.output
+      srcDir file('src/uiTest/java')
+    }
+    resources.srcDir file('src/uiTest/resources')
   }
 }
 
@@ -61,6 +78,8 @@ dependencies {
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
+  compile ('org.springframework:spring-context:' + project.'springframework.version');
+  compile ('org.springframework:spring-web:' + project.'springframework.version');
   runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
@@ -72,8 +91,10 @@ dependencies {
 
   providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
 
-  provided 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  provided 'com.google.guava:guava:' + project.'guava.version'
+  compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
+  testCompile 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
+  compileOnly 'com.google.guava:guava:' + project.'guava.version'
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
 
   testCompile project(':geode-junit')
   testCompile project(':geode-core')
@@ -128,18 +149,6 @@ war {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   classpath configurations.runtime
   classpath project(':geode-core').webJar.archivePath
-}
-
-task uiTest(type:Test) {
-  useJUnit {
-    includeCategories 'org.apache.geode.test.junit.categories.UITest'
-    excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-  }
-
-  forkEvery(1)
-  doFirst {
-    TestPropertiesWriter.writeTestProperties(buildDir, name)
-  }
 }
 
 uiTest.dependsOn war

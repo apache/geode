@@ -38,18 +38,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ClassPathLoader}.
  *
  * @since GemFire 6.5.1.4
  */
-@Category(UnitTest.class)
 public class ClassPathLoaderTest {
 
   private static final int GENERATED_CLASS_BYTES_COUNT = 354;

@@ -919,7 +919,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private void createAndValidatePersistentConfig() {
-    DiskStoreImpl dsi = this.getDiskStore();
+    DiskStoreImpl diskStore = this.getDiskStore();
     if (this.getDataPolicy().withPersistence() && !this.getConcurrencyChecksEnabled()
         && supportsConcurrencyChecks()) {
       logger.info(LocalizedMessage.create(
@@ -927,9 +927,9 @@ public class PartitionedRegion extends LocalRegion
           this.getFullPath()));
       this.setConcurrencyChecksEnabled(true);
     }
-    if (dsi != null && this.getDataPolicy().withPersistence()) {
+    if (diskStore != null && this.getDataPolicy().withPersistence()) {
       String colocatedWith = colocatedWithRegion == null ? "" : colocatedWithRegion.getFullPath();
-      PRPersistentConfig config = dsi.getPersistentPRConfig(this.getFullPath());
+      PRPersistentConfig config = diskStore.getPersistentPRConfig(this.getFullPath());
       if (config != null) {
         if (config.getTotalNumBuckets() != this.getTotalNumberOfBuckets()) {
           Object[] prms = new Object[] {this.getFullPath(), this.getTotalNumberOfBuckets(),
@@ -947,8 +947,8 @@ public class PartitionedRegion extends LocalRegion
           DiskAccessException dae = new DiskAccessException(
               LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_REGION_WILL_BE_CLOSED
                   .toLocalizedString(this.getFullPath()),
-              null, dsi);
-          dsi.handleDiskAccessException(dae);
+              null, diskStore);
+          diskStore.handleDiskAccessException(dae);
           throw new IllegalStateException(
               LocalizedStrings.PartitionedRegion_FOR_REGION_0_ColocatedWith_1_SHOULD_NOT_BE_CHANGED_Previous_Configured_2
                   .toString(prms));
@@ -956,13 +956,13 @@ public class PartitionedRegion extends LocalRegion
       } else {
 
         config = new PRPersistentConfig(this.getTotalNumberOfBuckets(), colocatedWith);
-        dsi.addPersistentPR(this.getFullPath(), config);
+        diskStore.addPersistentPR(this.getFullPath(), config);
         // Fix for support issue 7870 - the parent region needs to be able
         // to discover that there is a persistent colocated child region. So
         // if this is a child region, persist its config to the parent disk store
         // as well.
         if (colocatedWithRegion != null && colocatedWithRegion.getDiskStore() != null
-            && colocatedWithRegion.getDiskStore() != dsi) {
+            && colocatedWithRegion.getDiskStore() != diskStore) {
           colocatedWithRegion.getDiskStore().addPersistentPR(this.getFullPath(), config);
         }
       }
@@ -7448,6 +7448,13 @@ public class PartitionedRegion extends LocalRegion
    * @see GemFireCacheImpl#close()
    */
   private void sendDestroyRegionMessage(RegionEventImpl event, int serials[]) {
+    boolean retry = true;
+    while (retry) {
+      retry = attemptToSendDestroyRegionMessage(event, serials);
+    }
+  }
+
+  private boolean attemptToSendDestroyRegionMessage(RegionEventImpl event, int serials[]) {
     if (this.prRoot == null) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -7455,7 +7462,7 @@ public class PartitionedRegion extends LocalRegion
             this);
       }
       new UpdateAttributesProcessor(this, true).distribute(false);
-      return;
+      return false;
     }
     final HashSet configRecipients = new HashSet(getRegionAdvisor().adviseAllPRNodes());
 
@@ -7484,11 +7491,15 @@ public class PartitionedRegion extends LocalRegion
           DestroyPartitionedRegionMessage.send(configRecipients, this, event, serials);
       resp.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
+      if (e.getRootCause() instanceof ForceReattemptException) {
+        return true;
+      }
       logger.warn(
           LocalizedMessage.create(
               LocalizedStrings.PartitionedRegion_PARTITIONEDREGION_SENDDESTROYREGIONMESSAGE_CAUGHT_EXCEPTION_DURING_DESTROYREGIONMESSAGE_SEND_AND_WAITING_FOR_RESPONSE),
           e);
     }
+    return false;
   }
 
   /**

@@ -24,11 +24,8 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class GfJsonArrayTest {
 
   private GfJsonArray gfJsonArray;

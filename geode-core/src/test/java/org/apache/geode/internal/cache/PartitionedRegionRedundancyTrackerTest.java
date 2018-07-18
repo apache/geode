@@ -24,11 +24,8 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PartitionedRegionRedundancyTrackerTest {
   private static final int TARGET_COPIES = 2;
   private static final int TOTAL_BUCKETS = 3;

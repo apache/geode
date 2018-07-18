@@ -28,7 +28,7 @@ During operation, a partitioned region looks like one large virtual region, with
 For each member where you define the region, you can choose how much space to allow for region data storage, including no local storage at all. The member can access all region data regardless of how much is stored locally.
 <img src="../../images_svg/how_partitioning_works_2.svg" id="how_partitioning_works__image_773C91B76D5E4739A1F81D9DF918BCDB" class="image" />
 
-A distributed system can have multiple partitioned regions, and it can mix partitioned regions with distributed regions and local regions. The usual requirement for unique region names, except for regions with local scope, still applies. A single member can host multiple partitioned regions.
+A cluster can have multiple partitioned regions, and it can mix partitioned regions with distributed regions and local regions. The usual requirement for unique region names, except for regions with local scope, still applies. A single member can host multiple partitioned regions.
 
 ## <a id="how_partitioning_works__section_260C2455FC8C40A094B39BF585D06B7D" class="no-quick-link"></a>Data Partitioning
 
@@ -52,7 +52,7 @@ Keep the following in mind about partitioned regions:
 
 -   Partitioned regions never run asynchronously. Operations in partitioned regions always wait for acknowledgement from the caches containing the original data entry and any redundant copies.
 -   A partitioned region needs a cache loader in every region data store (`local-max-memory` &gt; 0).
--   <%=vars.product_name%> distributes the data buckets as evenly as possible across all members storing the partitioned region data, within the limits of any custom partitioning or data colocation that you use. The number of buckets allotted for the partitioned region determines the granularity of data storage and thus how evenly the data can be distributed. The number of buckets is a total for the entire region across the distributed system.
+-   <%=vars.product_name%> distributes the data buckets as evenly as possible across all members storing the partitioned region data, within the limits of any custom partitioning or data colocation that you use. The number of buckets allotted for the partitioned region determines the granularity of data storage and thus how evenly the data can be distributed. The number of buckets is a total for the entire region across the cluster.
 -   In rebalancing data for the region, <%=vars.product_name%> moves buckets, but does not move data around inside the buckets.
 -   You can query partitioned regions, but there are certain limitations. See [Querying Partitioned Regions](../querying_basics/querying_partitioned_regions.html#querying_partitioned_regions) for more information.
 
