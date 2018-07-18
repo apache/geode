@@ -42,7 +42,6 @@ import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -106,7 +105,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
-import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
@@ -121,7 +119,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  *
  * @author jhuynh
  */
-@Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {

@@ -111,6 +111,11 @@ subprojects {
       testTaskName = 'uiTest'
       includeInCheckLifecycle = false
     }
+    upgradeTest {
+      parentSourceSet = 'test'
+      testTaskName = 'upgradeTest'
+      includeInCheckLifecycle = false
+    }
   }
 
   integrationTest {
@@ -154,6 +159,11 @@ subprojects {
   }
 
   uiTest {
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
+  upgradeTest {
     forkEvery 1
     outputs.upToDateWhen{false}
   }
@@ -449,4 +459,6 @@ classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava
 classes.dependsOn subprojects.compileAcceptanceTestJava
 classes.dependsOn subprojects.compileUiTestJava
+classes.dependsOn subprojects.compilePerformanceTestJava
+classes.dependsOn subprojects.compileUpgradeTestJava
 
