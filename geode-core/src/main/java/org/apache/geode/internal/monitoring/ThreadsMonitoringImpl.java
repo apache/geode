@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup;
@@ -48,10 +49,10 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   /** Is this ThreadsMonitoringImpl closed? */
   private boolean isClosed = true;
 
-  public ThreadsMonitoringImpl() {
+  public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem) {
     this.monitorMap = new ConcurrentHashMap<>();
     this.isClosed = false;
-    setThreadsMonitoringProcess();
+    setThreadsMonitoringProcess(iDistributedSystem);
   }
 
   @Override
@@ -77,8 +78,8 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   }
 
   /** Starts a new {@link org.apache.geode.internal.monitoring.ThreadsMonitoringProcess} */
-  private void setThreadsMonitoringProcess() {
-    this.tmProcess = new ThreadsMonitoringProcess(this);
+  private void setThreadsMonitoringProcess(InternalDistributedSystem iDistributedSystem) {
+    this.tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem);
     this.timer.schedule(tmProcess, 0, distributionConfigImpl.getThreadMonitorInterval());
   }
 

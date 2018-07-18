@@ -51,7 +51,6 @@ import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
@@ -153,10 +152,13 @@ public class PoolImpl implements InternalPool {
   public static final int PRIMARY_QUEUE_TIMED_OUT = -1;
   private AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
+  private final ThreadsMonitoring threadMonitoring;
+
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
-      InternalCache cache) {
-    PoolImpl pool = new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache);
+      InternalCache cache, ThreadsMonitoring tMonitoring) {
+    PoolImpl pool =
+        new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring);
     pool.finishCreate(pm);
     return pool;
   }
@@ -184,7 +186,8 @@ public class PoolImpl implements InternalPool {
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAddress> locAddresses, InternalDistributedSystem distributedSystem,
-      InternalCache cache) {
+      InternalCache cache, ThreadsMonitoring tMonitoring) {
+    this.threadMonitoring = tMonitoring;
     this.pm = pm;
     this.name = name;
     this.socketConnectTimeout = attributes.getSocketConnectTimeout();
@@ -326,7 +329,7 @@ public class PoolImpl implements InternalPool {
             result.setDaemon(true);
             return result;
           }
-        }, getThreadMonitorObj());
+        }, this.threadMonitoring);
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
         .setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
@@ -1617,17 +1620,5 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getSubscriptionTimeoutMultiplier() {
     return subscriptionTimeoutMultiplier;
-  }
-
-  private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    if (ds == null)
-      return null;
-    DistributionManager distributionManager = ds.getDistributionManager();
-    if (distributionManager != null) {
-      return distributionManager.getThreadMonitoring();
-    } else {
-      return null;
-    }
   }
 }

@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class})
 public class ScheduledThreadPoolExecutorWKAGroupJUnitTest {
 
-  public static final String GRPNAME = "ScheduledThreadPoolExecutorWithKeepAlive";
+  public static final String GROUPNAME = "ScheduledThreadPoolExecutorWithKeepAlive";
 
   /**
    * Tests that {@link
@@ -41,6 +41,6 @@ public class ScheduledThreadPoolExecutorWKAGroupJUnitTest {
   public void testVerifyGroupName() {
     AbstractExecutor scheduledThreadPoolExecutorWKAGroup =
         new ScheduledThreadPoolExecutorWKAGroup(null);
-    assertTrue(scheduledThreadPoolExecutorWKAGroup.getGrpName().equals(GRPNAME));
+    assertTrue(scheduledThreadPoolExecutorWKAGroup.getGroupName().equals(GROUPNAME));
   }
 }

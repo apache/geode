@@ -36,7 +36,6 @@ import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -369,11 +368,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem == null)
-      return null;
-    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    DistributionManager distributionManager = this.sender.getDistributionManager();
     if (distributionManager != null) {
       return distributionManager.getThreadMonitoring();
     } else {

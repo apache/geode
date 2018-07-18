@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class})
 public class FunctionExecutionPooledExecutorGroupJUnitTest {
 
-  public static final String GRPNAME = "FunctionExecutionPooledExecutor";
+  public static final String GROUPNAME = "FunctionExecutionPooledExecutor";
 
   /**
    * Tests that {@link
@@ -41,6 +41,6 @@ public class FunctionExecutionPooledExecutorGroupJUnitTest {
   public void testVerifyGroupName() {
     AbstractExecutor functionExecutionPooledExecutorGroup =
         new FunctionExecutionPooledExecutorGroup(null);
-    assertTrue(functionExecutionPooledExecutorGroup.getGrpName().equals(GRPNAME));
+    assertTrue(functionExecutionPooledExecutorGroup.getGroupName().equals(GROUPNAME));
   }
 }

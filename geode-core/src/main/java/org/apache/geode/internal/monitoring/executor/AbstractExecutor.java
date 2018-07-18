@@ -26,11 +26,10 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public abstract class AbstractExecutor {
 
-  private final ThreadsMonitoring threadMonitoring;
   private static final int THREAD_DUMP_DEPTH = 40;
   private static final Logger logger = LogService.getLogger();
   private long threadID;
-  private String grpName;
+  private String groupName;
   private short numIterationsStuck;
   private long startTime;
 
@@ -38,7 +37,6 @@ public abstract class AbstractExecutor {
     this.startTime = System.currentTimeMillis();
     this.numIterationsStuck = 0;
     this.threadID = Thread.currentThread().getId();
-    this.threadMonitoring = tMonitoring;
   }
 
   public void handleExpiry(long stuckTime) {
@@ -72,7 +70,7 @@ public abstract class AbstractExecutor {
       strb.append("Owned By < ").append(thread.getLockOwnerName()).append(" > and ID < ")
           .append(thread.getLockOwnerId()).append(" > ").append(System.lineSeparator());
 
-    strb.append("Executor Group < ").append(grpName).append(" > ").append(System.lineSeparator())
+    strb.append("Executor Group < ").append(groupName).append(" > ").append(System.lineSeparator())
         .append("Monitored metric < ResourceManagerStats.numThreadsStuck >")
         .append(System.lineSeparator()).append("Thread Stack:").append(System.lineSeparator());
 
@@ -100,12 +98,12 @@ public abstract class AbstractExecutor {
     this.numIterationsStuck++;
   }
 
-  public String getGrpName() {
-    return this.grpName;
+  public String getGroupName() {
+    return this.groupName;
   }
 
-  public void setGrpName(String grpName) {
-    this.grpName = grpName;
+  public void setGroupName(String groupName) {
+    this.groupName = groupName;
   }
 
   public long getThreadID() {

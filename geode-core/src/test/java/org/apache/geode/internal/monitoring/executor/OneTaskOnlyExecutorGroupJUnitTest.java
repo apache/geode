@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class})
 public class OneTaskOnlyExecutorGroupJUnitTest {
 
-  public static final String GRPNAME = "OneTaskOnlyExecutor";
+  public static final String GROUPNAME = "OneTaskOnlyExecutor";
 
   /**
    * Tests that {@link org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup} is
@@ -39,6 +39,6 @@ public class OneTaskOnlyExecutorGroupJUnitTest {
   @Test
   public void testVerifyGroupName() {
     AbstractExecutor oneTaskOnlyExecutorGroup = new OneTaskOnlyExecutorGroup(null);
-    assertTrue(oneTaskOnlyExecutorGroup.getGrpName().equals(GRPNAME));
+    assertTrue(oneTaskOnlyExecutorGroup.getGroupName().equals(GROUPNAME));
   }
 }

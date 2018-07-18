@@ -30,8 +30,6 @@ import org.junit.experimental.categories.Category;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import org.apache.geode.cache.Operation;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -40,7 +38,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -56,7 +53,7 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
   public void setUp() throws Exception {
     this.sender = mock(AbstractGatewaySender.class);
     this.processor =
-        new TestSerialGatewaySenderEventProcessor(this.sender, "ny", getThreadMonitorObj());
+        new TestSerialGatewaySenderEventProcessor(this.sender, "ny", null);
   }
 
   @Test
@@ -147,18 +144,5 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     when(gsei.getEventId()).thenReturn(id);
     this.processor.basicHandlePrimaryEvent(gsei);
     return id;
-  }
-
-  private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem == null)
-      return null;
-    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
-    if (distributionManager != null) {
-      return distributionManager.getThreadMonitoring();
-    } else {
-      return null;
-    }
   }
 }

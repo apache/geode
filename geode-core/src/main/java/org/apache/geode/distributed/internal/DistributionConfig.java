@@ -169,8 +169,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_AUTO_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_AUTO_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_INTERVAL;
 import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_TIME_LIMIT;
@@ -1665,29 +1663,6 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_THREAD_MONITOR_ENABLED = true;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_AUTO_ENABLED} property
-   */
-  @ConfigAttributeGetter(name = THREAD_MONITOR_AUTO_ENABLED)
-  boolean getThreadMonitorAutoEnabled();
-
-  /**
-   * Sets {@link ConfigurationProperties#THREAD_MONITOR_AUTO_ENABLED}
-   */
-  @ConfigAttributeSetter(name = THREAD_MONITOR_AUTO_ENABLED)
-  void setThreadMonitorAutoEnabled(boolean newValue);
-
-  /**
-   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_AUTO_ENABLED} property
-   */
-  @ConfigAttribute(type = Boolean.class)
-  String THREAD_MONITOR_AUTO_ENABLED_NAME = THREAD_MONITOR_AUTO_ENABLED;
-
-  /**
-   * The default value of the {@link ConfigurationProperties#THREAD_MONITOR_AUTO_ENABLED} property
-   */
-  boolean DEFAULT_THREAD_MONITOR_AUTO_ENABLED = false;
-
-  /**
    * Sets the value for {@link ConfigurationProperties#USE_CLUSTER_CONFIGURATION}
    */
   @ConfigAttributeSetter(name = USE_CLUSTER_CONFIGURATION)
@@ -2058,40 +2033,6 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = Integer.class, min = MIN_THREAD_MONITOR_TIME_LIMIT,
       max = MAX_THREAD_MONITOR_TIME_LIMIT)
   String THREAD_MONITOR_TIME_LIMIT_NAME = THREAD_MONITOR_TIME_LIMIT;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_AUTO_LIMIT} property.
-   */
-  @ConfigAttributeGetter(name = THREAD_MONITOR_AUTO_LIMIT)
-  int getThreadMonitorAutoLimit();
-
-  /**
-   * Sets the value of the {@link ConfigurationProperties#THREAD_MONITOR_AUTO_LIMIT} property.
-   */
-  @ConfigAttributeSetter(name = THREAD_MONITOR_AUTO_LIMIT)
-  void setThreadMonitorAutoLimit(int newValue);
-
-  /**
-   * The default value of {@link ConfigurationProperties#THREAD_MONITOR_AUTO_LIMIT} is
-   * <code>60000</code>.
-   */
-  int DEFAULT_THREAD_MONITOR_AUTO_LIMIT = 200;
-  /**
-   * The minimum value of {@link ConfigurationProperties#THREAD_MONITOR_AUTO_LIMIT} is
-   * <code>0</code>.
-   */
-  int MIN_THREAD_MONITOR_AUTO_LIMIT = 0;
-  /**
-   * The maximum value of {@link ConfigurationProperties#THREAD_MONITOR_AUTO_LIMIT} is
-   * <code>86400000</code>.
-   */
-  int MAX_THREAD_MONITOR_AUTO_LIMIT = 86400000;
-  /**
-   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_AUTO_LIMIT} property
-   */
-  @ConfigAttribute(type = Integer.class, min = MIN_THREAD_MONITOR_AUTO_LIMIT,
-      max = MAX_THREAD_MONITOR_AUTO_LIMIT)
-  String THREAD_MONITOR_AUTO_LIMIT_NAME = THREAD_MONITOR_AUTO_LIMIT;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.

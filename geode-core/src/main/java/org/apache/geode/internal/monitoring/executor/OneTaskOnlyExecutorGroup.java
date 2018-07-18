@@ -18,17 +18,11 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class OneTaskOnlyExecutorGroup extends AbstractExecutor {
 
-  public static final String GRPNAME = "OneTaskOnlyExecutor";
+  public static final String GROUPNAME = "OneTaskOnlyExecutor";
 
   public OneTaskOnlyExecutorGroup(ThreadsMonitoring tMonitoring) {
     super(tMonitoring);
-    super.setGrpName(GRPNAME);
-
-  }
-
-  @Override
-  public void handleExpiry(long stuckTime) {
-    super.handleExpiry(stuckTime);
+    setGroupName(GROUPNAME);
   }
 
 }

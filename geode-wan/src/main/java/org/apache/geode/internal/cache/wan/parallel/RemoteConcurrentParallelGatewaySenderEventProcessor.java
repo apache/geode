@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -68,11 +67,7 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem == null)
-      return null;
-    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    DistributionManager distributionManager = sender.getDistributionManager();
     if (distributionManager != null) {
       return distributionManager.getThreadMonitoring();
     } else {

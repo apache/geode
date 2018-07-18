@@ -18,17 +18,11 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class GatewaySenderEventProcessorGroup extends AbstractExecutor {
 
-  public static final String GRPNAME = "GatewaySenderEventProcessor";
+  public static final String GROUPNAME = "GatewaySenderEventProcessor";
 
   public GatewaySenderEventProcessorGroup(ThreadsMonitoring tMonitoring) {
     super(tMonitoring);
-    super.setGrpName(GRPNAME);
-
-  }
-
-  @Override
-  public void handleExpiry(long stuckTime) {
-    super.handleExpiry(stuckTime);
+    setGroupName(GROUPNAME);
   }
 
 }

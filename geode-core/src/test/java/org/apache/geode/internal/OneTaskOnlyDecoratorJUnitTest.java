@@ -27,9 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -43,7 +40,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
 
     MyConflationListener listener = new MyConflationListener();
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, getThreadMonitorObj());
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, null);
 
     final CountDownLatch latch = new CountDownLatch(1);
     ex.submit(new Callable() {
@@ -81,7 +78,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
   @Test
   public void testReschedule() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, getThreadMonitorObj());
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, null);
 
     final CountDownLatch taskRunning = new CountDownLatch(1);
     final CountDownLatch continueTask = new CountDownLatch(1);
@@ -124,7 +121,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
   public void testRescheduleForEarlierTime() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
     MyConflationListener listener = new MyConflationListener();
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, getThreadMonitorObj());
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, null);
 
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicInteger counter = new AtomicInteger();
@@ -160,19 +157,6 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     public int getDropCount() {
       return dropCount;
-    }
-  }
-
-  private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem == null)
-      return null;
-    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
-    if (distributionManager != null) {
-      return distributionManager.getThreadMonitoring();
-    } else {
-      return null;
     }
   }
 }

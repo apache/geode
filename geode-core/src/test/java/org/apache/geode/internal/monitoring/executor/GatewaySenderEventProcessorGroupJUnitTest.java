@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class})
 public class GatewaySenderEventProcessorGroupJUnitTest {
 
-  public static final String GRPNAME = "GatewaySenderEventProcessor";
+  public static final String GROUPNAME = "GatewaySenderEventProcessor";
 
   /**
    * Tests that {@link
@@ -41,6 +41,6 @@ public class GatewaySenderEventProcessorGroupJUnitTest {
   public void testVerifyGroupName() {
     AbstractExecutor gatewaySenderEventProcessorGroup =
         new GatewaySenderEventProcessorGroup(null);
-    assertTrue(gatewaySenderEventProcessorGroup.getGrpName().equals(GRPNAME));
+    assertTrue(gatewaySenderEventProcessorGroup.getGroupName().equals(GROUPNAME));
   }
 }

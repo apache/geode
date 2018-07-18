@@ -659,17 +659,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   protected int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
 
-  /**
-   * Is auto handling stuck thread enabled
-   */
-  protected boolean threadMonitorAutoEnabled = DEFAULT_THREAD_MONITOR_AUTO_ENABLED;
-
-  /**
-   * If auto handling stuck thread is enabled - after how many monitoring thread iterations will it
-   * be done
-   */
-  protected int threadMonitorAutoLimit = DEFAULT_THREAD_MONITOR_AUTO_LIMIT;
-
   ////////////////////// Constructors //////////////////////
 
   /**
@@ -700,8 +689,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.threadMonitorEnabled = other.getThreadMonitorEnabled();
     this.threadMonitorInterval = other.getThreadMonitorInterval();
     this.threadMonitorTimeLimit = other.getThreadMonitorTimeLimit();
-    this.threadMonitorAutoEnabled = other.getThreadMonitorAutoEnabled();
-    this.threadMonitorAutoLimit = other.getThreadMonitorAutoLimit();
     this.statisticSampleRate = other.getStatisticSampleRate();
     this.statisticArchiveFile = other.getStatisticArchiveFile();
     this.ackWaitThreshold = other.getAckWaitThreshold();
@@ -3077,9 +3064,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
         .append(threadMonitorEnabled, that.threadMonitorEnabled)
         .append(threadMonitorInterval, that.threadMonitorInterval)
-        .append(threadMonitorTimeLimit, that.threadMonitorTimeLimit)
-        .append(threadMonitorAutoEnabled, that.threadMonitorAutoEnabled)
-        .append(threadMonitorAutoLimit, that.threadMonitorAutoLimit).isEquals();
+        .append(threadMonitorTimeLimit, that.threadMonitorTimeLimit).isEquals();
   }
 
   /**
@@ -3150,8 +3135,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
         .append(modifiable).append(threadMonitorEnabled).append(threadMonitorInterval)
-        .append(threadMonitorTimeLimit).append(threadMonitorAutoEnabled)
-        .append(threadMonitorAutoLimit).toHashCode();
+        .append(threadMonitorTimeLimit).toHashCode();
   }
 
   /**
@@ -3652,23 +3636,4 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.threadMonitorTimeLimit = value;
   }
 
-  @Override
-  public boolean getThreadMonitorAutoEnabled() {
-    return this.threadMonitorAutoEnabled;
-  }
-
-  @Override
-  public void setThreadMonitorAutoEnabled(boolean value) {
-    this.threadMonitorAutoEnabled = (Boolean) value;
-  }
-
-  @Override
-  public int getThreadMonitorAutoLimit() {
-    return this.threadMonitorAutoLimit;
-  }
-
-  @Override
-  public void setThreadMonitorAutoLimit(int value) {
-    this.threadMonitorAutoLimit = value;
-  }
 }

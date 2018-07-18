@@ -18,15 +18,11 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class PooledExecutorGroup extends AbstractExecutor {
 
-  public static final String GRPNAME = "PooledExecutorWithDMStats";
+  public static final String GROUPNAME = "PooledExecutorWithDMStats";
 
   public PooledExecutorGroup(ThreadsMonitoring tMonitoring) {
     super(tMonitoring);
-    super.setGrpName(GRPNAME);
+    setGroupName(GROUPNAME);
   }
 
-  @Override
-  public void handleExpiry(long stuckTime) {
-    super.handleExpiry(stuckTime);
-  }
 }

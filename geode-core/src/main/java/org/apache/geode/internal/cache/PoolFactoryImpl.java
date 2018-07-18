@@ -42,6 +42,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.HostAddre
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
@@ -337,14 +338,16 @@ public class PoolFactoryImpl implements PoolFactory {
   public Pool create(String name) throws CacheException {
     InternalDistributedSystem distributedSystem = InternalDistributedSystem.getAnyInstance();
     InternalCache cache = GemFireCacheImpl.getInstance();
+    ThreadsMonitoring threadMonitoring = null;
     if (cache != null) {
+      threadMonitoring = cache.getDistributionManager().getThreadMonitoring();
       TypeRegistry registry = cache.getPdxRegistry();
       if (registry != null && !attributes.isGateway()) {
         registry.creatingPool();
       }
     }
     return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses, distributedSystem,
-        cache);
+        cache, threadMonitoring);
   }
 
   /**

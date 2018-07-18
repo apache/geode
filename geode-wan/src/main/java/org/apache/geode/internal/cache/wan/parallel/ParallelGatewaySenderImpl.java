@@ -201,11 +201,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem == null)
-      return null;
-    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
+    DistributionManager distributionManager = this.cache.getDistributionManager();
     if (distributionManager != null) {
       return distributionManager.getThreadMonitoring();
     } else {

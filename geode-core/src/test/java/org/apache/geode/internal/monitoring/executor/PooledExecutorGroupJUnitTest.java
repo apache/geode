@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class})
 public class PooledExecutorGroupJUnitTest {
 
-  public static final String GRPNAME = "PooledExecutorWithDMStats";
+  public static final String GROUPNAME = "PooledExecutorWithDMStats";
 
   /**
    * Tests that {@link org.apache.geode.internal.monitoring.executor.PooledExecutorGroup} is setting
@@ -39,6 +39,6 @@ public class PooledExecutorGroupJUnitTest {
   @Test
   public void testVerifyGroupName() {
     AbstractExecutor pooledExecutorGroup = new PooledExecutorGroup(null);
-    assertTrue(pooledExecutorGroup.getGrpName().equals(GRPNAME));
+    assertTrue(pooledExecutorGroup.getGroupName().equals(GROUPNAME));
   }
 }

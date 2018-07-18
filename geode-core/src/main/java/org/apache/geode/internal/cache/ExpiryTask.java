@@ -30,7 +30,6 @@ import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.SystemTimer;
@@ -78,18 +77,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       };
       // LinkedBlockingQueue q = new LinkedBlockingQueue();
       SynchronousQueue q = new SynchronousQueue();
-
-      DistributionManager distributionManager = null;
-      InternalDistributedSystem internalDistributedSystem =
-          InternalDistributedSystem.getAnyInstance();
-      if (internalDistributedSystem != null)
-        distributionManager = internalDistributedSystem.getDistributionManager();
-      if (distributionManager != null) {
-        executor = new PooledExecutorWithDMStats(q, nThreads, tf,
-            distributionManager.getThreadMonitoring());
-      } else {
-        executor = new PooledExecutorWithDMStats(q, nThreads, tf, null);
-      }
+      executor = new PooledExecutorWithDMStats(q, nThreads, tf, null);
     } else {
       executor = null;
     }

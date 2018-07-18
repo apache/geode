@@ -37,14 +37,17 @@ public class ThreadsMonitoringProcess extends TimerTask {
   private ResourceManagerStats resourceManagerStats = null;
   private static final Logger logger = LogService.getLogger();
   private final int timeLimit;
+  private final InternalDistributedSystem internalDistributedSystem;
 
   private final Properties nonDefault = new Properties();
   private final DistributionConfigImpl distributionConfigImpl =
       new DistributionConfigImpl(nonDefault);
 
-  protected ThreadsMonitoringProcess(ThreadsMonitoring tMonitoring) {
+  protected ThreadsMonitoringProcess(ThreadsMonitoring tMonitoring,
+      InternalDistributedSystem iDistributedSystem) {
     this.timeLimit = this.distributionConfigImpl.getThreadMonitorTimeLimit();
     this.threadsMonitoring = tMonitoring;
+    this.internalDistributedSystem = iDistributedSystem;
   }
 
   public boolean mapValidation() {
@@ -78,10 +81,10 @@ public class ThreadsMonitoringProcess extends TimerTask {
   public void run() {
     if (this.resourceManagerStats == null) {
       try {
-        InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-        if (ds == null)
+        if (this.internalDistributedSystem == null || !this.internalDistributedSystem.isConnected())
           return;
-        DistributionManager distributionManager = ds.getDistributionManager();
+        DistributionManager distributionManager =
+            this.internalDistributedSystem.getDistributionManager();
         InternalCache cache = distributionManager.getExistingCache();
         this.resourceManagerStats = cache.getInternalResourceManager().getStats();
       } catch (CacheClosedException e1) {

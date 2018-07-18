@@ -32,15 +32,12 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinatorJUnitTest;
 import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySenderFlushedCoordinator.WaitUntilBucketRegionQueueFlushedCallable;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -63,7 +60,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
 
   protected AbstractGatewaySenderEventProcessor getEventProcessor() {
     ConcurrentParallelGatewaySenderEventProcessor processor =
-        spy(new ConcurrentParallelGatewaySenderEventProcessor(this.sender, getThreadMonitorObj()));
+        spy(new ConcurrentParallelGatewaySenderEventProcessor(this.sender, null));
     return processor;
   }
 
@@ -163,18 +160,5 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
     Set<BucketRegionQueue> localBucketRegions = new HashSet<BucketRegionQueue>();
     localBucketRegions.add(this.brq);
     return localBucketRegions;
-  }
-
-  private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem == null)
-      return null;
-    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
-    if (distributionManager != null) {
-      return distributionManager.getThreadMonitoring();
-    } else {
-      return null;
-    }
   }
 }

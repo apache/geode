@@ -693,7 +693,7 @@ public class ClusterDistributionManager implements DistributionManager {
       DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
 
       if (distributionConfigImpl.getThreadMonitorEnabled()) {
-        this.threadMonitor = new ThreadsMonitoringImpl();
+        this.threadMonitor = new ThreadsMonitoringImpl(system);
         logger.info("[ThreadsMonitor] a New Monitor object and process were created.\n");
       } else {
         this.threadMonitor = new ThreadsMonitoringImplDummy();
@@ -719,7 +719,8 @@ public class ClusterDistributionManager implements DistributionManager {
         // distributed deadlock when we block the UDP reader thread
         boolean throttlingDisabled = system.getConfig().getDisableTcp();
         this.serialQueuedExecutorPool =
-            new SerialQueuedExecutorPool(this.threadGroup, this.stats, throttlingDisabled);
+            new SerialQueuedExecutorPool(this.threadGroup, this.stats, throttlingDisabled,
+                this.threadMonitor);
       }
 
       {
@@ -3795,16 +3796,19 @@ public class ClusterDistributionManager implements DistributionManager {
 
     final boolean throttlingDisabled;
 
+    final ThreadsMonitoring threadMonitoring;
+
     /**
      * Constructor.
      *
      * @param group thread group to which the threads will belog to.
      */
     SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats,
-        boolean throttlingDisabled) {
+        boolean throttlingDisabled, ThreadsMonitoring tMonitoring) {
       this.threadGroup = group;
       this.stats = stats;
       this.throttlingDisabled = throttlingDisabled;
+      this.threadMonitoring = tMonitoring;
     }
 
     /*
@@ -3957,7 +3961,7 @@ public class ClusterDistributionManager implements DistributionManager {
         }
       };
       return new SerialQueuedExecutorWithDMStats(poolQueue,
-          this.stats.getSerialPooledProcessorHelper(), tf, getThreadMonitorObj());
+          this.stats.getSerialPooledProcessorHelper(), tf, this.threadMonitoring);
     }
 
     /*
@@ -4015,18 +4019,6 @@ public class ClusterDistributionManager implements DistributionManager {
       for (Iterator iter = serialQueuedExecutorMap.values().iterator(); iter.hasNext();) {
         ExecutorService executor = (ExecutorService) iter.next();
         executor.shutdown();
-      }
-    }
-
-    private ThreadsMonitoring getThreadMonitorObj() {
-      InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-      if (ds == null)
-        return null;
-      DistributionManager distributionManager = ds.getDistributionManager();
-      if (distributionManager != null) {
-        return distributionManager.getThreadMonitoring();
-      } else {
-        return null;
       }
     }
   }

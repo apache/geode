@@ -24,12 +24,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class ThreadsMonitoringIntegrationTest {
 
   private Properties nonDefault;
-  private Cache cache;
+  private InternalCache cache;
 
   @Before
   public void setUpThreadsMonitoringIntegrationTest() throws Exception {
@@ -62,7 +61,7 @@ public class ThreadsMonitoringIntegrationTest {
     nonDefault.put(ConfigurationProperties.MCAST_PORT, "0");
     nonDefault.put(ConfigurationProperties.LOCATORS, "");
 
-    cache = new CacheFactory(nonDefault).create();
+    cache = (InternalCache) new CacheFactory(nonDefault).create();
   }
 
   /**
@@ -72,14 +71,12 @@ public class ThreadsMonitoringIntegrationTest {
   public void testThreadsMonitoringWorkflow() {
 
     ThreadsMonitoring threadMonitoring = null;
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem != null) {
-      DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
-      if (distributionManager != null) {
-        threadMonitoring = distributionManager.getThreadMonitoring();
-      }
+
+    DistributionManager distributionManager = cache.getDistributionManager();
+    if (distributionManager != null) {
+      threadMonitoring = distributionManager.getThreadMonitoring();
     }
+
 
     DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
     if (distributionConfigImpl.getThreadMonitorEnabled() && threadMonitoring != null) {

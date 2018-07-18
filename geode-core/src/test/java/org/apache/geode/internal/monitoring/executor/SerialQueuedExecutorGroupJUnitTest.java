@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class})
 public class SerialQueuedExecutorGroupJUnitTest {
 
-  public static final String GRPNAME = "SerialQueuedExecutorWithDMStats";
+  public static final String GROUPNAME = "SerialQueuedExecutorWithDMStats";
 
   /**
    * Tests that {@link org.apache.geode.internal.monitoring.executor.SerialQueuedExecutorGroup} is
@@ -39,6 +39,6 @@ public class SerialQueuedExecutorGroupJUnitTest {
   @Test
   public void testVerifyGroupName() {
     AbstractExecutor serialQueuedExecutorGroup = new SerialQueuedExecutorGroup(null);
-    assertTrue(serialQueuedExecutorGroup.getGrpName().equals(GRPNAME));
+    assertTrue(serialQueuedExecutorGroup.getGroupName().equals(GROUPNAME));
   }
 }

@@ -18,17 +18,11 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class SerialQueuedExecutorGroup extends AbstractExecutor {
 
-  public static final String GRPNAME = "SerialQueuedExecutorWithDMStats";
+  public static final String GROUPNAME = "SerialQueuedExecutorWithDMStats";
 
   public SerialQueuedExecutorGroup(ThreadsMonitoring tMonitoring) {
     super(tMonitoring);
-    super.setGrpName(GRPNAME);
-
-  }
-
-  @Override
-  public void handleExpiry(long stuckTime) {
-    super.handleExpiry(stuckTime);
+    setGroupName(GROUPNAME);
   }
 
 }

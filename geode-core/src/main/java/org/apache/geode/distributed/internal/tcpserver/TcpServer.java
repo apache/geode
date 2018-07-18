@@ -46,7 +46,6 @@ import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -200,19 +199,8 @@ public class TcpServer {
       }
     };
 
-    DistributionManager distributionManager = null;
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem != null)
-      distributionManager = internalDistributedSystem.getDistributionManager();
-    if (distributionManager != null) {
-      return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
-          factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(),
-          distributionManager.getThreadMonitoring());
-    } else {
-      return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
-          factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(), null);
-    }
+    return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
+        factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(), null);
   }
 
   public void restarting(InternalDistributedSystem ds, InternalCache cache,

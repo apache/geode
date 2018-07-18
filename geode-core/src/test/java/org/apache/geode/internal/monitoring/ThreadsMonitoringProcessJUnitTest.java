@@ -41,7 +41,7 @@ public class ThreadsMonitoringProcessJUnitTest {
 
   @Before
   public void before() {
-    threadsMonitoringImpl = new ThreadsMonitoringImpl();
+    threadsMonitoringImpl = new ThreadsMonitoringImpl(null);
   }
 
   /**

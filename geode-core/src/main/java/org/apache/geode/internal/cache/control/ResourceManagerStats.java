@@ -185,7 +185,8 @@ public class ResourceManagerStats {
             f.createIntGauge("thresholdEventProcessorThreadJobs",
                 "Number of jobs currently being processed by the thresholdEventProcessorThread",
                 "jobs"),
-            f.createIntGauge("numThreadsStuck", "Indication of a stuck threads in the system.",
+            f.createIntGauge("numThreadsStuck",
+                "Number of running threads that have not changed state within the thread-monitor-time-limit-ms interval.",
                 "stuck Threads")});
 
     rebalancesInProgressId = type.nameToId("rebalancesInProgress");

@@ -5364,13 +5364,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getAnyInstance();
-    if (internalDistributedSystem == null)
-      return null;
-    DistributionManager distributionManager = internalDistributedSystem.getDistributionManager();
-    if (distributionManager != null) {
-      return distributionManager.getThreadMonitoring();
+    if (this.dm != null) {
+      return this.dm.getThreadMonitoring();
     } else {
       return null;
     }
