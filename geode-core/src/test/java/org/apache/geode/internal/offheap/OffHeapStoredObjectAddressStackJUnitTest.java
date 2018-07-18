@@ -22,13 +22,10 @@ import static org.mockito.Mockito.withSettings;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.listeners.InvocationListener;
 import org.mockito.listeners.MethodInvocationReport;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OffHeapStoredObjectAddressStackJUnitTest {
 
   @Test

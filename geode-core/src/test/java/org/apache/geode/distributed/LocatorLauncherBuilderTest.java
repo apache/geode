@@ -27,17 +27,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link LocatorLauncher.Builder}. Extracted from {@link LocatorLauncherTest}.
  */
-@Category(UnitTest.class)
 public class LocatorLauncherBuilderTest {
 
   private InetAddress localHost;

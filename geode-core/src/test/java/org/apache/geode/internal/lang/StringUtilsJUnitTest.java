@@ -24,12 +24,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The StringUtilsJUnitTest is a test suite containing test cases for testing the contract and
@@ -42,7 +40,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @since GemFire 7.0
  */
 @SuppressWarnings("null")
-@Category(UnitTest.class)
 public class StringUtilsJUnitTest {
 
 

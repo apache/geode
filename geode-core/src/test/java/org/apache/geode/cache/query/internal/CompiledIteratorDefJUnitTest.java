@@ -20,13 +20,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CompiledIteratorDefJUnitTest {
 
   @Test

@@ -32,11 +32,8 @@ import java.time.LocalDateTime;
 
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LogFilterTest {
   @Test
   public void permittedLogLevelsCanFilterLines() throws Exception {

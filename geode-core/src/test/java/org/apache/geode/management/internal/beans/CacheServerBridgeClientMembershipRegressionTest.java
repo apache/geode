@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.internal.InternalQueryService;
@@ -38,7 +37,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * JMX and membership should not deadlock on CacheFactory.getAnyInstance.
@@ -46,7 +44,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * <p>
  * GEODE-3407: JMX and membership may deadlock on CacheFactory.getAnyInstance
  */
-@Category(UnitTest.class)
 public class CacheServerBridgeClientMembershipRegressionTest {
 
   private final AtomicBoolean after = new AtomicBoolean();

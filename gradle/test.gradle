@@ -78,47 +78,105 @@ subprojects {
     options.annotationProcessorPath = files(configurations['apt'])
   }
 
-  //This target does not run any tests. Rather, it validates that there are no
-  //tests that are missing a category annotation
-  task checkMissedTests(type: Test) {
-    include '**/*Test.class'
-    useJUnit {
-      excludeCategories 'org.apache.geode.test.junit.categories.UnitTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.PerformanceTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.HydraTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.ContainerTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.UITest'
-      excludeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-
-    //Skip launching any DUnit VMs during this run. This will prevent
-    //junit from launching VMs while parsing categories
-    systemProperty 'gemfire.DUnitLauncher.LAUNCHED', 'true'
-
-    beforeTest { descriptor ->
-      throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
-    }
-  }
-
   test {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.UnitTest'
-    }
-
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
   }
 
+  sourceSets {
+    integrationTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/integrationTest/java')
+      }
+      resources.srcDir file('src/integrationTest/resources')
+      compiledBy(assemble)
+      apply plugin: 'idea'
+      idea {
+        module {
+          testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
+          testSourceDirs += project.sourceSets.integrationTest.resources.srcDirs
+        }
+      }
+    }
+
+    distributedTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/distributedTest/java')
+      }
+      resources.srcDir file('src/distributedTest/resources')
+      apply plugin: 'idea'
+      idea {
+        module {
+          testSourceDirs += project.sourceSets.distributedTest.java.srcDirs
+          testSourceDirs += project.sourceSets.distributedTest.resources.srcDirs
+        }
+      }
+    }
+
+    performanceTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/performanceTest/java')
+      }
+      resources.srcDir file('src/performanceTest/resources')
+      apply plugin: 'idea'
+      idea {
+        module {
+          testSourceDirs += project.sourceSets.performanceTest.java.srcDirs
+          testSourceDirs += project.sourceSets.performanceTest.resources.srcDirs
+        }
+      }
+    }
+
+    acceptanceTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/acceptanceTest/java')
+      }
+      resources.srcDir file('src/acceptanceTest/resources')
+      apply plugin: 'idea'
+      idea {
+        module {
+          testSourceDirs += project.sourceSets.acceptanceTest.java.srcDirs
+          testSourceDirs += project.sourceSets.acceptanceTest.resources.srcDirs
+        }
+      }
+    }
+
+    uiTest {
+      java {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        srcDir file('src/uiTest/java')
+      }
+      resources.srcDir file('src/uiTest/resources')
+      apply plugin: 'idea'
+      idea {
+        module {
+          testSourceDirs += project.sourceSets.uiTest.java.srcDirs
+          testSourceDirs += project.sourceSets.uiTest.resources.srcDirs
+        }
+      }
+    }
+  }
+
   task integrationTest(type:Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
     useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
     forkEvery 1
+
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
@@ -126,11 +184,15 @@ subprojects {
   }
 
   task distributedTest(type:Test) {
+    testClassesDirs = sourceSets.distributedTest.output.classesDirs
+    classpath = sourceSets.distributedTest.runtimeClasspath
+
     useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
+
     forkEvery 1
+
     outputs.upToDateWhen{false}
   }
 
@@ -141,6 +203,26 @@ subprojects {
 
     outputs.upToDateWhen{false}
   }
+
+  task acceptanceTest(type:Test) {
+      testClassesDirs = sourceSets.acceptanceTest.output.classesDirs
+      classpath = sourceSets.acceptanceTest.runtimeClasspath
+
+      forkEvery 1
+
+      outputs.upToDateWhen{false}
+  }
+
+  task uiTest(type:Test) {
+    testClassesDirs = sourceSets.uiTest.output.classesDirs
+    classpath = sourceSets.uiTest.runtimeClasspath
+
+    forkEvery 1
+
+    outputs.upToDateWhen{false}
+  }
+
+
 
   task flakyTest(type:Test) {
     useJUnit {
@@ -352,14 +434,6 @@ subprojects {
     forkEvery 30
   }
 
-  task acceptanceTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-    forkEvery 1
-    outputs.upToDateWhen{false}
-  }
-
   // apply common test configuration
   gradle.taskGraph.whenReady( { graph ->
     tasks.withType(Test).each { test ->
@@ -424,8 +498,11 @@ subprojects {
     description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
 
-  check.dependsOn checkMissedTests
-
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest, repeatTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest, repeatTest].each {it.finalizedBy combineReports}
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest
+  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest].each {it.finalizedBy combineReports}
 }
+
+classes.dependsOn subprojects.compileIntegrationTestJava
+classes.dependsOn subprojects.compileDistributedTestJava
+classes.dependsOn subprojects.compileAcceptanceTestJava
+classes.dependsOn subprojects.compileUiTestJava

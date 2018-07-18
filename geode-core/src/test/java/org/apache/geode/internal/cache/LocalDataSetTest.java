@@ -25,12 +25,9 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Operation;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LocalDataSetTest {
 
   @Test

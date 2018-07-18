@@ -19,19 +19,16 @@ import static org.junit.Assert.assertSame;
 import java.util.Stack;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AbstractXmlParser}.
  *
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class AbstractXmlParserJUnitTest {
 
   /**

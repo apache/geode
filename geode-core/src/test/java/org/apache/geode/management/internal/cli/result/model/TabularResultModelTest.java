@@ -22,12 +22,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
+
 public class TabularResultModelTest {
   private TabularResultModel table1;
 

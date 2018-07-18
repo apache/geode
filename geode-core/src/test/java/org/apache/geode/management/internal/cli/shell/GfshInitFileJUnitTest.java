@@ -40,11 +40,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for supplying an init file to Gfsh.
@@ -52,7 +50,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * Makes use of reflection to reset private static variables on some classes to replace loggers that
  * would otherwise clutter the console.
  */
-@Category(UnitTest.class)
 public class GfshInitFileJUnitTest {
 
   private static final String INIT_FILE_NAME = GfshConfig.DEFAULT_INIT_FILE_NAME;

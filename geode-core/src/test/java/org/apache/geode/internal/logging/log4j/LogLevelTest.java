@@ -20,12 +20,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LogLevelTest {
   @Test
   public void testGetLevel() {

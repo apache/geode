@@ -23,7 +23,6 @@ import static org.mockito.Mockito.mock;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -36,9 +35,7 @@ import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntr
 import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FetchEntriesMessageJUnitTest {
 
   private GemFireCacheImpl cache;

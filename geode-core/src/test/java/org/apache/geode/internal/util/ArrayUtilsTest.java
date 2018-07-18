@@ -26,17 +26,14 @@ import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ArrayUtils}.
  *
  * @since GemFire 7.x
  */
-@Category(UnitTest.class)
 @SuppressWarnings("null")
 public class ArrayUtilsTest {
 

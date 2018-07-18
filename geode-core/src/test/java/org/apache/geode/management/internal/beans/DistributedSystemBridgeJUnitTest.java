@@ -35,7 +35,6 @@ import javax.management.ObjectName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -50,9 +49,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DistributedSystemBridgeJUnitTest {
 
   private GemFireCacheImpl cache;

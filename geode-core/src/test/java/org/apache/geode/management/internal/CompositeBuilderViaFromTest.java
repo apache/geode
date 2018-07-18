@@ -22,12 +22,9 @@ import static org.mockito.Mockito.when;
 import javax.management.openmbean.CompositeData;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.OpenTypeConverter.CompositeBuilderViaFrom;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CompositeBuilderViaFromTest {
 
   @Test

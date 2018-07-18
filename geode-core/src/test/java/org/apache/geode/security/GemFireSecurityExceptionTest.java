@@ -31,12 +31,11 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link GemFireSecurityException}.
  */
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class GemFireSecurityExceptionTest {
 
   private String message;

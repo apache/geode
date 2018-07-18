@@ -21,12 +21,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Properties;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
+
 public class ClassNameTest {
 
   @Test

@@ -31,19 +31,16 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the AlertAppender.
  */
-@Category(UnitTest.class)
 public class AlertAppenderJUnitTest {
 
   private final List<DistributedMember> members = new ArrayList<DistributedMember>();

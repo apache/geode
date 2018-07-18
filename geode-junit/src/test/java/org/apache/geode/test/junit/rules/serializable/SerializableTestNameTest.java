@@ -25,16 +25,13 @@ import java.util.Arrays;
 
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.Description;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SerializableTestName}.
  */
-@Category(UnitTest.class)
 public class SerializableTestNameTest {
 
   @Test
