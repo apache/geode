@@ -59,7 +59,8 @@ public class MemberMessenger {
   }
 
   public void broadcastManagerInfo() {
-    Set<DistributedMember> otherMemberSet = system.getDistributionManager().getAllOtherMembers();
+    Set<? extends DistributedMember> otherMemberSet =
+        system.getDistributionManager().getAllOtherMembers();
 
     String levelName = jmxAdapter.getDistributedSystemMXBean().getAlertLevel();
     int alertCode = LogLevel.getLogWriterLevel(levelName);

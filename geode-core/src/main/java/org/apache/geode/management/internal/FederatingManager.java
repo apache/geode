@@ -16,7 +16,6 @@ package org.apache.geode.management.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -261,18 +260,11 @@ public class FederatingManager extends Manager {
   public void startManagingActivity() throws Exception {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    Set<DistributedMember> members =
-        cache.getDistributionManager().getOtherDistributionManagerIds();
-
-    Iterator<DistributedMember> it = members.iterator();
-    DistributedMember member;
-
     final List<Callable<DistributedMember>> giiTaskList = new ArrayList<>();
-
     List<Future<DistributedMember>> futureTaskList;
 
-    while (it.hasNext()) {
-      member = it.next();
+    for (DistributedMember member : cache.getDistributionManager()
+        .getOtherDistributionManagerIds()) {
       giiTaskList.add(new GIITask(member));
     }
 

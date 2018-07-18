@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -48,7 +49,8 @@ public class StartupOperation {
    * @return whether all recipients could be contacted. The failure set can be fetched with
    *         getFailureSet??
    */
-  boolean sendStartupMessage(Set recipients, long timeout, Set interfaces, String redundancyZone,
+  boolean sendStartupMessage(Set recipients, long timeout, Set<InetAddress> interfaces,
+      String redundancyZone,
       boolean enforceUniqueZone)
       throws InterruptedException, ReplyException, java.net.UnknownHostException, IOException {
     if (Thread.interrupted())
@@ -89,12 +91,12 @@ public class StartupOperation {
       logger.debug("Waiting {} milliseconds to receive startup responses", timeout);
     }
     boolean timedOut = true;
-    Set unresponsive = null;
+    Set<InternalDistributedMember> unresponsive = null;
     try {
       timedOut = !proc.waitForReplies(timeout);
     } finally {
       if (timedOut) {
-        unresponsive = new HashSet();
+        unresponsive = new HashSet<>();
         proc.collectUnresponsiveMembers(unresponsive);
         if (!unresponsive.isEmpty()) {
           for (Iterator it = unresponsive.iterator(); it.hasNext();) {

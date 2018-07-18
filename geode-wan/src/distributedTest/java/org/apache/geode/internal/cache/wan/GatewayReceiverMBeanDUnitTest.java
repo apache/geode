@@ -92,7 +92,7 @@ public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
   }
 
   private static void verifyMBeanProxies(final InternalCache cache) {
-    Set<DistributedMember> members =
+    Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
@@ -101,7 +101,7 @@ public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
   }
 
   private static void verifyMBeanProxiesDoesNotExist(final InternalCache cache) {
-    Set<DistributedMember> members =
+    Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
       assertNull(getMBeanProxy(member));

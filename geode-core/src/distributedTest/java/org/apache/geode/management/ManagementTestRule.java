@@ -238,7 +238,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
     return allMembers;
   }
 
-  public Set<DistributedMember> getAllNormalMembers() {
+  public Set<? extends DistributedMember> getAllNormalMembers() {
     return getDistributionManager().getNormalDistributionManagerIds(); // excludes LOCATOR_DM_TYPE
   }
 

@@ -140,7 +140,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   }
 
   private static void waitForMemberProxiesToRefresh(int refreshCount, final InternalCache cache) {
-    Set<DistributedMember> members =
+    Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     // Currently, the LuceneServiceMBean is not updated in the manager since it has no getters,
     // so use the MemberMBean instead.
@@ -165,7 +165,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   }
 
   private static void verifyMBeanProxies(final InternalCache cache) {
-    Set<DistributedMember> members =
+    Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
       getMBeanProxy(member);
@@ -204,7 +204,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
 
   private static void verifyAllMBeanProxyIndexMetrics(String regionName, int numRegionIndexes,
       int numTotalIndexes, final InternalCache cache) {
-    Set<DistributedMember> members =
+    Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
       LuceneServiceMXBean mbean = getMBeanProxy(member);
@@ -240,7 +240,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   private void verifyMBeanIndexMetricsValues(String regionName, String indexName, int expectedPuts,
       int expectedQueries, int expectedHits, final InternalCache cache) {
     // Get index metrics from all members
-    Set<DistributedMember> members =
+    Set<? extends DistributedMember> members =
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     int totalCommits = 0, totalUpdates = 0, totalDocuments = 0, totalQueries = 0, totalHits = 0;
     for (DistributedMember member : members) {

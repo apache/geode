@@ -550,21 +550,21 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public void getMessageState(InternalDistributedMember target, Map state,
+  public void getMessageState(InternalDistributedMember target, Map<String, Long> state,
       boolean includeMulticast) {
     if (includeMulticast) {
       NAKACK2 nakack = (NAKACK2) myChannel.getProtocolStack().findProtocol("NAKACK2");
       if (nakack != null) {
         long seqno = nakack.getCurrentSeqno();
-        state.put("JGroups.mcastState", Long.valueOf(seqno));
+        state.put("JGroups.mcastState", seqno);
       }
     }
   }
 
   @Override
-  public void waitForMessageState(InternalDistributedMember sender, Map state)
+  public void waitForMessageState(InternalDistributedMember sender, Map<String, Long> state)
       throws InterruptedException {
-    Long seqno = (Long) state.get("JGroups.mcastState");
+    Long seqno = state.get("JGroups.mcastState");
     if (seqno == null) {
       return;
     }
@@ -590,7 +590,7 @@ public class JGroupsMessenger implements Messenger {
             "waiting for multicast messages from {}.  Current seqno={} and expected seqno={}",
             sender, highSeqno, seqno);
       }
-      if (highSeqno >= seqno.longValue()) {
+      if (highSeqno >= seqno) {
         break;
       }
       long now = System.currentTimeMillis();
@@ -1096,7 +1096,7 @@ public class JGroupsMessenger implements Messenger {
       throws ClassNotFoundException, IOException {
     GMSMember m = new GMSMember();
     m.readEssentialData(in);
-    DistributionMessage result = (DistributionMessage) DataSerializer.readObject(in);
+    DistributionMessage result = DataSerializer.readObject(in);
 
     setSender(result, m, ordinal);
 
