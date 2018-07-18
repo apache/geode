@@ -250,6 +250,8 @@ public class RedisConstants {
      */
     public static final String GEOADD =
         "The wrong number of arguments or syntax was provided, the format for the GEOADD command is \"GEOADD key longitude latitude member [longitude latitude member ...]\", or not every latitude/longitude pair matches to a member";
+    public static final String GEOADD_INVALID_LATLONG =
+            "invalid longitude,latitude pair";
     public static final String GEOHASH =
         "The wrong number of arguments or syntax was provided, the format for the GEOHASH command is \"GEOHASH key member [member...]\"";
     public static final String GEOPOS =

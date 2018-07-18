@@ -22,6 +22,7 @@ import java.util.Iterator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
+import io.netty.handler.codec.redis.RedisCodecException;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 public class GeoCoder {
@@ -34,6 +35,10 @@ public class GeoCoder {
    * Earth radius for distance calculations.
    */
   private static final double EARTH_RADIUS_IN_METERS = 6372797.560856;
+  public static final double LONG_MIN = -180.0;
+  public static final double LONG_MAX = 180.0;
+  public static final double LAT_MIN = -90.0;
+  public static final double LAT_MAX = 90.0;
 
 
   public static ByteBuf getBulkStringGeoCoordinateArrayResponse(ByteBufAllocator alloc,
@@ -86,7 +91,7 @@ public class GeoCoder {
       latChars[i / 2] = binChars[i + 1];
     }
 
-    return new GeoCoord(coord(lonChars, -180.0, 180.0), coord(latChars, -90.0, 90.0));
+    return new GeoCoord(coord(lonChars, LONG_MIN, LONG_MAX), coord(latChars, LAT_MIN, LAT_MAX));
   }
 
   /**
@@ -123,12 +128,12 @@ public class GeoCoder {
    * @param lat byte array encoding latitude as decimal
    * @return geohash as base32
    */
-  public static String geoHash(byte[] lon, byte[] lat) {
+  public static String geoHash(byte[] lon, byte[] lat) throws CoderException {
     Double longitude = Coder.bytesToDouble(lon);
     Double latitude = Coder.bytesToDouble(lat);
 
-    char[] longDigits = coordDigits(longitude, -180.0, 180.0);
-    char[] latDigits = coordDigits(latitude, -90.0, 90.0);
+    char[] longDigits = coordDigits(longitude, LONG_MIN, LONG_MAX);
+    char[] latDigits = coordDigits(latitude, LAT_MIN, LAT_MAX);
     char[] hashBin = new char[LEN_GEOHASH];
     for (int c = 0; c < LEN_GEOHASH / 2; c++) {
       hashBin[2 * c] = longDigits[c];
@@ -183,7 +188,11 @@ public class GeoCoder {
     return "0000" + Integer.toBinaryString(v);
   }
 
-  private static char[] coordDigits(Double coordinate, Double min, Double max) {
+  private static char[] coordDigits(Double coordinate, Double min, Double max) throws CoderException {
+    if (coordinate > max || coordinate < min) {
+      throw new CoderException();
+    }
+
     char[] bin = new char[LEN_GEOHASH / 2];
     for (int c = 0; c < bin.length; c++) {
       Double mid = (min + max) / 2;

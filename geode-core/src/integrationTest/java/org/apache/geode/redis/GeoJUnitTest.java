@@ -90,6 +90,25 @@ public class GeoJUnitTest {
   }
 
   @Test
+  public void testGeoAddBoundaries() {
+    Exception ex = null;
+    try {
+      jedis.geoadd("Sicily", 13.36, 91.0, "Palermo");
+    } catch (Exception e) {
+      ex = e;
+    }
+    assertNotNull(ex);
+
+    ex = null;
+    try {
+      jedis.geoadd("Sicily", -181, 38.12, "Palermo");
+    } catch (Exception e) {
+      ex = e;
+    }
+    assertNotNull(ex);
+  }
+
+  @Test
   public void testGeoHash() {
     Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
     memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
