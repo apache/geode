@@ -46,7 +46,7 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   private final Timer timer =
       new Timer(LocalizedStrings.THREAD_MONITOR_NAME.toLocalizedString(), true);
 
-  /** Is this ThreadsMonitoringImpl closed? */
+  /** Is this ThreadsMonitoringImpl closed?? */
   private boolean isClosed = true;
 
   public ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem) {
