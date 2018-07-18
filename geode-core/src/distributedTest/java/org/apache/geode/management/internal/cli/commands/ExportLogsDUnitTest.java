@@ -144,6 +144,7 @@ public class ExportLogsDUnitTest {
     assertThat(FileUtils.listFiles(locator.getWorkingDir(), extensions, true)).isNotEmpty();
     assertThat(FileUtils.listFiles(absoluteDirPath.toFile(), extensions, false)).isNotEmpty();
   }
+
   @Test
   public void startAndEndDateCanIncludeLogs() throws Exception {
     ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
