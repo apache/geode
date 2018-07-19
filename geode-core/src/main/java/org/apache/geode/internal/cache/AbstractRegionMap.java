@@ -815,12 +815,14 @@ public abstract class AbstractRegionMap
 
   @Override
   public boolean initialImagePut(final Object key, final long lastModified, Object newValue,
-      final boolean wasRecovered, boolean deferLRUCallback, VersionTag entryVersion,
+      final boolean wasRecovered, boolean deferLRUCallback,
+      VersionTag entryVersion,
       InternalDistributedMember sender, boolean isSynchronizing) {
     boolean result = false;
     boolean done = false;
     boolean cleared = false;
     final LocalRegion owner = _getOwner();
+    boolean acceptedVersionTag = entryVersion != null && owner.getConcurrencyChecksEnabled();
 
     if (newValue == Token.TOMBSTONE && !owner.getConcurrencyChecksEnabled()) {
       return false;
@@ -833,193 +835,160 @@ public abstract class AbstractRegionMap
       }
     }
 
-    try {
-      RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
-      EntryEventImpl event = null;
+    RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
 
-      @Retained
-      @Released
-      Object oldValue = null;
-
+    RegionEntry oldRe = null;
+    synchronized (newRe) {
       try {
-        RegionEntry oldRe = null;
-        synchronized (newRe) {
-          try {
-            oldRe = putEntryIfAbsent(key, newRe);
-            while (!done && oldRe != null) {
-              synchronized (oldRe) {
-                if (oldRe.isRemovedPhase2()) {
-                  owner.getCachePerfStats().incRetries();
-                  getEntryMap().remove(key, oldRe);
-                  oldRe = putEntryIfAbsent(key, newRe);
-                } else {
-                  boolean acceptedVersionTag = false;
-                  if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
-                    Assert.assertTrue(entryVersion.getMemberID() != null,
-                        "GII entry versions must have identifiers");
-                    try {
-                      boolean isTombstone = (newValue == Token.TOMBSTONE);
-                      // don't reschedule the tombstone if it hasn't changed
-                      boolean isSameTombstone = oldRe.isTombstone() && isTombstone
-                          && oldRe.getVersionStamp().asVersionTag().equals(entryVersion);
-                      if (isSameTombstone) {
-                        return true;
-                      }
-                      processVersionTagForGII(oldRe, owner, entryVersion, isTombstone, sender,
-                          !wasRecovered || isSynchronizing);
-                      acceptedVersionTag = true;
-                    } catch (ConcurrentCacheModificationException e) {
-                      return false;
-                    }
-                  }
-                  final boolean oldIsTombstone = oldRe.isTombstone();
-                  final boolean oldIsDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
-                  final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
-                  try {
-                    if (owner.getIndexManager() != null) {
-                      // Due to having no reverse map, we need to be able to generate the oldkey
-                      // before doing an update
-                      // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index
-                      // as the update could not locate the old key
-                      if (!oldRe.isRemoved()) {
-                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                            IndexProtocol.BEFORE_UPDATE_OP);
-                      }
-                    }
-                    result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered,
-                        acceptedVersionTag);
-                    if (result) {
-                      if (oldIsTombstone) {
-                        owner.unscheduleTombstone(oldRe);
-                        if (newValue != Token.TOMBSTONE) {
-                          lruEntryCreate(oldRe);
-                        } else {
-                          lruEntryUpdate(oldRe);
-                        }
-                      }
-                      if (newValue == Token.TOMBSTONE) {
-                        if (!oldIsDestroyedOrRemoved) {
-                          owner.updateSizeOnRemove(key, oldSize);
-                        }
-                        if (owner.getServerProxy() == null
-                            && owner.getVersionVector().isTombstoneTooOld(
-                                entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
-                          // the received tombstone has already been reaped, so don't retain it
-                          if (owner.getIndexManager() != null) {
-                            owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                                IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
-                          }
-                          removeTombstone(oldRe, entryVersion, false, false);
-                          return false;
-                        } else {
-                          owner.scheduleTombstone(oldRe, entryVersion);
-                          lruEntryDestroy(oldRe);
-                        }
-                      } else {
-                        int newSize = owner.calculateRegionEntryValueSize(oldRe);
-                        if (!oldIsTombstone) {
-                          owner.updateSizeOnPut(key, oldSize, newSize);
-                        } else {
-                          owner.updateSizeOnCreate(key, newSize);
-                        }
-                        EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
-                      }
-                    }
-                    if (owner.getIndexManager() != null) {
-                      // if existing/current re is a tombstone
-                      if (oldRe.isRemoved()) {
-                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                            IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
-                      } else {
-                        owner.getIndexManager().updateIndexes(oldRe,
-                            oldIsDestroyedOrRemoved ? IndexManager.ADD_ENTRY
-                                : IndexManager.UPDATE_ENTRY,
-                            oldIsDestroyedOrRemoved ? IndexProtocol.OTHER_OP
-                                : IndexProtocol.AFTER_UPDATE_OP);
-                      }
-                    }
-                    done = true;
-                  } finally {
-                    if (event != null) {
-                      releaseEvent(event);
-                      event = null;
-                    }
-                  }
-                }
-              }
-            }
-            if (!done) {
-              boolean versionTagAccepted = false;
+        oldRe = putEntryIfAbsent(key, newRe);
+        while (!done && oldRe != null) {
+          synchronized (oldRe) {
+            if (oldRe.isRemovedPhase2()) {
+              owner.getCachePerfStats().incRetries();
+              getEntryMap().remove(key, oldRe);
+              oldRe = putEntryIfAbsent(key, newRe);
+            } else {
               if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
                 Assert.assertTrue(entryVersion.getMemberID() != null,
                     "GII entry versions must have identifiers");
-                try {
-                  boolean isTombstone = (newValue == Token.TOMBSTONE);
-                  processVersionTagForGII(newRe, owner, entryVersion, isTombstone, sender,
-                      !wasRecovered || isSynchronizing);
-                  versionTagAccepted = true;
-                } catch (ConcurrentCacheModificationException e) {
-                  return false;
+                boolean isTombstone = (newValue == Token.TOMBSTONE);
+                // don't reschedule the tombstone if it hasn't changed
+                boolean isSameTombstone = oldRe.isTombstone() && isTombstone
+                    && oldRe.getVersionStamp().asVersionTag().equals(entryVersion);
+                if (isSameTombstone) {
+                  return true;
                 }
-              }
-              result = newRe.initialImageInit(owner, lastModified, newValue, true, wasRecovered,
-                  versionTagAccepted);
-              try {
-                if (result) {
-                  if (newValue == Token.TOMBSTONE) {
-                    owner.scheduleTombstone(newRe, entryVersion);
-                  } else {
-                    owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(newRe));
-                    EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
-                    lruEntryCreate(newRe);
-                  }
-                  incEntryCount(1);
-                }
+                processVersionTagForGII(oldRe, owner, entryVersion, isTombstone, sender,
+                    !wasRecovered || isSynchronizing);
 
-                // Update local indexes
-                if (owner.getIndexManager() != null && !newRe.isRemoved()) {
-                  owner.getIndexManager().updateIndexes(newRe,
-                      IndexManager.ADD_ENTRY,
-                      IndexProtocol.OTHER_OP);
-                }
-                done = true;
-              } finally {
-                if (event != null) {
-                  releaseEvent(event);
-                  event = null;
+              }
+              final boolean oldIsTombstone = oldRe.isTombstone();
+              final boolean oldIsDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
+              final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
+              if (owner.getIndexManager() != null) {
+                // Due to having no reverse map, we need to be able to generate the oldkey
+                // before doing an update
+                // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index
+                // as the update could not locate the old key
+                if (!oldRe.isRemoved()) {
+                  owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
+                      IndexProtocol.BEFORE_UPDATE_OP);
                 }
               }
-            }
-          } finally {
-            if (done && result) {
-              if (owner instanceof BucketRegionQueue) {
-                BucketRegionQueue brq = (BucketRegionQueue) owner;
-                brq.addToEventQueue(key, done, event);
+              result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered,
+                  acceptedVersionTag);
+              if (result) {
+                if (oldIsTombstone) {
+                  owner.unscheduleTombstone(oldRe);
+                  if (newValue != Token.TOMBSTONE) {
+                    lruEntryCreate(oldRe);
+                  } else {
+                    lruEntryUpdate(oldRe);
+                  }
+                }
+                if (newValue == Token.TOMBSTONE) {
+                  if (!oldIsDestroyedOrRemoved) {
+                    owner.updateSizeOnRemove(key, oldSize);
+                  }
+                  if (owner.getServerProxy() == null
+                      && owner.getVersionVector().isTombstoneTooOld(
+                          entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
+                    // the received tombstone has already been reaped, so don't retain it
+                    if (owner.getIndexManager() != null) {
+                      owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
+                          IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
+                    }
+                    removeTombstone(oldRe, entryVersion, false, false);
+                    return false;
+                  } else {
+                    owner.scheduleTombstone(oldRe, entryVersion);
+                    lruEntryDestroy(oldRe);
+                  }
+                } else {
+                  int newSize = owner.calculateRegionEntryValueSize(oldRe);
+                  if (!oldIsTombstone) {
+                    owner.updateSizeOnPut(key, oldSize, newSize);
+                  } else {
+                    owner.updateSizeOnCreate(key, newSize);
+                  }
+                  EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
+                }
               }
-            }
-            if (!done) {
-              removeEntry(key, newRe, false);
+              if (owner.getIndexManager() != null) {
+                // if existing/current re is a tombstone
+                if (oldRe.isRemoved()) {
+                  owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
+                      IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
+                } else {
+                  owner.getIndexManager().updateIndexes(oldRe,
+                      oldIsDestroyedOrRemoved ? IndexManager.ADD_ENTRY
+                          : IndexManager.UPDATE_ENTRY,
+                      oldIsDestroyedOrRemoved ? IndexProtocol.OTHER_OP
+                          : IndexProtocol.AFTER_UPDATE_OP);
+                }
+              }
+              done = true;
+
             }
           }
-        } // synchronized
+        }
+        if (!done) {
+          if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
+            Assert.assertTrue(entryVersion.getMemberID() != null,
+                "GII entry versions must have identifiers");
+            boolean isTombstone = (newValue == Token.TOMBSTONE);
+            processVersionTagForGII(newRe, owner, entryVersion, isTombstone, sender,
+                !wasRecovered || isSynchronizing);
+          }
+          result = newRe.initialImageInit(owner, lastModified, newValue, true, wasRecovered,
+              acceptedVersionTag);
+          if (result) {
+            if (newValue == Token.TOMBSTONE) {
+              owner.scheduleTombstone(newRe, entryVersion);
+            } else {
+              owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(newRe));
+              EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
+              lruEntryCreate(newRe);
+            }
+            incEntryCount(1);
+          }
+
+          // Update local indexes
+          if (owner.getIndexManager() != null && !newRe.isRemoved()) {
+            owner.getIndexManager().updateIndexes(newRe,
+                IndexManager.ADD_ENTRY,
+                IndexProtocol.OTHER_OP);
+          }
+          done = true;
+
+        }
+      } catch (ConcurrentCacheModificationException e) {
+        return false;
+      } catch (RegionClearedException rce) {
+        done = false;
+        cleared = true;
+      } catch (QueryException qe) {
+        done = false;
+        cleared = true;
       } finally {
-        if (event != null)
-          releaseEvent(event);
-        OffHeapHelper.release(oldValue);
+        if (done && !deferLRUCallback) {
+          lruUpdateCallback();
+        } else if (!cleared) {
+          resetThreadLocals();
+        }
+
+        if (done && result) {
+          if (owner instanceof BucketRegionQueue) {
+            BucketRegionQueue brq = (BucketRegionQueue) owner;
+            brq.addToEventQueue(key, done, null);
+          }
+        }
+        if (!done) {
+          removeEntry(key, newRe, false);
+        }
       }
-    } catch (RegionClearedException rce) {
-      done = false;
-      cleared = true;
-    } catch (QueryException qe) {
-      done = false;
-      cleared = true;
-    } finally {
-      if (done && !deferLRUCallback) {
-        lruUpdateCallback();
-      } else if (!cleared) {
-        resetThreadLocals();
-      }
-    }
+    } // synchronized
+
     return result;
   }
 
