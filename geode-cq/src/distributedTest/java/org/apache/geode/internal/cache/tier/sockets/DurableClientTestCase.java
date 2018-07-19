@@ -855,7 +855,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
             (CacheServerTestUtil.ControlListener) region.getAttributes().getCacheListeners()[0];
         listener.waitWhileNotEnoughEvents(60 * 1000, numEntries + numEntriesBeforeDisconnect);
         assertEquals(numEntries + numEntriesBeforeDisconnect, listener.events.size());
-       }
+      }
     });
   }
 

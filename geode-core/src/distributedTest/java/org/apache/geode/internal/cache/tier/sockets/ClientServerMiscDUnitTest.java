@@ -28,7 +28,6 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -84,7 +83,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -771,7 +769,8 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     factory1.setPoolName(p.getName());
 
     final RegionAttributes attrs1 = factory1.create();
-    assertThatThrownBy(() -> cache2.createRegion(REGION_NAME1, attrs1)).isInstanceOfAny(IllegalStateException.class, DistributedSystemDisconnectedException.class);
+    assertThatThrownBy(() -> cache2.createRegion(REGION_NAME1, attrs1))
+        .isInstanceOfAny(IllegalStateException.class, DistributedSystemDisconnectedException.class);
   }
 
   @Test(expected = GemFireConfigException.class)

@@ -1238,13 +1238,13 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
           @Override
           public void run2() throws CacheException {
             PoolImpl.BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG = true;
-                ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
-                  @Override
-                  public void beforeSendingClientAck() {
-                    LogWriterUtils.getLogWriter().info("beforeSendingClientAck invoked");
+            ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+              @Override
+              public void beforeSendingClientAck() {
+                LogWriterUtils.getLogWriter().info("beforeSendingClientAck invoked");
 
-                  }
-                });
+              }
+            });
 
           }
         };
@@ -2861,8 +2861,8 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
         public void run2() throws CacheException {
           Awaitility.waitAtMost(10, TimeUnit.SECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
               .until(() -> CacheClientProxy.testHook != null
-              && (((RejectClientReconnectTestHook) CacheClientProxy.testHook)
-              .wasClientRejected()));
+                  && (((RejectClientReconnectTestHook) CacheClientProxy.testHook)
+                      .wasClientRejected()));
           assertTrue(
               ((RejectClientReconnectTestHook) CacheClientProxy.testHook).wasClientRejected());
         }
@@ -3429,11 +3429,11 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
   public void testGetAllDurableCqsFromServer() {
     // Start server 1
     final int server1Port = this.server1VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[]{regionName, Boolean.TRUE});
+        "createCacheServer", new Object[] {regionName, Boolean.TRUE});
 
     // Start server 2
     final int server2Port = this.server2VM.invoke(CacheServerTestUtil.class,
-        "createCacheServer", new Object[]{regionName, Boolean.TRUE});
+        "createCacheServer", new Object[] {regionName, Boolean.TRUE});
 
     // Start a durable client
     final String durableClientId = getName() + "_client";
