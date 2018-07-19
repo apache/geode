@@ -98,7 +98,8 @@ public class TXState implements TXStateInterface {
    */
   private int modSerialNum;
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<EntryEventImpl>();
-  private volatile boolean beforeCompletionCalled;
+  // Access this variable should be in synchronized block.
+  private boolean beforeCompletionCalled;
 
   // Internal testing hooks
   private Runnable internalAfterReservation;
