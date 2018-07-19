@@ -51,6 +51,7 @@ apt-get install -y --no-install-recommends \
     openjdk-8-jdk-headless \
     python3 \
     python3-pip \
+    rsync \
     unzip \
     vim
 gcloud config set core/disable_usage_reporting true
