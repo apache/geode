@@ -14,12 +14,20 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.CoderException;
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.GeoCoder;
+import org.apache.geode.redis.internal.RedisConstants;
+import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.StringWrapper;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.*;
 
 public class GeoAddExecutor extends GeoSortedSetExecutor {
 
@@ -44,9 +52,9 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
       byte[] latitude = commandElems.get(i + 1);
       byte[] member = commandElems.get(i + 2);
 
-      String score = "";
+      String score;
       try {
-        score = GeoCoder.geoHash(longitude, latitude);
+        score = GeoCoder.geoHash(longitude, latitude, GeoCoder.LEN_GEOHASH);
       } catch(CoderException ce) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
                 "ERR " + RedisConstants.ArityDef.GEOADD_INVALID_LATLONG +
