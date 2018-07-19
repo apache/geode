@@ -32,12 +32,12 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 public class DurableClientCrashDUnitTest extends DurableClientTestCase {
 
   @Override
-  protected final void postSetUpDurableClientTestCase() throws Exception {
+  protected final void postSetUpDurableClientTestCase() {
     configureClientStop1();
   }
 
   public void configureClientStop1() {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(new Boolean(true)));
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.TRUE));
   }
 
   @Override
@@ -46,7 +46,7 @@ public class DurableClientCrashDUnitTest extends DurableClientTestCase {
   }
 
   public void configureClientStop2() {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(new Boolean(false)));
+    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.FALSE));
   }
 
   @Override
