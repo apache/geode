@@ -38,6 +38,13 @@
  *                       The default is 'root'.
  */
 
+
+if (project.hasProperty('parallelDunit')) {
+  def pwd = System.getenv('PWD')
+  def geodeDir = new File(pwd).getCanonicalPath()
+  ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
+}
+
 def dockerConfig = {
   maxParallelForks = dunitParallelForks.toInteger()
 
@@ -110,5 +117,8 @@ subprojects {
     distributedTest.configure(dockerConfig)
     upgradeTest.configure(dockerConfig)
     repeatTest.configure(dockerConfig)
+    integrationTest.configure(dockerConfig)
+    acceptanceTest.configure(dockerConfig)
+    uiTest.configure(dockerConfig)
   }
 }
