@@ -40,7 +40,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
   private long revokedTime;
 
   public PersistentMemberPattern(PersistentMemberID id) {
-    this(id.host, id.directory, id.diskStoreId.toUUID(), 0);
+    this(id.getHost(), id.getDirectory(), id.getDiskStoreId().toUUID(), 0);
   }
 
   public PersistentMemberPattern(InetAddress host, String directory) {
@@ -72,11 +72,12 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
       return false;
     }
     boolean matches = true;
-    matches &= host == null || host.equals(id.host);
-    matches &= directory == null || directory.equals(id.directory);
+    matches &= host == null || host.equals(id.getHost());
+    matches &= directory == null || directory.equals(id.getDirectory());
     matches &= diskStoreID == null
-        || id.diskStoreId.getMostSignificantBits() == diskStoreID.getMostSignificantBits()
-            && id.diskStoreId.getLeastSignificantBits() == diskStoreID.getLeastSignificantBits();
+        || id.getDiskStoreId().getMostSignificantBits() == diskStoreID.getMostSignificantBits()
+            && id.getDiskStoreId().getLeastSignificantBits() == diskStoreID
+                .getLeastSignificantBits();
 
     // Safety measure. Id's which are generated after this pattern was revoked
     // should not be revoked. For example, if someone loses the disk for server A
@@ -84,7 +85,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     // if they then close the region everywhere and then reopen it, we don't want
     // the new pattern to be revoked.
     if (diskStoreID == null) {
-      matches &= revokedTime > id.timeStamp;
+      matches &= revokedTime > id.getTimeStamp();
     }
     return matches;
   }
