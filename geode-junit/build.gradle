@@ -16,6 +16,8 @@
  */
 
 dependencies {
+  compile project(':geode-core')
+
   compile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'
   }
