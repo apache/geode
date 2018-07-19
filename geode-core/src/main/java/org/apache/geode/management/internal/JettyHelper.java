@@ -28,6 +28,7 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -172,6 +173,7 @@ public class JettyHelper {
     webapp.setParentLoaderPriority(false);
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
     webapp.setAttribute(SECURITY_SERVICE_SERVLET_CONTEXT_PARAM, securityService);
+    webapp.addAliasCheck(new AllowSymLinkAliasChecker());
 
     // This is only required for Pulse because in embedded mode, with SSL enabled, Pulse needs to
     // know how to make SSL RMI connections.

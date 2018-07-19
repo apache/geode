@@ -26,17 +26,17 @@ sourceSets {
   }
 }
 
-
+idea {
+  module {
+    testSourceDirs += project.tasks.generateIntegrationTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generateDistributedTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generatePerformanceTestGrammarSource.outputs.files
+  }
+}
 
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-  distributedTestCompile.extendsFrom integrationTestCompile
-  distributedTestRuntime.extendsFrom integrationTestRuntime
-  performanceTestCompile.extendsFrom testCompile
-  performanceTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -178,51 +178,6 @@ sourceSets {
   }
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
-  }
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-    apply plugin: 'idea'
-    idea {
-      module {
-        testSourceDirs += project.sourceSets.integrationTest.java.srcDirs
-        testSourceDirs += project.sourceSets.integrationTest.resources.srcDirs
-      }
-    }
-  }
-  distributedTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/distributedTest/java')
-    }
-    resources.srcDir file('src/distributedTest/resources')
-    apply plugin: 'idea'
-    idea {
-      module {
-        testSourceDirs += project.sourceSets.distributedTest.java.srcDirs
-        testSourceDirs += project.sourceSets.distributedTest.resources.srcDirs
-      }
-    }
-  }
-  performanceTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/performanceTest/java')
-    }
-    resources.srcDir file('src/performanceTest/resources')
-    apply plugin: 'idea'
-    idea {
-      module {
-        testSourceDirs += project.sourceSets.performanceTest.java.srcDirs
-        testSourceDirs += project.sourceSets.performanceTest.resources.srcDirs
-      }
-    }
   }
 }
 

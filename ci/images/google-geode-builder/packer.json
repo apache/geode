@@ -1,0 +1,29 @@
+{
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": ["mkdir -p /tmp/work"]
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "script": "scripts/setup.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "script": "scripts/cache_dependencies.sh"
+    }
+  ],
+  "builders": [
+    {
+      "type": "googlecompute",
+      "project_id": "apachegeode-ci",
+      "source_image_family": "debian-9",
+      "ssh_username": "packer",
+      "zone": "us-central1-f",
+      "image_family": "geode-builder",
+      "image_name": "geode-builder-{{timestamp}}"
+    }
+  ]
+}

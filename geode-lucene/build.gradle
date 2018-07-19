@@ -39,19 +39,6 @@ dependencies {
     testCompile files(project(':geode-core').sourceSets.test.output)
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
-}
-
-configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
-    distributedTestCompile.extendsFrom testCompile
-    distributedTestRuntime.extendsFrom testRuntime
-    performanceTestCompile.extendsFrom testCompile
-    performanceTestRuntime.extendsFrom testRuntime
-}
-
-
-dependencies {
     // TODO build - move dunit framework to shared module.
     integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
     distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)

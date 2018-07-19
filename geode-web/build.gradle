@@ -61,6 +61,12 @@ dependencies {
 
   testRuntime files(war.destinationDir)
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
+
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 //Remove the gradle output directories from the eclipse classpath. These
@@ -71,45 +77,6 @@ eclipse.classpath.file {
     whenMerged { classpath ->
         classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
     }
-}
-idea.module.iml {
-  whenMerged {module ->
-     module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
-  }
-}
-
-configurations {
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-  distributedTestCompile.extendsFrom testCompile
-  distributedTestRuntime.extendsFrom testRuntime
-}
-
-sourceSets {
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-  distributedTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/distributedTest/java')
-    }
-    resources.srcDir file('src/distributedTest/resources')
-  }
-}
-
-dependencies {
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-  integrationTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 distributedTest {
