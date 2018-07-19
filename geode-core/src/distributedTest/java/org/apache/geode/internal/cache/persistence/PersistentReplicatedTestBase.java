@@ -41,7 +41,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
-  protected static final int MAX_WAIT = 30 * 1000;
+  protected static final int MAX_WAIT = 60 * 1000;
   protected static String REGION_NAME = "region";
   protected File diskDir;
   protected static String SAVED_ACK_WAIT_THRESHOLD;
@@ -180,7 +180,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
       fail("Region not created within" + MAX_WAIT);
     }
     if (!future.isAlive() && wait) {
-      fail("Did not expecte region creation to complete");
+      fail("Did not expect region creation to complete");
     }
     if (!wait && future.exceptionOccurred()) {
       throw new RuntimeException(future.getException());
