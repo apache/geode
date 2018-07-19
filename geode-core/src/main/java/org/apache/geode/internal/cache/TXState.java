@@ -1000,7 +1000,7 @@ public class TXState implements TXStateInterface {
    * @see org.apache.geode.internal.cache.TXStateInterface#beforeCompletion()
    */
   @Override
-  public void beforeCompletion() throws SynchronizationCommitConflictException {
+  public synchronized void beforeCompletion() throws SynchronizationCommitConflictException {
     if (this.closed) {
       throw new TXManagerCancelledException();
     }
@@ -1066,7 +1066,7 @@ public class TXState implements TXStateInterface {
    * @see org.apache.geode.internal.cache.TXStateInterface#afterCompletion(int)
    */
   @Override
-  public void afterCompletion(int status) {
+  public synchronized void afterCompletion(int status) {
     this.proxy.getTxMgr().setTXState(null);
     // For commit, beforeCompletion should be called. Otherwise
     // throw FailedSynchronizationException().
