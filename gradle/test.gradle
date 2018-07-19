@@ -126,19 +126,6 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
-  integrationTest {
-    useJUnit {
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-
-    forkEvery 1
-
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    outputs.upToDateWhen{false}
-  }
-
   distributedTest {
     useJUnit {
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
@@ -164,6 +151,16 @@ subprojects {
 
     useJUnit {}
 
+    outputs.upToDateWhen{false}
+  }
+
+  task gfshDistributedTest(type:Test) {
+    useJUnit {
+      includeCategories 'org.apache.geode.test.junit.categories.GfshTest'
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+
+    forkEvery 1
     outputs.upToDateWhen{false}
   }
 
