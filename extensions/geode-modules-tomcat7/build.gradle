@@ -40,10 +40,10 @@ dependencies {
   testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
 
   testCompile project(path: ':geode-junit')
-  testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
 
   integrationTestCompile project(":geode-dunit")
+  integrationTestCompile files(project(':extensions/geode-modules').sourceSets.integrationTest.output)
 
   eclipse.classpath.file {
     whenMerged { classpath ->
