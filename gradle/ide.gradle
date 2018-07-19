@@ -76,7 +76,6 @@ subprojects {
   idea {
     module {
       downloadSources = true
-      testSourceDirs = Collections.emptySet()
     }
   }
 }
