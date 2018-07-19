@@ -760,8 +760,8 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     prop.setProperty(LOCATORS, "");
     ds = getSystem(prop);
 
-    final Cache cache2 = getCache();
-    assertNotNull(cache2);
+    final Cache cacheForLamda = getCache();
+    assertNotNull(cacheForLamda);
 
     AttributesFactory factory1 = new AttributesFactory();
     factory1.setScope(Scope.DISTRIBUTED_ACK);
@@ -769,7 +769,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     factory1.setPoolName(p.getName());
 
     final RegionAttributes attrs1 = factory1.create();
-    assertThatThrownBy(() -> cache2.createRegion(REGION_NAME1, attrs1))
+    assertThatThrownBy(() -> cacheForLamda.createRegion(REGION_NAME1, attrs1))
         .isInstanceOfAny(IllegalStateException.class, DistributedSystemDisconnectedException.class);
   }
 

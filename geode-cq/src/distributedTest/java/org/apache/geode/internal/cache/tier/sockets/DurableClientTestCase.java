@@ -1413,6 +1413,8 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
             clientWasRejected = true;
             continueDrain.countDown();
             break;
+          default:
+            break;
         }
       } catch (InterruptedException e) {
         e.printStackTrace();
