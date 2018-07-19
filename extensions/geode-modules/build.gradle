@@ -28,16 +28,13 @@ dependencies {
   }
   compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
 
+  testCompile project(':geode-junit')
+
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
   testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
-  testCompile project(path: ':geode-junit')
-  // TODO build - move shared source to common library.
-  testCompile files(project(':geode-core').sourceSets.test.output)
-
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
 }
 
 disableMavenPublishing()

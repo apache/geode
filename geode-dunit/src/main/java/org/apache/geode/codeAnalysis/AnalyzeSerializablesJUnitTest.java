@@ -109,7 +109,7 @@ public class AnalyzeSerializablesJUnitTest {
     this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
     assertThat(this.expectedDataSerializablesFile).exists().canRead();
 
-    this.expectedDataSerializables = loadClassesAndMethods(this.expectedDataSerializablesFile);
+    this.expectedDataSerializables = CompiledClassUtils.loadClassesAndMethods(this.expectedDataSerializablesFile);
     Collections.sort(this.expectedDataSerializables);
 
   }
@@ -119,7 +119,7 @@ public class AnalyzeSerializablesJUnitTest {
         getResourceAsFile(InternalDataSerializer.class, expectedSerializablesFileName);
     assertThat(this.expectedSerializablesFile).exists().canRead();
 
-    this.expectedSerializables = loadClassesAndVariables(this.expectedSerializablesFile);
+    this.expectedSerializables = CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesFile);
     Collections.sort(this.expectedSerializables);
   }
 
@@ -166,10 +166,11 @@ public class AnalyzeSerializablesJUnitTest {
         + actualDataSerializablesFile.getAbsolutePath());
 
     List<ClassAndMethods> actualDataSerializables = findToDatasAndFromDatas();
-    storeClassesAndMethods(actualDataSerializables, actualDataSerializablesFile);
+    CompiledClassUtils.storeClassesAndMethods(actualDataSerializables, actualDataSerializablesFile);
 
     String diff =
-        diffSortedClassesAndMethods(this.expectedDataSerializables, actualDataSerializables);
+        CompiledClassUtils
+            .diffSortedClassesAndMethods(this.expectedDataSerializables, actualDataSerializables);
     if (!diff.isEmpty()) {
       System.out.println(
           "++++++++++++++++++++++++++++++testDataSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
@@ -191,9 +192,10 @@ public class AnalyzeSerializablesJUnitTest {
         + actualSerializablesFile.getAbsolutePath());
 
     List<ClassAndVariables> actualSerializables = findSerializables();
-    storeClassesAndVariables(actualSerializables, actualSerializablesFile);
+    CompiledClassUtils.storeClassesAndVariables(actualSerializables, actualSerializablesFile);
 
-    String diff = diffSortedClassesAndVariables(this.expectedSerializables, actualSerializables);
+    String diff = CompiledClassUtils
+        .diffSortedClassesAndVariables(this.expectedSerializables, actualSerializables);
     if (!diff.isEmpty()) {
       System.out.println(
           "++++++++++++++++++++++++++++++testSerializables found discrepancies++++++++++++++++++++++++++++++++++++");
@@ -501,7 +503,7 @@ public class AnalyzeSerializablesJUnitTest {
   }
 
   private void loadClassesFromBuild(File buildDir, List<String> excludedClasses) {
-    Map<String, CompiledClass> newClasses = parseClassFilesInDir(buildDir);
+    Map<String, CompiledClass> newClasses = CompiledClassUtils.parseClassFilesInDir(buildDir);
     removeExclusions(newClasses, excludedClasses);
     this.classes.putAll(newClasses);
   }

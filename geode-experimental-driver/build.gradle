@@ -23,8 +23,6 @@ dependencies {
     testCompile project(':geode-core')
     testCompile project(':geode-junit')
     testCompile project(':geode-protobuf')
-    testCompile files(project(':geode-core').sourceSets.test.output)
 
-    // TODO build - move dunit framework to shared module.
-    integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+    integrationTestCompile project(":geode-dunit")
 }

@@ -44,6 +44,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 
 @SuppressWarnings("serial")
@@ -73,7 +74,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    disconnectAllFromDS();
+    JUnit4DistributedTestCase.disconnectAllFromDS();
 
     Host host = Host.getHost(0);
     managingNode = host.getVM(0);
@@ -164,7 +165,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
 
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
-    props.setProperty(LOG_FILE, getTestMethodName() + "-.log");
+    props.setProperty(LOG_FILE, JUnit4DistributedTestCase.getTestMethodName() + "-.log");
 
     Cache cache = getCache(props);
     managementService = ManagementService.getManagementService(cache);

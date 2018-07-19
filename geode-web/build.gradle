@@ -54,7 +54,6 @@ dependencies {
   testCompile project(':geode-core')
   testCompile project(':geode-junit')
   testRuntime project(':geode-common')
-  testCompile files(project(':geode-core').sourceSets.test.output)
 
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
@@ -63,11 +62,11 @@ dependencies {
   testRuntime files(war.destinationDir)
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-  integrationTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
+
+  distributedTestCompile project(":geode-dunit")
+
+  upgradeTestCompile project(":geode-dunit")
 }
 
 //Remove the gradle output directories from the eclipse classpath. These
