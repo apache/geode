@@ -16,12 +16,12 @@
 # limitations under the License.
 
 set -x
+set -e
 
 export CHROME_DRIVER_VERSION=2.35
 export GRADLE_USER_HOME=/usr/local/maven_files
 export LOCAL_USER=geode
 
-chmod +x /usr/local/bin/initdocker
 mkdir -p ${GRADLE_USER_HOME}
 apt-get update
 apt-get install -y --no-install-recommends \
