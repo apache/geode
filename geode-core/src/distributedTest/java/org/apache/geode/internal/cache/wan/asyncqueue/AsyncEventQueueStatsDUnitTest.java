@@ -122,14 +122,22 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue(
         getTestMethodName() + "_RR", "ln1,ln2", isOffHeap()));
 
-    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm2.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm3.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm4.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
-    vm2.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
-    vm3.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
-    vm4.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm2.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm3.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm4.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
+    vm2.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
+    vm3.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
+    vm4.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
