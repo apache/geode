@@ -50,7 +50,7 @@ public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMS
   private final int startThrottleSize;
 
   /** The current memory footprint of the queue */
-  private volatile AtomicInteger memSize = new AtomicInteger();
+  private final AtomicInteger memSize = new AtomicInteger();
 
   /** Creates a new instance of ThrottlingMessageQueue */
   public ThrottlingMemLinkedQueueWithDMStats(int maxMemSize, int startThrottleMemSize, int maxSize,
