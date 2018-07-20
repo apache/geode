@@ -27,10 +27,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
@@ -77,7 +75,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
@@ -282,120 +279,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
     return serviceState.getStatus();
   }
 
-  protected void writePid(final File pidFile, final int pid) throws IOException {
-    assertTrue("The PID file must actually exist!", pidFile != null && pidFile.isFile());
-
-    FileWriter writer = null;
-
-    try {
-      writer = new FileWriter(pidFile, false);
-      writer.write(String.valueOf(pid));
-      writer.write(System.getProperty("line.separator"));
-      writer.flush();
-    } finally {
-      IOUtils.close(writer);
-    }
-  }
-
-  @Test
-  public void test000StartLocatorCapturesOutputOnError() throws IOException {
-    final int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-
-    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
-    File workingDirectory = temporaryFolder.newFolder(pathname);
-
-    assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
-
-    File pidFile = new File(workingDirectory, ProcessType.LOCATOR.getPidFileName());
-
-    assertTrue(pidFile.createNewFile());
-
-    writePid(pidFile, getPidOrOne());
-    pidFile.deleteOnExit();
-
-    assertTrue(pidFile.isFile());
-
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_LOCATOR);
-
-    command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, pathname);
-    command.addOption(CliStrings.START_LOCATOR__DIR, workingDirectory.getCanonicalPath());
-    command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
-    command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION,
-        Boolean.FALSE.toString());
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX
-        + "jmx-manager-port=" + AvailablePortHelper.getRandomAvailableTCPPort());
-
-    CommandResult result = executeCommand(command.toString());
-
-    assertNotNull(result);
-    assertEquals(Result.Status.ERROR, result.getStatus());
-
-    String resultString = toString(result);
-
-    assertTrue(resultString,
-        resultString.contains(
-            "Exception in thread \"main\" java.lang.RuntimeException: A PID file already exists and a Locator may be running in "
-                + IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(workingDirectory)));
-    assertTrue(resultString,
-        resultString.contains(
-            "Caused by: org.apache.geode.internal.process.FileAlreadyExistsException: Pid file already exists: "
-                + IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(pidFile)));
-  }
-
-  /*
-   * This method makes an effort to get the PID of the running process. If it is unable to determine
-   * accurately, it simply returns 1.
-   */
-  private int getPidOrOne() {
-    int pid = 1;
-    String[] name = ManagementFactory.getRuntimeMXBean().getName().split("@");
-    if (name.length > 1) {
-      try {
-        pid = Integer.parseInt(name[0]);
-      } catch (NumberFormatException nex) {
-        // Ignored
-      }
-    }
-
-    return pid;
-  }
-
-  @Test
-  public void test001StartLocatorFailsFastOnMissingGemFirePropertiesFile() throws IOException {
-    String gemfirePropertiesPathname = "/path/to/missing/gemfire.properties";
-
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_LOCATOR);
-    String pathName = getClass().getSimpleName().concat("_").concat(getTestMethodName());
-    final File workingDirectory = temporaryFolder.newFolder(pathName);
-
-    command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, pathName);
-    command.addOption(CliStrings.START_LOCATOR__DIR, workingDirectory.getCanonicalPath());
-    command.addOption(CliStrings.START_LOCATOR__PORT, "0");
-    command.addOption(CliStrings.START_LOCATOR__PROPERTIES, gemfirePropertiesPathname);
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager=false");
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-start=false");
-
-    CommandResult result = executeCommand(command.toString());
-
-    assertNotNull(result);
-    assertEquals(Result.Status.ERROR, result.getStatus());
-
-    String resultString = toString(result);
-
-    assertTrue(resultString,
-        resultString
-            .contains(MessageFormat.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
-                StringUtils.EMPTY, gemfirePropertiesPathname)));
-  }
-
   /**
    * Test to verify GEODE-2138
    *
@@ -444,42 +327,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
       stopLocator(workingDirectoryLoc);
       stopServer(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectorySer));
     }
-  }
-
-  @Test
-  public void test002StartLocatorFailsFastOnMissingGemFireSecurityPropertiesFile()
-      throws IOException {
-    String gemfireSecurityPropertiesPathname = "/path/to/missing/gemfire-security.properties";
-    String pathName = getClass().getSimpleName().concat("_").concat(getTestMethodName());
-    final File workingDirectory = temporaryFolder.newFolder(pathName);
-
-    CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_LOCATOR);
-
-    command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, pathName);
-    command.addOption(CliStrings.START_LOCATOR__DIR, workingDirectory.getCanonicalPath());
-    command.addOption(CliStrings.START_LOCATOR__PORT, "0");
-    command.addOption(CliStrings.START_LOCATOR__SECURITY_PROPERTIES,
-        gemfireSecurityPropertiesPathname);
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager=false");
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=0");
-    command.addOption(CliStrings.START_LOCATOR__J,
-        "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-start=false");
-
-    CommandResult result = executeCommand(command.toString());
-
-    assertNotNull(result);
-    assertEquals(Result.Status.ERROR, result.getStatus());
-
-    String resultString = toString(result);
-
-    assertTrue(resultString,
-        resultString
-            .contains(MessageFormat.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
-                "Security ", gemfireSecurityPropertiesPathname)));
   }
 
   @Test
@@ -579,128 +426,6 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
         resultString
             .contains(MessageFormat.format(CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
                 "Security ", gemfireSecuritiesPropertiesFile)));
-  }
-
-  @Test
-  public void test006StartLocatorInRelativeDirectory() {
-    final int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-
-    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
-    File workingDirectory = new File(pathname);
-
-    assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
-
-    try {
-      CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_LOCATOR);
-
-      command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, pathname);
-      command.addOption(CliStrings.START_LOCATOR__CONNECT, Boolean.FALSE.toString());
-      command.addOption(CliStrings.START_LOCATOR__DIR, pathname);
-      command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
-      command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION,
-          Boolean.FALSE.toString());
-      command.addOption(CliStrings.START_LOCATOR__J,
-          "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
-      command.addOption(CliStrings.START_LOCATOR__J, "-D" + DistributionConfig.GEMFIRE_PREFIX
-          + "jmx-manager-port=" + AvailablePortHelper.getRandomAvailableTCPPort());
-
-      CommandResult result = executeCommand(command.toString());
-
-      assertNotNull(result);
-      assertEquals(Result.Status.OK, result.getStatus());
-
-      String locatorOutput = toString(result);
-
-      assertNotNull(locatorOutput);
-      assertTrue("Locator output was: " + locatorOutput, locatorOutput.contains(
-          "Locator in " + IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(workingDirectory)));
-    } finally {
-      stopLocator(workingDirectory);
-    }
-  }
-
-  @Test
-  public void test007StatusLocatorUsingMemberNameIDWhenGfshIsNotConnected() {
-    CommandResult result =
-        executeCommand(CliStrings.STATUS_LOCATOR + " --name=" + getTestMethodName());
-
-    assertNotNull(result);
-    assertEquals(Result.Status.ERROR, result.getStatus());
-    assertEquals(
-        CliStrings.format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Locator"),
-        StringUtils.trim(toString(result)));
-  }
-
-  @Test
-  public void test008StatusLocatorUsingMemberName() throws IOException {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-
-    final int jmxManagerPort = ports[0];
-    final int locatorPort = ports[1];
-
-    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
-    File workingDirectory = temporaryFolder.newFolder(pathname);
-
-    assertTrue(workingDirectory.isDirectory() || workingDirectory.mkdir());
-
-    try {
-      CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_LOCATOR);
-
-      command.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, pathname);
-      command.addOption(CliStrings.START_LOCATOR__CONNECT, Boolean.FALSE.toString());
-      command.addOption(CliStrings.START_LOCATOR__DIR, workingDirectory.getCanonicalPath());
-      command.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
-      command.addOption(CliStrings.START_LOCATOR__ENABLE__SHARED__CONFIGURATION,
-          Boolean.FALSE.toString());
-      command.addOption(CliStrings.START_LOCATOR__FORCE, Boolean.TRUE.toString());
-      command.addOption(CliStrings.START_LOCATOR__J,
-          "-D" + DistributionConfig.GEMFIRE_PREFIX + "http-service-port=0");
-      command.addOption(CliStrings.START_LOCATOR__J,
-          "-D" + DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port=" + jmxManagerPort);
-
-      CommandResult result = executeCommand(command.toString());
-
-      assertNotNull(result);
-      assertEquals(Result.Status.OK, result.getStatus());
-
-      LocatorLauncher locatorLauncher = new LocatorLauncher.Builder()
-          .setCommand(LocatorLauncher.Command.STATUS).setBindAddress(null).setPort(locatorPort)
-          .setWorkingDirectory(workingDirectory.getPath()).build();
-
-      assertNotNull(locatorLauncher);
-
-      LocatorState expectedLocatorState =
-          locatorLauncher.waitOnStatusResponse(60, 10, TimeUnit.SECONDS);
-
-      assertNotNull(expectedLocatorState);
-      assertEquals(Status.ONLINE, expectedLocatorState.getStatus());
-
-      result = executeCommand(
-          String.format("%1$s --locator=localhost[%2$d]", CliStrings.CONNECT, locatorPort));
-
-      assertNotNull(result);
-      assertEquals(Result.Status.OK, result.getStatus());
-
-      result = executeCommand(
-          String.format("%1$s --name=invalidLocatorMemberName", CliStrings.STATUS_LOCATOR));
-
-      assertNotNull(result);
-      assertEquals(Result.Status.ERROR, result.getStatus());
-      assertEquals(
-          CliStrings.format(CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE,
-              "invalidLocatorMemberName"),
-          StringUtils.trim(toString(result)));
-
-      result =
-          executeCommand(String.format("%1$s --name=%2$s", CliStrings.STATUS_LOCATOR, pathname));
-
-      assertNotNull(result);
-      assertEquals(Result.Status.OK, result.getStatus());
-      assertTrue(serviceStateStatusStringNormalized(toString(result))
-          .contains(serviceStateStatusStringNormalized(expectedLocatorState)));
-    } finally {
-      stopLocator(workingDirectory);
-    }
   }
 
   @Test
