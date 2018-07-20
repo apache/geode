@@ -37,6 +37,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
@@ -163,7 +164,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "-J-Xmx" + Runtime.getRuntime().maxMemory(), "-J-Dgemfire.use-cluster-configuration=false",
         "-J-Dgemfire.locators=\"\"", "log-file=" + this.logFileName,
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
-        "-classpath=" + this.classpath);
+        "-classpath=" + getManifestJarFromClasspath());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status",
         "-dir=" + this.directoryPath);
@@ -181,7 +182,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "cache-xml-file=" + this.cacheXmlFile.getAbsolutePath(),
         "log-file=" + this.logFile.getAbsolutePath(), "-J-Dgemfire.use-cluster-configuration=false",
         "-J-Dgemfire.locators=\"\"", "-server-port=" + this.serverPort,
-        "-dir=" + this.directory.getAbsolutePath(), "-classpath=" + this.classpath);
+        "-dir=" + this.directory.getAbsolutePath(), "-classpath=" + getManifestJarFromClasspath());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status",
         "-dir=" + this.directory.getAbsolutePath());
@@ -204,7 +205,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
             "log-file=" + this.logFileName, "log-level=info",
             "-J-Dgemfire.use-cluster-configuration=false", "-J-Dgemfire.locators=\"\"",
             "-server-port=" + this.serverPort, "-dir=" + this.directoryPath,
-            "-classpath=" + this.classpath})
+            "-classpath=" + getManifestJarFromClasspath()})
         .build();
 
     this.processWrapper.execute();
@@ -261,7 +262,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "-J-Xmx" + Runtime.getRuntime().maxMemory(), "-J-Dgemfire.use-cluster-configuration=false",
         "-J-Dgemfire.locators=\"\"", "log-file=" + this.logFileName,
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
-        "-classpath=" + this.classpath, "-rebalance");
+        "-classpath=" + getManifestJarFromClasspath(), "-rebalance");
 
     await().atMost(2, MINUTES).until(() -> assertThat(this.status.isStarted()).isTrue());
     await().atMost(2, MINUTES).until(() -> assertThat(this.status.isFinished()).isTrue());
@@ -286,7 +287,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "-J-Xmx" + Runtime.getRuntime().maxMemory(), "-J-Dgemfire.use-cluster-configuration=false",
         "-J-Dgemfire.locators=\"\"", "log-file=" + this.logFileName,
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
-        "-classpath=" + this.classpath, "-rebalance");
+        "-classpath=" + getManifestJarFromClasspath(), "-rebalance");
 
     await().atMost(2, MINUTES).until(() -> assertThat(this.status.isStarted()).isTrue());
     await().atMost(2, MINUTES).until(() -> assertThat(this.status.isFinished()).isTrue());
@@ -306,7 +307,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "-J-Xmx" + Runtime.getRuntime().maxMemory(), "-J-Dgemfire.use-cluster-configuration=false",
         "-J-Dgemfire.locators=\"\"", "log-file=" + this.logFileName,
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
-        "-classpath=" + this.classpath);
+        "-classpath=" + getManifestJarFromClasspath());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status", "-dir=" + this.directory);
 
@@ -336,7 +337,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "-J-Xmx" + Runtime.getRuntime().maxMemory(), "-J-Dgemfire.use-cluster-configuration=false",
         "-J-Dgemfire.locators=\"\"", "log-file=" + this.logFileName,
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
-        "-classpath=" + this.classpath, "-server-port=" + this.commandPort);
+        "-classpath=" + getManifestJarFromClasspath(), "-server-port=" + this.commandPort);
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status", "-dir=" + this.directory);
 
@@ -368,7 +369,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "-J-Xmx" + Runtime.getRuntime().maxMemory(), "-J-Dgemfire.use-cluster-configuration=false",
         "-J-Dgemfire.locators=\"\"", "log-file=" + this.logFileName,
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
-        "-classpath=" + this.classpath, "-server-port=" + this.commandPort,
+        "-classpath=" + getManifestJarFromClasspath(), "-server-port=" + this.commandPort,
         "-server-bind-address=" + InetAddress.getLocalHost().getHostName());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status", "-dir=" + this.directory);
@@ -388,6 +389,11 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     region.put(1, 1); // put should be successful
 
     execAndValidate("The CacheServer has stopped\\.", "stop", "-dir=" + this.directory);
+  }
+
+  private String getManifestJarFromClasspath() throws IOException {
+    List<String> parts = Arrays.asList(this.classpath.split(File.pathSeparator));
+    return ProcessWrapper.createManifestJar(parts, temporaryFolder.newFolder().getAbsolutePath());
   }
 
   private void unexportObject(final Remote object) {
