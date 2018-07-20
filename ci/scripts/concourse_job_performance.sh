@@ -31,6 +31,7 @@ pip3 install requests
 pip3 install ansicolors
 pip3 install sseclient-py
 pip3 install urllib3
+pip3 install tqdm
 set -x
 python3 geode-ci/ci/bin/concourse_job_performance.py ${CONCOURSE_URL} ${CONCOURSE_PIPELINE} ${CONCOURSE_JOB} ${COUNT}
 set +x
