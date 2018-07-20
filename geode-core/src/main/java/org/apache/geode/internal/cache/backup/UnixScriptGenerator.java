@@ -39,9 +39,9 @@ class UnixScriptGenerator implements ScriptGenerator {
   @Override
   public void writeCopyDirectoryContents(final BufferedWriter writer, final File backup,
       final File original, final boolean backupHasFiles) throws IOException {
-    writer.write("mkdir -p '" + original + "'");
-    writer.newLine();
     if (backupHasFiles) {
+      writer.write("mkdir -p '" + original + "'");
+      writer.newLine();
       writer.write("cp -rp '" + backup + "'/* '" + original + "'");
       writer.newLine();
     }
