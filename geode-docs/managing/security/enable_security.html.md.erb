@@ -34,6 +34,12 @@ For example:
 security-manager = com.example.security.MySecurityManager
 ```
 
+To ensure that the `security-manager` property is applied consistently across a cluster, follow these guidelines:
+
+- Specify the `security-manager` property in a properties file, such as `gemfire.properties`, **not** in a cluster configuration file (such as `cluster.properties`).
+- Specify the properties file when you start the first locator for the cluster. The locator will propagate the value to all members (locators and servers) that follow.
+- If you must specify the `security-manager` property for servers (neither necessary nor recommended) make sure its value is exactly identical to that specified for the first locator.
+
 All components of the system invoke the same callbacks.
 Here are descriptions of the components and the connections that they
 make with the system.
