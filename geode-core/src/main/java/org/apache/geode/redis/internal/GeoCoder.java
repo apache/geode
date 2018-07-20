@@ -23,8 +23,6 @@ import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class GeoCoder {
     /**
@@ -134,17 +132,17 @@ public class GeoCoder {
     }
 
     /**
-     *  Return a set of areas (center + 8) that are able to cover a range query
+     *  Return a set of hashes (center + 8) that are able to cover a range query
      *  for the specified position and radius.
     */
-    List<HashArea> geohashGetAreasByRadius(double longitude, double latitude, double radiusMeters) throws CoderException {
+   public static HashNeighbors geoHashGetAreasByRadius(double longitude, double latitude, double radiusMeters) throws CoderException {
 //        HashArea boundingBox = geoHashBoundingBox(longitude, latitude, radiusMeters);
         int steps = geohashEstimateStepsByRadius(radiusMeters, latitude, LEN_GEOHASH/2);
         String hash = geoHash(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
                 2 * steps);
         HashNeighbors neighbors  = getNeighbors(hash);
 
-        return neighbors.get().stream().map(n -> geoHashTile(n)).collect(Collectors.toList());
+        return neighbors;
     }
 
     /**
@@ -310,13 +308,15 @@ public class GeoCoder {
         int e = 0;
         for (int d = 0; d < hashBin.length; d++) {
             digitBuilder.append(hashBin[d]);
-            if (e == 4) {
+            if (e == 4 || d == hashBin.length - 1) {
                 hashStrBuilder.append(base32(Integer.parseInt(digitBuilder.toString(), 2)));
                 digitBuilder = new StringBuilder();
                 e = 0;
-            } else if (d == hashBin.length - 1) {
-                hashStrBuilder.append('0');
-            } else {
+            }
+//            else if (d == hashBin.length - 1) {
+//                hashStrBuilder.append('0');
+//            }
+            else {
                 e++;
             }
         }

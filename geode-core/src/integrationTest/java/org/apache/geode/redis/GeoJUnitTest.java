@@ -172,8 +172,8 @@ public class GeoJUnitTest {
     assertTrue(l == 2L);
 
     List<GeoRadiusResponse> gr = jedis.georadius("Sicily", 15.0, 37.0, 100, GeoUnit.KM);
-    assertEquals(gr.size(), 1);
-    assertEquals(gr.get(0).getMemberByString(), "Catania");
+    assertEquals(1, gr.size());
+    assertEquals("Catania", gr.get(0).getMemberByString());
   }
 
   @After
