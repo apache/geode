@@ -15,8 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.List;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -25,6 +23,8 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.StringWrapper;
+
+import java.util.List;
 
 public class GeoDistExecutor extends GeoSortedSetExecutor {
 
@@ -47,7 +47,7 @@ public class GeoDistExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    Double dist = GeoCoder.geoDist(hw1.toString(), hw2.toString());
+    Double dist = GeoCoder.geoDist(hw1.toString().toCharArray(), hw2.toString().toCharArray());
 
     if (commandElems.size() == 5) {
       String unit = new String(commandElems.get(4));

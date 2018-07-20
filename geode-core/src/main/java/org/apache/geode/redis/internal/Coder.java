@@ -14,6 +14,11 @@
  */
 package org.apache.geode.redis.internal;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.query.Struct;
+
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -21,12 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-
-import org.apache.geode.cache.EntryDestroyedException;
-import org.apache.geode.cache.query.Struct;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs
@@ -108,77 +107,63 @@ public class Coder {
    */
   public static final String N_INF = "-inf";
 
-  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, byte[] value) {
-    ByteBuf response = alloc.buffer(value.length + 20);
-    response.writeByte(BULK_STRING_ID);
-    response.writeBytes(intToBytes(value.length));
-    response.writeBytes(CRLFar);
-    response.writeBytes(value);
-    response.writeBytes(CRLFar);
-    return response;
-  }
+  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, Object v) {
+    ByteBuf response;
+    byte[] toWrite;
 
-  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, double value) {
-    ByteBuf response = alloc.buffer();
-    byte[] doub = doubleToBytes(value);
-    response.writeByte(BULK_STRING_ID);
-    response.writeBytes(intToBytes(doub.length));
-    response.writeBytes(CRLFar);
-    response.writeBytes(doub);
-    response.writeBytes(CRLFar);
-    return response;
-  }
-
-  public static ByteBuf getBulkStringResponse(ByteBufAllocator alloc, String value) {
-    byte[] valueAr = stringToBytes(value);
-    int length = valueAr == null ? 0 : valueAr.length;
-    ByteBuf response = alloc.buffer(length + 20);
-    response.writeByte(BULK_STRING_ID);
-    response.writeBytes(intToBytes(length));
-    response.writeBytes(CRLFar);
-    response.writeBytes(valueAr);
-    response.writeBytes(CRLFar);
-    return response;
-  }
-
-  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, List<String> items) {
-    Iterator<String> it = items.iterator();
-    ByteBuf response = alloc.buffer();
-    response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
-    response.writeBytes(CRLFar);
-    while (it.hasNext()) {
-      String next = it.next();
-      if (next == null) {
-        response.writeBytes(bNIL);
-      } else {
-        response.writeByte(BULK_STRING_ID);
-        response.writeBytes(intToBytes(next.length()));
-        response.writeBytes(CRLFar);
-        response.writeBytes(stringToBytes(next));
-        response.writeBytes(CRLFar);
-      }
+    if (v == null) {
+      response = alloc.buffer();
+      response.writeBytes(bNIL);
+      return response;
+    } else if (v instanceof byte[]) {
+      byte[] value = (byte[]) v;
+      response = alloc.buffer(value.length + 20);
+      toWrite = value;
+    } else if (v instanceof ByteArrayWrapper) {
+      byte[] value = ((ByteArrayWrapper) v).toBytes();
+      response = alloc.buffer(value.length + 20);
+      toWrite = value;
+    } else if (v instanceof Double) {
+      response = alloc.buffer();
+      toWrite = doubleToBytes(((Double) v).doubleValue());
+    } else if (v instanceof String) {
+      String value = (String) v;
+      response = alloc.buffer(value.length() + 20);
+      toWrite = stringToBytes(value);
+    } else {
+      response = alloc.buffer();
+      response.writeBytes(bNIL);
+      return response;
     }
+
+    response.writeByte(BULK_STRING_ID);
+    response.writeBytes(intToBytes(toWrite.length));
+    response.writeBytes(CRLFar);
+    response.writeBytes(toWrite);
+    response.writeBytes(CRLFar);
+
     return response;
   }
 
-  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc,
-      Collection<ByteArrayWrapper> items) {
-    Iterator<ByteArrayWrapper> it = items.iterator();
+  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, Collection<?> items) {
+    Iterator<?> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
     while (it.hasNext()) {
-      ByteArrayWrapper nextWrapper = it.next();
-      if (nextWrapper != null) {
-        response.writeByte(BULK_STRING_ID);
-        response.writeBytes(intToBytes(nextWrapper.length()));
-        response.writeBytes(CRLFar);
-        response.writeBytes(nextWrapper.toBytes());
-        response.writeBytes(CRLFar);
-      } else
-        response.writeBytes(getNilResponse(alloc));
+      Object next = it.next();
+
+      if (next instanceof Collection) {
+        Collection<?> nextItems = (Collection<?>)next;
+        ByteBuf tmp = getBulkStringArrayResponse(alloc, nextItems);
+        response.writeBytes(tmp);
+        tmp.release();
+      } else {
+        ByteBuf tmp = getBulkStringResponse(alloc, next);
+        response.writeBytes(tmp);
+        tmp.release();
+      }
     }
 
     return response;
@@ -226,6 +211,7 @@ public class Coder {
 
   public static ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
     ByteBuf response = alloc.buffer();
+
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(2));
     response.writeBytes(CRLFar);

@@ -266,6 +266,12 @@ public enum SortedSetQuery {
           + ".entrySet entry ORDER BY entry.value desc, entry.key desc LIMIT $1";
     }
   },
+  GEORADIUS {
+    public String getQueryString(String fullpath) {
+      return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
+              + ".entries entry WHERE entry.value.toString LIKE $1 ORDER BY entry.value asc";
+    }
+  },
   ZRANK {
     public String getQueryString(String fullpath) {
       return "SELECT COUNT(*) FROM " + fullpath

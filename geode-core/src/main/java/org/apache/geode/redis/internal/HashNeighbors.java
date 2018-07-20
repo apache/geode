@@ -35,6 +35,7 @@ public class HashNeighbors {
                 .asList(center, west, east, north, south, northwest, northeast, southwest, southeast)
                 .stream()
                 .filter(n -> n != null)
+                .distinct()
                 .collect(Collectors.toList());
     }
 }

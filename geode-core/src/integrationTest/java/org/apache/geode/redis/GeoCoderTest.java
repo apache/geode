@@ -30,16 +30,16 @@ public class GeoCoderTest {
     String hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(), Double.toString(38.115556).getBytes(), 60);
     assertEquals("sqc8b49rnyte", hash);
     hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(), Double.toString(38.115556).getBytes(), 52);
-    assertEquals("sqc8b49rny0", hash);
+    assertEquals("sqc8b49rny3", hash);
     hash = GeoCoder.geoHash(Double.toString(15.087269).getBytes(), Double.toString(37.502669).getBytes(), 52);
     assertEquals("sqdtr74hyu0", hash);
     hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(), Double.toString(38.115556).getBytes(), 6);
-    assertEquals("s0", hash);
+    assertEquals("s1", hash);
   }
 
   @Test
   public void testGeoPos() throws CoderException {
-    GeoCoord pos = GeoCoder.geoPos("sqc8b49rnyte");
+    GeoCoord pos = GeoCoder.geoPos(GeoCoder.hashToBits("sqc8b49rnyte"));
     assertEquals(13.361389, pos.getLongitude(), 0.000001);
     assertEquals(38.115556, pos.getLatitude(), 0.000001);
   }
@@ -62,82 +62,82 @@ public class GeoCoderTest {
 
   @Test
   public void testGetNeighbors() throws CoderException {
-    HashNeighbors hn1 = GeoCoder.getNeighbors("sq");
-    assertEquals("sq", hn1.center);
-    assertEquals("sn", hn1.west);
-    assertEquals("sw", hn1.east);
-    assertEquals("sr", hn1.north);
-    assertEquals("sm", hn1.south);
-    assertEquals("sp", hn1.northwest);
-    assertEquals("sx", hn1.northeast);
-    assertEquals("sj", hn1.southwest);
-    assertEquals("st", hn1.southeast);
+    HashNeighbors hn1 = GeoCoder.getNeighbors(GeoCoder.hashToBits("sq"));
+    assertEquals("sq", GeoCoder.bitsToHash(hn1.center.toCharArray()));
+    assertEquals("sn", GeoCoder.bitsToHash(hn1.west.toCharArray()));
+    assertEquals("sw", GeoCoder.bitsToHash(hn1.east.toCharArray()));
+    assertEquals("sr", GeoCoder.bitsToHash(hn1.north.toCharArray()));
+    assertEquals("sm", GeoCoder.bitsToHash(hn1.south.toCharArray()));
+    assertEquals("sp", GeoCoder.bitsToHash(hn1.northwest.toCharArray()));
+    assertEquals("sx", GeoCoder.bitsToHash(hn1.northeast.toCharArray()));
+    assertEquals("sj", GeoCoder.bitsToHash(hn1.southwest.toCharArray()));
+    assertEquals("st", GeoCoder.bitsToHash(hn1.southeast.toCharArray()));
 
-    HashNeighbors hn2 = GeoCoder.getNeighbors("s");
-    assertEquals("s", hn2.center);
-    assertEquals("e", hn2.west);
-    assertEquals("t", hn2.east);
-    assertEquals("u", hn2.north);
-    assertEquals("k", hn2.south);
-    assertEquals("g", hn2.northwest);
-    assertEquals("v", hn2.northeast);
-    assertEquals("7", hn2.southwest);
-    assertEquals("m", hn2.southeast);
+    HashNeighbors hn2 = GeoCoder.getNeighbors(GeoCoder.hashToBits("s"));
+    assertEquals("s", GeoCoder.bitsToHash(hn2.center.toCharArray()));
+    assertEquals("e", GeoCoder.bitsToHash(hn2.west.toCharArray()));
+    assertEquals("t", GeoCoder.bitsToHash(hn2.east.toCharArray()));
+    assertEquals("u", GeoCoder.bitsToHash(hn2.north.toCharArray()));
+    assertEquals("k", GeoCoder.bitsToHash(hn2.south.toCharArray()));
+    assertEquals("g", GeoCoder.bitsToHash(hn2.northwest.toCharArray()));
+    assertEquals("v", GeoCoder.bitsToHash(hn2.northeast.toCharArray()));
+    assertEquals("7", GeoCoder.bitsToHash(hn2.southwest.toCharArray()));
+    assertEquals("m", GeoCoder.bitsToHash(hn2.southeast.toCharArray()));
 
     // Test boundary conditions at the poles
-    HashNeighbors hn3 = GeoCoder.getNeighbors("c");
-    assertEquals("c", hn3.center);
-    assertEquals("b", hn3.west);
-    assertEquals("f", hn3.east);
-    assertEquals("c", hn3.north);
-    assertEquals("9", hn3.south);
-    assertEquals("b", hn3.northwest);
-    assertEquals("f", hn3.northeast);
-    assertEquals("8", hn3.southwest);
-    assertEquals("d", hn3.southeast);
+    HashNeighbors hn3 = GeoCoder.getNeighbors(GeoCoder.hashToBits("c"));
+    assertEquals("c", GeoCoder.bitsToHash(hn3.center.toCharArray()));
+    assertEquals("b", GeoCoder.bitsToHash(hn3.west.toCharArray()));
+    assertEquals("f", GeoCoder.bitsToHash(hn3.east.toCharArray()));
+    assertEquals("c", GeoCoder.bitsToHash(hn3.north.toCharArray()));
+    assertEquals("9", GeoCoder.bitsToHash(hn3.south.toCharArray()));
+    assertEquals("b", GeoCoder.bitsToHash(hn3.northwest.toCharArray()));
+    assertEquals("f", GeoCoder.bitsToHash(hn3.northeast.toCharArray()));
+    assertEquals("8", GeoCoder.bitsToHash(hn3.southwest.toCharArray()));
+    assertEquals("d", GeoCoder.bitsToHash(hn3.southeast.toCharArray()));
 
-    HashNeighbors hn4 = GeoCoder.getNeighbors("1");
-    assertEquals("1", hn4.center);
-    assertEquals("0", hn4.west);
-    assertEquals("4", hn4.east);
-    assertEquals("3", hn4.north);
-    assertEquals("1", hn4.south);
-    assertEquals("2", hn4.northwest);
-    assertEquals("6", hn4.northeast);
-    assertEquals("0", hn4.southwest);
-    assertEquals("4", hn4.southeast);
+    HashNeighbors hn4 = GeoCoder.getNeighbors(GeoCoder.hashToBits("1"));
+    assertEquals("1", GeoCoder.bitsToHash(hn4.center.toCharArray()));
+    assertEquals("0", GeoCoder.bitsToHash(hn4.west.toCharArray()));
+    assertEquals("4", GeoCoder.bitsToHash(hn4.east.toCharArray()));
+    assertEquals("3", GeoCoder.bitsToHash(hn4.north.toCharArray()));
+    assertEquals("1", GeoCoder.bitsToHash(hn4.south.toCharArray()));
+    assertEquals("2", GeoCoder.bitsToHash(hn4.northwest.toCharArray()));
+    assertEquals("6", GeoCoder.bitsToHash(hn4.northeast.toCharArray()));
+    assertEquals("0", GeoCoder.bitsToHash(hn4.southwest.toCharArray()));
+    assertEquals("4", GeoCoder.bitsToHash(hn4.southeast.toCharArray()));
 
     // Test boundary conditions at international date line
-    HashNeighbors hn5 = GeoCoder.getNeighbors("2");
-    assertEquals("2", hn5.center);
-    assertEquals("r", hn5.west);
-    assertEquals("3", hn5.east);
-    assertEquals("8", hn5.north);
-    assertEquals("0", hn5.south);
-    assertEquals("x", hn5.northwest);
-    assertEquals("9", hn5.northeast);
-    assertEquals("p", hn5.southwest);
-    assertEquals("1", hn5.southeast);
+    HashNeighbors hn5 = GeoCoder.getNeighbors(GeoCoder.hashToBits("2"));
+    assertEquals("2", GeoCoder.bitsToHash(hn5.center.toCharArray()));
+    assertEquals("r", GeoCoder.bitsToHash(hn5.west.toCharArray()));
+    assertEquals("3", GeoCoder.bitsToHash(hn5.east.toCharArray()));
+    assertEquals("8", GeoCoder.bitsToHash(hn5.north.toCharArray()));
+    assertEquals("0", GeoCoder.bitsToHash(hn5.south.toCharArray()));
+    assertEquals("x", GeoCoder.bitsToHash(hn5.northwest.toCharArray()));
+    assertEquals("9", GeoCoder.bitsToHash(hn5.northeast.toCharArray()));
+    assertEquals("p", GeoCoder.bitsToHash(hn5.southwest.toCharArray()));
+    assertEquals("1", GeoCoder.bitsToHash(hn5.southeast.toCharArray()));
   }
 
   @Test
   public void testGeoHashTile() {
     HashArea t;
-    t = GeoCoder.geoHashTile("9");
+    t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9"));
     assertEquals(0, t.minlat, 0.0);
     assertEquals(-135.0, t.minlon, 0.0);
     assertEquals(45, t.maxlat, 0.0);
     assertEquals(-90, t.maxlon, 0.0);
 
     //34.40917, -119.70703, 34.45312, -119.66308
-    t = GeoCoder.geoHashTile("9q4gu");
+    t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9q4gu"));
     assertEquals(34.40917, t.minlat, 0.00001);
     assertEquals(-119.70703, t.minlon, 0.00001);
     assertEquals(34.45312, t.maxlat, 0.00001);
     assertEquals(-119.66308, t.maxlon, 0.00001);
 
     //34.41926, -119.69849, 34.41930, -119.69844
-    t = GeoCoder.geoHashTile("9q4gu1y4z");
+    t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9q4gu1y4z"));
     assertEquals(34.41926, t.minlat, 0.00001);
     assertEquals(-119.69849, t.minlon, 0.00001);
     assertEquals(34.41930, t.maxlat, 0.00001);
