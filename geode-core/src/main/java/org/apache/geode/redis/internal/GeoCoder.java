@@ -23,6 +23,8 @@ import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GeoCoder {
     /**
@@ -132,27 +134,41 @@ public class GeoCoder {
     }
 
     /**
+     *  Return a set of areas (center + 8) that are able to cover a range query
+     *  for the specified position and radius.
+    */
+    List<HashArea> geohashGetAreasByRadius(double longitude, double latitude, double radiusMeters) throws CoderException {
+//        HashArea boundingBox = geoHashBoundingBox(longitude, latitude, radiusMeters);
+        int steps = geohashEstimateStepsByRadius(radiusMeters, latitude, LEN_GEOHASH/2);
+        String hash = geoHash(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
+                2 * steps);
+        HashNeighbors neighbors  = getNeighbors(hash);
+
+        return neighbors.get().stream().map(n -> geoHashTile(n)).collect(Collectors.toList());
+    }
+
+    /**
      * This function is used in order to estimate the step (bits precision)
      * of the 9 search area boxes during radius queries.
      */
-    public static int geohashEstimateStepsByRadius(double range_meters, double lat, int maxStep) {
-        if (range_meters == 0) return maxStep;
+    public static int geohashEstimateStepsByRadius(double rangeMeters, double lat, int maxStep) {
+        if (rangeMeters == 0) return maxStep;
         int step = 1;
-        while (range_meters < MERCATOR_MAX) {
-            range_meters *= 2;
+        while (rangeMeters < MERCATOR_MAX) {
+            rangeMeters *= 2;
             step++;
         }
         step -= 2; /* Make sure range is included in most of the base cases. */
 
-    /* Wider range torwards the poles... Note: it is possible to do better
-     * than this approximation by computing the distance between meridians
-     * at this latitude, but this does the trick for now. */
+        /* Wider range torwards the poles... Note: it is possible to do better
+        * than this approximation by computing the distance between meridians
+        * at this latitude, but this does the trick for now. */
         if (lat > 66 || lat < -66) {
             step--;
             if (lat > 80 || lat < -80) step--;
         }
 
-    /* Frame to valid range. */
+        /* Frame to valid range. */
         if (step < 1) step = 1;
         if (step > maxStep) step = maxStep;
         return step;
@@ -175,11 +191,11 @@ public class GeoCoder {
      * optimization is not used for very big radiuses, however the function
      * should be fixed.
      */
-    public static HashArea geoHashBoundingBox(double longitude, double latitude, double radius_meters) {
-        double minlon = longitude - Math.toDegrees((radius_meters / EARTH_RADIUS_IN_METERS) * Math.cos(Math.toRadians(latitude)));
-        double maxlon = longitude + Math.toDegrees((radius_meters / EARTH_RADIUS_IN_METERS) * Math.cos(Math.toRadians(latitude)));
-        double minlat = latitude - Math.toDegrees(radius_meters / EARTH_RADIUS_IN_METERS);
-        double maxlat = latitude + Math.toDegrees(radius_meters / EARTH_RADIUS_IN_METERS);
+    public static HashArea geoHashBoundingBox(double longitude, double latitude, double radiusMeters) {
+        double minlon = longitude - Math.toDegrees((radiusMeters / EARTH_RADIUS_IN_METERS) * Math.cos(Math.toRadians(latitude)));
+        double maxlon = longitude + Math.toDegrees((radiusMeters / EARTH_RADIUS_IN_METERS) * Math.cos(Math.toRadians(latitude)));
+        double minlat = latitude - Math.toDegrees(radiusMeters / EARTH_RADIUS_IN_METERS);
+        double maxlat = latitude + Math.toDegrees(radiusMeters / EARTH_RADIUS_IN_METERS);
 
         return new HashArea(minlon, maxlon, minlat, maxlat);
     }
