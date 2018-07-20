@@ -1875,4 +1875,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     return hostedTXStates;
   }
 
+  public boolean isHostedTXStatesEmpty() {
+    return hostedTXStates.isEmpty();
+  }
+
 }

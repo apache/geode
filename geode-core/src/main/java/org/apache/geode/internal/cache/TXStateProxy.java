@@ -54,15 +54,6 @@ public interface TXStateProxy extends TXStateInterface {
   void setJCATransaction();
 
   /**
-   * establishes the synchronization thread used for client/server beforeCompletion/afterCompletion
-   * processing
-   *
-   */
-  void setSynchronizationRunnable(TXSynchronizationRunnable sync);
-
-  TXSynchronizationRunnable getSynchronizationRunnable();
-
-  /**
    * Perform additional tasks required by the proxy to suspend a transaction
    */
   void suspend();
