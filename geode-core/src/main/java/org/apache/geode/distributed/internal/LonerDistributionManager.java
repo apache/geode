@@ -114,6 +114,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   protected void shutdown() {
+    threadMonitor.close();
     executor.shutdown();
     try {
       executor.awaitTermination(20, TimeUnit.SECONDS);

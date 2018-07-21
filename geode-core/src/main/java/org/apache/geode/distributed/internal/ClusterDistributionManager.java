@@ -1841,6 +1841,7 @@ public class ClusterDistributionManager implements DistributionManager {
   private void askThreadsToStop() {
     // Stop executors after they have finished
     ExecutorService es;
+    threadMonitor.close();
     es = this.serialThread;
     if (es != null) {
       es.shutdown();
