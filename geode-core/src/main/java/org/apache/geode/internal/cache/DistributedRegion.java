@@ -1503,6 +1503,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
       // need to do this before we release the afterGetInitialImageLatch
       if (this.persistenceAdvisor != null) {
+        if (dskRgn != null && GIIStatus.didGII(giiStatus)) {
+          dskRgn.forceFlush();
+        }
         this.persistenceAdvisor.setOnline(GIIStatus.didGII(giiStatus), false, getPersistentID());
       }
     } finally {
