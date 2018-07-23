@@ -985,6 +985,18 @@ public abstract class AbstractRegionMap
         }
         if (!done) {
           removeEntry(key, newRe, false);
+          // Update local indexes
+          if (owner.getIndexManager() != null && !newRe.isRemoved()) {
+            // attempt to clean up any thread local state,
+            // not intended to actually do any removal
+            try {
+              owner.getIndexManager().updateIndexes(newRe,
+                  IndexManager.REMOVE_ENTRY,
+                  IndexProtocol.CLEAN_UP_THREAD_LOCALS);
+            } catch (QueryException qe) {
+              logger.info("Unable to clean up thread locals for indexes", qe);
+            }
+          }
         }
       }
     } // synchronized

@@ -159,7 +159,16 @@ public class CompactRangeIndex extends AbstractIndex {
       // we know in this specific case, that a before op was called and stored oldKey/value
       // we also know that a regular remove won't work due to the entry no longer being present
       // We know the old key so let's just remove mapping from the old key
-      indexStore.removeMapping(oldKeyValue.get().getOldKey(), entry);
+      if (oldKeyValue != null) {
+        indexStore.removeMapping(oldKeyValue.get().getOldKey(), entry);
+      } else {
+        // rely on reverse map in the index store to figure out the real key
+        indexStore.removeMapping(IndexManager.NULL, entry);
+      }
+    } else if (opCode == CLEAN_UP_THREAD_LOCALS) {
+      if (oldKeyValue != null) {
+        oldKeyValue.remove();
+      }
     } else {
       // Need to reset the thread-local map as many puts and destroys might
       // happen in same thread.

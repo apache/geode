@@ -158,6 +158,52 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
 
   @Test
+  public void giiWithPersistenceAndStaleDataDueToSameUpdatesShouldCorrectlyPopulateIndexes()
+      throws Exception {
+    String regionName = "persistentTestRegionWithEntrySetIndex"; // this region is created via
+    // cache.xml
+    int numEntries = 100;
+    Map<String, Portfolio> entries = new HashMap<>();
+    IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
+    vm3.invoke(() -> populateRegion(regionName, entries));
+
+    clusterStartupRule.stopMember(2, false);
+    // update entries
+    IntStream.range(0, numEntries).forEach(i -> {
+      entries.put("key-" + i, new Portfolio(i));
+    });
+    vm3.invoke(() -> populateRegion(regionName, entries));
+    clusterStartupRule.stopMember(1, false);
+    clusterStartupRule.stopMember(3, false);
+
+    Thread t3 =
+        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+    t3.start();
+    Thread t1 =
+        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+    t1.start();
+    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    t3.join();
+    t1.join();
+
+    // invoke the query enough times to hopefully randomize bucket to server targeting enough to
+    // target both secondary/primary servers
+    vm3.invoke(() -> {
+      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+          () -> IntStream.range(0, numEntries), 8, 1);
+    });
+    vm2.invoke(() -> {
+      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+          () -> IntStream.range(0, numEntries), 8, 1);
+    });
+    vm1.invoke(() -> {
+      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+          () -> IntStream.range(0, numEntries), 8, 1);
+    });
+  }
+
+
+  @Test
   public void giiWithPersistenceAndStaleDataDueToUpdatesShouldCorrectlyPopulateIndexesWithEntrySet()
       throws Exception {
     String regionName = "persistentTestRegionWithEntrySetIndex"; // this region is created via
