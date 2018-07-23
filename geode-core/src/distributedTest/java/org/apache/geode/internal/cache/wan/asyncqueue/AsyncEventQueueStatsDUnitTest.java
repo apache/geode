@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({AEQTest.class})
@@ -85,7 +84,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   /**
    * Two listeners added to the same RR.
    */
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-5097
+  @Category(WanTest.class)
   @Test
   public void testAsyncStatsTwoListeners() throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);
