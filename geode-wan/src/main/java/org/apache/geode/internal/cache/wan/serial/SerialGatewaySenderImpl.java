@@ -22,6 +22,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -37,6 +38,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * @since GemFire 7.0
@@ -79,11 +81,11 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         }
       }
       if (getDispatcherThreads() > 1) {
-        eventProcessor =
-            new RemoteConcurrentSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this);
+        eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
+            SerialGatewaySenderImpl.this, getThreadMonitorObj());
       } else {
-        eventProcessor =
-            new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this, getId());
+        eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
+            getId(), getThreadMonitorObj());
       }
       eventProcessor.start();
       waitForRunningStatus();
@@ -231,5 +233,14 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
           ThreadIdentifier.toDisplayString(newThreadId));
     }
     clonedEvent.setEventId(newEventId);
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.cache.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

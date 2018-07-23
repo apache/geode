@@ -37,7 +37,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
 
     MyConflationListener listener = new MyConflationListener();
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener);
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, null);
 
     final CountDownLatch latch = new CountDownLatch(1);
     ex.submit(new Callable() {
@@ -75,7 +75,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
   @Test
   public void testReschedule() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex);
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, null);
 
     final CountDownLatch taskRunning = new CountDownLatch(1);
     final CountDownLatch continueTask = new CountDownLatch(1);
@@ -118,7 +118,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
   public void testRescheduleForEarlierTime() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
     MyConflationListener listener = new MyConflationListener();
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener);
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, null);
 
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicInteger counter = new AtomicInteger();
