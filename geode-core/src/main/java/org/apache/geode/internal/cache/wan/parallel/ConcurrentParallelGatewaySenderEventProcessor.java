@@ -35,6 +35,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -51,6 +52,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * Parallel processor which constitutes of multiple {@link ParallelGatewaySenderEventProcessor}.
@@ -72,10 +74,11 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   final int nDispatcher;
 
-  public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
+  public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring) {
     super(
         LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + sender.getId()),
-        "Event Processor for GatewaySender_" + sender.getId(), sender);
+        "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     // initializeMessageQueue(sender.getId());
     logger.info("ConcurrentParallelGatewaySenderEventProcessor: dispatcher threads {}",
         sender.getDispatcherThreads());
@@ -118,7 +121,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors[i] = new ParallelGatewaySenderEventProcessor(sender, targetRs, i,
-          sender.getDispatcherThreads());
+          sender.getDispatcherThreads(), getThreadMonitorObj());
     }
   }
 
@@ -362,5 +365,14 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   protected void enqueueEvent(GatewayQueueEvent event) {
     int pId = ((GatewaySenderEventImpl) event).getBucketId() % this.nDispatcher;
     this.processors[pId].enqueueEvent(event);
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.sender.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

@@ -49,7 +49,8 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
   @Before
   public void setUp() throws Exception {
     this.sender = mock(AbstractGatewaySender.class);
-    this.processor = new TestSerialGatewaySenderEventProcessor(this.sender, "ny");
+    this.processor =
+        new TestSerialGatewaySenderEventProcessor(this.sender, "ny", null);
   }
 
   @Test

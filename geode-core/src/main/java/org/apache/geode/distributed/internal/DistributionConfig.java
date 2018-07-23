@@ -169,6 +169,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_INTERVAL;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_TIME_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_FRAGMENT_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_RECV_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_SEND_BUFFER_SIZE;
@@ -1637,6 +1640,29 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_ENABLE_TIME_STATISTICS = false;
 
   /**
+   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_ENABLED} property
+   */
+  @ConfigAttributeGetter(name = THREAD_MONITOR_ENABLED)
+  boolean getThreadMonitorEnabled();
+
+  /**
+   * Sets {@link ConfigurationProperties#THREAD_MONITOR_ENABLED}
+   */
+  @ConfigAttributeSetter(name = THREAD_MONITOR_ENABLED)
+  void setThreadMonitorEnabled(boolean newValue);
+
+  /**
+   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String THREAD_MONITOR_ENABLED_NAME = THREAD_MONITOR_ENABLED;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#THREAD_MONITOR_ENABLED} property
+   */
+  boolean DEFAULT_THREAD_MONITOR_ENABLED = true;
+
+  /**
    * Sets the value for {@link ConfigurationProperties#USE_CLUSTER_CONFIGURATION}
    */
   @ConfigAttributeSetter(name = USE_CLUSTER_CONFIGURATION)
@@ -1940,6 +1966,73 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = Integer.class, min = MIN_ASYNC_QUEUE_TIMEOUT,
       max = MAX_ASYNC_QUEUE_TIMEOUT)
   String ASYNC_QUEUE_TIMEOUT_NAME = ASYNC_QUEUE_TIMEOUT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} property.
+   */
+  @ConfigAttributeGetter(name = THREAD_MONITOR_INTERVAL)
+  int getThreadMonitorInterval();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} property.
+   */
+  @ConfigAttributeSetter(name = THREAD_MONITOR_INTERVAL)
+  void setThreadMonitorInterval(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} is
+   * <code>60000</code>.
+   */
+  int DEFAULT_THREAD_MONITOR_INTERVAL = 60000;
+  /**
+   * The minimum value of {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} is <code>0</code>.
+   */
+  int MIN_THREAD_MONITOR_INTERVAL = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} is
+   * <code>86400000</code>.
+   */
+  int MAX_THREAD_MONITOR_INTERVAL = 86400000;
+  /**
+   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_THREAD_MONITOR_INTERVAL,
+      max = MAX_THREAD_MONITOR_INTERVAL)
+  String THREAD_MONITOR_INTERVAL_NAME = THREAD_MONITOR_INTERVAL;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} property.
+   */
+  @ConfigAttributeGetter(name = THREAD_MONITOR_TIME_LIMIT)
+  int getThreadMonitorTimeLimit();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} property.
+   */
+  @ConfigAttributeSetter(name = THREAD_MONITOR_TIME_LIMIT)
+  void setThreadMonitorTimeLimit(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} is
+   * <code>60000</code>.
+   */
+  int DEFAULT_THREAD_MONITOR_TIME_LIMIT = 30000;
+  /**
+   * The minimum value of {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} is
+   * <code>0</code>.
+   */
+  int MIN_THREAD_MONITOR_TIME_LIMIT = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} is
+   * <code>86400000</code>.
+   */
+  int MAX_THREAD_MONITOR_TIME_LIMIT = 86400000;
+  /**
+   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_THREAD_MONITOR_TIME_LIMIT,
+      max = MAX_THREAD_MONITOR_TIME_LIMIT)
+  String THREAD_MONITOR_TIME_LIMIT_NAME = THREAD_MONITOR_TIME_LIMIT;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.

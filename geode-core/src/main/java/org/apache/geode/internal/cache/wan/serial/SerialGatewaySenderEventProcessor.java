@@ -59,6 +59,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -110,9 +111,10 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
   private int uncheckedCount = 0;
 
 
-  public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id) {
+  public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
+      ThreadsMonitoring tMonitoring) {
     super(LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + id, logger),
-        "Event Processor for GatewaySender_" + id, sender);
+        "Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();

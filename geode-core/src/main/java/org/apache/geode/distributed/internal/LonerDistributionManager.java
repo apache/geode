@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +55,9 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -68,6 +72,12 @@ public class LonerDistributionManager implements DistributionManager {
   private final InternalLogWriter logger;
   private ElderState elderState;
 
+  /**
+   * Thread Monitor mechanism to monitor system threads
+   *
+   * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
+   */
+  private final ThreadsMonitoring threadMonitor;
 
   //////////////////////// Constructors ////////////////////////
 
@@ -84,6 +94,17 @@ public class LonerDistributionManager implements DistributionManager {
     this.allIds = Collections.singleton(localAddress);
     this.viewMembers = new ArrayList<InternalDistributedMember>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
+
+    Properties nonDefault = new Properties();
+    DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+
+    if (distributionConfigImpl.getThreadMonitorEnabled()) {
+      this.threadMonitor = new ThreadsMonitoringImpl(system);
+      logger.info("[ThreadsMonitor] New Monitor object and process were created.\n");
+    } else {
+      this.threadMonitor = new ThreadsMonitoringImplDummy();
+      logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
+    }
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -93,6 +114,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   protected void shutdown() {
+    threadMonitor.close();
     executor.shutdown();
     try {
       executor.awaitTermination(20, TimeUnit.SECONDS);
@@ -1461,5 +1483,11 @@ public class LonerDistributionManager implements DistributionManager {
   @Override
   public void clearExceptionInThreads() {
     // no-op
+  }
+
+  @Override
+  /** returns the Threads Monitoring instance */
+  public ThreadsMonitoring getThreadMonitoring() {
+    return this.threadMonitor;
   }
 }

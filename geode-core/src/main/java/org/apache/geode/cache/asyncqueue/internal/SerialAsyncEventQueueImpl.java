@@ -21,6 +21,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -40,6 +41,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
 
@@ -85,11 +87,11 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
         }
       }
       if (getDispatcherThreads() > 1) {
-        eventProcessor =
-            new ConcurrentSerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this);
+        eventProcessor = new ConcurrentSerialGatewaySenderEventProcessor(
+            SerialAsyncEventQueueImpl.this, getThreadMonitorObj());
       } else {
-        eventProcessor =
-            new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this, getId());
+        eventProcessor = new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this,
+            getId(), getThreadMonitorObj());
       }
       eventProcessor.start();
       waitForRunningStatus();
@@ -245,4 +247,12 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     clonedEvent.setEventId(newEventId);
   }
 
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.cache.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
+  }
 }
