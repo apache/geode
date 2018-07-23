@@ -696,6 +696,11 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   }
 
   @Override
+  public Set<PersistentMemberID> getPersistedOfflineMembers() {
+    return persistentMemberView.getOfflineMembers();
+  }
+
+  @Override
   public void prepareNewMember(InternalDistributedMember sender, PersistentMemberID oldId,
       PersistentMemberID newId) {
     if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
@@ -899,9 +904,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         }
 
         // If the peer thinks we are newer or equal to them, we don't need to wait for this peer.
-        if (membersHostingThisRegion.contains(memberId) && initializingID != null && state != null
-            && (state.equals(PersistentMemberState.ONLINE)
-                || state.equals(PersistentMemberState.EQUAL))) {
+        if (membersHostingThisRegion.contains(memberId) && initializingID != null) {
           if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
             logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
                 "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),

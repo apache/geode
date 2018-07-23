@@ -23,6 +23,8 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -85,9 +87,20 @@ public class PersistenceInitialImageAdvisor {
           Set<PersistentMemberID> previouslyOnlineMembers =
               persistenceAdvisor.getPersistedOnlineOrEqualMembers();
 
+          Set<PersistentMemberID> previouslyOfflineMembers =
+              persistenceAdvisor.getPersistedOfflineMembers();
+
+          boolean isMyRvvTrusted = true;
+          if (cacheDistributionAdvisor.getAdvisee() instanceof LocalRegion) {
+            DiskRegion diskRegion =
+                ((LocalRegion) cacheDistributionAdvisor.getAdvisee()).getDiskRegion();
+            isMyRvvTrusted = diskRegion == null ? true : diskRegion.getRVVTrusted();
+          }
+
           // If there are no currently online members, and no previously online members, this member
           // should just go with what's on its own disk
-          if (previouslyOnlineMembers.isEmpty()) {
+          if (previouslyOnlineMembers.isEmpty()
+              && (isMyRvvTrusted || previouslyOfflineMembers.isEmpty())) {
             if (isPersistAdvisorDebugEnabled()) {
               logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
                   "{}-{}: No previously online members. Recovering with the data from the local disk",
@@ -99,6 +112,13 @@ public class PersistenceInitialImageAdvisor {
           Set<PersistentMemberID> offlineMembers = new HashSet<>();
           Set<PersistentMemberID> membersToWaitFor =
               persistenceAdvisor.getMembersToWaitFor(previouslyOnlineMembers, offlineMembers);
+
+          if (!isMyRvvTrusted && membersToWaitFor.isEmpty()) {
+            logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
+                "{}-{}: No previously online members to wait for and rvv is not trusted. Previously offline members to wait for {}",
+                shortDiskStoreID, regionPath, previouslyOfflineMembers);
+            membersToWaitFor = previouslyOfflineMembers;
+          }
 
           if (membersToWaitFor.isEmpty()) {
             if (isPersistAdvisorDebugEnabled()) {
