@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -79,7 +80,7 @@ public class QueryCommandDUnitTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator, server1, server2;
+  protected MemberVM locator, server1, server2;
 
   @Before
   public void before() throws Exception {
@@ -94,7 +95,11 @@ public class QueryCommandDUnitTest {
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_PAR_REGION_NAME_PATH, 1);
 
-    gfsh.connectAndVerify(locator);
+    connectToLocator();
+  }
+
+  public void connectToLocator() throws Exception {
+    gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
   }
 
   @Test

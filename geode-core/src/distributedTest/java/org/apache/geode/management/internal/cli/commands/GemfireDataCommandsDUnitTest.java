@@ -89,13 +89,18 @@ public class GemfireDataCommandsDUnitTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator, server1, server2;
+  protected MemberVM locator, server1, server2;
 
   public void before() throws Exception {
     locator = cluster.startLocatorVM(0, locatorProperties());
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
+    connectToLocator();
+  }
 
+  // extracted for convenience overriding in GemfireDataCommandsOverHttpDUnitTest to connect via
+  // http
+  public void connectToLocator() throws Exception {
     gfsh.connectAndVerify(locator);
   }
 
