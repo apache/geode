@@ -471,7 +471,8 @@ public class VM implements Serializable {
   }
 
   /**
-   * Synchronously bounces (forced kill and restarts) this {@code VM}. Concurrent bounce attempts are
+   * Synchronously bounces (forced kill and restarts) this {@code VM}. Concurrent bounce attempts
+   * are
    * synchronized but attempts to invoke methods on a bouncing {@code VM} will cause test failure.
    * Tests using bounce should be placed at the end of the DUnit test suite, since an exception here
    * will cause all tests using the unsuccessfully bounced {@code VM} to fail.
