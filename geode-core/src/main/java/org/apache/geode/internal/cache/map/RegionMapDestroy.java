@@ -334,13 +334,12 @@ public class RegionMapDestroy {
     // 4. event.getContext to return null
     // 5. concurrencyChecks to be true
     if (noVersionTag()) {
+      // When will tombstone entries not have a version tag?
       return;
     }
     // if we're dealing with a tombstone and this is a remote event
     // (e.g., from cache client update thread) we need to update
     // the tombstone's version information
-    // TODO use destroyEntry() here
-    processVersionTag(entry);
     makeTombstone(entry);
   }
 
