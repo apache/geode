@@ -115,6 +115,9 @@ subprojects {
 
   integrationTest {
     useJUnit {
+      if(project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
@@ -128,6 +131,9 @@ subprojects {
 
   distributedTest {
     useJUnit {
+      if(project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
@@ -136,11 +142,21 @@ subprojects {
   }
 
   acceptanceTest {
+    useJUnit {
+      if(project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
+    }
     forkEvery 1
     outputs.upToDateWhen{false}
   }
 
   uiTest {
+    useJUnit {
+      if(project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
+    }
     forkEvery 1
     outputs.upToDateWhen{false}
   }
@@ -154,19 +170,12 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
-  task gfshDistributedTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.GfshTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-
-    forkEvery 1
-    outputs.upToDateWhen{false}
-  }
-
   task flakyTest(type:Test) {
     useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+      if(project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
+      includeCategories += 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
     forkEvery 1
@@ -178,185 +187,15 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
-  task securityTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.SecurityTest'
-    }
+  /*
+   * Don't add tasks for running specific category tests, instead use this
+   * property `testCategory` and set a FQCN of the required category.
+   * Eg: ./gradlew :geode-core:distributedTest -PtestCategory=org.apache.geode.test.junit.categories.GfshTest
+   *
+   * This provides developers a way to choose specific test source and test category.
+   *
+  */
 
-    forkEvery 1
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-
-    reports.junitXml.destination = file "$buildDir/test-reports-security"
-  }
-
-  task clientServerTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.ClientServerTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-security"
-  }
-
-  task dlockTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.DLockTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-dlock"
-  }
-
-  task backwardCompatibilityTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.BackwardCompatibilityTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-backwardcompatibility"
-  }
-
-  task clientSubscriptionTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.ClientSubscriptionTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-client-subscription"
-  }
-  task queryTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.OQLQueryTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-oql-query"
-  }
-
-  task indexTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.OQLIndexTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-oql-index"
-  }
-
-  task functionServiceTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.FunctionServiceTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-function-service"
-  }
-
-  task membershipTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.MembershipTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-membership"
-  }
-  task luceneTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.LuceneTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-lucene"
-  }
-
-  task aeqTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.AEQTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-aeq"
-  }
-
-
-  task sessionTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.SessionTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-session"
-  }
-
-  task wanTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.WanTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-wan"
-  }
-
-
-  task redisTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.RedisTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    forkEvery 1
-    reports.junitXml.destination = file "$buildDir/test-reports-redis"
-  }
-
-  task restAPITest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.RestAPITest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    forkEvery 1
-    reports.junitXml.destination = file "$buildDir/test-reports-restAPI"
-  }
-
-  task serializationTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.SerializationTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-serialization"
-  }
 
   // By proving a file with an arbitrary list of test classes, we can select only those
   // tests to run. Activated using -Dcustom.tests=<file> customTest
