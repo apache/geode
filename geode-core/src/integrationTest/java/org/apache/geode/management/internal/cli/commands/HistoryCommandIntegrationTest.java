@@ -48,7 +48,9 @@ public class HistoryCommandIntegrationTest {
     gfsh.executeCommand("connect");
 
     gfsh.executeAndAssertThat("history").statusIsSuccess()
-        .containsOutput("  1  0: echo --string=string\n" + "  2  1: connect\n\n\n");
+        .containsOutput(
+            "  1  0: echo --string=string" + System.lineSeparator() + "  2  1: connect" +
+                System.lineSeparator() + System.lineSeparator() + System.lineSeparator());
   }
 
   @Test
