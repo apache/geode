@@ -41,6 +41,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.Invoke;
@@ -238,7 +239,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
     return allMembers;
   }
 
-  public Set<? extends DistributedMember> getAllNormalMembers() {
+  private Set<InternalDistributedMember> getAllNormalMembers() {
     return getDistributionManager().getNormalDistributionManagerIds(); // excludes LOCATOR_DM_TYPE
   }
 
