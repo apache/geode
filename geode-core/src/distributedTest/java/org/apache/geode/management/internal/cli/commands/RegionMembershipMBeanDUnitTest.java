@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import java.util.Properties;
@@ -79,7 +80,7 @@ public class RegionMembershipMBeanDUnitTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator, server1, server2;
+  protected MemberVM locator, server1, server2;
 
   @Before
   public void before() throws Exception {
@@ -93,7 +94,12 @@ public class RegionMembershipMBeanDUnitTest {
     server1 = cluster.startServerVM(1, serverProps, locator.getPort());
     server2 = cluster.startServerVM(2, serverProps, locator.getPort());
 
-    gfsh.connectAndVerify(locator);
+    connectToLocator();
+  }
+
+  // extracted in order to override in RegionMembershipMBeanOverHttpDUnitTest to use http connection
+  public void connectToLocator() throws Exception {
+    gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
   }
 
   private static void setupDataRegionAndSubregions() {
