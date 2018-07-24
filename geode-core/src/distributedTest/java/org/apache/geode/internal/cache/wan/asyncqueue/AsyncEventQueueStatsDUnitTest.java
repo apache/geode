@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({AEQTest.class})
@@ -85,7 +84,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   /**
    * Two listeners added to the same RR.
    */
-  @Category({FlakyTest.class, WanTest.class}) // GEODE-5097
+  @Category(WanTest.class)
   @Test
   public void testAsyncStatsTwoListeners() throws Exception {
     Integer lnPort = createFirstLocatorWithDSId(1);
@@ -122,14 +121,22 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm4.invoke(() -> AsyncEventQueueTestBase.createReplicatedRegionWithAsyncEventQueue(
         getTestMethodName() + "_RR", "ln1,ln2", isOffHeap()));
 
-    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm2.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm3.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm4.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln1"));
-    vm1.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
-    vm2.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
-    vm3.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
-    vm4.invoke(() -> AsyncEventQueueTestBase.pauseAsyncEventQueue("ln2"));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm2.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm3.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm4.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln1"));
+    vm1.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
+    vm2.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
+    vm3.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
+    vm4.invoke(
+        () -> AsyncEventQueueTestBase.pauseAsyncEventQueueAndWaitForDispatcherToPause("ln2"));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 1000));
 
