@@ -175,7 +175,7 @@ public class GeoJUnitTest {
     Long l = jedis.geoadd("Sicily", memberCoordinateMap);
     assertTrue(l == 2L);
 
-    List<GeoRadiusResponse> gr = jedis.georadius("Sicily", 15.0, 37.0, 100, GeoUnit.KM);
+    List<GeoRadiusResponse> gr = jedis.georadius("Sicily", 15.0, 37.0, 100000, GeoUnit.M);
     assertEquals(1, gr.size());
     assertEquals("Catania", gr.get(0).getMemberByString());
 

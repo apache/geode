@@ -32,6 +32,7 @@ import org.apache.geode.redis.internal.executor.SortedSetQuery;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_DIST_UNIT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
 
 public class GeoRadiusExecutor extends GeoSortedSetExecutor {
@@ -56,16 +57,36 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
     double lon;
     double lat;
-    double radius;
+    double radius = 0.0;
+    String unit;
     try {
       byte[] lonArray = commandElems.get(2);
       byte[] latArray = commandElems.get(3);
       byte[] radArray = commandElems.get(4);
+      unit = new String(commandElems.get(5));
       lon = Coder.bytesToDouble(lonArray);
       lat = Coder.bytesToDouble(latArray);
-      radius = Coder.bytesToDouble(radArray) * 1000.0;
+      switch(unit) {
+        case "km":
+          radius = Coder.bytesToDouble(radArray) * 1000.0;
+          break;
+        case "m":
+          radius = Coder.bytesToDouble(radArray);
+          break;
+        case "ft":
+          radius = Coder.bytesToDouble(radArray) * 3.28084;
+        break;
+        case "mi":
+          radius = Coder.bytesToDouble(radArray) * 0.000621371;
+          break;
+        default:
+          throw new IllegalArgumentException();
+      }
     } catch (NumberFormatException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
+      return;
+    } catch (IllegalArgumentException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_DIST_UNIT));
       return;
     }
 
