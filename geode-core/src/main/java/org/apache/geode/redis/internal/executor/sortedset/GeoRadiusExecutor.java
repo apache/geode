@@ -29,6 +29,7 @@ import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
@@ -76,21 +77,23 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    List<?> eastKeys;
-    try {
-      eastKeys = getRange(context, key, hn.north);
-    } catch (Exception e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));
-      return;
+    List<String> hashes = new ArrayList<>();
+    for (String neighbor : hn.get()) {
+      try {
+          hashes.addAll(getRange(context, key, neighbor));
+      } catch (Exception e) {
+        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));
+        return;
+      }
     }
 
-    command.setResponse(Coder.georadiusResponse(context.getByteBufAllocator(), eastKeys, false));
+    command.setResponse(Coder.georadiusResponse(context.getByteBufAllocator(), hashes, false));
   }
 
-  private List<?> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, String hash) throws Exception {
+  private List<String> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, String hash) throws Exception {
     Query query = getQuery(key, SortedSetQuery.GEORADIUS, context);
     Object[] params = {hash + "%"};
-    SelectResults<?> results = (SelectResults<?>) query.execute(params);
+    SelectResults<String> results = (SelectResults<String>) query.execute(params);
     return results.asList();
   }
 

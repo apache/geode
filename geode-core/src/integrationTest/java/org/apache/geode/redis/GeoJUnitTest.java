@@ -19,6 +19,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.junit.After;
@@ -77,11 +78,14 @@ public class GeoJUnitTest {
     assertNotNull("Expected region to be not NULL", sicilyRegion);
 
     // Check GeoHash
+    String hashBin = sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString();
     assertEquals(
-        sicilyRegion.get(new ByteArrayWrapper(new String("Palermo").getBytes())).toString(),
+        GeoCoder.bitsToHash(hashBin.toCharArray()),
         "sqc8b49rnyte");
+
+    hashBin = sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString();
     assertEquals(
-        sicilyRegion.get(new ByteArrayWrapper(new String("Catania").getBytes())).toString(),
+        GeoCoder.bitsToHash(hashBin.toCharArray()),
         "sqdtr74hyu5n");
   }
 
@@ -114,8 +118,8 @@ public class GeoJUnitTest {
 
     List<String> hashes = jedis.geohash("Sicily", "Palermo", "Catania", "Rome");
 
-    assertEquals("sqc8b49rnyte", hashes.get(0));
-    assertEquals("sqdtr74hyu5n", hashes.get(1));
+    assertEquals("sqc8b49rnyte", GeoCoder.bitsToHash(hashes.get(0).toCharArray()));
+    assertEquals("sqdtr74hyu5n", GeoCoder.bitsToHash(hashes.get(1).toCharArray()));
     assertEquals(null, hashes.get(2));
   }
 
@@ -174,6 +178,11 @@ public class GeoJUnitTest {
     List<GeoRadiusResponse> gr = jedis.georadius("Sicily", 15.0, 37.0, 100, GeoUnit.KM);
     assertEquals(1, gr.size());
     assertEquals("Catania", gr.get(0).getMemberByString());
+
+    gr = jedis.georadius("Sicily", 15.0, 37.0, 200, GeoUnit.KM);
+    assertEquals(2, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Catania")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Palermo")));
   }
 
   @After

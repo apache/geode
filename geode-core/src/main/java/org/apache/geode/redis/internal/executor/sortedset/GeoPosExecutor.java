@@ -15,9 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -27,6 +24,9 @@ import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GeoPosExecutor extends GeoSortedSetExecutor {
 
@@ -49,7 +49,7 @@ public class GeoPosExecutor extends GeoSortedSetExecutor {
 
       StringWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
       if (hashWrapper != null) {
-        positions.add(GeoCoder.geoPos(hashWrapper.toString()));
+        positions.add(GeoCoder.geoPos(hashWrapper.toString().toCharArray()));
       } else {
         positions.add(null);
       }

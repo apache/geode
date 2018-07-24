@@ -54,7 +54,7 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
 
       String score;
       try {
-        score = GeoCoder.geoHash(longitude, latitude, GeoCoder.LEN_GEOHASH);
+        score = new String(GeoCoder.geoHashBits(longitude, latitude, GeoCoder.LEN_GEOHASH));
       } catch(CoderException ce) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
                 "ERR " + RedisConstants.ArityDef.GEOADD_INVALID_LATLONG +

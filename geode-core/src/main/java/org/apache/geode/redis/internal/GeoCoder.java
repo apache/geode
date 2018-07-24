@@ -76,8 +76,8 @@ public class GeoCoder {
      * @param hash geohash as base32
      * @return a GeoCoord object containing the coordinates
      */
-    public static GeoCoord geoPos(String hash) {
-        Pair<char[], char[]> hashBits = hashToBits(hash);
+    public static GeoCoord geoPos(char[] hash) {
+        Pair<char[], char[]> hashBits = deinterleave(hash);
 
         return new GeoCoord(coord(hashBits.fst, LONG_MIN, LONG_MAX), coord(hashBits.snd, LAT_MIN, LAT_MAX));
     }
@@ -89,7 +89,7 @@ public class GeoCoder {
      * @param hash2 geohash of second point
      * @return distance in meters
      */
-    public static Double geoDist(String hash1, String hash2) {
+    public static Double geoDist(char[] hash1, char[] hash2) {
         GeoCoord coord1 = geoPos(hash1);
         GeoCoord coord2 = geoPos(hash2);
 
@@ -98,11 +98,7 @@ public class GeoCoder {
         Double lat2 = Math.toRadians(coord2.getLatitude());
         Double long2 = Math.toRadians(coord2.getLongitude());
 
-        Double hav =
-                haversine(lat2 - lat1) + (Math.cos(lat1) * Math.cos(lat2) * haversine(long2 - long1));
-        Double distAngle = Math.acos(1 - (2 * hav));
-
-        return EARTH_RADIUS_IN_METERS * distAngle;
+       return dist(long1, lat1, long2, lat2);
     }
 
     /**
@@ -113,6 +109,10 @@ public class GeoCoder {
      * @return geohash as base32
      */
     public static String geoHash(byte[] lon, byte[] lat, int length) throws CoderException {
+        return bitsToHash(geoHashBits(lon, lat, length));
+    }
+
+    public static char[] geoHashBits(byte[] lon, byte[] lat, int length) throws CoderException {
         Double longitude = Coder.bytesToDouble(lon);
         Double latitude = Coder.bytesToDouble(lat);
 
@@ -128,7 +128,7 @@ public class GeoCoder {
         char[] longDigits = coordDigits(longitude, LONG_MIN, LONG_MAX, longLen);
         char[] latDigits = coordDigits(latitude, LAT_MIN, LAT_MAX, latLen);
 
-        return bitsToHash(longDigits, latDigits);
+        return interleave(longDigits, latDigits);
     }
 
     /**
@@ -136,13 +136,61 @@ public class GeoCoder {
      *  for the specified position and radius.
     */
    public static HashNeighbors geoHashGetAreasByRadius(double longitude, double latitude, double radiusMeters) throws CoderException {
-//        HashArea boundingBox = geoHashBoundingBox(longitude, latitude, radiusMeters);
-        int steps = geohashEstimateStepsByRadius(radiusMeters, latitude, LEN_GEOHASH/2);
-        String hash = geoHash(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
-                2 * steps);
-        HashNeighbors neighbors  = getNeighbors(hash);
+        HashArea boundingBox = geoHashBoundingBox(longitude, latitude, radiusMeters);
+       int steps = geohashEstimateStepsByRadius(radiusMeters, latitude, LEN_GEOHASH / 2);
+       char[] hash = geoHashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
+               2 * steps);
+       HashNeighbors neighbors = getNeighbors(hash);
+       HashArea centerArea = geoHashTile(hash);
+       HashArea northArea = geoHashTile(neighbors.north.toCharArray());
+       HashArea southArea = geoHashTile(neighbors.south.toCharArray());
+       HashArea eastArea = geoHashTile(neighbors.east.toCharArray());
+       HashArea westArea = geoHashTile(neighbors.west.toCharArray());
 
-        return neighbors;
+        /* Check if the step is enough at the limits of the covered area.
+         * Sometimes when the search area is near an edge of the
+         * area, the estimated step is not small enough, since one of the
+         * north / south / west / east square is too near to the search area
+         * to cover everything. */
+       if ((dist(longitude, latitude, longitude, northArea.maxlat) < radiusMeters
+               || dist(longitude, latitude, longitude, southArea.minlat) < radiusMeters
+               || dist(longitude, latitude, eastArea.maxlon, latitude) < radiusMeters
+               || dist(longitude, latitude, westArea.minlon, latitude) < radiusMeters) && steps > 1) {
+           steps--;
+           hash = geoHashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
+                   2 * steps);
+           neighbors = getNeighbors(hash);
+           centerArea = geoHashTile(hash);
+       }
+
+       /* Exclude the search areas that are useless. */
+       if (steps >= 2) {
+           if (centerArea.minlat < boundingBox.minlat) {
+               neighbors.south = null;
+               neighbors.southwest = null;
+               neighbors.southeast = null;
+           }
+
+           if (centerArea.maxlat > boundingBox.maxlat) {
+               neighbors.north = null;
+               neighbors.northeast = null;
+               neighbors.northwest = null;
+           }
+
+           if (centerArea.minlon < boundingBox.minlon) {
+               neighbors.west = null;
+               neighbors.southwest = null;
+               neighbors.northwest = null;
+           }
+
+           if (centerArea.maxlon > boundingBox.maxlon) {
+               neighbors.east = null;
+               neighbors.southeast = null;
+               neighbors.northeast = null;
+           }
+       }
+
+       return neighbors;
     }
 
     /**
@@ -186,7 +234,7 @@ public class GeoCoder {
      * point -1.27579540014266968 61.33421815228281559 is at less than 7000
      * kilometers away.
      * Since this function is currently only used as an optimization, the
-     * optimization is not used for very big radiuses, however the function
+     * optimization is not used for very big radii, however the function
      * should be fixed.
      */
     public static HashArea geoHashBoundingBox(double longitude, double latitude, double radiusMeters) {
@@ -198,8 +246,16 @@ public class GeoCoder {
         return new HashArea(minlon, maxlon, minlat, maxlat);
     }
 
-    public static HashArea geoHashTile(String hash) {
-        Pair<char[], char[]> coordBits = hashToBits(hash);
+    public static Double dist(Double long1, Double lat1, Double long2, Double lat2) {
+        Double hav =
+                haversine(lat2 - lat1) + (Math.cos(lat1) * Math.cos(lat2) * haversine(long2 - long1));
+        Double distAngle = Math.acos(1 - (2 * hav));
+
+        return EARTH_RADIUS_IN_METERS * distAngle;
+    }
+
+    public static HashArea geoHashTile(char[] hash) {
+        Pair<char[], char[]> coordBits = deinterleave(hash);
         Pair<Double, Double> lonRange = getRange(coordBits.fst, LONG_MIN, LONG_MAX);
         Pair<Double, Double> latRange = getRange(coordBits.snd, LAT_MIN, LAT_MAX);
 
@@ -220,23 +276,23 @@ public class GeoCoder {
         return Pair.of(min, max);
     }
 
-    public static HashNeighbors getNeighbors(String hash) throws CoderException {
+    public static HashNeighbors getNeighbors(char[] hash) throws CoderException {
         HashNeighbors hn = new HashNeighbors();
-        hn.center = hash;
-        hn.west = move(hash, -1, 0);
-        hn.east = move(hash, 1, 0);
-        hn.north = move(hash, 0, 1);
-        hn.south = move(hash, 0, -1);
-        hn.northwest = move(hash, -1, 1);
-        hn.northeast = move(hash, 1, 1);
-        hn.southwest = move(hash, -1, -1);
-        hn.southeast = move(hash, 1, -1);
+        hn.center = new String(hash);
+        hn.west = new String(move(hash, -1, 0));
+        hn.east = new String(move(hash, 1, 0));
+        hn.north = new String(move(hash, 0, 1));
+        hn.south = new String(move(hash, 0, -1));
+        hn.northwest = new String(move(hash, -1, 1));
+        hn.northeast = new String(move(hash, 1, 1));
+        hn.southwest = new String(move(hash, -1, -1));
+        hn.southeast = new String(move(hash, 1, -1));
 
         return hn;
     }
 
-    private static String move(String hash, int dist_lon, int dist_lat) throws CoderException {
-        Pair<char[], char[]> coordBits = hashToBits(hash);
+    private static char[] move(char[] hash, int dist_lon, int dist_lat) throws CoderException {
+        Pair<char[], char[]> coordBits = deinterleave(hash);
         char[] lonbits = coordBits.fst;
         char[] latbits = coordBits.snd;
 
@@ -255,17 +311,20 @@ public class GeoCoder {
             newLatBits = sliceOrPad(newLatBits, latbits.length);
         }
 
-        return bitsToHash(newLonBits, newLatBits);
+        return interleave(newLonBits, newLatBits);
     }
 
-    private static Pair<char[], char[]> hashToBits(String hash) {
+    public static char[] hashToBits(String hash) {
         StringBuilder binStringBuilder = new StringBuilder();
         for (char digit : hash.toCharArray()) {
             int val = base32Val(digit);
             binStringBuilder.append(base32bin(val));
         }
 
-        char[] binChars = binStringBuilder.toString().toCharArray();
+        return binStringBuilder.toString().toCharArray();
+    }
+
+    private static Pair<char[], char[]> deinterleave(char[] binChars) {
         int longLen, latLen;
         if (binChars.length % 2 == 0) {
             longLen = binChars.length / 2;
@@ -288,7 +347,7 @@ public class GeoCoder {
         return Pair.of(lonChars, latChars);
     }
 
-    private static String bitsToHash(char[] longDigits, char[] latDigits) throws CoderException {
+    private static char[] interleave(char[] longDigits, char[] latDigits) throws CoderException {
         if (longDigits.length > latDigits.length + 1) {
             throw new CoderException();
         }
@@ -302,6 +361,10 @@ public class GeoCoder {
             }
         }
 
+        return hashBin;
+    }
+
+    public static String bitsToHash(char[] hashBin){
         StringBuilder hashStrBuilder = new StringBuilder();
         StringBuilder digitBuilder = new StringBuilder();
 
@@ -312,11 +375,7 @@ public class GeoCoder {
                 hashStrBuilder.append(base32(Integer.parseInt(digitBuilder.toString(), 2)));
                 digitBuilder = new StringBuilder();
                 e = 0;
-            }
-//            else if (d == hashBin.length - 1) {
-//                hashStrBuilder.append('0');
-//            }
-            else {
+            } else {
                 e++;
             }
         }
