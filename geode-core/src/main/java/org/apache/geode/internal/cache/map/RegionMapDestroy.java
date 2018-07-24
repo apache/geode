@@ -441,16 +441,23 @@ public class RegionMapDestroy {
       } else {
         handleIncompleteDestroy(existing);
       }
-    } catch (RegionClearedException rce) { // TODO coverage
+    } catch (RegionClearedException rce) {
       recordEvent();
       inhibitCacheListenerNotification();
       handleRegionClearedException(existing);
     } finally {
-      if (isRemoved(existing) && !isTombstone(existing)) {
+      if (isNonTombstoneRemoved(existing)) {
         removeExistingFromMap(existing);
       }
       checkRegionReadiness();
     }
+  }
+
+  private boolean isNonTombstoneRemoved(RegionEntry entry) {
+    if (isTombstone(entry)) {
+      return false;
+    }
+    return isRemoved(entry);
   }
 
   private void handleCompletedDestroy(RegionEntry existing) {

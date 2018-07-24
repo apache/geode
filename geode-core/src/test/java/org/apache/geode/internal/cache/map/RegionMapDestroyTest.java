@@ -802,6 +802,23 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingEntryWithRegionClearedExceptionDoesDestroyAndPart2AndPart3()
+      throws RegionClearedException {
+    givenConcurrencyChecks(false);
+    givenEvictionWithMockedEntryMap();
+    this.isEviction = false;
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    givenEventWithVersionTag();
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenThrow(RegionClearedException.class);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyInvokedDestroyMethodsOnRegion(true);
+  }
+
+  @Test
   public void expireDestroyOfExistingEntry() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
