@@ -420,58 +420,6 @@ public class Coder {
     return buffer;
   }
 
-  public static ByteBuf georadiusResponse(ByteBufAllocator alloc, Collection<?> list,
-                                       boolean withScores) {
-    if (list.isEmpty())
-      return Coder.getEmptyArrayResponse(alloc);
-
-    ByteBuf buffer = alloc.buffer();
-    buffer.writeByte(Coder.ARRAY_ID);
-    ByteBuf tmp = alloc.buffer();
-    int size = 0;
-
-    for (Object entry : list) {
-      ByteArrayWrapper key;
-      StringWrapper score;
-      if (entry instanceof Entry) {
-        try {
-          key = (ByteArrayWrapper) ((Entry<?, ?>) entry).getKey();
-          score = (StringWrapper) ((Entry<?, ?>) entry).getValue();
-        } catch (EntryDestroyedException e) {
-          continue;
-        }
-      } else {
-        Object[] fieldVals = ((Struct) entry).getFieldValues();
-        key = (ByteArrayWrapper) fieldVals[0];
-        score = (StringWrapper) fieldVals[1];
-      }
-      byte[] byteAr = key.toBytes();
-      tmp.writeByte(Coder.BULK_STRING_ID);
-      tmp.writeBytes(intToBytes(byteAr.length));
-      tmp.writeBytes(Coder.CRLFar);
-      tmp.writeBytes(byteAr);
-      tmp.writeBytes(Coder.CRLFar);
-      size++;
-      if (withScores) {
-        byte[] scoreAr = stringToBytes(score.toString());
-        tmp.writeByte(Coder.BULK_STRING_ID);
-        tmp.writeBytes(intToBytes(score.toString().length()));
-        tmp.writeBytes(Coder.CRLFar);
-        tmp.writeBytes(scoreAr);
-        tmp.writeBytes(Coder.CRLFar);
-        size++;
-      }
-    }
-
-    buffer.writeBytes(intToBytes(size));
-    buffer.writeBytes(Coder.CRLFar);
-    buffer.writeBytes(tmp);
-
-    tmp.release();
-
-    return buffer;
-  }
-
   public static ByteBuf getArrayOfNils(ByteBufAllocator alloc, int length) {
     ByteBuf response = alloc.buffer();
     response.writeByte(Coder.ARRAY_ID);

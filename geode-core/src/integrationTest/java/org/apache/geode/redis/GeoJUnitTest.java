@@ -31,6 +31,7 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -118,8 +119,8 @@ public class GeoJUnitTest {
 
     List<String> hashes = jedis.geohash("Sicily", "Palermo", "Catania", "Rome");
 
-    assertEquals("sqc8b49rnyte", GeoCoder.bitsToHash(hashes.get(0).toCharArray()));
-    assertEquals("sqdtr74hyu5n", GeoCoder.bitsToHash(hashes.get(1).toCharArray()));
+    assertEquals("sqc8b49rnyte", hashes.get(0));
+    assertEquals("sqdtr74hyu5n", hashes.get(1));
     assertEquals(null, hashes.get(2));
   }
 
@@ -183,6 +184,21 @@ public class GeoJUnitTest {
     assertEquals(2, gr.size());
     assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Catania")));
     assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Palermo")));
+  }
+
+  @Test
+  public void testGeoRadiusWithDist() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    List<GeoRadiusResponse> gr = jedis.georadius("Sicily", 15.0, 37.0, 100, GeoUnit.KM,
+            GeoRadiusParam.geoRadiusParam().withDist());
+    assertEquals(1, gr.size());
+    assertEquals("Catania", gr.get(0).getMemberByString());
+    assertEquals(56.4413, gr.get(0).getDistance(), 0.0001);
   }
 
   @After

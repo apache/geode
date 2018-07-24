@@ -65,9 +65,39 @@ public class GeoCoder {
         response.writeBytes(Coder.CRLFar);
         response.writeBytes(tmp);
 
-        tmp.release();
-
         return response;
+    }
+
+    public static ByteBuf georadiusResponse(ByteBufAllocator alloc, Collection<GeoRadiusElement> list) {
+        if (list.isEmpty())
+            return Coder.getEmptyArrayResponse(alloc);
+
+        ByteBuf buffer = alloc.buffer();
+        buffer.writeByte(Coder.ARRAY_ID);
+        ByteBuf tmp = alloc.buffer();
+        int size = 0;
+
+        for (GeoRadiusElement element : list) {
+            String name = element.getName();
+            if (element.getDistFromCenter().isPresent()) {
+                String distStr = element.getDistFromCenter().get().toString();
+                tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
+                        Arrays.asList(name, distStr)));
+            } else {
+                tmp.writeByte(Coder.BULK_STRING_ID);
+                tmp.writeBytes(Coder.intToBytes(name.length()));
+                tmp.writeBytes(Coder.CRLFar);
+                tmp.writeBytes(name.getBytes());
+                tmp.writeBytes(Coder.CRLFar);
+            }
+            size++;
+        }
+
+        buffer.writeBytes(Coder.intToBytes(size));
+        buffer.writeBytes(Coder.CRLFar);
+        buffer.writeBytes(tmp);
+
+        return buffer;
     }
 
     /**
