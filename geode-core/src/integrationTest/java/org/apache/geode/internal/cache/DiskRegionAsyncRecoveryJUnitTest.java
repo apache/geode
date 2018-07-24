@@ -360,6 +360,8 @@ public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
         recoveryDone.countDown();
       }
     });
+
+    Thread.sleep(1);
     try {
       region = createRegion();
 

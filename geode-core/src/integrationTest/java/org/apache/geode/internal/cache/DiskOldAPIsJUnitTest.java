@@ -82,7 +82,7 @@ public class DiskOldAPIsJUnitTest {
     doSyncBitTest(true);
   }
 
-  private void doSyncBitTest(boolean destroyRegion) {
+  private void doSyncBitTest(boolean destroyRegion) throws Exception {
     DiskWriteAttributesFactory dwaf = new DiskWriteAttributesFactory();
     dwaf.setSynchronous(true);
     AttributesFactory af = new AttributesFactory();
@@ -96,6 +96,7 @@ public class DiskOldAPIsJUnitTest {
       r.close();
     }
 
+    Thread.sleep(1);
     dwaf.setSynchronous(false);
     af.setDiskWriteAttributes(dwaf.create());
     r = cache.createRegion("r", af.create());
