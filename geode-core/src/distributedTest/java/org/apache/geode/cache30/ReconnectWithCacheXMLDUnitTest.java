@@ -28,13 +28,11 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.CacheServerLauncher;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -47,17 +45,14 @@ import org.apache.geode.util.test.TestUtil;
  */
 @Category({MembershipTest.class, ClientServerTest.class})
 public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
+  private static final long serialVersionUID = 1L;
+  private String xmlProperty = DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
+  private String oldPropertySetting;
 
 
   public ReconnectWithCacheXMLDUnitTest() {
     super();
   }
-
-  private static final long serialVersionUID = 1L;
-
-
-  private String xmlProperty = DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
-  private String oldPropertySetting;
 
   @Override
   public final void postSetUp() {
@@ -65,7 +60,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() {
     if (oldPropertySetting == null) {
       System.getProperties().remove(xmlProperty);
     } else {
@@ -85,9 +80,9 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testCacheServerLauncherPortRetained() throws Exception {
-    CacheServerLauncher.setDisableDefaultServer(true);
-    CacheServerLauncher.setServerPort(AvailablePortHelper.getRandomAvailableTCPPort());
+  public void testCacheServerLauncherPortRetained() {
+    ServerLauncherParameters.INSTANCE.withPort(AvailablePortHelper.getRandomAvailableTCPPort())
+        .withDisableDefaultServer(true);
     Cache cache = getCache();
 
     final AtomicBoolean membershipFailed = new AtomicBoolean();
@@ -102,25 +97,12 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
     });
     MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
     assertTrue(membershipFailed.get());
-
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return cache.getReconnectedCache() != null;
-      }
-
-      @Override
-      public String description() {
-        return "waiting for cache to reconnect";
-      }
-    };
-    Wait.waitForCriterion(wc, 60000, 5000, true);
-    await().atMost(60, TimeUnit.SECONDS).until(() -> cache.getReconnectedCache() != null);
+    await().atMost(60000, TimeUnit.MILLISECONDS).pollInterval(5000, TimeUnit.MILLISECONDS)
+        .until(() -> cache.getReconnectedCache() != null);
 
     Cache newCache = cache.getReconnectedCache();
     CacheServer server = newCache.getCacheServers().iterator().next();
-    assertEquals(CacheServerLauncher.getServerPort().intValue(), server.getPort());
+    assertEquals(ServerLauncherParameters.INSTANCE.getPort().intValue(), server.getPort());
     assertEquals(20, server.getMaxConnections()); // this setting is in the XML file
   }
-
 }

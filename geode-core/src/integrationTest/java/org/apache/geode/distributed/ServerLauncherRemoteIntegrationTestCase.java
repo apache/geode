@@ -55,12 +55,12 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   private ServerCommand serverCommand;
 
   @Before
-  public void setUpServerLauncherRemoteIntegrationTestCase() throws Exception {
+  public void setUpServerLauncherRemoteIntegrationTestCase() {
     serverCommand = new ServerCommand(this);
   }
 
   @After
-  public void tearDownServerLauncherRemoteIntegrationTestCase() throws Exception {
+  public void tearDownServerLauncherRemoteIntegrationTestCase() {
     if (process != null) {
       process.destroy();
       process = null;
@@ -129,7 +129,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   protected ServerLauncher startServer(final ServerCommand command,
       final ProcessStreamReader.InputListener outListener,
-      final ProcessStreamReader.InputListener errListener) throws Exception {
+      final ProcessStreamReader.InputListener errListener) throws IOException {
     executeCommandWithReaders(command.create(), outListener, errListener);
     ServerLauncher launcher = awaitStart(getWorkingDirectory());
     assertThat(process.isAlive()).isTrue();

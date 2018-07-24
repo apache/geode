@@ -37,6 +37,7 @@ import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
@@ -76,7 +77,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
   }
 
   @After
-  public void tearDownAbstractServerLauncherIntegrationTestCase() throws Exception {
+  public void tearDownAbstractServerLauncherIntegrationTestCase() {
     if (launcher != null) {
       launcher.stop();
     }
@@ -132,6 +133,20 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
     return awaitStart(builder);
   }
 
+  protected File givenCacheXmlFileWithServerProperties(final int serverPort,
+      final String bindAddress, final String hostnameForClients, final int maxConnections,
+      final int maxThreads, final int maximumMessageCount, final int messageTimeToLive,
+      final int socketBufferSize) {
+    try {
+      cacheXmlFile = writeCacheXml(serverPort, bindAddress, hostnameForClients, maxConnections,
+          maxThreads, maximumMessageCount, messageTimeToLive, socketBufferSize);
+      System.setProperty(CACHE_XML_FILE, cacheXmlFile.getCanonicalPath());
+      return cacheXmlFile;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   protected File givenCacheXmlFileWithServerPort(final int cacheXmlPort) {
     try {
       cacheXmlFile = writeCacheXml(cacheXmlPort);
@@ -171,6 +186,33 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
     attrs.setDataPolicy(DataPolicy.REPLICATE);
     creation.createRegion(getUniqueName(), attrs);
     creation.addCacheServer().setPort(serverPort);
+
+    File cacheXmlFile = new File(getWorkingDirectory(), getUniqueName() + ".xml");
+    PrintWriter pw = new PrintWriter(new FileWriter(cacheXmlFile), true);
+    CacheXmlGenerator.generate(creation, pw);
+    pw.close();
+
+    return cacheXmlFile;
+  }
+
+  private File writeCacheXml(final int serverPort, final String bindAddress,
+      final String hostnameForClients, final int maxConnections, final int maxThreads,
+      final int maximumMessageCount, final int messageTimeToLive, final int socketBufferSize)
+      throws IOException {
+    CacheCreation creation = new CacheCreation();
+    RegionAttributesCreation attrs = new RegionAttributesCreation(creation);
+    attrs.setScope(Scope.DISTRIBUTED_ACK);
+    attrs.setDataPolicy(DataPolicy.REPLICATE);
+    creation.createRegion(getUniqueName(), attrs);
+    CacheServer server = creation.addCacheServer();
+    server.setPort(serverPort);
+    server.setBindAddress(bindAddress);
+    server.setHostnameForClients(hostnameForClients);
+    server.setMaxConnections(maxConnections);
+    server.setMaxThreads(maxThreads);
+    server.setMaximumMessageCount(maximumMessageCount);
+    server.setMessageTimeToLive(messageTimeToLive);
+    server.setSocketBufferSize(socketBufferSize);
 
     File cacheXmlFile = new File(getWorkingDirectory(), getUniqueName() + ".xml");
     PrintWriter pw = new PrintWriter(new FileWriter(cacheXmlFile), true);

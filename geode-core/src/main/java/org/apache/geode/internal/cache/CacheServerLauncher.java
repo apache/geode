@@ -43,6 +43,8 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -62,7 +64,9 @@ import org.apache.geode.internal.util.JavaCommandBuilder;
  * Launcher program to start a cache server.
  *
  * @since GemFire 2.0.2
+ * @deprecated Since Geode 1.7.0. Use {@link ServerLauncher} instead.
  */
+@Deprecated
 public class CacheServerLauncher {
 
   /** Is this VM a dedicated Cache Server? This value is used mainly by the admin API. */
@@ -578,46 +582,6 @@ public class CacheServerLauncher {
     }
   }
 
-  private static Integer serverPort;
-
-  private static String serverBindAddress;
-
-  public static void setServerPort(Integer serverPort) {
-    CacheServerLauncher.serverPort = serverPort;
-  }
-
-  public static void setServerBindAddress(String serverBindAddress) {
-    CacheServerLauncher.serverBindAddress = serverBindAddress;
-  }
-
-  public static void setDisableDefaultServer(Boolean disableDefaultServer) {
-    CacheServerLauncher.disableDefaultServer = disableDefaultServer;
-  }
-
-  public static Boolean disableDefaultServer;
-
-
-
-  public static Integer getServerPort() {
-    return serverPort;
-  }
-
-  public static String getServerBindAddress() {
-    return serverBindAddress;
-  }
-
-  public static Boolean getDisableDefaultServer() {
-    return disableDefaultServer;
-  }
-
-
-  public static void clearStatics() {
-    disableDefaultServer = null;
-    serverPort = null;
-    serverBindAddress = null;
-  }
-
-
   /**
    * The method that does the work of being a cache server. It is invoked in the VM spawned by the
    * {@link #start} method. Basically, it creates a GemFire {@link Cache} based on configuration
@@ -636,20 +600,19 @@ public class CacheServerLauncher {
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
   public void server(final String[] args) throws Exception {
+    Integer serverPort = null;
     isDedicatedCacheServer = true;
     SystemFailure.setExitOK(true);
-
-    final Map<String, Object> options = getServerOptions(args);
-
-    final String serverPortString = (String) options.get(SERVER_PORT);
-
-    if (serverPortString != null) {
-      serverPort = Integer.parseInt(serverPortString);
-    }
-
-    serverBindAddress = (String) options.get(SERVER_BIND_ADDRESS_NAME);
-    disableDefaultServer = (Boolean) options.get(DISABLE_DEFAULT_SERVER);
     workingDir = new File(System.getProperty("user.dir"));
+    final Map<String, Object> options = getServerOptions(args);
+    final String serverPortString = (String) options.get(SERVER_PORT);
+    if (serverPortString != null)
+      serverPort = Integer.parseInt(serverPortString);
+
+    ServerLauncherParameters.INSTANCE
+        .withPort(serverPort)
+        .withBindAddress((String) options.get(SERVER_BIND_ADDRESS_NAME))
+        .withDisableDefaultServer((Boolean) options.get(DISABLE_DEFAULT_SERVER));
 
     // Say that we're starting...
     Status originalStatus = createStatus(this.baseName, STARTING, OSProcess.getId());
@@ -859,11 +822,10 @@ public class CacheServerLauncher {
       cache.getResourceManager().setEvictionOffHeapPercentage(threshold);
     }
 
-
     // Create and start a default cache server
     // If (disableDefaultServer is not set or it is set but false) AND (the number of cacheservers
     // is 0)
-    Boolean disable = disableDefaultServer;
+    Boolean disable = ServerLauncherParameters.INSTANCE.isDisableDefaultServer();
     if ((disable == null || !disable) && cache.getCacheServers().size() == 0) {
       // Create and add a cache server
       CacheServer server = cache.addCacheServer();
@@ -871,13 +833,13 @@ public class CacheServerLauncher {
       CacheServerHelper.setIsDefaultServer(server);
 
       // Set its port if necessary
-      Integer serverPort = CacheServerLauncher.getServerPort();
+      Integer serverPort = ServerLauncherParameters.INSTANCE.getPort();
       if (serverPort != null) {
         server.setPort(serverPort);
       }
 
       // Set its bind address if necessary
-      String serverBindAddress = getServerBindAddress();
+      String serverBindAddress = ServerLauncherParameters.INSTANCE.getBindAddress();
       if (serverBindAddress != null) {
         server.setBindAddress(serverBindAddress.trim());
       }

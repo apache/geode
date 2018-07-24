@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
 
@@ -42,33 +43,33 @@ import org.apache.geode.internal.process.ProcessControllerFactory;
 public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteIntegrationTestCase {
 
   @Before
-  public void setUpServerLauncherRemoteIntegrationTest() throws Exception {
+  public void setUpServerLauncherRemoteIntegrationTest() {
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isTrue();
   }
 
   @Test
-  public void startCreatesPidFile() throws Exception {
+  public void startCreatesPidFile() {
     startServer();
 
     assertThat(getPidFile()).exists();
   }
 
   @Test
-  public void pidFileContainsServerPid() throws Exception {
+  public void pidFileContainsServerPid() {
     startServer();
 
     assertThatPidIsAlive(getServerPid());
   }
 
   @Test
-  public void startCreatesLogFile() throws Exception {
+  public void startCreatesLogFile() {
     startServer();
 
     assertThat(getLogFile()).exists();
   }
 
   @Test
-  public void startDeletesStaleControlFiles() throws Exception {
+  public void startDeletesStaleControlFiles() {
     File stopRequestFile = givenControlFile(getStopRequestFileName());
     File statusRequestFile = givenControlFile(getStatusRequestFileName());
     File statusFile = givenControlFile(getStatusFileName());
@@ -84,7 +85,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
    * This test takes > 1 minute to run in {@link ServerLauncherRemoteFileIntegrationTest}.
    */
   @Test
-  public void startOverwritesStalePidFile() throws Exception {
+  public void startOverwritesStalePidFile() {
     givenPidFile(fakePid);
 
     startServer();
@@ -93,7 +94,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void startWithDisableDefaultServerDoesNotUseDefaultPort() throws Exception {
+  public void startWithDisableDefaultServerDoesNotUseDefaultPort() {
     givenServerPortIsFree(defaultServerPort);
 
     startServer(withDisableDefaultServer());
@@ -102,7 +103,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void startWithDisableDefaultServerSucceedsWhenDefaultPortInUse() throws Exception {
+  public void startWithDisableDefaultServerSucceedsWhenDefaultPortInUse() {
     givenServerPortInUse(defaultServerPort);
 
     startServer(withDisableDefaultServer());
@@ -114,7 +115,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
    * This test takes > 1 minute to run in {@link ServerLauncherRemoteFileIntegrationTest}.
    */
   @Test
-  public void startWithForceOverwritesExistingPidFile() throws Exception {
+  public void startWithForceOverwritesExistingPidFile() {
     givenPidFile(localPid);
 
     startServer(withForce());
@@ -124,7 +125,8 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void startWithServerPortInUseFailsWithBindException() throws Exception {
+  public void startWithServerPortInUseFailsWithBindException()
+      throws IOException, InterruptedException {
     givenServerPortInUse(nonDefaultServerPort);
 
     startServerShouldFail(withServerPort(nonDefaultServerPort));
@@ -133,7 +135,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void startWithServerPortOverridesPortInCacheXml() throws Exception {
+  public void startWithServerPortOverridesPortInCacheXml() {
     givenCacheXmlFileWithServerPort(unusedServerPort);
 
     ServerLauncher launcher = startServer(
@@ -147,7 +149,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void startWithServerPortOverridesDefaultWithCacheXml() throws Exception {
+  public void startWithServerPortOverridesDefaultWithCacheXml() {
     givenCacheXmlFile();
 
     ServerLauncher launcher = startServer(
@@ -161,7 +163,8 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void startWithDefaultPortInUseFailsWithBindException() throws Exception {
+  public void startWithDefaultPortInUseFailsWithBindException()
+      throws IOException, InterruptedException {
     givenServerPortInUse(defaultServerPort);
 
     startServerShouldFail();
@@ -170,7 +173,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void statusForDisableDefaultServerHasEmptyPort() throws Exception {
+  public void statusForDisableDefaultServerHasEmptyPort() {
     givenRunningServer(withDisableDefaultServer());
 
     ServerState serverState =
@@ -180,7 +183,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void statusWithPidReturnsOnlineWithDetails() throws Exception {
+  public void statusWithPidReturnsOnlineWithDetails() throws IOException {
     givenRunningServer();
 
     ServerState serverState = new Builder().setPid(getServerPid()).build().status();
@@ -199,7 +202,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws Exception {
+  public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws IOException {
     givenRunningServer();
 
     ServerState serverState =
@@ -219,7 +222,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void statusWithEmptyPidFileThrowsIllegalArgumentException() throws Exception {
+  public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
     givenEmptyPidFile();
 
     ServerLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
@@ -229,7 +232,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws Exception {
+  public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws IOException {
     givenEmptyWorkingDirectory();
 
     ServerState serverState =
@@ -248,7 +251,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void statusWithStalePidFileReturnsNotResponding() throws Exception {
+  public void statusWithStalePidFileReturnsNotResponding() {
     givenPidFile(fakePid);
 
     ServerState serverState =
@@ -258,7 +261,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void stopWithPidReturnsStopped() throws Exception {
+  public void stopWithPidReturnsStopped() {
     givenRunningServer();
 
     ServerState serverState = new Builder().setPid(getServerPid()).build().stop();
@@ -267,7 +270,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void stopWithPidStopsServerProcess() throws Exception {
+  public void stopWithPidStopsServerProcess() {
     givenRunningServer();
 
     new Builder().setPid(getServerPid()).build().stop();
@@ -276,7 +279,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void stopWithPidDeletesPidFile() throws Exception {
+  public void stopWithPidDeletesPidFile() {
     givenRunningServer();
 
     new Builder().setPid(getServerPid()).build().stop();
@@ -285,7 +288,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void stopWithWorkingDirectoryReturnsStopped() throws Exception {
+  public void stopWithWorkingDirectoryReturnsStopped() {
     givenRunningServer();
 
     ServerState serverState =
@@ -295,7 +298,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void stopWithWorkingDirectoryStopsServerProcess() throws Exception {
+  public void stopWithWorkingDirectoryStopsServerProcess() {
     givenRunningServer();
 
     new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
@@ -304,7 +307,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   }
 
   @Test
-  public void stopWithWorkingDirectoryDeletesPidFile() throws Exception {
+  public void stopWithWorkingDirectoryDeletesPidFile() {
     givenRunningServer();
 
     new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();

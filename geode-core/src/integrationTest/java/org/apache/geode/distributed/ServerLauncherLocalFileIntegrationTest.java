@@ -31,7 +31,7 @@ import org.apache.geode.internal.process.ProcessControllerFactory;
 public class ServerLauncherLocalFileIntegrationTest extends ServerLauncherLocalIntegrationTest {
 
   @Before
-  public void setUpServerLauncherLocalFileTest() throws Exception {
+  public void setUpServerLauncherLocalFileTest() {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isFalse();
   }

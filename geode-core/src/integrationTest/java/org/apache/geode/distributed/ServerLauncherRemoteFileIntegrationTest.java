@@ -34,7 +34,7 @@ import org.apache.geode.lang.AttachAPINotFoundException;
 public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemoteIntegrationTest {
 
   @Before
-  public void setUpServerLauncherRemoteFileTest() throws Exception {
+  public void setUpServerLauncherRemoteFileTest() {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isFalse();
   }
@@ -44,7 +44,7 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
    */
   @Override
   @Test
-  public void statusWithPidReturnsOnlineWithDetails() throws Exception {
+  public void statusWithPidReturnsOnlineWithDetails() {
     givenRunningServer();
 
     assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().status())
@@ -56,7 +56,7 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
    */
   @Override
   @Test
-  public void stopWithPidDeletesPidFile() throws Exception {
+  public void stopWithPidDeletesPidFile() {
     givenRunningServer();
 
     assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
@@ -68,7 +68,7 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
    */
   @Override
   @Test
-  public void stopWithPidReturnsStopped() throws Exception {
+  public void stopWithPidReturnsStopped() {
     givenRunningServer();
 
     assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
@@ -80,7 +80,7 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
    */
   @Override
   @Test
-  public void stopWithPidStopsServerProcess() throws Exception {
+  public void stopWithPidStopsServerProcess() {
     givenRunningServer();
 
     assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
