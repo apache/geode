@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,12 +26,11 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
@@ -41,13 +39,9 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({LoggingTest.class})
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+
 public class ShowLogCommandDUnitTest implements Serializable {
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
@@ -58,7 +52,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
   private static final String MESSAGE_ON_MANAGER = "someLogMessageOnManager";
   private static final String MESSAGE_ON_SERVER1 = "someLogMessageOnServer1";
   private static final String MESSAGE_ON_SERVER2 = "someLogMessageOnServer2";
-  private static MemberVM manager;
+  protected static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   @ClassRule
@@ -66,14 +60,6 @@ public class ShowLogCommandDUnitTest implements Serializable {
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
-
-  @Parameterized.Parameter
-  public static boolean useHttp;
-
-  @Parameterized.Parameters
-  public static Object[] data() {
-    return new Object[] {true, false};
-  }
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -83,7 +69,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     managerProps.setProperty(LOG_FILE, MANAGER_NAME + ".log");
     managerProps.setProperty(LOG_LEVEL, "info");
 
-    manager = clusterStartupRule.startLocatorVM(0, managerProps);
+    locator = clusterStartupRule.startLocatorVM(0, managerProps);
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);
@@ -91,7 +77,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     server1Props.setProperty(LOG_FILE, SERVER1_NAME + ".log");
     managerProps.setProperty(LOG_LEVEL, "info");
 
-    server1 = clusterStartupRule.startServerVM(1, server1Props, manager.getPort());
+    server1 = clusterStartupRule.startServerVM(1, server1Props, locator.getPort());
 
     Properties server2Props = new Properties();
     server2Props.setProperty(NAME, SERVER2_NAME);
@@ -99,20 +85,24 @@ public class ShowLogCommandDUnitTest implements Serializable {
     server2Props.setProperty(LOG_FILE, SERVER2_NAME + ".log");
     managerProps.setProperty(LOG_LEVEL, "info");
 
-    server2 = clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
+    server2 = clusterStartupRule.startServerVM(2, server2Props, locator.getPort());
+  }
 
-    if (useHttp) {
-      gfsh.connectAndVerify(manager.getHttpPort(), http);
-    } else {
-      gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
-    }
+  @Before
+  public void before() throws Exception {
+    gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
 
     Awaitility.await().atMost(2, TimeUnit.MINUTES)
         .until(ShowLogCommandDUnitTest::allMembersAreConnected);
   }
 
+  @After
+  public void after() throws Exception {
+    gfsh.disconnect();
+  }
+
   private void writeLogMessages() {
-    manager.invoke(() -> LogService.getLogger().info(MESSAGE_ON_MANAGER));
+    locator.invoke(() -> LogService.getLogger().info(MESSAGE_ON_MANAGER));
     server1.invoke(() -> LogService.getLogger().info(MESSAGE_ON_SERVER1));
     server2.invoke(() -> LogService.getLogger().info(MESSAGE_ON_SERVER2));
 
@@ -158,8 +148,8 @@ public class ShowLogCommandDUnitTest implements Serializable {
     assertThat(output).contains("Member NotAValidMember could not be found");
   }
 
-  private static boolean allMembersAreConnected() {
-    return manager.getVM().invoke(() -> {
+  protected static boolean allMembersAreConnected() {
+    return locator.getVM().invoke(() -> {
       DistributedMember server1 =
           CliUtil.getDistributedMemberByNameOrId(SERVER1_NAME, ClusterStartupRule.getCache());
       DistributedMember server2 =

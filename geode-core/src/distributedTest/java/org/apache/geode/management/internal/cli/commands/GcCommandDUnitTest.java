@@ -17,29 +17,24 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 
-
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GcCommandDUnitTest {
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
@@ -48,14 +43,7 @@ public class GcCommandDUnitTest {
   private static final String GROUP1 = "Group1";
   private static final String GROUP2 = "Group2";
 
-  @Parameterized.Parameter
-  public static boolean useHttp;
-
-  @Parameterized.Parameters(name = "Use http: {0}")
-  public static Object[] data() {
-    return new Object[] {true, false};
-  }
-
+  protected static MemberVM locator;
 
   @ClassRule
   public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -69,24 +57,27 @@ public class GcCommandDUnitTest {
     managerProps.setProperty(NAME, MANAGER_NAME);
     managerProps.setProperty(GROUPS, GROUP0);
     managerProps.setProperty(LOG_FILE, "someLog.log");
-
-    MemberVM manager = clusterStartupRule.startLocatorVM(0, managerProps);
+    locator = clusterStartupRule.startLocatorVM(0, managerProps);
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);
     server1Props.setProperty(GROUPS, GROUP1);
-    clusterStartupRule.startServerVM(1, server1Props, manager.getPort());
+    clusterStartupRule.startServerVM(1, server1Props, locator.getPort());
 
     Properties server2Props = new Properties();
     server2Props.setProperty(NAME, SERVER2_NAME);
     server2Props.setProperty(GROUPS, GROUP2);
-    clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
+    clusterStartupRule.startServerVM(2, server2Props, locator.getPort());
+  }
 
-    if (useHttp) {
-      gfsh.connectAndVerify(manager.getHttpPort(), http);
-    } else {
-      gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
-    }
+  @Before
+  public void before() throws Exception {
+    gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
+  }
+
+  @After
+  public void after() throws Exception {
+    gfsh.disconnect();
   }
 
   @Test
