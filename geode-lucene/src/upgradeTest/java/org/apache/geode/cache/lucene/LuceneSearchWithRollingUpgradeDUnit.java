@@ -469,9 +469,9 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   private VM createLuceneIndexAndRegionOnRolledServer(String regionType, File diskdir,
       String shortcutName, String regionName, VM rollServer) {
-    if (reindex) {
-      rollServer.invoke(() -> LuceneServiceImpl.LUCENE_REINDEX = true);
-    }
+
+    Boolean serializeIt = reindex;
+    rollServer.invoke(() -> LuceneServiceImpl.LUCENE_REINDEX = serializeIt);
     rollServer.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
     // recreate region on "rolled" server
     if ((regionType.equals("persistentPartitioned"))) {
