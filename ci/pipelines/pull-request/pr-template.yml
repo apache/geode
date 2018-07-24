@@ -103,7 +103,7 @@ jobs:
           GRADLE_TASK_OPTIONS: (( grab metadata.job.gradle_task_options || "" ))
           ARTIFACT_SLUG: (( grab metadata.job.artifact_slug ))
         run:
-          path: geode/ci/scripts/execute_tests.sh
+          path: (( grab metadata.job.execute_command || "geode/ci/scripts/execute_tests.sh" ))
     on_success:
       do:
       - put: pull-request-job-success
