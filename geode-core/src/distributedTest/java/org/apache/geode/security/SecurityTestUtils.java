@@ -68,6 +68,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DynamicRegionFactory;
+import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -659,6 +660,19 @@ public class SecurityTestUtils {
       }
     };
     waitForCriterion(ev, sleepMillis * numTries, 200, true);
+  }
+
+  protected static Object getLocalValue(final Region region, final Object key) {
+    Region.Entry entry = region.getEntry(key);
+    if (entry != null) {
+      try { // Handle race conditions with concurrent destroy ops
+        return entry.getValue();
+      } catch (EntryDestroyedException e) {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   protected static void doProxyCacheClose() {
@@ -1668,7 +1682,7 @@ public class SecurityTestUtils {
     for (int index = 0; index < num; ++index) {
       final String key = KEYS[index];
       final String expectedVal = vals[index];
-      waitForCondition(() -> expectedVal.equals(region.get(key)), 1000, 30 / num);
+      waitForCondition(() -> expectedVal.equals(getLocalValue(region, key)), 1000, 30 / num);
     }
 
     for (int index = 0; index < num; ++index) {

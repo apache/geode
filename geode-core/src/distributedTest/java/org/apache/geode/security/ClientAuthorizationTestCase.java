@@ -29,6 +29,7 @@ import static org.apache.geode.security.SecurityTestUtils.VALUES;
 import static org.apache.geode.security.SecurityTestUtils.closeCache;
 import static org.apache.geode.security.SecurityTestUtils.concatProperties;
 import static org.apache.geode.security.SecurityTestUtils.getCache;
+import static org.apache.geode.security.SecurityTestUtils.getLocalValue;
 import static org.apache.geode.security.SecurityTestUtils.registerExpectedExceptions;
 import static org.apache.geode.security.SecurityTestUtils.waitForCondition;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -400,7 +401,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
               @Override
               public Boolean call() throws Exception {
-                Object value = region.get(key);
+                Object value = getLocalValue(region, key);
                 return (flags & OpFlags.CHECK_FAIL) > 0 ? !expectedVal.equals(value)
                     : expectedVal.equals(value);
               }
@@ -412,7 +413,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             }.init(region);
             waitForCondition(condition);
 
-            value = region.get(key);
+            value = getLocalValue(region, key);
 
           } else if ((flags & OpFlags.USE_GET_ENTRY_IN_TX) > 0) {
             getCache().getCacheTransactionManager().begin();
