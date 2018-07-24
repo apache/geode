@@ -111,6 +111,11 @@ subprojects {
       testTaskName = 'uiTest'
       includeInCheckLifecycle = false
     }
+    upgradeTest {
+      parentSourceSet = 'test'
+      testTaskName = 'upgradeTest'
+      includeInCheckLifecycle = false
+    }
   }
 
   integrationTest {
@@ -146,6 +151,8 @@ subprojects {
 
     forkEvery 1
     outputs.upToDateWhen{false}
+
+    dependsOn upgradeTest
   }
 
   acceptanceTest {
@@ -154,6 +161,11 @@ subprojects {
   }
 
   uiTest {
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
+  upgradeTest {
     forkEvery 1
     outputs.upToDateWhen{false}
   }
@@ -446,12 +458,14 @@ subprojects {
     description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
 
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest].each {it.finalizedBy combineReports}
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest
+  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {it.finalizedBy combineReports}
 }
 
 classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava
 classes.dependsOn subprojects.compileAcceptanceTestJava
 classes.dependsOn subprojects.compileUiTestJava
+classes.dependsOn subprojects.compilePerformanceTestJava
+classes.dependsOn subprojects.compileUpgradeTestJava
 

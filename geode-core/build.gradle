@@ -31,6 +31,7 @@ idea {
     testSourceDirs += project.tasks.generateIntegrationTestGrammarSource.outputs.files
     testSourceDirs += project.tasks.generateDistributedTestGrammarSource.outputs.files
     testSourceDirs += project.tasks.generatePerformanceTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generateUpgradeTestGrammarSource.outputs.files
   }
 }
 
@@ -168,6 +169,9 @@ dependencies {
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
 
+  distributedTestCompile files(sourceSets.integrationTest.output)
+  upgradeTestCompile files(sourceSets.distributedTest.output)
+  upgradeTestCompile files(sourceSets.integrationTest.output)
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
