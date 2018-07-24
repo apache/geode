@@ -1580,7 +1580,8 @@ public interface DiskEntry extends RegionEntry {
           result = new AsyncDiskEntry(region, entry, tag);
         }
       }
-      if (curValAsToken == null) {
+      boolean isPrimary = region.toString().contains("primary=true");
+      if (curValAsToken == null || !isPrimary) {
         updateStats(dr, region, 0/* InVM */, -1/* OnDisk */, -oldValueLength);
       } else if (!Token.isInvalidOrRemoved(curValAsToken)) {
         updateStats(dr, region, -1/* InVM */, 0/* OnDisk */, 0);
