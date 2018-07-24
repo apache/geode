@@ -83,6 +83,17 @@ if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; 
   TEAM="main"
 fi
 
+if [[ "${GEODE_FORK}" == "apache" ]]; then
+  PIPELINE_NAME=${SANITIZED_GEODE_BRANCH}
+  DOCKER_IMAGE_PREFIX=""
+else
+  PIPELINE_NAME="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
+  DOCKER_IMAGE_PREFIX="${PIPELINE_NAME}-"
+fi
+
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
-fly -t ${TARGET} set-pipeline --non-interactive --pipeline ${SANITIZED_GEODE_BRANCH} --config ${TMP_DIR}/final.yml
+fly -t ${TARGET} set-pipeline --non-interactive \
+  --pipeline ${PIPELINE_NAME} \
+  --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
+  --config ${TMP_DIR}/final.yml
 

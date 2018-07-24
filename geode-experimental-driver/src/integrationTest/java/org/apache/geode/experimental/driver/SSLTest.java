@@ -24,9 +24,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
@@ -140,7 +143,8 @@ public class SSLTest {
   public void driverCannotConnectWithBogusClientKeystore() throws Exception {
     startLocator(SERVER_KEY_STORE, true, "any", "any");
     startServer();
-    expectedException.expect(SSLException.class);
+    expectedException
+        .expect(anyOf(instanceOf(SSLException.class), instanceOf(SocketException.class)));
     driver = new DriverFactory().addLocator("localhost", locatorPort)
         .setTrustStorePath(CLIENT_TRUST_STORE).setKeyStorePath(BOGUSCLIENT_KEY_STORE).create();
   }

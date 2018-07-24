@@ -35,27 +35,9 @@ dependencies {
   testCompile project(path: ':geode-junit')
   // TODO build - move shared source to common library.
   testCompile files(project(':geode-core').sourceSets.test.output)
-}
 
-disableMavenPublishing()
-
-configurations {
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-}
-
-sourceSets {
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-}
-
-dependencies {
   // TODO build - move dunit framework to shared module.
   integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
+
+disableMavenPublishing()

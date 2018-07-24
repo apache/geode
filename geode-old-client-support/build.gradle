@@ -23,25 +23,7 @@ dependencies {
 
     testCompile files(project(':geode-core').sourceSets.test.output)
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
-}
 
-configurations {
-    distributedTestCompile.extendsFrom testCompile
-    distributedTestRuntime.extendsFrom testRuntime
-}
-
-sourceSets {
-    distributedTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/distributedTest/java')
-        }
-        resources.srcDir file('src/distributedTest/resources')
-    }
-}
-
-dependencies {
     // TODO build - move dunit framework to shared module.
     distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
     distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)

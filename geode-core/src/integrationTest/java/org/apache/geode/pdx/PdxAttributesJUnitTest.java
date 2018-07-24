@@ -77,6 +77,9 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     if (instance != null) {
       instance.close();
     }
+    if (cache != null) {
+      cache.close();
+    }
     FileUtils.deleteDirectory(diskDir);
     File[] defaultStoreFiles = new File(".").listFiles(new FilenameFilter() {
 
@@ -87,9 +90,6 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
 
     for (File file : defaultStoreFiles) {
       FileUtils.forceDelete(file);
-    }
-    if (cache != null) {
-      cache.close();
     }
   }
 

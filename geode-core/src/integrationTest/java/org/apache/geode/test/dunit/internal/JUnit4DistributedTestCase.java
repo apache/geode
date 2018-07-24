@@ -333,7 +333,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    *
    * @return the blackboard
    */
-  public DUnitBlackboard getBlackboard() {
+  public static DUnitBlackboard getBlackboard() {
     return blackboard;
   }
 

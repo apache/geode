@@ -38,22 +38,6 @@ dependencies {
   compile project(":geode-old-versions")
 }
 
-configurations {
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-}
-
-sourceSets {
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-}
-
 test {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"

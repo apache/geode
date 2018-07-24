@@ -17,23 +17,27 @@ package org.apache.geode.internal.cache.partitioned.fixed;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DuplicatePrimaryPartitionException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.partition.PartitionNotAvailableException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.PartitioningTest;
 
 /**
@@ -41,6 +45,8 @@ import org.apache.geode.test.junit.categories.PartitioningTest;
  */
 @Category({PartitioningTest.class})
 public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
+
+  public static final String REGION_NAME = "Quarter";
 
   public FixedPartitioningDUnitTest() {
     super();
@@ -67,7 +73,8 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition(null, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa);
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(
+          REGION_NAME,
           fpaList, 0, 40, 3, new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     } catch (Exception illegal) {
@@ -95,8 +102,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 0, 40, 3, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 0, 40, 3, new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     } catch (Exception illegal) {
       if (!((illegal.getCause() instanceof IllegalStateException) && (illegal.getCause()
@@ -120,8 +128,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 0, 0, 3, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 0, 0, 3, new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     } catch (Exception illegal) {
       if (!((illegal.getCause() instanceof IllegalStateException)
@@ -147,22 +156,25 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
           FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 0, 40, 9, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 0, 40, 9, new QuarterPartitionResolver(), null, false));
 
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpaList.clear();
       fpaList.add(fpa1);
-      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 0, 40, 9, new QuarterPartitionResolver(), null, false));
+      member2
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 0, 40, 9, new QuarterPartitionResolver(), null, false));
 
       member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpaList.clear();
       fpaList.add(fpa1);
-      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 0, 40, 9, new QuarterPartitionResolver(), null, false));
+      member3
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 0, 40, 9, new QuarterPartitionResolver(), null, false));
       fail("DuplicatePrimaryPartitionException Expected");
     } catch (Exception duplicate) {
       if (!((duplicate.getCause() instanceof DuplicatePrimaryPartitionException)
@@ -192,8 +204,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
 
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
@@ -201,8 +214,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
+      member2
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException Expected");
     } catch (Exception illegal) {
       if (!((illegal.getCause() instanceof IllegalStateException)
@@ -225,8 +239,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          null, 1, 0, 9, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              null, 1, 0, 9, new QuarterPartitionResolver(), null, false));
 
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 = FixedPartitionAttributes.createFixedPartition("Q11", true, 3);
@@ -235,8 +250,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
+      member2
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
 
       member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition("Q12", true, 3);
@@ -247,8 +263,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       fpaList.add(fpa1);
       fpaList.add(fpa2);
       fpaList.add(fpa3);
-      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
+      member3
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
 
       member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition("Q13", true, 3);
@@ -256,8 +273,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
+      member4
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 9, new QuarterPartitionResolver(), null, false));
       fail("IllegalStateException expected");
     } catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException) && (ex.getCause().getMessage()
@@ -278,8 +296,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          null, 1, 0, 5, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              null, 1, 0, 5, new QuarterPartitionResolver(), null, false));
 
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 =
@@ -289,8 +308,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 5, new QuarterPartitionResolver(), null, false));
+      member2
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 5, new QuarterPartitionResolver(), null, false));
 
       member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
@@ -298,8 +318,9 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
       fpaList.clear();
       fpaList.add(fpa1);
       fpaList.add(fpa2);
-      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 5, new QuarterPartitionResolver(), null, false));
+      member3
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 5, new QuarterPartitionResolver(), null, false));
 
       fail("IllegalStateException expected");
     } catch (Exception ex) {
@@ -322,25 +343,28 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   public void testPut_PartitionNotAvailableException() {
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          null, 1, 0, 12, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              null, 1, 0, 12, new QuarterPartitionResolver(), null, false));
 
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 =
           FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
+      member2
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
 
       member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
       fpaList.clear();
       fpaList.add(fpa1);
-      member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
+      member3
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
 
-      member1.invoke(() -> FixedPartitioningTestBase.putThorughAccessor("Quarter"));
+      member1.invoke(() -> FixedPartitioningTestBase.putThroughAccessor(REGION_NAME));
       fail("PartitionNotAvailableException Expected");
     } catch (Exception ex) {
       if (!((ex.getCause() instanceof PartitionNotAvailableException))) {
@@ -359,16 +383,18 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     IgnoredException expected = IgnoredException.addIgnoredException("IllegalStateException");
     try {
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          null, 1, 40, 12, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              null, 1, 40, 12, new QuarterPartitionResolver(), null, false));
 
       member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
       FixedPartitionAttributes fpa1 =
           FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
+      member2
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
     } catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
         Assert.fail("Expected IllegalStateException ", ex);
@@ -392,12 +418,14 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
           FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
       List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
       fpaList.add(fpa1);
-      member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
+      member2
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              fpaList, 1, 40, 12, new QuarterPartitionResolver(), null, false));
 
       member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-      member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          null, 1, 40, 12, new QuarterPartitionResolver(), null, false));
+      member1
+          .invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+              null, 1, 40, 12, new QuarterPartitionResolver(), null, false));
     } catch (Exception ex) {
       if (!((ex.getCause() instanceof IllegalStateException))) {
         Assert.fail("Expected IllegalStateException ", ex);
@@ -414,7 +442,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   @Test
   public void testPut_ValidateDataOnMember_OnlyPrimary_Accessor() {
     member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+    member1.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
         null, 0, 0, 12, new QuarterPartitionResolver(), null, false));
 
     member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
@@ -422,24 +450,24 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
         FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     fpaList.add(fpa1);
-    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+    member2.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
         fpaList, 0, 40, 12, new QuarterPartitionResolver(), null, false));
 
     member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
     fpaList.clear();
     fpaList.add(fpa1);
-    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+    member3.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
         fpaList, 0, 40, 12, new QuarterPartitionResolver(), null, false));
 
     member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
     fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
     fpaList.clear();
     fpaList.add(fpa1);
-    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+    member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
         fpaList, 0, 40, 12, new QuarterPartitionResolver(), null, false));
 
-    member1.invoke(() -> FixedPartitioningTestBase.putThorughAccessor("Quarter"));
+    member1.invoke(() -> FixedPartitioningTestBase.putThroughAccessor(REGION_NAME));
 
     member2.invoke(() -> FixedPartitioningTestBase.checkPrimaryData(Quarter1));
     member3.invoke(() -> FixedPartitioningTestBase.checkPrimaryData(Quarter2));
@@ -447,74 +475,69 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
 
   }
 
-  @Category(FlakyTest.class) // GEODE-567: async actions, waitForCriterion, time sensitive,
-  // non-thread-safe test hook, eats exceptions (partially fixed)
   @Test
-  public void testBug43283() {
-    member1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-    member2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-    member3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
-    member4.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+  public void putWhileDataStoresAreBeingCreatedFails() throws Exception {
 
-    member1.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
-    member2.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
-    member3.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
-    member4.invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
+    VM accessor = VM.getVM(0);
+    VM datastore1 = VM.getVM(1);
+    VM datastore2 = VM.getVM(2);
+    VM datastore3 = VM.getVM(3);
+    accessor.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    datastore1.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    datastore2.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+    datastore3.invoke(() -> FixedPartitioningTestBase.createCacheOnMember());
+
+    getBlackboard().initBlackboard();
+
+    // Create an accessor for the PR
+    accessor.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes(REGION_NAME,
+        null, 0, 0, 12, new QuarterPartitionResolver(), null, false));
+
+    // Set an observer in datastore 1 that will wait in the middle of PR creation
+    datastore1
+        .invoke(() -> FixedPartitioningTestBase.setPRObserverBeforeCalculateStartingBucketId());
     try {
+      // Start datstore1 asynchronously. This will get stuck waiting in the PR observer
+      AsyncInvocation inv1 = datastore1.invokeAsync(() -> createRegionWithQuarter(Quarter1));
 
-      FixedPartitionAttributes fpa1 =
-          FixedPartitionAttributes.createFixedPartition(Quarter1, true, 3);
-      List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
-      fpaList.add(fpa1);
-      AsyncInvocation inv1 = member1.invokeAsync(
-          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter", fpaList, 0,
-              40, 12, new QuarterPartitionResolver(), null, false));
+      // Make sure datastore 1 gets stuck waiting on the observer
+      getBlackboard().waitForGate("waiting", 1, TimeUnit.MINUTES);
 
-      FixedPartitionAttributes fpa2 =
-          FixedPartitionAttributes.createFixedPartition(Quarter2, true, 3);
-      fpaList.clear();
-      fpaList.add(fpa2);
-      AsyncInvocation inv2 = member2.invokeAsync(
-          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter", fpaList, 0,
-              40, 12, new QuarterPartitionResolver(), null, false));
+      // Start two more data stores asynchronously. These will get stuck waiting for a dlock behind
+      // datatstore1
+      AsyncInvocation inv2 = datastore2.invokeAsync(() -> createRegionWithQuarter(Quarter2));
+      AsyncInvocation inv3 = datastore3.invokeAsync(() -> createRegionWithQuarter(Quarter3));
 
-      FixedPartitionAttributes fpa3 =
-          FixedPartitionAttributes.createFixedPartition(Quarter3, true, 3);
-      fpaList.clear();
-      fpaList.add(fpa3);
-      AsyncInvocation inv3 = member3.invokeAsync(
-          () -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter", fpaList, 0,
-              40, 12, new QuarterPartitionResolver(), null, false));
 
-      member4.invoke(() -> FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
-          null, 0, 0, 12, new QuarterPartitionResolver(), null, false));
-      try {
-        member4.invoke(() -> FixedPartitioningTestBase.putThorughAccessor_Immediate("Quarter"));
-      } catch (Exception e) {
-        e.printStackTrace();
-        if (!(e.getCause() instanceof PartitionNotAvailableException)) {
-          Assert.fail("exception thrown is not PartitionNotAvailableException", e);
-        }
-      }
-      try {
-        inv1.join();
-        inv2.join();
-        inv3.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        Assert.fail("Unexpected Exception", e);
-      }
+      // Make sure a put to datastore1, which is in the middle of pr initialization, fails correctly
+      Assertions.assertThatThrownBy(() -> accessor
+          .invoke(() -> FixedPartitioningTestBase.putForQuarter(REGION_NAME, Quarter1)))
+          .hasCauseInstanceOf(PartitionedRegionStorageException.class);
+
+      // Make sure a put to datastore2, which stuck behind datastore1 in initialization, fails
+      // correctly
+      Assertions.assertThatThrownBy(() -> accessor
+          .invoke(() -> FixedPartitioningTestBase.putForQuarter(REGION_NAME, Quarter2)))
+          .hasCauseInstanceOf(PartitionedRegionStorageException.class);
+
+      getBlackboard().signalGate("done");
+
+      inv1.get();
+      inv2.get();
+      inv3.get();
     } finally {
-      member1
-          .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
-      member2
-          .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
-      member3
-          .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
-      member4
+      datastore1
           .invoke(() -> FixedPartitioningTestBase.resetPRObserverBeforeCalculateStartingBucketId());
     }
 
+  }
+
+  private void createRegionWithQuarter(String quarter) {
+    FixedPartitionAttributes partition =
+        FixedPartitionAttributes.createFixedPartition(quarter, true, 3);
+    FixedPartitioningTestBase.createRegionWithPartitionAttributes("Quarter",
+        Arrays.asList(partition), 0,
+        40, 12, new QuarterPartitionResolver(), null, false);
   }
 
   /**

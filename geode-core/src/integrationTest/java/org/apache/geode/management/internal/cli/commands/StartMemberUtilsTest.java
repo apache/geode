@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -89,10 +90,14 @@ public class StartMemberUtilsTest {
   @Test
   public void testGeodeOnClasspathIsFirst() {
     String currentClasspath = System.getProperty("java.class.path");
-    String customGeodeCore = "/custom/geode-core-" + GemFireVersion.getGemFireVersion() + ".jar";
-    System.setProperty("java.class.path", currentClasspath + ":" + customGeodeCore);
+    String customGeodeCore = FileSystems
+        .getDefault().getPath("/custom/geode-core-" + GemFireVersion.getGemFireVersion() + ".jar")
+        .toAbsolutePath().toString();
+    System.setProperty("java.class.path", currentClasspath + File.pathSeparator + customGeodeCore);
 
-    String[] otherJars = new String[] {"/other/one.jar", "/other/two.jar"};
+    String[] otherJars = new String[] {
+        FileSystems.getDefault().getPath("/other/one.jar").toAbsolutePath().toString(),
+        FileSystems.getDefault().getPath("/other/two.jar").toAbsolutePath().toString()};
 
     String gemfireClasspath = StartMemberUtils.toClasspath(true, otherJars);
     assertThat(gemfireClasspath).startsWith(customGeodeCore);

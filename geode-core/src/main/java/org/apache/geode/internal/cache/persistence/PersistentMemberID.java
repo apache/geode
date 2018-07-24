@@ -26,12 +26,12 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 public class PersistentMemberID implements DataSerializable {
   private static final long serialVersionUID = 7037022320499508045L;
 
-  public InetAddress host;
-  public String directory;
-  public long timeStamp;
-  public short version;
-  public DiskStoreID diskStoreId;
-  public String name;
+  private InetAddress host;
+  private String directory;
+  private long timeStamp;
+  private short version;
+  private DiskStoreID diskStoreId;
+  private String name;
 
   public PersistentMemberID() {
 
@@ -161,5 +161,29 @@ public class PersistentMemberID implements DataSerializable {
 
   public VersionSource getVersionMember() {
     return this.diskStoreId;
+  }
+
+  public InetAddress getHost() {
+    return host;
+  }
+
+  public String getDirectory() {
+    return directory;
+  }
+
+  public long getTimeStamp() {
+    return timeStamp;
+  }
+
+  public short getVersion() {
+    return version;
+  }
+
+  public DiskStoreID getDiskStoreId() {
+    return diskStoreId;
+  }
+
+  public String getName() {
+    return name;
   }
 }

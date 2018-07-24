@@ -84,107 +84,36 @@ subprojects {
     }
   }
 
-  sourceSets {
+  apply plugin: 'nebula.facet'
+  facets {
     integrationTest {
-      java {
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
-        srcDir file('src/integrationTest/java')
-      }
-      resources.srcDir file('src/integrationTest/resources')
-      apply plugin: 'idea'
-      idea {
-        module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.integrationTestCompile ]
-        }
-      }
+      parentSourceSet = 'test'
+      testTaskName = 'integrationTest'
+      includeInCheckLifecycle = false
     }
-
     distributedTest {
-      java {
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
-        srcDir file('src/distributedTest/java')
-      }
-      resources.srcDir file('src/distributedTest/resources')
-      apply plugin: 'idea'
-      idea {
-        module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.distributedTestCompile ]
-        }
-      }
+      parentSourceSet = 'test'
+      testTaskName = 'distributedTest'
+      includeInCheckLifecycle = false
     }
-
     performanceTest {
-      java {
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
-        srcDir file('src/performanceTest/java')
-      }
-      resources.srcDir file('src/performanceTest/resources')
-      apply plugin: 'idea'
-      idea {
-        module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.performanceTestCompile ]
-        }
-      }
+      parentSourceSet = 'test'
+      testTaskName = 'performanceTest'
+      includeInCheckLifecycle = false
     }
-
     acceptanceTest {
-      java {
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
-        srcDir file('src/acceptanceTest/java')
-      }
-      resources.srcDir file('src/acceptanceTest/resources')
-      apply plugin: 'idea'
-      idea {
-        module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.acceptanceTestCompile ]
-        }
-      }
+      parentSourceSet = 'test'
+      testTaskName = 'acceptanceTest'
+      includeInCheckLifecycle = false
     }
-
     uiTest {
-      java {
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
-        srcDir file('src/uiTest/java')
-      }
-      resources.srcDir file('src/uiTest/resources')
-      apply plugin: 'idea'
-      idea {
-        module {
-          sourceDirs -= java
-          resourceDirs -= resources
-          testSourceDirs += java
-          testResourceDirs += resources
-          scopes.TEST.plus += [ configurations.uiTestCompile ]
-        }
-      }
+      parentSourceSet = 'test'
+      testTaskName = 'uiTest'
+      includeInCheckLifecycle = false
     }
   }
 
-  task integrationTest(type:Test) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-
+  integrationTest {
     useJUnit {
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
@@ -197,18 +126,38 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
-  task distributedTest(type:Test) {
-    testClassesDirs = sourceSets.distributedTest.output.classesDirs
-    classpath = sourceSets.distributedTest.runtimeClasspath
-
+  integrationTest {
     useJUnit {
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
     forkEvery 1
 
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
     outputs.upToDateWhen{false}
   }
+
+  distributedTest {
+    useJUnit {
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
+  acceptanceTest {
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
+  uiTest {
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
 
   task repeatTest(type:RepeatTest) {
     times= Integer.parseInt(repeat)
@@ -216,27 +165,12 @@ subprojects {
     useJUnit {}
 
     outputs.upToDateWhen{false}
+
+    classpath += project.sourceSets.distributedTest.runtimeClasspath
+    testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
+    classpath += project.sourceSets.integrationTest.runtimeClasspath
+    testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
   }
-
-  task acceptanceTest(type:Test) {
-      testClassesDirs = sourceSets.acceptanceTest.output.classesDirs
-      classpath = sourceSets.acceptanceTest.runtimeClasspath
-
-      forkEvery 1
-
-      outputs.upToDateWhen{false}
-  }
-
-  task uiTest(type:Test) {
-    testClassesDirs = sourceSets.uiTest.output.classesDirs
-    classpath = sourceSets.uiTest.runtimeClasspath
-
-    forkEvery 1
-
-    outputs.upToDateWhen{false}
-  }
-
-
 
   task flakyTest(type:Test) {
     useJUnit {

@@ -31,9 +31,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -380,7 +382,16 @@ public class BackupIntegrationTest {
 
   private void execute(File script, boolean expectFailure)
       throws IOException, InterruptedException {
-    ProcessBuilder pb = new ProcessBuilder(script.getAbsolutePath());
+    List<String> command = new ArrayList<>();
+
+    boolean isWindows = script.getName().endsWith("bat");
+    if (isWindows) {
+      command.add("cmd.exe");
+      command.add("/c");
+    }
+
+    command.add(script.getAbsolutePath());
+    ProcessBuilder pb = new ProcessBuilder(command);
     pb.redirectErrorStream(true);
     Process process = pb.start();
 
@@ -393,7 +404,6 @@ public class BackupIntegrationTest {
     }
 
     int result = process.waitFor();
-    boolean isWindows = script.getName().endsWith("bat");
     // On Windows XP, the process returns 0 even though we exit with a non-zero status.
     // So let's not bother asserting the return value on XP.
     if (!isWindows) {

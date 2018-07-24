@@ -18,32 +18,6 @@ import org.apache.geode.gradle.TestPropertiesWriter
  */
 apply plugin: 'war'
 
-configurations {
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-  uiTestCompile.extendsFrom testCompile
-  uiTestRuntime.extendsFrom testRuntime
-}
-
-sourceSets {
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-  uiTest {
-    java {
-      compileClasspath += main.output + test.output
-      runtimeClasspath += main.output + test.output
-      srcDir file('src/uiTest/java')
-    }
-    resources.srcDir file('src/uiTest/resources')
-  }
-}
-
 dependencies {
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
 
