@@ -477,7 +477,7 @@ public class RegionMapDestroy {
     if (!hasVersionStamp(entry)) {
       removePhase2(entry);
     } else if (isRemoteDestroyOfTombstone(entry)) {
-      rescheduleTombstoneUsingEntryTag(entry);
+      rescheduleTombstoneUsingEntryTag(entry); // TODO coverage
     }
     lruEntryDestroy(entry);
     opCompleted = true;
