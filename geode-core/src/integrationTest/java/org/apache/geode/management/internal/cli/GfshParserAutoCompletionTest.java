@@ -269,11 +269,12 @@ public class GfshParserAutoCompletionTest {
   @Test
   public void testObtainHelp() {
     String command = CliStrings.START_PULSE;
-    String helpString = "NAME\n" + "start pulse\n" + "IS AVAILABLE\n" + "true\n" + "SYNOPSIS\n"
+    String helpString = ("NAME\n" + "start pulse\n" + "IS AVAILABLE\n" + "true\n" + "SYNOPSIS\n"
         + "Open a new window in the default Web browser with the URL for the Pulse application.\n"
         + "SYNTAX\n" + "start pulse [--url=value]\n" + "PARAMETERS\n" + "url\n"
         + "URL of the Pulse Web application.\n" + "Required: false\n"
-        + "Default (if the parameter is not specified): http://localhost:7070/pulse\n";
+        + "Default (if the parameter is not specified): http://localhost:7070/pulse\n").replace(
+            "\n", System.lineSeparator());
     assertThat(parser.getCommandManager().obtainHelp(command)).isEqualTo(helpString);
   }
 
