@@ -278,27 +278,27 @@ function displaySelectedRegionDetails(regionName, data){
       //region member specific statistics 
       tipObj.find('#idMemberName').html(memberName);
       
-      var key = 'memberOnRegionJson.' + memberName + '.entryCount';
+      var key = 'memberOnRegionJson.[' + memberName + '].entryCount';
       tipObj.find('#regionMemberEntryCount').html(eval(key));
-      key = 'memberOnRegionJson.' + memberName + '.entrySize';
+      key = 'memberOnRegionJson.[' + memberName + '].entrySize';
       tipObj.find('#regionMemberEntrySize').html(eval(key));
-      key = 'memberOnRegionJson.' + memberName + '.accessor';
+      key = 'memberOnRegionJson.[' + memberName + '].accessor';
       //tipObj.find('#regionMemberAccessor').html('False');
       tipObj.find('#regionMemberAccessor').html(eval(key));
       
-      key = 'memberOnRegionJson.' + memberName + '.memoryReadsTrend';
+      key = 'memberOnRegionJson.[' + memberName + '].memoryReadsTrend';
       tipObj.find('#memberMemoryReadsTrend').sparkline(eval(key),spo);
       var reads = eval(key); // store
-      key = 'memberOnRegionJson.' + memberName + '.diskReadsTrend';
+      key = 'memberOnRegionJson.[' + memberName + '].diskReadsTrend';
       tipObj.find('#memberDiskReadsTrend').sparkline(eval(key),spo);
       var diskReads = eval(key); // store
       
       // Writes trends
       spo.lineColor = '#2e84bb';
-      key = 'memberOnRegionJson.' + memberName + '.memoryWritesTrend';
+      key = 'memberOnRegionJson.[' + memberName + '].memoryWritesTrend';
       tipObj.find('#memberMemoryWritesTrend').sparkline(eval(key),spo);
       var writes = eval(key); // store
-      key = 'memberOnRegionJson.' + memberName + '.diskWritesTrend';
+      key = 'memberOnRegionJson.[' + memberName + '].diskWritesTrend';
       tipObj.find('#memberDiskWritesTrend').sparkline(eval(key),spo);
       var diskWrites = eval(key); // store
             
