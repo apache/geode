@@ -71,9 +71,8 @@ public class UnixScriptGeneratorTest {
     scriptGenerator.writeCopyDirectoryContents(writer, backupDirToCopy, dirWithBackups, true);
     writer.flush();
     List<String> output = Files.readAllLines(outputFile.toPath());
-    assertThat(output).hasSize(3);
-    assertThat(output).containsExactly("mkdir -p '" + dirWithoutBackups + "'",
-        "mkdir -p '" + dirWithBackups + "'",
+    assertThat(output).hasSize(2);
+    assertThat(output).containsExactly("mkdir -p '" + dirWithBackups + "'",
         "cp -rp '" + backupDirToCopy + "'/* '" + dirWithBackups + "'");
   }
 

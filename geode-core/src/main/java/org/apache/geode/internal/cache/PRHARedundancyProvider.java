@@ -87,6 +87,7 @@ import org.apache.geode.internal.cache.persistence.PersistentStateListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * This class provides the redundancy management for partitioned region. It will provide the
@@ -161,7 +162,7 @@ public class PRHARedundancyProvider {
           public void taskDropped() {
             InternalResourceManager.getResourceObserver().recoveryConflated(region);
           }
-        });
+        }, getThreadMonitorObj());
   }
 
   /**
@@ -2307,5 +2308,14 @@ public class PRHARedundancyProvider {
 
   public CountDownLatch getAllBucketsRecoveredFromDiskLatch() {
     return allBucketsRecoveredFromDisk;
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.prRegion.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

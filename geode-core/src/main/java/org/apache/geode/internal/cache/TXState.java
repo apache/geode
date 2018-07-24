@@ -31,16 +31,19 @@ import javax.transaction.Status;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
@@ -95,6 +98,8 @@ public class TXState implements TXStateInterface {
    */
   private int modSerialNum;
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<EntryEventImpl>();
+  // Access this variable should be in synchronized block.
+  private boolean beforeCompletionCalled;
 
   // Internal testing hooks
   private Runnable internalAfterReservation;
@@ -996,15 +1001,21 @@ public class TXState implements TXStateInterface {
    * @see org.apache.geode.internal.cache.TXStateInterface#beforeCompletion()
    */
   @Override
-  public void beforeCompletion() throws SynchronizationCommitConflictException {
+  public synchronized void beforeCompletion() throws SynchronizationCommitConflictException {
     if (this.closed) {
       throw new TXManagerCancelledException();
     }
-    this.proxy.getTxMgr().setTXState(null);
+    if (beforeCompletionCalled) {
+      // do not re-execute beforeCompletion again
+      return;
+    }
+    beforeCompletionCalled = true;
+    doBeforeCompletion();
+  }
+
+  private void doBeforeCompletion() {
     final long opStart = CachePerfStats.getStatTime();
     this.jtaLifeTime = opStart - getBeginTime();
-
-
     try {
       reserveAndCheck();
       /*
@@ -1042,7 +1053,7 @@ public class TXState implements TXStateInterface {
       }
     } catch (CommitConflictException commitConflict) {
       cleanup();
-      this.proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
+      proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
       throw new SynchronizationCommitConflictException(
           LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
               .toLocalizedString(getTransactionId()),
@@ -1056,41 +1067,59 @@ public class TXState implements TXStateInterface {
    * @see org.apache.geode.internal.cache.TXStateInterface#afterCompletion(int)
    */
   @Override
-  public void afterCompletion(int status) {
-    // System.err.println("start afterCompletion");
-    final long opStart = CachePerfStats.getStatTime();
-    switch (status) {
-      case Status.STATUS_COMMITTED:
-        // System.err.println("begin commit in afterCompletion");
-        Assert.assertTrue(this.locks != null,
-            "Gemfire Transaction afterCompletion called with illegal state.");
-        try {
-          proxy.getTxMgr().setTXState(null);
-          commit();
-          saveTXCommitMessageForClientFailover();
-        } catch (CommitConflictException error) {
-          Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
-              + " afterCompletion failed.due to CommitConflictException: " + error);
-        }
-
-        this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
-        this.locks = null;
-        // System.err.println("end commit in afterCompletion");
-        break;
-      case Status.STATUS_ROLLEDBACK:
-        this.jtaLifeTime = opStart - getBeginTime();
-        this.proxy.getTxMgr().setTXState(null);
-        rollback();
-        saveTXCommitMessageForClientFailover();
-        this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
-        break;
-      default:
-        Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+  public synchronized void afterCompletion(int status) {
+    this.proxy.getTxMgr().setTXState(null);
+    // For commit, beforeCompletion should be called. Otherwise
+    // throw FailedSynchronizationException().
+    if (wasBeforeCompletionCalled()) {
+      doAfterCompletion(status);
+    } else {
+      // rollback does not run beforeCompletion.
+      if (status != Status.STATUS_ROLLEDBACK) {
+        throw new FailedSynchronizationException(
+            "Could not execute afterCompletion when beforeCompletion was not executed");
+      }
+      doAfterCompletion(status);
     }
-    // System.err.println("end afterCompletion");
   }
 
-  private void saveTXCommitMessageForClientFailover() {
+  private void doAfterCompletion(int status) {
+    final long opStart = CachePerfStats.getStatTime();
+    try {
+      switch (status) {
+        case Status.STATUS_COMMITTED:
+          Assert.assertTrue(this.locks != null,
+              "Gemfire Transaction afterCompletion called with illegal state.");
+          try {
+            commit();
+            saveTXCommitMessageForClientFailover();
+          } catch (CommitConflictException error) {
+            Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
+                + " afterCompletion failed.due to CommitConflictException: " + error);
+          }
+
+          this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
+          this.locks = null;
+          break;
+        case Status.STATUS_ROLLEDBACK:
+          this.jtaLifeTime = opStart - getBeginTime();
+          rollback();
+          saveTXCommitMessageForClientFailover();
+          this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
+          break;
+        default:
+          Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+      }
+    } catch (InternalGemFireError error) {
+      throw new TransactionException(error);
+    }
+  }
+
+  boolean wasBeforeCompletionCalled() {
+    return beforeCompletionCalled;
+  }
+
+  void saveTXCommitMessageForClientFailover() {
     proxy.getTxMgr().saveTXStateForClientFailover(proxy);
   }
 

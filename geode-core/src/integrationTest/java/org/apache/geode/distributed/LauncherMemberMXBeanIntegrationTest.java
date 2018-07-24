@@ -24,10 +24,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.JMX;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
+import javax.management.ReflectionException;
+import javax.management.openmbean.CompositeDataSupport;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +41,9 @@ import org.junit.Test;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.OSMetrics;
 
 /**
  * Integration tests for querying of {@link MemberMXBean} as used in MBeanProcessController to
@@ -52,6 +59,7 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
   private ObjectName pattern;
   private QueryExp constraint;
   private Set<ObjectName> mbeanNames;
+  private ObjectName mbeanObjectName;
 
   @Before
   public void setUp() throws Exception {
@@ -71,7 +79,7 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
   }
 
   @Test
-  public void queryWithNullFindsMemberMXBean() throws Exception {
+  public void queryWithNullFindsMemberMXBean() {
     givenConstraint(null);
 
     whenQuerying(getPlatformMBeanServer());
@@ -80,7 +88,7 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
   }
 
   @Test
-  public void queryWithProcessIdFindsMemberMXBean() throws Exception {
+  public void queryWithProcessIdFindsMemberMXBean() {
     givenConstraint(Query.eq(Query.attr("ProcessId"), Query.value(localPid)));
 
     whenQuerying(getPlatformMBeanServer());
@@ -89,12 +97,76 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
   }
 
   @Test
-  public void queryWithMemberNameFindsMemberMXBean() throws Exception {
+  public void queryWithMemberNameFindsMemberMXBean() {
     givenConstraint(Query.eq(Query.attr("Name"), Query.value(getUniqueName())));
 
     whenQuerying(getPlatformMBeanServer());
 
     thenMemberMXBeanShouldBeFound().andShouldMatchCurrentMember();
+  }
+
+  @Test
+  public void showOSMetrics_reconstructsOSMetricsFromCompositeDataType()
+      throws MBeanException, InstanceNotFoundException, ReflectionException {
+    givenConstraint(Query.eq(Query.attr("Name"), Query.value(getUniqueName())));
+
+    whenQuerying(getPlatformMBeanServer());
+    assertThat(mbeanNames).hasSize(1);
+
+    MemberMXBean mbean = getMXBeanProxy();
+
+    CompositeDataSupport cds =
+        (CompositeDataSupport) getPlatformMBeanServer().invoke(mbeanObjectName, "showOSMetrics",
+            null, null);
+    OSMetrics osMetrics = mbean.showOSMetrics();
+
+    // Verify conversion from CompositeData to OSMetrics
+    assertThat(osMetrics).isNotNull();
+    assertThat(osMetrics.getArch()).isEqualTo(cds.get("arch"));
+    assertThat(osMetrics.getAvailableProcessors()).isEqualTo(cds.get("availableProcessors"));
+    assertThat(osMetrics.getCommittedVirtualMemorySize())
+        .isEqualTo(cds.get("committedVirtualMemorySize"));
+    assertThat(osMetrics.getFreePhysicalMemorySize()).isEqualTo(cds.get("freePhysicalMemorySize"));
+    assertThat(osMetrics.getFreeSwapSpaceSize()).isEqualTo(cds.get("freeSwapSpaceSize"));
+    assertThat(osMetrics.getMaxFileDescriptorCount()).isEqualTo(cds.get("maxFileDescriptorCount"));
+    assertThat(osMetrics.getName()).isEqualTo(cds.get("name"));
+    assertThat(osMetrics.getOpenFileDescriptorCount())
+        .isEqualTo(cds.get("openFileDescriptorCount"));
+    assertThat(osMetrics.getProcessCpuTime()).isEqualTo(cds.get("processCpuTime"));
+    assertThat(osMetrics.getSystemLoadAverage()).isEqualTo(cds.get("systemLoadAverage"));
+    assertThat(osMetrics.getTotalPhysicalMemorySize())
+        .isEqualTo(cds.get("totalPhysicalMemorySize"));
+    assertThat(osMetrics.getTotalSwapSpaceSize()).isEqualTo(cds.get("totalSwapSpaceSize"));
+    assertThat(osMetrics.getVersion()).isEqualTo(cds.get("version"));
+  }
+
+  @Test
+  public void showJVMMetrics_returnsOJVMMetricsType()
+      throws MBeanException, InstanceNotFoundException, ReflectionException {
+    givenConstraint(Query.eq(Query.attr("Name"), Query.value(getUniqueName())));
+
+    whenQuerying(getPlatformMBeanServer());
+    assertThat(mbeanNames).hasSize(1);
+
+    MemberMXBean mbean = getMXBeanProxy();
+
+    CompositeDataSupport cds =
+        (CompositeDataSupport) getPlatformMBeanServer().invoke(mbeanObjectName, "showJVMMetrics",
+            null, null);
+    JVMMetrics jvmMetrics = mbean.showJVMMetrics();
+    assertThat(jvmMetrics).isNotNull();
+    assertThat(jvmMetrics.getCommittedMemory()).isEqualTo(cds.get("committedMemory"));
+    assertThat(jvmMetrics.getGcCount()).isEqualTo(cds.get("gcCount"));
+    assertThat(jvmMetrics.getGcTimeMillis()).isEqualTo(cds.get("gcTimeMillis"));
+    assertThat(jvmMetrics.getInitMemory()).isEqualTo(cds.get("initMemory"));
+    assertThat(jvmMetrics.getMaxMemory()).isEqualTo(cds.get("maxMemory"));
+    assertThat(jvmMetrics.getTotalThreads()).isEqualTo(cds.get("totalThreads"));
+    assertThat(jvmMetrics.getUsedMemory()).isEqualTo(cds.get("usedMemory"));
+  }
+
+  private MemberMXBean getMXBeanProxy() {
+    this.mbeanObjectName = mbeanNames.iterator().next();
+    return JMX.newMXBeanProxy(getPlatformMBeanServer(), mbeanObjectName, MemberMXBean.class, false);
   }
 
   private void givenConstraint(final QueryExp constraint) {

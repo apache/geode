@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,6 +83,9 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.tcp.Connection;
@@ -448,6 +452,13 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private ThrottlingMemLinkedQueueWithDMStats serialQueue;
 
+  /**
+   * Thread Monitor mechanism to monitor system threads
+   *
+   * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
+   */
+  private final ThreadsMonitoring threadMonitor;
+
   /** a map keyed on InternalDistributedMember, to direct channels to other systems */
   // protected final Map channelMap = CFactory.createCM();
 
@@ -677,6 +688,19 @@ public class ClusterDistributionManager implements DistributionManager {
         LoggingThreadGroup.createThreadGroup("DistributionManager Threads", logger);
     this.threadGroup = group;
 
+    {
+      Properties nonDefault = new Properties();
+      DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+
+      if (distributionConfigImpl.getThreadMonitorEnabled()) {
+        this.threadMonitor = new ThreadsMonitoringImpl(system);
+        logger.info("[ThreadsMonitor] a New Monitor object and process were created.\n");
+      } else {
+        this.threadMonitor = new ThreadsMonitoringImplDummy();
+        logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
+      }
+    }
+
     boolean finishedConstructor = false;
     try {
 
@@ -695,7 +719,8 @@ public class ClusterDistributionManager implements DistributionManager {
         // distributed deadlock when we block the UDP reader thread
         boolean throttlingDisabled = system.getConfig().getDisableTcp();
         this.serialQueuedExecutorPool =
-            new SerialQueuedExecutorPool(this.threadGroup, this.stats, throttlingDisabled);
+            new SerialQueuedExecutorPool(this.threadGroup, this.stats, throttlingDisabled,
+                this.threadMonitor);
       }
 
       {
@@ -734,7 +759,7 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         };
         SerialQueuedExecutorWithDMStats executor = new SerialQueuedExecutorWithDMStats(poolQueue,
-            this.stats.getSerialProcessorHelper(), tf);
+            this.stats.getSerialProcessorHelper(), tf, threadMonitor);
         this.serialThread = executor;
       }
       {
@@ -763,8 +788,8 @@ public class ClusterDistributionManager implements DistributionManager {
             return thread;
           }
         };
-        this.viewThread =
-            new SerialQueuedExecutorWithDMStats(q, this.stats.getViewProcessorHelper(), tf);
+        this.viewThread = new SerialQueuedExecutorWithDMStats(q,
+            this.stats.getViewProcessorHelper(), tf, threadMonitor);
       }
 
       {
@@ -803,7 +828,7 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         };
         ThreadPoolExecutor pool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
-            this.stats.getNormalPoolHelper(), tf);
+            this.stats.getNormalPoolHelper(), tf, threadMonitor);
         this.threadPool = pool;
       }
 
@@ -844,7 +869,7 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         };
         this.highPriorityPool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
-            this.stats.getHighPriorityPoolHelper(), tf);
+            this.stats.getHighPriorityPoolHelper(), tf, threadMonitor);
       }
 
 
@@ -884,7 +909,7 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats(this.stats.getWaitingQueueHelper());
         }
         this.waitingPool = new PooledExecutorWithDMStats(poolQueue, MAX_WAITING_THREADS,
-            this.stats.getWaitingPoolHelper(), tf);
+            this.stats.getWaitingPoolHelper(), tf, threadMonitor);
       }
 
       {
@@ -918,7 +943,7 @@ public class ClusterDistributionManager implements DistributionManager {
         BlockingQueue poolQueue;
         poolQueue = new OverflowQueueWithDMStats(this.stats.getWaitingQueueHelper());
         this.prMetaDataCleanupThreadPool = new PooledExecutorWithDMStats(poolQueue,
-            MAX_PR_META_DATA_CLEANUP_THREADS, this.stats.getWaitingPoolHelper(), tf);
+            MAX_PR_META_DATA_CLEANUP_THREADS, this.stats.getWaitingPoolHelper(), tf, threadMonitor);
       }
 
       {
@@ -956,10 +981,10 @@ public class ClusterDistributionManager implements DistributionManager {
         };
         if (MAX_PR_THREADS > 1) {
           this.partitionedRegionPool = new PooledExecutorWithDMStats(poolQueue, MAX_PR_THREADS,
-              this.stats.getPartitionedRegionPoolHelper(), tf);
+              this.stats.getPartitionedRegionPoolHelper(), tf, threadMonitor);
         } else {
           SerialQueuedExecutorWithDMStats executor = new SerialQueuedExecutorWithDMStats(poolQueue,
-              this.stats.getPartitionedRegionPoolHelper(), tf);
+              this.stats.getPartitionedRegionPoolHelper(), tf, threadMonitor);
           this.partitionedRegionThread = executor;
         }
 
@@ -1001,12 +1026,12 @@ public class ClusterDistributionManager implements DistributionManager {
         };
 
         if (MAX_FE_THREADS > 1) {
-          this.functionExecutionPool =
-              new FunctionExecutionPooledExecutor(poolQueue, MAX_FE_THREADS,
-                  this.stats.getFunctionExecutionPoolHelper(), tf, true /* for fn exec */);
+          this.functionExecutionPool = new FunctionExecutionPooledExecutor(poolQueue,
+              MAX_FE_THREADS, this.stats.getFunctionExecutionPoolHelper(), tf,
+              true /* for fn exec */, this.threadMonitor);
         } else {
           SerialQueuedExecutorWithDMStats executor = new SerialQueuedExecutorWithDMStats(poolQueue,
-              this.stats.getFunctionExecutionPoolHelper(), tf);
+              this.stats.getFunctionExecutionPoolHelper(), tf, threadMonitor);
           this.functionExecutionThread = executor;
         }
 
@@ -1816,6 +1841,7 @@ public class ClusterDistributionManager implements DistributionManager {
   private void askThreadsToStop() {
     // Stop executors after they have finished
     ExecutorService es;
+    threadMonitor.close();
     es = this.serialThread;
     if (es != null) {
       es.shutdown();
@@ -3553,6 +3579,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
   }
 
+  @Override
+  /** returns the Threads Monitoring instance */
+  public ThreadsMonitoring getThreadMonitoring() {
+    return this.threadMonitor;
+  }
+
   /**
    * Sets the administration agent associated with this distribution manager.
    */
@@ -3765,16 +3797,19 @@ public class ClusterDistributionManager implements DistributionManager {
 
     final boolean throttlingDisabled;
 
+    final ThreadsMonitoring threadMonitoring;
+
     /**
      * Constructor.
      *
      * @param group thread group to which the threads will belog to.
      */
     SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats,
-        boolean throttlingDisabled) {
+        boolean throttlingDisabled, ThreadsMonitoring tMonitoring) {
       this.threadGroup = group;
       this.stats = stats;
       this.throttlingDisabled = throttlingDisabled;
+      this.threadMonitoring = tMonitoring;
     }
 
     /*
@@ -3927,7 +3962,7 @@ public class ClusterDistributionManager implements DistributionManager {
         }
       };
       return new SerialQueuedExecutorWithDMStats(poolQueue,
-          this.stats.getSerialPooledProcessorHelper(), tf);
+          this.stats.getSerialPooledProcessorHelper(), tf, this.threadMonitoring);
     }
 
     /*

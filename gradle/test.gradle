@@ -165,6 +165,11 @@ subprojects {
     useJUnit {}
 
     outputs.upToDateWhen{false}
+
+    classpath += project.sourceSets.distributedTest.runtimeClasspath
+    testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
+    classpath += project.sourceSets.integrationTest.runtimeClasspath
+    testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
   }
 
   task flakyTest(type:Test) {
