@@ -107,9 +107,11 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     }
 
     for (int i = 6; i < commandElems.size(); i++) {
-      if (new String(commandElems.get(i)).equals("withdist")) withDist = true;
-      if (new String(commandElems.get(i)).equals("withcoord")) withCoord = true;
-      if (new String(commandElems.get(i)).equals("withhash")) withHash = true;
+      String elem = new String(commandElems.get(i));
+
+      if (elem.equals("withdist")) withDist = true;
+      if (elem.equals("withcoord")) withCoord = true;
+      if (elem.equals("withhash")) withHash = true;
     }
 
     HashNeighbors hn;

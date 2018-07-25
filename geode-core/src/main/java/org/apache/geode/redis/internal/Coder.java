@@ -155,22 +155,13 @@ public class Coder {
       }
 
       if (next instanceof String) {
-        String nextStr = (String)next;
-        response.writeByte(BULK_STRING_ID);
-        response.writeBytes(intToBytes(nextStr.length()));
-        response.writeBytes(CRLFar);
-        response.writeBytes(stringToBytes(nextStr));
-        response.writeBytes(CRLFar);
+        response.writeBytes(getBulkStringResponse(alloc, (String)next));
         continue;
       }
 
       if (next instanceof ByteArrayWrapper) {
         ByteArrayWrapper nextWrapper = (ByteArrayWrapper)next;
-        response.writeByte(BULK_STRING_ID);
-        response.writeBytes(intToBytes(nextWrapper.length()));
-        response.writeBytes(CRLFar);
-        response.writeBytes(nextWrapper.toBytes());
-        response.writeBytes(CRLFar);
+        response.writeBytes(getBulkStringResponse(alloc, nextWrapper.toBytes()));
         continue;
       }
 
