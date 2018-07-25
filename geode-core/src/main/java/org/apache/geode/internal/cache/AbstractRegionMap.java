@@ -848,7 +848,7 @@ public abstract class AbstractRegionMap
               getEntryMap().remove(key, oldRe);
               oldRe = putEntryIfAbsent(key, newRe);
             } else {
-              if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
+              if (acceptedVersionTag) {
                 Assert.assertTrue(entryVersion.getMemberID() != null,
                     "GII entry versions must have identifiers");
                 boolean isTombstone = (newValue == Token.TOMBSTONE);
@@ -915,7 +915,7 @@ public abstract class AbstractRegionMap
                 }
               }
               if (owner.getIndexManager() != null) {
-                // if existing/current re is a tombstone
+                // if existing/current re is a tombstone - note oldRe at this point is currentRe
                 if (oldRe.isRemoved()) {
                   owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
                       IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
@@ -933,7 +933,7 @@ public abstract class AbstractRegionMap
           }
         }
         if (!done) {
-          if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
+          if (acceptedVersionTag) {
             Assert.assertTrue(entryVersion.getMemberID() != null,
                 "GII entry versions must have identifiers");
             boolean isTombstone = (newValue == Token.TOMBSTONE);
@@ -963,6 +963,8 @@ public abstract class AbstractRegionMap
 
         }
       } catch (ConcurrentCacheModificationException e) {
+        //We do not want to do any clean up of indexes because it is assumed that
+        //the cause of the concurrent modification would have updated the indexes appropriately
         return false;
       } catch (RegionClearedException rce) {
         done = false;
