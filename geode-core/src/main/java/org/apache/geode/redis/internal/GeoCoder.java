@@ -67,10 +67,12 @@ public class GeoCoder {
         response.writeBytes(Coder.CRLFar);
         response.writeBytes(tmp);
 
+        tmp.release();
+
         return response;
     }
 
-    public static ByteBuf georadiusResponse(ByteBufAllocator alloc, Collection<GeoRadiusElement> list) {
+    public static ByteBuf geoRadiusResponse(ByteBufAllocator alloc, Collection<GeoRadiusElement> list) {
         if (list.isEmpty())
             return Coder.getEmptyArrayResponse(alloc);
 

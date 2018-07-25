@@ -145,7 +145,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       }
     }
 
-    command.setResponse(GeoCoder.georadiusResponse(context.getByteBufAllocator(), results));
+    command.setResponse(GeoCoder.geoRadiusResponse(context.getByteBufAllocator(), results));
   }
 
   private List<StructImpl> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, String hash) throws Exception {
