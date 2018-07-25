@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
@@ -361,7 +362,7 @@ public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
       }
     });
 
-    Thread.sleep(1);
+    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
     try {
       region = createRegion();
 

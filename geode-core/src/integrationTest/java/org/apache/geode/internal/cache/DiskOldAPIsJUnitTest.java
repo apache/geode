@@ -26,7 +26,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -96,7 +98,7 @@ public class DiskOldAPIsJUnitTest {
       r.close();
     }
 
-    Thread.sleep(1);
+    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
     dwaf.setSynchronous(false);
     af.setDiskWriteAttributes(dwaf.create());
     r = cache.createRegion("r", af.create());
