@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -170,10 +171,7 @@ public class HashesJUnitTest {
 
   private String randString() {
     int length = rand.nextInt(8) + 5;
-    StringBuilder rString = new StringBuilder();
-    for (int i = 0; i < length; i++)
-      rString.append((char) (rand.nextInt(25) + 65));
-    return rString.toString();
+    return RandomStringUtils.randomAlphanumeric(length);
   }
 
   @After
