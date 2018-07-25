@@ -384,13 +384,14 @@ public class BackupIntegrationTest {
       throws IOException, InterruptedException {
     List<String> command = new ArrayList<>();
 
+    System.out.println("EXECUTING:" + script.getCanonicalPath());
     boolean isWindows = script.getName().endsWith("bat");
     if (isWindows) {
       command.add("cmd.exe");
       command.add("/c");
     }
 
-    command.add(script.getAbsolutePath());
+    command.add(script.getCanonicalPath());
     ProcessBuilder pb = new ProcessBuilder(command);
     pb.redirectErrorStream(true);
     Process process = pb.start();
