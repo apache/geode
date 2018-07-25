@@ -30,6 +30,7 @@ import org.apache.geode.redis.internal.HashNeighbors;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     String unit;
 
     boolean withDist = false;
+    boolean withCoord = false;
     Double distScale = 1.0;
     char[] centerHashPrecise;
 
@@ -105,6 +107,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
     for (int i = 6; i < commandElems.size(); i++) {
       if (new String(commandElems.get(i)).equals("withdist")) withDist = true;
+      if (new String(commandElems.get(i)).equals("withcoord")) withCoord = true;
     }
 
     HashNeighbors hn;
@@ -126,7 +129,9 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
             Optional<Double> dist = withDist ?
                     Optional.of(GeoCoder.geoDist(centerHashPrecise, hashBits) / distScale) :
                     Optional.empty();
-            results.add(new GeoRadiusElement(name, Optional.empty(), dist, Optional.empty()));
+            Optional<GeoCoord> coord = withCoord ?
+                    Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
+            results.add(new GeoRadiusElement(name, coord, dist, Optional.empty()));
           }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));

@@ -20,9 +20,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class GeoCoder {
     /**
@@ -72,32 +74,33 @@ public class GeoCoder {
         if (list.isEmpty())
             return Coder.getEmptyArrayResponse(alloc);
 
-        ByteBuf buffer = alloc.buffer();
-        buffer.writeByte(Coder.ARRAY_ID);
-        ByteBuf tmp = alloc.buffer();
-        int size = 0;
-
+        List<Object> responseElements = new ArrayList<>();
         for (GeoRadiusElement element : list) {
             String name = element.getName();
+
+            String distStr = "";
             if (element.getDistFromCenter().isPresent()) {
-                String distStr = element.getDistFromCenter().get().toString();
-                tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
-                        Arrays.asList(name, distStr)));
-            } else {
-                tmp.writeByte(Coder.BULK_STRING_ID);
-                tmp.writeBytes(Coder.intToBytes(name.length()));
-                tmp.writeBytes(Coder.CRLFar);
-                tmp.writeBytes(name.getBytes());
-                tmp.writeBytes(Coder.CRLFar);
+                distStr = element.getDistFromCenter().get().toString();
             }
-            size++;
+
+            List<String> coord = new ArrayList<>();
+            if (element.getCoord().isPresent()) {
+                coord.add(Double.toString(element.getCoord().get().getLongitude()));
+                coord.add(Double.toString(element.getCoord().get().getLatitude()));
+            }
+
+            if (distStr != "" || !coord.isEmpty()) {
+                List<Object> elementData = new ArrayList<>();
+                elementData.add(name);
+                if (distStr != "") elementData.add(distStr);
+                if (!coord.isEmpty()) elementData.add(coord);
+                responseElements.add(elementData);
+            } else {
+                responseElements.add(name);
+            }
         }
 
-        buffer.writeBytes(Coder.intToBytes(size));
-        buffer.writeBytes(Coder.CRLFar);
-        buffer.writeBytes(tmp);
-
-        return buffer;
+        return Coder.getBulkStringArrayResponse(alloc, responseElements);
     }
 
     /**

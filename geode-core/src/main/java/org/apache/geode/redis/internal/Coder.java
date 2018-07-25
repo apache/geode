@@ -140,44 +140,44 @@ public class Coder {
     return response;
   }
 
-  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, List<String> items) {
-    Iterator<String> it = items.iterator();
+  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, Collection<?> items) {
+    Iterator<?> it = items.iterator();
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(items.size()));
     response.writeBytes(CRLFar);
     while (it.hasNext()) {
-      String next = it.next();
+      Object next = it.next();
+
       if (next == null) {
         response.writeBytes(bNIL);
-      } else {
-        response.writeByte(BULK_STRING_ID);
-        response.writeBytes(intToBytes(next.length()));
-        response.writeBytes(CRLFar);
-        response.writeBytes(stringToBytes(next));
-        response.writeBytes(CRLFar);
+        continue;
       }
-    }
-    return response;
-  }
 
-  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc,
-      Collection<ByteArrayWrapper> items) {
-    Iterator<ByteArrayWrapper> it = items.iterator();
-    ByteBuf response = alloc.buffer();
-    response.writeByte(ARRAY_ID);
-    response.writeBytes(intToBytes(items.size()));
-    response.writeBytes(CRLFar);
-    while (it.hasNext()) {
-      ByteArrayWrapper nextWrapper = it.next();
-      if (nextWrapper != null) {
+      if (next instanceof String) {
+        String nextStr = (String)next;
+        response.writeByte(BULK_STRING_ID);
+        response.writeBytes(intToBytes(nextStr.length()));
+        response.writeBytes(CRLFar);
+        response.writeBytes(stringToBytes(nextStr));
+        response.writeBytes(CRLFar);
+        continue;
+      }
+
+      if (next instanceof ByteArrayWrapper) {
+        ByteArrayWrapper nextWrapper = (ByteArrayWrapper)next;
         response.writeByte(BULK_STRING_ID);
         response.writeBytes(intToBytes(nextWrapper.length()));
         response.writeBytes(CRLFar);
         response.writeBytes(nextWrapper.toBytes());
         response.writeBytes(CRLFar);
-      } else
-        response.writeBytes(getNilResponse(alloc));
+        continue;
+      }
+
+      if (next instanceof Collection) {
+        Collection<?> nextItems = (Collection<?>)next;
+        response.writeBytes(getBulkStringArrayResponse(alloc, nextItems));
+      }
     }
 
     return response;
