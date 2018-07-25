@@ -172,7 +172,7 @@ public class HashesJUnitTest {
     int length = rand.nextInt(8) + 5;
     StringBuilder rString = new StringBuilder();
     for (int i = 0; i < length; i++)
-      rString.append((char) (rand.nextInt(57) + 65));
+      rString.append((char) (rand.nextInt(25) + 65));
     return rString.toString();
   }
 
