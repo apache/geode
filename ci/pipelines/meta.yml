@@ -39,6 +39,14 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/geode-build/*
+- name: geode-pr-pipeline
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/pipelines/geode-build/test-stubs/*
+    - ci/pipelines/pull-request/*
 - name: geode-images-pipeline
   type: git
   source:
@@ -90,14 +98,14 @@ jobs:
   serial: true
   public: ((!public-pipelines))
   plan:
-  - get: geode-pipeline
+  - get: geode-pr-pipeline
     trigger: true
   - get: apachegeode-build-concourse-docker-image
   - task: deploy-pr
     image: apachegeode-build-concourse-docker-image
     config:
       inputs:
-      - name: geode-pipeline
+      - name: geode-pr-pipeline
       outputs:
       - name: results
       platform: linux
@@ -109,7 +117,7 @@ jobs:
         CONCOURSE_PASSWORD: ((!concourse-password))
         CONCOURSE_TEAM: ((!concourse-team))
       run:
-        path: geode-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
+        path: geode-pr-pipeline/ci/pipelines/pull-request/deploy_pr_pipeline.sh
 
 - name: set-images-pipeline
   serial: true
