@@ -303,8 +303,10 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     vm1.invoke(() -> checkData(0, 4, "a", partitionedRegionName));
 
-    vm0.invoke(() -> createPartitionedRegion(0, -1, 113, true));
+    // wait till cache is completely shutdown before trying to create the region again. otherwise
+    // deadlock situation might happen.
     vm0.invoke(() -> await().atMost(2, MINUTES).until(() -> CRASHED.get()));
+    vm0.invoke(() -> createPartitionedRegion(0, -1, 113, true));
     vm0.invoke(() -> checkData(0, 4, "a", partitionedRegionName));
 
     assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).isEqualTo(bucketsOnVM1);
