@@ -169,6 +169,11 @@ subprojects {
   }
 
   upgradeTest {
+    useJUnit {
+      if(project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
+    }
     forkEvery 1
     outputs.upToDateWhen{false}
   }
