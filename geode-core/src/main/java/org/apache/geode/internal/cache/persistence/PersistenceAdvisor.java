@@ -81,10 +81,6 @@ public interface PersistenceAdvisor {
    */
   HashSet<PersistentMemberID> getPersistedOnlineOrEqualMembers();
 
-  /**
-   * Get the set of peers that are offline
-   */
-  Set<PersistentMemberID> getPersistedOfflineMembers();
 
   /**
    * Update the membership on this member to reflect changes that have happened since the member was
