@@ -16,16 +16,17 @@
 
 metadata:
   job:
-    name: AcceptanceTest
-    gradle_task: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
-    artifact_slug: acceptancetestfiles
+    name: DistributedTest
+    gradle_task: distributedTest
+    artifact_slug: distributedtestfiles
     dunit:
-      parallel: false
-      forks: 0
-    cpus: 8
+      parallel: true
+# max number of docker containers to run, generally cpus/2
+      forks: 48
+    cpus: 96
 # specified in Gigabytes.
-    ram: 30
+    ram: 210
 # specified in seconds
-    call_stack_timeout: 1800
-    timeout: 1h
+    call_stack_timeout: 7200
+    timeout: 3h
     size: []

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,14 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-metadata:
-  job:
-    name: FlakyTest
-    gradle_task: flakyTest
-    artifact_slug: flakytestfiles
-    dunit:
-      parallel: false
-      forks: 0
-    call_stack_timeout: 25200
-    timeout: 8h
-    size: []
+echo "Running concourse-metadata script" 1>&2
+
+SCRIPT_INPUT='/tmp/input'
+cat > $SCRIPT_INPUT <&0 # STDIN params
+
+OUTPUT_STRING="[ ]"
+
+echo $OUTPUT_STRING
+
+exit 0

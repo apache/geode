@@ -18,7 +18,6 @@
 set -e
 
 WORK_DIR=$(mktemp -d)
-export GRADLE_USER_HOME=/usr/local/maven_files
 
 pushd ${WORK_DIR}
   git clone -b develop --depth 1 https://github.com/apache/geode.git geode

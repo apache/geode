@@ -16,7 +16,7 @@
 # limitations under the License.
 
 GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-")
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 TARGET=geode
 GEODE_FORK=${1:-apache}
 TEAM=$(fly targets | grep ^${TARGET} | awk '{print $3}')
