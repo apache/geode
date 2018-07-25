@@ -66,6 +66,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
     boolean withDist = false;
     boolean withCoord = false;
+    boolean withHash = false;
     Double distScale = 1.0;
     char[] centerHashPrecise;
 
@@ -108,6 +109,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     for (int i = 6; i < commandElems.size(); i++) {
       if (new String(commandElems.get(i)).equals("withdist")) withDist = true;
       if (new String(commandElems.get(i)).equals("withcoord")) withCoord = true;
+      if (new String(commandElems.get(i)).equals("withhash")) withHash = true;
     }
 
     HashNeighbors hn;
@@ -131,7 +133,9 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
                     Optional.empty();
             Optional<GeoCoord> coord = withCoord ?
                     Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
-            results.add(new GeoRadiusElement(name, coord, dist, Optional.empty()));
+            Optional<String> hash = withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
+
+            results.add(new GeoRadiusElement(name, coord, dist, hash));
           }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));

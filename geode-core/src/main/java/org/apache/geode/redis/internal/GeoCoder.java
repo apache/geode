@@ -89,11 +89,18 @@ public class GeoCoder {
                 coord.add(Double.toString(element.getCoord().get().getLatitude()));
             }
 
-            if (distStr != "" || !coord.isEmpty()) {
+            String hash = "";
+            if (element.getHash().isPresent()) {
+                distStr = element.getHash().get();
+            }
+
+            if (distStr != "" || !coord.isEmpty() || hash != "") {
                 List<Object> elementData = new ArrayList<>();
                 elementData.add(name);
                 if (distStr != "") elementData.add(distStr);
                 if (!coord.isEmpty()) elementData.add(coord);
+                if (hash != "") elementData.add(hash);
+
                 responseElements.add(elementData);
             } else {
                 responseElements.add(name);
