@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -56,6 +57,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -192,8 +195,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public T withName(String name) {
-    this.name = name;
-    properties.putIfAbsent(NAME, name);
+    // only if name is not defined yet
+    if (!properties.containsKey(NAME)) {
+      this.name = name;
+      properties.putIfAbsent(NAME, name);
+    }
     return (T) this;
   }
 
@@ -315,6 +321,23 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     waitTillCacheServerIsReady(serverName, serverPort);
     CacheServerMXBean bean = getCacheServerMXBean(serverName, serverPort);
     await().atMost(1, TimeUnit.MINUTES).until(() -> bean.getClientIds().length == clientCount);
+  }
+
+  /**
+   * Invoked in serverVM
+   */
+  public void waitTillCacheClientProxyHasBeenPaused() {
+    await().until(() -> {
+      CacheClientNotifier clientNotifier = CacheClientNotifier.getInstance();
+      Collection<CacheClientProxy> clientProxies = clientNotifier.getClientProxies();
+
+      for (CacheClientProxy clientProxy : clientProxies) {
+        if (clientProxy.isPaused()) {
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
   public void waitTillCacheServerIsReady(String serverName, int serverPort) {

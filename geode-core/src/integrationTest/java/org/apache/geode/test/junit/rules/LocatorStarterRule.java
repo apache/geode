@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.junit.Assert.assertTrue;
 
@@ -40,6 +42,12 @@ import org.apache.geode.internal.cache.InternalCache;
  * <p>
  * In your test code, you can use the rule to access the locator's attributes, like the port
  * information, working dir, name, and the InternalLocator it creates.
+ *
+ * <p>
+ * by default the rule starts a locator with jmx and http service and cluster configuration service
+ * you can turn off the http service and cluster configuration service to have your test
+ * run faster if your test does not need them.
+ * </p>
  *
  * <p>
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
@@ -72,8 +80,6 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     }
   }
 
-
-
   public void startLocator() {
     try {
       // this will start a jmx manager and admin rest service by default
@@ -93,6 +99,16 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
           .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }
+  }
+
+  public LocatorStarterRule withoutHttpService() {
+    properties.put(HTTP_SERVICE_PORT, "0");
+    return this;
+  }
+
+  public LocatorStarterRule withoutClusterConfigurationService() {
+    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    return this;
   }
 
   @Override
