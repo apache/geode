@@ -46,6 +46,10 @@ gradle.taskGraph.whenReady( { graph ->
   tasks.srcDistTar {
     classifier 'src'
   }
+  tasks.withType(Jar).each { jarTasks ->
+    distTar.dependsOn(jarTasks)
+    distZip.dependsOn(jarTasks)
+  }
 })
 
 configurations {
@@ -280,6 +284,9 @@ task docs(type: Javadoc) {
     exclude 'org/apache/geode/test/**/'
     destinationDir = docsDir
 
+    parent.subprojects.each { project ->
+      dependsOn(project.tasks['javadoc'])
+    }
     doLast {
       parent.subprojects.each { project ->
         copy {
@@ -324,6 +331,7 @@ distributions {
         exclude '**/gradle/wrapper/gradle-wrapper.jar'
         exclude '**/.gradle'
         exclude '**/build/**'
+        exclude '**/out/**'
         exclude '**/.project'
         exclude '**/.classpath'
         exclude '**/.settings/**'

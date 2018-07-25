@@ -30,40 +30,6 @@ subprojects {
     throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
   }
     
-  // apply compiler options
-  gradle.taskGraph.whenReady({ graph ->
-    tasks.withType(JavaCompile).each { javac ->
-      javac.configure {
-        sourceCompatibility '1.8'
-        targetCompatibility '1.8'
-        options.encoding = 'UTF-8'
-      }
-      javac.options.incremental = true
-    }
-  })
-
-  // apply default manifest
-  gradle.taskGraph.whenReady({ graph ->
-    tasks.withType(Jar).each { jar ->
-      jar.doFirst {
-        manifest {
-          attributes(
-            "Manifest-Version": "1.0",
-            "Created-By": System.getProperty("user.name"),
-            "Title": rootProject.name,
-            "Version": version,
-            "Organization": productOrg
-          )
-        }
-      }
-      jar.metaInf {
-          from("$rootDir/LICENSE")
-          if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
-            from("$rootDir/NOTICE")
-          }
-      }
-    }
-  })
 
   configurations {
     testOutput {
@@ -98,4 +64,39 @@ subprojects {
   }
 }
 
+// apply compiler options
+gradle.taskGraph.whenReady({ graph ->
+  tasks.withType(JavaCompile).each { javac ->
+    javac.configure {
+      sourceCompatibility '1.8'
+      targetCompatibility '1.8'
+      options.encoding = 'UTF-8'
+    }
+    javac.options.incremental = true
+    javac.options.fork = true
+  }
+})
+
+// apply default manifest
+gradle.taskGraph.whenReady({ graph ->
+  tasks.withType(Jar).each { jar ->
+    jar.doFirst {
+      manifest {
+        attributes(
+                "Manifest-Version": "1.0",
+                "Created-By": System.getProperty("user.name"),
+                "Title": rootProject.name,
+                "Version": version,
+                "Organization": productOrg
+        )
+      }
+    }
+    jar.metaInf {
+      from("$rootDir/LICENSE")
+      if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
+        from("$rootDir/NOTICE")
+      }
+    }
+  }
+})
 

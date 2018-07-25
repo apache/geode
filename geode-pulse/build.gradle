@@ -124,7 +124,7 @@ war {
   classpath configurations.runtime
   classpath project(':geode-core').webJar.archivePath
 }
-
+war.dependsOn(':geode-core:webJar')
 uiTest.dependsOn war
 uiTest.finalizedBy rootProject.combineReports
 rootProject.combineReports.mustRunAfter uiTest
