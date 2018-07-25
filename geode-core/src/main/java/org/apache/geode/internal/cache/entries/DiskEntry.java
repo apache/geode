@@ -918,7 +918,7 @@ public interface DiskEntry extends RegionEntry {
 
         if (dr.isBackup()) {
           dr.testIsRecoveredAndClear(did); // fixes bug 41409
-          if (dr.isSync()) {
+          if (doSynchronousWrite(region, dr)) {
             if (AbstractRegionEntry.isCompressible(dr, newValue)) {
               // In case of compression the value is being set first
               // so that writeToDisk can get it back from the entry
@@ -1335,7 +1335,7 @@ public interface DiskEntry extends RegionEntry {
           // TODO: Check if we need to overflow even when id is = 0
           boolean wasAlreadyPendingAsync = did.isPendingAsync();
           if (did.needsToBeWritten()) {
-            if (dr.isSync()) {
+            if (doSynchronousWrite(region, dr)) {
               writeToDisk(entry, region, false);
             } else if (!wasAlreadyPendingAsync) {
               scheduledAsyncHere = true;
@@ -1558,7 +1558,7 @@ public interface DiskEntry extends RegionEntry {
 
       // System.out.println("DEBUG: removeFromDisk doing remove(" + id + ")");
       int oldValueLength = did.getValueLength();
-      if (dr.isSync() || isClear) {
+      if (doSynchronousWrite(region, dr) || isClear) {
         dr.remove(region, entry, false, isClear);
         if (dr.isBackup()) {
           did.setKeyId(DiskRegion.INVALID_ID); // fix for bug 41340
@@ -1606,7 +1606,7 @@ public interface DiskEntry extends RegionEntry {
       }
       try {
         synchronized (syncObj) {
-          if (dr.isSync()) {
+          if (doSynchronousWrite(region, dr)) {
             dr.getDiskStore().putVersionTagOnly(region, tag, false);
           } else {
             scheduleAsync = true;
@@ -1621,6 +1621,10 @@ public interface DiskEntry extends RegionEntry {
         // this needs to be done outside the above sync
         scheduleAsyncWrite(new AsyncDiskEntry(region, tag));
       }
+    }
+
+    private static boolean doSynchronousWrite(InternalRegion region, DiskRegion dr) {
+      return dr.isSync() || (dr.isBackup() && !region.isInitialized());
     }
 
   }
