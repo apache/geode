@@ -82,8 +82,8 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     });
 
     // restart locator and server without clearing the file system
-    lsRule.stopMember(1, false);
-    lsRule.stopMember(0, false);
+    server1.stop(false);
+    locator.stop(false);
 
     locator = lsRule.startLocatorVM(0);
     server1 = lsRule.startServerVM(1, "group1", locator.getPort());

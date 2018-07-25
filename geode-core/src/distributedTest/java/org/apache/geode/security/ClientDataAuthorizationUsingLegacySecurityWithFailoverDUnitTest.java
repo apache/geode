@@ -188,7 +188,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopMember(true);
+    server_to_fail.stop(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
@@ -252,7 +252,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopMember(true);
+    server_to_fail.stop(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
@@ -298,7 +298,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopMember(true);
+    server_to_fail.stop(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;
@@ -356,7 +356,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     MemberVM server_to_fail = determinePrimaryServer(client);
 
     // Bring down primary server
-    server_to_fail.stopMember(true);
+    server_to_fail.stop(true);
 
     // Confirm failover
     MemberVM secondaryServer = (server1.getPort() == server_to_fail.getPort()) ? server2 : server1;

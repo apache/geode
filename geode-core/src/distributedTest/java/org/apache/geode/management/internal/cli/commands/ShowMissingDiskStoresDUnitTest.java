@@ -97,8 +97,8 @@ public class ShowMissingDiskStoresDUnitTest {
     putUsingGfsh(gfshConnector, testRegionName, 2, "B");
     putUsingGfsh(gfshConnector, testRegionName, 3, "C");
 
-    lsRule.stopMember(1);
-    lsRule.stopMember(2);
+    lsRule.stop(1);
+    lsRule.stop(2);
 
     AsyncInvocation restart1 = restartServerAsync(server1);
     checkAsyncResults(restart1, gfshConnector, 5);

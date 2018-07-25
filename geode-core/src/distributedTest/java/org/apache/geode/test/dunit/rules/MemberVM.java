@@ -16,11 +16,8 @@ package org.apache.geode.test.dunit.rules;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 
@@ -57,11 +54,6 @@ public class MemberVM extends VMProvider implements Member {
   }
 
   @Override
-  public File getWorkingDir() {
-    return vm.getWorkingDirectory();
-  }
-
-  @Override
   public int getPort() {
     return member.getPort();
   }
@@ -89,26 +81,10 @@ public class MemberVM extends VMProvider implements Member {
   }
 
   /**
-   * this gracefully shutdown the member inside this vm
-   */
-  @Override
-  public void stopMember(boolean cleanWorkingDir) {
-    super.stopMember(cleanWorkingDir);
-
-    if (!cleanWorkingDir) {
-      return;
-    }
-
-    // if using the dunit/vm dir as the preset working dir, need to cleanup dir
-    // so that regions/indexes won't get persisted across tests
-    Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
-  }
-
-  /**
    * this disconnects the distributed system of the member. The member will automatically try to
    * reconnect after 5 seconds.
    */
-  public void forceDisconnectMember() {
+  public void forceDisconnect() {
     vm.invoke("force disconnect", () -> ClusterStartupRule.memberStarter.forceDisconnectMember());
   }
 

@@ -15,7 +15,10 @@
 
 package org.apache.geode.test.junit.rules;
 
+import java.io.File;
 import java.util.Arrays;
+
+import org.apache.commons.io.FileUtils;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallableIF;
@@ -30,11 +33,19 @@ public abstract class VMProvider {
 
   public abstract VM getVM();
 
-  public void stopMember(boolean cleanWorkingDir) {
+  public void stop() {
+    stop(true);
+  }
+
+  public void stop(boolean cleanWorkingDir) {
     getVM().invoke(() -> {
       ClusterStartupRule.stopElementInsideVM();
       MemberStarterRule.disconnectDSIfAny();
     });
+
+    if (cleanWorkingDir) {
+      Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
+    }
   }
 
   public boolean isClient() {
@@ -63,12 +74,24 @@ public abstract class VMProvider {
     return getVM().invoke(callable);
   }
 
+  public void invoke(String name, final SerializableRunnableIF runnable) {
+    getVM().invoke(name, runnable);
+  }
+
+  public <T> T invoke(String name, final SerializableCallableIF<T> callable) {
+    return getVM().invoke(name, callable);
+  }
+
   public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {
     return getVM().invokeAsync(runnable);
   }
 
   public AsyncInvocation invokeAsync(String name, final SerializableRunnableIF runnable) {
     return getVM().invokeAsync(name, runnable);
+  }
+
+  public File getWorkingDir() {
+    return getVM().getWorkingDirectory();
   }
 
 }

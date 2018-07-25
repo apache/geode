@@ -101,7 +101,7 @@ public class JMXMBeanReconnectDUnitTest {
   public void testLocalBeans_MaintainServerAndCrashLocator() {
     List<String> initialServerBeans = canonicalBeanNamesFor(server1);
 
-    locator1.forceDisconnectMember();
+    locator1.forceDisconnect();
 
     List<String> intermediateServerBeans = canonicalBeanNamesFor(server1);
 
@@ -120,7 +120,7 @@ public class JMXMBeanReconnectDUnitTest {
   public void testLocalBeans_MaintainLocatorAndCrashServer() {
     List<String> initialLocatorBeans = canonicalBeanNamesFor(locator1);
 
-    server1.forceDisconnectMember();
+    server1.forceDisconnect();
 
     List<String> intermediateLocatorBeans = canonicalBeanNamesFor(locator1);
 
@@ -146,7 +146,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    locator1.forceDisconnectMember();
+    locator1.forceDisconnect();
 
     List<ObjectName> intermediateLocator2GemfireBeans =
         getFederatedGemfireBeansFrom(locator2);
@@ -184,7 +184,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    server1.forceDisconnectMember();
+    server1.forceDisconnect();
 
     List<ObjectName> intermediateLocator1GemfireBeans =
         getFederatedGemfireBeansFrom(locator1);

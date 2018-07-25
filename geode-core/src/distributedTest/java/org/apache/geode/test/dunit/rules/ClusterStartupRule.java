@@ -76,6 +76,9 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   public static ClientCacheRule clientCacheRule;
 
   public static InternalCache getCache() {
+    if (memberStarter == null) {
+      return null;
+    }
     return memberStarter.getCache();
   }
 
@@ -111,6 +114,9 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public static ClientCache getClientCache() {
+    if (clientCacheRule == null) {
+      return null;
+    }
     return clientCacheRule.getCache();
   }
 
@@ -147,7 +153,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
           occupiedVMs.values().stream().filter(x -> x.isServer()).collect(Collectors.toSet()));
       vms.addAll(
           occupiedVMs.values().stream().filter(x -> x.isLocator()).collect(Collectors.toSet()));
-      vms.forEach(x -> x.stopMember(true));
+      vms.forEach(x -> x.stop());
 
       // delete any file under root dir
       Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
@@ -259,11 +265,18 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return clientVM;
   }
 
+  public ClientVM startClientVM(int index,
+      SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
+    return startClientVM(index, new Properties(), cacheFactorySetup,
+        VersionManager.CURRENT_VERSION);
+  }
+
   public ClientVM startClientVM(int index, Properties properties,
       SerializableConsumerIF<ClientCacheFactory> cacheFactorySetup) throws Exception {
     return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
   }
 
+  // convenient startClientMethod
   public ClientVM startClientVM(int index, String username, String password,
       boolean subscriptionEnabled, int... serverPorts) throws Exception {
     Properties props = new Properties();
@@ -278,6 +291,18 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
       }
     });
     return startClientVM(index, props, consumer);
+  }
+
+  // convenient startClientMethod
+  public ClientVM startClientVM(int index, boolean subscriptionEnabled, int... serverPorts)
+      throws Exception {
+    SerializableConsumerIF<ClientCacheFactory> consumer = ((cacheFactory) -> {
+      cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
+      for (int serverPort : serverPorts) {
+        cacheFactory.addPoolServer("localhost", serverPort);
+      }
+    });
+    return startClientVM(index, consumer);
   }
 
   /**
@@ -298,38 +323,17 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   /**
    * gracefully stop the member/client inside this vm
    *
-   * if this vm is a server/locator, it stops them
+   * if this vm is a server/locator, it stops them and cleans the working dir
    * if this vm is a client, it closes the client cache.
    *
    * @param index vm index
    */
-  public void stopMember(int index) {
-    stopMember(index, true);
+  public void stop(int index) {
+    stop(index, true);
   }
 
-  /**
-   * gracefully stop the member inside this vm
-   */
-  public void stopMember(int index, boolean cleanWorkingDir) {
-    VMProvider member = occupiedVMs.get(index);
-
-    if (member == null)
-      return;
-
-    member.stopMember(cleanWorkingDir);
-  }
-
-  /**
-   * this forces a disconnect of the distributed system of the member.
-   * The member will automatically try to reconnect after 5 seconds.
-   *
-   * will throw a ClassCastException if this method is called on a client VM.
-   */
-  public void forceDisconnectMember(int index) {
-    MemberVM member = getMember(index);
-    if (member == null)
-      return;
-    member.forceDisconnectMember();
+  public void stop(int index, boolean cleanWorkingDir) {
+    occupiedVMs.get(index).stop(cleanWorkingDir);
   }
 
   /**

@@ -136,7 +136,7 @@ public class DeployCommandRedeployDUnitTest {
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
-    server.stopMember(false);
+    server.stop(false);
 
     lsRule.startServerVM(1, locator.getPort());
 

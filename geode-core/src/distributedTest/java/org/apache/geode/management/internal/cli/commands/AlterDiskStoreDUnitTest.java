@@ -95,7 +95,7 @@ public class AlterDiskStoreDUnitTest {
 
   @Test
   public void alterDiskStoreUpdatesValues() throws Exception {
-    startupRule.stopMember(1);
+    startupRule.stop(1);
 
     gfsh.connectAndVerify(locator.getJmxPort(), PortType.jmxManager);
     String commandOne = commandToSetManyVariables();
@@ -117,7 +117,7 @@ public class AlterDiskStoreDUnitTest {
     });
 
     // Halt the member and "alter" the disk store with the --remove option
-    startupRule.stopMember(1);
+    startupRule.stop(1);
     String cmd = commandWithRemoveAndNoOtherOption();
     gfsh.executeAndAssertThat(cmd).statusIsSuccess().containsOutput("The region " + regionName
         + " was successfully removed from the disk store " + diskStoreName);

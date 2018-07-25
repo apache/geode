@@ -103,9 +103,9 @@ public class AlterCompressorDUnitTest {
         server2);
 
     // stop the VM
-    server1.stopMember(false);
-    server2.stopMember(false);
-    server3.stopMember(false);
+    server1.stop(false);
+    server2.stop(false);
+    server3.stop(false);
 
     // Alter disk-store & region to add compressor
     Arrays.asList(server1, server2).stream().forEach(server -> {
@@ -145,9 +145,9 @@ public class AlterCompressorDUnitTest {
     VMProvider.invokeInEveryMember(AlterCompressorDUnitTest::verifyRegionIsCompressed, server1);
 
     // stop the VM
-    server1.stopMember(false);
-    server2.stopMember(false);
-    server3.stopMember(false);
+    server1.stop(false);
+    server2.stop(false);
+    server3.stop(false);
 
     Arrays.asList(server1, server2).stream().forEach(server -> {
       String diskDir = server.getWorkingDir() + "/diskStore";
