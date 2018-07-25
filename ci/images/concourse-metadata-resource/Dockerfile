@@ -13,19 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+FROM alpine
 
-metadata:
-  job:
-    name: AcceptanceTest
-    gradle_task: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
-    artifact_slug: acceptancetestfiles
-    dunit:
-      parallel: false
-      forks: 0
-    cpus: 8
-# specified in Gigabytes.
-    ram: 30
-# specified in seconds
-    call_stack_timeout: 1800
-    timeout: 1h
-    size: []
+RUN apk --no-cache add \
+  bash \
+  jq \
+  util-linux
+RUN mkdir -p /opt/resource
+ADD files/check files/in files/out /opt/resource/

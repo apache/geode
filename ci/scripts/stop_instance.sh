@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,18 +17,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-metadata:
-  job:
-    name: AcceptanceTest
-    gradle_task: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
-    artifact_slug: acceptancetestfiles
-    dunit:
-      parallel: false
-      forks: 0
-    cpus: 8
-# specified in Gigabytes.
-    ram: 30
-# specified in seconds
-    call_stack_timeout: 1800
-    timeout: 1h
-    size: []
+set -e
+
+BASE_DIR=$(pwd)
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+INSTANCE_NAME="$(cat instance-data/instance-name)"
+PROJECT="$(cat instance-data/project)"
+ZONE="$(cat instance-data/zone)"
+
+
+echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
+
+gcloud compute --project=${PROJECT} instances delete ${INSTANCE_NAME} \
+  --zone=${ZONE} \
+  --quiet

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,6 +17,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
+
+BASE_DIR=$(pwd)
+
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -24,24 +29,20 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-pushd ${SCRIPTDIR}
+REPODIR=$(cd geode; git rev-parse --show-toplevel)
 
-GEODE_BRANCH=${GEODE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
-IMAGE_FAMILY_PREFIX=""
-GEODE_DOCKER_IMAGE=${GEODE_DOCKER_IMAGE:-"gcr.io/apachegeode-ci/apachegeode-build-concourse"}
-if [[ -z "${GEODE_FORK}" ]]; then
-  echo "GEODE_FORK environment variable must be set for this script to work."
-  exit 1
-fi
+DEFAULT_GRADLE_TASK_OPTIONS="--parallel --console=plain --no-daemon -x javadoc -x spotlessCheck -x rat"
 
 
-if [[ "${GEODE_FORK}" != "apache" ]]; then
-  IMAGE_FAMILY_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
-fi
+SSHKEY_FILE="instance-data/sshkey"
 
-echo "Running packer"
-packer build \
-  --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
-  --var "image_family_prefix=${IMAGE_FAMILY_PREFIX}" \
-  packer.json
+INSTANCE_NAME="$(cat instance-data/instance-name)"
+INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
+PROJECT="$(cat instance-data/project)"
+ZONE="$(cat instance-data/zone)"
+
+
+echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
+
+ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ./gradlew ${DEFAULT_GRADLE_TASK_OPTIONS} -Dskip.tests=true build"
+

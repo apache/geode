@@ -282,6 +282,7 @@ subprojects {
         afterTest { desc, result ->
           def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
           progress << "$now Completed test $desc.className $desc.name with result: ${result.resultType}$eol"
+          logger.quiet("Test: ${desc.className}.${desc.name}: ${result.resultType}")
         }
 
         doFirst {

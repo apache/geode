@@ -13,19 +13,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+FROM alpine:3.7
 
-metadata:
-  job:
-    name: AcceptanceTest
-    gradle_task: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
-    artifact_slug: acceptancetestfiles
-    dunit:
-      parallel: false
-      forks: 0
-    cpus: 8
-# specified in Gigabytes.
-    ram: 30
-# specified in seconds
-    call_stack_timeout: 1800
-    timeout: 1h
-    size: []
+COPY --from=google/cloud-sdk:alpine /google-cloud-sdk /google-cloud-sdk
+COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
+ENV PATH /google-cloud-sdk/bin:$PATH
+RUN apk --no-cache add \
+      bash \
+      curl \
+      git \
+      jq \
+      openssh-client \
+      python \
+      py2-pip \
+      rsync \
+  && gcloud config set core/disable_usage_reporting true \
+  && gcloud config set component_manager/disable_update_check true \
+  && gcloud config set metrics/environment github_docker_image

@@ -38,7 +38,6 @@ resources:
   source:
     repository: openjdk
     tag: 8
-    skip_download: true
 
 - name: google-geode-builder
   type: git
@@ -47,6 +46,50 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/images/google-geode-builder
+
+- name: alpine37-docker-image
+  type: docker-image
+  source:
+    repository: alpine
+    tag: 3.7
+    skip_download: true
+
+- name: alpine-docker-image
+  type: docker-image
+  source:
+    repository: alpine
+    tag: latest
+    skip_download: true
+
+- name: alpine-tools-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/alpine-tools/*
+
+- name: alpine-tools-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
+
+- name: concourse-metadata-resource-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/concourse-metadata-resource/*
+
+- name: concourse-metadata-resource-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))concourse-metadata-resource
 
 jobs:
 # apachegeode-build-concourse
@@ -69,11 +112,14 @@ jobs:
   serial: true
   plan:
   - aggregate:
+    - get: apachegeode-build-concourse-docker-image
+      passed: [build-apachegeode-build-concourse-docker-image]
+      trigger: true
     - get: google-geode-builder
       trigger: true
-    - get: apachegeode-build-concourse-docker-image
+    - get: alpine-tools-docker-image
   - task: build-image
-    image: apachegeode-build-concourse-docker-image
+    image: alpine-tools-docker-image
     config:
       inputs:
       - name: google-geode-builder
@@ -81,6 +127,36 @@ jobs:
       - name: results
       platform: linux
       params:
-        GCP_CONCOURSE_KEY: ((!concourse-gcp-key-encoded))
+        GEODE_FORK: ((!geode-fork))
+        GEODE_BRANCH: ((!geode-build-branch))
+        GEODE_DOCKER_IMAGE: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
       run:
         path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
+
+- name: build-alpine-tools-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine37-docker-image
+      trigger: true
+    - get: alpine-tools-dockerfile
+      trigger: true
+  - put: alpine-tools-docker-image
+    params:
+      build: alpine-tools-dockerfile/ci/images/alpine-tools
+      tag_as_latest: true
+
+- name: build-concourse-metadata-resource-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: concourse-metadata-resource-dockerfile
+      trigger: true
+  - put: concourse-metadata-resource-docker-image
+    params:
+      build: concourse-metadata-resource-dockerfile/ci/images/concourse-metadata-resource
+      tag_as_latest: true
