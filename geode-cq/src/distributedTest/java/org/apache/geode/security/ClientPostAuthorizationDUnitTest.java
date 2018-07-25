@@ -31,7 +31,6 @@ import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 /**
@@ -112,8 +111,6 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
     }
   }
 
-  // GEODE-1009: random ports, uses Random, time sensitive, waitForCondition (waitForCriterion)
-  @Category(FlakyTest.class)
   @Test
   public void testAllOpsNotifications() throws Exception {
     OperationWithAction[] allOps = allOpsForTestAllOpsNotifications();
