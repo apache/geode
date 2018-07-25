@@ -238,14 +238,13 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   private String startInfraWithSSL(final Properties sslProperties, boolean clusterLevel)
       throws Exception {
 
-    final Host host = Host.getHost(0);
-    VM locator = host.getVM(0);
-    VM manager = host.getVM(1);
-    VM server = host.getVM(2);
-    VM client = host.getVM(3);
+    VM locator = VM.getVM(0);
+    VM manager = VM.getVM(1);
+    VM server = VM.getVM(2);
+    VM client = VM.getVM(3);
 
     // start locator
-    final String hostName = NetworkUtils.getServerHostName(locator.getHost());
+    final String hostName = NetworkUtils.getServerHostName();
 
     int locatorPort = startLocatorInVM(locator, hostName, "");
 
@@ -621,6 +620,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     props.setProperty(SSL_PROTOCOLS, "TLSv1.1");
     props.setProperty(SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
+    // The above configuration requires the "Unlimited Strength Cryptography Policy files" from Sun for Sun Java
     props.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
     String restEndpoint = startInfraWithSSL(props, false);
@@ -781,7 +781,7 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
     props.setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "TLSv1.1");
     props.setProperty(HTTP_SERVICE_SSL_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
-
+    // The above configuration requires the "Unlimited Strength Cryptography Policy files" from Sun for Sun Java
     String restEndpoint = startInfraWithSSL(props, false);
     validateConnection(restEndpoint, "TLSv1.1", props);
   }
