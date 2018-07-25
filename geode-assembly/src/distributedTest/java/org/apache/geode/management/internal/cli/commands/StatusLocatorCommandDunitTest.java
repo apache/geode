@@ -63,10 +63,16 @@ public class StatusLocatorCommandDunitTest {
     locator.start();
   }
 
+  @AfterClass
+  public static void after() {
+    locator.stop();
+  }
+
   @Test
   public void testWithDisconnectedGfsh() throws Exception {
     final String expectedResult =
-        CliStrings.format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, "Locator");
+        CliStrings.format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE,
+            LOCATOR_TERM_NAME);
 
     if (gfsh.isConnected()) {
       gfsh.disconnect();
@@ -210,11 +216,6 @@ public class StatusLocatorCommandDunitTest {
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getMessageFromContent()).contains(expectedError);
-  }
-
-  @AfterClass
-  public static void after() {
-    locator.stop();
   }
 
   public void assertStatusCommandOutput(String locatorStatusCommandMessage, LocatorState state) {
