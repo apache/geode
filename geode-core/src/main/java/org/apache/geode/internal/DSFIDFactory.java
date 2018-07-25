@@ -937,6 +937,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY,
         GatewaySenderQueueEntrySynchronizationOperation.GatewaySenderQueueEntrySynchronizationEntry.class);
     registerDSFID(ABORT_BACKUP_REQUEST, AbortBackupRequest.class);
+    registerDSFID(EXPIRE_CLIENT_TRANSACTIONS,
+        TXManagerImpl.ExpireDisconnectedClientTransactionsMessage.class);
   }
 
   /**

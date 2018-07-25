@@ -21,39 +21,58 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.test.fake.Fakes;
 
 
 public class TXManagerImplTest {
   private TXManagerImpl txMgr;
-  TXId txid;
-  DestroyMessage msg;
-  TXCommitMessage txCommitMsg;
-  TXId completedTxid;
-  TXId notCompletedTxid;
-  InternalDistributedMember member;
-  CountDownLatch latch;
-  TXStateProxy tx1, tx2;
-  ClusterDistributionManager dm;
-  TXRemoteRollbackMessage rollbackMsg;
-  TXRemoteCommitMessage commitMsg;
+  private TXId txid;
+  private DestroyMessage msg;
+  private TXCommitMessage txCommitMsg;
+  private TXId completedTxid;
+  private TXId notCompletedTxid;
+  private InternalDistributedMember member;
+  private CountDownLatch latch;
+  private TXStateProxy tx1, tx2;
+  private ClusterDistributionManager dm;
+  private TXRemoteRollbackMessage rollbackMsg;
+  private TXRemoteCommitMessage commitMsg;
+  private InternalCache cache;
+  private TXManagerImpl spyTxMgr;
+  private InternalCache spyCache;
+  private SystemTimer timer;
 
   @Before
   public void setUp() {
-    InternalCache cache = Fakes.cache();
+    cache = Fakes.cache();
     dm = mock(ClusterDistributionManager.class);
     txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache);
     txid = new TXId(null, 0);
@@ -69,6 +88,13 @@ public class TXManagerImplTest {
     when(this.msg.canStartRemoteTransaction()).thenReturn(true);
     when(this.msg.canParticipateInTransaction()).thenReturn(true);
 
+    spyCache = spy(Fakes.cache());
+    InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);
+    doReturn(distributedSystem).when(spyCache).getDistributedSystem();
+    when(distributedSystem.getDistributionManager()).thenReturn(dm);
+    spyTxMgr = spy(new TXManagerImpl(mock(CachePerfStats.class), spyCache));
+    timer = mock(SystemTimer.class);
+    doReturn(timer).when(spyCache).getCCPTimer();
   }
 
   @Test
@@ -349,7 +375,7 @@ public class TXManagerImplTest {
   }
 
   @Test
-  public void txStateCleanedupIfRemovedFromHostedTxStatesMap() {
+  public void txStateCleanedUpIfRemovedFromHostedTxStatesMap() {
     tx1 = txMgr.getOrSetHostedTXState(txid, msg);
     TXStateProxyImpl txStateProxy = (TXStateProxyImpl) tx1;
     assertNotNull(txStateProxy);
@@ -360,5 +386,141 @@ public class TXManagerImplTest {
     txMgr.getHostedTXStates().remove(txid);
     txMgr.unmasquerade(tx1);
     assertTrue(txStateProxy.getLocalRealDeal().isClosed());
+  }
+
+  @Test
+  public void clientTransactionWithIdleTimeLongerThanTransactionTimeoutIsRemoved()
+      throws Exception {
+    when(msg.getTXOriginatorClient()).thenReturn(mock(InternalDistributedMember.class));
+    TXStateProxyImpl tx = spy((TXStateProxyImpl) txMgr.getOrSetHostedTXState(txid, msg));
+    doReturn(true).when(tx).isOverTransactionTimeoutLimit();
+
+    txMgr.scheduleToRemoveExpiredClientTransction(txid);
+
+    assertTrue(txMgr.isHostedTXStatesEmpty());
+  }
+
+  @Test
+  public void processExpireDisconnectedClientTransactionsMessageWillExpireDisconnectedClientTransactions() {
+    TXManagerImpl.ExpireDisconnectedClientTransactionsMessage message =
+        new TXManagerImpl.ExpireDisconnectedClientTransactionsMessage();
+
+    InternalCache cache = mock(InternalCache.class);
+    TXManagerImpl txManager = mock(TXManagerImpl.class);
+    when(dm.getCache()).thenReturn(cache);
+    when(cache.getTXMgr()).thenReturn(txManager);
+
+    message.process(dm);
+
+    verify(txManager, times(1)).expireDisconnectedClientTransactions(any(), eq(false));
+  }
+
+  @Test
+  public void clientTransactionsToBeRemovedAndDistributedAreSentToRemoveServerIfWithNoTimeout() {
+    Set<TXId> txIds = (Set<TXId>) mock(Set.class);
+    doReturn(0).when(spyTxMgr).getTransactionTimeToLive();
+    when(txIds.iterator()).thenAnswer(new Answer<Iterator<TXId>>() {
+      @Override
+      public Iterator<TXId> answer(InvocationOnMock invocation) throws Throwable {
+        return Arrays.asList(txid, mock(TXId.class)).iterator();
+      }
+    });
+
+    spyTxMgr.expireDisconnectedClientTransactions(txIds, true);
+
+    verify(spyTxMgr, times(1)).removeClientTransactionsOnRemoteServer(eq(txIds));
+    verify(spyTxMgr, times(1)).scheduleToExpireDisconnectedClientTransactions(eq(txIds), eq(true));
+  }
+
+  @Test
+  public void clientTransactionsToBeExpiredAreRemovedAndNotDistributedIfWithNoTimeout() {
+    doReturn(1).when(spyTxMgr).getTransactionTimeToLive();
+    TXId txId1 = mock(TXId.class);
+    TXId txId2 = mock(TXId.class);
+    TXId txId3 = mock(TXId.class);
+    tx1 = spyTxMgr.getOrSetHostedTXState(txId1, msg);
+    tx2 = spyTxMgr.getOrSetHostedTXState(txId2, msg);
+    Set<TXId> txIds = spy(new HashSet<>());
+    txIds.add(txId1);
+    doReturn(0).when(spyTxMgr).getTransactionTimeToLive();
+    when(txIds.iterator()).thenAnswer(new Answer<Iterator<TXId>>() {
+      @Override
+      public Iterator<TXId> answer(InvocationOnMock invocation) throws Throwable {
+        return Arrays.asList(txId1, txId3).iterator();
+      }
+    });
+    assertEquals(2, spyTxMgr.getHostedTXStates().size());
+
+    spyTxMgr.expireDisconnectedClientTransactions(txIds, false);
+
+    verify(spyTxMgr, never()).removeClientTransactionsOnRemoteServer(eq(txIds));
+    verify(spyTxMgr, times(1)).scheduleToExpireDisconnectedClientTransactions(eq(txIds), eq(false));
+    verify(spyTxMgr, times(1)).removeHostedTXState(eq(txIds));
+    verify(spyTxMgr, times(1)).removeHostedTXState(eq(txId1));
+    verify(spyTxMgr, times(1)).removeHostedTXState(eq(txId3));
+    assertEquals(tx2, spyTxMgr.getHostedTXStates().get(txId2));
+    assertEquals(1, spyTxMgr.getHostedTXStates().size());
+  }
+
+  @Test
+  public void clientTransactionsToBeRemovedAndDistributedAreScheduledToSentToRemoveServerIfWithTimeout() {
+    Set<TXId> txIds = mock(Set.class);
+    doReturn(1).when(spyTxMgr).getTransactionTimeToLive();
+
+    spyTxMgr.expireDisconnectedClientTransactions(txIds, true);
+
+    verify(timer, times(1)).schedule(any(), eq(1000L));
+    verify(spyTxMgr, times(1)).scheduleToExpireDisconnectedClientTransactions(eq(txIds), eq(true));
+  }
+
+  @Test
+  public void clientTransactionsToBeExpiredAndDistributedAreSentToRemoveServer() {
+    Set<TXId> txIds = mock(Set.class);
+
+    spyTxMgr.scheduleToExpireDisconnectedClientTransactions(txIds, true);
+
+    verify(spyTxMgr, times(1)).expireClientTransactionsOnRemoteServer(eq(txIds));
+  }
+
+  @Test
+  public void clientTransactionsNotToBeDistributedAreNotSentToRemoveServer() {
+    Set<TXId> txIds = mock(Set.class);
+
+    spyTxMgr.scheduleToExpireDisconnectedClientTransactions(txIds, false);
+
+    verify(spyTxMgr, never()).expireClientTransactionsOnRemoteServer(eq(txIds));
+  }
+
+  @Test
+  public void clientTransactionsToBeExpiredIsScheduledToBeRemoved() {
+    doReturn(1).when(spyTxMgr).getTransactionTimeToLive();
+    TXId txId1 = mock(TXId.class);
+    TXId txId2 = mock(TXId.class);
+    TXId txId3 = mock(TXId.class);
+    tx1 = spyTxMgr.getOrSetHostedTXState(txId1, msg);
+    tx2 = spyTxMgr.getOrSetHostedTXState(txId2, msg);
+    Set<TXId> set = new HashSet<>();
+    set.add(txId1);
+    set.add(txId2);
+
+    spyTxMgr.scheduleToExpireDisconnectedClientTransactions(set, false);
+
+    verify(spyTxMgr, times(1)).scheduleToRemoveClientTransaction(eq(txId1), eq(1100L));
+    verify(spyTxMgr, times(1)).scheduleToRemoveClientTransaction(eq(txId2), eq(1100L));
+    verify(spyTxMgr, never()).scheduleToRemoveClientTransaction(eq(txId3), eq(1100L));
+  }
+
+  @Test
+  public void clientTransactionIsRemovedIfWithNoTimeout() {
+    spyTxMgr.scheduleToRemoveClientTransaction(txid, 0);
+
+    verify(spyTxMgr, times(1)).removeHostedTXState(eq(txid));
+  }
+
+  @Test
+  public void clientTransactionIsScheduledToBeReIfWithNoTimeout() {
+    spyTxMgr.scheduleToRemoveClientTransaction(txid, 1000);
+
+    verify(timer, times(1)).schedule(any(), eq(1000L));
   }
 }
