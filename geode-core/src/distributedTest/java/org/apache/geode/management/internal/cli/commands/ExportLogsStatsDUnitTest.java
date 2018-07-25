@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -68,8 +69,10 @@ public class ExportLogsStatsDUnitTest {
     serverProperties.setProperty(STATISTIC_ARCHIVE_FILE, "statistics.gfs");
     lsRule.startServerVM(1, serverProperties, locator.getPort());
 
-    expectedZipEntries = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log",
-        "server-1/statistics.gfs");
+    expectedZipEntries = Sets.newHashSet(
+        "locator-0" + File.separator + "locator-0.log",
+        "server-1" + File.separator + "server-1.log",
+        "server-1" + File.separator + "statistics.gfs");
   }
 
   protected void connectIfNeeded() throws Exception {
@@ -85,8 +88,10 @@ public class ExportLogsStatsDUnitTest {
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
-    Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log",
-        "server-1/statistics.gfs");
+    Set<String> expectedFiles = Sets.newHashSet(
+        "locator-0" + File.separator + "locator-0.log",
+        "server-1" + File.separator + "server-1.log",
+        "server-1" + File.separator + "statistics.gfs");
     assertThat(actualZipEnries).containsAll(expectedFiles);
     // remove pulse.log if present
     actualZipEnries =
@@ -101,7 +106,9 @@ public class ExportLogsStatsDUnitTest {
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
-    Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log");
+    Set<String> expectedFiles = Sets.newHashSet(
+        "locator-0" + File.separator + "locator-0.log",
+        "server-1" + File.separator + "server-1.log");
     assertThat(actualZipEnries).containsAll(expectedFiles);
     // remove pulse.log if present
     actualZipEnries =
@@ -116,7 +123,7 @@ public class ExportLogsStatsDUnitTest {
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
-    Set<String> expectedFiles = Sets.newHashSet("server-1/statistics.gfs");
+    Set<String> expectedFiles = Sets.newHashSet("server-1" + File.separator + "statistics.gfs");
     assertThat(actualZipEnries).isEqualTo(expectedFiles);
   }
 
