@@ -100,12 +100,8 @@ public class QueryMonitorDUnitTest {
   @Test
   public void testMultipleClientToOneServer() throws Exception {
     int server1Port = server1.getPort();
-    client3 = cluster.startClientVM(3, ccf -> {
-      configureClientCacheFactory(ccf, server1Port);
-    });
-    client4 = cluster.startClientVM(4, ccf -> {
-      configureClientCacheFactory(ccf, server1Port);
-    });
+    client3 = cluster.startClientVM(3, true, server1Port);
+    client4 = cluster.startClientVM(4, true, server1Port);
 
     gfsh.executeAndAssertThat("create region --name=exampleRegion --type=REPLICATE")
         .statusIsSuccess();
@@ -116,17 +112,15 @@ public class QueryMonitorDUnitTest {
     // execute the query
     VMProvider.invokeInEveryMember(() -> exuteQuery(), client3, client4);
 
-    client3.stopMember();
-    client4.stopMember();
+    client3.stop();
+    client4.stop();
   }
 
   @Test
   public void testOneClientToMultipleServerOnReplicateRegion() throws Exception {
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
-    client3 = cluster.startClientVM(3, ccf -> {
-      configureClientCacheFactory(ccf, server1Port, server2Port);
-    });
+    client3 = cluster.startClientVM(3, true, server1Port, server2Port);
 
     gfsh.executeAndAssertThat("create region --name=exampleRegion --type=REPLICATE")
         .statusIsSuccess();
@@ -137,7 +131,7 @@ public class QueryMonitorDUnitTest {
     // execute the query from client3
     client3.invoke(() -> exuteQuery());
 
-    client3.stopMember();
+    client3.stop();
   }
 
   @Test
@@ -145,13 +139,8 @@ public class QueryMonitorDUnitTest {
     // client3 connects to server1, client4 connects to server2
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
-    client3 = cluster.startClientVM(3, ccf -> {
-      configureClientCacheFactory(ccf, server1Port);
-    });
-
-    client4 = cluster.startClientVM(4, ccf -> {
-      configureClientCacheFactory(ccf, server2Port);
-    });
+    client3 = cluster.startClientVM(3, true, server1Port);
+    client4 = cluster.startClientVM(4, true, server2Port);
 
     gfsh.executeAndAssertThat("create region --name=exampleRegion --type=PARTITION")
         .statusIsSuccess();
@@ -163,8 +152,8 @@ public class QueryMonitorDUnitTest {
     client3.invoke(() -> exuteQuery());
     client4.invoke(() -> exuteQuery());
 
-    client3.stopMember();
-    client4.stopMember();
+    client3.stop();
+    client4.stop();
   }
 
   @Test
@@ -229,8 +218,8 @@ public class QueryMonitorDUnitTest {
     client4.invoke(() -> exuteQuery());
     System.out.println("this takes: " + (System.currentTimeMillis() - begin));
 
-    client3.stopMember();
-    client4.stopMember();
+    client3.stop();
+    client4.stop();
   }
 
   @Test
@@ -255,21 +244,16 @@ public class QueryMonitorDUnitTest {
     // client3 connects to server1, client4 connects to server2
     int server1Port = server1.getPort();
     int server2Port = server2.getPort();
-    client3 = cluster.startClientVM(3, ccf -> {
-      configureClientCacheFactory(ccf, server1Port);
-    });
-
-    client4 = cluster.startClientVM(4, ccf -> {
-      configureClientCacheFactory(ccf, server2Port);
-    });
+    client3 = cluster.startClientVM(3, true, server1Port);
+    client4 = cluster.startClientVM(4, true, server2Port);
 
     client3.invoke(() -> exuteQuery());
     client4.invoke(() -> exuteQuery());
 
     // destroy the indices created in this test
     gfsh.executeAndAssertThat("destroy index --region=/exampleRegion").statusIsSuccess();
-    client3.stopMember();
-    client4.stopMember();
+    client3.stop();
+    client4.stop();
   }
 
   @Test
@@ -304,7 +288,7 @@ public class QueryMonitorDUnitTest {
       populateRegion(0, 150);
     });
 
-    client3.stopMember();
+    client3.stop();
   }
 
   @Test
@@ -313,8 +297,6 @@ public class QueryMonitorDUnitTest {
     // start up more servers
     MemberVM server3 = cluster.startServerVM(3, locatorPort);
 
-    // configure the server to make the query to wait for at least 1 second in every execution spot
-    // and set a MAX_QUERY_EXECUTION_TIME to be 10ms
     server3.invoke(() -> {
       DefaultQuery.testHook = new QueryTimeoutHook();
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = MAX_QUERY_EXECUTE_TIME;
@@ -373,7 +355,7 @@ public class QueryMonitorDUnitTest {
       DefaultQuery.testHook = null;
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = -1;
     });
-    server3.stopMember(true);
+    server3.stop(true);
   }
 
 
