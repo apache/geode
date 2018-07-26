@@ -52,7 +52,7 @@ if [[ "${GEODE_FORK}" != "apache" ]]; then
   IMAGE_FAMILY_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
 
-INSTANCE_NAME="$(echo "geode-builder-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr '[:upper:]' '[:lower:]')"
+INSTANCE_NAME="$(echo "build-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr '[:upper:]' '[:lower:]')"
 PROJECT=apachegeode-ci
 ZONE=us-central1-f
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
