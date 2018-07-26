@@ -21,7 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-public class GeoRadiusElement {
+public class GeoRadiusResponseElement {
     private String name;
     private Optional<GeoCoord> coord;
     private Double distFromCenter;
@@ -46,7 +46,7 @@ public class GeoRadiusElement {
         return hash;
     }
 
-    public GeoRadiusElement(String n, Optional<GeoCoord> c, Double d, boolean sh, Optional<String> h) {
+    public GeoRadiusResponseElement(String n, Optional<GeoCoord> c, Double d, boolean sh, Optional<String> h) {
         this.name = n;
         this.coord = c;
         this.distFromCenter = d;
@@ -54,11 +54,11 @@ public class GeoRadiusElement {
         this.hash = h;
     }
 
-    public static void sortByDistanceAscending(List<GeoRadiusElement> elements) {
-        Collections.sort(elements, Comparator.comparing(GeoRadiusElement::getDistFromCenter));
+    public static void sortByDistanceAscending(List<GeoRadiusResponseElement> elements) {
+        Collections.sort(elements, Comparator.comparing(GeoRadiusResponseElement::getDistFromCenter));
     }
 
-    public static void sortByDistanceDescending(List<GeoRadiusElement> elements) {
-        Collections.sort(elements, Comparator.comparing((GeoRadiusElement x) -> -1.0 * x.getDistFromCenter()));
+    public static void sortByDistanceDescending(List<GeoRadiusResponseElement> elements) {
+        Collections.sort(elements, Comparator.comparing((GeoRadiusResponseElement x) -> -1.0 * x.getDistFromCenter()));
     }
 }

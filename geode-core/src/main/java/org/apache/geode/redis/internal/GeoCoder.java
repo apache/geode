@@ -72,12 +72,12 @@ public class GeoCoder {
         return response;
     }
 
-    public static ByteBuf geoRadiusResponse(ByteBufAllocator alloc, Collection<GeoRadiusElement> list) {
+    public static ByteBuf geoRadiusResponse(ByteBufAllocator alloc, Collection<GeoRadiusResponseElement> list) {
         if (list.isEmpty())
             return Coder.getEmptyArrayResponse(alloc);
 
         List<Object> responseElements = new ArrayList<>();
-        for (GeoRadiusElement element : list) {
+        for (GeoRadiusResponseElement element : list) {
             String name = element.getName();
 
             String distStr = "";

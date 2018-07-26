@@ -23,7 +23,7 @@ import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.GeoRadiusElement;
+import org.apache.geode.redis.internal.GeoRadiusResponseElement;
 import org.apache.geode.redis.internal.HashNeighbors;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -82,7 +82,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    List<GeoRadiusElement> results = new ArrayList<>();
+    List<GeoRadiusResponseElement> results = new ArrayList<>();
     for (String neighbor : hn.get()) {
       try {
           List<StructImpl> range = getGeoRadiusRange(context, key, neighbor);
@@ -95,7 +95,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
                     Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
             Optional<String> hash = params.withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
 
-            results.add(new GeoRadiusElement(name, coord, dist, params.withDist, hash));
+            results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hash));
           }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));
@@ -104,9 +104,9 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     }
 
     if (params.ascendingOrder != null && params.ascendingOrder) {
-      GeoRadiusElement.sortByDistanceAscending(results);
+      GeoRadiusResponseElement.sortByDistanceAscending(results);
     } else if (params.ascendingOrder != null && !params.ascendingOrder) {
-      GeoRadiusElement.sortByDistanceDescending(results);
+      GeoRadiusResponseElement.sortByDistanceDescending(results);
     }
 
     if (params.count != null && params.count < results.size()) {
