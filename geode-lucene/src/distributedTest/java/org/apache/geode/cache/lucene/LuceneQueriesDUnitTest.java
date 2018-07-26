@@ -23,11 +23,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -66,6 +68,32 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
     accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+  }
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void luceneQueryExecutedWhenAllBucketsAreLostShouldNotCauseAHang(
+      RegionTestableType regionTestType) throws Exception {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+
+
+    putDataInRegion(accessor);
+    dataStore1.invoke(() -> Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> assertTrue(getCache().getRegion(REGION_NAME).size() == 3)));
+
+
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
+    executeTextSearch(accessor);
+
+    dataStore1.invoke(() -> closeCache());
+    dataStore2.invoke(() -> closeCache());
+    executeQueryAndValidateNoHang(regionTestType);
   }
 
   @Test

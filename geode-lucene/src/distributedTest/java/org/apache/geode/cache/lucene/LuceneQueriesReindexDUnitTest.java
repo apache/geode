@@ -19,8 +19,11 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.TimeUnit;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -57,6 +60,49 @@ public class LuceneQueriesReindexDUnitTest extends LuceneQueriesAccessorBase {
         (LuceneIndexFactoryImpl) luceneService.createIndexFactory().addField(fieldName);
     indexFactory.create(indexName, REGION_NAME, true);
   };
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void luceneQueryExecutedWithReindexWhenAllBucketsAreLostShouldNotCauseAHang(
+      RegionTestableType regionTestType) throws Exception {
+    dataStore1.invoke(() -> createDataStore(regionTestType));
+    dataStore2.invoke(() -> createDataStore(regionTestType));
+    accessor.invoke(() -> createAccessor(regionTestType));
+
+
+    putDataInRegion(accessor);
+    dataStore1.invoke(() -> Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> assertTrue(getCache().getRegion(REGION_NAME).size() == 3)));
+
+    // re-index stored data
+    AsyncInvocation ai1 = dataStore1.invokeAsync(() -> {
+      createIndex("text");
+    });
+
+    AsyncInvocation ai2 = dataStore2.invokeAsync(() -> {
+      createIndex("text");
+    });
+    AsyncInvocation ai3 = accessor.invokeAsync(() -> {
+      createIndex("text");
+    });
+
+    ai1.join();
+    ai2.join();
+    ai3.join();
+
+    ai1.checkException();
+    ai2.checkException();
+    ai3.checkException();
+
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
+    executeTextSearch(accessor);
+
+    dataStore1.invoke(() -> closeCache());
+    dataStore2.invoke(() -> closeCache());
+    executeQueryAndValidateNoHang(regionTestType);
+  }
+
+
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")

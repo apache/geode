@@ -35,9 +35,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.execute.EmptyRegionFunctionException;
 import org.apache.geode.cache.lucene.internal.LuceneIndexFactorySpy;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
@@ -80,6 +82,23 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
 
       return service.waitUntilFlushed(INDEX_NAME, REGION_NAME, ms, TimeUnit.MILLISECONDS);
     });
+  }
+
+  protected void executeQueryAndValidateNoHang(RegionTestableType regionTestType) {
+    try {
+      executeTextSearch(accessor);
+      fail();
+    } catch (Exception exception) {
+      // We expect an exception to be thrown when we execute a query
+      // accessor must not try to execute a lucene query and hang.
+      if (regionTestType == RegionTestableType.FIXED_PARTITION
+          && !(exception.getCause() instanceof EmptyRegionFunctionException)) {
+        fail();
+      } else if (regionTestType != RegionTestableType.FIXED_PARTITION
+          && !(exception.getCause() instanceof PartitionedRegionStorageException)) {
+        fail();
+      }
+    }
   }
 
   protected void executeTextSearch(VM vm) {
