@@ -259,6 +259,8 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the GEOPOS command is \"GEOPOS key member [member...]\"";
     public static final String GEODIST =
         "The wrong number of arguments or syntax was provided, the format for the GEODIST command is \"GEODIST key member member [unit]\"";
+    public static final String GEORADIUS =
+        "The wrong number of arguments or syntax was provided, the format for the GEORADIUS command is \"GEORADIUS key longitude latitude radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
     /*
      * String
      */

@@ -27,6 +27,7 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.GeoRadiusElement;
 import org.apache.geode.redis.internal.HashNeighbors;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
@@ -48,7 +49,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 6) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ""));
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEORADIUS));
       return;
     }
 
@@ -107,7 +108,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_DIST_UNIT));
       return;
     } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ""));
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
       return;
     }
 
@@ -134,7 +135,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     try {
       hn = GeoCoder.geoHashGetAreasByRadius(lon, lat, radius);
     } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ""));
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
       return;
     }
 
