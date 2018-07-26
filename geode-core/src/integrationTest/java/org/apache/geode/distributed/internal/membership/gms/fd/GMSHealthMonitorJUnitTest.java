@@ -877,7 +877,9 @@ public class GMSHealthMonitorJUnitTest {
 
     @Override
     public Socket accept() throws IOException {
-      return wrappedSocket.accept();
+      // It's expected that the GMSHealthMonitor will start shut down prior to calling this accept,
+      // but to prevent hanging on the rare race where that doesn't happen, throw this exception.
+      throw new IOException("Unable to handle accept call.");
     }
 
     @Override

@@ -100,7 +100,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
           .contains(REGION_NAME);
     });
 
-    server2.forceDisconnectMember();
+    server2.forceDisconnect();
 
     server2.waitTilServerFullyReconnected();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
@@ -132,7 +132,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
       assertThat(sharedConfig.getConfiguration(GROUP_NAME).getCacheXmlContent()).contains("45635");
     });
 
-    server2.forceDisconnectMember();
+    server2.forceDisconnect();
 
     server2.waitTilServerFullyReconnected();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
@@ -157,7 +157,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
           .doesNotContain(REGION_NAME);
     });
 
-    server2.forceDisconnectMember();
+    server2.forceDisconnect();
 
     server2.waitTilServerFullyReconnected();
 

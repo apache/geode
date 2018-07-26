@@ -15,14 +15,12 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -31,10 +29,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
 public class RebalanceCommandDistributedTest {
 
@@ -44,18 +39,10 @@ public class RebalanceCommandDistributedTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator, server1, server2;
-
-  @Parameterized.Parameter
-  public static boolean useHttp;
-
-  @Parameterized.Parameters(name = "useHttp={0}")
-  public static Object[] data() {
-    return new Object[] {true, false};
-  }
+  protected static MemberVM locator, server1, server2;
 
   @BeforeClass
-  public static void before() throws Exception {
+  public static void beforeClass() {
     locator = cluster.startLocatorVM(0);
 
     int locatorPort = locator.getPort();
@@ -63,12 +50,11 @@ public class RebalanceCommandDistributedTest {
     server2 = cluster.startServerVM(2, "localhost", locatorPort);
 
     setUpRegions();
+  }
 
-    if (useHttp) {
-      gfsh.connectAndVerify(locator.getHttpPort(), http);
-    } else {
-      gfsh.connectAndVerify(locator.getJmxPort(), jmxManager);
-    }
+  @Before
+  public void before() throws Exception {
+    gfsh.connect(locator.getJmxPort(), jmxManager);
   }
 
   @Test

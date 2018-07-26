@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.ClientStatsManager;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.DiskStoreObserver;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
@@ -203,7 +202,6 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
 
       // keep alphabetized to detect duplicate lines
       CacheCreation.clearThreadLocals();
-      CacheServerLauncher.clearStatics();
       CacheServerTestUtil.clearCacheReference();
       ClientProxyMembershipID.system = null;
       ClientServerTestCase.AUTO_LOAD_BALANCE = false;

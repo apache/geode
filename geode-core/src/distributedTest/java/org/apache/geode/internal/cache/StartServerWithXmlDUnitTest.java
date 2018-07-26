@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -54,8 +55,7 @@ public class StartServerWithXmlDUnitTest {
     server = cluster.getVM(1);
 
     server.invoke(() -> {
-      CacheServerLauncher.setServerBindAddress("localhost");
-      CacheServerLauncher.setDisableDefaultServer(false);
+      ServerLauncherParameters.INSTANCE.withBindAddress("localhost");
       CacheFactory cf = new CacheFactory(props);
       Cache cache = cf.create();
     });

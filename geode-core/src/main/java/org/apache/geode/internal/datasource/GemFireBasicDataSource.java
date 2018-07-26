@@ -89,10 +89,21 @@ public class GemFireBasicDataSource extends AbstractDataSource {
           loadDriver();
       }
     }
+
     if (url != null) {
       Properties props = new Properties();
-      props.put("user", user);
-      props.put("password", password);
+
+      // If no default username or password is specified don't add these properties - the user may
+      // be connecting to a system which does not require authentication
+      if (user != null) {
+        props.put("user", user);
+      }
+
+      // check for password separately from username - some drivers may throw different error
+      // messages we want to capture
+      if (password != null) {
+        props.put("password", password);
+      }
       connection = driverObject.connect(url, props);
     } else {
       StringId exception =
@@ -109,7 +120,6 @@ public class GemFireBasicDataSource extends AbstractDataSource {
    *
    * @param clUsername The username for the database connection.
    * @param clPassword The password for the database connection.
-   * @return ???
    */
   @Override
   public Connection getConnection(String clUsername, String clPassword) throws SQLException {

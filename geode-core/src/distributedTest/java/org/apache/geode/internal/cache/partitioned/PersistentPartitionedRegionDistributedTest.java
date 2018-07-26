@@ -53,7 +53,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.admin.AdminDistributedSystem;
@@ -73,6 +72,7 @@ import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.cache.persistence.RevokeFailedException;
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -95,7 +95,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -952,7 +951,6 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   }
 
   @Test
-  @Category(FlakyTest.class) // GEODE-5325
   public void recoversFromCloseDuringRegionOperation() throws Exception {
     vm0.invoke(() -> createPartitionedRegion(1, -1, 1, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 1, true));
@@ -970,6 +968,9 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
           region.put(0, i);
           i++;
         } catch (CacheClosedException e) {
+          break;
+        } catch (DistributedSystemDisconnectedException e) {
+          // remove this check when GEODE-5457 is resolved
           break;
         }
       }

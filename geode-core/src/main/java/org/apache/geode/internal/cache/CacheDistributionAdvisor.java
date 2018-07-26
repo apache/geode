@@ -1175,7 +1175,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       isPersistent = true;
       CacheProfile profile = (CacheProfile) getProfile(memberId);
       if (profile != null && profile.persistentID != null) {
-        persistentId = ((CacheProfile) getProfile(memberId)).persistentID.diskStoreId;
+        persistentId = ((CacheProfile) getProfile(memberId)).persistentID.getDiskStoreId();
       }
     }
 

@@ -88,7 +88,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 
 /**
@@ -1264,7 +1263,6 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     });
   }
 
-  @Category(FlakyTest.class) // GEODE-1703: fails assertion: Region not created within30000
   @Test
   public void testCrashDuringPreparePersistentId() throws Exception {
     Host host = Host.getHost(0);

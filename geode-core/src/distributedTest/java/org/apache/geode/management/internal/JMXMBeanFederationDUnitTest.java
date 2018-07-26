@@ -128,7 +128,7 @@ public class JMXMBeanFederationDUnitTest {
     intermediateMBeans = intermediateMBeans.stream().sorted().collect(Collectors.toList());
     assertThat(intermediateMBeans).containsExactlyElementsOf(expectedMBeans);
 
-    lsRule.stopMember(SERVER_3_VM_INDEX);
+    lsRule.stop(SERVER_3_VM_INDEX);
     SERVER_COUNT--;
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 

@@ -4,6 +4,7 @@ org/apache/geode/cache/operations/internal/UpdateOnlyMap
 org/apache/geode/cache/query/internal/index/CompactRangeIndex$1
 org/apache/geode/distributed/LocatorLauncher$Command
 org/apache/geode/distributed/ServerLauncher$Command
+org/apache/geode/distributed/ServerLauncherParameters
 org/apache/geode/distributed/internal/DistributionConfigImpl
 org/apache/geode/distributed/internal/OverflowQueueWithDMStats
 org/apache/geode/distributed/internal/ThrottlingMemLinkedQueueWithDMStats

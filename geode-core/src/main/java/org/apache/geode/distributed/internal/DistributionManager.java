@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * This interface defines the services provided by any class that is a distribution manager.
@@ -496,4 +497,7 @@ public interface DistributionManager extends ReplySender {
    * returns the ID of a member having the given name, or null if no such member exists
    */
   DistributedMember getMemberWithName(String name);
+
+  /** returns the Threads Monitoring instance */
+  public ThreadsMonitoring getThreadMonitoring();
 }

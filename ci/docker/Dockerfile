@@ -21,6 +21,7 @@ ENV SPRUCE_VERSION 1.17.0
 ENV GRADLE_USER_HOME /usr/local/maven_files
 
 WORKDIR /tmp/work
+COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
 
 ADD https://github.com/geofffranks/spruce/releases/download/v${SPRUCE_VERSION}/spruce-linux-amd64 /usr/local/bin/spruce
 ADD https://github.com/krallin/tini/releases/download/v0.14.0/tini-static-amd64 /usr/local/bin/tini

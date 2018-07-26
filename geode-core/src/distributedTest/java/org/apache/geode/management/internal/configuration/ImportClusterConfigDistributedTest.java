@@ -73,8 +73,8 @@ public class ImportClusterConfigDistributedTest {
         .statusIsSuccess();
 
     gfsh.disconnect();
-    locator.stopMember(true);
-    server.stopMember(true);
+    locator.stop(true);
+    server.stop(true);
 
     assertThat(this.exportedClusterConfig).exists();
     assertThat(this.exportedClusterConfig.length()).isGreaterThan(100);

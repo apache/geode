@@ -62,8 +62,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
     addDisconnectListener(locator0);
 
-    server2.forceDisconnectMember();
-    locator0.forceDisconnectMember();
+    server2.forceDisconnect();
+    locator0.forceDisconnect();
 
     waitForLocatorToReconnect(locator0);
 
@@ -92,7 +92,7 @@ public class ClusterConfigLocatorRestartDUnitTest {
     // Shut down hard
     rule.crashVM(0);
 
-    server3.forceDisconnectMember();
+    server3.forceDisconnect();
 
     rule.startServerVM(4, locator1.getPort(), locator0.getPort());
 

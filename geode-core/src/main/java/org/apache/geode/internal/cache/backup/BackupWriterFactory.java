@@ -26,6 +26,8 @@ enum BackupWriterFactory {
   FILE_SYSTEM("FileSystem") {
     @Override
     BackupWriter createWriter(Properties properties, String memberId) {
+      // Remove chars that are illegal in Windows paths
+      memberId = memberId.replaceAll("[:()]", "-");
       FileSystemBackupWriterConfig config = new FileSystemBackupWriterConfig(properties);
       Path targetDir = Paths.get(config.getTargetDirectory())
           .resolve(properties.getProperty(TIMESTAMP)).resolve(memberId);

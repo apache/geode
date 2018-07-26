@@ -97,6 +97,7 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -107,7 +108,6 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.DiskStoreFactoryImpl;
@@ -574,11 +574,7 @@ public class CacheCreation implements InternalCache {
     // before region initialization to after it to fix bug 33587.
     // Create and start the CacheServers after the gateways have been initialized
     // to fix bug 39736.
-
-    Integer serverPort = CacheServerLauncher.getServerPort();
-    String serverBindAdd = CacheServerLauncher.getServerBindAddress();
-    Boolean disableDefaultServer = CacheServerLauncher.getDisableDefaultServer();
-    startCacheServers(getCacheServers(), cache, serverPort, serverBindAdd, disableDefaultServer);
+    startCacheServers(getCacheServers(), cache, ServerLauncherParameters.INSTANCE);
 
     for (GatewayReceiver receiverCreation : this.getGatewayReceivers()) {
       GatewayReceiverFactory factory = cache.createGatewayReceiverFactory();
@@ -633,11 +629,56 @@ public class CacheCreation implements InternalCache {
   }
 
   /**
+   * Reconfigures the server using the specified parameters.
+   *
+   * @param serverImpl CacheServer implementation.
+   * @param parameters Parameters to reconfigure the server.
+   */
+  void reconfigureServer(CacheServerImpl serverImpl, ServerLauncherParameters parameters) {
+    if (parameters == null)
+      return;
+
+    if (parameters.getPort() != null
+        && parameters.getPort() != CacheServer.DEFAULT_PORT)
+      serverImpl.setPort(parameters.getPort());
+    if (parameters.getMaxThreads() != null
+        && parameters.getMaxThreads() != CacheServer.DEFAULT_MAX_THREADS)
+      serverImpl.setMaxThreads(parameters.getMaxThreads());
+    if (parameters.getMaxConnections() != null
+        && parameters.getMaxConnections() != CacheServer.DEFAULT_MAX_CONNECTIONS)
+      serverImpl.setMaxConnections(parameters.getMaxConnections());
+    if (parameters.getMaxMessageCount() != null
+        && parameters.getMaxMessageCount() != CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT)
+      serverImpl.setMaximumMessageCount(parameters.getMaxMessageCount());
+    if (parameters.getSocketBufferSize() != null
+        && parameters.getSocketBufferSize() != CacheServer.DEFAULT_SOCKET_BUFFER_SIZE)
+      serverImpl.setSocketBufferSize(parameters.getSocketBufferSize());
+    if (parameters.getBindAddress() != null
+        && parameters.getBindAddress() != CacheServer.DEFAULT_BIND_ADDRESS)
+      serverImpl.setBindAddress(parameters.getBindAddress().trim());
+    if (parameters.getMessageTimeToLive() != null
+        && parameters.getMessageTimeToLive() != CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE)
+      serverImpl.setMessageTimeToLive(parameters.getMessageTimeToLive());
+    if (parameters.getHostnameForClients() != null
+        && parameters.getHostnameForClients() != CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS)
+      serverImpl.setHostnameForClients(parameters.getHostnameForClients());
+  }
+
+  /**
    * starts declarative cache servers if a server is not running on the port already. Also adds a
    * default server to the param declarativeCacheServers if a serverPort is specified.
    */
-  void startCacheServers(List<CacheServer> declarativeCacheServers, Cache cache, Integer serverPort,
-      String serverBindAdd, Boolean disableDefaultServer) {
+  void startCacheServers(List<CacheServer> declarativeCacheServers, Cache cache,
+      ServerLauncherParameters parameters) {
+    Integer serverPort = null;
+    String serverBindAdd = null;
+    Boolean disableDefaultServer = null;
+
+    if (parameters != null) {
+      serverPort = parameters.getPort();
+      serverBindAdd = parameters.getBindAddress();
+      disableDefaultServer = parameters.isDisableDefaultServer();
+    }
 
     if (declarativeCacheServers.size() > 1 && (serverPort != null || serverBindAdd != null)) {
       throw new RuntimeException(
@@ -648,6 +689,7 @@ public class CacheCreation implements InternalCache {
     CacheServerCreation defaultServer = null;
     boolean hasServerPortOrBindAddress = serverPort != null || serverBindAdd != null;
     boolean isDefaultServerDisabled = disableDefaultServer == null || !disableDefaultServer;
+
     if (declarativeCacheServers.isEmpty() && hasServerPortOrBindAddress
         && isDefaultServerDisabled) {
       boolean existingCacheServer = false;
@@ -686,16 +728,12 @@ public class CacheCreation implements InternalCache {
 
       CacheServerImpl impl = (CacheServerImpl) cache.addCacheServer();
       impl.configureFrom(declaredCacheServer);
+
       if (declaredCacheServer == defaultServer) {
         impl.setIsDefaultServer();
       }
 
-      if (serverPort != null && serverPort != CacheServer.DEFAULT_PORT) {
-        impl.setPort(serverPort);
-      }
-      if (serverBindAdd != null) {
-        impl.setBindAddress(serverBindAdd.trim());
-      }
+      reconfigureServer(impl, parameters);
 
       try {
         if (!impl.isRunning()) {

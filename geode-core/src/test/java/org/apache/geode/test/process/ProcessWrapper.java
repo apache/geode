@@ -18,7 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,11 +32,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.jar.Attributes;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
@@ -315,7 +325,8 @@ public class ProcessWrapper {
     try {
       synchronized (this.exitValue) {
         final String[] command =
-            defineCommand(jvmArgumentsList.toArray(new String[jvmArgumentsList.size()]));
+            defineCommand(jvmArgumentsList.toArray(new String[jvmArgumentsList.size()]),
+                workingDirectory.getCanonicalPath());
         this.process = new ProcessBuilder(command).directory(workingDirectory).start();
 
         final StringBuilder processCommand = new StringBuilder();
@@ -364,14 +375,19 @@ public class ProcessWrapper {
     }
   }
 
-  private String[] defineCommand(final String[] jvmArguments) {
+  private String[] defineCommand(final String[] jvmArguments, String workingDir)
+      throws IOException {
     final File javaBinDir = new File(System.getProperty("java.home"), "bin");
     final File javaExe = new File(javaBinDir, "java");
 
-    final List<String> argumentList = new ArrayList<String>();
+    String classPath = System.getProperty("java.class.path");
+    List<String> parts = Arrays.asList(classPath.split(File.pathSeparator));
+    String manifestJar = createManifestJar(parts, workingDir);
+
+    final List<String> argumentList = new ArrayList<>();
     argumentList.add(javaExe.getPath());
     argumentList.add("-classpath");
-    argumentList.add(System.getProperty("java.class.path"));
+    argumentList.add(manifestJar);
 
     // -d64 is not a valid option for windows and results in failure
     final int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
@@ -437,6 +453,57 @@ public class ProcessWrapper {
 
   public Process getProcess() {
     return this.process;
+  }
+
+  /**
+   * Method to create a manifest jar from a list of jars or directories. The provided entries are
+   * first converted to absolute paths and then converted to relative paths, relative to the
+   * location provided. This is to support the Manifest's requirement that class-paths only be
+   * relative. For example, if a jar is given as /a/b/c/foo.jar and the location is /tmp/app, the
+   * following will happen:
+   * - the manifest jar will be created as /tmp/app/manifest.jar
+   * - the class-path attribute will be ../../a/b/c/foo.jar
+   *
+   * @return the path to the created manifest jar
+   */
+  public static String createManifestJar(List<String> entries, String location) throws IOException {
+    // Must use the canonical path so that symbolic links are resolved correctly
+    Path locationPath = new File(location).getCanonicalFile().toPath();
+    Files.createDirectories(locationPath);
+
+    List<String> manifestEntries = new ArrayList<>();
+    for (String jar : entries) {
+      Path absPath = Paths.get(jar).toAbsolutePath();
+      Path relPath = locationPath.relativize(absPath);
+      if (absPath.toFile().isDirectory()) {
+        manifestEntries.add(relPath.toString() + "/");
+      } else {
+        manifestEntries.add(relPath.toString());
+      }
+    }
+
+    Manifest manifest = new Manifest();
+    Attributes global = manifest.getMainAttributes();
+    global.put(Attributes.Name.MANIFEST_VERSION, "1.0.0");
+    global.put(new Attributes.Name("Class-Path"), String.join(" ", manifestEntries));
+
+    // Generate a 'unique' 8 char name
+    String uuid = UUID.randomUUID().toString().substring(0, 8);
+    Path manifestJar = Paths.get(location, "manifest-" + uuid + ".jar");
+    JarOutputStream jos = null;
+    try {
+      File jarFile = manifestJar.toFile();
+      OutputStream os = new FileOutputStream(jarFile);
+      jos = new JarOutputStream(os, manifest);
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (jos != null) {
+        jos.close();
+      }
+    }
+
+    return manifestJar.toString();
   }
 
   public static class Builder {

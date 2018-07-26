@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -272,7 +271,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     setDebug(Boolean.TRUE.equals(builder.getDebug()));
     this.deletePidFileOnStop = Boolean.TRUE.equals(builder.getDeletePidFileOnStop());
     this.disableDefaultServer = Boolean.TRUE.equals(builder.getDisableDefaultServer());
-    CacheServerLauncher.setDisableDefaultServer(this.disableDefaultServer);
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
     this.force = Boolean.TRUE.equals(builder.getForce());
     this.help = Boolean.TRUE.equals(builder.getHelp());
@@ -282,13 +280,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     this.rebalance = Boolean.TRUE.equals(builder.getRebalance());
     this.redirectOutput = Boolean.TRUE.equals(builder.getRedirectOutput());
     this.serverBindAddress = builder.getServerBindAddress();
-    if (builder.isServerBindAddressSetByUser() && this.serverBindAddress != null) {
-      CacheServerLauncher.setServerBindAddress(this.serverBindAddress.getHostAddress());
-    }
     this.serverPort = builder.getServerPort();
-    if (builder.isServerPortSetByUser() && this.serverPort != null) {
-      CacheServerLauncher.setServerPort(this.serverPort);
-    }
     this.springXmlLocation = builder.getSpringXmlLocation();
     this.workingDirectory = builder.getWorkingDirectory();
     this.criticalHeapPercentage = builder.getCriticalHeapPercentage();
@@ -314,6 +306,26 @@ public class ServerLauncher extends AbstractLauncher<String> {
         return statusInProcess();
       }
     };
+
+    // GEODE-5256: set startup properties on CacheServerLauncher statics, used later to start the
+    // server through CacheCreation if a cache.xml or if the cluster-configuration-service is
+    // enabled.
+    Integer serverPort =
+        (builder.isServerPortSetByUser() && this.serverPort != null) ? this.serverPort : null;
+    String serverBindAddress =
+        (builder.isServerBindAddressSetByUser() && this.serverBindAddress != null)
+            ? this.serverBindAddress.getHostAddress() : null;
+
+    ServerLauncherParameters.INSTANCE
+        .withPort(serverPort)
+        .withMaxThreads(this.maxThreads)
+        .withBindAddress(serverBindAddress)
+        .withMaxConnections(this.maxConnections)
+        .withMaxMessageCount(this.maxMessageCount)
+        .withSocketBufferSize(this.socketBufferSize)
+        .withMessageTimeToLive(this.messageTimeToLive)
+        .withHostnameForClients(this.hostNameForClients)
+        .withDisableDefaultServer(this.disableDefaultServer);
   }
 
   /**
@@ -942,8 +954,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
       final String serverBindAddress =
           getServerBindAddress() == null ? null : getServerBindAddress().getHostAddress();
       final Integer serverPort = getServerPort();
-      CacheServerLauncher.setServerBindAddress(serverBindAddress);
-      CacheServerLauncher.setServerPort(serverPort);
       final CacheServer cacheServer = cache.addCacheServer();
       cacheServer.setBindAddress(serverBindAddress);
       cacheServer.setPort(serverPort);
@@ -1506,17 +1516,17 @@ public class ServerLauncher extends AbstractLauncher<String> {
         }
 
         if (options.hasArgument(CliStrings.START_SERVER__MAX__MESSAGE__COUNT)) {
-          setMaxConnections(Integer.parseInt(
+          setMaxMessageCount(Integer.parseInt(
               ObjectUtils.toString(options.valueOf(CliStrings.START_SERVER__MAX__MESSAGE__COUNT))));
         }
 
         if (options.hasArgument(CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE)) {
-          setMaxConnections(Integer.parseInt(ObjectUtils
+          setMessageTimeToLive(Integer.parseInt(ObjectUtils
               .toString(options.valueOf(CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE))));
         }
 
         if (options.hasArgument(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE)) {
-          setMaxConnections(Integer.parseInt(ObjectUtils
+          setSocketBufferSize(Integer.parseInt(ObjectUtils
               .toString(options.valueOf(CliStrings.START_SERVER__SOCKET__BUFFER__SIZE))));
         }
 

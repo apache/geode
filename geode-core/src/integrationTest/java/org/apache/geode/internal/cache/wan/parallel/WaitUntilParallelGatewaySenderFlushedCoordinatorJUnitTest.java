@@ -59,7 +59,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
 
   protected AbstractGatewaySenderEventProcessor getEventProcessor() {
     ConcurrentParallelGatewaySenderEventProcessor processor =
-        spy(new ConcurrentParallelGatewaySenderEventProcessor(this.sender));
+        spy(new ConcurrentParallelGatewaySenderEventProcessor(this.sender, null));
     return processor;
   }
 

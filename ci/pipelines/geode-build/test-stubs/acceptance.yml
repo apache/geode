@@ -22,6 +22,10 @@ metadata:
     dunit:
       parallel: false
       forks: 0
-    call_stack_timeout: 25200
-    timeout: 8h
+    cpus: 8
+# specified in Gigabytes.
+    ram: 30
+# specified in seconds
+    call_stack_timeout: 1800
+    timeout: 1h
     size: []

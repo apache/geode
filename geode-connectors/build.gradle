@@ -41,45 +41,7 @@ dependencies {
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
     testCompile files(project(':geode-core').sourceSets.test.output)
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
-}
 
-configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
-    distributedTestCompile.extendsFrom testCompile
-    distributedTestRuntime.extendsFrom testRuntime
-    acceptanceTestCompile.extendsFrom testCompile
-    acceptanceTestRuntime.extendsFrom testRuntime
-}
-
-sourceSets {
-    integrationTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/integrationTest/java')
-        }
-        resources.srcDir file('src/integrationTest/resources')
-    }
-    distributedTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/distributedTest/java')
-        }
-        resources.srcDir file('src/distributedTest/resources')
-    }
-    acceptanceTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/acceptanceTest/java')
-        }
-        resources.srcDir file('src/acceptanceTest/resources')
-    }
-}
-
-dependencies {
     // TODO build - move dunit framework to shared module.
     integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
     distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)

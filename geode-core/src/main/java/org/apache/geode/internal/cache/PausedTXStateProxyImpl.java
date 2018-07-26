@@ -390,14 +390,6 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   public void setJCATransaction() {}
 
   @Override
-  public void setSynchronizationRunnable(TXSynchronizationRunnable sync) {}
-
-  @Override
-  public TXSynchronizationRunnable getSynchronizationRunnable() {
-    return null;
-  }
-
-  @Override
   public void suspend() {}
 
   @Override
