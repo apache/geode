@@ -70,7 +70,7 @@ public class GeoRadiusParameters {
             lat = pos.getLatitude();
         }
 
-        distScale = GeoExecutorHelper.parseUnitScale(unit);
+        distScale = GeoCoder.parseUnitScale(unit);
         radius = Coder.bytesToDouble(radArray) / distScale;
 
         int i = (cmdType == CommandType.GEORADIUS) ? 6 : 5;

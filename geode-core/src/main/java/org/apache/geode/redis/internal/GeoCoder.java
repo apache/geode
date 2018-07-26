@@ -425,8 +425,23 @@ public class GeoCoder {
         return hashStrBuilder.toString();
     }
 
-    public static Double haversine(Double rad) {
+    public static double haversine(Double rad) {
         return 0.5 * (1 - Math.cos(rad));
+    }
+
+    public static double parseUnitScale(String unit) throws IllegalArgumentException {
+        switch(unit) {
+            case "km":
+                return 0.001;
+            case "m":
+                return 1.0;
+            case "ft":
+                return 3.28084;
+            case "mi":
+                return 0.000621371;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     private static char base32(int x) {

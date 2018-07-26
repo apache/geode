@@ -51,7 +51,7 @@ public class GeoDistExecutor extends GeoSortedSetExecutor {
 
     if (commandElems.size() == 5) {
       String unit = new String(commandElems.get(4));
-      dist = dist * GeoExecutorHelper.parseUnitScale(unit);
+      dist = dist * GeoCoder.parseUnitScale(unit);
     }
 
     command.setResponse(
