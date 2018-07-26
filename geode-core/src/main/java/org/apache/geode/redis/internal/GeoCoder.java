@@ -15,15 +15,15 @@
 
 package org.apache.geode.redis.internal;
 
-import com.sun.tools.javac.util.Pair;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import com.sun.tools.javac.util.Pair;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 
 public class GeoCoder {
   /**

@@ -22,8 +22,8 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.GeoCoord;
+import org.apache.geode.redis.internal.RedisCommandParserException;
 
 public class GeoRadiusParameters {
   double lon;

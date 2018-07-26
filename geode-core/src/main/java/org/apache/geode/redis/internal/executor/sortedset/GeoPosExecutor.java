@@ -24,8 +24,8 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.GeoCoord;
+import org.apache.geode.redis.internal.RedisConstants;
 
 public class GeoPosExecutor extends GeoSortedSetExecutor {
 
