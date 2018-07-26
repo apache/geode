@@ -47,7 +47,6 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
 fi
 
 SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
-MAX_IN_FLIGHT=5
 
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
@@ -63,8 +62,8 @@ for i in ${GEODEBUILDDIR}/test-stubs/*.yml; do
   ${SPRUCE} merge --prune metadata \
     <(echo "metadata:"; \
       echo "  geode-build-branch: ${GEODE_BRANCH}"; \
-      echo "  geode-fork: ${GEODE_FORK}"; \
-      echo "  max_in_flight: ${MAX_IN_FLIGHT}") \
+      echo "  geode-fork: ${GEODE_FORK}" \
+      echo "  ") \
     ${SCRIPTDIR}/pr-template.yml \
     ${i} > ${TMP_DIR}/${X}
 done
@@ -75,7 +74,6 @@ ${SPRUCE} merge --prune metadata \
   <(echo "metadata:"; \
     echo "  geode-build-branch: ${GEODE_BRANCH}"; \
     echo "  geode-fork: ${GEODE_FORK}"; \
-    echo "  max_in_flight: ${MAX_IN_FLIGHT}"; \
     echo "  ") \
   ${TMP_DIR}/*.yml > ${TMP_DIR}/final.yml
 
