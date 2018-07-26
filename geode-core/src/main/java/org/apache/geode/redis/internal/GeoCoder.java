@@ -282,17 +282,6 @@ public class GeoCoder {
    * having a radius of radius_meter. bounds[0] - bounds[2] is the minimum
    * and maxium longitude, while bounds[1] - bounds[3] is the minimum and
    * maximum latitude.
-   * This function does not behave correctly with very large radius values, for
-   * instance for the coordinates 81.634948934258375 30.561509253718668 and a
-   * radius of 7083 kilometers, it reports as bounding boxes:
-   * min_lon 7.680495, min_lat -33.119473, max_lon 155.589402, max_lat 94.242491
-   * However, for instance, a min_lon of 7.6804
-   * 95 is not correct, because the
-   * point -1.27579540014266968 61.33421815228281559 is at less than 7000
-   * kilometers away.
-   * Since this function is currently only used as an optimization, the
-   * optimization is not used for very big radii, however the function
-   * should be fixed.
    */
   public static HashArea geoHashBoundingBox(double longitude, double latitude,
       double radiusMeters) {
