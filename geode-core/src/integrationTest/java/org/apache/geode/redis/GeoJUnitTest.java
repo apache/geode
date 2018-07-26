@@ -312,6 +312,92 @@ public class GeoJUnitTest {
     assertEquals(38.115556, gr.get(0).getCoordinate().getLatitude(), 0.0001);
   }
 
+
+  @Test
+  public void testGeoRadiusByMemberFull() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    // 47.599246, -122.333826
+    memberCoordinateMap.put("Galvanize", new GeoCoordinate(-122.333826, 47.599246));
+    // 47.600249, -122.331166
+    memberCoordinateMap.put("Flatstick", new GeoCoordinate(-122.331166, 47.600249));
+    // 47.601120, -122.332063
+    memberCoordinateMap.put("Fuel Sports", new GeoCoordinate(-122.332063, 47.601120));
+    // 47.600657, -122.334362
+    memberCoordinateMap.put("Central Saloon", new GeoCoordinate(-122.334362, 47.600657));
+    // 47.598519, -122.334405
+    memberCoordinateMap.put("Cowgirls", new GeoCoordinate(-122.334405, 47.598519));
+
+    // 47.608336, -122.340746
+    memberCoordinateMap.put("Jarrbar", new GeoCoordinate(-122.340746, 47.608336));
+    // 47.612499, -122.336871
+    memberCoordinateMap.put("Oliver's lounge", new GeoCoordinate(-122.336871, 47.612499));
+    // 47.612622, -122.320288
+    memberCoordinateMap.put("Garage", new GeoCoordinate(-122.320288, 47.612622));
+    // 47.607362, -122.316517
+    memberCoordinateMap.put("Ba Bar", new GeoCoordinate(-122.316517, 47.607362));
+
+    // 47.615146, -122.322355
+    memberCoordinateMap.put("Bill's", new GeoCoordinate(-122.322355, 47.615146));
+    // 47.621821, -122.336747
+    memberCoordinateMap.put("Brave Horse Tavern", new GeoCoordinate(-122.336747, 47.621821));
+
+    // 47.616580, -122.200777
+    memberCoordinateMap.put("Earl's", new GeoCoordinate(-122.200777, 47.616580));
+    // 47.615165, -122.201317
+    memberCoordinateMap.put("Wild Ginger", new GeoCoordinate(-122.201317, 47.615165));
+
+    Long l = jedis.geoadd("Seattle", memberCoordinateMap);
+    assertTrue(l == 13L);
+
+    List<GeoRadiusResponse> gr = jedis.georadiusByMember("Seattle", "Galvanize", 0.2, GeoUnit.MI);
+    assertEquals(4, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Flatstick")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Fuel Sports")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Central Saloon")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Cowgirls")));
+
+    gr = jedis.georadiusByMember("Seattle", "Galvanize", 1.2, GeoUnit.MI);
+    assertEquals(8, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Jarrbar")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Oliver's lounge")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Garage")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Ba Bar")));
+
+    gr = jedis.georadiusByMember("Seattle", "Galvanize", 2.0, GeoUnit.MI);
+    assertEquals(10, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Bill's")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Brave Horse Tavern")));
+
+    gr = jedis.georadiusByMember("Seattle", "Galvanize", 10.0, GeoUnit.MI);
+    assertEquals(12, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Earl's")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Wild Ginger")));
+  }
+
+  @Test
+  public void testGeoRadiusByMemberNorth() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    // 66.084124, -18.592468
+    memberCoordinateMap.put("Northern Iceland", new GeoCoordinate(-18.592468, 66.084124));
+    // 64.203491, -51.726331
+    memberCoordinateMap.put("Nuuk", new GeoCoordinate(-51.726331, 64.203491));
+    // 55.861822, -4.237179
+    memberCoordinateMap.put("Glasgow", new GeoCoordinate(-4.237179, 55.861822));
+    // 51.585005, -0.159837
+    memberCoordinateMap.put("London", new GeoCoordinate(-0.159837, 51.585005));
+    // 59.933071, 10.769027
+    memberCoordinateMap.put("Oslo", new GeoCoordinate(10.769027, 59.933071));
+
+    Long l = jedis.geoadd("North", memberCoordinateMap);
+    assertTrue(l == 5L);
+
+    List<GeoRadiusResponse> gr = jedis.georadiusByMember("North", "Northern Iceland", 1590.0,
+            GeoUnit.KM, GeoRadiusParam.geoRadiusParam().withDist());
+    assertEquals(2, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Nuuk")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Glasgow")));
+  }
+
   @After
   public void flushAll() {
     jedis.flushAll();

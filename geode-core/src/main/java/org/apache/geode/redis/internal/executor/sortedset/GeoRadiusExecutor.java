@@ -90,6 +90,10 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
             char[] hashBits = point.get("value").toString().toCharArray();
 
             Double dist = GeoCoder.geoDist(params.centerHashPrecise, hashBits) * params.distScale;
+
+            // Post-filter for accuracy
+            if (dist > (params.radius * params.distScale)) continue;
+
             Optional<GeoCoord> coord = params.withCoord ?
                     Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
             Optional<String> hash = params.withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
