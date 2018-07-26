@@ -15,13 +15,6 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -30,12 +23,19 @@ import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
+import org.apache.geode.redis.internal.GeoCoord;
 import org.apache.geode.redis.internal.GeoRadiusResponseElement;
 import org.apache.geode.redis.internal.HashNeighbors;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
 
 public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 

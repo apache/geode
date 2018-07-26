@@ -22,7 +22,7 @@ import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.HashArea;
 import org.apache.geode.redis.internal.HashNeighbors;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+import org.apache.geode.redis.internal.GeoCoord;
 
 public class GeoCoderTest {
 

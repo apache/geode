@@ -35,7 +35,7 @@ import org.apache.geode.redis.internal.HashNeighbors;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+import org.apache.geode.redis.internal.GeoCoord;
 
 public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
 

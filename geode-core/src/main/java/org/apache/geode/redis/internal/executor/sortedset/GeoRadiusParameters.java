@@ -23,7 +23,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisCommandParserException;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+import org.apache.geode.redis.internal.GeoCoord;
 
 public class GeoRadiusParameters {
   double lon;
