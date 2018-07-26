@@ -269,7 +269,7 @@ public class GeoJUnitTest {
   }
 
   @Test
-  public void testGeoRadiusByMember() {
+  public void testGeoRadiusByMemberBasic() {
     Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
     memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
@@ -278,7 +278,38 @@ public class GeoJUnitTest {
 
     List<GeoRadiusResponse> gr = jedis.georadiusByMember("Sicily", "Catania", 250, GeoUnit.KM);
     assertEquals(1, gr.size());
-    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Palermo")));
+    assertEquals("Palermo", gr.get(0).getMemberByString());
+  }
+
+  @Test
+  public void testGeoRadiusByMemberWithDist() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    List<GeoRadiusResponse> gr = jedis.georadiusByMember("Sicily", "Catania", 250,
+            GeoUnit.KM, GeoRadiusParam.geoRadiusParam().withDist());
+    assertEquals(1, gr.size());
+    assertEquals("Palermo", gr.get(0).getMemberByString());
+    assertEquals(166.2742, gr.get(0).getDistance(), 0.0001);
+  }
+
+  @Test
+  public void testGeoRadiusByMemberWithCoord() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    List<GeoRadiusResponse> gr = jedis.georadiusByMember("Sicily", "Catania", 250,
+            GeoUnit.KM, GeoRadiusParam.geoRadiusParam().withCoord());
+    assertEquals(1, gr.size());
+    assertEquals("Palermo", gr.get(0).getMemberByString());
+    assertEquals(13.361389, gr.get(0).getCoordinate().getLongitude(), 0.0001);
+    assertEquals(38.115556, gr.get(0).getCoordinate().getLatitude(), 0.0001);
   }
 
   @After

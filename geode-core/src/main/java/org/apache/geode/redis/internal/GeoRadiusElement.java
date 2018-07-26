@@ -16,6 +16,9 @@ package org.apache.geode.redis.internal;
 
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 public class GeoRadiusElement {
@@ -49,5 +52,13 @@ public class GeoRadiusElement {
         this.distFromCenter = d;
         this.showDist = sh;
         this.hash = h;
+    }
+
+    public static void sortByDistanceAscending(List<GeoRadiusElement> elements) {
+        Collections.sort(elements, Comparator.comparing(GeoRadiusElement::getDistFromCenter));
+    }
+
+    public static void sortByDistanceDescending(List<GeoRadiusElement> elements) {
+        Collections.sort(elements, Comparator.comparing((GeoRadiusElement x) -> -1.0 * x.getDistFromCenter()));
     }
 }

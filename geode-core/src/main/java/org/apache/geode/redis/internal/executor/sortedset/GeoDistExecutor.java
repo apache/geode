@@ -51,19 +51,7 @@ public class GeoDistExecutor extends GeoSortedSetExecutor {
 
     if (commandElems.size() == 5) {
       String unit = new String(commandElems.get(4));
-      switch (unit) {
-        case "km":
-          dist = dist * 0.001;
-          break;
-        case "ft":
-          dist = dist * 3.28084;
-          break;
-        case "mi":
-          dist = dist * 0.000621371;
-          break;
-        default:
-          break;
-      }
+      dist = dist * GeoExecutorHelper.parseUnitScale(unit);
     }
 
     command.setResponse(
