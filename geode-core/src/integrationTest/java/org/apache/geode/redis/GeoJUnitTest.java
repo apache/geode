@@ -268,6 +268,19 @@ public class GeoJUnitTest {
     assertEquals(56.4413, gr.get(0).getDistance(), 0.0001);
   }
 
+  @Test
+  public void testGeoRadiusByMember() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    List<GeoRadiusResponse> gr = jedis.georadiusByMember("Sicily", "Catania", 250, GeoUnit.KM);
+    assertEquals(1, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Palermo")));
+  }
+
   @After
   public void flushAll() {
     jedis.flushAll();
