@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,10 +36,10 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
@@ -52,15 +49,12 @@ import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.TXManagerCancelledException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
@@ -120,6 +114,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   private final Map<TXId, TXStateProxy> hostedTXStates;
 
+  // Used for testing only.
   private final Set<TXId> scheduledToBeRemovedTx =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
           ? new ConcurrentHashSet<TXId>() : null;
@@ -1196,11 +1191,12 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     synchronized (this.hostedTXStates) {
       for (TXId txId : txIds) {
         // only expire client transaction if no activity for the given transactionTimeToLive
-        scheduleToRemoveExpiredClientTransction(txId);
+        scheduleToRemoveExpiredClientTransaction(txId);
       }
     }
   }
 
+  @TestingOnly
   /** remove the given TXStates for test */
   public void removeTransactions(Set<TXId> txIds, boolean distribute) {
     synchronized (this.hostedTXStates) {
@@ -1334,132 +1330,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     throw new InternalGemFireError("the parameter TXCommitMessage is not an exception token");
   }
 
-  public static class TXRemovalMessage extends HighPriorityDistributionMessage {
-
-    Set<TXId> txIds;
-
-    /** for deserialization */
-    public TXRemovalMessage() {}
-
-    static void send(DistributionManager dm, Set<InternalDistributedMember> recipients,
-        Set<TXId> txIds) {
-      TXRemovalMessage msg = new TXRemovalMessage();
-      msg.txIds = txIds;
-      // only send to servers with version earlier than geode 1.7.0
-      // newer version use ExpireDisconnectedClientTransactionsMessage
-      Set oldVersionRecipients = new HashSet();
-      for (InternalDistributedMember recipient : recipients) {
-        if (recipient.getVersionObject().compareTo(Version.GEODE_170) < 0) {
-          oldVersionRecipients.add(recipient);
-        }
-      }
-      msg.setRecipients(oldVersionRecipients);
-      dm.putOutgoing(msg);
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeHashSet((HashSet<TXId>) this.txIds, out);
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.txIds = DataSerializer.readHashSet(in);
-    }
-
-    public int getDSFID() {
-      return TX_MANAGER_REMOVE_TRANSACTIONS;
-    }
-
-    @Override
-    protected void process(ClusterDistributionManager dm) {
-      InternalCache cache = dm.getCache();
-      if (cache != null) {
-        TXManagerImpl mgr = cache.getTXMgr();
-        // check if transaction has been updated before remove it
-        mgr.removeExpiredClientTransactions(this.txIds);
-      }
-    }
-  }
-
-  public static class ExpireDisconnectedClientTransactionsMessage
-      extends HighPriorityDistributionMessage {
-    Set<TXId> txIds;
-
-    /** for deserialization */
-    public ExpireDisconnectedClientTransactionsMessage() {}
-
-    // only send to geode 1.7.0 and later servers
-    static void send(DistributionManager dm, Set<InternalDistributedMember> recipients,
-        Set<TXId> txIds) {
-      ExpireDisconnectedClientTransactionsMessage msg =
-          new ExpireDisconnectedClientTransactionsMessage();
-      msg.txIds = txIds;
-      Set newVersionRecipients = new HashSet();
-      for (InternalDistributedMember recipient : recipients) {
-        // to geode 1.7.0 and later version servers
-        if (recipient.getVersionObject().compareTo(Version.GEODE_170) >= 0) {
-          newVersionRecipients.add(recipient);
-        }
-      }
-      msg.setRecipients(newVersionRecipients);
-      dm.putOutgoing(msg);
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeHashSet((HashSet<TXId>) this.txIds, out);
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.txIds = DataSerializer.readHashSet(in);
-    }
-
-    public int getDSFID() {
-      return EXPIRE_CLIENT_TRANSACTIONS;
-    }
-
-    @Override
-    protected void process(ClusterDistributionManager dm) {
-      InternalCache cache = dm.getCache();
-      if (cache != null) {
-        TXManagerImpl mgr = cache.getTXMgr();
-        mgr.expireDisconnectedClientTransactions(this.txIds, false);
-      }
-    }
-  }
-
   /** timer task for expiring the given TXStates */
   public void expireDisconnectedClientTransactions(Set<TXId> txIds, boolean distribute) {
-    long timeout = TimeUnit.SECONDS.toMillis(getTransactionTimeToLive());
-    if (distribute) {
-      if (timeout <= 0) {
-        removeClientTransactionsOnRemoteServer(txIds);
-      } else {
-        if (logger.isDebugEnabled()) {
-          logger.debug("expiring the following transactions: {}", Arrays.toString(txIds.toArray()));
-        }
-        // schedule to send remove message to server with version earlier than geode 1.7.0
-        SystemTimerTask task = new SystemTimerTask() {
-          @Override
-          public void run2() {
-            removeClientTransactionsOnRemoteServer(txIds);
-          }
-        };
-        getCache().getCCPTimer().schedule(task, timeout);
-      }
-    }
-    // schedule to expire client transactions on server with version geode 1.7.0 and after.
-    scheduleToExpireDisconnectedClientTransactions(txIds, distribute);
-  }
-
-  void removeClientTransactionsOnRemoteServer(Set<TXId> txIds) {
-    TXRemovalMessage.send(this.dm, this.dm.getOtherDistributionManagerIds(), txIds);
-  }
-
-  /** timer task for expiring the given TXStates */
-  public void scheduleToExpireDisconnectedClientTransactions(Set<TXId> txIds, boolean distribute) {
     // increase the client transaction timeout setting to avoid a late in-flight client operation
     // preventing the expiration of the client transaction.
     long timeout = (long) (TimeUnit.SECONDS.toMillis(getTransactionTimeToLive()) * 1.1);
@@ -1500,7 +1372,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       SystemTimerTask task = new SystemTimerTask() {
         @Override
         public void run2() {
-          scheduleToRemoveExpiredClientTransction(txId);
+          scheduleToRemoveExpiredClientTransaction(txId);
           if (scheduledToBeRemovedTx != null) {
             scheduledToBeRemovedTx.remove(txId);
           }
@@ -1510,7 +1382,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  void scheduleToRemoveExpiredClientTransction(TXId txId) {
+  void scheduleToRemoveExpiredClientTransaction(TXId txId) {
     synchronized (this.hostedTXStates) {
       TXStateProxy result = hostedTXStates.get(txId);
       if (result != null) {

@@ -569,7 +569,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
   short PR_REMOVE_BUCKET_REPLY = 135;
   short PR_MOVE_BUCKET_MESSAGE = 136;
   short PR_MOVE_BUCKET_REPLY = 137;
-  short TX_MANAGER_REMOVE_TRANSACTIONS = 138;
+  // Geode-5401, message changed from remove transaction to expire transactions.
+  short EXPIRE_CLIENT_TRANSACTIONS = 138;
 
   short REGION_VERSION_VECTOR = 139;
 
@@ -823,7 +824,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_MESSAGE = 2181;
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY = 2182;
   short ABORT_BACKUP_REQUEST = 2183;
-  short EXPIRE_CLIENT_TRANSACTIONS = 2184;
 
   // NOTE, codes > 65535 will take 4 bytes to serialize
 

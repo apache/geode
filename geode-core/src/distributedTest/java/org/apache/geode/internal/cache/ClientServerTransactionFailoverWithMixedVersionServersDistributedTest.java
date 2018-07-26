@@ -137,8 +137,8 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     Thread[] threads = new Thread[numOfTransactions];
     FutureTask<TransactionId>[] futureTasks = new FutureTask[numOfTransactions];
     TransactionId[] txIds = new TransactionId[numOfTransactions];
-    // suspend transactions
-    suspendTransactions(numOfTransactions, numOfOperations, threads, futureTasks, txIds);
+    // begin and suspend transactions
+    beginAndSuspendTransactions(numOfTransactions, numOfOperations, threads, futureTasks, txIds);
     // resume transactions
     resumeTransactions(numOfTransactions, numOfOperations, threads, txIds);
     waitForResumeTransactionsToComplete(numOfTransactions, threads);
@@ -235,12 +235,13 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     crf.create(regionName);
   }
 
-  private void suspendTransactions(int numOfTransactions, int numOfOperations, Thread[] threads,
+  private void beginAndSuspendTransactions(int numOfTransactions, int numOfOperations,
+      Thread[] threads,
       FutureTask<TransactionId>[] futureTasks, TransactionId[] txIds)
       throws InterruptedException, java.util.concurrent.ExecutionException {
     for (int i = 0; i < numOfTransactions; i++) {
       FutureTask<TransactionId> futureTask =
-          new FutureTask<>(() -> suspendTransaction(numOfOperations));
+          new FutureTask<>(() -> beginAndSuspendTransaction(numOfOperations));
       futureTasks[i] = futureTask;
       Thread thread = new Thread(futureTask);
       threads[i] = thread;
@@ -252,7 +253,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     }
   }
 
-  private TransactionId suspendTransaction(int numOfOperations) {
+  private TransactionId beginAndSuspendTransaction(int numOfOperations) {
     Region region = clientCacheRule.getClientCache().getRegion(regionName);
     TXManagerImpl txManager =
         (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
@@ -418,26 +419,4 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
         .until(() -> assertThat(txManager.hostedTransactionsInProgressForTest()).isEqualTo(0));
   }
 
-  @Test
-  public void clientTransactionExpiredAreRemovedOnNotYetRolledServer() throws Exception {
-    setupPartiallyRolledVersion();
-
-    server1.invoke(() -> createServerRegion(1, true));
-    server2.invoke(() -> createServerRegion(1, true));
-    server3.invoke(() -> createServerRegion(1, true));
-    server4.invoke(() -> createServerRegion(1, false));
-    client.invoke(() -> createClientRegion());
-
-    ClientProxyMembershipID clientProxyMembershipID = client.invoke(() -> getClientId());
-
-    int numOfTransactions = 12;
-    int numOfOperations = 1;
-    client.invokeAsync(() -> doUnfinishedTransactions(numOfTransactions, numOfOperations));
-
-    server4.invoke(() -> verifyTransactionAreStarted(numOfTransactions));
-
-    unregisterClientMultipleTimes(clientProxyMembershipID);
-
-    server4.invoke(() -> verifyTransactionAreExpired(numOfTransactions));
-  }
 }

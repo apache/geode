@@ -98,7 +98,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
 
     int numOfOpertions = 5;
     createClientRegion(true, port2, port1);
-    TransactionId txId = suspendTransaction(numOfOpertions);
+    TransactionId txId = beginAndSuspendTransaction(numOfOpertions);
     server2.invoke(() -> {
       cacheRule.getCache().close();
     });
@@ -162,7 +162,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     return (PoolImpl) factory.create(uniqueName);
   }
 
-  private TransactionId suspendTransaction(int numOfOperations) {
+  private TransactionId beginAndSuspendTransaction(int numOfOperations) {
     Region region = clientCacheRule.getClientCache().getRegion(regionName);
     TXManagerImpl txManager =
         (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
@@ -237,8 +237,9 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     FutureTask<TransactionId>[] futureTasks = new FutureTask[numOfTransactions];
     TransactionId[] txIds = new TransactionId[numOfTransactions];
 
-    // suspend transactions
-    suspendTransactions(numOfTransactions, numOfOperationsInTransaction, threads, futureTasks,
+    // begin and suspend transactions
+    beginAndSuspendTransactions(numOfTransactions, numOfOperationsInTransaction, threads,
+        futureTasks,
         txIds);
 
     // unregister client on 2 of the servers
@@ -264,8 +265,8 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     FutureTask<TransactionId>[] futureTasks = new FutureTask[numOfTransactions];
     TransactionId[] txIds = new TransactionId[numOfTransactions];
 
-    // suspend transactions
-    suspendTransactions(numOfTransactions, numOfOperations, threads, futureTasks, txIds);
+    // begin and suspend transactions
+    beginAndSuspendTransactions(numOfTransactions, numOfOperations, threads, futureTasks, txIds);
 
     // unregister client multiple times
     ClientProxyMembershipID clientProxyMembershipID = getClientId();
@@ -284,12 +285,13 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     }
   }
 
-  private void suspendTransactions(int numOfTransactions, int numOfOperations, Thread[] threads,
+  private void beginAndSuspendTransactions(int numOfTransactions, int numOfOperations,
+      Thread[] threads,
       FutureTask<TransactionId>[] futureTasks, TransactionId[] txIds)
       throws InterruptedException, java.util.concurrent.ExecutionException {
     for (int i = 0; i < numOfTransactions; i++) {
       FutureTask<TransactionId> futureTask =
-          new FutureTask<>(() -> suspendTransaction(numOfOperations));
+          new FutureTask<>(() -> beginAndSuspendTransaction(numOfOperations));
       futureTasks[i] = futureTask;
       Thread thread = new Thread(futureTask);
       threads[i] = thread;
