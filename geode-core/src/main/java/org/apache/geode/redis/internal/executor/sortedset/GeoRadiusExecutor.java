@@ -15,6 +15,13 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -30,13 +37,6 @@ import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
-
 public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
   @Override
@@ -44,7 +44,8 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     if (commandElems.size() < 6) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEORADIUS));
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEORADIUS));
       return;
     }
 
@@ -59,16 +60,19 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
     GeoRadiusParameters params;
     try {
-      params = new GeoRadiusParameters(keyRegion, commandElems, GeoRadiusParameters.CommandType.GEORADIUS);
-    } catch(IllegalArgumentException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
+      params = new GeoRadiusParameters(keyRegion, commandElems,
+          GeoRadiusParameters.CommandType.GEORADIUS);
+    } catch (IllegalArgumentException e) {
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
       return;
-    } catch(RedisCommandParserException e) {
+    } catch (RedisCommandParserException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-              RedisConstants.ArityDef.GEORADIUS));
+          RedisConstants.ArityDef.GEORADIUS));
       return;
-    } catch(CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
+    } catch (CoderException e) {
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
       return;
     }
 
@@ -83,22 +87,24 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     List<GeoRadiusResponseElement> results = new ArrayList<>();
     for (String neighbor : hn.get()) {
       try {
-          List<StructImpl> range = getGeoRadiusRange(context, key, neighbor);
-          for (StructImpl point : range) {
-            String name = point.get("key").toString();
-            char[] hashBits = point.get("value").toString().toCharArray();
+        List<StructImpl> range = getGeoRadiusRange(context, key, neighbor);
+        for (StructImpl point : range) {
+          String name = point.get("key").toString();
+          char[] hashBits = point.get("value").toString().toCharArray();
 
-            Double dist = GeoCoder.geoDist(params.centerHashPrecise, hashBits) * params.distScale;
+          Double dist = GeoCoder.geoDist(params.centerHashPrecise, hashBits) * params.distScale;
 
-            // Post-filter for accuracy
-            if (dist > (params.radius * params.distScale)) continue;
+          // Post-filter for accuracy
+          if (dist > (params.radius * params.distScale))
+            continue;
 
-            Optional<GeoCoord> coord = params.withCoord ?
-                    Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
-            Optional<String> hash = params.withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
+          Optional<GeoCoord> coord =
+              params.withCoord ? Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
+          Optional<String> hash =
+              params.withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
 
-            results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hash));
-          }
+          results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hash));
+        }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));
         return;

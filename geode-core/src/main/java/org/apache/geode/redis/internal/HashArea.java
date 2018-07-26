@@ -16,15 +16,15 @@
 package org.apache.geode.redis.internal;
 
 public class HashArea {
-    public Double minlon;
-    public Double maxlon;
-    public Double minlat;
-    public Double maxlat;
+  public Double minlon;
+  public Double maxlon;
+  public Double minlat;
+  public Double maxlat;
 
-    public HashArea(double minlon, double maxlon, double minlat, double maxlat) {
-        this.minlon = minlon;
-        this.maxlon = maxlon;
-        this.minlat = minlat;
-        this.maxlat = maxlat;
-    }
+  public HashArea(double minlon, double maxlon, double minlat, double maxlat) {
+    this.minlon = minlon;
+    this.maxlon = maxlon;
+    this.minlat = minlat;
+    this.maxlat = maxlat;
+  }
 }

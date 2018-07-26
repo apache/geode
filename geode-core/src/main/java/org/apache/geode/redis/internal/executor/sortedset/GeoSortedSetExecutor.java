@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.List;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;
@@ -24,16 +26,15 @@ import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
 
-import java.util.List;
-
 public abstract class GeoSortedSetExecutor extends AbstractExecutor {
 
   @Override
   protected Region<ByteArrayWrapper, ByteArrayWrapper> getOrCreateRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = (Region<ByteArrayWrapper, ByteArrayWrapper>) context
-        .getRegionProvider().getOrCreateRegion(key, type, context);
+    Region<ByteArrayWrapper, ByteArrayWrapper> r =
+        (Region<ByteArrayWrapper, ByteArrayWrapper>) context
+            .getRegionProvider().getOrCreateRegion(key, type, context);
     return r;
   }
 

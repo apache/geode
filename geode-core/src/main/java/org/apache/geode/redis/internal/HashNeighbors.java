@@ -20,22 +20,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class HashNeighbors {
-    public String center;
-    public String west;
-    public String east;
-    public String north;
-    public String south;
-    public String northwest;
-    public String northeast;
-    public String southwest;
-    public String southeast;
+  public String center;
+  public String west;
+  public String east;
+  public String north;
+  public String south;
+  public String northwest;
+  public String northeast;
+  public String southwest;
+  public String southeast;
 
-    public List<String> get() {
-        return Arrays
-                .asList(center, west, east, north, south, northwest, northeast, southwest, southeast)
-                .stream()
-                .filter(n -> n != null)
-                .distinct()
-                .collect(Collectors.toList());
-    }
+  public List<String> get() {
+    return Arrays
+        .asList(center, west, east, north, south, northwest, northeast, southwest, southeast)
+        .stream()
+        .filter(n -> n != null)
+        .distinct()
+        .collect(Collectors.toList());
+  }
 }

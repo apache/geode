@@ -39,7 +39,8 @@ public class RedisConstants {
   static final String ERROR_TRANSACTION_EXCEPTION =
       "This transcation cannot be initiated, make sure the command is executed against a replicate region or your data is collocated. If you are using persistent regions, make sure transactions are enabled";
   public static final String ERROR_NOT_NUMERIC = "Illegal non numeric argument";
-  public static final String ERROR_INVALID_ARGUMENT_UNIT_NUM = "Either illegal non numeric argument or invalid unit" +
+  public static final String ERROR_INVALID_ARGUMENT_UNIT_NUM =
+      "Either illegal non numeric argument or invalid unit" +
           "(please use either km/m/ft/mi)";
   public static final String ERROR_UNKOWN_COMMAND = "Unable to process uknown command";
   public static final String ERROR_COMMIT_CONFLICT =
@@ -253,7 +254,7 @@ public class RedisConstants {
     public static final String GEOADD =
         "The wrong number of arguments or syntax was provided, the format for the GEOADD command is \"GEOADD key longitude latitude member [longitude latitude member ...]\", or not every latitude/longitude pair matches to a member";
     public static final String GEOADD_INVALID_LATLONG =
-            "invalid longitude,latitude pair";
+        "invalid longitude,latitude pair";
     public static final String GEOHASH =
         "The wrong number of arguments or syntax was provided, the format for the GEOHASH command is \"GEOHASH key member [member...]\"";
     public static final String GEOPOS =
@@ -263,7 +264,7 @@ public class RedisConstants {
     public static final String GEORADIUS =
         "The wrong number of arguments or syntax was provided, the format for the GEORADIUS command is \"GEORADIUS key longitude latitude radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
     public static final String GEORADIUSBYMEMBER =
-            "The wrong number of arguments or syntax was provided, the format for the GEORADIUSBYMEMBER command is \"GEORADIUSBYMEMBER key member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
+        "The wrong number of arguments or syntax was provided, the format for the GEORADIUSBYMEMBER command is \"GEORADIUSBYMEMBER key member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] [ASC|DESC]\"";
 
     /*
      * String

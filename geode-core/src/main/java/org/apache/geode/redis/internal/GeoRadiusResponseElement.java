@@ -14,51 +14,55 @@
  */
 package org.apache.geode.redis.internal;
 
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+
 public class GeoRadiusResponseElement {
-    private String name;
-    private Optional<GeoCoord> coord;
-    private Double distFromCenter;
-    private boolean showDist;
-    private Optional<String> hash;
+  private String name;
+  private Optional<GeoCoord> coord;
+  private Double distFromCenter;
+  private boolean showDist;
+  private Optional<String> hash;
 
-    public String getName() {
-        return name;
-    }
-    public Optional<GeoCoord> getCoord() {
-        return coord;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public Double getDistFromCenter() {
-        return distFromCenter;
-    }
-    public boolean isShowDist() {
-        return showDist;
-    }
+  public Optional<GeoCoord> getCoord() {
+    return coord;
+  }
 
-    public Optional<String> getHash() {
-        return hash;
-    }
+  public Double getDistFromCenter() {
+    return distFromCenter;
+  }
 
-    public GeoRadiusResponseElement(String n, Optional<GeoCoord> c, Double d, boolean sh, Optional<String> h) {
-        this.name = n;
-        this.coord = c;
-        this.distFromCenter = d;
-        this.showDist = sh;
-        this.hash = h;
-    }
+  public boolean isShowDist() {
+    return showDist;
+  }
 
-    public static void sortByDistanceAscending(List<GeoRadiusResponseElement> elements) {
-        Collections.sort(elements, Comparator.comparing(GeoRadiusResponseElement::getDistFromCenter));
-    }
+  public Optional<String> getHash() {
+    return hash;
+  }
 
-    public static void sortByDistanceDescending(List<GeoRadiusResponseElement> elements) {
-        Collections.sort(elements, Comparator.comparing((GeoRadiusResponseElement x) -> -1.0 * x.getDistFromCenter()));
-    }
+  public GeoRadiusResponseElement(String n, Optional<GeoCoord> c, Double d, boolean sh,
+      Optional<String> h) {
+    this.name = n;
+    this.coord = c;
+    this.distFromCenter = d;
+    this.showDist = sh;
+    this.hash = h;
+  }
+
+  public static void sortByDistanceAscending(List<GeoRadiusResponseElement> elements) {
+    Collections.sort(elements, Comparator.comparing(GeoRadiusResponseElement::getDistFromCenter));
+  }
+
+  public static void sortByDistanceDescending(List<GeoRadiusResponseElement> elements) {
+    Collections.sort(elements,
+        Comparator.comparing((GeoRadiusResponseElement x) -> -1.0 * x.getDistFromCenter()));
+  }
 }

@@ -14,6 +14,10 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -23,10 +27,6 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class GeoAddExecutor extends GeoSortedSetExecutor {
 
@@ -54,10 +54,10 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
       String score;
       try {
         score = new String(GeoCoder.geoHashBits(longitude, latitude, GeoCoder.LEN_GEOHASH));
-      } catch(CoderException ce) {
+      } catch (CoderException ce) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-                "ERR " + RedisConstants.ArityDef.GEOADD_INVALID_LATLONG +
-                        " " + longitude.toString() + " " + latitude.toString()));
+            "ERR " + RedisConstants.ArityDef.GEOADD_INVALID_LATLONG +
+                " " + longitude.toString() + " " + latitude.toString()));
         return;
       }
 

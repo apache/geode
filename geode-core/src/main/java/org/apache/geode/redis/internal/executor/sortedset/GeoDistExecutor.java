@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.List;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -22,8 +24,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
-
-import java.util.List;
 
 public class GeoDistExecutor extends GeoSortedSetExecutor {
 
