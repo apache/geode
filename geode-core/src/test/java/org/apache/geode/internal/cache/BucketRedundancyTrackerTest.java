@@ -81,6 +81,23 @@ public class BucketRedundancyTrackerTest {
   }
 
   @Test
+  public void decrementsBucketCountOnIncrementBeforeNoCopies() {
+    bucketRedundancyTracker =
+        new BucketRedundancyTracker(2, regionRedundancyTracker);
+    bucketRedundancyTracker.updateStatistics(3);
+    // Verify decrementLowRedundancyBucketCount is invoked. Note: It won't decrement below 0.
+    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
+    bucketRedundancyTracker.updateStatistics(2);
+    // Verify incrementLowRedundancyBucketCount is invoked.
+    verify(regionRedundancyTracker, times(1)).incrementLowRedundancyBucketCount();
+    bucketRedundancyTracker.updateStatistics(1);
+    bucketRedundancyTracker.updateStatistics(2);
+    // Verify incrementLowRedundancyBucketCount is not invoked again when the count goes 2.
+    verify(regionRedundancyTracker, times(1)).incrementLowRedundancyBucketCount();
+    assertEquals(1, bucketRedundancyTracker.getCurrentRedundancy());
+  }
+
+  @Test
   public void bucketCountNotDecrementedOnClosingBucketThatNeverHadCopies() {
     verify(regionRedundancyTracker, never()).decrementLowRedundancyBucketCount();
     assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
@@ -104,8 +121,14 @@ public class BucketRedundancyTrackerTest {
   @Test
   public void decrementsBucketCountOnHavingAtLeastOneCopyOfBucket() {
     bucketRedundancyTracker.updateStatistics(1);
+    // Verify incrementLowRedundancyBucketCount is invoked.
+    verify(regionRedundancyTracker, times(1)).incrementLowRedundancyBucketCount();
     bucketRedundancyTracker.updateStatistics(0);
     bucketRedundancyTracker.updateStatistics(1);
+    // Verify incrementLowRedundancyBucketCount is not invoked again when the count goes to 1.
+    verify(regionRedundancyTracker, times(1)).incrementLowRedundancyBucketCount();
+    // Verify decrementLowRedundancyBucketCount is not invoked.
+    verify(regionRedundancyTracker, never()).decrementLowRedundancyBucketCount();
     verify(regionRedundancyTracker, times(1)).decrementNoCopiesBucketCount();
     assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
   }

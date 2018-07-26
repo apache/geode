@@ -97,7 +97,7 @@ class BucketRedundancyTracker {
       if (redundancySatisfied) {
         regionRedundancyTracker.incrementLowRedundancyBucketCount();
         redundancySatisfied = false;
-      } else if (!hasAnyCopies && updatedRedundancy >= 0) {
+      } else if (!hasAnyCopies && !hasEverHadCopies && updatedRedundancy >= 0) {
         regionRedundancyTracker.incrementLowRedundancyBucketCount();
       }
     } else if (!redundancySatisfied && updatedRedundancy == targetRedundancy) {
