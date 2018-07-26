@@ -39,12 +39,12 @@ jobs:
       version: every
       params:
         fetch_merge: false
-#    - aggregate:
-#      - put: geode
-#        params:
-#          path: geode-unmerged-request
-#          context: $BUILD_JOB_NAME
-#          status: pending
+    - aggregate:
+      - put: geode
+        params:
+          path: geode-unmerged-request
+          context: $BUILD_JOB_NAME
+          status: pending
 
     - task: start_instance
       image: alpine-tools-image
@@ -145,18 +145,18 @@ jobs:
             platform: linux
             run:
               path: geode/ci/scripts/stop_instance.sh
-#    on_failure:
-#      aggregate:
-#      - put: geode
-#        params:
-#          path: geode-unmerged-request
-#          status: failure
-#          context: $BUILD_JOB_NAME
-#    on_success:
-#      aggregate:
-#      - put: geode
-#        params:
-#          path: geode-unmerged-request
-#          context: $BUILD_JOB_NAME
-#          status: success
+    on_failure:
+      aggregate:
+      - put: geode
+        params:
+          path: geode-unmerged-request
+          status: failure
+          context: $BUILD_JOB_NAME
+    on_success:
+      aggregate:
+      - put: geode
+        params:
+          path: geode-unmerged-request
+          context: $BUILD_JOB_NAME
+          status: success
 
