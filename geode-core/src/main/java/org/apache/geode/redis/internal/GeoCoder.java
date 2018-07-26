@@ -93,7 +93,7 @@ public class GeoCoder {
 
             String hash = "";
             if (element.getHash().isPresent()) {
-                distStr = element.getHash().get();
+                hash = element.getHash().get();
             }
 
             if (distStr != "" || !coord.isEmpty() || hash != "") {
