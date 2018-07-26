@@ -30,7 +30,7 @@ jobs:
           fetch_merge: true
           git:
             depth: 100
-      - get: docker-geode-build-image
+      - get: alpine-tools-image
         params:
           rootfs: true
     # Unmerged pull request SHA, for writing status into GitHub
@@ -117,6 +117,33 @@ jobs:
           platform: linux
           run:
             path: geode/ci/scripts/rsync_code_down.sh
+      ensure:
+        aggregate:
+        - task: archive-results
+          image: docker-geode-build-image
+          config:
+            inputs:
+              - name: geode
+              - name: geode-results
+            platform: linux
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              GRADLE_TASK: (( grab metadata.job.gradle_task ))
+              ARTIFACT_SLUG: (( grab metadata.job.artifact_slug ))
+            run:
+              path: geode/ci/scripts/archive_results.sh
+        - task: stop_instance
+          image: alpine-tools-image
+          timeout: 1h
+          config:
+            inputs:
+              - name: geode
+              - name: instance-data
+            platform: linux
+            run:
+              path: geode/ci/scripts/stop_instance.sh
     on_failure:
       aggregate:
       - put: geode
@@ -131,32 +158,4 @@ jobs:
           path: geode-unmerged-request
           context: $BUILD_JOB_NAME
           status: success
-
-    ensure:
-      aggregate:
-      - task: archive-results
-        image: docker-geode-build-image
-        config:
-          inputs:
-            - name: geode
-            - name: geode-results
-          platform: linux
-          params:
-            MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
-            SERVICE_ACCOUNT: ((!concourse-gcp-account))
-            PUBLIC_BUCKET: ((!public-bucket))
-            GRADLE_TASK: (( grab metadata.job.gradle_task ))
-            ARTIFACT_SLUG: (( grab metadata.job.artifact_slug ))
-          run:
-            path: geode/ci/scripts/archive_results.sh
-      - task: stop_instance
-        image: alpine-tools-image
-        timeout: 1h
-        config:
-          inputs:
-            - name: geode
-            - name: instance-data
-          platform: linux
-          run:
-            path: geode/ci/scripts/stop_instance.sh
 
