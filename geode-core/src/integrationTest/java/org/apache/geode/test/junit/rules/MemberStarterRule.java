@@ -212,11 +212,10 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    */
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
+      int[] randomPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
       // do no override these properties if already exists
-      properties.putIfAbsent(JMX_MANAGER_PORT,
-          AvailablePortHelper.getRandomAvailableTCPPort() + "");
-      properties.putIfAbsent(HTTP_SERVICE_PORT,
-          AvailablePortHelper.getRandomAvailableTCPPort() + "");
+      properties.putIfAbsent(JMX_MANAGER_PORT, randomPorts[0] + "");
+      properties.putIfAbsent(HTTP_SERVICE_PORT, randomPorts[1] + "");
       this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
       this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
     } else {
