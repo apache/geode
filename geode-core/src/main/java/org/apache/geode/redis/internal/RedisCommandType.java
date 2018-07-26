@@ -81,6 +81,12 @@ import org.apache.geode.redis.internal.executor.set.SRemExecutor;
 import org.apache.geode.redis.internal.executor.set.SScanExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionExecutor;
 import org.apache.geode.redis.internal.executor.set.SUnionStoreExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoAddExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoDistExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoHashExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoPosExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoRadiusByMemberExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoRadiusExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZCountExecutor;
@@ -2577,6 +2583,125 @@ public enum RedisCommandType {
     public Executor getExecutor() {
       if (executor == null) {
         executor = new ZScoreExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+
+  /**************************************
+   * Geospatial commands ****************
+   **************************************/
+
+  GEOADD {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new GeoAddExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  GEOHASH {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new GeoHashExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  GEOPOS {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new GeoPosExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  GEODIST {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new GeoDistExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  GEORADIUS {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new GeoRadiusExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  GEORADIUSBYMEMBER {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new GeoRadiusByMemberExecutor();
       }
       return executor;
     }
