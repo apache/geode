@@ -246,7 +246,7 @@ public class RegionMembershipMBeanDUnitTest {
         .isEqualTo(intermediateMemberSizeChild2FromMBean)
         .isEqualTo(initialMemberSizeChild2FromMBean + 1);
 
-    server3.stopMember(Boolean.TRUE);
+    server3.stop(Boolean.TRUE);
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_PATH, 2);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(DATA_REGION_NAME_CHILD_1_PATH, 2);
@@ -335,7 +335,7 @@ public class RegionMembershipMBeanDUnitTest {
     assertThat(intermediateMemberSizeFromFunctionCall).isEqualTo(intermediateMemberSizeFromMBean)
         .isEqualTo(initialMemberSizeFromMBean + 1);
 
-    server3.stopMember(Boolean.TRUE);
+    server3.stop(Boolean.TRUE);
 
     Integer finalMemberSizeFromMBean =
         distributedRegionMembersSizeFromMBean(DATA_PAR_REGION_NAME_PATH);

@@ -15,10 +15,12 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import java.io.Serializable;
+
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.VMProvider;
 
-public class ClientVM extends VMProvider {
+public class ClientVM extends VMProvider implements Serializable {
   private VM vm;
 
   public ClientVM(VM vm) {

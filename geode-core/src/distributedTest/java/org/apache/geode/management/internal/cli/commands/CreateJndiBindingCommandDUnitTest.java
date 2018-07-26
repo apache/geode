@@ -90,7 +90,7 @@ public class CreateJndiBindingCommandDUnitTest {
         () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(1));
 
     // bounce server1
-    server1.stopMember(false);
+    server1.stop(false);
     server1 = cluster.startServerVM(1, locator.getPort());
 
     // verify it has recreated the datasource from cluster config

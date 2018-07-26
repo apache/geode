@@ -121,8 +121,8 @@ public class ListClientCommandDUnitTest {
                 "member=server-1,port=" + server1port);
 
     // shutdown the clients
-    cluster.stopMember(client1ID);
-    cluster.stopMember(client2ID);
+    cluster.stop(client1ID);
+    cluster.stop(client2ID);
   }
 
   @Test
@@ -178,6 +178,6 @@ public class ListClientCommandDUnitTest {
     assertThat(serverList.get(0)).contains("server-1").contains("server-2");
 
     // shutdown the clients
-    cluster.stopMember(client1ID);
+    cluster.stop(client1ID);
   }
 }

@@ -106,7 +106,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   @Override
   public void after() {
-    // invoke stopMember() first and then ds.disconnect
+    // invoke stop() first and then ds.disconnect
     stopMember();
 
     // this will clean up the SocketCreators created in this VM so that it won't contaminate
@@ -283,6 +283,15 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionName,
       int exactServerCount) throws Exception {
+    if (exactServerCount == 0) {
+      waitUntilEqual(
+          () -> getRegionMBean(regionName),
+          Objects::isNull,
+          true,
+          String.format("Expecting to not find an mbean for region '%s'", regionName),
+          WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
+      return;
+    }
     // First wait until the region mbean is not null...
     waitUntilEqual(
         () -> getRegionMBean(regionName),
