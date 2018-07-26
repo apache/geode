@@ -62,7 +62,7 @@ for i in ${GEODEBUILDDIR}/test-stubs/*.yml; do
   ${SPRUCE} merge --prune metadata \
     <(echo "metadata:"; \
       echo "  geode-build-branch: ${GEODE_BRANCH}"; \
-      echo "  geode-fork: ${GEODE_FORK}" \
+      echo "  geode-fork: ${GEODE_FORK}"; \
       echo "  ") \
     ${SCRIPTDIR}/pr-template.yml \
     ${i} > ${TMP_DIR}/${X}
