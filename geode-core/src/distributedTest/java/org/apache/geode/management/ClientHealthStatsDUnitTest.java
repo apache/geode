@@ -45,8 +45,10 @@ public class ClientHealthStatsDUnitTest implements Serializable {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator, server;
-  private ClientVM client1, client2;
+  private MemberVM locator;
+  private MemberVM server;
+  private ClientVM client1;
+  private ClientVM client2;
 
   private static volatile boolean lastKeyReceived;
 
@@ -104,7 +106,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
   @Test
   public void testStatsMatchWithSize() throws Exception {
-    // // create durable client, with durable RI
+    // create durable client, with durable RI
     client1 = createDurableClient(2);
 
     // do puts in server
