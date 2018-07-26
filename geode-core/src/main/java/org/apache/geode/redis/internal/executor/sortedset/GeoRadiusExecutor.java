@@ -70,7 +70,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     boolean withDist = false;
     boolean withCoord = false;
     boolean withHash = false;
-    int count = -1;
+    Integer count = null;
     Boolean ascendingOrder = null;
 
     Double distScale = 1.0;
@@ -112,23 +112,35 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    for (int i = 6; i < commandElems.size(); i++) {
+    int i;
+    for (i = 6; i < commandElems.size() && (new String(commandElems.get(i))).contains("with"); i++) {
       String elem = new String(commandElems.get(i));
 
       if (elem.equals("withdist")) withDist = true;
       if (elem.equals("withcoord")) withCoord = true;
       if (elem.equals("withhash")) withHash = true;
-      if (elem.equals("count")) {
-        try {
-          count = Coder.bytesToInt(commandElems.get(i+1));
-          i++;
-        } catch (NumberFormatException e) {
-          command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
-          return;
-        }
+    }
+
+    if (i < commandElems.size() && (new String(commandElems.get(i))).equals("count")) {
+      try {
+        count = Coder.bytesToInt(commandElems.get(++i));
+        i++;
+      } catch (NumberFormatException e) {
+        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
+        return;
       }
+    }
+
+    if (i < commandElems.size() && (new String(commandElems.get(i))).contains("sc")) {
+      String elem = new String(commandElems.get(i++));
+
       if (elem.equals("asc")) ascendingOrder = true;
-      if (elem.equals("desc")) ascendingOrder = false;
+      else if (elem.equals("desc")) ascendingOrder = false;
+    }
+
+    if (i < commandElems.size()) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEORADIUS));
+      return;
     }
 
     HashNeighbors hn;
@@ -166,7 +178,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       Collections.sort(results, Comparator.comparing((GeoRadiusElement x) -> -1.0 * x.getDistFromCenter()));
     }
 
-    if (count > 0 && count < results.size()) {
+    if (count != null && count < results.size()) {
       results = results.subList(0, count);
     }
 
