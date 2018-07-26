@@ -60,8 +60,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
     GeoRadiusParameters params;
     try {
-      params = new GeoRadiusParameters(keyRegion,
-              commandElems, GeoRadiusParameters.CommandType.GEORADIUS);
+      params = new GeoRadiusParameters(keyRegion, commandElems, GeoRadiusParameters.CommandType.GEORADIUS);
     } catch(IllegalArgumentException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
       return;
