@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+evaluationDependsOn(":geode-core")
+
 dependencies {
   compile(project(':extensions/geode-modules')) {
     // Remove everything related to Tomcat 6.x
@@ -40,6 +42,9 @@ dependencies {
   testCompile project(path: ':geode-junit')
   testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
+
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 
   eclipse.classpath.file {
     whenMerged { classpath ->

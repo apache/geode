@@ -53,7 +53,7 @@ class TemporaryBackupFiles {
    */
   static TemporaryBackupFiles create() throws IOException {
     long currentTime = System.currentTimeMillis();
-    String diskStoreDirectoryName = BackupService.DATA_STORES_TEMPORARY_DIRECTORY + currentTime;
+    String diskStoreDirectoryName = BackupService.TEMPORARY_DIRECTORY_FOR_BACKUPS + currentTime;
     Path temporaryDirectory = Files.createTempDirectory("backup_" + currentTime);
     return new TemporaryBackupFiles(temporaryDirectory, diskStoreDirectoryName);
   }

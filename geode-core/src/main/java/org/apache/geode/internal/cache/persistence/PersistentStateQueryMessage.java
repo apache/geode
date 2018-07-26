@@ -66,16 +66,12 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
     this.processorId = processorId;
   }
 
-  public static PersistentStateQueryResults send(Set<InternalDistributedMember> members,
-      DistributionManager dm, String regionPath, PersistentMemberID persistentId,
-      PersistentMemberID initializingId) throws ReplyException {
-    PersistentStateQueryReplyProcessor processor =
-        new PersistentStateQueryReplyProcessor(dm, members);
-    PersistentStateQueryMessage msg = new PersistentStateQueryMessage(regionPath, persistentId,
-        initializingId, processor.getProcessorId());
-    msg.setRecipients(members);
+  PersistentStateQueryResults send(Set<InternalDistributedMember> members, DistributionManager dm,
+      PersistentStateQueryReplyProcessor processor) {
+    setRecipients(members);
 
-    dm.putOutgoing(msg);
+    dm.putOutgoing(this);
+
     processor.waitForRepliesUninterruptibly();
     return processor.results;
   }
@@ -200,7 +196,7 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
         + initializingId;
   }
 
-  private static class PersistentStateQueryReplyProcessor extends ReplyProcessor21 {
+  static class PersistentStateQueryReplyProcessor extends ReplyProcessor21 {
     PersistentStateQueryResults results = new PersistentStateQueryResults();
 
     public PersistentStateQueryReplyProcessor(DistributionManager dm, Collection initMembers) {

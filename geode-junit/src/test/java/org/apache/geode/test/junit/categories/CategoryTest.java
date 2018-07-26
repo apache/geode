@@ -27,7 +27,6 @@ import org.junit.runners.Suite;
 
 import org.apache.geode.test.junit.runners.TestRunner;
 
-@Category(UnitTest.class)
 public class CategoryTest {
 
   private static boolean executedClassOneMethodNone; // 1

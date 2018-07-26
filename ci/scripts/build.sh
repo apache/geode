@@ -28,8 +28,12 @@ GEODE_BUILD_VERSION_FILE=${ROOT_DIR}/geode-build-version/number
 GEODE_RESULTS_VERSION_FILE=${ROOT_DIR}/results/number
 GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" geode/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
 GEODE_BUILD_DIR=/tmp/geode-build
+GEODE_PULL_REQUEST_ID_FILE=${ROOT_DIR}/geode/.git/id
+if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
+  GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
+fi
 
-if [ ! -e "${GEODE_BUILD_VERSION_FILE}" ]; then
+if [ ! -e "${GEODE_BUILD_VERSION_FILE}" ] && [ -z "${GEODE_PULL_REQUEST_ID}" ]; then
   echo "${GEODE_BUILD_VERSION_FILE} file does not exist. Concourse is probably not configured correctly."
   exit 1
 fi
@@ -52,17 +56,22 @@ if [ -z ${GEODE_BUILD_VERSION_NUMBER+x} ]; then
   exit 1
 fi
 
-CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
-CONCOURSE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
-GEODE_PRODUCT_VERSION=${GEODE_BUILD_VERSION_NUMBER}
-CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
-BUILD_ID=${CONCOURSE_VERSION##*.}
-FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${CONCOURSE_BUILD_SLUG}
+if [ -z "${GEODE_PULL_REQUEST_ID}" ]; then
+  CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
+  CONCOURSE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
+  GEODE_PRODUCT_VERSION=${GEODE_BUILD_VERSION_NUMBER}
+  CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
+  BUILD_ID=${CONCOURSE_VERSION##*.}
+  FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${CONCOURSE_BUILD_SLUG}
+  echo "Concourse VERSION is ${CONCOURSE_VERSION}"
+  echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"
+  echo "Build ID is ${BUILD_ID}"
+else
+  FULL_PRODUCT_VERSION="geode-pr-${GEODE_PULL_REQUEST_ID}"
+fi
+
 echo -n "${FULL_PRODUCT_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
 
-echo "Concourse VERSION is ${CONCOURSE_VERSION}"
-echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"
-echo "Build ID is ${BUILD_ID}"
 
 printf "\nUsing the following JDK:"
 java -version
@@ -81,7 +90,7 @@ ln -s ${ROOT_DIR}/geode ${GEODE_BUILD_DIR}
 
 pushd ${GEODE_BUILD_DIR}
 set +e
-./gradlew --no-daemon -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" build
+./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" build
 GRADLE_EXIT_STATUS=$?
 set -e
 

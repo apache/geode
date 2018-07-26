@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public interface BackupWriter {
+
   String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
   String USER_FILES_DIRECTORY = "user";
   String DEPLOYED_JARS_DIRECTORY = "user";
@@ -29,5 +30,4 @@ public interface BackupWriter {
   void backupFiles(BackupDefinition backupDefinition) throws IOException;
 
   Path getBaselineDirectory();
-
 }

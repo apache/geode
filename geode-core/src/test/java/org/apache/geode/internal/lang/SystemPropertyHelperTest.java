@@ -17,11 +17,8 @@ package org.apache.geode.internal.lang;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class SystemPropertyHelperTest {
   private String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
 

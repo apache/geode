@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -29,6 +30,7 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class DestroyLuceneIndexMessage extends PooledDistributionMessage
@@ -67,10 +69,21 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
       try {
         InternalCache cache = dm.getCache();
         LuceneServiceImpl impl = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
-        impl.destroyIndex(this.indexName, this.regionPath, false);
-        if (logger.isDebugEnabled()) {
-          logger.debug("DestroyLuceneIndexMessage: Destroyed regionPath=" + this.regionPath
-              + "; indexName=" + this.indexName);
+        try {
+          impl.destroyIndex(this.indexName, this.regionPath, false);
+          if (logger.isDebugEnabled()) {
+            logger.debug("DestroyLuceneIndexMessage: Destroyed regionPath=" + this.regionPath
+                + "; indexName=" + this.indexName);
+          }
+        } catch (IllegalArgumentException e) {
+          // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
+          String fullRegionPath =
+              regionPath.startsWith(Region.SEPARATOR) ? regionPath : Region.SEPARATOR + regionPath;
+          String indexNotFoundMessage = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
+              .toLocalizedString(this.indexName, fullRegionPath);
+          if (!e.getLocalizedMessage().equals(indexNotFoundMessage)) {
+            throw e;
+          }
         }
       } catch (Throwable e) {
         replyException = new ReplyException(e);

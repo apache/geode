@@ -91,6 +91,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -592,7 +593,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     } catch (IllegalArgumentException poolInitException) {
       this.stats.close();
       this.serverSock.close();
-      this.pool.shutdownNow();
+      this.pool.shutdown();
       throw poolInitException;
     }
   }
@@ -622,7 +623,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     };
     return new PooledExecutorWithDMStats(new SynchronousQueue(),
         CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(),
-        clientQueueThreadFactory, 60000);
+        clientQueueThreadFactory, 60000, getThreadMonitorObj());
   }
 
   private ThreadPoolExecutor initializeServerConnectionThreadPool() throws IOException {
@@ -655,7 +656,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     try {
       if (isSelector()) {
         return new PooledExecutorWithDMStats(new LinkedBlockingQueue(), this.maxThreads,
-            getStats().getCnxPoolHelper(), socketThreadFactory, Integer.MAX_VALUE);
+            getStats().getCnxPoolHelper(), socketThreadFactory, Integer.MAX_VALUE,
+            getThreadMonitorObj());
       } else {
         return new ThreadPoolExecutor(MINIMUM_MAX_CONNECTIONS, this.maxConnections, 0L,
             TimeUnit.MILLISECONDS, new SynchronousQueue(), socketThreadFactory);
@@ -664,6 +666,15 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       this.stats.close();
       this.serverSock.close();
       throw poolInitException;
+    }
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.cache.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
     }
   }
 
@@ -1686,8 +1697,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       Thread.currentThread().interrupt();
       this.pool.shutdownNow();
     }
-    this.clientQueueInitPool.shutdownNow();
-    this.hsPool.shutdownNow();
+    this.clientQueueInitPool.shutdown();
+    this.hsPool.shutdown();
   }
 
   private void shutdownSCs() {

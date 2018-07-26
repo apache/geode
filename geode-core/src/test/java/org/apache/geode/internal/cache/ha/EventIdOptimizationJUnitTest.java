@@ -30,7 +30,6 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client to server, server
@@ -40,7 +39,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * methods written in <code>EventID</code> class for the above optimization. For distributed testing
  * for the same , please refer {@link EventIdOptimizationDUnitTest}.
  */
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class EventIdOptimizationJUnitTest {
 
   /** The long id (threadId or sequenceId) having value equivalent to byte */

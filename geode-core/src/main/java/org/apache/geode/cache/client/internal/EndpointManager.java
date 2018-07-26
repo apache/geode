@@ -65,7 +65,7 @@ public interface EndpointManager {
    *
    * @return a map of ServerLocation-> ConnectionStats
    */
-  Map getAllStats();
+  Map<ServerLocation, ConnectionStats> getAllStats();
 
   /**
    * Test hook that returns the number of servers we currently have connections to.

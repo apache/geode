@@ -16,7 +16,6 @@ package org.apache.geode.tools.pulse.tests;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -26,8 +25,10 @@ import java.rmi.registry.LocateRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -36,6 +37,8 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
+
+import org.awaitility.Awaitility;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
@@ -53,56 +56,16 @@ public class Server {
   private final JMXServiceURL url;
   private MBeanServer mbs;
   private JMXConnectorServer cs;
-  private String propFile = null;
+  private String propFile;
+  private int jmxPort;
+  private String jsonAuthFile;
 
   public Server(int jmxPort, String properties, String jsonAuthFile) throws Exception {
     this.propFile = properties;
     mbs = ManagementFactory.getPlatformMBeanServer();
     url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, jmxPort));
-
-    // Load the beans first, otherwise we get access denied
-    loadMBeans();
-
-    if (jsonAuthFile != null) {
-      System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
-
-      Map<String, Object> env = new HashMap<String, Object>();
-
-      // set up Shiro Security Manager
-      Properties securityProperties = new Properties();
-      securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonAuthFile);
-      securityProperties.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
-
-      SecurityService securityService = SecurityServiceFactory.create(securityProperties);
-
-      // register the AccessControll bean
-      AccessControlMBean acc = new AccessControlMBean(securityService);
-      ObjectName accessControlMBeanON = new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL);
-      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-      platformMBeanServer.registerMBean(acc, accessControlMBeanON);
-
-      // wire in the authenticator and authorizaton
-      JMXShiroAuthenticator interceptor = new JMXShiroAuthenticator(securityService);
-      env.put(JMXConnectorServer.AUTHENTICATOR, interceptor);
-      cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
-      cs.setMBeanServerForwarder(new MBeanServerWrapper(securityService));
-
-      // set up the AccessControlMXBean
-
-    } else {
-      System.setProperty("spring.profiles.active", "pulse.authentication.default");
-      cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
-    }
-
-    try {
-      LocateRegistry.createRegistry(jmxPort);
-      System.out.println("RMI registry ready.");
-    } catch (Exception e) {
-      System.out.println("Exception starting RMI registry:");
-      e.printStackTrace();
-    }
-
-    cs.start();
+    this.jmxPort = jmxPort;
+    this.jsonAuthFile = jsonAuthFile;
   }
 
   private String formJMXServiceURLString(String host, int jmxPort) throws UnknownHostException {
@@ -121,83 +84,124 @@ public class Server {
     return jmxSerURL;
   }
 
-  public void stop() throws IOException {
+  public void stop() throws Exception {
     cs.stop();
+    unloadMBeans();
+
+    if (jsonAuthFile != null)
+      mbs.unregisterMBean(new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL));
   }
 
-  private synchronized void loadMBeans() {
-    JMXProperties props = JMXProperties.getInstance();
-    try {
-      props.load(propFile);
-    } catch (IOException e) {
-      e.printStackTrace();
+  public void start() throws Exception {
+
+    // Load the beans first, otherwise we get access denied
+    loadMBeans();
+
+    if (jsonAuthFile != null) {
+      System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+
+      Map<String, Object> env = new HashMap<>();
+
+      // set up Shiro Security Manager
+      Properties securityProperties = new Properties();
+      securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonAuthFile);
+      securityProperties.setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
+
+      SecurityService securityService = SecurityServiceFactory.create(securityProperties);
+
+      // register the AccessControl bean
+      mbs.registerMBean(new AccessControlMBean(securityService),
+          new ObjectName(ResourceConstants.OBJECT_NAME_ACCESSCONTROL));
+
+      // wire in the authenticator and authorization
+      env.put(JMXConnectorServer.AUTHENTICATOR, new JMXShiroAuthenticator(securityService));
+      cs = JMXConnectorServerFactory.newJMXConnectorServer(url, env, mbs);
+      cs.setMBeanServerForwarder(new MBeanServerWrapper(securityService));
+
+    } else {
+      System.setProperty("spring.profiles.active", "pulse.authentication.default");
+      cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
     }
+
+    try {
+      LocateRegistry.createRegistry(jmxPort);
+      System.out.println("RMI registry ready.");
+    } catch (Exception e) {
+      System.out.println("Exception starting RMI registry:");
+      throw e;
+    }
+
+    cs.start();
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+        .until(() -> cs.isActive());
+  }
+
+  private synchronized void loadMBeans() throws Exception {
+    JMXProperties props = JMXProperties.getInstance();
+
+    props.load(propFile);
 
     // Add servers
     String[] servers = getArrayProperty(props, "servers");
     for (String server : servers) {
-      try {
-        addServerMBean(server);
-      } catch (InstanceAlreadyExistsException e) {
-        e.printStackTrace();
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (NotCompliantMBeanException e) {
-        e.printStackTrace();
-      } catch (MalformedObjectNameException e) {
-        e.printStackTrace();
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
+      addServerMBean(server);
     }
 
     // Add members
     String[] members = getArrayProperty(props, "members");
     for (String m : members) {
-      try {
-        addMemberMBean(m);
-      } catch (InstanceAlreadyExistsException e) {
-        e.printStackTrace();
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (NotCompliantMBeanException e) {
-        e.printStackTrace();
-      } catch (MalformedObjectNameException e) {
-        e.printStackTrace();
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
+      addMemberMBean(m);
     }
 
     // Add regions
     String[] regions = getArrayProperty(props, "regions");
     for (String reg : regions) {
-      try {
-        addRegionMBean(reg);
-      } catch (InstanceAlreadyExistsException e) {
-        e.printStackTrace();
-      } catch (MBeanRegistrationException e) {
-        e.printStackTrace();
-      } catch (NotCompliantMBeanException e) {
-        e.printStackTrace();
-      } catch (MalformedObjectNameException e) {
-        e.printStackTrace();
-      } catch (NullPointerException e) {
-        e.printStackTrace();
-      }
+      addRegionMBean(reg);
+    }
+  }
+
+  private synchronized void unloadMBeans() throws Exception {
+    JMXProperties props = JMXProperties.getInstance();
+
+    props.load(propFile);
+
+    // remove servers
+    String[] servers = getArrayProperty(props, "servers");
+    for (String server : servers) {
+      removeServerMBean();
+    }
+
+    // remove members
+    String[] members = getArrayProperty(props, "members");
+    for (String m : members) {
+      removeMemberMBean(m);
+    }
+
+    // remove regions
+    String[] regions = getArrayProperty(props, "regions");
+    for (String reg : regions) {
+      removeRegionMBean(reg);
     }
   }
 
   private void addMemberMBean(String m) throws InstanceAlreadyExistsException,
       MBeanRegistrationException, NotCompliantMBeanException, MalformedObjectNameException {
-    Member m1 = new Member(m);
-    mbs.registerMBean(m1, new ObjectName(Member.OBJECT_NAME + ",member=" + m));
+
+    mbs.registerMBean(new Member(m), new ObjectName(Member.OBJECT_NAME + ",member=" + m));
+  }
+
+
+  private void removeMemberMBean(String m)
+      throws InstanceNotFoundException,
+      MBeanRegistrationException, MalformedObjectNameException {
+    mbs.unregisterMBean(new ObjectName(Member.OBJECT_NAME + ",member=" + m));
   }
 
   private void addRegionMBean(String reg)
       throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException,
       MalformedObjectNameException, NullPointerException {
     Region regionObject = new Region(reg);
+
     mbs.registerMBean(regionObject, new ObjectName(Region.OBJECT_NAME + ",name=/" + reg));
 
     for (String member : regionObject.getMembers()) {
@@ -209,11 +213,30 @@ public class Server {
     }
   }
 
+  private void removeRegionMBean(String reg)
+      throws InstanceNotFoundException, MBeanRegistrationException, MalformedObjectNameException,
+      NullPointerException {
+    Region regionObject = new Region(reg);
+
+    mbs.unregisterMBean(new ObjectName(Region.OBJECT_NAME + ",name=/" + reg));
+
+    for (String member : regionObject.getMembers()) {
+      mbs.unregisterMBean(new ObjectName(
+          PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObject.getFullPath()
+              + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + member));
+    }
+  }
+
   private void addServerMBean(String server)
       throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException,
       MalformedObjectNameException, NullPointerException {
-    ServerObject so = new ServerObject(server);
-    mbs.registerMBean(so, new ObjectName(ServerObject.OBJECT_NAME));
+    mbs.registerMBean(new ServerObject(server), new ObjectName(ServerObject.OBJECT_NAME));
+  }
+
+  private void removeServerMBean()
+      throws InstanceNotFoundException, MBeanRegistrationException,
+      MalformedObjectNameException, NullPointerException {
+    mbs.unregisterMBean(new ObjectName(ServerObject.OBJECT_NAME));
   }
 
   private String[] getArrayProperty(JMXProperties props, String propName) {
@@ -221,15 +244,8 @@ public class Server {
     return propVal.split(" ");
   }
 
-  public static Server createServer(int jmxPort, String properties, String jsonAuthFile) {
-    Server s = null;
-    try {
-      s = new Server(jmxPort, properties, jsonAuthFile);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
-
-    return s;
+  public static Server createServer(int jmxPort, String properties, String jsonAuthFile)
+      throws Exception {
+    return new Server(jmxPort, properties, jsonAuthFile);
   }
 }

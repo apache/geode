@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-public class FileSystemBackupWriter implements BackupWriter {
+class FileSystemBackupWriter implements BackupWriter {
 
   private final Path backupDirectory;
   private final FileSystemIncrementalBackupLocation incrementalBaselineLocation;
@@ -143,7 +143,7 @@ public class FileSystemBackupWriter implements BackupWriter {
       RestoreScript restoreScript) throws IOException {
     File storesDir = new File(backupDirectory.toFile(), DATA_STORES_DIRECTORY);
     for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
-      DiskStoreImpl diskStore = ((DiskStoreImpl) entry.getKey());
+      DiskStoreImpl diskStore = (DiskStoreImpl) entry.getKey();
       boolean diskstoreHasFilesInBackup = false;
       for (Path path : entry.getValue()) {
         if (filter.accept(diskStore, path)) {
@@ -175,7 +175,7 @@ public class FileSystemBackupWriter implements BackupWriter {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
     name = name + "_" + ((DiskStoreImpl) diskStore).getDiskStoreID().toString();
-    return this.backupDirectory.resolve(DATA_STORES_DIRECTORY).resolve(name)
+    return backupDirectory.resolve(DATA_STORES_DIRECTORY).resolve(name)
         .resolve(BACKUP_DIR_PREFIX + index);
   }
 
@@ -196,7 +196,7 @@ public class FileSystemBackupWriter implements BackupWriter {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
 
-    return (name + "_" + diskStore.getDiskStoreID().toString());
+    return name + "_" + diskStore.getDiskStoreID().toString();
   }
 
   private void backupOplog(Path targetDir, Path path) throws IOException {

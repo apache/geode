@@ -108,5 +108,7 @@ subprojects {
 
   if (project.hasProperty('parallelDunit')) {
     distributedTest.configure(dockerConfig)
+    upgradeTest.configure(dockerConfig)
+    repeatTest.configure(dockerConfig)
   }
 }

@@ -71,6 +71,7 @@ public class ResourceManagerStats {
   private static final int resourceEventsDeliveredId;
   private static final int resourceEventQueueSizeId;
   private static final int thresholdEventProcessorThreadJobsId;
+  private static final int numThreadsStuckId;
 
 
 
@@ -183,7 +184,10 @@ public class ResourceManagerStats {
                 "Pending events for thresholdEventProcessor thread", "events"),
             f.createIntGauge("thresholdEventProcessorThreadJobs",
                 "Number of jobs currently being processed by the thresholdEventProcessorThread",
-                "jobs")});
+                "jobs"),
+            f.createIntGauge("numThreadsStuck",
+                "Number of running threads that have not changed state within the thread-monitor-time-limit-ms interval.",
+                "stuck Threads")});
 
     rebalancesInProgressId = type.nameToId("rebalancesInProgress");
     rebalancesCompletedId = type.nameToId("rebalancesCompleted");
@@ -225,6 +229,7 @@ public class ResourceManagerStats {
     resourceEventsDeliveredId = type.nameToId("resourceEventsDelivered");
     resourceEventQueueSizeId = type.nameToId("resourceEventQueueSize");
     thresholdEventProcessorThreadJobsId = type.nameToId("thresholdEventProcessorThreadJobs");
+    numThreadsStuckId = type.nameToId("numThreadsStuck");
   }
 
   private final Statistics stats;
@@ -555,5 +560,19 @@ public class ResourceManagerStats {
         incThresholdEventProcessorThreadJobs(1);
       }
     };
+  }
+
+  /**
+   * Returns the value of ThreadStuck (how many (if at all) stuck threads are in the system)
+   */
+  public int getNumThreadStuck() {
+    return this.stats.getInt(numThreadsStuckId);
+  }
+
+  /**
+   * Sets the value of Thread Stuck
+   */
+  public void setNumThreadStuck(int value) {
+    this.stats.setInt(numThreadsStuckId, value);
   }
 }

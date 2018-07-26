@@ -41,7 +41,7 @@ public class RegionLogger {
     GRAPH_LOGGER.logTransition(GraphType.REGION, regionName, "GII", "created", source, dest);
     if (persistentMemberID != null) {
       GRAPH_LOGGER.logTransition(GraphType.REGION, regionName, "persist", "persisted", dest,
-          persistentMemberID.diskStoreId);
+          persistentMemberID.getDiskStoreId());
     }
   }
 
@@ -51,7 +51,7 @@ public class RegionLogger {
   public static void logPersistence(String regionName, InternalDistributedMember source,
       PersistentMemberID disk) {
     GRAPH_LOGGER.logTransition(GraphType.REGION, regionName, "persist", "persisted", source,
-        disk.diskStoreId);
+        disk.getDiskStoreId());
   }
 
   /**
@@ -59,7 +59,8 @@ public class RegionLogger {
    */
   public static void logRecovery(String regionName, PersistentMemberID disk,
       InternalDistributedMember memberId) {
-    GRAPH_LOGGER.logTransition(GraphType.REGION, regionName, "recover", "created", disk.diskStoreId,
+    GRAPH_LOGGER.logTransition(GraphType.REGION, regionName, "recover", "created",
+        disk.getDiskStoreId(),
         memberId);
 
   }
@@ -74,9 +75,9 @@ public class RegionLogger {
           memberId);
       if (!isClose && persistentID != null) {
         GRAPH_LOGGER.logTransition(GraphType.REGION, regionName, "destroy", "destroyed", memberId,
-            persistentID.diskStoreId);
+            persistentID.getDiskStoreId());
         GRAPH_LOGGER.logTransition(GraphType.KEY, ALL_REGION_KEYS, "destroy", "destroyed", memberId,
-            persistentID.diskStoreId);
+            persistentID.getDiskStoreId());
       }
     }
   }

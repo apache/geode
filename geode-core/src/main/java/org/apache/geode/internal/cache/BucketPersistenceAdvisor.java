@@ -297,7 +297,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
     if (id == null) {
       return id;
     } else {
-      id = new PersistentMemberID(id.diskStoreId, id.host, id.directory,
+      id = new PersistentMemberID(id.getDiskStoreId(), id.getHost(), id.getDirectory(),
           this.proxyBucket.getPartitionedRegion().getBirthTime(), version++);
       return id;
     }

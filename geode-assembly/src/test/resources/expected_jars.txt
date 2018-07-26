@@ -25,7 +25,6 @@ jackson-databind
 jackson-module-paranamer
 jackson-module-scala
 jansi
-javassist
 javax.mail-api
 javax.resource-api
 javax.servlet-api
@@ -60,7 +59,6 @@ netty-all
 paranamer
 protobuf-java
 ra.jar
-reflections
 rmiio
 scala-library
 scala-reflect

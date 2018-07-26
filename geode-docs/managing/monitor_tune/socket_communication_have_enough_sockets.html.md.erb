@@ -56,17 +56,17 @@ A member’s socket use is governed by a number of factors, including:
 
 The socket requirements described here are worst-case. Generally, it is not practical to calculate exact socket use for your applications. Socket use varies depending on a number of factors including how many members are running, what their threads are doing, and whether threads share sockets.
 
-To calculate any member’s socket requirements, add up the requirements for every category that applies to the member. For example, a cache server running in a distributed system with clients connected to it has both peer-to-peer and server socket requirements.
+To calculate any member’s socket requirements, add up the requirements for every category that applies to the member. For example, a cache server running in a cluster with clients connected to it has both peer-to-peer and server socket requirements.
 
 ## <a id="socket_comm__section_DF64BDE7B6AA47A9B08E0540CAD6DA3A" class="no-quick-link"></a>Peer-to-Peer Socket Requirements Per Member
 
-Every member of a distributed system maintains two outgoing and two incoming connections to every peer. If threads share sockets, these fixed sockets are the sockets they share.
+Every member of a cluster maintains two outgoing and two incoming connections to every peer. If threads share sockets, these fixed sockets are the sockets they share.
 
 For every thread that does not share sockets, additional sockets, one in and one out, are added for each peer. This affects not only the member’s socket count, but the socket count for every member the member thread connects to.
 
 In this table:
 
--   M is the total number of members in the distributed system.
+-   M is the total number of members in the cluster.
 -   T is the number of threads in a member that own their own sockets and do not share.
 
 <table>
@@ -110,7 +110,7 @@ The threads servicing client requests add to the total count of thread-owned soc
 
 ## <a id="socket_comm__section_0497E07414CC4E0B968B4F3A7AFD3690" class="no-quick-link"></a>Server Socket Requirements Per Server
 
-Servers use one connection for each incoming client connection. By default, each connection is serviced by a server thread. These threads that service client requests communicate with the rest of the server distributed system to satisfy the requests and distributed update operations. Each of these threads uses its own thread-owned sockets for peer-to-peer communication. So this adds to the server’s group of thread-owned sockets.
+Servers use one connection for each incoming client connection. By default, each connection is serviced by a server thread. These threads that service client requests communicate with the rest of the servers to satisfy the requests and distributed update operations. Each of these threads uses its own thread-owned sockets for peer-to-peer communication. So this adds to the server’s group of thread-owned sockets.
 
 The thread and connection count in the server may be limited by server configuration settings. These
 are `max-connections` and `max-threads` settings in the &lt;cache-server&gt; element of the
@@ -123,7 +123,7 @@ connection requirements:
 
 The server uses one socket for each incoming client pool connection. If client subscriptions are used, the server creates an additional connection to each client that enables subscriptions.
 
-In this table, M is the total number of members in the distributed system.
+In this table, M is the total number of members in the cluster.
 
 <table>
 <colgroup>
@@ -160,7 +160,7 @@ In this table, M is the total number of members in the distributed system.
 
 With client/server installations, the number of client connections to any single server is undetermined, but <%=vars.product_name%>’s server load balancing and conditioning keeps the connections fairly evenly distributed among servers.
 
-Servers are peers in their own distributed system and have the additional socket requirements as noted in the Peer-to-Peer section above.
+Servers are peers in their own cluster and have the additional socket requirements as noted in the Peer-to-Peer section above.
 
 ## <a id="socket_comm__section_0D46E55422D24BA1B0CD888E14FD5182" class="no-quick-link"></a>Client Socket Requirements per Client
 
@@ -189,4 +189,4 @@ Client connection requirements are compounded by how many pools they use. The us
 </tbody>
 </table>
 
-If your client acts as a peer in its own distributed system, it has the additional socket requirements as noted in the Peer-to-Peer section of this topic.
+If your client acts as a peer in its own cluster, it has the additional socket requirements as noted in the Peer-to-Peer section of this topic.

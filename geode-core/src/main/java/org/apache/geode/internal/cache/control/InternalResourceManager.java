@@ -41,6 +41,7 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ClassPathLoader;
@@ -53,6 +54,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * Implementation of ResourceManager with additional internal-only methods.
@@ -158,7 +160,7 @@ public class InternalResourceManager implements ResourceManager {
     BlockingQueue<Runnable> threadQ =
         new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());
     this.notifyExecutor = new SerialQueuedExecutorWithDMStats(threadQ,
-        this.stats.getResourceEventPoolStatHelper(), eventProcessorFactory);
+        this.stats.getResourceEventPoolStatHelper(), eventProcessorFactory, getThreadMonitorObj());
 
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<ResourceType, ResourceMonitor>();
@@ -619,5 +621,14 @@ public class InternalResourceManager implements ResourceManager {
   @Override
   public float getEvictionHeapPercentage() {
     return getHeapMonitor().getEvictionThreshold();
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.cache.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

@@ -28,18 +28,15 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for the StatisticsMonitor class. No disk IO.
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class StatisticsMonitorTest {
 
   private TestStatisticsManager manager;

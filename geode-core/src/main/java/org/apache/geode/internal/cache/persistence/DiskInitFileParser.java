@@ -155,7 +155,8 @@ public class DiskInitFileParser {
           String regName = dis.readUTF();
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
-            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_CREATE_REGION_ID drId= name={}",
+            logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
+                "IFREC_CREATE_REGION_ID drId={} name={}",
                 drId, regName);
           }
           interpreter.cmnCreateRegion(drId, regName);
@@ -629,6 +630,7 @@ public class DiskInitFileParser {
       this.delegate = wrapped;
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
       if (method.getName().equals("isClosing")) {
         if (delegate == null) {
@@ -649,7 +651,9 @@ public class DiskInitFileParser {
         out.append(",");
       }
       out.replace(out.length() - 1, out.length(), ")");
-      System.out.println(out.toString());
+      if (logger.isDebugEnabled()) {
+        logger.debug(out.toString());
+      }
       if (delegate == null) {
         return result;
       } else {

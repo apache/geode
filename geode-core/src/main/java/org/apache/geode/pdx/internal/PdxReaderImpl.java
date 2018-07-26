@@ -684,7 +684,16 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   protected Object basicGetObject() {
     String pdxClassName = getPdxType().getClassName();
-    Class<?> pdxClass = getPdxType().getPdxClass();
+    Class<?> pdxClass;
+    try {
+      pdxClass = InternalDataSerializer.getCachedClass(pdxClassName);
+    } catch (Exception e) {
+      PdxSerializationException ex = new PdxSerializationException(
+          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
+              .toLocalizedString(pdxClassName),
+          e);
+      throw ex;
+    }
     {
       AutoClassInfo ci = getPdxType().getAutoInfo(pdxClass);
       if (ci != null) {

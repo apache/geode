@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
 import org.apache.geode.CancelCriterion;
@@ -45,9 +44,7 @@ import org.apache.geode.internal.cache.TXLockRequest;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ClientTXStateStubTest {
 
   private InternalCache cache;
