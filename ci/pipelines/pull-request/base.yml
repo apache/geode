@@ -58,6 +58,8 @@ resources:
     ignore_paths:
     - geode-docs/*
     - geode-book/*
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
 
 groups:
 - name: main
