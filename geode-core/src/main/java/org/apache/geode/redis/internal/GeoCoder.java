@@ -81,8 +81,8 @@ public class GeoCoder {
             String name = element.getName();
 
             String distStr = "";
-            if (element.getDistFromCenter().isPresent()) {
-                distStr = element.getDistFromCenter().get().toString();
+            if (element.isShowDist()) {
+                distStr = element.getDistFromCenter().toString();
             }
 
             List<String> coord = new ArrayList<>();

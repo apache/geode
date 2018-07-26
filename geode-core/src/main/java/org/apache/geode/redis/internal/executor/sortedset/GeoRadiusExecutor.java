@@ -33,6 +33,8 @@ import org.apache.geode.redis.internal.executor.SortedSetQuery;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +69,9 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     boolean withDist = false;
     boolean withCoord = false;
     boolean withHash = false;
+    int count = -1;
+    Boolean ascendingOrder = null;
+
     Double distScale = 1.0;
     char[] centerHashPrecise;
 
@@ -112,6 +117,17 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       if (elem.equals("withdist")) withDist = true;
       if (elem.equals("withcoord")) withCoord = true;
       if (elem.equals("withhash")) withHash = true;
+      if (elem.equals("count")) {
+        try {
+          count = Coder.bytesToInt(commandElems.get(i+1));
+          i++;
+        } catch (NumberFormatException e) {
+          command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
+          return;
+        }
+      }
+      if (elem.equals("asc")) ascendingOrder = true;
+      if (elem.equals("desc")) ascendingOrder = false;
     }
 
     HashNeighbors hn;
@@ -130,19 +146,27 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
             String name = point.get("key").toString();
             char[] hashBits = point.get("value").toString().toCharArray();
 
-            Optional<Double> dist = withDist ?
-                    Optional.of(GeoCoder.geoDist(centerHashPrecise, hashBits) / distScale) :
-                    Optional.empty();
+            Double dist = GeoCoder.geoDist(centerHashPrecise, hashBits) / distScale;
             Optional<GeoCoord> coord = withCoord ?
                     Optional.of(GeoCoder.geoPos(hashBits)) : Optional.empty();
             Optional<String> hash = withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
 
-            results.add(new GeoRadiusElement(name, coord, dist, hash));
+            results.add(new GeoRadiusElement(name, coord, dist, withDist, hash));
           }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));
         return;
       }
+    }
+
+    if (ascendingOrder != null && ascendingOrder) {
+      Collections.sort(results, Comparator.comparing(GeoRadiusElement::getDistFromCenter));
+    } else if (ascendingOrder != null && !ascendingOrder) {
+      Collections.sort(results, Comparator.comparing((GeoRadiusElement x) -> -1.0 * x.getDistFromCenter()));
+    }
+
+    if (count > 0 && count < results.size()) {
+      results = results.subList(0, count);
     }
 
     command.setResponse(GeoCoder.geoRadiusResponse(context.getByteBufAllocator(), results));
