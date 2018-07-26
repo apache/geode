@@ -963,8 +963,8 @@ public abstract class AbstractRegionMap
 
         }
       } catch (ConcurrentCacheModificationException e) {
-        //We do not want to do any clean up of indexes because it is assumed that
-        //the cause of the concurrent modification would have updated the indexes appropriately
+        // We do not want to do any clean up of indexes because it is assumed that
+        // the cause of the concurrent modification would have updated the indexes appropriately
         return false;
       } catch (RegionClearedException rce) {
         done = false;
