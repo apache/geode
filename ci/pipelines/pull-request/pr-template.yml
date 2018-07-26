@@ -120,9 +120,10 @@ jobs:
       ensure:
         aggregate:
         - task: archive-results
-          image: docker-geode-build-image
+          image: alpine-tools-image
           config:
             inputs:
+              - name: concourse-metadata-resource
               - name: geode
               - name: geode-results
             platform: linux
