@@ -75,7 +75,7 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
     server2.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
 
     // Stop server2
-    server2.stopMember(false);
+    server2.stop(false);
 
     // Verify lowBucketRedundancyCount == 113 in server1
     server1.getVM().invoke(() -> waitForLowBucketRedundancyCount(113));
@@ -143,8 +143,8 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
     server4.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
 
     // Stop servers 1 and 2
-    server1.stopMember(false);
-    server2.stopMember(false);
+    server1.stop(false);
+    server2.stop(false);
 
     server3.getVM().invoke(() -> waitForMembers(1));
     server4.getVM().invoke(() -> waitForMembers(1));
