@@ -37,15 +37,15 @@ import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
 
-public class GeoRadiusExecutor extends GeoSortedSetExecutor {
+public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() < 6) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ArityDef.GEORADIUS));
+    if (commandElems.size() < 5) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          RedisConstants.ArityDef.GEORADIUSBYMEMBER));
       return;
     }
 
@@ -61,14 +61,14 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
     GeoRadiusParameters params;
     try {
       params = new GeoRadiusParameters(keyRegion, commandElems,
-          GeoRadiusParameters.CommandType.GEORADIUS);
+          GeoRadiusParameters.CommandType.GEORADIUSBYMEMBER);
     } catch (IllegalArgumentException e) {
       command.setResponse(
           Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
       return;
     } catch (RedisCommandParserException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          RedisConstants.ArityDef.GEORADIUS));
+          RedisConstants.ArityDef.GEORADIUSBYMEMBER));
       return;
     } catch (CoderException e) {
       command.setResponse(
@@ -103,7 +103,10 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
           Optional<String> hash =
               params.withHash ? Optional.of(GeoCoder.bitsToHash(hashBits)) : Optional.empty();
 
-          results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hash));
+          // Because of the way hashing works, sometimes you can get the same requested member back
+          // in the results
+          if (!name.equals(params.member))
+            results.add(new GeoRadiusResponseElement(name, coord, dist, params.withDist, hash));
         }
       } catch (Exception e) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), e.getMessage()));
@@ -123,5 +126,4 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
 
     command.setResponse(GeoCoder.geoRadiusResponse(context.getByteBufAllocator(), results));
   }
-
 }

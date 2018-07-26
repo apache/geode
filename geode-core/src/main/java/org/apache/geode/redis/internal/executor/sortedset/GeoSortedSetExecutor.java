@@ -14,30 +14,43 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.List;
+
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.executor.SortedSetQuery;
 
 public abstract class GeoSortedSetExecutor extends AbstractExecutor {
 
   @Override
-  protected Region<ByteArrayWrapper, StringWrapper> getOrCreateRegion(
+  protected Region<ByteArrayWrapper, ByteArrayWrapper> getOrCreateRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, StringWrapper> r = (Region<ByteArrayWrapper, StringWrapper>) context
-        .getRegionProvider().getOrCreateRegion(key, type, context);
+    Region<ByteArrayWrapper, ByteArrayWrapper> r =
+        (Region<ByteArrayWrapper, ByteArrayWrapper>) context
+            .getRegionProvider().getOrCreateRegion(key, type, context);
     return r;
   }
 
-  protected Region<ByteArrayWrapper, StringWrapper> getRegion(ExecutionHandlerContext context,
+  protected Region<ByteArrayWrapper, ByteArrayWrapper> getRegion(ExecutionHandlerContext context,
       ByteArrayWrapper key) {
     @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, StringWrapper> r =
-        (Region<ByteArrayWrapper, StringWrapper>) context.getRegionProvider().getRegion(key);
+    Region<ByteArrayWrapper, ByteArrayWrapper> r =
+        (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider().getRegion(key);
     return r;
   }
 
+  protected List<StructImpl> getGeoRadiusRange(ExecutionHandlerContext context,
+      ByteArrayWrapper key, String hash) throws Exception {
+    Query query = getQuery(key, SortedSetQuery.GEORADIUS, context);
+    Object[] params = {hash + "%"};
+    SelectResults<StructImpl> results = (SelectResults<StructImpl>) query.execute(params);
+    return results.asList();
+  }
 }

@@ -15,6 +15,9 @@
 
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -22,10 +25,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.StringWrapper;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GeoHashExecutor extends GeoSortedSetExecutor {
 
@@ -41,12 +40,12 @@ public class GeoHashExecutor extends GeoSortedSetExecutor {
     }
 
     List<String> hashes = new ArrayList<>();
-    Region<ByteArrayWrapper, StringWrapper> keyRegion = getRegion(context, key);
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
     for (int i = 2; i < commandElems.size(); i++) {
       byte[] member = commandElems.get(i);
 
-      StringWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
+      ByteArrayWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(member));
       if (hashWrapper != null) {
         hashes.add(GeoCoder.bitsToHash(hashWrapper.toString().toCharArray()));
       } else {

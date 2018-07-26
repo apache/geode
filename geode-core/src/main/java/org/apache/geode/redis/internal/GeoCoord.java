@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.redis.internal.org.apache.hadoop.fs;
+package org.apache.geode.redis.internal;
 
 public class GeoCoord {
   double longitude;

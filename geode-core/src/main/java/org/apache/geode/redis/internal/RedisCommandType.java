@@ -85,6 +85,7 @@ import org.apache.geode.redis.internal.executor.sortedset.GeoAddExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.GeoDistExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.GeoHashExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.GeoPosExecutor;
+import org.apache.geode.redis.internal.executor.sortedset.GeoRadiusByMemberExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.GeoRadiusExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZAddExecutor;
 import org.apache.geode.redis.internal.executor.sortedset.ZCardExecutor;
@@ -2682,6 +2683,25 @@ public enum RedisCommandType {
     public Executor getExecutor() {
       if (executor == null) {
         executor = new GeoRadiusExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_SORTEDSET;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  GEORADIUSBYMEMBER {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new GeoRadiusByMemberExecutor();
       }
       return executor;
     }

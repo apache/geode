@@ -14,26 +14,31 @@
  */
 package org.apache.geode.redis;
 
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.HashArea;
-import org.apache.geode.redis.internal.HashNeighbors;
-import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.geode.redis.internal.CoderException;
+import org.apache.geode.redis.internal.GeoCoder;
+import org.apache.geode.redis.internal.GeoCoord;
+import org.apache.geode.redis.internal.HashArea;
+import org.apache.geode.redis.internal.HashNeighbors;
 
 public class GeoCoderTest {
 
   @Test
   public void testGeoHash() throws CoderException {
-    String hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(), Double.toString(38.115556).getBytes(), 60);
+    String hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(),
+        Double.toString(38.115556).getBytes(), 60);
     assertEquals("sqc8b49rnyte", hash);
-    hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(), Double.toString(38.115556).getBytes(), 52);
+    hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(),
+        Double.toString(38.115556).getBytes(), 52);
     assertEquals("sqc8b49rny3", hash);
-    hash = GeoCoder.geoHash(Double.toString(15.087269).getBytes(), Double.toString(37.502669).getBytes(), 52);
+    hash = GeoCoder.geoHash(Double.toString(15.087269).getBytes(),
+        Double.toString(37.502669).getBytes(), 52);
     assertEquals("sqdtr74hyu0", hash);
-    hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(), Double.toString(38.115556).getBytes(), 6);
+    hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(),
+        Double.toString(38.115556).getBytes(), 6);
     assertEquals("s1", hash);
   }
 
@@ -129,14 +134,14 @@ public class GeoCoderTest {
     assertEquals(45, t.maxlat, 0.0);
     assertEquals(-90, t.maxlon, 0.0);
 
-    //34.40917, -119.70703, 34.45312, -119.66308
+    // 34.40917, -119.70703, 34.45312, -119.66308
     t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9q4gu"));
     assertEquals(34.40917, t.minlat, 0.00001);
     assertEquals(-119.70703, t.minlon, 0.00001);
     assertEquals(34.45312, t.maxlat, 0.00001);
     assertEquals(-119.66308, t.maxlon, 0.00001);
 
-    //34.41926, -119.69849, 34.41930, -119.69844
+    // 34.41926, -119.69849, 34.41930, -119.69844
     t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9q4gu1y4z"));
     assertEquals(34.41926, t.minlat, 0.00001);
     assertEquals(-119.69849, t.minlon, 0.00001);
