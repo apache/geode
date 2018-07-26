@@ -98,11 +98,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     vm3.invoke(() -> populateRegion(regionName, entries));
 
     vm2.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
 
     // update entries
     vm3.invoke(() -> populateRegion(regionName, entries));
-    clusterStartupRule.stopMember(1, false);
+    clusterStartupRule.stop(1, false);
     server1 = this.clusterStartupRule.startServerVM(1, props, this.locator.getPort());
     server2 = this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
 
@@ -121,14 +121,14 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
     vm3.invoke(() -> populateRegion(regionName, entries));
 
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
     // update entries
     IntStream.range(0, numEntries).forEach(i -> {
       entries.put("key-" + i, new Portfolio(i));
     });
     vm3.invoke(() -> populateRegion(regionName, entries));
-    clusterStartupRule.stopMember(1, false);
-    clusterStartupRule.stopMember(3, false);
+    clusterStartupRule.stop(1, false);
+    clusterStartupRule.stop(3, false);
 
     Thread t3 =
         new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
@@ -167,14 +167,14 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
     vm3.invoke(() -> populateRegion(regionName, entries));
 
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
     // update entries
     IntStream.range(0, numEntries).forEach(i -> {
       entries.put("key-" + i, new Portfolio(i));
     });
     vm3.invoke(() -> populateRegion(regionName, entries));
-    clusterStartupRule.stopMember(1, false);
-    clusterStartupRule.stopMember(3, false);
+    clusterStartupRule.stop(1, false);
+    clusterStartupRule.stop(3, false);
 
     Thread t3 =
         new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
@@ -213,15 +213,15 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
     vm3.invoke(() -> populateRegion(regionName, entries));
 
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
 
     // update entries
     IntStream.range(0, numEntries).forEach(i -> {
       entries.put("key-" + i, new Portfolio(i));
     });
     vm3.invoke(() -> populateRegion(regionName, entries));
-    clusterStartupRule.stopMember(1, false);
-    clusterStartupRule.stopMember(3, false);
+    clusterStartupRule.stop(1, false);
+    clusterStartupRule.stop(3, false);
 
     Thread t3 =
         new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
@@ -259,11 +259,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
     vm3.invoke(() -> populateRegion(regionName, entries));
 
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
 
     vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
-    clusterStartupRule.stopMember(1, false);
-    clusterStartupRule.stopMember(3, false);
+    clusterStartupRule.stop(1, false);
+    clusterStartupRule.stop(3, false);
 
     Thread t3 =
         new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
@@ -301,11 +301,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
     vm3.invoke(() -> populateRegion(regionName, entries));
 
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
 
     vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
-    clusterStartupRule.stopMember(1, false);
-    clusterStartupRule.stopMember(3, false);
+    clusterStartupRule.stop(1, false);
+    clusterStartupRule.stop(3, false);
 
     Thread t3 =
         new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
@@ -339,10 +339,10 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
     vm3.invoke(() -> populateRegion(regionName, entries));
 
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
     vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
-    clusterStartupRule.stopMember(1, false);
-    clusterStartupRule.stopMember(3, false);
+    clusterStartupRule.stop(1, false);
+    clusterStartupRule.stop(3, false);
 
     Thread t3 =
         new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
@@ -379,11 +379,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
     vm3.invoke(() -> populateRegion(regionName, entries));
 
-    clusterStartupRule.stopMember(2, false);
+    clusterStartupRule.stop(2, false);
 
     vm3.invoke(() -> destroyFromRegion(regionName, entries.keySet()));
-    clusterStartupRule.stopMember(1, false);
-    clusterStartupRule.stopMember(3, false);
+    clusterStartupRule.stop(1, false);
+    clusterStartupRule.stop(3, false);
 
     Thread t3 =
         new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
