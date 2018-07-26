@@ -86,9 +86,19 @@ TEAM=${CONCOURSE_TEAM}
 #  TEAM="main"
 #fi
 
+if [[ "${GEODE_FORK}" == "apache" ]]; then
+  PIPELINE_PREFIX=""
+  DOCKER_IMAGE_PREFIX=""
+else
+  PIPELINE_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+  DOCKER_IMAGE_PREFIX=${PIPELINE_PREFIX}
+fi
+
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
 fly -t ${TARGET} set-pipeline \
   --non-interactive \
   --pipeline pr-${SANITIZED_GEODE_BRANCH} \
   --config ${TMP_DIR}/final.yml \
+  --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
   --var concourse-team=${TEAM}
+
