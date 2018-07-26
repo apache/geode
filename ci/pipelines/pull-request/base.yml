@@ -53,7 +53,7 @@ resources:
   type: pull-request
   source:
     access_token: ((!github-pr-access-token))
-    repo: (( concat metadata.geode-fork "/geode" ))
+    repo: apache/geode
     base: develop
     ignore_paths:
     - geode-docs/*
