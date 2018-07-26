@@ -20,7 +20,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.GeoCoder;
-import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.test.junit.categories.RedisTest;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -75,7 +74,7 @@ public class GeoJUnitTest {
     Long l = jedis.geoadd("Sicily", memberCoordinateMap);
     assertTrue(l == 2L);
 
-    Region<ByteArrayWrapper, StringWrapper> sicilyRegion = cache.getRegion("Sicily");
+    Region<ByteArrayWrapper, ByteArrayWrapper> sicilyRegion = cache.getRegion("Sicily");
     assertNotNull("Expected region to be not NULL", sicilyRegion);
 
     // Check GeoHash

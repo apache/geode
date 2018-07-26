@@ -21,7 +21,6 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisCommandParserException;
-import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 import java.util.List;
@@ -46,7 +45,7 @@ public class GeoRadiusParameters {
         GEORADIUS, GEORADIUSBYMEMBER
     }
 
-    public GeoRadiusParameters(Region<ByteArrayWrapper, StringWrapper> keyRegion,
+    public GeoRadiusParameters(Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion,
        List<byte[]> commandElems, CommandType cmdType) throws IllegalArgumentException,
        RedisCommandParserException, CoderException {
         byte[] radArray;
@@ -63,7 +62,7 @@ public class GeoRadiusParameters {
             radArray = commandElems.get(3);
             unit = new String(commandElems.get(4));
             member = new String(memberArray);
-            StringWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(memberArray));
+            ByteArrayWrapper hashWrapper = keyRegion.get(new ByteArrayWrapper(memberArray));
             centerHashPrecise = hashWrapper.toString().toCharArray();
             GeoCoord pos = GeoCoder.geoPos(centerHashPrecise);
             lon = pos.getLongitude();

@@ -23,7 +23,6 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.StringWrapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +42,10 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, StringWrapper> keyRegion =
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
         getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
 
-    Map<ByteArrayWrapper, StringWrapper> tempMap = new HashMap<>();
+    Map<ByteArrayWrapper, ByteArrayWrapper> tempMap = new HashMap<>();
     for (int i = 2; i < commandElems.size(); i += 3) {
       byte[] longitude = commandElems.get(i);
       byte[] latitude = commandElems.get(i + 1);
@@ -62,7 +61,7 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
         return;
       }
 
-      tempMap.put(new ByteArrayWrapper(member), new StringWrapper(score));
+      tempMap.put(new ByteArrayWrapper(member), new ByteArrayWrapper(score.getBytes()));
     }
 
     for (ByteArrayWrapper m : tempMap.keySet()) {

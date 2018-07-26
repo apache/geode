@@ -22,7 +22,6 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.RedisConstants;
-import org.apache.geode.redis.internal.StringWrapper;
 
 import java.util.List;
 
@@ -39,9 +38,9 @@ public class GeoDistExecutor extends GeoSortedSetExecutor {
       return;
     }
 
-    Region<ByteArrayWrapper, StringWrapper> keyRegion = getRegion(context, key);
-    StringWrapper hw1 = keyRegion.get(new ByteArrayWrapper(commandElems.get(2)));
-    StringWrapper hw2 = keyRegion.get(new ByteArrayWrapper(commandElems.get(3)));
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    ByteArrayWrapper hw1 = keyRegion.get(new ByteArrayWrapper(commandElems.get(2)));
+    ByteArrayWrapper hw2 = keyRegion.get(new ByteArrayWrapper(commandElems.get(3)));
     if (hw1 == null || hw2 == null) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;

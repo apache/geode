@@ -28,7 +28,6 @@ import org.apache.geode.redis.internal.HashNeighbors;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.StringWrapper;
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GeoCoord;
 
 import java.util.ArrayList;
@@ -52,7 +51,7 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SORTEDSET, context);
-    Region<ByteArrayWrapper, StringWrapper> keyRegion = getRegion(context, key);
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
     if (keyRegion == null) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
