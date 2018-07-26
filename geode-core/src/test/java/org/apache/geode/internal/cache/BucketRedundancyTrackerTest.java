@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class BucketRedundancyTrackerTest {
   private static final int TARGET_COPIES = 2;
 
@@ -57,7 +56,7 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
-    verify(regionRedundancyTracker, times(2)).decrementLowRedundancyBucketCount();
+    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
     assertEquals(TARGET_COPIES - 1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
@@ -66,7 +65,7 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES);
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
     bucketRedundancyTracker.closeBucket();
-    verify(regionRedundancyTracker, times(2)).decrementLowRedundancyBucketCount();
+    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
     assertEquals(0, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
@@ -76,7 +75,7 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker.updateStatistics(TARGET_COPIES - 1);
     bucketRedundancyTracker.updateStatistics(0);
     bucketRedundancyTracker.closeBucket();
-    verify(regionRedundancyTracker, times(2)).decrementLowRedundancyBucketCount();
+    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
     assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
   }
 
@@ -85,8 +84,6 @@ public class BucketRedundancyTrackerTest {
     bucketRedundancyTracker =
         new BucketRedundancyTracker(2, regionRedundancyTracker);
     bucketRedundancyTracker.updateStatistics(3);
-    // Verify decrementLowRedundancyBucketCount is invoked. Note: It won't decrement below 0.
-    verify(regionRedundancyTracker, times(1)).decrementLowRedundancyBucketCount();
     bucketRedundancyTracker.updateStatistics(2);
     // Verify incrementLowRedundancyBucketCount is invoked.
     verify(regionRedundancyTracker, times(1)).incrementLowRedundancyBucketCount();

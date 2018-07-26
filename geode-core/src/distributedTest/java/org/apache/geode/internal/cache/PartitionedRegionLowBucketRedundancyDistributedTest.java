@@ -58,6 +58,9 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
     // Start server1 and create region
     MemberVM server1 = startServerAndCreateRegion(1, locatorPort, PARTITION, 1);
 
+    // Verify lowBucketRedundancyCount == 0 in server1
+    server1.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
+
     // Do puts in server1
     server1.getVM().invoke(() -> doPuts(500));
 
@@ -86,6 +89,9 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
 
     // Start server1 and create region
     MemberVM server1 = startServerAndCreateRegion(1, locatorPort, PARTITION, 2);
+
+    // Verify lowBucketRedundancyCount == 0 in server1
+    server1.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
 
     // Do puts in server1
     server1.getVM().invoke(() -> doPuts(500));
@@ -120,6 +126,12 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
     MemberVM server2 = startServerAndCreateRegion(2, locatorPort, PARTITION_PERSISTENT, 1);
     MemberVM server3 = startServerAndCreateRegion(3, locatorPort, PARTITION_PERSISTENT, 1);
     MemberVM server4 = startServerAndCreateRegion(4, locatorPort, PARTITION_PERSISTENT, 1);
+
+    // Verify lowBucketRedundancyCount == 0 in all servers
+    server1.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
+    server2.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
+    server3.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
+    server4.getVM().invoke(() -> waitForLowBucketRedundancyCount(0));
 
     // Do puts in server1
     server1.getVM().invoke(() -> doPuts(500));
