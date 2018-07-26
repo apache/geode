@@ -166,7 +166,7 @@ jobs:
   public: true
   plan:
     - get: geode
-      passed: [AcceptanceTest, DistributedTest, IntegrationTest]
+      passed: [AcceptanceTest, DistributedTest, IntegrationTest, UpgradeTest]
       trigger: true
     - aggregate:
       - get: geode-ci
@@ -198,7 +198,7 @@ jobs:
   public: true
   plan:
     - get: geode
-      passed: [AcceptanceTest, DistributedTest, IntegrationTest]
+      passed: [AcceptanceTest, DistributedTest, IntegrationTest, UpgradeTest]
       trigger: true
     - get: geode-ci
     - get: docker-geode-build-image
