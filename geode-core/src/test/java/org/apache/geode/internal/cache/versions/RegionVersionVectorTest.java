@@ -30,6 +30,7 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +39,6 @@ import java.util.concurrent.Future;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.DataSerializer;
@@ -48,11 +48,9 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category(UnitTest.class)
 public class RegionVersionVectorTest {
 
   @Rule
@@ -67,7 +65,7 @@ public class RegionVersionVectorTest {
    */
   @Test
   public void testSynchronizationVectorContainsAllVersionsForOwnerAndNonTarget() {
-    final String local = NetworkUtils.getIPLiteral();
+    final String local = getIPLiteral();
     InternalDistributedMember server1 = new InternalDistributedMember(local, 101);
     InternalDistributedMember server2 = new InternalDistributedMember(local, 102);
     InternalDistributedMember server3 = new InternalDistributedMember(local, 103);
@@ -121,7 +119,7 @@ public class RegionVersionVectorTest {
   public void testRegionVersionVectors() throws Exception {
     // this is just a quick set of unit tests for basic RVV functionality
 
-    final String local = NetworkUtils.getIPLiteral();
+    final String local = getIPLiteral();
     InternalDistributedMember server1 = new InternalDistributedMember(local, 101);
     InternalDistributedMember server2 = new InternalDistributedMember(local, 102);
     InternalDistributedMember server3 = new InternalDistributedMember(local, 103);
@@ -593,7 +591,7 @@ public class RegionVersionVectorTest {
   public void testRecordVersionDuringRegionInit() {
     LocalRegion mockRegion = mock(LocalRegion.class);
     when(mockRegion.isInitialized()).thenReturn(false);
-    final String local = NetworkUtils.getIPLiteral();
+    final String local = getIPLiteral();
     InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
     VMVersionTag tag = new VMVersionTag();
     tag.setRegionVersion(1L);
@@ -607,7 +605,7 @@ public class RegionVersionVectorTest {
   public void testRecordVersionAfterRegionInitThrowsException() {
     LocalRegion mockRegion = mock(LocalRegion.class);
     when(mockRegion.isInitialized()).thenReturn(true);
-    final String local = NetworkUtils.getIPLiteral();
+    final String local = getIPLiteral();
     InternalDistributedMember ownerId = new InternalDistributedMember(local, 101);
     VMVersionTag tag = new VMVersionTag();
     tag.setRegionVersion(1L);
@@ -739,6 +737,14 @@ public class RegionVersionVectorTest {
     @Override
     public int getDSFID() {
       return 0;
+    }
+  }
+
+  private static String getIPLiteral() {
+    try {
+      return SocketCreator.getLocalHost().getHostAddress();
+    } catch (UnknownHostException e) {
+      throw new Error("Problem determining host IP address", e);
     }
   }
 

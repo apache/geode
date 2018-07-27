@@ -19,15 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.RetryRule;
 
 /**
  * Example usage of {@link RetryRule} with global scope.
  */
-@Category(UnitTest.class)
 public class RetryRuleExampleTest {
 
   private static int count = 0;

@@ -24,14 +24,11 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.BackupStatus;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class BackupStatusImplTest {
 
   private Map<DistributedMember, Set<PersistentID>> backedUpDiskStores;

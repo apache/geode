@@ -27,15 +27,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.Timeout;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SerializableTimeout}.
  */
-@Category(UnitTest.class)
 public class SerializableTimeoutTest {
 
   @Test

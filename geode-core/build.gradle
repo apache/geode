@@ -26,7 +26,14 @@ sourceSets {
   }
 }
 
-
+idea {
+  module {
+    testSourceDirs += project.tasks.generateIntegrationTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generateDistributedTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generatePerformanceTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generateUpgradeTestGrammarSource.outputs.files
+  }
+}
 
 configurations {
   //declaring new configuration that will be used to associate with artifacts
@@ -161,6 +168,10 @@ dependencies {
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
+
+  distributedTestCompile files(sourceSets.integrationTest.output)
+  upgradeTestCompile files(sourceSets.distributedTest.output)
+  upgradeTestCompile files(sourceSets.integrationTest.output)
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -177,6 +188,14 @@ sourceSets {
 jmh {
   include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
   duplicateClassesStrategy = 'warn'
+}
+
+dependencies {
+  // Integration Tests
+  integrationTestCompile sourceSets.test.output
+
+  // Distributed Tests
+  distributedTestCompile sourceSets.integrationTest.output
 }
 
 // Creates the version properties file and writes it to the classes dir
@@ -248,3 +267,7 @@ dependencies {
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
+distributedTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}

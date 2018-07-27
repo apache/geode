@@ -57,6 +57,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -113,6 +114,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   private Exception exception;
 
+  private final ThreadsMonitoring threadMonitoring;
+
   /*
    * The batchIdToEventsMap contains a mapping between batch id and an array of events. The first
    * element of the array is the list of events peeked from the queue. The second element of the
@@ -144,10 +147,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
   private int batchSize;
 
   public AbstractGatewaySenderEventProcessor(LoggingThreadGroup createThreadGroup, String string,
-      GatewaySender sender) {
+      GatewaySender sender, ThreadsMonitoring tMonitoring) {
     super(createThreadGroup, string);
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
+    this.threadMonitoring = tMonitoring;
   }
 
   protected abstract void initializeMessageQueue(String id);
@@ -499,189 +503,195 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
             continue; // nothing to do!
           }
 
-          // this list is access by ack reader thread so create new every time. #50220
-          filteredList = new ArrayList<GatewaySenderEventImpl>();
+          beforeExecute();
+          try {
+            // this list is access by ack reader thread so create new every time. #50220
+            filteredList = new ArrayList<GatewaySenderEventImpl>();
 
-          filteredList.addAll(events);
+            filteredList.addAll(events);
 
-          // If the exception has been set and its cause is an IllegalStateExcetption,
-          // remove all events whose serialized value is no longer available
-          if (this.exception != null && this.exception.getCause() != null
-              && this.exception.getCause() instanceof IllegalStateException) {
-            for (Iterator<GatewaySenderEventImpl> i = filteredList.iterator(); i.hasNext();) {
-              GatewaySenderEventImpl event = i.next();
-              if (event.isSerializedValueNotAvailable()) {
-                i.remove();
+            // If the exception has been set and its cause is an IllegalStateExcetption,
+            // remove all events whose serialized value is no longer available
+            if (this.exception != null && this.exception.getCause() != null
+                && this.exception.getCause() instanceof IllegalStateException) {
+              for (Iterator<GatewaySenderEventImpl> i = filteredList.iterator(); i.hasNext();) {
+                GatewaySenderEventImpl event = i.next();
+                if (event.isSerializedValueNotAvailable()) {
+                  i.remove();
+                }
               }
+              this.exception = null;
             }
-            this.exception = null;
-          }
 
-          // Filter the events
-          for (GatewayEventFilter filter : sender.getGatewayEventFilters()) {
-            Iterator<GatewaySenderEventImpl> itr = filteredList.iterator();
-            while (itr.hasNext()) {
-              GatewayQueueEvent event = itr.next();
+            // Filter the events
+            for (GatewayEventFilter filter : sender.getGatewayEventFilters()) {
+              Iterator<GatewaySenderEventImpl> itr = filteredList.iterator();
+              while (itr.hasNext()) {
+                GatewayQueueEvent event = itr.next();
 
-              // This seems right place to prevent transmission of UPDATE_VERSION events if
-              // receiver's
-              // version is < 7.0.1, especially to prevent another loop over events.
-              if (!sendUpdateVersionEvents
-                  && event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
-                if (isTraceEnabled) {
-                  logger.trace(
-                      "Update Event Version event: {} removed from Gateway Sender queue: {}", event,
-                      sender);
+                // This seems right place to prevent transmission of UPDATE_VERSION events if
+                // receiver's
+                // version is < 7.0.1, especially to prevent another loop over events.
+                if (!sendUpdateVersionEvents
+                    && event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
+                  if (isTraceEnabled) {
+                    logger.trace(
+                        "Update Event Version event: {} removed from Gateway Sender queue: {}",
+                        event, sender);
+                  }
+
+                  itr.remove();
+                  statistics.incEventsNotQueued();
+                  continue;
                 }
 
-                itr.remove();
-                statistics.incEventsNotQueued();
-                continue;
-              }
-
-              boolean transmit = filter.beforeTransmit(event);
-              if (!transmit) {
-                if (isDebugEnabled) {
-                  logger.debug("{}: Did not transmit event due to filtering: {}", sender.getId(),
-                      event);
-                }
-                itr.remove();
-                statistics.incEventsFiltered();
-              }
-            }
-          }
-          /*
-           * if (filteredList.isEmpty()) { eventQueueRemove(events.size()); continue; }
-           */
-
-          // if the bucket becomes secondary after the event is picked from it,
-          // check again before dispatching the event. Do this only for
-          // AsyncEventQueue since possibleDuplicate flag is not used in WAN.
-          if (this.getSender().isParallel()
-              && (this.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
-            Iterator<GatewaySenderEventImpl> itr = filteredList.iterator();
-            while (itr.hasNext()) {
-              GatewaySenderEventImpl event = (GatewaySenderEventImpl) itr.next();
-              PartitionedRegion qpr = null;
-              if (this.getQueue() instanceof ConcurrentParallelGatewaySenderQueue) {
-                qpr = ((ConcurrentParallelGatewaySenderQueue) this.getQueue())
-                    .getRegion(event.getRegionPath());
-              } else {
-                qpr =
-                    ((ParallelGatewaySenderQueue) this.getQueue()).getRegion(event.getRegionPath());
-              }
-              int bucketId = event.getBucketId();
-              // if the bucket from which the event has been picked is no longer
-              // primary, then set possibleDuplicate to true on the event
-              if (qpr != null) {
-                BucketRegion bucket = qpr.getDataStore().getLocalBucketById(bucketId);
-                if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
-                  event.setPossibleDuplicate(true);
+                boolean transmit = filter.beforeTransmit(event);
+                if (!transmit) {
                   if (isDebugEnabled) {
-                    logger.debug(
-                        "Bucket id: {} is no longer primary on this node. The event: {} will be dispatched from this node with possibleDuplicate set to true.",
-                        bucketId, event);
+                    logger.debug("{}: Did not transmit event due to filtering: {}", sender.getId(),
+                        event);
+                  }
+                  itr.remove();
+                  statistics.incEventsFiltered();
+                }
+              }
+            }
+            /*
+             * if (filteredList.isEmpty()) { eventQueueRemove(events.size()); continue; }
+             */
+
+            // if the bucket becomes secondary after the event is picked from it,
+            // check again before dispatching the event. Do this only for
+            // AsyncEventQueue since possibleDuplicate flag is not used in WAN.
+            if (this.getSender().isParallel()
+                && (this.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+              Iterator<GatewaySenderEventImpl> itr = filteredList.iterator();
+              while (itr.hasNext()) {
+                GatewaySenderEventImpl event = (GatewaySenderEventImpl) itr.next();
+                PartitionedRegion qpr = null;
+                if (this.getQueue() instanceof ConcurrentParallelGatewaySenderQueue) {
+                  qpr = ((ConcurrentParallelGatewaySenderQueue) this.getQueue())
+                      .getRegion(event.getRegionPath());
+                } else {
+                  qpr = ((ParallelGatewaySenderQueue) this.getQueue())
+                      .getRegion(event.getRegionPath());
+                }
+                int bucketId = event.getBucketId();
+                // if the bucket from which the event has been picked is no longer
+                // primary, then set possibleDuplicate to true on the event
+                if (qpr != null) {
+                  BucketRegion bucket = qpr.getDataStore().getLocalBucketById(bucketId);
+                  if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
+                    event.setPossibleDuplicate(true);
+                    if (isDebugEnabled) {
+                      logger.debug(
+                          "Bucket id: {} is no longer primary on this node. The event: {} will be dispatched from this node with possibleDuplicate set to true.",
+                          bucketId, event);
+                    }
                   }
                 }
               }
             }
-          }
 
-          eventsToBeDispatched.clear();
-          if (!(this.dispatcher instanceof GatewaySenderEventCallbackDispatcher)) {
-            // store the batch before dispatching so it can be retrieved by the ack thread.
-            List<GatewaySenderEventImpl>[] eventsArr = (List<GatewaySenderEventImpl>[]) new List[2];
-            eventsArr[0] = events;
-            eventsArr[1] = filteredList;
-            this.batchIdToEventsMap.put(getBatchId(), eventsArr);
-            // find out PDX event and append it in front of the list
-            pdxEventsToBeDispatched = addPDXEvent();
-            eventsToBeDispatched.addAll(pdxEventsToBeDispatched);
-            if (!pdxEventsToBeDispatched.isEmpty()) {
-              this.batchIdToPDXEventsMap.put(getBatchId(), pdxEventsToBeDispatched);
+            eventsToBeDispatched.clear();
+            if (!(this.dispatcher instanceof GatewaySenderEventCallbackDispatcher)) {
+              // store the batch before dispatching so it can be retrieved by the ack thread.
+              List<GatewaySenderEventImpl>[] eventsArr =
+                  (List<GatewaySenderEventImpl>[]) new List[2];
+              eventsArr[0] = events;
+              eventsArr[1] = filteredList;
+              this.batchIdToEventsMap.put(getBatchId(), eventsArr);
+              // find out PDX event and append it in front of the list
+              pdxEventsToBeDispatched = addPDXEvent();
+              eventsToBeDispatched.addAll(pdxEventsToBeDispatched);
+              if (!pdxEventsToBeDispatched.isEmpty()) {
+                this.batchIdToPDXEventsMap.put(getBatchId(), pdxEventsToBeDispatched);
+              }
             }
-          }
 
-          eventsToBeDispatched.addAll(filteredList);
+            eventsToBeDispatched.addAll(filteredList);
 
-          // Conflate the batch. Event conflation only occurs on the queue.
-          // Once an event has been peeked into a batch, it won't be
-          // conflated. So if events go through the queue quickly (as in the
-          // no-ack case), then multiple events for the same key may end up in
-          // the batch.
-          List conflatedEventsToBeDispatched = conflate(eventsToBeDispatched);
+            // Conflate the batch. Event conflation only occurs on the queue.
+            // Once an event has been peeked into a batch, it won't be
+            // conflated. So if events go through the queue quickly (as in the
+            // no-ack case), then multiple events for the same key may end up in
+            // the batch.
+            List conflatedEventsToBeDispatched = conflate(eventsToBeDispatched);
 
-          if (isDebugEnabled) {
-            logBatchFine("During normal processing, dispatching the following ",
-                conflatedEventsToBeDispatched);
-          }
-
-          boolean success = this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched,
-              sender.isRemoveFromQueueOnException(), false);
-          if (success) {
             if (isDebugEnabled) {
-              logger.debug(
-                  "During normal processing, successfully dispatched {} events (batch #{})",
-                  conflatedEventsToBeDispatched.size(), getBatchId());
+              logBatchFine("During normal processing, dispatching the following ",
+                  conflatedEventsToBeDispatched);
             }
-            removeEventFromFailureMap(getBatchId());
-          } else {
-            if (!skipFailureLogging(getBatchId())) {
-              logger.warn(
-                  LocalizedMessage.create(LocalizedStrings.GatewayImpl_EVENT_QUEUE_DISPATCH_FAILED,
-                      new Object[] {filteredList.size(), getBatchId()}));
-            }
-          }
-          // check again, don't do post-processing if we're stopped.
-          if (stopped()) {
-            break;
-          }
 
-          // If the batch is successfully processed, remove it from the queue.
-          if (success) {
-            if (this.dispatcher instanceof GatewaySenderEventCallbackDispatcher) {
-              handleSuccessfulBatchDispatch(conflatedEventsToBeDispatched, events);
+            boolean success = this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched,
+                sender.isRemoveFromQueueOnException(), false);
+            if (success) {
+              if (isDebugEnabled) {
+                logger.debug(
+                    "During normal processing, successfully dispatched {} events (batch #{})",
+                    conflatedEventsToBeDispatched.size(), getBatchId());
+              }
+              removeEventFromFailureMap(getBatchId());
             } else {
-              incrementBatchId();
+              if (!skipFailureLogging(getBatchId())) {
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.GatewayImpl_EVENT_QUEUE_DISPATCH_FAILED,
+                    new Object[] {filteredList.size(), getBatchId()}));
+              }
+            }
+            // check again, don't do post-processing if we're stopped.
+            if (stopped()) {
+              break;
             }
 
-            // pdx related gateway sender events needs to be updated for
-            // isDispatched
-            for (GatewaySenderEventImpl pdxGatewaySenderEvent : pdxEventsToBeDispatched) {
-              pdxGatewaySenderEvent.isDispatched = true;
-            }
-
-            increaseNumEventsDispatched(conflatedEventsToBeDispatched.size());
-          } // successful batch
-          else { // The batch was unsuccessful.
-            if (this.dispatcher instanceof GatewaySenderEventCallbackDispatcher) {
-              handleUnSuccessfulBatchDispatch(events);
-              this.resetLastPeekedEvents = true;
-            } else {
-              handleUnSuccessfulBatchDispatch(events);
-              if (!resetLastPeekedEvents) {
-                while (!this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched,
-                    sender.isRemoveFromQueueOnException(), true)) {
-                  if (isDebugEnabled) {
-                    logger.debug(
-                        "During normal processing, unsuccessfully dispatched {} events (batch #{})",
-                        conflatedEventsToBeDispatched.size(), getBatchId());
-                  }
-                  if (stopped() || resetLastPeekedEvents) {
-                    break;
-                  }
-                  try {
-                    Thread.sleep(100);
-                  } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                  }
-                }
+            // If the batch is successfully processed, remove it from the queue.
+            if (success) {
+              if (this.dispatcher instanceof GatewaySenderEventCallbackDispatcher) {
+                handleSuccessfulBatchDispatch(conflatedEventsToBeDispatched, events);
+              } else {
                 incrementBatchId();
               }
+
+              // pdx related gateway sender events needs to be updated for
+              // isDispatched
+              for (GatewaySenderEventImpl pdxGatewaySenderEvent : pdxEventsToBeDispatched) {
+                pdxGatewaySenderEvent.isDispatched = true;
+              }
+
+              increaseNumEventsDispatched(conflatedEventsToBeDispatched.size());
+            } // successful batch
+            else { // The batch was unsuccessful.
+              if (this.dispatcher instanceof GatewaySenderEventCallbackDispatcher) {
+                handleUnSuccessfulBatchDispatch(events);
+                this.resetLastPeekedEvents = true;
+              } else {
+                handleUnSuccessfulBatchDispatch(events);
+                if (!resetLastPeekedEvents) {
+                  while (!this.dispatcher.dispatchBatch(conflatedEventsToBeDispatched,
+                      sender.isRemoveFromQueueOnException(), true)) {
+                    if (isDebugEnabled) {
+                      logger.debug(
+                          "During normal processing, unsuccessfully dispatched {} events (batch #{})",
+                          conflatedEventsToBeDispatched.size(), getBatchId());
+                    }
+                    if (stopped() || resetLastPeekedEvents) {
+                      break;
+                    }
+                    try {
+                      Thread.sleep(100);
+                    } catch (InterruptedException ie) {
+                      Thread.currentThread().interrupt();
+                    }
+                  }
+                  incrementBatchId();
+                }
+              }
+            } // unsuccessful batch
+            if (logger.isDebugEnabled()) {
+              logger.debug("Finished processing events (batch #{})", (getBatchId() - 1));
             }
-          } // unsuccessful batch
-          if (logger.isDebugEnabled()) {
-            logger.debug("Finished processing events (batch #{})", (getBatchId() - 1));
+          } finally {
+            afterExecute();
           }
         } // for
       } catch (RegionDestroyedException e) {
@@ -1302,6 +1312,18 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {
     ((ParallelGatewaySenderQueue) this.queue).addShadowPartitionedRegionForUserRR(userRegion);
+  }
+
+  protected void beforeExecute() {
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.AGSExecutor);
+    }
+  }
+
+  protected void afterExecute() {
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
+    }
   }
 
   protected abstract void enqueueEvent(GatewayQueueEvent event);

@@ -2097,4 +2097,38 @@ public interface ConfigurationProperties {
    *
    */
   String SERIALIZABLE_OBJECT_FILTER = "serializable-object-filter";
+  /**
+   * The static String definition of the <i>"thread-monitor-enabled"</i> property <a
+   * name="thread-monitor-enabled"/a>
+   * <p>
+   * <U>Description</U>: Defines whether thread monitoring is to be enabled.
+   * <p>
+   * <U>Default</U>: "true"
+   * <p>
+   * <U>Allowed values</U>: false/true
+   * <p>
+   */
+  String THREAD_MONITOR_ENABLED = "thread-monitor-enabled";
+  /**
+   * The static String definition of the <i>"thread-monitor-interval-ms"</i> property <a
+   * name="thread-monitor-interval-ms"/a>
+   * <p>
+   * <U>Description</U>: Defines the time interval (in milliseconds) with which thread monitoring is
+   * scheduled to run.
+   * <p>
+   * <U>Default</U>: "60000"
+   * <p>
+   */
+  String THREAD_MONITOR_INTERVAL = "thread-monitor-interval-ms";
+  /**
+   * The static String definition of the <i>"thread-monitor-time-limit-ms"</i> property <a
+   * name="thread-monitor-time-limit-ms"/a>
+   * <p>
+   * <U>Description</U>: Defines the time period (in milliseconds) after which the monitored thread
+   * is considered to be stuck.
+   * <p>
+   * <U>Default</U>: "30000"
+   * <p>
+   */
+  String THREAD_MONITOR_TIME_LIMIT = "thread-monitor-time-limit-ms";
 }

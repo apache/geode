@@ -21,6 +21,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -36,6 +37,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * @since GemFire 7.0
@@ -72,7 +74,8 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        * "ParallelGatewaySenderEventProcessor" and "ParallelGatewaySenderQueue" as a utility classes
        * of Concurrent version of processor and queue.
        */
-      eventProcessor = new RemoteConcurrentParallelGatewaySenderEventProcessor(this);
+      eventProcessor =
+          new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
       eventProcessor.start();
       waitForRunningStatus();
 
@@ -195,5 +198,14 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
           newThreadId);
     }
     clonedEvent.setEventId(newEventId);
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.cache.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

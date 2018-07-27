@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The SocketUtilsJUnitTest class is a test suite of test cases testing the contract and
@@ -46,7 +45,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class SocketUtilsJUnitTest {
 
   private Mockery mockContext;

@@ -7714,12 +7714,28 @@ public class LocalizedStrings {
       new StringId(6667,
           "Lucene index {0} cannot be created because its parameters are incompatible with another Lucene index");
 
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_INTERVAL = new StringId(
+      6668,
+      "Defines the time interval (in milliseconds) with which thread monitoring is scheduled to run.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_ENABLED =
+      new StringId(6669, "Defines whether thread monitoring is to be enabled.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_TIME_LIMIT = new StringId(
+      6670,
+      "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
+  public static final StringId THREAD_MONITOR_NAME = new StringId(6671, "ThreadsMonitor");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_ENABLED =
+      new StringId(6672,
+          "Defines whether thread monitoring is expected to automatically kill stuck thread.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_LIMIT = new StringId(
+      6673,
+      "Defines the number of thread monitoring attempts after which the stuck thread will be automatically killed (only applicable when <thread-monitor-auto-enabled> is set to Y).");
+
   public static final StringId cq_CACHE_CLIENT_PROXY_IS_NULL =
-      new StringId(6668,
+      new StringId(6674,
           "No Cache Client Proxy found while executing CQ.");
 
   public static final StringId LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED =
-      new StringId(6669, "Lucene index {0} on region {1} was destroyed while being created");
+      new StringId(6675, "Lucene index {0} on region {1} was destroyed while being created");
   /** Testing strings, messageId 90000-99999 **/
 
   /**

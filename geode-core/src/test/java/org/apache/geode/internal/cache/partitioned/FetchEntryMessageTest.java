@@ -22,13 +22,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FetchEntryMessageTest {
 
   @Test

@@ -25,34 +25,53 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ServerLauncher}.
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class ServerLauncherTest {
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     DistributedSystem.removeSystem(InternalDistributedSystem.getConnectedInstance());
   }
 
   @Test
-  public void canBeMocked() throws Exception {
+  public void constructorCorrectlySetsCacheServerLauncherParameters() {
+    ServerLauncher launcher = new Builder().setServerBindAddress(null).setServerPort(11235)
+        .setMaxThreads(10).setMaxConnections(100).setMaxMessageCount(5).setMessageTimeToLive(10000)
+        .setSocketBufferSize(2048).setHostNameForClients("hostName4Clients")
+        .setDisableDefaultServer(Boolean.FALSE).build();
+
+    assertThat(launcher).isNotNull();
+    assertThat(ServerLauncherParameters.INSTANCE).isNotNull();
+    assertThat(ServerLauncherParameters.INSTANCE.getPort()).isEqualTo(11235);
+    assertThat(ServerLauncherParameters.INSTANCE.getMaxThreads()).isEqualTo(10);
+    assertThat(ServerLauncherParameters.INSTANCE.getBindAddress()).isEqualTo(null);
+    assertThat(ServerLauncherParameters.INSTANCE.getMaxConnections()).isEqualTo(100);
+    assertThat(ServerLauncherParameters.INSTANCE.getMaxMessageCount()).isEqualTo(5);
+    assertThat(ServerLauncherParameters.INSTANCE.getSocketBufferSize()).isEqualTo(2048);
+    assertThat(ServerLauncherParameters.INSTANCE.getMessageTimeToLive()).isEqualTo(10000);
+    assertThat(ServerLauncherParameters.INSTANCE.getHostnameForClients())
+        .isEqualTo("hostName4Clients");
+    assertThat(ServerLauncherParameters.INSTANCE.isDisableDefaultServer()).isFalse();
+  }
+
+  @Test
+  public void canBeMocked() throws IOException {
     ServerLauncher launcher = mock(ServerLauncher.class);
     Cache cache = mock(Cache.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -75,7 +94,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isServingReturnsTrueWhenCacheHasOneCacheServer() throws Exception {
+  public void isServingReturnsTrueWhenCacheHasOneCacheServer() {
     Cache cache = mock(Cache.class);
     CacheServer cacheServer = mock(CacheServer.class);
     when(cache.getCacheServers()).thenReturn(Collections.singletonList(cacheServer));
@@ -86,7 +105,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isServingReturnsFalseWhenCacheHasZeroCacheServers() throws Exception {
+  public void isServingReturnsFalseWhenCacheHasZeroCacheServers() {
     Cache cache = mock(Cache.class);
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
 
@@ -96,7 +115,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void reconnectedCacheIsClosed() throws Exception {
+  public void reconnectedCacheIsClosed() {
     Cache cache = mock(Cache.class, "Cache");
     Cache reconnectedCache = mock(Cache.class, "ReconnectedCache");
     when(cache.isReconnecting()).thenReturn(false).thenReturn(false).thenReturn(true);
@@ -111,7 +130,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isRunningReturnsTrueWhenRunningIsSetTrue() throws Exception {
+  public void isRunningReturnsTrueWhenRunningIsSetTrue() {
     ServerLauncher launcher = new Builder().build();
 
     launcher.running.set(true);
@@ -120,7 +139,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isRunningReturnsFalseWhenRunningIsSetFalse() throws Exception {
+  public void isRunningReturnsFalseWhenRunningIsSetFalse() {
     ServerLauncher launcher = new Builder().build();
 
     launcher.running.set(false);
@@ -129,7 +148,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void reconnectingDistributedSystemIsDisconnectedOnStop() throws Exception {
+  public void reconnectingDistributedSystemIsDisconnectedOnStop() {
     Cache cache = mock(Cache.class, "Cache");
     DistributedSystem system = mock(DistributedSystem.class, "DistributedSystem");
     Cache reconnectedCache = mock(Cache.class, "ReconnectedCache");
@@ -153,7 +172,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isWaitingReturnsTrueWhenSystemIsConnected() throws Exception {
+  public void isWaitingReturnsTrueWhenSystemIsConnected() {
     Cache cache = mock(Cache.class, "Cache");
     DistributedSystem system = mock(DistributedSystem.class, "DistributedSystem");
     when(cache.getDistributedSystem()).thenReturn(system);
@@ -166,7 +185,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isWaitingReturnsFalseWhenSystemIsNotConnected() throws Exception {
+  public void isWaitingReturnsFalseWhenSystemIsNotConnected() {
     Cache cache = mock(Cache.class, "Cache");
     DistributedSystem system = mock(DistributedSystem.class, "DistributedSystem");
     when(cache.getDistributedSystem()).thenReturn(system);
@@ -180,14 +199,14 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isWaitingReturnsFalseByDefault() throws Exception {
+  public void isWaitingReturnsFalseByDefault() {
     ServerLauncher launcher = new Builder().build();
 
     assertThat(launcher.isWaiting(null)).isFalse();
   }
 
   @Test
-  public void isWaitingReturnsFalseWhenNotRunning() throws Exception {
+  public void isWaitingReturnsFalseWhenNotRunning() {
     ServerLauncher launcher = new Builder().build();
 
     launcher.running.set(false);
@@ -196,14 +215,14 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isDisableDefaultServerReturnsFalseByDefault() throws Exception {
+  public void isDisableDefaultServerReturnsFalseByDefault() {
     ServerLauncher launcher = new Builder().build();
 
     assertThat(launcher.isDisableDefaultServer()).isFalse();
   }
 
   @Test
-  public void isDefaultServerEnabledForCacheReturnsTrueByDefault() throws Exception {
+  public void isDefaultServerEnabledForCacheReturnsTrueByDefault() {
     Cache cache = mock(Cache.class, "Cache");
 
     ServerLauncher launcher = new Builder().build();
@@ -212,7 +231,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isDefaultServerEnabledForNullThrowsNullPointerException() throws Exception {
+  public void isDefaultServerEnabledForNullThrowsNullPointerException() {
     ServerLauncher launcher = new Builder().build();
 
     assertThatThrownBy(() -> launcher.isDefaultServerEnabled(null))
@@ -220,7 +239,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isDefaultServerEnabledReturnsFalseWhenCacheServersExist() throws Exception {
+  public void isDefaultServerEnabledReturnsFalseWhenCacheServersExist() {
     Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.singletonList(cacheServer));
@@ -231,15 +250,14 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isDisableDefaultServerReturnsTrueWhenDisabled() throws Exception {
+  public void isDisableDefaultServerReturnsTrueWhenDisabled() {
     ServerLauncher launcher = new Builder().setDisableDefaultServer(true).build();
 
     assertThat(launcher.isDisableDefaultServer()).isTrue();
   }
 
   @Test
-  public void isDefaultServerEnabledReturnsFalseWhenDefaultServerDisabledIsTrueAndNoCacheServersExist()
-      throws Exception {
+  public void isDefaultServerEnabledReturnsFalseWhenDefaultServerDisabledIsTrueAndNoCacheServersExist() {
     Cache cache = mock(Cache.class, "Cache");
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
 
@@ -249,8 +267,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void isDefaultServerEnabledReturnsFalseWhenDefaultServerDisabledIsTrueAndCacheServersExist()
-      throws Exception {
+  public void isDefaultServerEnabledReturnsFalseWhenDefaultServerDisabledIsTrueAndCacheServersExist() {
     Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.singletonList(cacheServer));
@@ -261,22 +278,30 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void startCacheServerStartsCacheServerWithBuilderValues() throws Exception {
+  public void startCacheServerStartsCacheServerWithBuilderValues() throws IOException {
     Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
     when(cache.addCacheServer()).thenReturn(cacheServer);
-    ServerLauncher launcher = new Builder().setServerBindAddress(null).setServerPort(11235).build();
+    ServerLauncher launcher = new Builder().setServerBindAddress(null).setServerPort(11235)
+        .setMaxThreads(10).setMaxConnections(100).setMaxMessageCount(5).setMessageTimeToLive(10000)
+        .setSocketBufferSize(2048).setHostNameForClients("hostName4Clients").build();
 
     launcher.startCacheServer(cache);
 
     verify(cacheServer, times(1)).setBindAddress(null);
     verify(cacheServer, times(1)).setPort(eq(11235));
+    verify(cacheServer, times(1)).setMaxThreads(10);
+    verify(cacheServer, times(1)).setMaxConnections(100);
+    verify(cacheServer, times(1)).setMaximumMessageCount(5);
+    verify(cacheServer, times(1)).setMessageTimeToLive(10000);
+    verify(cacheServer, times(1)).setSocketBufferSize(2048);
+    verify(cacheServer, times(1)).setHostnameForClients("hostName4Clients");
     verify(cacheServer, times(1)).start();
   }
 
   @Test
-  public void startCacheServerDoesNothingWhenDefaultServerDisabled() throws Exception {
+  public void startCacheServerDoesNothingWhenDefaultServerDisabled() throws IOException {
     Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
@@ -287,11 +312,17 @@ public class ServerLauncherTest {
 
     verify(cacheServer, times(0)).setBindAddress(anyString());
     verify(cacheServer, times(0)).setPort(anyInt());
+    verify(cacheServer, times(0)).setMaxThreads(anyInt());
+    verify(cacheServer, times(0)).setMaxConnections(anyInt());
+    verify(cacheServer, times(0)).setMaximumMessageCount(anyInt());
+    verify(cacheServer, times(0)).setMessageTimeToLive(anyInt());
+    verify(cacheServer, times(0)).setSocketBufferSize(anyInt());
+    verify(cacheServer, times(0)).setHostnameForClients(anyString());
     verify(cacheServer, times(0)).start();
   }
 
   @Test
-  public void startCacheServerDoesNothingWhenCacheServerAlreadyExists() throws Exception {
+  public void startCacheServerDoesNothingWhenCacheServerAlreadyExists() throws IOException {
     Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer1 = mock(CacheServer.class, "CacheServer1");
     CacheServer cacheServer2 = mock(CacheServer.class, "CacheServer2");
@@ -303,6 +334,12 @@ public class ServerLauncherTest {
 
     verify(cacheServer2, times(0)).setBindAddress(anyString());
     verify(cacheServer2, times(0)).setPort(anyInt());
+    verify(cacheServer2, times(0)).setMaxThreads(anyInt());
+    verify(cacheServer2, times(0)).setMaxConnections(anyInt());
+    verify(cacheServer2, times(0)).setMaximumMessageCount(anyInt());
+    verify(cacheServer2, times(0)).setMessageTimeToLive(anyInt());
+    verify(cacheServer2, times(0)).setSocketBufferSize(anyInt());
+    verify(cacheServer2, times(0)).setHostnameForClients(anyString());
     verify(cacheServer2, times(0)).start();
   }
 }

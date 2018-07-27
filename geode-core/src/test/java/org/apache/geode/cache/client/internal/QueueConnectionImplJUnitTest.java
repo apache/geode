@@ -22,9 +22,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class QueueConnectionImplJUnitTest {
 
   @Test

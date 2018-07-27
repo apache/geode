@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.DataPolicy;
@@ -46,9 +45,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DistributedEventTrackerTest {
   LocalRegion region;
   RegionAttributes<?, ?> regionAttributes;

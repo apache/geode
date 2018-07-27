@@ -32,11 +32,13 @@ buildscript {
     classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6.2-SNAPSHOT"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
     classpath "com.gradle:build-scan-plugin:1.13.4"
+    classpath "com.netflix.nebula:nebula-project-plugin:4.0.1"
   }
 }
 
 apply plugin: 'wrapper'
 apply plugin: 'com.gradle.build-scan'
+apply plugin: 'nebula.facet'
 
 wrapper {
   gradleVersion = minimumGradleVersion

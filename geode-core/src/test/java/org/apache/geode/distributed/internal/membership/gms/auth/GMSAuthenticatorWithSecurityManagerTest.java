@@ -31,13 +31,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 
 /**
  * Unit tests GMSAuthenticator using new integrated security.
  */
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class GMSAuthenticatorWithSecurityManagerTest extends AbstractGMSAuthenticatorTestCase {
 
   /**

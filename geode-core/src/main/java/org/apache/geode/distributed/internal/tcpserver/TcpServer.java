@@ -199,8 +199,8 @@ public class TcpServer {
       }
     };
 
-    return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper, factory,
-        POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
+    return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
+        factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(), null);
   }
 
   public void restarting(InternalDistributedSystem ds, InternalCache cache,

@@ -46,8 +46,7 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-")
-MAX_IN_FLIGHT=5
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
@@ -64,7 +63,7 @@ for i in ${GEODEBUILDDIR}/test-stubs/*.yml; do
     <(echo "metadata:"; \
       echo "  geode-build-branch: ${GEODE_BRANCH}"; \
       echo "  geode-fork: ${GEODE_FORK}"; \
-      echo "  max_in_flight: ${MAX_IN_FLIGHT}") \
+      echo "  ") \
     ${SCRIPTDIR}/pr-template.yml \
     ${i} > ${TMP_DIR}/${X}
 done
@@ -75,7 +74,6 @@ ${SPRUCE} merge --prune metadata \
   <(echo "metadata:"; \
     echo "  geode-build-branch: ${GEODE_BRANCH}"; \
     echo "  geode-fork: ${GEODE_FORK}"; \
-    echo "  max_in_flight: ${MAX_IN_FLIGHT}"; \
     echo "  ") \
   ${TMP_DIR}/*.yml > ${TMP_DIR}/final.yml
 
@@ -88,10 +86,19 @@ TEAM=${CONCOURSE_TEAM}
 #  TEAM="main"
 #fi
 
+if [[ "${GEODE_FORK}" == "apache" ]]; then
+  PIPELINE_PREFIX=""
+  DOCKER_IMAGE_PREFIX=""
+else
+  PIPELINE_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+  DOCKER_IMAGE_PREFIX=${PIPELINE_PREFIX}
+fi
+
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
 fly -t ${TARGET} set-pipeline \
   --non-interactive \
   --pipeline pr-${SANITIZED_GEODE_BRANCH} \
   --config ${TMP_DIR}/final.yml \
+  --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
   --var concourse-team=${TEAM}
 

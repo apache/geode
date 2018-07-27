@@ -26,17 +26,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.admin.GfManagerAgentConfig;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class RemoteGfManagerAgentTest {
 
   private RemoteGfManagerAgent mockConnectedAgent(GfManagerAgentConfig config) {

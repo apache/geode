@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -33,9 +32,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ParallelGatewaySenderEventProcessorJUnitTest {
 
   private GemFireCacheImpl cache;

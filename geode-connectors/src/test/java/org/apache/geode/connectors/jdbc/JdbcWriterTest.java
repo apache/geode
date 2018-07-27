@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
@@ -37,9 +36,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JdbcWriterTest {
 
   private EntryEvent<Object, Object> entryEvent;

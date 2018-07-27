@@ -32,9 +32,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class ClearRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION = "test region";
   private final String MISSING_REGION = "missing region";

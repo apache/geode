@@ -23,13 +23,10 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.DiskStoreMonitor.DiskState;
 import org.apache.geode.internal.cache.DiskStoreMonitor.DiskUsage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DiskUsageTest {
 
   @Test

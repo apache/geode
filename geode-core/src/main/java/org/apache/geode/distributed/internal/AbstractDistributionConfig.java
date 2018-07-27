@@ -168,6 +168,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_INTERVAL;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_TIME_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_FRAGMENT_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_RECV_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.UDP_SEND_BUFFER_SIZE;
@@ -1384,6 +1387,12 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "If true checks incoming java serializable objects against a filter");
     m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");
 
+    m.put(THREAD_MONITOR_INTERVAL,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_INTERVAL.toLocalizedString());
+    m.put(THREAD_MONITOR_ENABLED,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_ENABLED.toLocalizedString());
+    m.put(THREAD_MONITOR_TIME_LIMIT,
+        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_TIME_LIMIT.toLocalizedString());
     dcAttDescriptions = Collections.unmodifiableMap(m);
 
   }

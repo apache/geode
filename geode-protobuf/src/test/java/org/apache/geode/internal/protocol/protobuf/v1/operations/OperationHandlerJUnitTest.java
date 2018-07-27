@@ -23,9 +23,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class OperationHandlerJUnitTest {
   protected InternalCache cacheStub;
   protected ProtobufSerializationService serializationService;

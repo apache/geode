@@ -354,7 +354,17 @@ server1 | Success
 
 ## <a id="topic_a4x_pb1_dk" class="no-quick-link"></a>create gateway-receiver
 
-Creates a gateway receiver. You can only have one gateway receiver on each member, and unlike a gateway sender, you do not need to specify an identifier for the gateway receiver.
+Creates gateway receivers. You can only have one gateway receiver on each member, and unlike a gateway sender, you do not need to specify an identifier for the gateway receiver.
+
+The create occurs on all servers,
+unless the `--groups` or `--members` option is specified.
+
+If the gateway receiver creation succeeds on at least one member,
+this `gfsh` command exits with an exit code indicating success.
+
+
+Outputs a tabular format status of each member's gateway receiver,
+independent of the success or failure of the creation.
 
 See [Gateway Receivers](../../../topologies_and_comm/topology_concepts/multisite_overview.html#topic_4DB3D9CF01AD4F4899457D1250468D00).
 
@@ -367,6 +377,7 @@ create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
   [--manual-start=value] [--start-port=value] [--end-port=value] [--bind-address=value] 
   [--maximum-time-between-pings=value] [--socket-buffer-size=value]
   [--gateway-transport-filter=value(,value)*] [--hostname-for-senders=value]
+  [--if-not-exists=(value)?]
 ```
 
 **Parameters, create gateway-receiver:**
@@ -392,7 +403,10 @@ create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-members</span></td>
-<td>Name of the member(s) on which to create the gateway receiver.</td>
+<td>Name of the member(s) on which to create the gateway receiver.
+For backward compatibility, no gateway receiver configuration is persisted
+if this option is specified and cluster configuration is enabled.
+</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -437,6 +451,13 @@ create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 <td>The host name or IP address told to gateway senders as the address for them to connect to. The locator informs gateway senders of this value.</td>
 <td> </td>
 </tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-if-not-exists</span></td>
+<td>When specified without providing a boolean value or when specified and set to true, gateway receivers will not be created if they already exist. Command output reports the status of each creation attempt.
+</td>
+<td>false</td>
+</tr>
+
 </tbody>
 </table>
 

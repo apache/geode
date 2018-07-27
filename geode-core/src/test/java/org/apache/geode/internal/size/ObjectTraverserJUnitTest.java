@@ -25,12 +25,9 @@ import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ObjectTraverserJUnitTest {
 
   @Test

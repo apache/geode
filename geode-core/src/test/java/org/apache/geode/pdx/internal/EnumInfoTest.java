@@ -29,12 +29,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SerializationTest.class})
 public class EnumInfoTest {
   enum TestEnum {
     ZERO(0),

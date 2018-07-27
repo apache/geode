@@ -39,9 +39,8 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class GMSMemberJUnitTest {
 
   @Test

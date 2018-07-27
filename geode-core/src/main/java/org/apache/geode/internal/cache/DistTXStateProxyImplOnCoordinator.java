@@ -117,9 +117,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       }
 
       inProgress = preserveTx;
-      if (this.synchRunnable != null) {
-        this.synchRunnable.abort();
-      }
     }
   }
 
@@ -281,9 +278,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
     } finally {
       inProgress = false;
-      if (this.synchRunnable != null) {
-        this.synchRunnable.abort();
-      }
     }
 
     /*

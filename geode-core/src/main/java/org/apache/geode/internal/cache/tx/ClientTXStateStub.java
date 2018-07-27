@@ -322,4 +322,8 @@ public class ClientTXStateStub extends TXStateStub {
   public void setAfterLocalLocks(Runnable afterLocalLocks) {
     this.internalAfterLocalLocks = afterLocalLocks;
   }
+
+  public ServerLocation getServerAffinityLocation() {
+    return serverAffinityLocation;
+  }
 }

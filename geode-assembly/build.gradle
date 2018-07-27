@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
+
+evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
 
@@ -111,6 +114,14 @@ dependencies {
   }
 
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
+
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  acceptanceTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  uiTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  uiTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 sourceSets {
@@ -435,14 +446,6 @@ def dependOnInstalledProduct = {
   dependsOn installDist
   def install = file("$buildDir/install/${distributions.main.baseName}")
   environment ('GEODE_HOME', install)
-}
-
-task uiTest(type: Test) {
-    useJUnit {
-        includeCategories 'org.apache.geode.test.junit.categories.UITest'
-        excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    forkEvery(1)
 }
 
 // Add the configuration closure to the test targets so they depend on the install directory

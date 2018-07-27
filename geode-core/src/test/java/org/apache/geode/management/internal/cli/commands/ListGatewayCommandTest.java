@@ -30,7 +30,6 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -39,10 +38,8 @@ import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-@Category(UnitTest.class)
 public class ListGatewayCommandTest {
 
   @ClassRule

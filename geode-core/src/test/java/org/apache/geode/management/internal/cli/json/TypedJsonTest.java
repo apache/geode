@@ -27,9 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Extracted from {@link TypedJsonPdxIntegrationTest}.
@@ -37,7 +35,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * TODO: add actual assertions
  */
-@Category(UnitTest.class)
 public class TypedJsonTest {
 
   private static final String RESULT = "result";

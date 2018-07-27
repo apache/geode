@@ -23,15 +23,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.CommandAvailabilityIndicatorTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class JDBCCommandsAvailabilityTest {
 
   @Test

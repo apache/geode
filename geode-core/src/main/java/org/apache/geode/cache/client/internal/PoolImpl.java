@@ -66,6 +66,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
 /**
@@ -151,10 +152,13 @@ public class PoolImpl implements InternalPool {
   public static final int PRIMARY_QUEUE_TIMED_OUT = -1;
   private AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
+  private final ThreadsMonitoring threadMonitoring;
+
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
-      InternalCache cache) {
-    PoolImpl pool = new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache);
+      InternalCache cache, ThreadsMonitoring tMonitoring) {
+    PoolImpl pool =
+        new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring);
     pool.finishCreate(pm);
     return pool;
   }
@@ -182,7 +186,8 @@ public class PoolImpl implements InternalPool {
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAddress> locAddresses, InternalDistributedSystem distributedSystem,
-      InternalCache cache) {
+      InternalCache cache, ThreadsMonitoring tMonitoring) {
+    this.threadMonitoring = tMonitoring;
     this.pm = pm;
     this.name = name;
     this.socketConnectTimeout = attributes.getSocketConnectTimeout();
@@ -324,7 +329,7 @@ public class PoolImpl implements InternalPool {
             result.setDaemon(true);
             return result;
           }
-        });
+        }, this.threadMonitoring);
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
         .setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)

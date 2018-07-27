@@ -25,19 +25,16 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link LocatorLauncher.LocatorState}.
  */
-@Category(UnitTest.class)
 public class LocatorStateTest {
 
   private String classpath;

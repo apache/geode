@@ -63,6 +63,11 @@ dependencies {
   testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   compileOnly project(':geode-core')
   testCompile project(':geode-core')
+
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 war {

@@ -25,7 +25,6 @@ import java.util.HashSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
@@ -33,9 +32,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionMappingTest {
 
   @Rule

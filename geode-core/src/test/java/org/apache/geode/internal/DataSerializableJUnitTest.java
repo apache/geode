@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotSame;
-import static org.apache.geode.test.dunit.Assert.assertSame;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,14 +71,13 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.statistics.StatArchiveWriter;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link DataSerializable} class.
  *
  * @since GemFire 3.0
  */
-@Category({UnitTest.class, SerializationTest.class})
+@Category({SerializationTest.class})
 public class DataSerializableJUnitTest implements Serializable {
 
   /** A <code>ByteArrayOutputStream</code> that data is serialized to */
@@ -1904,7 +1903,7 @@ public class DataSerializableJUnitTest implements Serializable {
         if (e instanceof VirtualMachineError) {
           SystemFailure.setFailure((VirtualMachineError) e); // don't throw
         }
-        fail("Uncaught exception in thread " + t, e);
+        fail("Uncaught exception in thread " + t + e);
       }
     };
     Thread thread = new Thread(group, "Registrar") {
@@ -1914,7 +1913,7 @@ public class DataSerializableJUnitTest implements Serializable {
           DataSerializer.register(c);
 
         } catch (Exception ex) {
-          fail("Interrupted while registering", ex);
+          fail("Interrupted while registering" + ex);
         }
       }
     };
@@ -1962,7 +1961,7 @@ public class DataSerializableJUnitTest implements Serializable {
         if (e instanceof VirtualMachineError) {
           SystemFailure.setFailure((VirtualMachineError) e); // don't throw
         }
-        fail("Uncaught exception in thread " + t, e);
+        fail("Uncaught exception in thread " + t + e);
       }
     };
     Thread thread = new Thread(group, "Registrar") {
@@ -1972,7 +1971,7 @@ public class DataSerializableJUnitTest implements Serializable {
           Instantiator.register(inst);
 
         } catch (Exception ex) {
-          fail("Interrupted while registering", ex);
+          fail("Interrupted while registering" + ex);
         }
       }
     };
