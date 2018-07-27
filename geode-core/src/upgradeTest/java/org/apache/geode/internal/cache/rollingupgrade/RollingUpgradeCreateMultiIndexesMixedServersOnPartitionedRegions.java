@@ -18,7 +18,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class RollingUpgradeCreateMultiIndexesMixedServersOnPartitionedRegions
-    extends RollingUpgrade2DUnitTest {
+    extends RollingUpgrade2DUnitTestBase {
 
 
   @Ignore("GEODE_2356: test fails when index creation succeeds")

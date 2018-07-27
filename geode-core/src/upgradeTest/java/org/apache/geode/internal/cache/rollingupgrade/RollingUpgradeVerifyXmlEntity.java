@@ -32,7 +32,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
-public class RollingUpgradeVerifyXmlEntity extends RollingUpgrade2DUnitTest {
+public class RollingUpgradeVerifyXmlEntity extends RollingUpgrade2DUnitTestBase {
 
   @Test
   // This test verifies that an XmlEntity created in the current version serializes properly to

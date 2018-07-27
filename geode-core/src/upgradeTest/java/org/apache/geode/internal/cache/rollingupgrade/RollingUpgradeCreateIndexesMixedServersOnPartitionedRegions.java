@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.rollingupgrade;
 import org.junit.Test;
 
 public class RollingUpgradeCreateIndexesMixedServersOnPartitionedRegions
-    extends RollingUpgrade2DUnitTest {
+    extends RollingUpgrade2DUnitTestBase {
 
 
   @Test

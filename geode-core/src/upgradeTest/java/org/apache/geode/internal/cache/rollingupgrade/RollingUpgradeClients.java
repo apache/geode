@@ -30,7 +30,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
-public class RollingUpgradeClients extends RollingUpgrade2DUnitTest {
+public class RollingUpgradeClients extends RollingUpgrade2DUnitTestBase {
 
   @Test
   public void testClients() throws Exception {

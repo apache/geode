@@ -116,7 +116,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
+abstract public class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
 
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
@@ -132,7 +132,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   File[] testingDirs = new File[3];
 
 
-  protected static String diskDir = "RollingUpgrade2DUnitTest";
+  protected static String diskDir = "RollingUpgrade2DUnitTestBase";
 
   // Each vm will have a cache object
   protected static GemFireCache cache;
@@ -692,7 +692,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
           systemProperties.put(DistributionConfig.START_LOCATOR_NAME,
               "" + serverHostName + "[" + port + "]");
           systemProperties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-          RollingUpgrade2DUnitTest.cache = createCache(systemProperties);
+          RollingUpgrade2DUnitTestBase.cache = createCache(systemProperties);
           Thread.sleep(5000); // bug in 1.0 - cluster config service not immediately available
         } catch (Exception e) {
           fail("Error starting locators", e);
@@ -705,7 +705,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: createCache") {
       public void run2() {
         try {
-          RollingUpgrade2DUnitTest.cache = createCache(systemProperties);
+          RollingUpgrade2DUnitTestBase.cache = createCache(systemProperties);
         } catch (Exception e) {
           fail("Error creating cache", e);
         }
@@ -718,7 +718,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: createClientCache") {
       public void run2() {
         try {
-          RollingUpgrade2DUnitTest.cache =
+          RollingUpgrade2DUnitTestBase.cache =
               createClientCache(systemProperties, hosts, ports, subscriptionEnabled);
         } catch (Exception e) {
           fail("Error creating client cache", e);
@@ -731,7 +731,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: startCacheServer") {
       public void run2() {
         try {
-          startCacheServer(RollingUpgrade2DUnitTest.cache, port);
+          startCacheServer(RollingUpgrade2DUnitTestBase.cache, port);
         } catch (Exception e) {
           fail("Error creating cache", e);
         }
@@ -743,7 +743,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: assertVersion") {
       public void run2() {
         try {
-          assertVersion(RollingUpgrade2DUnitTest.cache, version);
+          assertVersion(RollingUpgrade2DUnitTestBase.cache, version);
         } catch (Exception e) {
           fail("Error asserting version", e);
         }
@@ -756,7 +756,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: createRegion") {
       public void run2() {
         try {
-          createRegion(RollingUpgrade2DUnitTest.cache, regionName, shortcut);
+          createRegion(RollingUpgrade2DUnitTestBase.cache, regionName, shortcut);
         } catch (Exception e) {
           fail("Error createRegion", e);
         }
@@ -769,7 +769,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: createPersistentReplicateRegion") {
       public void run2() {
         try {
-          createPersistentReplicateRegion(RollingUpgrade2DUnitTest.cache, regionName, diskstore);
+          createPersistentReplicateRegion(RollingUpgrade2DUnitTestBase.cache, regionName, diskstore);
         } catch (Exception e) {
           fail("Error createPersistentReplicateRegion", e);
         }
@@ -782,7 +782,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: createClientRegion") {
       public void run2() {
         try {
-          createClientRegion(RollingUpgrade2DUnitTest.cache, regionName, shortcut);
+          createClientRegion(RollingUpgrade2DUnitTestBase.cache, regionName, shortcut);
         } catch (Exception e) {
           fail("Error creating client region", e);
         }
@@ -795,7 +795,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: put(" + key + "," + value + ")") {
       public void run2() {
         try {
-          put(RollingUpgrade2DUnitTest.cache, regionName, key, value);
+          put(RollingUpgrade2DUnitTestBase.cache, regionName, key, value);
         } catch (Exception e) {
           fail("Error put", e);
         }
@@ -808,7 +808,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: assertEntriesCorrect") {
       public void run2() {
         try {
-          assertEntriesCorrect(RollingUpgrade2DUnitTest.cache, regionName, start, end);
+          assertEntriesCorrect(RollingUpgrade2DUnitTestBase.cache, regionName, start, end);
         } catch (Exception e) {
           fail("Error asserting equals", e);
         }
@@ -821,7 +821,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: assertEntryExists") {
       public void run2() {
         try {
-          assertEntryExists(RollingUpgrade2DUnitTest.cache, regionName, start, end);
+          assertEntryExists(RollingUpgrade2DUnitTestBase.cache, regionName, start, end);
         } catch (Exception e) {
           fail("Error asserting exists", e);
         }
@@ -845,7 +845,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: closeCache") {
       public void run2() {
         try {
-          closeCache(RollingUpgrade2DUnitTest.cache);
+          closeCache(RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error closing cache", e);
         }
@@ -857,7 +857,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: rebalance") {
       public void run2() {
         try {
-          rebalance(RollingUpgrade2DUnitTest.cache);
+          rebalance(RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error rebalancing", e);
         }
@@ -870,7 +870,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: assertQueryResults") {
       public void run2() {
         try {
-          assertQueryResults(RollingUpgrade2DUnitTest.cache, queryString, numExpected);
+          assertQueryResults(RollingUpgrade2DUnitTestBase.cache, queryString, numExpected);
         } catch (Exception e) {
           fail("Error asserting query results", e);
         }
@@ -882,7 +882,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("invokeCreateIndexes") {
       public void run2() {
         try {
-          createIndexes(regionPath, RollingUpgrade2DUnitTest.cache);
+          createIndexes(regionPath, RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error creating indexes ", e);
         }
@@ -894,7 +894,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("invokeCreateIndexes") {
       public void run2() {
         try {
-          createIndex(regionPath, RollingUpgrade2DUnitTest.cache);
+          createIndex(regionPath, RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error creating indexes ", e);
         }

@@ -28,7 +28,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
-public class RollingUpgradeRollLocatorsWithOldServer extends RollingUpgrade2DUnitTest {
+public class RollingUpgradeRollLocatorsWithOldServer extends RollingUpgrade2DUnitTestBase {
 
 
   /**

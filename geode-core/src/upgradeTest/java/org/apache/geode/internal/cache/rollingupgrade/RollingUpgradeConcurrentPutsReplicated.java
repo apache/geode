@@ -33,7 +33,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 
-public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnitTest {
+public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnitTestBase {
 
   /**
    * Starts 2 servers with old classloader puts in one server while the other bounces verifies
@@ -81,7 +81,7 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
             public void run2() {
               try {
                 for (int i = 0; i < 500; i++) {
-                  put(RollingUpgrade2DUnitTest.cache, regionName, "" + i, "VALUE(" + i + ")");
+                  put(RollingUpgrade2DUnitTestBase.cache, regionName, "" + i, "VALUE(" + i + ")");
                 }
               } catch (Exception e) {
                 fail("error putting");
@@ -103,7 +103,7 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
             public void run2() {
               try {
                 for (int i = 250; i < 750; i++) {
-                  put(RollingUpgrade2DUnitTest.cache, regionName, "" + i, "VALUE(" + i + ")");
+                  put(RollingUpgrade2DUnitTestBase.cache, regionName, "" + i, "VALUE(" + i + ")");
                 }
               } catch (Exception e) {
                 fail("error putting");

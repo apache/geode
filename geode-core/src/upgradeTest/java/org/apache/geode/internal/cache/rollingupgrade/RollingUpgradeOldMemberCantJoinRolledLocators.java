@@ -22,7 +22,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 
-public class RollingUpgradeOldMemberCantJoinRolledLocators extends RollingUpgrade2DUnitTest {
+public class RollingUpgradeOldMemberCantJoinRolledLocators extends RollingUpgrade2DUnitTestBase {
 
 
   /**

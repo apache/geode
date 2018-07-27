@@ -30,7 +30,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
 public class RollingUpgradeRollSingleLocatorWithMultipleServersReplicatedRegion
-    extends RollingUpgrade2DUnitTest {
+    extends RollingUpgrade2DUnitTestBase {
 
   @Test
   public void testRollSingleLocatorWithMultipleServersReplicatedRegion() throws Exception {
