@@ -233,7 +233,6 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
   public void testBackupDuringGII() throws Exception {
     getBlackboard().initBlackboard();
     String diskStoreName = getUniqueName();
-    // String diskStoreRegion2 = getUniqueName() + regionName2;
 
     vm0.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm0), true,
         false));
@@ -242,8 +241,6 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
 
     vm1.invoke(
         () -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm1), true, true));
-    // vm1.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1),
-    // false, true));
 
     vm0.invoke(() -> {
       createData(0, 5, "A", regionName1);
