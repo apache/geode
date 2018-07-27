@@ -34,7 +34,7 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
     extends LuceneSearchWithRollingUpgradeDUnit {
 
   @Test
-  public void luceneQueryReturnsCorrectResultsAfterClientAndServersAreRolledOverAllBucketsCreated()
+  public void test()
       throws Exception {
     // This test verifies the upgrade from lucene 6 to 7 doesn't cause any issues. Without any
     // changes to accomodate this upgrade, this test will fail with an IndexFormatTooNewException.
