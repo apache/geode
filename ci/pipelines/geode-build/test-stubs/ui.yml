@@ -20,8 +20,8 @@ metadata:
     gradle_task: uiTest
     artifact_slug: uitestfiles
     dunit:
-      parallel: false
-      forks: 0
+      parallel: true
+      forks: 7
     cpus: 8
 # specified in Gigabytes.
     ram: 30
