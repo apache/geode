@@ -151,7 +151,7 @@ public class DescribeClientCommandDUnitTest {
     }
 
     assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS)).isEqualTo("2");
-    assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS)).isEqualTo("1");
+    assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS)).isEqualTo("0");
     assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_DURABLE)).isEqualTo("No");
     assertThat(Integer.parseInt(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_THREADS)))
         .isGreaterThan(0);
