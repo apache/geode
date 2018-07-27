@@ -30,7 +30,8 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
-public class RollingUpgradeHARegionNameOnDifferentServerVersions extends RollingUpgrade2DUnitTestBase {
+public class RollingUpgradeHARegionNameOnDifferentServerVersions
+    extends RollingUpgrade2DUnitTestBase {
 
   @Test
   public void testHARegionNameOnDifferentServerVersions() {

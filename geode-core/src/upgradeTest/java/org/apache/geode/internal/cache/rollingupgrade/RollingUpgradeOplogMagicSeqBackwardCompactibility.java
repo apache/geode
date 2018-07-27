@@ -28,7 +28,8 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
-public class RollingUpgradeOplogMagicSeqBackwardCompactibility extends RollingUpgrade2DUnitTestBase {
+public class RollingUpgradeOplogMagicSeqBackwardCompactibility
+    extends RollingUpgrade2DUnitTestBase {
 
 
   @Ignore("GEODE-2355: test fails consistently")

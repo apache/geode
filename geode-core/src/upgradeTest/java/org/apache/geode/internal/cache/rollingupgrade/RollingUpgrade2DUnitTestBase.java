@@ -116,7 +116,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-abstract public class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
+public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
 
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
@@ -769,7 +769,8 @@ abstract public class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     return new CacheSerializableRunnable("execute: createPersistentReplicateRegion") {
       public void run2() {
         try {
-          createPersistentReplicateRegion(RollingUpgrade2DUnitTestBase.cache, regionName, diskstore);
+          createPersistentReplicateRegion(RollingUpgrade2DUnitTestBase.cache, regionName,
+              diskstore);
         } catch (Exception e) {
           fail("Error createPersistentReplicateRegion", e);
         }

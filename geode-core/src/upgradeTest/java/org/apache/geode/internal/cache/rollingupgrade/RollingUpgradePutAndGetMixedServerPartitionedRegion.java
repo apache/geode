@@ -16,7 +16,8 @@ package org.apache.geode.internal.cache.rollingupgrade;
 
 import org.junit.Test;
 
-public class RollingUpgradePutAndGetMixedServerPartitionedRegion extends RollingUpgrade2DUnitTestBase {
+public class RollingUpgradePutAndGetMixedServerPartitionedRegion
+    extends RollingUpgrade2DUnitTestBase {
 
 
   @Test
