@@ -27,7 +27,9 @@ public class ExportLogsOverHttpDistributedTest extends ExportLogsDUnitTest {
 
   @Override
   public void connect() throws Exception {
-    gfshConnector.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+    if(!gfshConnector.isConnected()) {
+      gfshConnector.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+    }
   }
 
   public File getWorkingDirectory() throws Exception {
