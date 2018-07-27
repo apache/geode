@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.EnumSet;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
@@ -32,41 +33,34 @@ import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 
 public class DiskRegionTest {
 
-  @Test
-  public void finishInitializeOwnerOnAsyncPersistentRegionWithUnTrustedRvvCallsWriteRVV()
-      throws Exception {
-    DiskStoreImpl diskStoreImpl = mock(DiskStoreImpl.class);
+  private DiskRegion diskRegion;
 
+  @Before
+  public void setup() {
+    DiskStoreImpl diskStoreImpl = mock(DiskStoreImpl.class);
     when(diskStoreImpl.getDiskInitFile()).thenReturn(mock(DiskInitFile.class));
     when(diskStoreImpl.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-
-    DiskRegion diskRegion = spy(new DiskRegion(diskStoreImpl, "testRegion",
+    diskRegion = spy(new DiskRegion(diskStoreImpl, "testRegion",
         false, true, false, false,
         mock(DiskRegionStats.class), mock(CancelCriterion.class), mock(DiskExceptionHandler.class),
         null, mock(EnumSet.class), null, 0,
         null, false));
+  }
+
+  @Test
+  public void finishInitializeOwnerOnAsyncPersistentRegionWithUnTrustedRvvCallsWriteRVV() {
     diskRegion.setRVVTrusted(false);
+
     diskRegion.finishInitializeOwner(mock(LocalRegion.class), GOTIMAGE_BY_FULLGII);
 
     verify(diskRegion, times(1)).writeRVV(any(), any());
   }
 
   @Test
-  public void finishInitializeOwnerOnAsyncPersistentRegionWithTrustedRvvNeverCallsWriteRVV()
-      throws Exception {
-    DiskStoreImpl diskStoreImpl = mock(DiskStoreImpl.class);
-
-    when(diskStoreImpl.getDiskInitFile()).thenReturn(mock(DiskInitFile.class));
-    when(diskStoreImpl.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
-
-
-    DiskRegion diskRegion = spy(new DiskRegion(diskStoreImpl, "testRegion",
-        false, true, false, false,
-        mock(DiskRegionStats.class), mock(CancelCriterion.class), mock(DiskExceptionHandler.class),
-        null, mock(EnumSet.class), null, 0,
-        null, false));
+  public void finishInitializeOwnerOnAsyncPersistentRegionWithTrustedRvvNeverCallsWriteRVV() {
     diskRegion.setRVVTrusted(true);
+
     diskRegion.finishInitializeOwner(mock(LocalRegion.class), GOTIMAGE_BY_FULLGII);
 
     verify(diskRegion, never()).writeRVV(any(), any());
