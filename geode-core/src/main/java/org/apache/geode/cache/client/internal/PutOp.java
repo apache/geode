@@ -90,14 +90,14 @@ public class PutOp {
   }
 
   public static Object execute(ExecutablePool pool, String regionName, Object key, Object value,
-      byte[] deltaBytes, EntryEventImpl event, Operation operation, boolean requireOldValue,
-      Object expectedOldValue, Object callbackArg, boolean prSingleHopEnabled,
-      boolean isMetaRegionPutOp) {
+      byte[] deltaBytes, EntryEventImpl event, Operation operation,
+      boolean requireOldValue,
+      Object expectedOldValue, Object callbackArg,
+      boolean prSingleHopEnabled) {
 
     AbstractOp op = new PutOpImpl(regionName, key, value, deltaBytes, event, operation,
         requireOldValue, expectedOldValue, callbackArg, false/* donot send full obj; send delta */,
         prSingleHopEnabled);
-    ((PutOpImpl) op).setMetaRegionPutOp(isMetaRegionPutOp);
     return pool.execute(op);
   }
 
@@ -150,8 +150,6 @@ public class PutOp {
     private EntryEventImpl event;
 
     private Object callbackArg;
-
-    private boolean isMetaRegionPutOp;
 
     private boolean prSingleHopEnabled;
 
@@ -393,26 +391,6 @@ public class PutOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
-      if (!this.isMetaRegionPutOp) {
-        super.sendMessage(cnx);
-      } else {
-        getMessage().send(false);
-      }
-    }
-
-    @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {
-      super.processSecureBytes(cnx, message);
-    }
-
-    @Override
-    protected boolean needsUserId() {
-      boolean ret = this.isMetaRegionPutOp ? false : super.needsUserId();
-      return ret;
-    }
-
-    @Override
     protected boolean isErrorResponse(int msgType) {
       return msgType == MessageType.PUT_DATA_ERROR;
     }
@@ -470,10 +448,6 @@ public class PutOp {
       } else {
         return null;
       }
-    }
-
-    void setMetaRegionPutOp(boolean bool) {
-      this.isMetaRegionPutOp = bool;
     }
   }
 

@@ -16,14 +16,12 @@ package org.apache.geode.internal.admin;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -70,8 +68,9 @@ public class ClientStatsManager {
       return; // handles null case too
     }
     LogWriterI18n logger = currentCache.getLoggerI18n();
-    if (logger.fineEnabled())
+    if (logger.fineEnabled()) {
       logger.fine("Entering ClientStatsManager#publishClientStats...");
+    }
 
     ClientHealthStats stats = getClientHealthStats(currentCache, pool);
 
@@ -230,29 +229,6 @@ public class ClientStatsManager {
           "ClientHealthStats for poolName " + poolName + " poolStatsStr=" + poolStatsStr);
 
       newPoolStats.put(poolName, poolStatsStr);
-
-      // consider old stats
-      Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(currentCache);
-
-      if (clientHealthMonitoringRegion != null) {
-        InternalDistributedSystem ds =
-            (InternalDistributedSystem) currentCache.getDistributedSystem();
-        ClientHealthStats oldStats =
-            (ClientHealthStats) clientHealthMonitoringRegion.get(ds.getMemberId());
-        logger.info(LocalizedStrings.DEBUG, "getClientHealthStats got oldStats  " + oldStats);
-        if (oldStats != null) {
-          Map<String, String> oldPoolStats = oldStats.getPoolStats();
-          logger.info(LocalizedStrings.DEBUG,
-              "getClientHealthStats got oldPoolStats  " + oldPoolStats);
-          if (oldPoolStats != null) {
-            for (Entry<String, String> entry : oldPoolStats.entrySet()) {
-              if (!poolName.equals(entry.getKey())) {
-                stats.getPoolStats().put(entry.getKey(), entry.getValue());
-              }
-            }
-          }
-        }
-      }
 
     } catch (Exception e) {
       logger.fine("Exception in getting pool stats in  getClientHealthStats "
