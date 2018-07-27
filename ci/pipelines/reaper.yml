@@ -1,0 +1,87 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+---
+groups: []
+resources:
+- name: 1m
+  type: time
+  source:
+    interval: 1m
+resource_types: []
+jobs:
+- name: reaper
+  serial: true
+  plan:
+  - get: 1m
+    trigger: true
+  - task: reap
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          password: ((!docker-password))
+          repository: gcr.io/apachegeode-ci/alpine-tools
+          tag: latest
+          username: ((!docker-username))
+      run:
+        path: bash
+        args:
+        - -exc
+        - |
+          set -x
+          set -e
+
+          now=$(date +%s)
+
+          # Stop running instances that are expired
+
+          instances=$(gcloud compute instances list \
+              --filter="labels.time-to-live:* AND labels.time-to-live<${now} AND status:RUNNING" \
+              --format='json(name, zone:sort=1)')
+
+          long_zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
+
+          for long_zone in ${long_zone_names}; do
+            zoneInstances=$(echo "${instances}" | jq -r --arg LONG_ZONE "${long_zone}" '.[] | select(.zone == $LONG_ZONE) | .name')
+            zone=$(echo ${long_zone} | sed 's:.*/::')
+
+            gcloud compute instances stop ${zoneInstances} --zone=${zone} &
+          done
+
+          wait
+
+          # Delete stopped instances over 24h expired
+
+          oneDay=$((60 * 60 * 24))
+          yesterday=$((${now} - ${oneDay}))
+
+          instances=$(gcloud compute instances list \
+              --filter="labels.time-to-live:* AND labels.time-to-live<${yesterday} AND status:TERMINATED" \
+              --format='json(name, zone:sort=1)')
+
+          long_zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
+
+          for long_zone in ${long_zone_names}; do
+            zoneInstances=$(echo "${instances}" | jq -r --arg LONG_ZONE "${long_zone}" '.[] | select(.zone == $LONG_ZONE) | .name')
+            zone=$(echo ${long_zone} | sed 's:.*/::')
+
+            gcloud compute instances delete ${zoneInstances} --zone=${zone} --quiet &
+          done
+
+          wait
+

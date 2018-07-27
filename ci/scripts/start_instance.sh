@@ -63,6 +63,9 @@ echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 echo "RAM is ${RAM}"
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 echo "RAM_MEGABYTES is ${RAM_MEGABYTES}"
+
+TTL=$(($(date +%s) + 60 * 60 * 2))
+
 INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \
   --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
@@ -71,6 +74,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${IN
   --image-project=${PROJECT} \
   --boot-disk-size=100GB \
   --boot-disk-type=pd-ssd \
+  --labels=time-to-live=${TTL} \
   --format=json)
 CREATE_EXIT_STATUS=$?
 
