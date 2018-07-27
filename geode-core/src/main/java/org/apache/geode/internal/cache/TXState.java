@@ -845,6 +845,10 @@ public class TXState implements TXStateInterface {
   @Override
   public void close() {
     if (!this.closed) {
+      if (locks != null) {
+        cleanup();
+        return;
+      }
       this.closed = true;
       for (TXRegionState r : this.regions.values()) {
         r.close();
