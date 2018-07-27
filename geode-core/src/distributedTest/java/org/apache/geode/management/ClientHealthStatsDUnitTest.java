@@ -53,7 +53,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
   private static volatile boolean lastKeyReceived;
 
   @Before
-  public void beforeClass() {
+  public void before() {
     locator =
         cluster.startLocatorVM(0, r -> r.withoutClusterConfigurationService().withoutHttpService());
     server = cluster.startServerVM(1, s -> s.withRegion(RegionShortcut.REPLICATE, "regionA")
