@@ -77,7 +77,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.locks.DLockRequestProcessor;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.DestroyRegionOperation.DestroyRegionMessage;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.logging.LogService;
@@ -86,7 +85,6 @@ import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
@@ -235,13 +233,17 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
   public void testBackupDuringGII() throws Exception {
     getBlackboard().initBlackboard();
     String diskStoreName = getUniqueName();
-    //String diskStoreRegion2 = getUniqueName() + regionName2;
+    // String diskStoreRegion2 = getUniqueName() + regionName2;
 
-    vm0.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm0), true, false));
-    vm0.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm0), true, false));
+    vm0.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
+    vm0.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
 
-    vm1.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm1), true, true));
-    //vm1.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1), false, true));
+    vm1.invoke(
+        () -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm1), true, true));
+    // vm1.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1),
+    // false, true));
 
     vm0.invoke(() -> {
       createData(0, 5, "A", regionName1);
@@ -286,20 +288,22 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     AsyncInvocation asyncVM1Region1 = vm1.invokeAsync(() -> {
       createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm1), true, true);
     });
-    
+
     AsyncInvocation asyncVM1Region2 = vm1.invokeAsync(() -> {
       createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1), false, true);
       getBlackboard().signalGate("createdRegionAfterRecovery");
     });
 
-    vm0.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm0), true, false));
+    vm0.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
 
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(
           createTestHookToWaitForRegionCreationBeforeSendingDLockRequestMessage());
     });
 
-    vm0.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm0), true, false));
+    vm0.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
 
     asyncVM1Region1.join();
     asyncVM1Region2.join();
@@ -681,7 +685,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
           logger.info("#### After signalling create region");
           try {
             getBlackboard().waitForGate("createdRegion", 30, SECONDS);
-          } catch (InterruptedException|TimeoutException ex) {
+          } catch (InterruptedException | TimeoutException ex) {
             throw new RuntimeException("never was notified region was created", ex);
           }
         }
@@ -700,7 +704,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
             logger.info("#### before waiting for createdRegionAfterRecovery");
             getBlackboard().waitForGate("createdRegionAfterRecovery", 30, SECONDS);
             logger.info("#### after waiting for createdRegionAfterRecovery");
-          } catch (InterruptedException|TimeoutException ex) {
+          } catch (InterruptedException | TimeoutException ex) {
             throw new RuntimeException("never was notified region was created", ex);
           }
         }
@@ -777,7 +781,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
   }
 
   private void createReplicatedRegion(final String regionName, final String diskStoreName,
-                            final File diskDir, boolean sync, boolean delayDiskStoreFlush) {
+      final File diskDir, boolean sync, boolean delayDiskStoreFlush) {
     DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
     diskStoreFactory.setDiskDirs(toArray(diskDir));
     diskStoreFactory.setMaxOplogSize(1);
@@ -906,9 +910,9 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     return cacheRule.getOrCreateCache();
   }
 
-//  private String getUniqueName() {
-//    return uniqueName;
-//  }
+  // private String getUniqueName() {
+  // return uniqueName;
+  // }
 
   private File getDiskStoreFor(final VM vm) {
     return new File(getDiskDirFor(vm), getUniqueName());
