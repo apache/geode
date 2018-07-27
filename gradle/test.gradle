@@ -134,7 +134,7 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
-  distributedTest {
+  performanceTest {
     useJUnit {
       if(project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
@@ -143,6 +143,10 @@ subprojects {
     }
 
     forkEvery 1
+
+    doFirst {
+      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    }
     outputs.upToDateWhen{false}
   }
 
