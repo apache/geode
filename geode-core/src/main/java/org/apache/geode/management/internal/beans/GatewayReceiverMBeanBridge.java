@@ -48,7 +48,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
     initializeReceiverStats();
   }
 
-  protected void destroyServer() {
+  void destroyServer() {
     removeServer();
   }
 
@@ -83,12 +83,6 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   public int getPort() {
     return rcv.getPort();
   }
-
-
-  public String getReceiverId() {
-    return null;
-  }
-
 
   public int getSocketBufferSize() {
     return rcv.getSocketBufferSize();
@@ -185,13 +179,20 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
     return eventsReceivedRate.getRate();
   }
 
+  @Override
+  public int getClientConnectionCount() {
+    // See GEODE-5248: we can't rely on ServerBridge as the HostStatSampler might not have ran
+    // between the last statistical update and the time at which this method is called.
+    return (!isRunning()) ? 0
+        : ((CacheServerImpl) rcv.getServer()).getAcceptor().getClientServerCnxCount();
+  }
 
-  public String[] getConnectedGatewaySenders() {
-    Set<String> uniqueIds = null;
+  String[] getConnectedGatewaySenders() {
+    Set<String> uniqueIds;
     AcceptorImpl acceptor = ((CacheServerImpl) rcv.getServer()).getAcceptor();
     Set<ServerConnection> serverConnections = acceptor.getAllServerConnections();
     if (serverConnections != null && serverConnections.size() > 0) {
-      uniqueIds = new HashSet<String>();
+      uniqueIds = new HashSet<>();
       for (ServerConnection conn : serverConnections) {
         uniqueIds.add(conn.getMembershipID());
       }
@@ -201,7 +202,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
     return new String[0];
   }
 
-  public long getAverageBatchProcessingTime() {
+  long getAverageBatchProcessingTime() {
     if (getStatistic(StatsKey.TOTAL_BATCHES).longValue() != 0) {
       long processTimeInNano = getStatistic(StatsKey.BATCH_PROCESS_TIME).longValue()
           / getStatistic(StatsKey.TOTAL_BATCHES).longValue();

@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createAndStartReceiver;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMember;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.stopReceiver;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewayReceiverMXBeanProxy;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -76,9 +75,9 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGatewayReceiverStatus() throws Exception {
-    Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+  public void testGatewayReceiverStatus() {
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = clusterStartupRule.startServerVM(3, lnPort);
@@ -112,9 +111,9 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(result_Status).hasSize(3);
     assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
 
-    server1.invoke(() -> stopReceiver());
-    server2.invoke(() -> stopReceiver());
-    server3.invoke(() -> stopReceiver());
+    server1.invoke(WANCommandUtils::stopReceivers);
+    server2.invoke(WANCommandUtils::stopReceivers);
+    server3.invoke(WANCommandUtils::stopReceivers);
 
     locatorSite1
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server1.getVM()), false));
@@ -137,9 +136,9 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGatewayReceiverStatus_OnMember() throws Exception {
-    Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+  public void testGatewayReceiverStatus_OnMember() {
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = clusterStartupRule.startServerVM(3, lnPort);
@@ -175,9 +174,9 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(result_Status).hasSize(1);
     assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
 
-    server1.invoke(() -> stopReceiver());
-    server2.invoke(() -> stopReceiver());
-    server3.invoke(() -> stopReceiver());
+    server1.invoke(WANCommandUtils::stopReceivers);
+    server2.invoke(WANCommandUtils::stopReceivers);
+    server3.invoke(WANCommandUtils::stopReceivers);
 
     locatorSite1
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server1.getVM()), false));
@@ -200,9 +199,9 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGatewayReceiverStatus_OnGroups() throws Exception {
-    Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+  public void testGatewayReceiverStatus_OnGroups() {
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = startServerWithGroups(3, "RG1, RG2", lnPort);
@@ -239,9 +238,9 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(result_Status).hasSize(3);
     assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_NOT_RUNNING);
 
-    server1.invoke(() -> stopReceiver());
-    server2.invoke(() -> stopReceiver());
-    server3.invoke(() -> stopReceiver());
+    server1.invoke(WANCommandUtils::stopReceivers);
+    server2.invoke(WANCommandUtils::stopReceivers);
+    server3.invoke(WANCommandUtils::stopReceivers);
 
     locatorSite1
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server1.getVM()), false));
@@ -263,7 +262,7 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(result_Status).doesNotContain(CliStrings.GATEWAY_RUNNING);
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);

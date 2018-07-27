@@ -243,7 +243,7 @@ public class WANCommandUtils implements Serializable {
     }
   }
 
-  public static void stopReceiver() {
+  public static void stopReceivers() {
     Cache cache = ClusterStartupRule.getCache();
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {

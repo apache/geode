@@ -23,6 +23,8 @@ import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.get
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewayReceiverMXBeanProxy;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateGatewaySenderMXBeanProxy;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.validateMemberMXBeanProxy;
+import static org.apache.geode.management.MXBeanAwaitility.await;
+import static org.apache.geode.management.MXBeanAwaitility.awaitGatewayReceiverMXBeanProxy;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -34,6 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -46,7 +49,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({WanTest.class})
 @SuppressWarnings("serial")
-public class WanCommandListDUnitTest implements Serializable {
+public class ListGatewaysCommandDUnitTest implements Serializable {
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(8);
@@ -77,7 +80,7 @@ public class WanCommandListDUnitTest implements Serializable {
   }
 
   @Test
-  public void testListGatewayWithNoSenderReceiver() throws Exception {
+  public void testListGatewayWithNoSenderReceiver() {
     Integer lnPort = locatorSite1.getPort();
 
     // setup servers in Site #1 (London)
@@ -96,9 +99,9 @@ public class WanCommandListDUnitTest implements Serializable {
   }
 
   @Test
-  public void testListGatewaySender() throws Exception {
-    Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+  public void testListGatewaySender() {
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = clusterStartupRule.startServerVM(3, lnPort);
@@ -157,9 +160,9 @@ public class WanCommandListDUnitTest implements Serializable {
   }
 
   @Test
-  public void testListGatewayReceiver() throws Exception {
-    Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+  public void testListGatewayReceiver() {
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = clusterStartupRule.startServerVM(3, lnPort);
@@ -206,7 +209,7 @@ public class WanCommandListDUnitTest implements Serializable {
   }
 
   @Test
-  public void testListGatewaySenderGatewayReceiver() throws Exception {
+  public void testListGatewaySenderGatewayReceiver() {
     Integer lnPort = locatorSite1.getPort();
     Integer nyPort = locatorSite2.getPort();
 
@@ -277,9 +280,9 @@ public class WanCommandListDUnitTest implements Serializable {
   }
 
   @Test
-  public void testListGatewaySenderGatewayReceiver_group() throws Exception {
-    Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+  public void testListGatewaySenderGatewayReceiver_group() {
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = startServerWithGroups(3, "Serial_Sender, Parallel_Sender", lnPort);
@@ -407,9 +410,75 @@ public class WanCommandListDUnitTest implements Serializable {
     assertThat(ports).hasSize(1);
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);
+  }
+
+  @Test
+  public void listGatewaysShouldCorrectlyUpdateSendersConnectedCountWhenReceiverStops()
+      throws Exception {
+    int site1Port = locatorSite1.getPort();
+    int site2Port = locatorSite2.getPort();
+
+    // Setup servers in Site #1
+    server1 = clusterStartupRule.startServerVM(3, site1Port);
+    server1.invoke(() -> createAndStartReceiver(site1Port));
+
+    // Setup servers in Site #2
+    server2 = clusterStartupRule.startServerVM(4, site2Port);
+    server2.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
+
+    // Check Gateways
+    locatorSite2.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> {
+      GatewayReceiverMXBean gatewayReceiverMXBean =
+          awaitGatewayReceiverMXBeanProxy(getMember(server1.getVM()));
+      assertThat(gatewayReceiverMXBean).isNotNull();
+      await("Awaiting GatewayReceiverMXBean.isRunning(true)")
+          .until(() -> assertThat(gatewayReceiverMXBean.isRunning()).isTrue());
+      await("Awaiting GatewayReceiverMXBean.getClientConnectionCount() > 0")
+          .until(() -> assertThat(gatewayReceiverMXBean.getClientConnectionCount()).isPositive());
+    });
+
+    // Verify Results
+    gfsh.connect(locatorSite1);
+    CommandResult listGatewaysCommandResult = gfsh.executeCommand(CliStrings.LIST_GATEWAY);
+    assertThat(listGatewaysCommandResult).isNotNull();
+    assertThat(listGatewaysCommandResult.getStatus()).isSameAs(Result.Status.OK);
+    TabularResultData gatewayReceiversResultData =
+        ((CompositeResultData) listGatewaysCommandResult.getResultData())
+            .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER)
+            .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+    assertThat(gatewayReceiversResultData.retrieveAllValues(CliStrings.RESULT_PORT)).hasSize(1);
+    assertThat(gatewayReceiversResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER))
+        .hasSize(1);
+    List<String> sendersCount =
+        gatewayReceiversResultData.retrieveAllValues(CliStrings.RESULT_SENDERS_COUNT);
+    assertThat(sendersCount).hasSize(1).doesNotContain("0");
+    assertThat(((CompositeResultData) listGatewaysCommandResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER)).isNull();
+
+    // Stop receivers in Site #1 and Verify Sender Count
+    server1.invoke(WANCommandUtils::stopReceivers);
+
+    locatorSite1
+        .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server1.getVM()), false));
+    gfsh.connect(locatorSite1);
+    listGatewaysCommandResult = gfsh.executeCommand(CliStrings.LIST_GATEWAY);
+    assertThat(listGatewaysCommandResult).isNotNull();
+    assertThat(listGatewaysCommandResult.getStatus()).isSameAs(Result.Status.OK);
+    gatewayReceiversResultData = ((CompositeResultData) listGatewaysCommandResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER)
+        .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+    assertThat(gatewayReceiversResultData.retrieveAllValues(CliStrings.RESULT_PORT)).hasSize(1);
+    assertThat(gatewayReceiversResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER))
+        .hasSize(1);
+    sendersCount = gatewayReceiversResultData.retrieveAllValues(CliStrings.RESULT_SENDERS_COUNT);
+    assertThat(sendersCount).hasSize(1).containsExactly("0");
+    assertThat(((CompositeResultData) listGatewaysCommandResult.getResultData())
+        .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER)).isNull();
   }
 }
