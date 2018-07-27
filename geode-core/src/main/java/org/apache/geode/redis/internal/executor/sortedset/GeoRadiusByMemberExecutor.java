@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZSET_MEMBER_NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.GeoCoord;
 import org.apache.geode.redis.internal.GeoRadiusResponseElement;
 import org.apache.geode.redis.internal.HashNeighbors;
+import org.apache.geode.redis.internal.MemberNotFoundException;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
@@ -71,8 +73,19 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
           RedisConstants.ArityDef.GEORADIUSBYMEMBER));
       return;
     } catch (CoderException e) {
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
+      /*
+       * This exception is technically not possible in GEORADIUSBYMEMBER, since the member, if it
+       * exists,
+       * should have a valid lat/long (otherwise it would have failed its respective GEOADD).
+       * However, since we are
+       * using the common GeoRadiusParameters class which is also used by the GeoRadiusExecutor, we
+       * have to catch
+       * this exception anyway.
+       */
+      return;
+    } catch (MemberNotFoundException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), "ERR "
+          + ERROR_ZSET_MEMBER_NOT_FOUND));
       return;
     }
 

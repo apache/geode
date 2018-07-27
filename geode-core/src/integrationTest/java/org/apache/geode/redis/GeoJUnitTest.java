@@ -401,6 +401,33 @@ public class GeoJUnitTest {
     assertEquals(2, gr.size());
     assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Nuuk")));
     assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Glasgow")));
+
+    gr = jedis.georadiusByMember("North", "Northern Iceland", 3000.0,
+        GeoUnit.KM, GeoRadiusParam.geoRadiusParam().withDist());
+    assertEquals(4, gr.size());
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Nuuk")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Glasgow")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("Oslo")));
+    assertTrue(gr.stream().anyMatch(r -> r.getMemberByString().equals("London")));
+  }
+
+  @Test
+  public void testGeoRadiusByMemberInvalid() {
+    Map<String, GeoCoordinate> memberCoordinateMap = new HashMap<>();
+    memberCoordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    memberCoordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    Long l = jedis.geoadd("Sicily", memberCoordinateMap);
+    assertTrue(l == 2L);
+
+    Exception ex = null;
+    try {
+      jedis.georadiusByMember("Sicily", "Roma", 91.0, GeoUnit.KM);
+    } catch (Exception e) {
+      ex = e;
+    }
+
+    assertNotNull(ex);
+    assertTrue(ex.getMessage().contains("could not decode requested zset member"));
   }
 
   @After

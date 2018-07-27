@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_LATLONG;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import org.apache.geode.redis.internal.GeoCoder;
 import org.apache.geode.redis.internal.GeoCoord;
 import org.apache.geode.redis.internal.GeoRadiusResponseElement;
 import org.apache.geode.redis.internal.HashNeighbors;
+import org.apache.geode.redis.internal.MemberNotFoundException;
 import org.apache.geode.redis.internal.RedisCommandParserException;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
@@ -72,7 +74,10 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       return;
     } catch (CoderException e) {
       command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_ARGUMENT_UNIT_NUM));
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_LATLONG));
+      return;
+    } catch (MemberNotFoundException e) {
+      /* Not possible for GEORADIUS */
       return;
     }
 

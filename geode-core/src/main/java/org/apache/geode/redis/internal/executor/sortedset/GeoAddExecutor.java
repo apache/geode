@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_LATLONG;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +58,7 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
         score = new String(GeoCoder.geoHashBits(longitude, latitude, GeoCoder.LEN_GEOHASH));
       } catch (CoderException ce) {
         command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-            "ERR " + RedisConstants.ArityDef.GEOADD_INVALID_LATLONG +
+            "ERR " + ERROR_INVALID_LATLONG +
                 " " + longitude.toString() + " " + latitude.toString()));
         return;
       }
