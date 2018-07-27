@@ -154,6 +154,8 @@ subprojects {
     }
     forkEvery 1
     outputs.upToDateWhen{false}
+
+    dependsOn upgradeTest
   }
 
   uiTest {
@@ -172,6 +174,11 @@ subprojects {
         includeCategories += project.testCategory
       }
     }
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
+  upgradeTest {
     forkEvery 1
     outputs.upToDateWhen{false}
   }
