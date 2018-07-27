@@ -164,7 +164,7 @@ public class ConnectCommandWithSSLTest {
 
   @Before
   public void before() throws Exception {
-    locator = lsRule.startLocatorVM(0, sslProperties);
+    locator = lsRule.startLocatorVM(0, l -> l.withProperties(sslProperties).withHttpService());
     IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Unrecognized SSL message");
     sslConfigFile = temporaryFolder.newFile("ssl.properties");
     out = new FileOutputStream(sslConfigFile);

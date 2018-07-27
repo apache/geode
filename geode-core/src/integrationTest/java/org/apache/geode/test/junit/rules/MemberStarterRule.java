@@ -108,6 +108,17 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   @Override
+  public void before() {
+    normalizeProperties();
+    if (httpPort < 0) {
+      // at this point, httpPort is not being configured by api, we assume they do not
+      // want to start the http service.
+      // use putIfAbsent if it was configured using withProperty
+      properties.putIfAbsent(HTTP_SERVICE_PORT, "0");
+    }
+  }
+
+  @Override
   public void after() {
     // invoke stop() first and then ds.disconnect
     stopMember();
@@ -218,20 +229,29 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    */
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
-      int[] randomPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
       // do no override these properties if already exists
-      properties.putIfAbsent(JMX_MANAGER_PORT, randomPorts[0] + "");
-      properties.putIfAbsent(HTTP_SERVICE_PORT, randomPorts[1] + "");
+      properties.putIfAbsent(JMX_MANAGER_PORT,
+          AvailablePortHelper.getRandomAvailableTCPPort() + "");
       this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
-      this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
     } else {
       // the real port numbers will be set after we started the server/locator.
       this.jmxPort = 0;
-      this.httpPort = 0;
     }
     properties.putIfAbsent(JMX_MANAGER, "true");
     properties.putIfAbsent(JMX_MANAGER_START, "true");
-    properties.putIfAbsent(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+    return (T) this;
+  }
+
+  public T withHttpService(boolean useDefaultPort) {
+    properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+    if (!useDefaultPort) {
+      httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
+      properties.putIfAbsent(HTTP_SERVICE_PORT, httpPort + "");
+    } else {
+      // indicate start http service but with default port
+      // (different from Gemfire properties, 0 means do not start http service)
+      httpPort = 0;
+    }
     return (T) this;
   }
 
@@ -241,6 +261,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withJMXManager() {
     return withJMXManager(false);
   }
+
+  public T withHttpService() {
+    return withHttpService(false);
+  }
+
 
   protected void normalizeProperties() {
     // if name is set via property, not with API

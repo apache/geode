@@ -41,7 +41,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class GfshCommandsSecurityTest {
   @ClassRule
   public static ServerStarterRule serverStarter =
-      new ServerStarterRule().withJMXManager().withSecurityManager(SimpleTestSecurityManager.class)
+      new ServerStarterRule().withJMXManager().withHttpService()
+          .withSecurityManager(SimpleTestSecurityManager.class)
           .withRegion(RegionShortcut.REPLICATE_PERSISTENT, "persistentRegion");
 
   @Rule

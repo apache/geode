@@ -43,7 +43,7 @@ public class RebalanceCommandDistributedTest {
 
   @BeforeClass
   public static void beforeClass() {
-    locator = cluster.startLocatorVM(0);
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
 
     int locatorPort = locator.getPort();
     server1 = cluster.startServerVM(1, "localhost", locatorPort);

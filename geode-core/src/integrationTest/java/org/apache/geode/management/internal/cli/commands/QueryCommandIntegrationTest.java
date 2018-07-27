@@ -52,7 +52,9 @@ public class QueryCommandIntegrationTest {
 
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "simpleRegion")
+      new ServerStarterRule().withJMXManager()
+          .withHttpService()
+          .withRegion(RegionShortcut.REPLICATE, "simpleRegion")
           .withRegion(RegionShortcut.REPLICATE, "complexRegion");
 
   @Rule

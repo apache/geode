@@ -78,7 +78,8 @@ public class AlterRuntimeCommandDUnitTest {
         "java.lang.IllegalArgumentException: Could not set \"log-disk-space-limit\"");
 
     MemberVM server0 =
-        startupRule.startServerVM(0, x -> x.withJMXManager().withProperty(LOG_LEVEL, "error"));
+        startupRule.startServerVM(0,
+            x -> x.withJMXManager().withHttpService().withProperty(LOG_LEVEL, "error"));
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);

@@ -69,7 +69,8 @@ public class ShowLogCommandDUnitTest implements Serializable {
     managerProps.setProperty(LOG_FILE, MANAGER_NAME + ".log");
     managerProps.setProperty(LOG_LEVEL, "info");
 
-    locator = clusterStartupRule.startLocatorVM(0, managerProps);
+    locator =
+        clusterStartupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(managerProps));
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);

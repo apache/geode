@@ -53,7 +53,8 @@ public class ChangeLogLevelCommandDUnitTest {
     Properties managerProps = new Properties();
     managerProps.setProperty(NAME, MANAGER_NAME);
     managerProps.setProperty(GROUPS, GROUP0);
-    locator = clusterStartupRule.startLocatorVM(0, managerProps);
+    locator =
+        clusterStartupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(managerProps));
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);
