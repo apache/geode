@@ -143,6 +143,9 @@ public class MemberVM extends VMProvider implements Member {
   }
 
 
+  /**
+   * this can only be called on a locator (or a vm that is not that serverName)
+   */
   public void waitTillClientsAreReadyOnServers(String serverName, int serverPort, int clientCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillClientsAreReadyOnServer(serverName,
         serverPort, clientCount));
@@ -164,6 +167,10 @@ public class MemberVM extends VMProvider implements Member {
       int expectedGatewayObjectCount) {
     vm.invoke(() -> ClusterStartupRule.memberStarter
         .waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(expectedGatewayObjectCount));
+  }
+
+  public void waitTillCacheClientProxyHasBeenPaused() {
+    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillCacheClientProxyHasBeenPaused());
   }
 
 }
