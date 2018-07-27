@@ -202,7 +202,7 @@ dependencies {
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
   outputs.file propertiesFile
-  inputs.dir compileJava.destinationDir
+  inputs.dir "../.git/index"
 
   doLast {
     def props = [
