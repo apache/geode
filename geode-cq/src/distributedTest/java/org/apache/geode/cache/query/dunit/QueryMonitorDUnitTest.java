@@ -20,9 +20,8 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,23 +61,23 @@ import org.apache.geode.test.junit.rules.VMProvider;
  * of the test by making MAX_QUERY_EXECUTION_TIME the smallest possible (1) and making the query
  * execution time longer (but not too long to make the test run too slow).
  *
- * the tests reuses locator/server1/server2 among all the tests for less test execution time.
  */
 @Category({OQLQueryTest.class})
 public class QueryMonitorDUnitTest {
   private static int MAX_QUERY_EXECUTE_TIME = 1;
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(5);
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule(5);
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator, server1, server2;
-  private static ClientVM client3, client4;
+  private MemberVM locator, server1, server2;
+  private ClientVM client3, client4;
 
-  @BeforeClass
-  public static void setUpServers() throws Exception {
-    locator = cluster.startLocatorVM(0);
+  @Before
+  public void setUpServers() throws Exception {
+    locator =
+        cluster.startLocatorVM(0, l -> l.withoutHttpService().withoutClusterConfigurationService());
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
 
@@ -89,12 +88,6 @@ public class QueryMonitorDUnitTest {
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = MAX_QUERY_EXECUTE_TIME;
     }, server1, server2);
     gfsh.connectAndVerify(locator);
-  }
-
-  @After
-  public void after() {
-    gfsh.executeAndAssertThat("destroy region --name=exampleRegion --if-exists").statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/exampleRegion", 0);
   }
 
   @Test
@@ -111,9 +104,6 @@ public class QueryMonitorDUnitTest {
 
     // execute the query
     VMProvider.invokeInEveryMember(() -> exuteQuery(), client3, client4);
-
-    client3.stop();
-    client4.stop();
   }
 
   @Test
@@ -130,8 +120,6 @@ public class QueryMonitorDUnitTest {
 
     // execute the query from client3
     client3.invoke(() -> exuteQuery());
-
-    client3.stop();
   }
 
   @Test
@@ -151,9 +139,6 @@ public class QueryMonitorDUnitTest {
 
     client3.invoke(() -> exuteQuery());
     client4.invoke(() -> exuteQuery());
-
-    client3.stop();
-    client4.stop();
   }
 
   @Test
@@ -212,14 +197,8 @@ public class QueryMonitorDUnitTest {
     client4 = cluster.startClientVM(4, ccf -> {
       configureClientCacheFactory(ccf, server2Port);
     });
-
-    long begin = System.currentTimeMillis();
     client3.invoke(() -> exuteQuery());
     client4.invoke(() -> exuteQuery());
-    System.out.println("this takes: " + (System.currentTimeMillis() - begin));
-
-    client3.stop();
-    client4.stop();
   }
 
   @Test
@@ -249,11 +228,6 @@ public class QueryMonitorDUnitTest {
 
     client3.invoke(() -> exuteQuery());
     client4.invoke(() -> exuteQuery());
-
-    // destroy the indices created in this test
-    gfsh.executeAndAssertThat("destroy index --region=/exampleRegion").statusIsSuccess();
-    client3.stop();
-    client4.stop();
   }
 
   @Test
@@ -287,8 +261,6 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> {
       populateRegion(0, 150);
     });
-
-    client3.stop();
   }
 
   @Test
@@ -355,7 +327,6 @@ public class QueryMonitorDUnitTest {
       DefaultQuery.testHook = null;
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = -1;
     });
-    server3.stop(true);
   }
 
 
@@ -432,8 +403,8 @@ public class QueryMonitorDUnitTest {
   }
 
 
-  @AfterClass
-  public static void reset() {
+  @After
+  public void reset() {
     VMProvider.invokeInEveryMember(() -> {
       DefaultQuery.testHook = null;
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = -1;
