@@ -26,6 +26,13 @@ resource_types:
     type: docker-image
     source:
       repository: jtarchie/pr
+  - name: concourse-metadata-resource
+    type: docker-image
+    source:
+      username: ((!docker-username))
+      password: ((!docker-password))
+      repository: gcr.io/apachegeode-ci/((!docker-image-prefix))concourse-metadata-resource
+      tag: latest
 
 resources:
 - name: docker-geode-build-image
@@ -33,9 +40,15 @@ resources:
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
     tag: latest
-
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
+    tag: latest
 - name: geode
   type: pull-request
   source:
@@ -45,6 +58,8 @@ resources:
     ignore_paths:
     - geode-docs/*
     - geode-book/*
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
 
 groups:
 - name: main
@@ -59,7 +74,6 @@ groups:
 jobs:
 - name: Build
   serial: false
-  max_in_flight: (( grab metadata.max_in_flight ))
   public: true
   plan:
   - aggregate:
@@ -116,134 +130,3 @@ jobs:
             path: geode-unmerged-request
             status: success
             context: $BUILD_JOB_NAME
-
-- name: DistributedTest
-  serial: false
-  max_in_flight: (( grab metadata.max_in_flight ))
-  public: true
-  plan:
-  - aggregate:
-    - get: geode
-      trigger: true
-      version: every
-      params:
-        fetch_merge: true
-        git:
-          depth: 100
-    - get: docker-geode-build-image
-      params:
-        rootfs: true
-  # Unmerged pull request SHA, for writing status into GitHub
-  - get: geode-unmerged-request
-    resource: geode
-    version: every
-    params:
-      fetch_merge: false
-
-  - aggregate:
-    - put: geode
-      params:
-        path: geode-unmerged-request
-        context: $BUILD_JOB_NAME
-        status: pending
-
-    - task: run-distributed-core
-      image: docker-geode-build-image
-      tags: [pr_large]
-      privileged: true
-      timeout: 8h
-      config:
-        inputs:
-          - name: geode
-          - name: docker-geode-build-image
-        platform: linux
-        outputs:
-          - name: built-geode
-        params:
-          MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
-          PUBLIC_BUCKET: ((!public-bucket))
-          PARALLEL_DUNIT: true
-          DUNIT_PARALLEL_FORKS: 7
-          CALL_STACK_TIMEOUT: 25200
-        run:
-          args:
-          - geode-core:distributedTest
-          - distributedtestcore
-          path: geode/ci/scripts/test-run.sh
-
-      ensure:
-        aggregate:
-        - task: archive-results-core
-          image: docker-geode-build-image
-          config:
-            inputs:
-              - name: geode
-              - name: built-geode
-            platform: linux
-            params:
-              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
-              SERVICE_ACCOUNT: ((!concourse-gcp-account))
-              PUBLIC_BUCKET: ((!public-bucket))
-            run:
-              args:
-              - geode-core:distributedTest
-              - distributedtestcore
-              path: geode/ci/scripts/test-archive.sh
-    - task: run-distributed-everything-else
-      image: docker-geode-build-image
-      tags: [pr_large]
-      privileged: true
-      timeout: 8h
-      config:
-        inputs:
-          - name: geode
-          - name: docker-geode-build-image
-        platform: linux
-        outputs:
-          - name: built-geode
-        params:
-          MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
-          PUBLIC_BUCKET: ((!public-bucket))
-          PARALLEL_DUNIT: true
-          DUNIT_PARALLEL_FORKS: 7
-          CALL_STACK_TIMEOUT: 25200
-          GRADLE_TASK_OPTIONS: -x geode-core:distributedTest
-        run:
-          args:
-          - distributedTest
-          - distributedtesteverythingelse
-          path: geode/ci/scripts/test-run.sh
-      ensure:
-        aggregate:
-        - task: archive-results-everythingelse
-          image: docker-geode-build-image
-          config:
-            inputs:
-              - name: geode
-              - name: built-geode
-            platform: linux
-            params:
-              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
-              SERVICE_ACCOUNT: ((!concourse-gcp-account))
-              PUBLIC_BUCKET: ((!public-bucket))
-            run:
-              args:
-              - disitributedTest
-              - distributedtesteverythingelse
-              path: geode/ci/scripts/test-archive.sh
-    on_failure:
-      aggregate:
-      - put: geode
-        params:
-          path: geode-unmerged-request
-          status: failure
-          context: $BUILD_JOB_NAME
-    on_success:
-      aggregate:
-      - put: geode
-        params:
-          path: geode-unmerged-request
-          context: $BUILD_JOB_NAME
-          status: success
