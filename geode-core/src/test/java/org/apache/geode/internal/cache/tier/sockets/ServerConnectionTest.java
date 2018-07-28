@@ -20,8 +20,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +58,7 @@ public class ServerConnectionTest {
    */
   @Rule
   public final RestoreLocaleRule restoreLocale =
-      new RestoreLocaleRule(Locale.ENGLISH, l -> StringId.setLocale(l));
+      new RestoreLocaleRule(Locale.ENGLISH, StringId::setLocale);
 
   @Mock
   private Message requestMsg;
@@ -69,27 +69,22 @@ public class ServerConnectionTest {
   @InjectMocks
   private ServerConnection serverConnection;
 
-  private AcceptorImpl acceptor;
-  private Socket socket;
   private ServerSideHandshake handshake;
-  private InternalCache cache;
-  private SecurityService securityService;
-  private CacheServerStats stats;
 
   @Before
   public void setUp() throws IOException {
-    acceptor = mock(AcceptorImpl.class);
+    AcceptorImpl acceptor = mock(AcceptorImpl.class);
 
     InetAddress inetAddress = mock(InetAddress.class);
     when(inetAddress.getHostAddress()).thenReturn("localhost");
 
-    socket = mock(Socket.class);
+    Socket socket = mock(Socket.class);
     when(socket.getInetAddress()).thenReturn(inetAddress);
 
-    cache = mock(InternalCache.class);
-    securityService = mock(SecurityService.class);
+    InternalCache cache = mock(InternalCache.class);
+    SecurityService securityService = mock(SecurityService.class);
 
-    stats = mock(CacheServerStats.class);
+    CacheServerStats stats = mock(CacheServerStats.class);
 
     handshake = mock(ServerSideHandshake.class);
     when(handshake.getEncryptor()).thenReturn(mock(Encryptor.class));
@@ -128,7 +123,7 @@ public class ServerConnectionTest {
   public void post65SecureShouldUseUniqueIdFromMessage() {
     long uniqueIdFromMessage = 23456L;
     when(handshake.getVersion()).thenReturn(Version.GFE_82);
-    serverConnection.setRequestMsg(requestMsg);
+    serverConnection.setRequestMessage(requestMsg);
 
     assertThat(serverConnection.getRequestMessage()).isSameAs(requestMsg);
     when(requestMsg.isSecureMode()).thenReturn(true);

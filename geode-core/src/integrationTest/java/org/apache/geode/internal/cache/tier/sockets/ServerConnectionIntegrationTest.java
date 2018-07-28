@@ -165,7 +165,7 @@ public class ServerConnectionIntegrationTest {
 
     private void setFakeRequest() {
       testMessage = new TestMessage();
-      setRequestMsg(testMessage);
+      setRequestMessage(testMessage);
     }
   }
 
