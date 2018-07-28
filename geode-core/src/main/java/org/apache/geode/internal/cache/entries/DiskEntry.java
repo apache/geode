@@ -1623,7 +1623,7 @@ public interface DiskEntry extends RegionEntry {
       }
     }
 
-    private static boolean doSynchronousWrite(InternalRegion region, DiskRegion dr) {
+    static boolean doSynchronousWrite(InternalRegion region, DiskRegion dr) {
       return dr.isSync() || (dr.isBackup() && !region.isInitialized());
     }
 
