@@ -47,10 +47,6 @@ public class RegisterDataSerializers extends BaseCommand {
           serverConnection.getSocketString());
     }
 
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
     int noOfParts = clientMessage.getNumberOfParts();
 
     // 2 parts per instantiator and one eventId part
