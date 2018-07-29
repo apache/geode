@@ -74,7 +74,7 @@ public class OriginalServerConnection extends ServerConnection {
       this.doHandshake = false;
     } else {
       this.resetTransientData();
-      doNormalMsg();
+      doNormalMessage();
     }
   }
 }
