@@ -50,12 +50,6 @@ public class AddPdxType extends BaseCommand {
           serverConnection.getSocketString());
     }
 
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
-    int noOfParts = clientMessage.getNumberOfParts();
-
     PdxType type = (PdxType) clientMessage.getPart(0).getObject();
     int typeId = clientMessage.getPart(1).getInt();
 
