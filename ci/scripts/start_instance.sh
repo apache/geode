@@ -60,29 +60,39 @@ echo "${PROJECT}" > "instance-data/project"
 echo "${ZONE}" > "instance-data/zone"
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
-echo "RAM is ${RAM}"
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
-echo "RAM_MEGABYTES is ${RAM_MEGABYTES}"
 
-TTL=$(($(date +%s) + 60 * 60 * 6))
+while true; do
+    TTL=$(($(date +%s) + 60 * 60 * 6))
 
-INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
-  --zone=${ZONE} \
-  --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
-  --min-cpu-platform=Intel\ Skylake \
-  --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
-  --image-project=${PROJECT} \
-  --boot-disk-size=100GB \
-  --boot-disk-type=pd-ssd \
-  --labels=time-to-live=${TTL} \
-  --format=json)
-CREATE_EXIT_STATUS=$?
+    set +e
+    INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
+      --zone=${ZONE} \
+      --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
+      --min-cpu-platform=Intel\ Skylake \
+      --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
+      --image-project=${PROJECT} \
+      --boot-disk-size=100GB \
+      --boot-disk-type=pd-ssd \
+      --labels=time-to-live=${TTL} \
+      --format=json)
+    CREATE_EXIT_STATUS=$?
+    set -e
 
+    if [ ${CREATE_EXIT_STATUS} -eq 0 ]; then
+        break
+    fi
 
-while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
-  echo -n .
+    TIMEOUT=60
+    echo "Waiting ${TIMEOUT} seconds..."
+    sleep ${TIMEOUT}
 done
+
 echo "${INSTANCE_INFORMATION}" > instance-data/instance-information
 
 INSTANCE_IP_ADDRESS=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].networkInterfaces[0].accessConfigs[0].natIP')
 echo "${INSTANCE_IP_ADDRESS}" > "instance-data/instance-ip-address"
+
+while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
+  echo -n .
+done
