@@ -50,6 +50,8 @@ class UnixScriptGenerator implements ScriptGenerator {
   @Override
   public void writeCopyFile(final BufferedWriter writer, final File backup, final File original)
       throws IOException {
+    writer.write("mkdir -p '" + original.getParent() + "'");
+    writer.newLine();
     writer.write("cp -p '" + backup + "' '" + original + "'");
     writer.newLine();
   }
