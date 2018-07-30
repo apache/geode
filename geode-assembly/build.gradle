@@ -126,6 +126,7 @@ dependencies {
   acceptanceTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
   uiTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
   uiTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  upgradeTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 sourceSets {
@@ -460,6 +461,7 @@ def dependOnInstalledProduct = {
 test dependOnInstalledProduct
 acceptanceTest dependOnInstalledProduct
 distributedTest dependOnInstalledProduct
+upgradeTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
 uiTest dependOnInstalledProduct
 flakyTest dependOnInstalledProduct
@@ -470,6 +472,8 @@ build.dependsOn installDist
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions/session-testing-war:war'
 distributedTest.dependsOn ':geode-old-versions:build'
+upgradeTest.dependsOn ':extensions/session-testing-war:war'
+upgradeTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
@@ -477,7 +481,7 @@ def printJars(tree) {
     if(!file.isDirectory()) {
       println file.name
     }
-  };
+  }
 }
 
 task dumpInstalledJars(dependsOn: installDist) {
@@ -498,6 +502,6 @@ task dumpInstalledJars(dependsOn: installDist) {
           println("==========================")
           printJars(warContents);
       }
-    };
+    }
   }
 }
