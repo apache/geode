@@ -204,8 +204,6 @@ task createVersionPropertiesFile {
   outputs.file propertiesFile
   inputs.dir "../.git/index"
 
-  mustRunAfter(compileJava)
-
   doLast {
     def props = [
       "Product-Name"      : productName,
