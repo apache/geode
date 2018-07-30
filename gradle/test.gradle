@@ -134,6 +134,18 @@ subprojects {
     outputs.upToDateWhen{false}
   }
 
+  distributedTest {
+    useJUnit {
+      if(project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
+
+    forkEvery 1
+    outputs.upToDateWhen{false}
+  }
+
   performanceTest {
     useJUnit {
       if(project.hasProperty("testCategory")) {
@@ -143,11 +155,6 @@ subprojects {
     }
 
     forkEvery 1
-
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    outputs.upToDateWhen{false}
   }
 
   acceptanceTest {
@@ -178,11 +185,6 @@ subprojects {
         includeCategories += project.testCategory
       }
     }
-    forkEvery 1
-    outputs.upToDateWhen{false}
-  }
-
-  upgradeTest {
     forkEvery 1
     outputs.upToDateWhen{false}
   }
