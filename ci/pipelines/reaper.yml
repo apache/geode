@@ -52,14 +52,12 @@ jobs:
 
           instances=$(gcloud compute instances list \
               --filter="labels.time-to-live:* AND labels.time-to-live<${now} AND status:RUNNING" \
-              --format='json(name, zone:sort=1)')
+              --format='json(name, zone)')
 
-          long_zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
+          zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
 
-          for long_zone in ${long_zone_names}; do
-            zoneInstances=$(echo "${instances}" | jq -r --arg LONG_ZONE "${long_zone}" '.[] | select(.zone == $LONG_ZONE) | .name')
-            zone=$(echo ${long_zone} | sed 's:.*/::')
-
+          for zone in ${zone_names}; do
+            zoneInstances=$(echo "${instances}" | jq -r --arg ZONE "${zone}" '.[] | select(.zone == $ZONE) | .name')
             gcloud compute instances stop ${zoneInstances} --zone=${zone} &
           done
 
@@ -74,12 +72,10 @@ jobs:
               --filter="labels.time-to-live:* AND labels.time-to-live<${yesterday} AND status:TERMINATED" \
               --format='json(name, zone:sort=1)')
 
-          long_zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
+          zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
 
-          for long_zone in ${long_zone_names}; do
-            zoneInstances=$(echo "${instances}" | jq -r --arg LONG_ZONE "${long_zone}" '.[] | select(.zone == $LONG_ZONE) | .name')
-            zone=$(echo ${long_zone} | sed 's:.*/::')
-
+          for zone in ${zone_names}; do
+            zoneInstances=$(echo "${instances}" | jq -r --arg ZONE "${zone}" '.[] | select(.zone == $ZONE) | .name')
             gcloud compute instances delete ${zoneInstances} --zone=${zone} --quiet &
           done
 
