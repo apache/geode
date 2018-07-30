@@ -259,15 +259,8 @@ public class DiskRegion extends AbstractDiskRegion {
         drs.repairRVV();
       }
 
-      // since rvvTrust will be true, so persist disk region rvv directly. It does not care inmemory
-      // rvv
-      if (this.isSync()) {
-        writeRVV(null, true);
-        writeRVVGC((LocalRegion) drs);
-      } else {
-        // put RVV and RVVGC into asyncQueue
-        this.getDiskStore().addDiskRegionToQueue((LocalRegion) drs);
-      }
+      writeRVV(null, true);
+      writeRVVGC((LocalRegion) drs);
     }
   }
 

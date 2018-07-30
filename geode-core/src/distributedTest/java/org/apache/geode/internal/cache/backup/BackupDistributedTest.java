@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.listFiles;
 import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
@@ -22,6 +23,7 @@ import static org.apache.geode.cache.EvictionAttributes.createLIFOEntryAttribute
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.internal.admin.remote.AdminFailureResponse.create;
 import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -70,6 +73,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.locks.DLockRequestProcessor;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.DestroyRegionOperation.DestroyRegionMessage;
 import org.apache.geode.internal.cache.InternalCache;
@@ -80,6 +84,7 @@ import org.apache.geode.internal.process.ProcessStreamReader.ReadingMode;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
@@ -94,10 +99,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <li>Test backing up and recovering while ops are in progress?
  * </ul>
  */
-
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class BackupDistributedTest implements Serializable {
+public class BackupDistributedTest extends JUnit4DistributedTestCase implements Serializable {
   private static final Logger logger = LogService.getLogger();
 
   private static final int NUM_BUCKETS = 15;
@@ -221,6 +225,94 @@ public class BackupDistributedTest implements Serializable {
     vm0.invoke(() -> verifyUserFileRestored(getDiskDirFor(vm0), lastModified0));
     vm1.invoke(() -> verifyUserFileRestored(getDiskDirFor(vm1), lastModified1));
   }
+
+  @Test
+  public void testBackupDuringGII() throws Exception {
+    getBlackboard().initBlackboard();
+    String diskStoreName = getUniqueName();
+
+    vm0.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
+    vm0.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
+
+    vm1.invoke(
+        () -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm1), true, true));
+
+    vm0.invoke(() -> {
+      createData(0, 5, "A", regionName1);
+      createData(0, 5, "B", regionName2);
+    });
+
+    vm2.invoke(() -> {
+      DistributionMessageObserver.setInstance(
+          createTestHookToCreateRegionBeforeSendingPrepareBackupRequest());
+    });
+
+    AsyncInvocation asyncVM1CreateRegion = vm1.invokeAsync(() -> {
+      getBlackboard().waitForGate("createRegion", 30, SECONDS);
+      createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1), false, true);
+      getBlackboard().signalGate("createdRegion");
+    });
+
+
+    vm2.invoke(() -> backupMember());
+    validateBackupComplete();
+    vm2.invoke(() -> getCache().close());
+
+    asyncVM1CreateRegion.join();
+
+    vm0.invoke(() -> {
+      validateData(0, 5, "A", regionName1);
+      validateData(0, 5, "B", regionName2);
+    });
+
+    vm0.invoke(() -> getCache().close());
+    vm1.invoke(() -> getCache().close());
+
+    // destroy the current data
+    cleanDiskDirsInEveryVM();
+
+    restoreBackup(2);
+
+    vm1.invoke(() -> {
+      getCache().getPartitionedRegionLockService().becomeLockGrantor();
+    });
+
+    AsyncInvocation asyncVM1Region1 = vm1.invokeAsync(() -> {
+      createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm1), true, true);
+    });
+
+    AsyncInvocation asyncVM1Region2 = vm1.invokeAsync(() -> {
+      createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm1), false, true);
+      getBlackboard().signalGate("createdRegionAfterRecovery");
+    });
+
+    vm0.invoke(() -> createReplicatedRegion(regionName1, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
+
+    vm0.invoke(() -> {
+      DistributionMessageObserver.setInstance(
+          createTestHookToWaitForRegionCreationBeforeSendingDLockRequestMessage());
+    });
+
+    vm0.invoke(() -> createReplicatedRegion(regionName2, diskStoreName, getDiskStoreFor(vm0), true,
+        false));
+
+    asyncVM1Region1.join();
+    asyncVM1Region2.join();
+
+    vm0.invoke(() -> {
+      validateData(0, 5, "A", regionName1);
+      validateData(0, 5, "B", regionName2);
+    });
+
+    vm1.invoke(() -> {
+      validateData(0, 5, "A", regionName1);
+      validateData(0, 5, "B", regionName2);
+    });
+  }
+
 
   /**
    * Test of bug 42419.
@@ -575,6 +667,45 @@ public class BackupDistributedTest implements Serializable {
     };
   }
 
+  private DistributionMessageObserver createTestHookToCreateRegionBeforeSendingPrepareBackupRequest() {
+    return new DistributionMessageObserver() {
+
+      @Override
+      public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+        if (message instanceof PrepareBackupRequest) {
+          DistributionMessageObserver.setInstance(null);
+          logger.info("#### After getting into observer to create regionName2 in vm1");
+          getBlackboard().signalGate("createRegion");
+          logger.info("#### After signalling create region");
+          try {
+            getBlackboard().waitForGate("createdRegion", 30, SECONDS);
+          } catch (InterruptedException | TimeoutException ex) {
+            throw new RuntimeException("never was notified region was created", ex);
+          }
+        }
+      }
+    };
+  }
+
+  private DistributionMessageObserver createTestHookToWaitForRegionCreationBeforeSendingDLockRequestMessage() {
+    return new DistributionMessageObserver() {
+
+      @Override
+      public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+        if (message instanceof DLockRequestProcessor.DLockRequestMessage) {
+          DistributionMessageObserver.setInstance(null);
+          try {
+            logger.info("#### before waiting for createdRegionAfterRecovery");
+            getBlackboard().waitForGate("createdRegionAfterRecovery", 30, SECONDS);
+            logger.info("#### after waiting for createdRegionAfterRecovery");
+          } catch (InterruptedException | TimeoutException ex) {
+            throw new RuntimeException("never was notified region was created", ex);
+          }
+        }
+      }
+    };
+  }
+
   private void createPersistentRegions(final VM... vms)
       throws ExecutionException, InterruptedException {
     Set<AsyncInvocation> createRegionAsyncs = new HashSet<>();
@@ -640,6 +771,21 @@ public class BackupDistributedTest implements Serializable {
     regionFactory.setDiskStoreName(diskStoreFactory.create(diskStoreName).getName());
     regionFactory.setDiskSynchronous(true);
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+    regionFactory.create(regionName);
+  }
+
+  private void createReplicatedRegion(final String regionName, final String diskStoreName,
+      final File diskDir, boolean sync, boolean delayDiskStoreFlush) {
+    DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(toArray(diskDir));
+    diskStoreFactory.setMaxOplogSize(1);
+    if (delayDiskStoreFlush) {
+      diskStoreFactory.setTimeInterval(Integer.MAX_VALUE);
+    }
+
+    RegionFactory regionFactory = getCache().createRegionFactory(REPLICATE_PERSISTENT);
+    regionFactory.setDiskStoreName(diskStoreFactory.create(diskStoreName).getName());
+    regionFactory.setDiskSynchronous(sync);
     regionFactory.create(regionName);
   }
 
@@ -758,9 +904,9 @@ public class BackupDistributedTest implements Serializable {
     return cacheRule.getOrCreateCache();
   }
 
-  private String getUniqueName() {
-    return uniqueName;
-  }
+  // private String getUniqueName() {
+  // return uniqueName;
+  // }
 
   private File getDiskStoreFor(final VM vm) {
     return new File(getDiskDirFor(vm), getUniqueName());

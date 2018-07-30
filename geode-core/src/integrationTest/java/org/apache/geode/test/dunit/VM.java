@@ -455,20 +455,43 @@ public class VM implements Serializable {
   }
 
   /**
-   * Synchronously bounces (mean kills and restarts) this {@code VM}. Concurrent bounce attempts are
+   * Synchronously bounces (nice kill and restarts) this {@code VM}. Concurrent bounce attempts are
    * synchronized but attempts to invoke methods on a bouncing {@code VM} will cause test failure.
    * Tests using bounce should be placed at the end of the DUnit test suite, since an exception here
    * will cause all tests using the unsuccessfully bounced {@code VM} to fail.
    *
    * This method is currently not supported by the standalone DUnit runner.
    *
+   * Note: bounce invokes shutdown hooks.
+   *
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
-  public synchronized void bounce() {
-    bounce(version);
+  public void bounce() {
+    bounce(version, false);
   }
 
-  public synchronized void bounce(final String targetVersion) {
+  /**
+   * Synchronously bounces (forced kill and restarts) this {@code VM}. Concurrent bounce attempts
+   * are
+   * synchronized but attempts to invoke methods on a bouncing {@code VM} will cause test failure.
+   * Tests using bounce should be placed at the end of the DUnit test suite, since an exception here
+   * will cause all tests using the unsuccessfully bounced {@code VM} to fail.
+   *
+   * This method is currently not supported by the standalone DUnit runner.
+   *
+   * Note: Forced bounce does not invoke shutdown hooks.
+   *
+   * @throws RMIException if an exception occurs while bouncing this {@code VM}
+   */
+  public void bounceForcibly() {
+    bounce(version, true);
+  }
+
+  public void bounce(final String targetVersion) {
+    bounce(targetVersion, false);
+  }
+
+  private synchronized void bounce(final String targetVersion, boolean force) {
     if (!available) {
       throw new RMIException(this, getClass().getName(), "bounceVM",
           new IllegalStateException("VM not available: " + this));
@@ -477,7 +500,7 @@ public class VM implements Serializable {
     available = false;
 
     try {
-      BounceResult result = DUnitEnv.get().bounce(targetVersion, id);
+      BounceResult result = DUnitEnv.get().bounce(targetVersion, id, force);
       id = result.getNewId();
       client = result.getNewClient();
       version = targetVersion;
@@ -525,4 +548,5 @@ public class VM implements Serializable {
       throw new RMIException(this, targetObject.getClass().getName(), methodName, exception);
     }
   }
+
 }
