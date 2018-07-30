@@ -209,7 +209,7 @@ public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCas
   @SuppressWarnings("deprecation")
   public static void createClientCache(String hostName, Integer[] ports) throws Exception {
     Properties props = new Properties();
-    DistributedSystem ds = new TxCommitMessageBCTestBase(){}.getSystem(props);
+    DistributedSystem ds = new TxCommitMessageBCTestBase() {}.getSystem(props);
     ds.disconnect();
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(true);
