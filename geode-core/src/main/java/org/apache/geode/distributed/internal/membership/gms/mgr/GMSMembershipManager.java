@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.mgr;
 
-import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +45,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -265,7 +263,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /**
    * Membership failure listeners - for testing
    */
-  private List membershipTestHooks;
+  private List<MembershipTestHook> membershipTestHooks;
 
   /**
    * This is a representation of the local member (ourself)
@@ -1584,7 +1582,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         try {
           logger.info("generating XML to rebuild the cache after reconnect completes");
           StringPrintWriter pw = new StringPrintWriter();
-          CacheXmlGenerator.generate((Cache) cache, pw, true, false);
+          CacheXmlGenerator.generate(cache, pw, true, false);
           String cacheXML = pw.toString();
           cache.getCacheConfig().setCacheXMLDescription(cacheXML);
           logger.info("XML generation completed: {}", cacheXML);
@@ -1683,7 +1681,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * @return all recipients who did not receive the message (null if all received it)
    * @throws NotSerializableException if the message is not serializable
    */
-  protected Set<InternalDistributedMember> directChannelSend(
+  Set<InternalDistributedMember> directChannelSend(
       InternalDistributedMember[] destinations, DistributionMessage content, DMStats theStats)
       throws NotSerializableException {
     boolean allDestinations;
@@ -1740,7 +1738,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         return null;
 
       // We need to return this list of failures
-      List<InternalDistributedMember> members = (List<InternalDistributedMember>) ex.getMembers();
+      List<InternalDistributedMember> members = ex.getMembers();
 
       // SANITY CHECK: If we fail to send a message to an existing member
       // of the view, we have a serious error (bug36202).
@@ -1767,14 +1765,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     } // catch ConnectionExceptions
     catch (ToDataException | CancelException e) {
       throw e;
-    } catch (IOException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Membership: directChannelSend caught exception: {}", e.getMessage(), e);
-      }
-      if (e instanceof NotSerializableException) {
-        throw (NotSerializableException) e;
-      }
-    } catch (RuntimeException | Error e) {
+    } catch (NotSerializableException | RuntimeException | Error e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Membership: directChannelSend caught exception: {}", e.getMessage(), e);
       }
@@ -2193,7 +2184,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /**
    * for mock testing this allows insertion of a DirectChannel mock
    */
-  protected void setDirectChannel(DirectChannel dc) {
+  void setDirectChannel(DirectChannel dc) {
     this.directChannel = dc;
     this.tcpDisabled = false;
   }
@@ -2201,8 +2192,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /*
    * non-thread-owned serial channels and high priority channels are not included
    */
-  public Map getMessageState(DistributedMember member, boolean includeMulticast) {
-    Map result = new HashMap();
+  public Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast) {
+    Map<String, Long> result = new HashMap<>();
     DirectChannel dc = directChannel;
     if (dc != null) {
       dc.getChannelStates(member, result);
@@ -2212,7 +2203,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     return result;
   }
 
-  public void waitForMessageState(DistributedMember otherMember, Map state)
+  public void waitForMessageState(DistributedMember otherMember, Map<String, Long> state)
       throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
@@ -2305,12 +2296,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /**
    * wait for serial executor messages from the given member to be processed
    */
-  public boolean waitForSerialMessageProcessing(InternalDistributedMember idm)
+  private boolean waitForSerialMessageProcessing(InternalDistributedMember idm)
       throws InterruptedException {
     // run a message through the member's serial execution queue to ensure that all of its
     // current messages have been processed
     boolean result = false;
-    OverflowQueueWithDMStats serialQueue = listener.getDM().getSerialQueue(idm);
+    OverflowQueueWithDMStats<Runnable> serialQueue = listener.getDM().getSerialQueue(idm);
     if (serialQueue != null) {
       final boolean done[] = new boolean[1];
       final FlushingMessage msg = new FlushingMessage(done);
@@ -2389,7 +2380,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       if (this.membershipTestHooks == null) {
         this.membershipTestHooks = Collections.singletonList(mth);
       } else {
-        List l = new ArrayList(this.membershipTestHooks);
+        List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
         l.add(mth);
         this.membershipTestHooks = l;
       }
@@ -2405,7 +2396,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         if (this.membershipTestHooks.size() == 1) {
           this.membershipTestHooks = null;
         } else {
-          List l = new ArrayList(this.membershipTestHooks);
+          List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
           l.remove(mth);
         }
       }

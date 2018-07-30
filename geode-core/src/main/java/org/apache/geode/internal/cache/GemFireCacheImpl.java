@@ -2707,7 +2707,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public Set<DistributedMember> getMembers() {
     return Collections
-        .unmodifiableSet((Set<DistributedMember>) this.dm.getOtherNormalDistributionManagerIds());
+        .unmodifiableSet((Set) this.dm.getOtherNormalDistributionManagerIds());
   }
 
   @Override

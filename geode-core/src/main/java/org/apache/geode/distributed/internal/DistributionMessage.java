@@ -19,8 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -29,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -246,26 +245,18 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Sets the intended recipient of the message. If recipient set contains {@link #ALL_RECIPIENTS}
    * then the message will be sent to all distribution managers.
    */
-  public void setRecipients(Collection recipients) {
+  public void setRecipients(Collection<? extends DistributedMember> recipients) {
     if (this.recipients != null) {
       throw new IllegalStateException(
           LocalizedStrings.DistributionMessage_RECIPIENTS_CAN_ONLY_BE_SET_ONCE.toLocalizedString());
     }
-    this.recipients = (InternalDistributedMember[]) recipients
+    this.recipients = recipients
         .toArray(new InternalDistributedMember[recipients.size()]);
   }
 
   public void resetRecipients() {
     this.recipients = null;
     this.multicast = false;
-  }
-
-  public Set getSuccessfulRecipients() {
-    // note we can't use getRecipients() for plannedRecipients because it will
-    // return ALL_RECIPIENTS if multicast
-    InternalDistributedMember[] plannedRecipients = this.recipients;
-    Set successfulRecipients = new HashSet(Arrays.asList(plannedRecipients));
-    return successfulRecipients;
   }
 
   /**
