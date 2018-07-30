@@ -233,7 +233,7 @@ public class StartLocatorCommandDUnitTest {
     final String missingDirPath = "/missing/path/to/start/in";
     final String expectedMessage = "Could not create directory " + missingDirPath
         + ". Please verify directory path or user permissions.";
-    final String memberName = "testWithMissingRelativeDirectory-locator";
+    final String memberName = "testInMissingRelativeDirectoryWithoutCreatePermissions-locator";
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
@@ -250,7 +250,7 @@ public class StartLocatorCommandDUnitTest {
   public void testInMissingRelativeDirectoryThatCanBeCreated() {
     // path to a missing dir that can be created
     final String missingDirPath = System.getProperty("user.dir") + "/missing/path/to/start/in";
-    final String memberName = "testWithMissingRelativeDirectory-locator";
+    final String memberName = "testInMissingRelativeDirectoryThatCanBeCreated-locator";
     final String expectedMessage = "Locator in " + missingDirPath;
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
