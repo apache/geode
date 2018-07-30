@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -39,12 +38,8 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
-import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
@@ -84,7 +79,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
+public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
@@ -104,9 +99,10 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   private static Cache cache;
 
   // the old version of Geode we're testing against
-  private String oldVersion;
+  @Parameterized.Parameter
+  public String oldVersion;
 
-  private void deleteVMFiles() throws Exception {
+  private void deleteVMFiles() {
     System.out.println("deleting files in vm" + VM.getCurrentVMNum());
     File pwd = new File(".");
     for (File entry : pwd.listFiles()) {
@@ -122,7 +118,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void deleteWorkingDirFiles() throws Exception {
+  private void deleteWorkingDirFiles() {
     Invoke.invokeInEveryVM("delete files", () -> deleteVMFiles());
   }
 
@@ -133,30 +129,10 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
         "cluster configuration service not available|ConflictingPersistentDataException");
   }
 
-  public RollingUpgradeDUnitTest(String version) {
-    oldVersion = version;
-  }
-
-  @Test
-  public void testRollServersOnReplicatedRegion_dataserializable() throws Exception {
-    doTestRollAll("replicate", "dataserializable", oldVersion);
-  }
-
-  @Test
-  public void testRollServersOnPartitionedRegion_dataserializable() throws Exception {
-    doTestRollAll("partitionedRedundant", "dataserializable", oldVersion);
-  }
-
-  @Test
-  public void testRollServersOnPersistentRegion_dataserializable() throws Exception {
-    doTestRollAll("persistentReplicate", "dataserializable", oldVersion);
-  }
-
-
   // We start an "old" locator and old servers
   // We roll the locator
   // Now we roll all the servers from old to new
-  public void doTestRollAll(String regionType, String objectType, String startingVersion)
+  void doTestRollAll(String regionType, String objectType, String startingVersion)
       throws Exception {
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(startingVersion, 0); // testingDirs[0]
@@ -239,20 +215,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
   // ******** TEST HELPER METHODS ********/
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
-      VM check1, VM check2, VM check3) throws Exception {
-    if (objectType.equals("strings")) {
-      putStringsAndVerify(putter, regionName, start, end, check1, check2, check3);
-    } else if (objectType.equals("serializable")) {
-      putSerializableAndVerify(putter, regionName, start, end, check1, check2, check3);
-    } else if (objectType.equals("dataserializable")) {
-      putDataSerializableAndVerify(putter, regionName, start, end, check1, check2, check3);
-    } else {
-      throw new Error("Not a valid test object type");
-    }
-  }
-
-  // ******** TEST HELPER METHODS ********/
-  private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM... checkVMs) throws Exception {
     if (objectType.equals("strings")) {
       putStringsAndVerify(putter, regionName, start, end, checkVMs);
@@ -321,7 +283,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void invokeRunnableInVMs(CacheSerializableRunnable runnable, VM... vms) throws Exception {
+  private void invokeRunnableInVMs(CacheSerializableRunnable runnable, VM... vms) {
     for (VM vm : vms) {
       vm.invoke(runnable);
     }
@@ -329,7 +291,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
   // Used to close cache and make sure we attempt on all vms even if some do not have a cache
   private void invokeRunnableInVMs(boolean catchErrors, CacheSerializableRunnable runnable,
-      VM... vms) throws Exception {
+      VM... vms) {
     for (VM vm : vms) {
       try {
         vm.invoke(runnable);
@@ -341,7 +303,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) throws Exception {
+  private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) {
     // Roll the server
     oldServer.invoke(invokeCloseCache());
     VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
@@ -352,7 +314,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private VM rollServerToCurrentAndCreateRegion(VM oldServer, String regionType, File diskdir,
-      String shortcutName, String regionName, int[] locatorPorts) throws Exception {
+      String shortcutName, String regionName, int[] locatorPorts) {
     VM rollServer = rollServerToCurrent(oldServer, locatorPorts);
     // recreate region on "rolled" server
     if ((regionType.equals("persistentReplicate"))) {
@@ -367,7 +329,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private VM rollLocatorToCurrent(VM oldLocator, final String serverHostName, final int port,
-      final String testName, final String locatorString) throws Exception {
+      final String testName, final String locatorString) {
     // Roll the locator
     oldLocator.invoke(invokeStopLocator());
     VM rollLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldLocator.getId());
@@ -379,18 +341,18 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   // Due to licensing changes
-  public Properties getSystemPropertiesPost71() {
+  private Properties getSystemPropertiesPost71() {
     Properties props = getSystemProperties();
     return props;
   }
 
   // Due to licensing changes
-  public Properties getSystemPropertiesPost71(int[] locatorPorts) {
+  private Properties getSystemPropertiesPost71(int[] locatorPorts) {
     Properties props = getSystemProperties(locatorPorts);
     return props;
   }
 
-  public Properties getSystemProperties() {
+  private Properties getSystemProperties() {
     Properties props = DistributedTestUtils.getAllDistributedSystemProperties(new Properties());
     props.remove("disable-auto-reconnect");
     props.remove(DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME);
@@ -398,7 +360,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return props;
   }
 
-  public Properties getSystemProperties(int[] locatorPorts) {
+  private Properties getSystemProperties(int[] locatorPorts) {
     Properties p = new Properties();
     String locatorString = getLocatorString(locatorPorts);
     p.setProperty("locators", locatorString);
@@ -406,12 +368,12 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return p;
   }
 
-  public static String getLocatorString(int locatorPort) {
+  private static String getLocatorString(int locatorPort) {
     String locatorString = getDUnitLocatorAddress() + "[" + locatorPort + "]";
     return locatorString;
   }
 
-  public static String getLocatorString(int[] locatorPorts) {
+  private static String getLocatorString(int[] locatorPorts) {
     String locatorString = "";
     int numLocators = locatorPorts.length;
     for (int i = 0; i < numLocators; i++) {
@@ -450,18 +412,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeStartCacheServer(final int port) {
-    return new CacheSerializableRunnable("execute: startCacheServer") {
-      public void run2() {
-        try {
-          startCacheServer(RollingUpgradeDUnitTest.cache, port);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
-  }
-
   private CacheSerializableRunnable invokeAssertVersion(final short version) {
     return new CacheSerializableRunnable("execute: assertVersion") {
       public void run2() {
@@ -493,19 +443,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       public void run2() {
         try {
           createPersistentReplicateRegion(RollingUpgradeDUnitTest.cache, regionName, diskstore);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
-  }
-
-  private CacheSerializableRunnable invokeCreateClientRegion(final String regionName,
-      final String shortcutName) {
-    return new CacheSerializableRunnable("execute: createClientRegion") {
-      public void run2() {
-        try {
-          createClientRegion((ClientCache) RollingUpgradeDUnitTest.cache, regionName, shortcutName);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -593,7 +530,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  public void deleteDiskStores() throws Exception {
+  private void deleteDiskStores() {
     try {
       FileUtils.deleteDirectory(new File(diskDir).getAbsoluteFile());
     } catch (IOException e) {
@@ -601,7 +538,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static Cache createCache(Properties systemProperties) throws Exception {
+  private static Cache createCache(Properties systemProperties) throws Exception {
 
     // systemProperties.put(DistributionConfig.LOG_FILE_NAME,
     // "rollingUpgradeCacheVM" + VM.getCurrentVMNum() + ".log");
@@ -622,13 +559,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return cache;
   }
 
-  public static void startCacheServer(Cache cache, int port) throws Exception {
-    CacheServer server = cache.addCacheServer();
-    server.setPort(port);
-    server.start();
-  }
-
-  public static boolean assertRegionExists(Cache cache, String regionName) throws Exception {
+  private static boolean assertRegionExists(Cache cache, String regionName) {
     Region region = cache.getRegion(regionName);
     if (region == null) {
       throw new Error("Region: " + regionName + " does not exist");
@@ -636,12 +567,12 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return true;
   }
 
-  public static Region getRegion(Cache cache, String regionName) throws Exception {
+  private static Region getRegion(Cache cache, String regionName) {
     return cache.getRegion(regionName);
   }
 
-  public static boolean assertEntryEquals(Cache cache, String regionName, Object key, Object value)
-      throws Exception {
+  private static boolean assertEntryEquals(Cache cache, String regionName, Object key,
+      Object value) {
     assertRegionExists(cache, regionName);
     Region region = getRegion(cache, regionName);
     Object regionValue = region.get(key);
@@ -654,8 +585,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return true;
   }
 
-  public static boolean assertEntryExists(Cache cache, String regionName, Object key)
-      throws Exception {
+  private static boolean assertEntryExists(Cache cache, String regionName, Object key) {
     assertRegionExists(cache, regionName);
     Region region = getRegion(cache, regionName);
     if (!region.keySet().contains(key)) {
@@ -664,13 +594,12 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     return true;
   }
 
-  public static Object put(Cache cache, String regionName, Object key, Object value)
-      throws Exception {
+  private static Object put(Cache cache, String regionName, Object key, Object value) {
     Region region = getRegion(cache, regionName);
     return region.put(key, value);
   }
 
-  public static void createRegion(Cache cache, String regionName, String shortcutName)
+  private static void createRegion(Cache cache, String regionName, String shortcutName)
       throws Exception {
     Class aClass = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.RegionShortcut");
@@ -692,39 +621,16 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     createRegion(cache, regionName, RegionShortcut.PARTITION.name());
   }
 
-  public static void createPartitionedRedundantRegion(Cache cache, String regionName)
-      throws Exception {
-    createRegion(cache, regionName, RegionShortcut.PARTITION_REDUNDANT.name());
-  }
-
   public static void createReplicatedRegion(Cache cache, String regionName) throws Exception {
     createRegion(cache, regionName, RegionShortcut.REPLICATE.name());
-  }
-
-  // Assumes a client cache is passed
-  public static void createClientRegion(ClientCache cache, String regionName, String shortcutName)
-      throws Exception {
-    Class aClass = Thread.currentThread().getContextClassLoader()
-        .loadClass("org.apache.geode.cache.client.ClientRegionShortcut");
-    Object[] enumConstants = aClass.getEnumConstants();
-    ClientRegionShortcut shortcut = null;
-    int length = enumConstants.length;
-    for (int i = 0; i < length; i++) {
-      Object constant = enumConstants[i];
-      if (((Enum) constant).name().equals(shortcutName)) {
-        shortcut = (ClientRegionShortcut) constant;
-        break;
-      }
-    }
-    cache.createClientRegionFactory(shortcut).create(regionName);
   }
 
   public static void createRegion(String regionName, Object regionFactory) throws Exception {
     regionFactory.getClass().getMethod("create", String.class).invoke(regionFactory, regionName);
   }
 
-  public static void createPersistentReplicateRegion(Cache cache, String regionName, File diskStore)
-      throws Exception {
+  private static void createPersistentReplicateRegion(Cache cache, String regionName,
+      File diskStore) {
 
     DiskStore store = cache.findDiskStore("store");
     if (store == null) {
@@ -736,7 +642,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
         .create(regionName);
   }
 
-  public static void assertVersion(Cache cache, short ordinal) throws Exception {
+  private static void assertVersion(Cache cache, short ordinal) {
     DistributedSystem ds = cache.getDistributedSystem();
     InternalDistributedMember member = (InternalDistributedMember) ds.getDistributedMember();
     Version thisVersion = member.getVersionObject();
@@ -747,28 +653,13 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void assertQueryResults(Cache cache, String queryString, int numExpectedResults) {
-    try {
-      Query query = cache.getQueryService().newQuery(queryString);
-      SelectResults results = (SelectResults) query.execute();
-      int numResults = results.size();
-
-      if (numResults != numExpectedResults) {
-        System.out.println("Num Results was:" + numResults);
-        throw new Error("Num results:" + numResults + " != num expected:" + numExpectedResults);
-      }
-    } catch (Exception e) {
-      throw new Error("Query Exception", e);
-    }
-  }
-
-  public static void stopCacheServers(Cache cache) throws Exception {
+  private static void stopCacheServers(Cache cache) {
     for (CacheServer server : cache.getCacheServers()) {
       server.stop();
     }
   }
 
-  public static void closeCache(final Cache cache) throws Exception {
+  private static void closeCache(final Cache cache) {
     if (cache == null) {
       return;
     }
@@ -780,7 +671,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void rebalance(Cache cache) throws Exception {
+  private static void rebalance(Cache cache) throws Exception {
     RebalanceOperation op = cache.getResourceManager().createRebalanceFactory().start();
 
     // Wait until the rebalance is complete
@@ -798,7 +689,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Starts a locator with given configuration.
    */
-  public static void startLocator(final String serverHostName, final int port,
+  private static void startLocator(final String serverHostName, final int port,
       final String testName, final String locatorsString, final Properties props, boolean fastStart)
       throws Exception {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
@@ -824,14 +715,14 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void stopLocator() throws Exception {
+  private static void stopLocator() {
     Locator.getLocator().stop();
   }
 
   /**
    * Get the port that the standard dunit locator is listening on.
    */
-  public static String getDUnitLocatorAddress() {
+  private static String getDUnitLocatorAddress() {
     return Host.getHost(0).getHostName();
   }
 

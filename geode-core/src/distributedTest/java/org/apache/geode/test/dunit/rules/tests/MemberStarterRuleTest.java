@@ -110,4 +110,13 @@ public class MemberStarterRuleTest {
 
     assertThat(locator.getWorkingDir()).isNotNull();
   }
+
+  @Test
+  public void httpPort() {
+    locator = new LocatorStarterRule().withoutHttpService();
+    locator.before();
+
+    assertThat(locator.getHttpPort()).isEqualTo(0);
+    assertThat(locator.getJmxPort()).isGreaterThan(0);
+  }
 }

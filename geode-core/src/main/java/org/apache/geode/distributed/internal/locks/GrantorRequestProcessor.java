@@ -279,11 +279,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * @param sys th distributed system
    * @return information describing the current grantor of this service and if recovery is needed
    */
-  public static GrantorInfo peekGrantor(DLockService service, InternalDistributedSystem sys) {
+  static GrantorInfo peekGrantor(DLockService service, InternalDistributedSystem sys) {
     return basicOp(-1, service, -1, sys, null, PEEK_OP);
   }
 
-  public static GrantorInfo peekGrantor(String serviceName, InternalDistributedSystem sys) {
+  static GrantorInfo peekGrantor(String serviceName, InternalDistributedSystem sys) {
     return basicOp(-1, serviceName, null, -1, sys, null, PEEK_OP);
   }
 
@@ -296,7 +296,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * @return information describing the previous grantor, if any, and if we need to do a grantor
    *         recovery
    */
-  public static GrantorInfo becomeGrantor(DLockService service, int dlsSerialNumber,
+  static GrantorInfo becomeGrantor(DLockService service, int dlsSerialNumber,
       InternalDistributedMember oldTurk, InternalDistributedSystem sys) {
     return basicOp(-1, service, dlsSerialNumber, sys, oldTurk, BECOME_OP);
   }
@@ -307,7 +307,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * @param service the service we are no longer the grantor of.
    * @param sys the distributed system
    */
-  public static void clearGrantor(long grantorVersion, DLockService service, int dlsSerialNumber,
+  static void clearGrantor(long grantorVersion, DLockService service, int dlsSerialNumber,
       InternalDistributedSystem sys, boolean withLocks) {
     basicOp(grantorVersion, service, dlsSerialNumber, sys, null,
         withLocks ? CLEAR_WITH_LOCKS_OP : CLEAR_OP);

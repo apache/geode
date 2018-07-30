@@ -61,12 +61,11 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
   /**
    * Adds any unresponsive members to s
    */
-  void collectUnresponsiveMembers(Set s) {
+  void collectUnresponsiveMembers(Set<InternalDistributedMember> s) {
     if (stillWaiting()) {
       InternalDistributedMember[] memberList = getMembers();
       synchronized (memberList) {
-        for (int i = 0; i < memberList.length; i++) {
-          InternalDistributedMember m = memberList[i];
+        for (InternalDistributedMember m : memberList) {
           if (m != null) {
             s.add(m);
           }

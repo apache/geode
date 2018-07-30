@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -168,6 +169,7 @@ public class DiskSpaceLimitIntegrationTest {
   }
 
   @Test
+  @Ignore("Fails frequently in docker container.")
   public void aboveZeroDeletesPreviousFiles() throws Exception {
     int oldMainId = 1;
     int newMainId = 2;

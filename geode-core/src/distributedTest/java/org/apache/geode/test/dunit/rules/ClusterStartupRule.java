@@ -284,25 +284,23 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
 
-    SerializableConsumerIF<ClientCacheFactory> consumer = ((cacheFactory) -> {
-      cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
+    return startClientVM(index, props, (ccf) -> {
+      ccf.setPoolSubscriptionEnabled(subscriptionEnabled);
       for (int serverPort : serverPorts) {
-        cacheFactory.addPoolServer("localhost", serverPort);
+        ccf.addPoolServer("localhost", serverPort);
       }
     });
-    return startClientVM(index, props, consumer);
   }
 
   // convenient startClientMethod
   public ClientVM startClientVM(int index, boolean subscriptionEnabled, int... serverPorts)
       throws Exception {
-    SerializableConsumerIF<ClientCacheFactory> consumer = ((cacheFactory) -> {
-      cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
-      for (int serverPort : serverPorts) {
-        cacheFactory.addPoolServer("localhost", serverPort);
+    return startClientVM(index, ccf -> {
+      ccf.setPoolSubscriptionEnabled(subscriptionEnabled);
+      for (int port : serverPorts) {
+        ccf.addPoolServer("localhost", port);
       }
     });
-    return startClientVM(index, consumer);
   }
 
   /**

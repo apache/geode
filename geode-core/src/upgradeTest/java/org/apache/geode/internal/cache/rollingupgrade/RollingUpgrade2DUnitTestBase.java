@@ -40,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -93,14 +91,11 @@ import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.RMIException;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
@@ -121,7 +116,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
+public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
 
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
@@ -134,21 +129,19 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return result;
   }
 
-  private File[] testingDirs = new File[3];
+  File[] testingDirs = new File[3];
 
 
-  private static String diskDir = "RollingUpgrade2DUnitTest";
+  protected static String diskDir = "RollingUpgrade2DUnitTestBase";
 
   // Each vm will have a cache object
-  private static GemFireCache cache;
+  protected static GemFireCache cache;
 
-  private String oldVersion;
+  @Parameterized.Parameter
+  public String oldVersion;
 
-  public RollingUpgrade2DUnitTest(String version) {
-    oldVersion = version;
-  }
 
-  private void deleteVMFiles() throws Exception {
+  private void deleteVMFiles() {
     System.out.println("deleting files in vm" + VM.getCurrentVMNum());
     File pwd = new File(".");
     for (File entry : pwd.listFiles()) {
@@ -172,419 +165,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
 
-  @Test
-  public void testRollSingleLocatorWithMultipleServersReplicatedRegion() throws Exception {
-    doTestRollSingleLocatorWithMultipleServers(false, oldVersion);
-  }
-
-  // 1 locator, 3 servers
-  public void doTestRollSingleLocatorWithMultipleServers(boolean partitioned, String oldVersion)
-      throws Exception {
-    final Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 0);
-    VM server2 = host.getVM(oldVersion, 1);
-    VM server3 = host.getVM(oldVersion, 2);
-
-    final String objectType = "strings";
-    final String regionName = "aRegion";
-
-    RegionShortcut shortcut = RegionShortcut.REPLICATE;
-    if (partitioned) {
-      shortcut = RegionShortcut.PARTITION_REDUNDANT;
-    }
-
-    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts[0]);
-
-    // configure all class loaders for each vm
-
-    String hostName = NetworkUtils.getServerHostName();
-    String locatorString = getLocatorString(locatorPorts);
-    try {
-      locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorString), true));
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      locator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server2, server3);
-
-      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), server2, server3);
-
-      putAndVerify(objectType, server2, regionName, 0, 10, server3);
-      locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
-          locatorString);
-
-      server2 = rollServerToCurrentAndCreateRegion(server2, shortcut, regionName, locatorPorts);
-      putAndVerify(objectType, server2, regionName, 5, 15, server3);
-      putAndVerify(objectType, server3, regionName, 10, 20, server2);
-
-      server3 = rollServerToCurrentAndCreateRegion(server3, shortcut, regionName, locatorPorts);
-      putAndVerify(objectType, server2, regionName, 15, 25, server3);
-      putAndVerify(objectType, server3, regionName, 20, 30, server2);
-
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator);
-      invokeRunnableInVMs(true, invokeCloseCache(), server2, server3);
-    }
-  }
-
-  /**
-   * Replicated regions
-   */
-  @Test
-  public void testRollLocatorWithTwoServers() throws Exception {
-    doTestRollLocatorsWithTwoServers(false, oldVersion);
-  }
-
-  // 2 locator, 2 servers
-  public void doTestRollLocatorsWithTwoServers(boolean partitioned, String oldVersion)
-      throws Exception {
-    final Host host = Host.getHost(0);
-    VM locator1 = host.getVM(oldVersion, 0);
-    VM server3 = host.getVM(oldVersion, 2);
-    VM server4 = host.getVM(oldVersion, 3);
-
-    final String objectType = "strings";
-    final String regionName = "aRegion";
-
-    RegionShortcut shortcut = RegionShortcut.REPLICATE;
-    if (partitioned) {
-      shortcut = RegionShortcut.PARTITION_REDUNDANT;
-    }
-
-    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-
-    String hostName = NetworkUtils.getServerHostName();
-    String locatorString = getLocatorString(locatorPorts);
-    try {
-      locator1.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorString), true));
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      locator1.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server3, server4);
-
-      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), server3, server4);
-
-      putAndVerify(objectType, server3, regionName, 0, 10, server3, server4);
-      locator1 = rollLocatorToCurrent(locator1, hostName, locatorPorts[0], getTestMethodName(),
-          locatorString);
-
-      server3 = rollServerToCurrentAndCreateRegion(server3, shortcut, regionName, locatorPorts);
-      putAndVerify(objectType, server4, regionName, 15, 25, server3, server4);
-      putAndVerify(objectType, server3, regionName, 20, 30, server3, server4);
-
-      server4 = rollServerToCurrentAndCreateRegion(server4, shortcut, regionName, locatorPorts);
-      putAndVerify(objectType, server4, regionName, 25, 35, server3, server4);
-      putAndVerify(objectType, server3, regionName, 30, 40, server3, server4);
-
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator1);
-      invokeRunnableInVMs(true, invokeCloseCache(), server3, server4);
-    }
-  }
-
-  @Test
-  public void testClients() throws Exception {
-    doTestClients(false, oldVersion);
-  }
-
-  public void doTestClients(boolean partitioned, String oldVersion) throws Exception {
-    final Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 0);
-    VM server2 = host.getVM(oldVersion, 1);
-    VM server3 = host.getVM(oldVersion, 2);
-    VM client = host.getVM(oldVersion, 3);
-
-    final String objectType = "strings";
-    final String regionName = "aRegion";
-
-    RegionShortcut shortcut = RegionShortcut.REPLICATE;
-    if (partitioned) {
-      shortcut = RegionShortcut.PARTITION_REDUNDANT;
-    }
-
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    int[] locatorPorts = new int[] {ports[0]};
-    int[] csPorts = new int[] {ports[1], ports[2]};
-
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-
-    String hostName = NetworkUtils.getServerHostName();
-    String[] hostNames = new String[] {hostName};
-    String locatorString = getLocatorString(locatorPorts);
-    try {
-      locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorString), true));
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      locator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server2, server3);
-      invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server2);
-      invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server3);
-
-      invokeRunnableInVMs(
-          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts, false),
-          client);
-      // invokeRunnableInVMs(invokeAssertVersion(oldOrdinal), server2, server3, client);
-      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), server2, server3);
-      invokeRunnableInVMs(invokeCreateClientRegion(regionName, ClientRegionShortcut.PROXY), client);
-
-      putAndVerify(objectType, client, regionName, 0, 10, server3, client);
-      putAndVerify(objectType, server3, regionName, 100, 110, server3, client);
-      locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
-          locatorString);
-
-      server3 = rollServerToCurrentAndCreateRegion(server3, shortcut, regionName, locatorPorts);
-      invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server3);
-      putAndVerify(objectType, client, regionName, 15, 25, server3, client);
-      putAndVerify(objectType, server3, regionName, 20, 30, server3, client);
-
-      server2 = rollServerToCurrentAndCreateRegion(server2, shortcut, regionName, locatorPorts);
-      invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server2);
-      putAndVerify(objectType, client, regionName, 25, 35, server2, client);
-      putAndVerify(objectType, server2, regionName, 30, 40, server3, client);
-
-      client = rollClientToCurrentAndCreateRegion(client, ClientRegionShortcut.PROXY, regionName,
-          hostNames, locatorPorts, false);
-      putAndVerify(objectType, client, regionName, 35, 45, server2, server3);
-      putAndVerify(objectType, server2, regionName, 40, 50, server3, client);
-
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator);
-      invokeRunnableInVMs(true, invokeCloseCache(), server2, server3, client);
-    }
-  }
-
-  /**
-   * starts 3 locators and 1 server rolls all 3 locators and then the server
-   */
-  @Test
-  public void testRollLocatorsWithOldServer() throws Exception {
-    doTestRollLocatorsWithOldServer(oldVersion);
-  }
-
-  public void doTestRollLocatorsWithOldServer(String oldVersion) throws Exception {
-    final Host host = Host.getHost(0);
-    VM locator1 = host.getVM(oldVersion, 0);
-    VM locator2 = host.getVM(oldVersion, 1);
-    VM server4 = host.getVM(oldVersion, 3);
-
-    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-
-    String hostName = NetworkUtils.getServerHostName();
-    String locatorString = getLocatorString(locatorPorts);
-    try {
-      locator1.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorString), true));
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      locator1.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-      locator2.invoke(invokeStartLocator(hostName, locatorPorts[1], getTestMethodName(),
-          getLocatorProperties(locatorString), false));
-
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server4);
-
-      locator1 = rollLocatorToCurrent(locator1, hostName, locatorPorts[0], getTestMethodName(),
-          locatorString);
-      locator2 = rollLocatorToCurrent(locator2, hostName, locatorPorts[1], getTestMethodName(),
-          locatorString);
-
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator1, locator2);
-      invokeRunnableInVMs(true, invokeCloseCache(), server4);
-    }
-  }
-
-  /**
-   * Starts 2 servers with old classloader puts in one server while the other bounces verifies
-   * values are present in bounced server puts in the newly started/bounced server and bounces the
-   * other server verifies values are present in newly bounced server
-   */
-  @Test
-  public void testConcurrentPutsReplicated() throws Exception {
-    doTestConcurrent(false, oldVersion);
-  }
-
-  public void doTestConcurrent(boolean partitioned, String oldVersion) throws Exception {
-    Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 1);
-    VM server1 = host.getVM(oldVersion, 2);
-    VM server2 = host.getVM(oldVersion, 3);
-
-    final String objectType = "strings";
-    final String regionName = "aRegion";
-
-    RegionShortcut shortcut = RegionShortcut.REPLICATE;
-    if (partitioned) {
-      shortcut = RegionShortcut.PARTITION_REDUNDANT;
-    }
-
-    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-    String hostName = NetworkUtils.getServerHostName();
-    String locatorString = getLocatorString(locatorPorts);
-
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-
-    try {
-      locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorString), true));
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      locator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
-      // invokeRunnableInVMs(invokeAssertVersion(oldOrdinal), server1, server2);
-      // create region
-      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), server1, server2);
-
-      // async puts through server 2
-      AsyncInvocation asyncPutsThroughOld =
-          server2.invokeAsync(new CacheSerializableRunnable("async puts") {
-            public void run2() {
-              try {
-                for (int i = 0; i < 500; i++) {
-                  put(RollingUpgrade2DUnitTest.cache, regionName, "" + i, "VALUE(" + i + ")");
-                }
-              } catch (Exception e) {
-                fail("error putting");
-              }
-            }
-          });
-      locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
-          locatorString);
-
-      server1 = rollServerToCurrentAndCreateRegion(server1, shortcut, regionName, locatorPorts);
-      ThreadUtils.join(asyncPutsThroughOld, 30000);
-
-      // verifyValues in server1
-      verifyValues(objectType, regionName, 0, 500, server1);
-
-      // aync puts through server 1
-      AsyncInvocation asyncPutsThroughNew =
-          server1.invokeAsync(new CacheSerializableRunnable("async puts") {
-            public void run2() {
-              try {
-                for (int i = 250; i < 750; i++) {
-                  put(RollingUpgrade2DUnitTest.cache, regionName, "" + i, "VALUE(" + i + ")");
-                }
-              } catch (Exception e) {
-                fail("error putting");
-              }
-            }
-          });
-      server2 = rollServerToCurrentAndCreateRegion(server2, shortcut, regionName, locatorPorts);
-      ThreadUtils.join(asyncPutsThroughNew, 30000);
-
-      // verifyValues in server2
-      verifyValues(objectType, regionName, 250, 750, server2);
-
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator);
-      invokeRunnableInVMs(true, invokeCloseCache(), server1, server2);
-    }
-  }
-
-  @Ignore("GEODE-2355: test fails consistently")
-  @Test
-  public void testOplogMagicSeqBackwardCompactibility() throws Exception {
-    String objectType = "strings";
-    String regionType = "persistentReplicate";
-
-
-    final Host host = Host.getHost(0);
-    VM server1 = host.getVM(oldVersion, 0);
-    VM server2 = host.getVM(oldVersion, 1);
-    VM server3 = host.getVM(oldVersion, 2);
-    VM locator = host.getVM(oldVersion, 3);
-
-    String regionName = "aRegion";
-    RegionShortcut shortcut = RegionShortcut.REPLICATE_PERSISTENT;
-    for (int i = 0; i < testingDirs.length; i++) {
-      testingDirs[i] = new File(diskDir, "diskStoreVM_" + String.valueOf(host.getVM(i).getId()))
-          .getAbsoluteFile();
-      if (!testingDirs[i].exists()) {
-        System.out.println(" Creating diskdir for server: " + i);
-        testingDirs[i].mkdirs();
-      }
-    }
-
-    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-    String hostName = NetworkUtils.getServerHostName();
-    String locatorsString = getLocatorString(locatorPorts);
-
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-
-    try {
-      locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorsString), true));
-
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2,
-          server3);
-      // invokeRunnableInVMs(invokeAssertVersion(oldOrdinal), server1, server2, server3);
-      // create region
-      for (int i = 0; i < testingDirs.length; i++) {
-        CacheSerializableRunnable runnable =
-            invokeCreatePersistentReplicateRegion(regionName, testingDirs[i]);
-        invokeRunnableInVMs(runnable, host.getVM(i));
-      }
-
-      putAndVerify("strings", server1, regionName, 0, 10, server2, server3);
-      // before upgrade headers will be absent
-      HashSet<String> oldFormatFiles = verifyOplogHeader(testingDirs[0], null);
-      locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
-          locatorsString);
-      server1 = rollServerToCurrentAndCreateRegion(server1, regionType, testingDirs[0], shortcut,
-          regionName, locatorPorts);
-      System.out.println(verifyOplogHeader(testingDirs[0], oldFormatFiles));
-      verifyValues(objectType, regionName, 0, 10, server1);
-      putAndVerify(objectType, server1, regionName, 5, 15, server2, server3);
-      putAndVerify(objectType, server2, regionName, 10, 20, server1, server3);
-      System.out.println(verifyOplogHeader(testingDirs[0], oldFormatFiles));
-      System.out.println(verifyOplogHeader(testingDirs[1], null));
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator);
-      invokeRunnableInVMs(true, invokeCloseCache(), server1, server2, server3);
-      if ((regionType.equals("persistentReplicate"))) {
-        deleteDiskStores();
-      }
-    }
-  }
-
-  private HashSet<String> verifyOplogHeader(File dir, HashSet<String> oldFiles) throws IOException {
+  HashSet<String> verifyOplogHeader(File dir, HashSet<String> oldFiles) throws IOException {
     if (oldFiles != null) {
       for (String file : oldFiles) {
         System.out.println("Known old format file: " + file);
@@ -641,39 +222,6 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return oldFilesFound;
   }
 
-  @Test
-  public void testPutAndGetMixedServersReplicateRegion() throws Exception {
-    doTestPutAndGetMixedServers("dataserializable", false, oldVersion);
-  }
-
-  @Test
-  public void testPutAndGetMixedServerPartitionedRegion() throws Exception {
-    doTestPutAndGetMixedServers("dataserializable", true, oldVersion);
-  }
-
-  /**
-   * Demonstrate that an old process can't join a system that has upgraded locators. This is for
-   * bugs #50510 and #50742.
-   */
-  @Test
-  public void testOldMemberCantJoinRolledLocators() throws Exception {
-    VM oldServer = Host.getHost(0).getVM(oldVersion, 1);
-    Properties props = getSystemProperties(); // uses the DUnit locator
-    try {
-      oldServer.invoke(invokeCreateCache(props));
-    } catch (RMIException e) {
-      Throwable cause = e.getCause();
-      if (cause != null && (cause instanceof AssertionError)) {
-        cause = cause.getCause();
-        if (cause != null && cause.getMessage() != null && !cause.getMessage().startsWith(
-            "Rejecting the attempt of a member using an older version of the product to join the distributed system")) {
-          throw e;
-        }
-      }
-    }
-  }
-
-
 
   /**
    * This test starts up multiple servers from the current code base and multiple servers from the
@@ -681,7 +229,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
    * results are present. Note that the puts have overlapping region keys just to test new puts and
    * replaces
    */
-  public void doTestPutAndGetMixedServers(String objectType, boolean partitioned, String oldVersion)
+  void doTestPutAndGetMixedServers(String objectType, boolean partitioned, String oldVersion)
       throws Exception {
     final Host host = Host.getHost(0);
     VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
@@ -743,28 +291,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @Test
-  public void testQueryMixedServersOnReplicatedRegions() throws Exception {
-    doTestQueryMixedServers(false, oldVersion);
-  }
-
-  @Test
-  public void testQueryMixedServersOnPartitionedRegions() throws Exception {
-    doTestQueryMixedServers(true, oldVersion);
-  }
-
-  @Ignore("GEODE_2356: test fails when index creation succeeds")
-  @Test
-  public void testCreateMultiIndexesMixedServersOnPartitionedRegions() throws Exception {
-    doTestCreateIndexes(true, true, oldVersion);
-  }
-
-  @Test
-  public void testCreateIndexesMixedServersOnPartitionedRegions() throws Exception {
-    doTestCreateIndexes(false, true, oldVersion);
-  }
-
-  public void doTestQueryMixedServers(boolean partitioned, String oldVersion) throws Exception {
+  void doTestQueryMixedServers(boolean partitioned, String oldVersion) throws Exception {
     final Host host = Host.getHost(0);
     VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
     VM oldServer = host.getVM(oldVersion, 1);
@@ -823,71 +350,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @Test
-  public void testTracePRQuery() throws Exception {
-    doTestTracePRQuery(true, oldVersion);
-  }
-
-  public void doTestTracePRQuery(boolean partitioned, String oldVersion) throws Exception {
-    final Host host = Host.getHost(0);
-    VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
-    VM oldServer = host.getVM(oldVersion, 1);
-    VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM oldServerAndLocator = host.getVM(oldVersion, 3);
-
-    String regionName = "cqs";
-
-    RegionShortcut shortcut = RegionShortcut.REPLICATE;
-    if (partitioned) {
-      shortcut = RegionShortcut.PARTITION;
-    }
-
-    String serverHostName = NetworkUtils.getServerHostName();
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    try {
-      Properties props = getSystemProperties();
-      props.remove(DistributionConfig.LOCATORS_NAME);
-      invokeRunnableInVMs(invokeStartLocatorAndServer(serverHostName, port, props),
-          oldServerAndLocator);
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-      props.put(DistributionConfig.LOCATORS_NAME, serverHostName + "[" + port + "]");
-      invokeRunnableInVMs(invokeCreateCache(props), currentServer1, currentServer2, oldServer);
-
-      currentServer1.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-      currentServer2.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-
-      // create region
-      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), currentServer1, currentServer2,
-          oldServer, oldServerAndLocator);
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-      putDataSerializableAndVerify(currentServer1, regionName, 0, 100, currentServer2, oldServer,
-          oldServerAndLocator);
-      query("<trace> Select * from /" + regionName + " p where p.timeout > 0L", 99, currentServer1,
-          currentServer2, oldServer, oldServerAndLocator);
-
-    } finally {
-      invokeRunnableInVMs(invokeCloseCache(), currentServer1, currentServer2, oldServer,
-          oldServerAndLocator);
-    }
-  }
-
-  public void doTestCreateIndexes(boolean createMultiIndexes, boolean partitioned,
+  void doTestCreateIndexes(boolean createMultiIndexes, boolean partitioned,
       String oldVersion) throws Exception {
     final Host host = Host.getHost(0);
     final VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 0);
@@ -949,127 +412,6 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @Test
-  // This test verifies that an XmlEntity created in the current version serializes properly to
-  // previous versions and vice versa.
-  public void testVerifyXmlEntity() throws Exception {
-    doTestVerifyXmlEntity(oldVersion);
-  }
-
-  private void doTestVerifyXmlEntity(String oldVersion) throws Exception {
-    final Host host = Host.getHost(0);
-    VM oldLocator = host.getVM(oldVersion, 0);
-    VM oldServer = host.getVM(oldVersion, 1);
-    VM currentServer1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM currentServer2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
-
-    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-    String hostName = NetworkUtils.getServerHostName();
-    String locatorsString = getLocatorString(locatorPorts);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-
-    try {
-      // Start locator
-      oldLocator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorsString, false), true));
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      oldLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-      // Start servers
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), oldServer,
-          currentServer1, currentServer2);
-      currentServer1.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-      currentServer2.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-
-      // Get DistributedMembers of the servers
-      DistributedMember oldServerMember = oldServer.invoke(() -> getDistributedMember());
-      DistributedMember currentServer1Member = currentServer1.invoke(() -> getDistributedMember());
-      DistributedMember currentServer2Member = currentServer2.invoke(() -> getDistributedMember());
-
-      // Register function in all servers
-      Function function = new GetDataSerializableFunction();
-      invokeRunnableInVMs(invokeRegisterFunction(function), oldServer, currentServer1,
-          currentServer2);
-
-      // Execute the function in the old server against the other servers to verify the
-      // DataSerializable can be serialized from a newer server to an older one.
-      oldServer.invoke(() -> executeFunctionAndVerify(function.getId(),
-          "org.apache.geode.management.internal.configuration.domain.XmlEntity",
-          currentServer1Member, currentServer2Member));
-
-      // Execute the function in a new server against the other servers to verify the
-      // DataSerializable can be serialized from an older server to a newer one.
-      currentServer1.invoke(() -> executeFunctionAndVerify(function.getId(),
-          "org.apache.geode.management.internal.configuration.domain.XmlEntity", oldServerMember,
-          currentServer2Member));
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), oldLocator);
-      invokeRunnableInVMs(true, invokeCloseCache(), oldServer, currentServer1, currentServer2);
-    }
-  }
-
-  @Test
-  public void testHARegionNameOnDifferentServerVersions() throws Exception {
-    doTestHARegionNameOnDifferentServerVersions(false, oldVersion);
-  }
-
-  public void doTestHARegionNameOnDifferentServerVersions(boolean partitioned, String oldVersion)
-      throws Exception {
-    final Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 0);
-    VM server1 = host.getVM(oldVersion, 1);
-    VM server2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
-    VM client = host.getVM(oldVersion, 3);
-
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    int[] locatorPorts = new int[] {ports[0]};
-    int[] csPorts = new int[] {ports[1], ports[2]};
-
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
-
-    String hostName = NetworkUtils.getServerHostName();
-    String[] hostNames = new String[] {hostName};
-    String locatorString = getLocatorString(locatorPorts);
-    try {
-      locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
-          getLocatorProperties(locatorString, false), true));
-
-      // Locators before 1.4 handled configuration asynchronously.
-      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
-      locator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
-                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
-                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
-
-      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
-      invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server1);
-      invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server2);
-
-      invokeRunnableInVMs(
-          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts, true),
-          client);
-
-      // Get HARegion name on server1
-      String server1HARegionName = server1.invoke(() -> getHARegionName());
-
-      // Get HARegionName on server2
-      String server2HARegionName = server2.invoke(() -> getHARegionName());
-
-      // Verify they are equal
-      assertEquals(server1HARegionName, server2HARegionName);
-    } finally {
-      invokeRunnableInVMs(true, invokeStopLocator(), locator);
-      invokeRunnableInVMs(true, invokeCloseCache(), server1, server2, client);
-    }
-  }
-
   // ******** TEST HELPER METHODS ********/
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM check1, VM check2, VM check3) throws Exception {
@@ -1085,7 +427,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   // ******** TEST HELPER METHODS ********/
-  private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
+  void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM... checkVMs) throws Exception {
     if (objectType.equals("strings")) {
       putStringsAndVerify(putter, regionName, start, end, checkVMs);
@@ -1121,7 +463,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void putDataSerializableAndVerify(VM putter, String regionName, int start, int end,
+  void putDataSerializableAndVerify(VM putter, String regionName, int start, int end,
       VM... vms) throws Exception {
     for (int i = start; i < end; i++) {
       Class aClass = Thread.currentThread().getContextClassLoader()
@@ -1137,7 +479,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void verifyValues(String objectType, String regionName, int start, int end, VM... vms) {
+  void verifyValues(String objectType, String regionName, int start, int end, VM... vms) {
     if (objectType.equals("strings")) {
       for (VM vm : vms) {
         vm.invoke(invokeAssertEntriesCorrect(regionName, start, end));
@@ -1154,7 +496,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  private void executeFunctionAndVerify(String functionId, String dsClassName,
+  void executeFunctionAndVerify(String functionId, String dsClassName,
       DistributedMember... members) {
     Set<DistributedMember> membersSet = new HashSet<>();
     Collections.addAll(membersSet, members);
@@ -1167,7 +509,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void query(String queryString, int numExpectedResults, VM... vms) {
+  protected void query(String queryString, int numExpectedResults, VM... vms) {
     for (VM vm : vms) {
       vm.invoke(invokeAssertQueryResults(queryString, numExpectedResults));
     }
@@ -1185,15 +527,15 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void invokeRunnableInVMs(CacheSerializableRunnable runnable, VM... vms) throws Exception {
+  void invokeRunnableInVMs(CacheSerializableRunnable runnable, VM... vms) {
     for (VM vm : vms) {
       vm.invoke(runnable);
     }
   }
 
   // Used to close cache and make sure we attempt on all vms even if some do not have a cache
-  private void invokeRunnableInVMs(boolean catchErrors, CacheSerializableRunnable runnable,
-      VM... vms) throws Exception {
+  void invokeRunnableInVMs(boolean catchErrors, CacheSerializableRunnable runnable,
+      VM... vms) {
     for (VM vm : vms) {
       try {
         vm.invoke(runnable);
@@ -1205,7 +547,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) throws Exception {
+  private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) {
     // Roll the server
     oldServer.invoke(invokeCloseCache());
     VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
@@ -1216,7 +558,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   private VM rollClientToCurrent(VM oldClient, String[] hostNames, int[] locatorPorts,
-      boolean subscriptionEnabled) throws Exception {
+      boolean subscriptionEnabled) {
     oldClient.invoke(invokeCloseCache());
     VM rollClient = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldClient.getId());
     rollClient.invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts,
@@ -1225,8 +567,8 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return rollClient;
   }
 
-  private VM rollServerToCurrentAndCreateRegion(VM oldServer, RegionShortcut shortcut,
-      String regionName, int[] locatorPorts) throws Exception {
+  VM rollServerToCurrentAndCreateRegion(VM oldServer, RegionShortcut shortcut,
+      String regionName, int[] locatorPorts) {
     VM newServer = rollServerToCurrent(oldServer, locatorPorts);
     // recreate region on "rolled" server
     invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), newServer);
@@ -1234,8 +576,8 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return newServer;
   }
 
-  private VM rollServerToCurrentAndCreateRegion(VM oldServer, String regionType, File diskdir,
-      RegionShortcut shortcut, String regionName, int[] locatorPorts) throws Exception {
+  VM rollServerToCurrentAndCreateRegion(VM oldServer, String regionType, File diskdir,
+      RegionShortcut shortcut, String regionName, int[] locatorPorts) {
     VM rollServer = rollServerToCurrent(oldServer, locatorPorts);
     // recreate region on "rolled" server
     if ((regionType.equals("persistentReplicate"))) {
@@ -1249,17 +591,16 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return rollServer;
   }
 
-  private VM rollClientToCurrentAndCreateRegion(VM oldClient, ClientRegionShortcut shortcut,
-      String regionName, String[] hostNames, int[] locatorPorts, boolean subscriptionEnabled)
-      throws Exception {
+  VM rollClientToCurrentAndCreateRegion(VM oldClient, ClientRegionShortcut shortcut,
+      String regionName, String[] hostNames, int[] locatorPorts, boolean subscriptionEnabled) {
     VM rollClient = rollClientToCurrent(oldClient, hostNames, locatorPorts, subscriptionEnabled);
     // recreate region on "rolled" client
     invokeRunnableInVMs(invokeCreateClientRegion(regionName, shortcut), rollClient);
     return rollClient;
   }
 
-  private VM rollLocatorToCurrent(VM rollLocator, final String serverHostName, final int port,
-      final String testName, final String locatorString) throws Exception {
+  VM rollLocatorToCurrent(VM rollLocator, final String serverHostName, final int port,
+      final String testName, final String locatorString) {
     // Roll the locator
     rollLocator.invoke(invokeStopLocator());
     VM newLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, rollLocator.getId());
@@ -1269,7 +610,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   // Due to licensing changes
-  public Properties getSystemPropertiesPost71() {
+  private Properties getSystemPropertiesPost71() {
     Properties props = getSystemProperties();
     props.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
     props.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
@@ -1277,7 +618,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   // Due to licensing changes
-  public Properties getSystemPropertiesPost71(int[] locatorPorts) {
+  private Properties getSystemPropertiesPost71(int[] locatorPorts) {
     Properties props = getSystemProperties(locatorPorts);
     props.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
     props.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
@@ -1307,14 +648,14 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return props;
   }
 
-  public Properties getClientSystemProperties() {
+  Properties getClientSystemProperties() {
     Properties p = new Properties();
     p.setProperty("mcast-port", "0");
     p.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
     return p;
   }
 
-  public static String getLocatorString(int locatorPort) {
+  private static String getLocatorString(int locatorPort) {
     return getDUnitLocatorAddress() + "[" + locatorPort + "]";
   }
 
@@ -1330,7 +671,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return locatorString;
   }
 
-  private CacheSerializableRunnable invokeStartLocator(final String serverHostName, final int port,
+  CacheSerializableRunnable invokeStartLocator(final String serverHostName, final int port,
       final String testName, final Properties props, boolean fastStart) {
     return new CacheSerializableRunnable("execute: startLocator") {
       public void run2() {
@@ -1343,7 +684,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeStartLocatorAndServer(final String serverHostName,
+  CacheSerializableRunnable invokeStartLocatorAndServer(final String serverHostName,
       final int port, final Properties systemProperties) {
     return new CacheSerializableRunnable("execute: startLocator") {
       public void run2() {
@@ -1351,7 +692,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
           systemProperties.put(DistributionConfig.START_LOCATOR_NAME,
               "" + serverHostName + "[" + port + "]");
           systemProperties.put(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
-          RollingUpgrade2DUnitTest.cache = createCache(systemProperties);
+          RollingUpgrade2DUnitTestBase.cache = createCache(systemProperties);
           Thread.sleep(5000); // bug in 1.0 - cluster config service not immediately available
         } catch (Exception e) {
           fail("Error starting locators", e);
@@ -1360,11 +701,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeCreateCache(final Properties systemProperties) {
+  CacheSerializableRunnable invokeCreateCache(final Properties systemProperties) {
     return new CacheSerializableRunnable("execute: createCache") {
       public void run2() {
         try {
-          RollingUpgrade2DUnitTest.cache = createCache(systemProperties);
+          RollingUpgrade2DUnitTestBase.cache = createCache(systemProperties);
         } catch (Exception e) {
           fail("Error creating cache", e);
         }
@@ -1372,12 +713,12 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeCreateClientCache(final Properties systemProperties,
+  CacheSerializableRunnable invokeCreateClientCache(final Properties systemProperties,
       final String[] hosts, final int[] ports, boolean subscriptionEnabled) {
     return new CacheSerializableRunnable("execute: createClientCache") {
       public void run2() {
         try {
-          RollingUpgrade2DUnitTest.cache =
+          RollingUpgrade2DUnitTestBase.cache =
               createClientCache(systemProperties, hosts, ports, subscriptionEnabled);
         } catch (Exception e) {
           fail("Error creating client cache", e);
@@ -1386,11 +727,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeStartCacheServer(final int port) {
+  CacheSerializableRunnable invokeStartCacheServer(final int port) {
     return new CacheSerializableRunnable("execute: startCacheServer") {
       public void run2() {
         try {
-          startCacheServer(RollingUpgrade2DUnitTest.cache, port);
+          startCacheServer(RollingUpgrade2DUnitTestBase.cache, port);
         } catch (Exception e) {
           fail("Error creating cache", e);
         }
@@ -1398,11 +739,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeAssertVersion(final short version) {
+  CacheSerializableRunnable invokeAssertVersion(final short version) {
     return new CacheSerializableRunnable("execute: assertVersion") {
       public void run2() {
         try {
-          assertVersion(RollingUpgrade2DUnitTest.cache, version);
+          assertVersion(RollingUpgrade2DUnitTestBase.cache, version);
         } catch (Exception e) {
           fail("Error asserting version", e);
         }
@@ -1410,12 +751,12 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeCreateRegion(final String regionName,
+  CacheSerializableRunnable invokeCreateRegion(final String regionName,
       final RegionShortcut shortcut) {
     return new CacheSerializableRunnable("execute: createRegion") {
       public void run2() {
         try {
-          createRegion(RollingUpgrade2DUnitTest.cache, regionName, shortcut);
+          createRegion(RollingUpgrade2DUnitTestBase.cache, regionName, shortcut);
         } catch (Exception e) {
           fail("Error createRegion", e);
         }
@@ -1423,12 +764,13 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeCreatePersistentReplicateRegion(final String regionName,
+  CacheSerializableRunnable invokeCreatePersistentReplicateRegion(final String regionName,
       final File diskstore) {
     return new CacheSerializableRunnable("execute: createPersistentReplicateRegion") {
       public void run2() {
         try {
-          createPersistentReplicateRegion(RollingUpgrade2DUnitTest.cache, regionName, diskstore);
+          createPersistentReplicateRegion(RollingUpgrade2DUnitTestBase.cache, regionName,
+              diskstore);
         } catch (Exception e) {
           fail("Error createPersistentReplicateRegion", e);
         }
@@ -1436,12 +778,12 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeCreateClientRegion(final String regionName,
+  CacheSerializableRunnable invokeCreateClientRegion(final String regionName,
       final ClientRegionShortcut shortcut) {
     return new CacheSerializableRunnable("execute: createClientRegion") {
       public void run2() {
         try {
-          createClientRegion(RollingUpgrade2DUnitTest.cache, regionName, shortcut);
+          createClientRegion(RollingUpgrade2DUnitTestBase.cache, regionName, shortcut);
         } catch (Exception e) {
           fail("Error creating client region", e);
         }
@@ -1454,7 +796,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: put(" + key + "," + value + ")") {
       public void run2() {
         try {
-          put(RollingUpgrade2DUnitTest.cache, regionName, key, value);
+          put(RollingUpgrade2DUnitTestBase.cache, regionName, key, value);
         } catch (Exception e) {
           fail("Error put", e);
         }
@@ -1467,7 +809,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: assertEntriesCorrect") {
       public void run2() {
         try {
-          assertEntriesCorrect(RollingUpgrade2DUnitTest.cache, regionName, start, end);
+          assertEntriesCorrect(RollingUpgrade2DUnitTestBase.cache, regionName, start, end);
         } catch (Exception e) {
           fail("Error asserting equals", e);
         }
@@ -1480,7 +822,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: assertEntryExists") {
       public void run2() {
         try {
-          assertEntryExists(RollingUpgrade2DUnitTest.cache, regionName, start, end);
+          assertEntryExists(RollingUpgrade2DUnitTestBase.cache, regionName, start, end);
         } catch (Exception e) {
           fail("Error asserting exists", e);
         }
@@ -1488,7 +830,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeStopLocator() {
+  CacheSerializableRunnable invokeStopLocator() {
     return new CacheSerializableRunnable("execute: stopLocator") {
       public void run2() {
         try {
@@ -1500,11 +842,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeCloseCache() {
+  CacheSerializableRunnable invokeCloseCache() {
     return new CacheSerializableRunnable("execute: closeCache") {
       public void run2() {
         try {
-          closeCache(RollingUpgrade2DUnitTest.cache);
+          closeCache(RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error closing cache", e);
         }
@@ -1516,7 +858,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: rebalance") {
       public void run2() {
         try {
-          rebalance(RollingUpgrade2DUnitTest.cache);
+          rebalance(RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error rebalancing", e);
         }
@@ -1529,7 +871,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("execute: assertQueryResults") {
       public void run2() {
         try {
-          assertQueryResults(RollingUpgrade2DUnitTest.cache, queryString, numExpected);
+          assertQueryResults(RollingUpgrade2DUnitTestBase.cache, queryString, numExpected);
         } catch (Exception e) {
           fail("Error asserting query results", e);
         }
@@ -1541,7 +883,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("invokeCreateIndexes") {
       public void run2() {
         try {
-          createIndexes(regionPath, RollingUpgrade2DUnitTest.cache);
+          createIndexes(regionPath, RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error creating indexes ", e);
         }
@@ -1553,7 +895,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return new CacheSerializableRunnable("invokeCreateIndexes") {
       public void run2() {
         try {
-          createIndex(regionPath, RollingUpgrade2DUnitTest.cache);
+          createIndex(regionPath, RollingUpgrade2DUnitTestBase.cache);
         } catch (Exception e) {
           fail("Error creating indexes ", e);
         }
@@ -1561,7 +903,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  private CacheSerializableRunnable invokeRegisterFunction(final Function function) {
+  CacheSerializableRunnable invokeRegisterFunction(final Function function) {
     return new CacheSerializableRunnable("invokeRegisterFunction") {
       public void run2() {
         try {
@@ -1573,7 +915,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
-  public void deleteDiskStores() throws Exception {
+  void deleteDiskStores() {
     try {
       FileUtils.deleteDirectory(new File(diskDir).getAbsoluteFile());
     } catch (IOException e) {
@@ -1581,7 +923,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static Cache createCache(Properties systemProperties) throws Exception {
+  private static Cache createCache(Properties systemProperties) {
     systemProperties.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
     if (Version.CURRENT_ORDINAL < 75) {
       systemProperties.remove("validate-serializable-objects");
@@ -1591,14 +933,14 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return cf.create();
   }
 
-  public static void startCacheServer(GemFireCache cache, int port) throws Exception {
+  private static void startCacheServer(GemFireCache cache, int port) throws Exception {
     CacheServer cacheServer = ((GemFireCacheImpl) cache).addCacheServer();
     cacheServer.setPort(port);
     cacheServer.start();
   }
 
-  public static ClientCache createClientCache(Properties systemProperties, String[] hosts,
-      int[] ports, boolean subscriptionEnabled) throws Exception {
+  private static ClientCache createClientCache(Properties systemProperties, String[] hosts,
+      int[] ports, boolean subscriptionEnabled) {
     ClientCacheFactory cf = new ClientCacheFactory(systemProperties);
     if (subscriptionEnabled) {
       cf.setPoolSubscriptionEnabled(true);
@@ -1616,7 +958,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return clientCache;
   }
 
-  public static boolean assertRegionExists(GemFireCache cache, String regionName) throws Exception {
+  private static boolean assertRegionExists(GemFireCache cache, String regionName) {
     Region region = cache.getRegion(regionName);
     if (region == null) {
       throw new Error("Region: " + regionName + " does not exist");
@@ -1624,7 +966,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return true;
   }
 
-  public static Region getRegion(GemFireCache cache, String regionName) throws Exception {
+  private static Region getRegion(GemFireCache cache, String regionName) {
     return cache.getRegion(regionName);
   }
 
@@ -1632,8 +974,8 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return cache.getDistributedSystem().getDistributedMember();
   }
 
-  public static boolean assertEntriesCorrect(GemFireCache cache, String regionName, int start,
-      int end) throws Exception {
+  private static boolean assertEntriesCorrect(GemFireCache cache, String regionName, int start,
+      int end) {
     assertRegionExists(cache, regionName);
     Region region = getRegion(cache, regionName);
     for (int i = start; i < end; i++) {
@@ -1650,8 +992,8 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return true;
   }
 
-  public static boolean assertEntryExists(GemFireCache cache, String regionName, int start, int end)
-      throws Exception {
+  private static boolean assertEntryExists(GemFireCache cache, String regionName, int start,
+      int end) {
     assertRegionExists(cache, regionName);
     Region region = getRegion(cache, regionName);
     for (int i = start; i < end; i++) {
@@ -1664,8 +1006,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return true;
   }
 
-  public static Object put(GemFireCache cache, String regionName, Object key, Object value)
-      throws Exception {
+  public static Object put(GemFireCache cache, String regionName, Object key, Object value) {
     Region region = getRegion(cache, regionName);
     System.out.println(regionName + ".put(" + key + "," + value + ")");
     Object result = region.put(key, value);
@@ -1673,21 +1014,20 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return result;
   }
 
-  public static void createRegion(GemFireCache cache, String regionName, RegionShortcut shortcut)
-      throws Exception {
+  private static void createRegion(GemFireCache cache, String regionName, RegionShortcut shortcut) {
     RegionFactory rf = ((GemFireCacheImpl) cache).createRegionFactory(shortcut);
     System.out.println("created region " + rf.create(regionName));
   }
 
   // Assumes a client cache is passed
-  public static void createClientRegion(GemFireCache cache, String regionName,
-      ClientRegionShortcut shortcut) throws Exception {
+  private static void createClientRegion(GemFireCache cache, String regionName,
+      ClientRegionShortcut shortcut) {
     ClientRegionFactory rf = ((ClientCache) cache).createClientRegionFactory(shortcut);
     rf.create(regionName);
   }
 
-  public static void createPersistentReplicateRegion(GemFireCache cache, String regionName,
-      File diskStore) throws Exception {
+  private static void createPersistentReplicateRegion(GemFireCache cache, String regionName,
+      File diskStore) {
     DiskStore store = cache.findDiskStore("store");
     if (store == null) {
       DiskStoreFactory factory = cache.createDiskStoreFactory();
@@ -1701,7 +1041,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     rf.create(regionName);
   }
 
-  public static void assertVersion(GemFireCache cache, short ordinal) throws Exception {
+  private static void assertVersion(GemFireCache cache, short ordinal) {
     DistributedSystem system = cache.getDistributedSystem();
     int thisOrdinal =
         ((InternalDistributedMember) system.getDistributedMember()).getVersionObject().ordinal();
@@ -1711,7 +1051,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void assertQueryResults(GemFireCache cache, String queryString,
+  private static void assertQueryResults(GemFireCache cache, String queryString,
       int numExpectedResults) {
     try {
       QueryService qs = cache.getQueryService();
@@ -1727,7 +1067,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void createIndexes(String regionPath, GemFireCache cache) throws Exception {
+  private static void createIndexes(String regionPath, GemFireCache cache) throws Exception {
     QueryService service = cache.getQueryService();
     service.defineIndex("statusIndex", "status", regionPath);
     service.defineIndex("IDIndex", "ID", regionPath);
@@ -1752,7 +1092,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void createIndex(String regionPath, GemFireCache cache) {
+  private static void createIndex(String regionPath, GemFireCache cache) {
     try {
       QueryService service = cache.getQueryService();
       service.createIndex("statusIndex", "status", regionPath);
@@ -1772,30 +1112,30 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void registerFunction(Function function) {
+  private static void registerFunction(Function function) {
     FunctionService.registerFunction(function);
   }
 
-  public static void stopCacheServers(GemFireCache cache) throws Exception {
+  private static void stopCacheServers(GemFireCache cache) {
     List<CacheServer> servers = ((Cache) cache).getCacheServers();
     for (CacheServer server : servers) {
       server.stop();
     }
   }
 
-  public static void closeCache(GemFireCache cache) throws Exception {
+  private static void closeCache(GemFireCache cache) {
     if (cache == null) {
       return;
     }
     boolean cacheClosed = cache.isClosed();
-    if (cache != null && !cacheClosed) {
+    if (!cacheClosed) {
       stopCacheServers(cache);
       cache.close();
     }
     cache = null;
   }
 
-  public static void rebalance(Object cache) throws Exception {
+  private static void rebalance(Object cache) throws Exception {
     RebalanceOperation op =
         ((GemFireCache) cache).getResourceManager().createRebalanceFactory().start();
 
@@ -1807,11 +1147,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     System.out.println("Transfered " + results.getTotalBucketTransferBytes() + "bytes\n");
   }
 
-  public Properties getLocatorProperties(String locatorsString) {
+  Properties getLocatorProperties(String locatorsString) {
     return getLocatorProperties(locatorsString, true);
   }
 
-  public Properties getLocatorProperties(String locatorsString, boolean enableCC) {
+  Properties getLocatorProperties(String locatorsString, boolean enableCC) {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locatorsString);
@@ -1823,7 +1163,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   /**
    * Starts a locator with given configuration.
    */
-  public static void startLocator(final String serverHostName, final int port, Properties props,
+  private static void startLocator(final String serverHostName, final int port, Properties props,
       boolean fastStart) throws Exception {
 
 
@@ -1849,7 +1189,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void stopLocator() throws Exception {
+  private static void stopLocator() {
     InternalLocator.getLocator().stop();
   }
 
@@ -1857,11 +1197,11 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
    * Get the port that the standard dunit locator is listening on.
    *
    */
-  public static String getDUnitLocatorAddress() {
+  private static String getDUnitLocatorAddress() {
     return Host.getHost(0).getHostName();
   }
 
-  private String getHARegionName() {
+  String getHARegionName() {
     InternalCache internalCache = (InternalCache) cache;
     Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
       assertEquals(1, internalCache.getCacheServers().size());
@@ -1876,15 +1216,15 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   public static class GetDataSerializableFunction implements Function, DataSerializable {
 
-    public GetDataSerializableFunction() {}
+    GetDataSerializableFunction() {}
 
     @Override
     public void execute(FunctionContext context) {
       String dsClassName = (String) context.getArguments();
       try {
         Class aClass = Thread.currentThread().getContextClassLoader().loadClass(dsClassName);
-        Constructor constructor = aClass.getConstructor(new Class[0]);
-        context.getResultSender().lastResult(constructor.newInstance(new Object[0]));
+        Constructor constructor = aClass.getConstructor();
+        context.getResultSender().lastResult(constructor.newInstance());
       } catch (Exception e) {
         throw new FunctionException(e);
       }
