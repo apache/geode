@@ -25,7 +25,6 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
@@ -47,7 +46,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class TomcatSessionBackwardsCompatibilityTest {
+public class TomcatSessionBackwardsCompatibilityTestBase {
 
   @Parameterized.Parameters
   public static Collection<String> data() {
@@ -68,24 +67,24 @@ public class TomcatSessionBackwardsCompatibilityTest {
   @Rule
   public transient TestName testName = new TestName();
 
-  public transient Client client;
-  public transient ContainerManager manager;
+  protected transient Client client;
+  protected transient ContainerManager manager;
 
-  File oldBuild;
-  File oldModules;
+  protected File oldBuild;
+  protected File oldModules;
 
-  TomcatInstall tomcat7079AndOldModules;
-  TomcatInstall tomcat7079AndCurrentModules;
-  TomcatInstall tomcat8AndOldModules;
-  TomcatInstall tomcat8AndCurrentModules;
+  protected TomcatInstall tomcat7079AndOldModules;
+  protected TomcatInstall tomcat7079AndCurrentModules;
+  protected TomcatInstall tomcat8AndOldModules;
+  protected TomcatInstall tomcat8AndCurrentModules;
 
-  int locatorPort;
-  String classPathTomcat7079;
-  String classPathTomcat8;
-  String serverDir;
-  String locatorDir;
+  protected int locatorPort;
+  protected String classPathTomcat7079;
+  protected String classPathTomcat8;
+  protected String serverDir;
+  protected String locatorDir;
 
-  public TomcatSessionBackwardsCompatibilityTest(String version) {
+  protected TomcatSessionBackwardsCompatibilityTestBase(String version) {
     VersionManager versionManager = VersionManager.getInstance();
     String installLocation = versionManager.getInstall(version);
     oldBuild = new File(installLocation);
@@ -154,7 +153,7 @@ public class TomcatSessionBackwardsCompatibilityTest {
     manager.setTestName(testName.getMethodName().replace("[", "").replace("]", ""));
   }
 
-  private void startClusterWithTomcat(String tomcatClassPath) throws Exception {
+  protected void startClusterWithTomcat(String tomcatClassPath) throws Exception {
     startLocator("loc", tomcatClassPath, locatorPort);
     startServer("server", tomcatClassPath, locatorPort);
   }
@@ -176,7 +175,7 @@ public class TomcatSessionBackwardsCompatibilityTest {
     gfsh.executeAndAssertThat(locStop.toString()).statusIsSuccess();
   }
 
-  private void doPutAndGetSessionOnAllClients() throws IOException, URISyntaxException {
+  protected void doPutAndGetSessionOnAllClients() throws IOException, URISyntaxException {
     // This has to happen at the start of every test
     manager.startAllInactiveContainers();
 
@@ -195,54 +194,6 @@ public class TomcatSessionBackwardsCompatibilityTest {
       assertEquals("Sessions are not replicating properly", cookie, resp.getSessionCookie());
       assertEquals("Session data is not replicating properly", value, resp.getResponse());
     }
-  }
-
-  @Test
-  public void tomcat7079WithOldModuleCanDoPuts() throws Exception {
-    startClusterWithTomcat(classPathTomcat7079);
-    manager.addContainer(tomcat7079AndOldModules);
-    manager.addContainer(tomcat7079AndOldModules);
-    doPutAndGetSessionOnAllClients();
-  }
-
-  @Test
-  public void tomcat7079WithOldModulesMixedWithCurrentCanDoPutFromOldModule() throws Exception {
-    startClusterWithTomcat(classPathTomcat7079);
-    manager.addContainer(tomcat7079AndOldModules);
-    manager.addContainer(tomcat7079AndCurrentModules);
-    doPutAndGetSessionOnAllClients();
-  }
-
-  @Test
-  public void tomcat7079WithOldModulesMixedWithCurrentCanDoPutFromCurrentModule() throws Exception {
-    startClusterWithTomcat(classPathTomcat7079);
-    manager.addContainer(tomcat7079AndCurrentModules);
-    manager.addContainer(tomcat7079AndOldModules);
-    doPutAndGetSessionOnAllClients();
-  }
-
-  @Test
-  public void tomcat8WithOldModuleCanDoPuts() throws Exception {
-    startClusterWithTomcat(classPathTomcat8);
-    manager.addContainer(tomcat8AndOldModules);
-    manager.addContainer(tomcat8AndOldModules);
-    doPutAndGetSessionOnAllClients();
-  }
-
-  @Test
-  public void tomcat8WithOldModulesMixedWithCurrentCanDoPutFromOldModule() throws Exception {
-    startClusterWithTomcat(classPathTomcat8);
-    manager.addContainer(tomcat8AndOldModules);
-    manager.addContainer(tomcat8AndCurrentModules);
-    doPutAndGetSessionOnAllClients();
-  }
-
-  @Test
-  public void tomcat8WithOldModulesMixedWithCurrentCanDoPutFromCurrentModule() throws Exception {
-    startClusterWithTomcat(classPathTomcat8);
-    manager.addContainer(tomcat8AndCurrentModules);
-    manager.addContainer(tomcat8AndOldModules);
-    doPutAndGetSessionOnAllClients();
   }
 
 }
