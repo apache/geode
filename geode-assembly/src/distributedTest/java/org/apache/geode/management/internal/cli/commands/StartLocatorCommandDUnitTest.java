@@ -14,9 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.internal.i18n.LocalizedStrings.Launcher_Command_START_PID_FILE_ALREADY_EXISTS_ERROR_MESSAGE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_TERM_NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__DIR;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__LOCATORS;
@@ -30,7 +28,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.text.MessageFormat;
@@ -107,9 +104,8 @@ public class StartLocatorCommandDUnitTest {
 
     CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    final String expectedError = Launcher_Command_START_PID_FILE_ALREADY_EXISTS_ERROR_MESSAGE
-        .toString(LOCATOR_TERM_NAME, pidFile.getParentFile().getCanonicalPath(),
-            InetAddress.getLocalHost().getHostAddress() + "[0]");
+    final String expectedError = "A PID file already exists and a Locator may be running in "
+        + pidFile.getParentFile().getCanonicalPath();
     final String expectedCause = "Caused by: "
         + "org.apache.geode.internal.process.FileAlreadyExistsException: Pid file already exists: "
         + pidFile.getCanonicalPath();
@@ -230,7 +226,8 @@ public class StartLocatorCommandDUnitTest {
   }
 
   @Test
-  public void testInMissingRelativeDirectory() {
+  public void testInMissingRelativeDirectoryWithoutCreatePermissions() {
+    // path to a missing dir that cannot be created due to insufficient permissions
     final String missingDirPath = "/missing/path/to/start/in";
     final String expectedMessage = "Could not create directory " + missingDirPath
         + ". Please verify directory path or user permissions.";
@@ -245,6 +242,29 @@ public class StartLocatorCommandDUnitTest {
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getMessageFromContent()).contains(expectedMessage);
+  }
+
+  @Test
+  public void testInMissingRelativeDirectoryThatCanBeCreated() {
+    // path to a missing dir that can be created
+    final String missingDirPath = System.getProperty("user.dir") + "/missing/path/to/start/in";
+    final String memberName = "testWithMissingRelativeDirectory-locator";
+    final String expectedMessage = "Locator in " + missingDirPath;
+
+    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
+        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
+        .addOption(START_LOCATOR__DIR, missingDirPath);
+
+    try {
+      CommandResult result = gfsh.executeCommand(command.getCommandString());
+
+      assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+      assertThat(result.getMessageFromContent()).contains(expectedMessage);
+    } finally {
+      File toDelete = new File(missingDirPath);
+      deleteLocatorFiles(toDelete);
+    }
   }
 
   @Test
