@@ -23,10 +23,6 @@ import org.junit.Test;
 
 public class TxCommitMessageBCClientToServerTxReplicateTest extends TxCommitMessageBCTestBase {
 
-  public TxCommitMessageBCClientToServerTxReplicateTest(String version) {
-    super(version);
-  }
-
   @Test
   public void test() throws Exception {
     String regionName = REPLICATE_REGION_NAME;

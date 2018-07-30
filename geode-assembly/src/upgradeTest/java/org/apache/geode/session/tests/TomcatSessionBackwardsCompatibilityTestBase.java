@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Category({BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class TomcatSessionBackwardsCompatibilityTestBase {
+public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   @Parameterized.Parameters
   public static Collection<String> data() {

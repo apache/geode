@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -65,12 +64,13 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * <li>CacheServer via Pool (transaction)-> CacheServer</li>
  * </ol>
  */
-@Category({BackwardCompatibilityTest.class})
+@Category(BackwardCompatibilityTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
-public class TxCommitMessageBCTestBase extends JUnit4DistributedTestCase {
-  protected String testVersion;
+public abstract class TxCommitMessageBCTestBase extends JUnit4DistributedTestCase {
+  @Parameterized.Parameter
+  public String testVersion;
 
   @Parameterized.Parameters
   public static Collection<String> data() {
@@ -98,13 +98,6 @@ public class TxCommitMessageBCTestBase extends JUnit4DistributedTestCase {
 
   protected static String KEY1 = "KEY1";
   protected static String KEY2 = "KEY2";
-
-  public TxCommitMessageBCTestBase(String version) {
-    super();
-    testVersion = version;
-  }
-
-  protected TxCommitMessageBCTestBase() {}
 
   @Override
   public final void postSetUp() throws Exception {
@@ -149,7 +142,7 @@ public class TxCommitMessageBCTestBase extends JUnit4DistributedTestCase {
   public static int createServerCache() throws Exception {
     Properties props = new Properties();
     TxCommitMessageBCTestBase test =
-        new TxCommitMessageBCTestBase();
+        new TxCommitMessageBCTestBase() {};
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
@@ -188,7 +181,7 @@ public class TxCommitMessageBCTestBase extends JUnit4DistributedTestCase {
   public static void createServerCacheWithPool(String hostName, Integer[] ports) throws Exception {
     Properties props = new Properties();
     TxCommitMessageBCTestBase test =
-        new TxCommitMessageBCTestBase();
+        new TxCommitMessageBCTestBase() {};
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
@@ -216,7 +209,7 @@ public class TxCommitMessageBCTestBase extends JUnit4DistributedTestCase {
   @SuppressWarnings("deprecation")
   public static void createClientCache(String hostName, Integer[] ports) throws Exception {
     Properties props = new Properties();
-    DistributedSystem ds = new TxCommitMessageBCTestBase().getSystem(props);
+    DistributedSystem ds = new TxCommitMessageBCTestBase(){}.getSystem(props);
     ds.disconnect();
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(true);

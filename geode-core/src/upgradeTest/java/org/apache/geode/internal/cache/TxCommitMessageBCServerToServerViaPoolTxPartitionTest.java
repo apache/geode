@@ -23,9 +23,6 @@ import org.junit.Test;
 
 public class TxCommitMessageBCServerToServerViaPoolTxPartitionTest
     extends TxCommitMessageBCTestBase {
-  public TxCommitMessageBCServerToServerViaPoolTxPartitionTest(String version) {
-    super(version);
-  }
 
   @Test
   public void test() throws Exception {

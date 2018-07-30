@@ -22,9 +22,6 @@ import java.util.List;
 import org.junit.Test;
 
 public class TxCommitMessageBCServerToServerViaPoolTxBothTest extends TxCommitMessageBCTestBase {
-  public TxCommitMessageBCServerToServerViaPoolTxBothTest(String version) {
-    super(version);
-  }
 
   @Test
   public void test() throws Exception {

@@ -25,10 +25,6 @@ import org.junit.Test;
 public class TxCommitMessageBCServerToServerViaPoolTxReplicateTest
     extends TxCommitMessageBCTestBase {
 
-  public TxCommitMessageBCServerToServerViaPoolTxReplicateTest(String version) {
-    super(version);
-  }
-
   @Test
   public void test() throws Exception {
     String regionName = REPLICATE_REGION_NAME;

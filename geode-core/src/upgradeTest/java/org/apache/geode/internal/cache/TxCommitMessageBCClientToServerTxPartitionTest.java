@@ -23,10 +23,6 @@ import org.junit.Test;
 
 
 public class TxCommitMessageBCClientToServerTxPartitionTest extends TxCommitMessageBCTestBase {
-  public TxCommitMessageBCClientToServerTxPartitionTest(String version) {
-    super(version);
-  }
-
   @Test
   public void test() throws Exception {
     String regionName = PARTITION_REGION_NAME;
