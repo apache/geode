@@ -168,24 +168,23 @@ public class StartLocatorCommandDUnitTest {
     final String expectedMessage = "java.net.BindException: Network is unreachable; port ("
         + locatorPort + ") is not available on localhost.";
 
-    Socket interferingProcess = new Socket();
-    interferingProcess.bind(new InetSocketAddress(locatorPort));
+    try (Socket interferingProcess = new Socket()) {
+      interferingProcess.bind(new InetSocketAddress(locatorPort));
 
-    File workingDir = tempFolder.newFolder();
+      File workingDir = tempFolder.newFolder();
 
-    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
-        .addOption(START_LOCATOR__PORT, locatorPort.toString());
+      CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
+          .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+          .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
+          .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
+          .addOption(START_LOCATOR__PORT, locatorPort.toString());
 
-    CommandResult result = gfsh.executeCommand(command.getCommandString());
+      CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    interferingProcess.close();
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).doesNotContain(unexpectedMessage);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage);
+      assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+      assertThat(result.getMessageFromContent()).doesNotContain(unexpectedMessage);
+      assertThat(result.getMessageFromContent()).contains(expectedMessage);
+    }
   }
 
   @Test
