@@ -19,6 +19,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.GEODE_0_P
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_TERM_NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__DIR;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__LOCATORS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__MEMBER_NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__PORT;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__PROPERTIES;
@@ -34,6 +35,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.text.MessageFormat;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -41,17 +45,39 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
-import org.apache.geode.test.junit.rules.gfsh.GfshRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshScript;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class StartLocatorCommandDUnitTest {
-  @Rule
-  public GfshRule gfsh = new GfshRule();
+  private static MemberVM locator;
+  private static String locatorConnectionString;
+
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
+
+  @ClassRule
+  public static final ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
+
+  @BeforeClass
+  public static void before() {
+    // locator used to clean up JVMs after test
+    locator = cluster.startLocatorVM(0, 0);
+
+    locatorConnectionString = "localhost[" + locator.getPort() + "]";
+  }
+
+  @AfterClass
+  public static void after() throws Exception {
+    gfsh.connectAndVerify(locator);
+    gfsh.execute("shutdown --include-locators");
+  }
 
   @Test
   public void testWithConflictingPIDFile() throws Exception {
@@ -75,10 +101,11 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, pidFile.getParentFile().getCanonicalPath())
         .addOption(START_LOCATOR__PORT, "0");
 
-    String result = GfshScript.of(command.getCommandString()).execute(gfsh).getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
     final String expectedError = Launcher_Command_START_PID_FILE_ALREADY_EXISTS_ERROR_MESSAGE
         .toString(LOCATOR_TERM_NAME, pidFile.getParentFile().getCanonicalPath(),
@@ -87,8 +114,9 @@ public class StartLocatorCommandDUnitTest {
         + "org.apache.geode.internal.process.FileAlreadyExistsException: Pid file already exists: "
         + pidFile.getCanonicalPath();
 
-    assertThat(result).contains(expectedError);
-    assertThat(result).contains(expectedCause);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getMessageFromContent()).contains(expectedError);
+    assertThat(result.getMessageFromContent()).contains(expectedCause);
   }
 
   @Test
@@ -105,10 +133,10 @@ public class StartLocatorCommandDUnitTest {
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
         .addOption(START_LOCATOR__PROPERTIES, missingPropertiesPath);
 
-    GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    assertThat(result).contains(expectedError);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getMessageFromContent()).contains(expectedError);
   }
 
   @Test
@@ -122,13 +150,14 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
         .addOption(START_LOCATOR__SECURITY_PROPERTIES, missingSecurityPropertiesPath);
 
-    GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    assertThat(result).contains(expectedError);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getMessageFromContent()).contains(expectedError);
   }
 
   @Test
@@ -146,16 +175,17 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
         .addOption(START_LOCATOR__PORT, locatorPort.toString());
 
-    GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
     interferingProcess.close();
 
-    assertThat(result).doesNotContain(unexpectedMessage);
-    assertThat(result).contains(expectedMessage);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getMessageFromContent()).doesNotContain(unexpectedMessage);
+    assertThat(result.getMessageFromContent()).contains(expectedMessage);
   }
 
   @Test
@@ -169,13 +199,14 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
         .addOption(START_LOCATOR__PORT, locatorPort.toString());
 
-    GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    assertThat(result).contains(expectedMessage);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(result.getMessageFromContent()).contains(expectedMessage);
   }
 
   @Test
@@ -188,18 +219,19 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
         .addOption(START_LOCATOR__PORT, "0");
 
-    GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    assertThat(result).doesNotContain(unexpectedMessage);
-    assertThat(result).containsPattern(expectedMessage);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(result.getMessageFromContent()).doesNotContain(unexpectedMessage);
+    assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
   }
 
   @Test
-  public void testInMissingRelativeDirectory() throws IOException {
+  public void testInMissingRelativeDirectory() {
     final String missingDirPath = "/missing/path/to/start/in";
     final String expectedMessage = "Could not create directory " + missingDirPath
         + ". Please verify directory path or user permissions.";
@@ -207,12 +239,13 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, missingDirPath);
 
-    GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    assertThat(result).contains(expectedMessage);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getMessageFromContent()).contains(expectedMessage);
   }
 
   @Test
@@ -225,17 +258,18 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__DIR, dir.getAbsolutePath())
         .addOption(START_LOCATOR__PORT, locatorPort.toString());
 
-    GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+    CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-    assertThat(result).contains(expectedMessage);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    assertThat(result.getMessageFromContent()).contains(expectedMessage);
   }
 
   @Test
-  public void testWithCurrentDirectory() throws IOException {
+  public void testWithCurrentDirectory() {
     final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String expectedMessage = "Locator in " + System.getProperty("user.dir");
     final String expectedVersionPattern = "Geode Version: \\d+\\.\\d+\\.\\d+";
@@ -243,17 +277,19 @@ public class StartLocatorCommandDUnitTest {
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
         .addOption(START_LOCATOR__PORT, locatorPort.toString());
 
     try {
-      GfshExecution execution = GfshScript.of(command.getCommandString()).execute(gfsh);
-    String result = execution.getOutputText();
+      CommandResult result = gfsh.executeCommand(command.getCommandString());
 
-      assertThat(result).contains(expectedMessage);
+      assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+      assertThat(result.getMessageFromContent()).contains(expectedMessage);
 
       // Verify GEODE-2138
-      assertThat(result).doesNotContain("Gemfire").doesNotContain("GemFire");
-      assertThat(result).containsPattern(expectedVersionPattern);
+      assertThat(result.getMessageFromContent()).doesNotContain("Gemfire")
+          .doesNotContain("GemFire");
+      assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
     } finally {
       String pathToFile = System.getProperty("user.dir") + "/" + memberName;
       File toDelete = new File(pathToFile);
