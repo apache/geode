@@ -232,6 +232,8 @@ jar {
   exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
 }
 
+jar.dependsOn(createVersionPropertiesFile)
+
 task webJar (type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive containing the gemfire management web classes.'
   from sourceSets.main.output
