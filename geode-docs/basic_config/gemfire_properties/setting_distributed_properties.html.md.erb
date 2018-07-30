@@ -19,10 +19,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%> provides a default distributed system configuration for out-of-the-box systems. To use non-default configurations and to fine-tune your member communication, you can use a mix of various options to customize your distributed system configuration.
+<%=vars.product_name%> provides a default configuration for out-of-the-box systems. To use non-default configurations and to fine-tune your member communication, you can use a mix of various options to customize your configuration.
 
 <a id="setting_distributed_properties__section_67EBCC53EB174B108DA7271E2CD2B76C"></a>
-<%=vars.product_name%> properties are used to join a distributed system and configure system member behavior. Configure your <%=vars.product_name%> properties through the `gemfire.properties` file, the Java API, or command-line input. Generally, you store all your properties in the `gemfire.properties` file, but you may need to provide properties through other means, for example, to pass in security properties for a username and password that you have received from keyboard input.
+<%=vars.product_name%> properties are used to join a cluster and configure system member behavior. Configure your <%=vars.product_name%> properties through the `gemfire.properties` file, the Java API, or command-line input. Generally, you store all your properties in the `gemfire.properties` file, but you may need to provide properties through other means, for example, to pass in security properties for a username and password that you have received from keyboard input.
 
 **Note:**
 Check with your <%=vars.product_name%> system administrator before changing properties through the API, including the `gemfire.properties` and `gfsecurity.properties` settings. The system administrator may need to set properties at the command line or in configuration files. Any change made through the API overrides those other settings.
@@ -30,7 +30,7 @@ Check with your <%=vars.product_name%> system administrator before changing prop
 **Note:**
 The product `defaultConfigs` directory has a sample `gemfire.properties` file with all default settings.
 
-Set distributed system properties by any combination of the following. The system looks for the settings in the order listed:
+Set properties by any combination of the following. The system looks for the settings in the order listed:
 
 1.  `java.lang.System` property setting. Usually set at the command line. For applications, set these in your code or at the command line.
 

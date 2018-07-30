@@ -54,4 +54,20 @@ public class Hex {
     }
     return new String(hex);
   }
+
+  /**
+   * Converts a hex string to a byte array.
+   *
+   * @param hex the hex string
+   * @return the byte array
+   */
+  public static byte[] toByteArray(String hex) {
+    byte[] bytes = new byte[hex.length() / 2];
+    for (int i = 0; i < bytes.length; i++) {
+      int index = i * 2;
+      int v = Integer.parseInt(hex.substring(index, index + 2), 16);
+      bytes[i] = (byte) v;
+    }
+    return bytes;
+  }
 }

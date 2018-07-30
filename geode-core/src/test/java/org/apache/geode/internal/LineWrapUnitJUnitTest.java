@@ -20,11 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LineWrapUnitJUnitTest {
 
   @Test

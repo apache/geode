@@ -25,15 +25,12 @@ import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Multithreaded unit tests for {@link ServerLauncher}. Extracted from {@link ServerLauncherTest}.
  */
-@Category(UnitTest.class)
 public class ServerLauncherWaitOnServerMultiThreadedTest {
 
   private final AtomicBoolean connectionStateHolder = new AtomicBoolean(true);
@@ -53,7 +50,7 @@ public class ServerLauncherWaitOnServerMultiThreadedTest {
   }
 
   @Test
-  public void waitOnServer() throws Exception {
+  public void waitOnServer() {
     runTest(new ServerWaitMultiThreadedTestCase());
   }
 

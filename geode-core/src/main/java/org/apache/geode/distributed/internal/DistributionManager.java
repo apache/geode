@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +33,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * This interface defines the services provided by any class that is a distribution manager.
@@ -58,7 +58,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @since GemFire 5.7
    */
-  Set getAllOtherMembers();
+  Set<InternalDistributedMember> getAllOtherMembers();
 
   /**
    * Returns the ID in the membership view that is equal to the argument. If the ID is not in the
@@ -88,13 +88,13 @@ public interface DistributionManager extends ReplySender {
    * Returns an unmodifiable set containing the identities of all of the known distribution
    * managers. As of 7.0 this includes locators since they have a cache.
    */
-  Set getDistributionManagerIds();
+  Set<InternalDistributedMember> getDistributionManagerIds();
 
   /**
    * Returns an unmodifiable set containing the identities of all of the known "normal" distribution
    * managers. This does not include locators or admin members.
    */
-  Set getNormalDistributionManagerIds();
+  Set<InternalDistributedMember> getNormalDistributionManagerIds();
 
   /**
    * Returns an unmodifiable set containing the identities of all of the known distribution managers
@@ -102,22 +102,23 @@ public interface DistributionManager extends ReplySender {
    *
    * @since GemFire 5.7
    */
-  Set getDistributionManagerIdsIncludingAdmin();
+  Set<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin();
 
   /**
    * Returns a private-memory list containing getDistributionManagerIds() minus our id.
    */
-  Set getOtherDistributionManagerIds();
+  Set<InternalDistributedMember> getOtherDistributionManagerIds();
 
   /**
    * Returns a private-memory list containing getNormalDistributionManagerIds() minus our id.
    */
-  Set getOtherNormalDistributionManagerIds();
+  Set<InternalDistributedMember> getOtherNormalDistributionManagerIds();
 
   /**
    * Add a membership listener and return other DistribtionManagerIds as an atomic operation
    */
-  Set addMembershipListenerAndGetDistributionManagerIds(MembershipListener l);
+  Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
+      MembershipListener l);
 
   /**
    * Add a membership listener for all members and return other DistribtionManagerIds as an atomic
@@ -125,7 +126,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @since GemFire 5.7
    */
-  Set addAllMembershipListenerAndGetAllIds(MembershipListener l);
+  Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l);
 
   /**
    * Returns the identity of this <code>DistributionManager</code>
@@ -186,7 +187,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @return recipients who did not receive the message
    */
-  Set putOutgoing(DistributionMessage msg);
+  Set<InternalDistributedMember> putOutgoing(DistributionMessage msg);
 
   /**
    * Returns the distributed system to which this distribution manager is connected.
@@ -265,12 +266,6 @@ public interface DistributionManager extends ReplySender {
    */
   Executor getFunctionExecutor();
 
-  /**
-   * gets this distribution manager's message-processing executor for ordered (i.e. serialized)
-   * message processing
-   */
-  // public Executor getSerialExecutor();
-
   void close();
 
   /**
@@ -278,16 +273,6 @@ public interface DistributionManager extends ReplySender {
    * DLockGrantor
    */
   List<InternalDistributedMember> getViewMembers();
-
-  /**
-   * Returns the oldest member in the given set of distribution managers. The current implementation
-   * may use n*n/2 comparisons, so use this judiciously
-   *
-   * @return the oldest member of the given collection
-   * @throws NoSuchElementException when none of the given members is actually a member of the
-   *         distributed system.
-   */
-  DistributedMember getOldestMember(Collection members) throws NoSuchElementException;
 
   /**
    * @return Set of Admin VM nodes
@@ -320,7 +305,7 @@ public interface DistributionManager extends ReplySender {
    */
   void removeUnfinishedStartup(InternalDistributedMember m, boolean departed);
 
-  void setUnfinishedStartups(Collection s);
+  void setUnfinishedStartups(Collection<InternalDistributedMember> s);
 
   /**
    * Return the CancelCriterion for this DM.
@@ -496,4 +481,7 @@ public interface DistributionManager extends ReplySender {
    * returns the ID of a member having the given name, or null if no such member exists
    */
   DistributedMember getMemberWithName(String name);
+
+  /** returns the Threads Monitoring instance */
+  public ThreadsMonitoring getThreadMonitoring();
 }

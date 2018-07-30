@@ -26,15 +26,19 @@ buildscript {
   dependencies {
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.0.1'
+    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.3.1"
-    classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6-SNAPSHOT"
+    classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6.2-SNAPSHOT"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
+    classpath "com.gradle:build-scan-plugin:1.13.4"
+    classpath "com.netflix.nebula:nebula-project-plugin:4.0.1"
   }
 }
 
 apply plugin: 'wrapper'
+apply plugin: 'com.gradle.build-scan'
+apply plugin: 'nebula.facet'
 
 wrapper {
   gradleVersion = minimumGradleVersion
@@ -78,16 +82,12 @@ if (name == 'geode') {
   ext.scriptDir = 'gradle'
 }
 
-if (project.hasProperty('parallelDunit')) {
-  def pwd = System.getenv('PWD')
-  def geodeDir = new File(pwd).getCanonicalPath()
-  ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
-}
 
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"
 apply from: "${scriptDir}/test.gradle"
+apply from: "${scriptDir}/test-by-category.gradle"
 apply from: "${scriptDir}/publish.gradle"
 apply from: "${scriptDir}/code-analysis.gradle"
 apply from: "${scriptDir}/sonar.gradle"

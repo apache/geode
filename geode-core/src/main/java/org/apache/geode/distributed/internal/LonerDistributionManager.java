@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -24,8 +23,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +53,9 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
+import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -68,6 +70,12 @@ public class LonerDistributionManager implements DistributionManager {
   private final InternalLogWriter logger;
   private ElderState elderState;
 
+  /**
+   * Thread Monitor mechanism to monitor system threads
+   *
+   * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
+   */
+  private final ThreadsMonitoring threadMonitor;
 
   //////////////////////// Constructors ////////////////////////
 
@@ -82,8 +90,19 @@ public class LonerDistributionManager implements DistributionManager {
     this.logger = logger;
     this.localAddress = generateMemberId();
     this.allIds = Collections.singleton(localAddress);
-    this.viewMembers = new ArrayList<InternalDistributedMember>(allIds);
+    this.viewMembers = new ArrayList<>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
+
+    Properties nonDefault = new Properties();
+    DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+
+    if (distributionConfigImpl.getThreadMonitorEnabled()) {
+      this.threadMonitor = new ThreadsMonitoringImpl(system);
+      logger.info("[ThreadsMonitor] New Monitor object and process were created.\n");
+    } else {
+      this.threadMonitor = new ThreadsMonitoringImplDummy();
+      logger.info("[ThreadsMonitor] Monitoring is disabled and will not be run.\n");
+    }
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -93,6 +112,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   protected void shutdown() {
+    threadMonitor.close();
     executor.shutdown();
     try {
       executor.awaitTermination(20, TimeUnit.SECONDS);
@@ -103,24 +123,10 @@ public class LonerDistributionManager implements DistributionManager {
 
   private final InternalDistributedMember localAddress;
 
-  /*
-   * static { // Make the id a little unique String host; try { host =
-   * InetAddress.getLocalHost().getCanonicalHostName(); MemberAttributes.setDefaults(65535,
-   * org.apache.geode.internal.OSProcess.getId(), DistributionManager.LONER_DM_TYPE,
-   * MemberAttributes.parseRoles(system.getConfig().getRoles())); id = new
-   * InternalDistributedMember(host, 65535); // noise value for port number
-   *
-   * } catch (UnknownHostException ex) { throw new InternalError(LocalizedStrings.
-   * LonerDistributionManager_CANNOT_RESOLVE_LOCAL_HOST_NAME_TO_AN_IP_ADDRESS.toLocalizedString());
-   * }
-   *
-   * }
-   */
-
   private final Set<InternalDistributedMember> allIds;// = Collections.singleton(id);
   private final List<InternalDistributedMember> viewMembers;
   private ConcurrentMap<InternalDistributedMember, InternalDistributedMember> canonicalIds =
-      new ConcurrentHashMap();
+      new ConcurrentHashMap<>();
   private static final DummyDMStats stats = new DummyDMStats();
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -133,16 +139,12 @@ public class LonerDistributionManager implements DistributionManager {
     return localAddress;
   }
 
-  public Set getDistributionManagerIds() {
+  public Set<InternalDistributedMember> getDistributionManagerIds() {
     return allIds;
   }
 
-  public Set getDistributionManagerIdsIncludingAdmin() {
+  public Set<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin() {
     return allIds;
-  }
-
-  public Serializable[] getDirectChannels(InternalDistributedMember[] ids) {
-    return ids;
   }
 
   public InternalDistributedMember getCanonicalId(DistributedMember dmid) {
@@ -167,17 +169,17 @@ public class LonerDistributionManager implements DistributionManager {
     return null;
   }
 
-  public Set getOtherDistributionManagerIds() {
-    return Collections.EMPTY_SET;
+  public Set<InternalDistributedMember> getOtherDistributionManagerIds() {
+    return Collections.emptySet();
   }
 
   @Override
-  public Set getOtherNormalDistributionManagerIds() {
-    return Collections.EMPTY_SET;
+  public Set<InternalDistributedMember> getOtherNormalDistributionManagerIds() {
+    return Collections.emptySet();
   }
 
-  public Set getAllOtherMembers() {
-    return Collections.EMPTY_SET;
+  public Set<InternalDistributedMember> getAllOtherMembers() {
+    return Collections.emptySet();
   }
 
   @Override // DM method
@@ -203,17 +205,14 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
 
-  public Set addMembershipListenerAndGetDistributionManagerIds(MembershipListener l) {
+  public Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
+      MembershipListener l) {
     // return getOtherDistributionManagerIds();
     return allIds;
   }
 
-  public Set addAllMembershipListenerAndGetAllIds(MembershipListener l) {
+  public Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l) {
     return allIds;
-  }
-
-  public int getDistributionManagerCount() {
-    return 0;
   }
 
   public InternalDistributedMember getId() {
@@ -246,17 +245,6 @@ public class LonerDistributionManager implements DistributionManager {
 
   public long getMembershipPort() {
     return 0;
-  }
-
-  public Set putOutgoingUserData(final DistributionMessage message) {
-    if (message.forAll() || message.getRecipients().length == 0) {
-      // do nothing
-      return null;
-    } else {
-      throw new RuntimeException(
-          LocalizedStrings.LonerDistributionManager_LONER_TRIED_TO_SEND_MESSAGE_TO_0
-              .toLocalizedString(message.getRecipientsDescription()));
-    }
   }
 
   public InternalDistributedSystem getSystem() {
@@ -315,20 +303,8 @@ public class LonerDistributionManager implements DistributionManager {
     return executor;
   }
 
-  public Map getChannelMap() {
-    return null;
-  }
-
-  public Map getMemberMap() {
-    return null;
-  }
-
   public void close() {
     shutdown();
-  }
-
-  public void restartCommunications() {
-
   }
 
   @Override
@@ -336,20 +312,8 @@ public class LonerDistributionManager implements DistributionManager {
     return viewMembers;
   }
 
-  public DistributedMember getOldestMember(Collection members) throws NoSuchElementException {
-    if (members.size() == 1) {
-      DistributedMember member = (DistributedMember) members.iterator().next();
-      if (member.equals(viewMembers.get(0))) {
-        return member;
-      }
-    }
-    throw new NoSuchElementException(
-        LocalizedStrings.LonerDistributionManager_MEMBER_NOT_FOUND_IN_MEMBERSHIP_SET
-            .toLocalizedString());
-  }
-
-  public Set getAdminMemberSet() {
-    return Collections.EMPTY_SET;
+  public Set<InternalDistributedMember> getAdminMemberSet() {
+    return Collections.emptySet();
   }
 
   public static class DummyDMStats implements DMStats {
@@ -1260,7 +1224,7 @@ public class LonerDistributionManager implements DistributionManager {
     return getId().equals(p_id);
   }
 
-  public Set putOutgoing(DistributionMessage msg) {
+  public Set<InternalDistributedMember> putOutgoing(DistributionMessage msg) {
     return null;
   }
 
@@ -1270,7 +1234,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   public void removeUnfinishedStartup(InternalDistributedMember m, boolean departed) {}
 
-  public void setUnfinishedStartups(Collection s) {}
+  public void setUnfinishedStartups(Collection<InternalDistributedMember> s) {}
 
   protected static class Stopper extends CancelCriterion {
 
@@ -1366,7 +1330,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   public Set<DistributedMember> getGroupMembers(String group) {
     if (getDistributionManagerId().getGroups().contains(group)) {
-      return Collections.singleton((DistributedMember) getDistributionManagerId());
+      return Collections.singleton(getDistributionManagerId());
     } else {
       return Collections.emptySet();
     }
@@ -1386,7 +1350,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set getNormalDistributionManagerIds() {
+  public Set<InternalDistributedMember> getNormalDistributionManagerIds() {
     return getDistributionManagerIds();
   }
 
@@ -1461,5 +1425,11 @@ public class LonerDistributionManager implements DistributionManager {
   @Override
   public void clearExceptionInThreads() {
     // no-op
+  }
+
+  @Override
+  /** returns the Threads Monitoring instance */
+  public ThreadsMonitoring getThreadMonitoring() {
+    return this.threadMonitor;
   }
 }

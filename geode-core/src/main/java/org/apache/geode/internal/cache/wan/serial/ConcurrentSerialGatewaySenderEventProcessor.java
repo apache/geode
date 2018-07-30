@@ -36,6 +36,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
@@ -50,6 +51,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 public class ConcurrentSerialGatewaySenderEventProcessor
@@ -66,10 +68,11 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   private final Set<RegionQueue> queues;
 
-  public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender) {
+  public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring) {
     super(LoggingThreadGroup
         .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId(), sender);
+        "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.sender = sender;
 
     initializeMessageQueue(sender.getId());
@@ -83,7 +86,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   @Override
   protected void initializeMessageQueue(String id) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
-      processors.add(new SerialGatewaySenderEventProcessor(this.sender, id + "." + i));
+      processors.add(
+          new SerialGatewaySenderEventProcessor(this.sender, id + "." + i, getThreadMonitorObj()));
       if (logger.isDebugEnabled()) {
         logger.debug("Created the SerialGatewayEventProcessor_{}->{}", i, processors.get(i));
       }
@@ -395,6 +399,15 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   protected void enqueueEvent(GatewayQueueEvent event) {
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       serialProcessor.enqueueEvent(event);
+    }
+  }
+
+  protected ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.sender.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
     }
   }
 

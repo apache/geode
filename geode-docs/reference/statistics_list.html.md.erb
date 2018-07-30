@@ -24,7 +24,7 @@ This section describes the primary statistics gathered by <%=vars.product_name%>
 
 All statistics gathering requires the `gemfire.properties` `statistic-sampling-enabled` in `gemfire.properties` file to be true. Statistics that use time require the `gemfire.properties` `enable-time-statistics` to be true.
 
-Performance statistics are collected for each Java application or cache server that connects to a distributed system.
+Performance statistics are collected for each Java application or cache server that connects to a cluster.
 
 -   **[Cache Performance (CachePerfStats)](#section_DEF8D3644D3246AB8F06FE09A37DC5C8)**
 
@@ -590,7 +590,7 @@ Statistics regarding operations performed on a disk region for persistence/overf
 
 ## <a id="section_ACB4161F10D64BC0B15871D003FF6FDF" class="no-quick-link"></a>Distributed System Messaging (DistributionStats)
 
-Statistics on the <%=vars.product_name%> distribution layer. These statistics can be used to tell how much message traffic exists between this member and other distributed system members.
+Statistics on the <%=vars.product_name%> distribution layer. These statistics can be used to tell how much message traffic exists between this member and other cluster members.
 
 The primary statistics are:
 
@@ -687,7 +687,7 @@ The primary statistics are:
 | `messagesBeingReceived`                | Current number of messages being received off the network or being processed after reception.                                                                                                                                                   |
 | `msgDeserializationTime`               | Total amount of time, in nanoseconds, spent deserializing messages.                                                                                                                                                                             |
 | `msgSerializationTime`                 | Total amount of time, in nanoseconds, spent serializing messages.                                                                                                                                                                               |
-| `nodesDesc`                            | The current number of members in this distributed system.                                                                                                                                                                                       |
+| `nodesDesc`                            | The current number of members in this cluster.                                                                                                                                                                                       |
 | `overflowQueueSizeDesc`                | The number of normal distribution messages currently waiting to be processed.                                                                                                                                                                   |
 | `overflowQueueThrottleCountDesc`       | The total number of times a thread was delayed in adding a normal message to the overflow queue.                                                                                                                                                |
 | `overflowQueueThrottleTimeDesc`        | The total amount of time, in nanoseconds, spent delayed by the overflow queue throttle.                                                                                                                                                         |

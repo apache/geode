@@ -77,7 +77,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       };
       // LinkedBlockingQueue q = new LinkedBlockingQueue();
       SynchronousQueue q = new SynchronousQueue();
-      executor = new PooledExecutorWithDMStats(q, nThreads, tf);
+      executor = new PooledExecutorWithDMStats(q, nThreads, tf, null);
     } else {
       executor = null;
     }

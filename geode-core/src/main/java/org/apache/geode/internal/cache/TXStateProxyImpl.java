@@ -57,12 +57,6 @@ public class TXStateProxyImpl implements TXStateProxy {
   private boolean commitRequestedByOwner;
   private boolean isJCATransaction;
 
-  /**
-   * for client/server JTA transactions we need to have a single thread handle both beforeCompletion
-   * and afterCompletion so that beforeC can obtain locks for the afterC step. This is that thread
-   */
-  protected volatile TXSynchronizationRunnable synchRunnable;
-
   private final ReentrantLock lock = new ReentrantLock();
 
   /** number of operations in this transaction */
@@ -96,16 +90,6 @@ public class TXStateProxyImpl implements TXStateProxy {
     this.txMgr = managerImpl;
     this.txId = id;
     this.isJTA = isjta;
-  }
-
-  @Override
-  public void setSynchronizationRunnable(TXSynchronizationRunnable synch) {
-    this.synchRunnable = synch;
-  }
-
-  @Override
-  public TXSynchronizationRunnable getSynchronizationRunnable() {
-    return this.synchRunnable;
   }
 
   @Override
@@ -230,9 +214,6 @@ public class TXStateProxyImpl implements TXStateProxy {
       throw e;
     } finally {
       inProgress = preserveTx;
-      if (this.synchRunnable != null) {
-        this.synchRunnable.abort();
-      }
     }
   }
 
@@ -410,9 +391,6 @@ public class TXStateProxyImpl implements TXStateProxy {
       getRealDeal(null, null).rollback();
     } finally {
       inProgress = false;
-      if (this.synchRunnable != null) {
-        this.synchRunnable.abort();
-      }
     }
   }
 
@@ -472,9 +450,6 @@ public class TXStateProxyImpl implements TXStateProxy {
       getRealDeal(null, null).afterCompletion(status);
     } finally {
       this.inProgress = false;
-      if (this.synchRunnable != null) {
-        this.synchRunnable.abort();
-      }
     }
   }
 

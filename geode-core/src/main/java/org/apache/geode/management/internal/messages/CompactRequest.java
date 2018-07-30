@@ -57,7 +57,7 @@ public class CompactRequest extends AdminRequest {
   private static String notExecutedMembers;
 
   public static Map<DistributedMember, PersistentID> send(DistributionManager dm,
-      String diskStoreName, Set<?> recipients) {
+      String diskStoreName, Set<? extends DistributedMember> recipients) {
     Map<DistributedMember, PersistentID> results = Collections.emptyMap();
 
     if (recipients != null && !recipients.isEmpty()) {

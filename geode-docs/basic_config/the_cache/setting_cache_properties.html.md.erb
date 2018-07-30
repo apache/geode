@@ -31,7 +31,7 @@ Configure the cache and its data regions through one or more of these methods:
 
 -   Through a persistent configuration that you define when issuing commands that use the gfsh command line utility. The gfsh utility supports the administration, debugging, and deployment of <%=vars.product_name_long%> processes and applications. You can use gfsh to configure regions, locators, servers, disk stores, event queues, and other objects.
 
-    As you issue commands, gfsh saves a set of configurations that apply to the entire cluster and also saves configurations that only apply to defined groups of members within the cluster. You can re-use these configurations to create a distributed system. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+    As you issue commands, gfsh saves a set of configurations that apply to the entire cluster and also saves configurations that only apply to defined groups of members within the cluster. You can re-use these configurations to create a cluster. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
 
 -   Through declarations in the XML file named in the `cache-xml-file` `gemfire.properties` setting. This file is generally referred to as the `cache.xml` file, but it can have any name. See [cache.xml](../../reference/topics/chapter_overview_cache_xml.html#cache_xml).
 -   Through application calls to the `org.apache.geode.cache.CacheFactory`, `org.apache.geode.cache.Cache` and `org.apache.geode.cache.Region` APIs.

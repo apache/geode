@@ -41,9 +41,7 @@ import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and
@@ -55,7 +53,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class CollectionUtilsJUnitTest {
 
   @Test

@@ -31,20 +31,22 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySenderEventProcessor {
   private static final Logger logger = LogService.getLogger();
 
-  protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
-    super(sender);
+  protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring) {
+    super(sender, tMonitoring);
   }
 
   /**
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher) {
-    super(sender, userRegions, id, nDispatcher);
+      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring) {
+    super(sender, userRegions, id, nDispatcher, tMonitoring);
   }
 
   @Override

@@ -19,13 +19,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Authentication lends a measure of security to a distributed system
+Authentication lends a measure of security to a cluster
 by verifying the identity of components as they connect to the system.
 All components use the same authentication mechanism.
 
 ## How Authentication Works
 
-When a component initiates a connection to the distributed system,
+When a component initiates a connection to the cluster,
 the `SecurityManager.authenticate` method is invoked.
 The component provides its credentials in the form of properties
 as a parameter to the `authenticate` method.

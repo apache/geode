@@ -39,6 +39,7 @@ rat {
     '**/build/**',
     '**/build-*/**',
     '.buildinfo',
+    '**/release-features.rendered', // just for jenkins
 
     // Geode examples
     'geode-examples/.idea/**',

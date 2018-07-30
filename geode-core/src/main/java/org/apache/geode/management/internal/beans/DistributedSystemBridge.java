@@ -14,18 +14,15 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -54,7 +51,7 @@ import org.apache.geode.internal.admin.remote.PrepareRevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.backup.BackupUtil;
+import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -479,15 +476,8 @@ public class DistributedSystemBridge {
    * @return open type DiskBackupStatus containing each member wise disk back up status
    */
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath) {
-    Properties properties = new Properties();
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-    properties.setProperty("TIMESTAMP", format.format(new Date()));
-    properties.setProperty("TYPE", "FileSystem");
-    properties.setProperty("TARGET_DIRECTORY", targetDirPath);
-    if (baselineDirPath != null) {
-      properties.setProperty("BASELINE_DIRECTORY", baselineDirPath);
-    }
-    BackupStatus result = BackupUtil.backupAllMembers(dm, properties);
+    BackupStatus result =
+        new BackupOperation(dm, dm.getCache()).backupAllMembers(targetDirPath, baselineDirPath);
     DiskBackupStatusImpl diskBackupStatus = new DiskBackupStatusImpl();
     diskBackupStatus.generateBackedUpDiskStores(result.getBackedUpDiskStores());
     diskBackupStatus.generateOfflineDiskStores(result.getOfflineDiskStores());

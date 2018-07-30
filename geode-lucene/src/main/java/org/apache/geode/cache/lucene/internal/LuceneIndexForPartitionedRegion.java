@@ -26,6 +26,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -44,6 +45,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   protected Region fileAndChunkRegion;
@@ -208,9 +210,15 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // localDestroyRegion can't be used because locally destroying regions is not supported on
     // colocated regions
     if (initiator) {
-      fileAndChunkRegion.destroyRegion();
-      if (logger.isDebugEnabled()) {
-        logger.debug("Destroyed fileAndChunkRegion=" + fileAndChunkRegion.getName());
+      try {
+        fileAndChunkRegion.destroyRegion();
+        if (logger.isDebugEnabled()) {
+          logger.debug("Destroyed fileAndChunkRegion=" + fileAndChunkRegion.getName());
+        }
+      } catch (RegionDestroyedException e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Already destroyed fileAndChunkRegion=" + fileAndChunkRegion.getName());
+        }
       }
     }
 
@@ -228,9 +236,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   private void destroyOnRemoteMembers() {
-    PartitionedRegion pr = (PartitionedRegion) getDataRegion();
-    DistributionManager dm = pr.getDistributionManager();
-    Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseAllPRNodes();
+    DistributionManager dm = getDataRegion().getDistributionManager();
+    Set<InternalDistributedMember> recipients = dm.getOtherNormalDistributionManagerIds();
     if (!recipients.isEmpty()) {
       if (logger.isDebugEnabled()) {
         logger.debug("LuceneIndexForPartitionedRegion: About to send destroy message recipients="
@@ -246,7 +253,17 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       try {
         processor.waitForReplies();
       } catch (ReplyException e) {
-        if (!(e.getCause() instanceof CancelException)) {
+        Throwable cause = e.getCause();
+        if (cause instanceof IllegalArgumentException) {
+          // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
+          String fullRegionPath =
+              regionPath.startsWith(Region.SEPARATOR) ? regionPath : Region.SEPARATOR + regionPath;
+          String indexNotFoundMessage = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
+              .toLocalizedString(indexName, fullRegionPath);
+          if (!cause.getLocalizedMessage().equals(indexNotFoundMessage)) {
+            throw e;
+          }
+        } else if (!(cause instanceof CancelException)) {
           throw e;
         }
       } catch (InterruptedException e) {

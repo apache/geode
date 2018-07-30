@@ -1,4 +1,4 @@
-<% set_title("Working with", product_name, "Cache Transactions") %>
+<% set_title("Working with", product_name, "Transactions") %>
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,7 +19,7 @@ limitations under the License.
 <a id="topic_tx2_gs4_5k"></a>
 
 
-This section contains guidelines and additional information on working with <%=vars.product_name%> and its cache transactions.
+This section contains guidelines and additional information on working with <%=vars.product_name%> transactions.
 
 -   **[Setting Global Copy on Read](#concept_vx2_gs4_5k)**
 
@@ -83,7 +83,7 @@ A function may contain transactions, and a transaction may contain functions, as
   - **Your combination of functions and transactions must not result in nested transactions.**
 
   - **When a transaction contains a function,** the function must operate only on keys that are colocated with the keys in the transaction,
-as described in [Data Location for Cache Transactions](data_location_cache_transactions.html). This implies:
+as described in [Data Location for Transactions](data_location_cache_transactions.html). This implies:
 
       - A function within a transaction must not specify execution on a particular server or member. 
 <%=vars.product_name%> throws `UnsupportedOperationException` if `FunctionService` calls `onMember()`, `onServer()`, 
@@ -94,7 +94,7 @@ or similar methods from within a transaction.
 
 See [Function Execution](../function_exec/chapter_overview.html) for more about functions.
 
-See [Transaction Embedded within a Function Example](transactional_function_example.html#concept_22331B3DBFAB4C0BA95EF103BFB71257) for an example.
+See [Transaction Embedded within a Function Example](transaction_coding_examples.html#transactional_function_example) for an example.
 
 ## <a id="concept_ty1_vnt_vk" class="no-quick-link"></a>Using Queries and Indexes with Transactions
 
@@ -160,7 +160,7 @@ If the member with the primary copy of the data crashes, the transactional view 
 
 If a suspended transaction is not touched for a period of time, <%=vars.product_name%> cleans it up automatically. By default, the timeout for a suspended transaction is 30 minutes and can be configured using the system property `gemfire.suspendedtxTimeout`. For example, `gemfire.suspendedtxTimeout=60` specifies a timeout of 60 minutes.
 
-See [Basic Suspend and Resume Transaction Example](transaction_suspend_resume_example.html) for a sample code fragment that suspends and resumes a transaction.
+See [Basic Suspend and Resume Transaction Example](transaction_coding_examples.html#suspend_resume_example) for a sample code fragment that suspends and resumes a transaction.
 
 ## <a id="concept_ysx_nf1_wk" class="no-quick-link"></a>Using Cache Writer and Cache Listener Plug-Ins
 
@@ -180,7 +180,7 @@ For more information on writing cache event handlers, see [Implementing Cache Ev
 
 <%=vars.product_name%> has two types of transaction plug-ins: Transaction Writers and Transaction Listeners. You can optionally install one transaction writer and one or more transaction listeners per cache.
 
-Like JTA global transactions, you can use transaction plug-in event handlers to coordinate <%=vars.product_name%> cache transaction activity with an external data store. However, you typically use JTA global transactions when <%=vars.product_name%> is running as a peer data store with your external data stores. Transaction writers and listeners are typically used when <%=vars.product_name%> is acting as a front end cache to your backend database.
+Like JTA global transactions, you can use transaction plug-in event handlers to coordinate <%=vars.product_name%> transaction activity with an external data store. However, you typically use JTA global transactions when <%=vars.product_name%> is running as a peer data store with your external data stores. Transaction writers and listeners are typically used when <%=vars.product_name%> is acting as a front end cache to your backend database.
 
 **Note:**
 You can also use transaction plug-in event handlers when running JTA global transactions.
@@ -189,7 +189,7 @@ You can also use transaction plug-in event handlers when running JTA global tran
 
 When you commit a transaction, if a transaction writer is installed in the cache where the data updates were performed, it is called. The writer can do whatever work you need, including aborting the transaction.
 
-The transaction writer is the last place that an application can rollback a transaction. If the transaction writer throws any exception, the transaction is rolled back. For example, you might use a transaction writer to update a backend data source before the <%=vars.product_name%> cache transaction completes the commit. If the backend data source update fails, the transaction writer implementation can throw a [TransactionWriterException](/releases/latest/javadoc/org/apache/geode/cache/TransactionWriterException.html) to veto the transaction.
+The transaction writer is the last place that an application can rollback a transaction. If the transaction writer throws any exception, the transaction is rolled back. For example, you might use a transaction writer to update a backend data source before the <%=vars.product_name%> transaction completes the commit. If the backend data source update fails, the transaction writer implementation can throw a [TransactionWriterException](/releases/latest/javadoc/org/apache/geode/cache/TransactionWriterException.html) to veto the transaction.
 
 A typical usage scenario would be to use the transaction writer to prepare the commit on the external database. Then in a transaction listener, you can apply the commit on the database.
 

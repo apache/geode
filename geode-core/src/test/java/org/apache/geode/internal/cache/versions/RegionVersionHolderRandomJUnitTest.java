@@ -24,9 +24,7 @@ import java.util.Random;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * A test of the region version holder, where all of the test methods will now build there RVV by
@@ -35,7 +33,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * This test also contains some other non deterministic RVV junit tests
  *
  */
-@Category(UnitTest.class)
 public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmallBitSetJUnitTest {
 
   private Random random;

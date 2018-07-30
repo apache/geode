@@ -16,9 +16,18 @@
  */
 
 dependencies {
-  provided project(':geode-core')
+  compileOnly project(':geode-core')
+  testCompile project(':geode-core')
 
+  // TODO build - move shared source to common library.
   testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
   testCompile project(':geode-junit')
+
+  // TODO build - move dunit framework to shared module.
+  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  upgradeTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+  upgradeTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }

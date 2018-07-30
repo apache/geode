@@ -34,6 +34,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
@@ -55,6 +57,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   private final CancelCriterion cancelCriterion;
   private final ConnectionConnector connectionConnector;
 
+
   /**
    * Test hook for client version support
    *
@@ -69,7 +72,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       GatewaySender sender, long pingInterval, boolean multiuserSecureMode, PoolImpl pool) {
     this(
         new ConnectionConnector(endpointManager, sys, socketBufferSize, handshakeTimeout,
-            readTimeout, proxyId, cancelCriterion, usedByGateway, sender, multiuserSecureMode),
+            readTimeout, cancelCriterion, usedByGateway, sender,
+            (usedByGateway || sender != null) ? SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY)
+                : SocketCreatorFactory
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER),
+            new ClientSideHandshakeImpl(proxyId, sys, sys.getSecurityService(),
+                multiuserSecureMode)),
         source, pingInterval, pool, cancelCriterion);
   }
 
@@ -101,16 +110,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       initialized = true;
       failureTracker.reset();
       authenticateIfRequired(connection);
-    } catch (GemFireConfigException e) {
-      throw e;
-    } catch (CancelException e) {
-      // propagate this up, don't retry
-      throw e;
-    } catch (GemFireSecurityException e) {
-      // propagate this up, don't retry
-      throw e;
-    } catch (GatewayConfigurationException e) {
-      // propagate this up, don't retry
+    } catch (GemFireConfigException | CancelException | GemFireSecurityException
+        | GatewayConfigurationException e) {
       throw e;
     } catch (ServerRefusedConnectionException src) {
       // propagate this up, don't retry

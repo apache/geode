@@ -67,8 +67,7 @@ The `CqEvent` object contains this information:
 -   `CqQuery` object associated with this CQ event.
 -   `Throwable` object, returned only if an error occurred when the `CqQuery` ran for the cache event. This is non-null only for `CqListener` onError calls.
 -   Query operation associated with this CQ event. This operation describes the change affected to the query results by the cache event. Possible values are:
-    -   `CREATE`, which corresponds to the standard database
-    -   `INSERT` operation
+    -   `CREATE`, which corresponds to the standard database `INSERT` operation
     -   `UPDATE`
     -   `DESTROY`, which corresponds to the standard database DELETE operation
 

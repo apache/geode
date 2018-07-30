@@ -21,14 +21,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * DistributionLocatorId Tester.
  */
-@Category(UnitTest.class)
 public class DistributionLocatorIdJUnitTest {
 
   @Test

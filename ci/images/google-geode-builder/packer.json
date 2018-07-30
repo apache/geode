@@ -1,0 +1,36 @@
+{
+  "variables": {
+    "image_family_prefix": "",
+    "geode_docker_image": ""
+  },
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": ["mkdir -p /tmp/work"]
+    },
+    {
+      "type": "shell",
+      "environment_vars": [
+        "GEODE_DOCKER_IMAGE={{user `geode_docker_image`}}"
+      ],
+      "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "script": "scripts/setup.sh"
+    },
+    {
+      "type": "shell",
+      "execute_command": "sudo -u geode -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "script": "scripts/cache_dependencies.sh"
+    }
+  ],
+  "builders": [
+    {
+      "type": "googlecompute",
+      "project_id": "apachegeode-ci",
+      "source_image_family": "debian-9",
+      "ssh_username": "packer",
+      "zone": "us-central1-f",
+      "image_family": "{{user `image_family_prefix`}}geode-builder",
+      "image_name": "{{user `image_family_prefix`}}geode-builder-{{timestamp}}"
+    }
+  ]
+}

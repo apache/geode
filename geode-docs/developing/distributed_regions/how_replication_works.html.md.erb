@@ -28,9 +28,9 @@ Replicated and preloaded regions are configured by using one of the `REPLICATE` 
 
 At region creation, the system initializes the preloaded or replicated region with the most complete and up-to-date data set it can find. The system uses these data sources to initialize the new region, following this order of preference:
 
-1.  Another replicated region that is already defined in the distributed system.
+1.  Another replicated region that is already defined in the cluster.
 2.  For persistent replicate only. Disk files, followed by a union of all copies of the region in the distributed cache.
-3.  For preloaded region only. Another preloaded region that is already defined in the distributed system.
+3.  For preloaded region only. Another preloaded region that is already defined in the cluster.
 4.  The union of all copies of the region in the distributed cache.
 
 <img src="../../images_svg/distributed_replica_preload.svg" id="how_replication_works__image_5F50EBA30CE3408091F07A198F821741" class="image" />

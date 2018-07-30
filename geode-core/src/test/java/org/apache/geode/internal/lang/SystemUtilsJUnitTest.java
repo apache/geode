@@ -46,9 +46,7 @@ import static org.junit.Assume.assumeNotNull;
 import java.lang.management.ManagementFactory;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The SystemUtilsJUnitTest class is a test suite of test cases for testing the contract and
@@ -60,7 +58,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 6.8
  */
-@Category(UnitTest.class)
 public class SystemUtilsJUnitTest {
 
   // NOTE this test adds some maintenance overhead but ensure the correct functioning of GemFire

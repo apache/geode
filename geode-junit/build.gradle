@@ -37,3 +37,13 @@ dependencies {
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
   compile project(":geode-old-versions")
 }
+
+test {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}
+
+integrationTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}

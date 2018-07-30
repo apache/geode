@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name_long%> allows you to organize your distributed system members into logical member groups.
+<%=vars.product_name_long%> allows you to organize your cluster members into logical member groups.
 
 The use of member groups in <%=vars.product_name_long%> is optional. The benefit of using member groups is the ability to coordinate certain operations on members based on logical group membership. For example, by defining and using member groups you can:
 
@@ -33,7 +33,7 @@ The use of member groups in <%=vars.product_name_long%> is optional. The benefit
 You define group names in the `groups` property of your member's `gemfire.properties` file or upon member startup in `gfsh`.
 
 **Note:**
-Any roles defined in the currently existing `roles` property will now be considered a group. If you wish to add membership roles to your distributed system, you should add them as member groups in the `groups` property. The `roles` property has been deprecated in favor of using the `groups` property.
+Any roles defined in the currently existing `roles` property will now be considered a group. If you wish to add membership roles to your cluster, you should add them as member groups in the `groups` property. The `roles` property has been deprecated in favor of using the `groups` property.
 
 To add a member to a group, add the name of a member group to the `gemfire.properties` file of the member prior to startup or you can start up a member in `gfsh` and pass in the `--groups` argument at startup time.
 

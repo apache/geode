@@ -253,25 +253,30 @@ public abstract class DistributedCacheOperation {
   public long startOperation() {
     DistributedRegion region = getRegion();
     long viewVersion = -1;
-    if (this.containsRegionContentChange()) {
-      viewVersion = region.getDistributionAdvisor().startOperation();
-    }
-    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
-      logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "dispatching operation in view version {}",
-          viewVersion);
-    }
     try {
-      _distribute();
-    } catch (InvalidVersionException e) {
-      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
-        logger.trace(LogMarker.DM_VERBOSE,
-            "PutAll failed since versions were missing; retrying again", e);
+      if (this.containsRegionContentChange()) {
+        viewVersion = region.getDistributionAdvisor().startOperation();
       }
+      if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
+        logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "dispatching operation in view version {}",
+            viewVersion);
+      }
+      try {
+        _distribute();
+      } catch (InvalidVersionException e) {
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
+              "PutAll failed since versions were missing; retrying", e);
+        }
 
-      if (test_InvalidVersionAction != null) {
-        test_InvalidVersionAction.run();
+        if (test_InvalidVersionAction != null) {
+          test_InvalidVersionAction.run();
+        }
+        _distribute();
       }
-      _distribute();
+    } catch (RuntimeException | Error e) {
+      endOperation(viewVersion);
+      throw e;
     }
     return viewVersion;
   }
@@ -310,7 +315,7 @@ public abstract class DistributedCacheOperation {
    * members. This method should wrapped by startOperation() and endOperation() in try/finally
    * block.
    */
-  private void _distribute() {
+  protected void _distribute() {
     DistributedRegion region = getRegion();
     DistributionManager mgr = region.getDistributionManager();
     boolean reliableOp = isOperationReliable() && region.requiresReliabilityCheck();

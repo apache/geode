@@ -217,6 +217,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
@@ -915,7 +916,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         };
         ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(EVENT_QUEUE_LIMIT);
         this.eventThreadPool = new PooledExecutorWithDMStats(queue, EVENT_THREAD_LIMIT,
-            this.cachePerfStats.getEventPoolHelper(), threadFactory, 1000);
+            this.cachePerfStats.getEventPoolHelper(), threadFactory, 1000, getThreadMonitorObj());
       } else {
         this.eventThreadPool = null;
       }
@@ -2706,7 +2707,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public Set<DistributedMember> getMembers() {
     return Collections
-        .unmodifiableSet((Set<DistributedMember>) this.dm.getOtherNormalDistributionManagerIds());
+        .unmodifiableSet((Set) this.dm.getOtherNormalDistributionManagerIds());
   }
 
   @Override
@@ -5360,6 +5361,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public InternalCache getCacheForProcessingClientRequests() {
     return cacheForClients;
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    if (this.dm != null) {
+      return this.dm.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 
 }

@@ -1267,15 +1267,6 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  public void addDiskRegionToQueue(LocalRegion lr) {
-    try {
-      addAsyncItem(lr, true);
-    } catch (InterruptedException ignore) {
-      // If it fail, that means the RVVTrusted is not written. It will
-      // automatically do full-GII
-    }
-  }
-
   private void addAsyncItem(Object item, boolean forceAsync) throws InterruptedException {
     synchronized (this.lock) { // fix for bug 41390
       // 43312: since this thread has gained dsi.lock, dsi.clear() should have
@@ -1748,40 +1739,34 @@ public class DiskStoreImpl implements DiskStore {
                 ((FlushNotifier) o).doFlush();
               } else {
                 try {
-                  if (o != null && o instanceof LocalRegion) {
-                    LocalRegion lr = (LocalRegion) o;
-                    lr.getDiskRegion().writeRVV(null, true);
-                    lr.getDiskRegion().writeRVVGC(lr);
+                  AsyncDiskEntry ade = (AsyncDiskEntry) o;
+                  InternalRegion region = ade.region;
+                  VersionTag tag = ade.tag;
+                  if (ade.versionOnly) {
+                    DiskEntry.Helper.doAsyncFlush(tag, region);
                   } else {
-                    AsyncDiskEntry ade = (AsyncDiskEntry) o;
-                    InternalRegion region = ade.region;
-                    VersionTag tag = ade.tag;
-                    if (ade.versionOnly) {
-                      DiskEntry.Helper.doAsyncFlush(tag, region);
-                    } else {
-                      DiskEntry entry = ade.de;
-                      // We check isPendingAsync
-                      if (entry.getDiskId().isPendingAsync()) {
-                        if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-                          if (!doingFlush) {
-                            doingFlush = true;
-                            CacheObserverHolder.getInstance().goingToFlush();
-                          }
-                        }
-                        DiskEntry.Helper.doAsyncFlush(entry, region, tag);
-                      } else {
-                        // If it is no longer pending someone called
-                        // unscheduleAsyncWrite
-                        // so we don't need to write the entry, but
-                        // if we have a version tag we need to record the
-                        // operation
-                        // to update the RVV
-                        if (tag != null) {
-                          DiskEntry.Helper.doAsyncFlush(tag, region);
+                    DiskEntry entry = ade.de;
+                    // We check isPendingAsync
+                    if (entry.getDiskId().isPendingAsync()) {
+                      if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
+                        if (!doingFlush) {
+                          doingFlush = true;
+                          CacheObserverHolder.getInstance().goingToFlush();
                         }
                       }
+                      DiskEntry.Helper.doAsyncFlush(entry, region, tag);
+                    } else {
+                      // If it is no longer pending someone called
+                      // unscheduleAsyncWrite
+                      // so we don't need to write the entry, but
+                      // if we have a version tag we need to record the
+                      // operation
+                      // to update the RVV
+                      if (tag != null) {
+                        DiskEntry.Helper.doAsyncFlush(tag, region);
+                      }
                     }
-                  } // else
+                  }
                 } catch (RegionDestroyedException ignore) {
                   // Normally we flush before closing or destroying a region
                   // but in some cases it is closed w/o flushing.
@@ -2035,7 +2020,7 @@ public class DiskStoreImpl implements DiskStore {
         try (Stream<Path> stream = Files.list(directoryHolder.getDir().toPath())) {
           backupDirectories = stream
               .filter((path) -> path.getFileName().toString()
-                  .startsWith(BackupService.DATA_STORES_TEMPORARY_DIRECTORY))
+                  .startsWith(BackupService.TEMPORARY_DIRECTORY_FOR_BACKUPS))
               .filter(p -> Files.isDirectory(p)).collect(Collectors.toList());
         }
         for (Path backupDirectory : backupDirectories) {

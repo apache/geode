@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
@@ -40,12 +39,10 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test suite for PartitionAttributesImpl.
  */
-@Category(UnitTest.class)
 public class PartitionAttributesImplJUnitTest {
 
   private String colocatedRegionFullPath;

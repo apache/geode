@@ -29,7 +29,7 @@ A distributed region automatically sends entry value updates to remote caches an
 
 -   Distributed entry updates come from the `Region` `put` and `create` operations (the creation of an entry with a non-null value is seen as an update by remote caches that already have the entry key). Entry updates are distributed selectively - only to caches where the entry key is already defined. This provides a pull model of distribution, compared to the push model that you get with replication.
 -   Distribution alone does not cause new entries to be copied from remote caches.
--   A distributed region shares cache loader and cache writer application event handler plug-ins across the distributed system.
+-   A distributed region shares cache loader and cache writer application event handler plug-ins across the cluster.
 
 In a distributed region, new and updated entry values are automatically distributed to remote caches that already have the entries defined.
 
@@ -41,7 +41,7 @@ In a distributed region, new and updated entry values are automatically distribu
 
 <img src="../../images_svg/distributed_how_2.svg" id="how_distribution_works__image_AF8A3ADEB5D94E20B101FDA92BF6D002" class="image" />
 
-**Step 3:** The entry's value is the same throughout the distributed system.
+**Step 3:** The entry's value is the same throughout the cluster.
 
 <img src="../../images_svg/distributed_how_3.svg" id="how_distribution_works__image_5B1F06B54C9047E28A8C8673D1D5BD27" class="image" />
 

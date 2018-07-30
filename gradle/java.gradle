@@ -38,6 +38,7 @@ subprojects {
         targetCompatibility '1.8'
         options.encoding = 'UTF-8'
       }
+      javac.options.incremental = true
     }
   })
 
@@ -54,23 +55,17 @@ subprojects {
             "Organization": productOrg
           )
         }
-
-        metaInf {
+      }
+      jar.metaInf {
           from("$rootDir/LICENSE")
           if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
             from("$rootDir/NOTICE")
           }
-        }
       }
     }
   })
 
   configurations {
-    provided {
-      description 'a dependency that is provided externally at runtime'
-      visible true
-    }
-
     testOutput {
       extendsFrom testCompile
       description 'a dependency that exposes test artifacts'
@@ -95,18 +90,11 @@ subprojects {
     testOutput jarTest
   }
 
-  sourceSets {
-    main.compileClasspath += configurations.provided
-    main.runtimeClasspath -= configurations.provided
-    test.compileClasspath += configurations.provided
-    test.runtimeClasspath += configurations.provided
-  }
-
-  javadoc.classpath += configurations.provided
-
   javadoc {
+    destinationDir = file("$buildDir/javadoc")
     options.addStringOption('Xdoclint:none', '-quiet')
     options.encoding = 'UTF-8'
+    classpath += configurations.compileOnly
   }
 }
 

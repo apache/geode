@@ -643,6 +643,22 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String shiroInit = "";
 
+  ////////////////////// thread monitoring///////////////////
+  /**
+   * Is thread monitoring enabled
+   */
+  protected boolean threadMonitorEnabled = DEFAULT_THREAD_MONITOR_ENABLED;
+
+  /**
+   * the thread monitoring interval
+   */
+  protected int threadMonitorInterval = DEFAULT_THREAD_MONITOR_INTERVAL;
+
+  /**
+   * the thread monitoring time limit after which the monitored thread is considered stuck
+   */
+  protected int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
+
   ////////////////////// Constructors //////////////////////
 
   /**
@@ -670,6 +686,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.logFile = other.getLogFile();
     this.logLevel = other.getLogLevel();
     this.statisticSamplingEnabled = other.getStatisticSamplingEnabled();
+    this.threadMonitorEnabled = other.getThreadMonitorEnabled();
+    this.threadMonitorInterval = other.getThreadMonitorInterval();
+    this.threadMonitorTimeLimit = other.getThreadMonitorTimeLimit();
     this.statisticSampleRate = other.getStatisticSampleRate();
     this.statisticArchiveFile = other.getStatisticArchiveFile();
     this.ackWaitThreshold = other.getAckWaitThreshold();
@@ -3043,7 +3062,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(locatorSSLAlias, that.locatorSSLAlias).append(sslDefaultAlias, that.sslDefaultAlias)
         .append(sourceMap, that.sourceMap).append(userCommandPackages, that.userCommandPackages)
         .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
-        .isEquals();
+        .append(threadMonitorEnabled, that.threadMonitorEnabled)
+        .append(threadMonitorInterval, that.threadMonitorInterval)
+        .append(threadMonitorTimeLimit, that.threadMonitorTimeLimit).isEquals();
   }
 
   /**
@@ -3113,7 +3134,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(sslTrustStorePassword).append(sslWebServiceRequireAuthentication)
         .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
-        .append(modifiable).toHashCode();
+        .append(modifiable).append(threadMonitorEnabled).append(threadMonitorInterval)
+        .append(threadMonitorTimeLimit).toHashCode();
   }
 
   /**
@@ -3584,5 +3606,34 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.distributedTransactions = value;
   }
 
+  @Override
+  public boolean getThreadMonitorEnabled() {
+    return this.threadMonitorEnabled;
+  }
+
+  @Override
+  public void setThreadMonitorEnabled(boolean value) {
+    this.threadMonitorEnabled = (Boolean) value;
+  }
+
+  @Override
+  public int getThreadMonitorInterval() {
+    return this.threadMonitorInterval;
+  }
+
+  @Override
+  public void setThreadMonitorInterval(int value) {
+    this.threadMonitorInterval = value;
+  }
+
+  @Override
+  public int getThreadMonitorTimeLimit() {
+    return this.threadMonitorTimeLimit;
+  }
+
+  @Override
+  public void setThreadMonitorTimeLimit(int value) {
+    this.threadMonitorTimeLimit = value;
+  }
 
 }

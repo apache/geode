@@ -180,6 +180,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     if (this.exceptions != null && !this.exceptions.isEmpty()) {
       sb.append(this.exceptions.toString());
     }
+    sb.append("}");
     return sb.toString();
   }
 

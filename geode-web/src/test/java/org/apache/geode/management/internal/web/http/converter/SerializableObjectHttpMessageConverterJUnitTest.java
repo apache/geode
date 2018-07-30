@@ -32,14 +32,12 @@ import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 
 import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The SerializableObjectHttpMessageConverterJUnitTest class is a test suite of test cases testing
@@ -52,7 +50,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 8.0
  */
-@Category(UnitTest.class)
 public class SerializableObjectHttpMessageConverterJUnitTest {
 
   private Mockery mockContext;

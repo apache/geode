@@ -33,7 +33,7 @@ system components.  The following list shows the system components that can be s
 to communicate using SSL, and the kind of communications to which each component name refers:
 
 <dt>**cluster**</dt>
-<dd>Peer-to-peer communications among members of a distributed system</dd>
+<dd>Peer-to-peer communications among members of a cluster</dd>
 
 <dt>**gateway**</dt>
 <dd>Communication across WAN gateways from one site to another</dd>
@@ -109,7 +109,7 @@ any protocol that is enabled by default in the configured JSSE provider.</dd>
 
 ### Example: secure communications throughout
 
-To implement secure SSL communications throughout an entire distributed system, each process should
+To implement secure SSL communications throughout an entire cluster, each process should
 enable SSL for all components.
  
 ``` pre
@@ -181,7 +181,7 @@ The following table lists the components you can configure to use SSL.
 
 | Component | Communication Types                                                   |
 |-----------|-----------------------------------------------------------------------|
-| cluster   | Peer-to-peer communications among members of a distributed system     |
+| cluster   | Peer-to-peer communications among members of a cluster                |
 | gateway   | Communication across WAN gateways from one site to another            |
 | web       | Web-based communication, including REST interfaces                    |
 | jmx       | Java management extension communications, including gfsh              |
@@ -214,7 +214,7 @@ use. For information, see the [Oracle JSSE website](http://www.oracle.com/techne
 
 2.  Configure SSL as needed for each connection type:
 
-    1.  Use locators for member discovery within the distributed systems and for client discovery of
+    1.  Use locators for member discovery within the clusters and for client discovery of
     servers. See [Configuring Peer-to-Peer Discovery](../../topologies_and_comm/p2p_configuration/setting_up_a_p2p_system.html) and
     [Configuring a Client/Server System](../../topologies_and_comm/cs_configuration/setting_up_a_client_server_system.html#setting_up_a_client_server_system).
 

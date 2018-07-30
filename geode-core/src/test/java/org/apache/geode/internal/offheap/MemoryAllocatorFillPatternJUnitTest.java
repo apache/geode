@@ -22,15 +22,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
  */
-@Category(UnitTest.class)
 public class MemoryAllocatorFillPatternJUnitTest {
 
   /** Size of single test slab. */

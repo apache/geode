@@ -20,20 +20,22 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class ConnectionTableTest {
   private ConnectionTable connectionTable;
   private Socket socket;
@@ -92,5 +94,21 @@ public class ConnectionTableTest {
 
     connectionTable.acceptConnection(socket, factory);
     assertEquals(1, connectionTable.getNumberOfReceivers());
+  }
+
+  @Test
+  public void testThreadOwnedSocketsAreRemoved() throws Exception {
+    Boolean wantsResources = ConnectionTable.getThreadOwnsResourcesRegistration();
+    ConnectionTable.threadWantsOwnResources();
+    try {
+      Map<DistributedMember, Connection> threadConnectionMap = new HashMap<>();
+      connectionTable.threadOrderedConnMap.set(threadConnectionMap);
+      ConnectionTable.releaseThreadsSockets();
+      assertEquals(0, threadConnectionMap.size());
+    } finally {
+      if (wantsResources != Boolean.FALSE) {
+        ConnectionTable.threadWantsSharedResources();
+      }
+    }
   }
 }

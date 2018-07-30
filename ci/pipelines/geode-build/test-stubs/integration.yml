@@ -21,7 +21,11 @@ metadata:
     artifact_slug: integrationtestfiles
     dunit:
       parallel: true
-      forks: 1
+      forks: 48
+    cpus: 96
+# specified in Gigabytes.
+    ram: 210
+# specified in seconds
     call_stack_timeout: 25200
     timeout: 8h
     size: []

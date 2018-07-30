@@ -1330,7 +1330,7 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_CLIENT_CONFLATION_PROP_NAME =
       new StringId(1839, "Client override for server queue conflation setting");
   public static final StringId PRHARRedundancyProvider_ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET =
-      new StringId(1840, "allocate enough members to host bucket.");
+      new StringId(1840, "allocate enough members to host a new bucket");
   public static final StringId PRHARedundancyProvider_TIME_OUT_WAITING_0_MS_FOR_CREATION_OF_BUCKET_FOR_PARTITIONED_REGION_1_MEMBERS_REQUESTED_TO_CREATE_THE_BUCKET_ARE_2 =
       new StringId(1841,
           "Time out waiting {0} ms for creation of bucket for partitioned region {1}. Members requested to create the bucket are: {2}");
@@ -1358,7 +1358,7 @@ public class LocalizedStrings {
       new StringId(1852, "Excpetion  in bucket index creation : {0}");
   public static final StringId PRHARRedundancyProvider_CONFIGURED_REDUNDANCY_LEVEL_COULD_NOT_BE_SATISFIED_0 =
       new StringId(1853,
-          "Configured Redundancy Level Could Not be Satisfied. {0} to satisfy redundancy for the region.{1}");
+          "Configured redundancy level could not be satisfied. {0} to satisfy redundancy for the region.{1}");
   public static final StringId PartitionedRegionDataStore_PARTITIONEDREGION_0_CAUGHT_UNEXPECTED_EXCEPTION_DURING_CLEANUP =
       new StringId(1854, "PartitionedRegion {0}: caught unexpected exception during data cleanup");
   public static final StringId MemberFunctionExecutor_NO_MEMBER_FOUND_FOR_EXECUTING_FUNCTION_0 =
@@ -3355,7 +3355,7 @@ public class LocalizedStrings {
   public static final StringId MemberMessage_MEMBERRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1 =
       new StringId(3033, "MemberResponse got memberDeparted event for < {0} > crashed =  {1}");
   public static final StringId PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1 =
-      new StringId(3034, "{0} : could not find partitioned region with Id  {1}");
+      new StringId(3034, "{0} : could not find partitioned region with Id {1}");
   public static final StringId PartitionMessage_ATTEMPT_FAILED =
       new StringId(3035, "Attempt failed");
   public static final StringId PartitionMessage_DISTRIBUTED_SYSTEM_IS_DISCONNECTING =
@@ -5816,9 +5816,6 @@ public class LocalizedStrings {
           "AutoConnectionSource UpdateLocatorListTask started with interval={0} ms.");
   public static final StringId AutoConnectionSourceImpl_COULD_NOT_CREATE_A_NEW_CONNECTION_TO_SERVER_0 =
       new StringId(4484, "Could not create a new connection to server: {0}");
-  public static final StringId DistributionAdvisor_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_CURRENT_OPERATIONS_TO_DISTRIBUTE =
-      new StringId(4485,
-          "{0} seconds have elapsed while waiting for current operations to distribute");
   public static final StringId DistributionManager_I_0_AM_THE_ELDER =
       new StringId(4486, "I, {0}, am the elder.");
   public static final StringId InternalLocator_STARTING_PEER_LOCATION_FOR_0 =
@@ -7717,10 +7714,28 @@ public class LocalizedStrings {
       new StringId(6667,
           "Lucene index {0} cannot be created because its parameters are incompatible with another Lucene index");
 
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_INTERVAL = new StringId(
+      6668,
+      "Defines the time interval (in milliseconds) with which thread monitoring is scheduled to run.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_ENABLED =
+      new StringId(6669, "Defines whether thread monitoring is to be enabled.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_TIME_LIMIT = new StringId(
+      6670,
+      "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
+  public static final StringId THREAD_MONITOR_NAME = new StringId(6671, "ThreadsMonitor");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_ENABLED =
+      new StringId(6672,
+          "Defines whether thread monitoring is expected to automatically kill stuck thread.");
+  public static final StringId AbstractDistributionConfig_THREAD_MONITOR_AUTO_LIMIT = new StringId(
+      6673,
+      "Defines the number of thread monitoring attempts after which the stuck thread will be automatically killed (only applicable when <thread-monitor-auto-enabled> is set to Y).");
+
   public static final StringId cq_CACHE_CLIENT_PROXY_IS_NULL =
-      new StringId(6668,
+      new StringId(6674,
           "No Cache Client Proxy found while executing CQ.");
 
+  public static final StringId LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED =
+      new StringId(6675, "Lucene index {0} on region {1} was destroyed while being created");
   /** Testing strings, messageId 90000-99999 **/
 
   /**

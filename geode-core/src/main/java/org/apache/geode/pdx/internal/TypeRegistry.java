@@ -83,6 +83,11 @@ public class TypeRegistry {
     }
   }
 
+  TypeRegistry(InternalCache cache, TypeRegistration distributedTypeRegistry) {
+    this.cache = cache;
+    this.distributedTypeRegistry = distributedTypeRegistry;
+  }
+
   public void testClearLocalTypeRegistry() {
     this.localTypeIds.clear();
     this.localTypeIdMaps.clear();

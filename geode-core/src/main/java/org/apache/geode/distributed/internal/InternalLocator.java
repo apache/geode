@@ -166,6 +166,8 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   private volatile boolean stoppedForReconnect;
 
+  private volatile boolean reconnected;
+
   /**
    * whether the locator was stopped during forced-disconnect processing
    */
@@ -936,12 +938,17 @@ public class InternalLocator extends Locator implements ConnectListener {
           if (!restarted) {
             stoppedForReconnect = false;
           }
+          reconnected = restarted;
         }
         InternalLocator.this.restartThread = null;
       }
     };
     this.restartThread.setDaemon(true);
     this.restartThread.start();
+  }
+
+  public boolean isReconnected() {
+    return reconnected;
   }
 
   /**

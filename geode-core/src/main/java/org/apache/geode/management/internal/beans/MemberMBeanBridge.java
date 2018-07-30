@@ -58,7 +58,6 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DLockStats;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -927,8 +926,8 @@ public class MemberMBeanBridge {
                   .toLocalizedString();
         }
       } else {
-        Assert.assertTrue(false,
-            "TailLogRequest/Response processed in application vm with shared logging.");
+        throw new IllegalStateException(
+            "TailLogRequest/Response processed in application vm with shared logging. This would occur if there is no 'log-file' defined.");
       }
     } catch (IOException e) {
       logger.warn(LocalizedMessage
