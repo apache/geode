@@ -78,6 +78,23 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${IN
   --format=json)
 CREATE_EXIT_STATUS=$?
 
+while [ $CREATE_EXIT_STATUS -ne 0 ]; do
+    sleep $((60 * 5))
+    TTL=$(($(date +%s) + 60 * 60 * 2))
+
+    INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
+      --zone=${ZONE} \
+      --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
+      --min-cpu-platform=Intel\ Skylake \
+      --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
+      --image-project=${PROJECT} \
+      --boot-disk-size=100GB \
+      --boot-disk-type=pd-ssd \
+      --labels=time-to-live=${TTL} \
+      --format=json)
+    CREATE_EXIT_STATUS=$?
+done
+
 
 while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
   echo -n .
