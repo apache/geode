@@ -56,7 +56,8 @@ jobs:
       - do:
         - put: concourse-metadata-resource
         - task: start_instance
-          timeout: 5m
+          timeout: 15m
+          attempts: 100
           config:
             inputs:
             - name: concourse-metadata-resource
@@ -72,7 +73,6 @@ jobs:
               GEODE_FORK: (( grab metadata.geode-fork ))
             run:
               path: geode/ci/scripts/start_instance.sh
-
     - task: rsync_code_up
       timeout: 5m
       config:
