@@ -62,7 +62,7 @@ echo "${ZONE}" > "instance-data/zone"
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 
-while [ true ]; then
+while true; do
     TTL=$(($(date +%s) + 60 * 60 * 6))
 
     set +e
@@ -88,11 +88,11 @@ while [ true ]; then
     sleep ${TIMEOUT}
 done
 
-
-while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
-  echo -n .
-done
 echo "${INSTANCE_INFORMATION}" > instance-data/instance-information
 
 INSTANCE_IP_ADDRESS=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].networkInterfaces[0].accessConfigs[0].natIP')
 echo "${INSTANCE_IP_ADDRESS}" > "instance-data/instance-ip-address"
+
+while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
+  echo -n .
+done
