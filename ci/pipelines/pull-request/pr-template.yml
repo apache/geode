@@ -16,6 +16,14 @@
 
 ---
 
+image_resource: &alpine-tools-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
+    tag: latest
+
 jobs:
 - name: (( grab metadata.job.name ))
   serial: false
@@ -51,7 +59,6 @@ jobs:
       - do:
         - put: concourse-metadata-resource
         - task: start_instance
-          image_resource: *alpine-tools-image
           timeout: 5m
           config:
             inputs:
@@ -60,6 +67,7 @@ jobs:
             outputs:
             - name: instance-data
             platform: linux
+            image_resource: *alpine-tools-image
             params:
               CPUS: (( grab metadata.job.cpus ))
               RAM: (( grab metadata.job.ram ))
@@ -69,26 +77,25 @@ jobs:
               path: geode/ci/scripts/start_instance.sh
 
     - task: rsync_code_up
-      image_resource: *alpine-tools-image
       timeout: 5m
       config:
         inputs:
           - name: geode
           - name: instance-data
         platform: linux
+        image_resource: *alpine-tools-image
         run:
           path: geode/ci/scripts/rsync_code_up.sh
     - task: prepopulate_build
-      image_resource: *alpine-tools-image
       config:
         inputs:
           - name: geode
           - name: instance-data
         platform: linux
+        image_resource: *alpine-tools-image
         run:
           path: geode/ci/scripts/prepopulate_build.sh
     - task: execute_tests
-      image_resource: *alpine-tools-image
       timeout: (( grab metadata.job.timeout ))
       tags: [pr]
       config:
@@ -96,6 +103,7 @@ jobs:
           - name: geode
           - name: instance-data
         platform: linux
+        image_resource: *alpine-tools-image
         params:
           MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -127,7 +135,6 @@ jobs:
     ensure:
       do:
       - task: rsync_code_down
-        image_resource: *alpine-tools-image
         timeout: 5m
         config:
           inputs:
@@ -136,18 +143,19 @@ jobs:
           outputs:
           - name: geode-results
           platform: linux
+          image_resource: *alpine-tools-image
           run:
             path: geode/ci/scripts/rsync_code_down.sh
       ensure:
         aggregate:
         - task: archive-results
-          image_resource: *alpine-tools-image
           config:
             inputs:
             - name: concourse-metadata-resource
             - name: geode
             - name: geode-results
             platform: linux
+            image_resource: *alpine-tools-image
             params:
               MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
               SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -157,13 +165,13 @@ jobs:
             run:
               path: geode/ci/scripts/archive_results.sh
         - task: stop_instance
-          image_resource: *alpine-tools-image
           timeout: 1h
           config:
             inputs:
             - name: geode
             - name: instance-data
             platform: linux
+            image_resource: *alpine-tools-image
             run:
               path: geode/ci/scripts/stop_instance.sh
 
