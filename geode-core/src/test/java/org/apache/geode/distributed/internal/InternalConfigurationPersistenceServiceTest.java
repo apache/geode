@@ -251,6 +251,17 @@ public class InternalConfigurationPersistenceServiceTest {
   }
 
   @Test
+  public void keepValidGatewayReceiversWithDefaultBindAddress() throws Exception {
+    Document document =
+        XmlUtils.createDocumentFromXml(getSingleReceiverWithDefaultBindAddressXml());
+    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
+    service.removeInvalidGatewayReceivers(document);
+    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
+  }
+
+  @Test
   @Parameters(method = "getXmlAndExpectedElements")
   public void removeInvalidXmlConfiguration(String xml, int expectedInitialElements,
       int expectFinalElements) throws Exception {
@@ -282,6 +293,14 @@ public class InternalConfigurationPersistenceServiceTest {
     return "<cache>\n<gateway-receiver bind-address=\"123.12.12.12\"/>\n<gateway-receiver bind-address=\"123.12.12.11\"/>\n</cache>";
   }
 
+  private String getSingleReceiverWithDefaultBindAddressXml() {
+    return "<cache>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n</cache>";
+  }
+
+  private String getDuplicateReceiversWithDefaultBindAddressesXml() {
+    return "<cache>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n</cache>";
+  }
+
   private String getValidReceiversXml() {
     return "<cache>\n<gateway-receiver/>\n</cache>";
   }
@@ -291,6 +310,8 @@ public class InternalConfigurationPersistenceServiceTest {
         new Object[] {getDuplicateReceiversWithDefaultPropertiesXml(), 2, 1},
         new Object[] {getDuplicateReceiversWithDifferentHostNameForSendersXml(), 2, 0},
         new Object[] {getDuplicateReceiversWithDifferentBindAddressesXml(), 2, 0},
+        new Object[] {getSingleReceiverWithDefaultBindAddressXml(), 1, 1},
+        new Object[] {getDuplicateReceiversWithDefaultBindAddressesXml(), 2, 1},
         new Object[] {getValidReceiversXml(), 1, 1});
   }
 }

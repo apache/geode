@@ -78,6 +78,9 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
       // Add a case for multiple receivers with default attributes
       addMultipleReceiversWithDefaultAttributes(result, version);
 
+      // Add a case for single receiver with default bind-address
+      addSingleReceiverWithDefaultBindAddress(result, version);
+
       // Add a case for single receiver with default attributes
       addSingleReceiverWithDefaultAttributes(result, version);
     });
@@ -126,6 +129,13 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
       String version) {
     List<Attribute> attributes = new ArrayList<>();
     attributes.add(Attribute.DEFAULT);
+    result.add(new Object[] {version, attributes, 1, 1});
+  }
+
+  private static void addSingleReceiverWithDefaultBindAddress(List<Object[]> result,
+      String version) {
+    List<Attribute> attributes = new ArrayList<>();
+    attributes.add(new Attribute("bind-address", "0.0.0.0"));
     result.add(new Object[] {version, attributes, 1, 1});
   }
 
