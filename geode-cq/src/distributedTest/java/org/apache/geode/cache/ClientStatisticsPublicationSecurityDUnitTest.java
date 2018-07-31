@@ -19,7 +19,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +37,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -99,30 +102,37 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
     Region region =
         client.createClientRegionFactory(CACHING_PROXY).setPoolName("poolName").create(regionName);
 
-    checkClientHealthStatus(client, 0);
+    checkClientHealthStatus(0);
 
     region.put("key", "value");
 
     ClientStatsManager.publishClientStats((PoolImpl) pool);
 
-    checkClientHealthStatus(client, 1, "poolName");
+    checkClientHealthStatus(1, "poolName");
 
     client.close(false);
   }
 
-  private void checkClientHealthStatus(ClientCache client, int expectedNumPuts,
+  private void checkClientHealthStatus(int expectedNumPuts,
       String... expectedPoolStatKeys) {
     final int serverPort = server.getPort();
-    final String clientId = client.getDistributedSystem().getMemberId();
     server.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      SystemManagementService service =
-          (SystemManagementService) ManagementService.getExistingManagementService(cache);
-      ClientHealthStatus status =
-          service.getJMXAdapter().getClientServiceMXBean(serverPort).showClientStats(clientId);
+      Awaitility.waitAtMost(5, TimeUnit.MINUTES).until(() -> {
+        Cache cache = ClusterStartupRule.getCache();
+        SystemManagementService service =
+            (SystemManagementService) ManagementService.getExistingManagementService(cache);
+        CacheServerMXBean serviceMBean = service.getJMXAdapter().getClientServiceMXBean(serverPort);
+        try {
+          String clientId = serviceMBean.getClientIds()[0];
+          ClientHealthStatus status = serviceMBean.showClientStats(clientId);
+          assertThat(status.getNumOfPuts()).isEqualTo(expectedNumPuts);
+          assertThat(status.getPoolStats().keySet())
+              .containsExactlyInAnyOrder(expectedPoolStatKeys);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
 
-      assertThat(status.getNumOfPuts()).isEqualTo(expectedNumPuts);
-      assertThat(status.getPoolStats().keySet()).containsExactlyInAnyOrder(expectedPoolStatKeys);
+      });
     });
   }
 }
