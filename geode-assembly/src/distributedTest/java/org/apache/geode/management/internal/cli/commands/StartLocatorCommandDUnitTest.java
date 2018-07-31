@@ -307,7 +307,7 @@ public class StartLocatorCommandDUnitTest {
       assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
       assertThat(result.getMessageFromContent()).contains(expectedMessage);
 
-      // Verify GEODE-2138
+      // Verify GEODE-2138 (Geode commands do not contain GemFire in output)
       assertThat(result.getMessageFromContent()).doesNotContain("Gemfire")
           .doesNotContain("GemFire");
       assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
