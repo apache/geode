@@ -77,7 +77,7 @@ while [ true ]; then
       --format=json)
     CREATE_EXIT_STATUS=$?
 
-    if [ CREATE_EXIT_STATUS == 0 ]; then
+    if [ ${CREATE_EXIT_STATUS} -eq 0 ]; then
         break
     fi
 
