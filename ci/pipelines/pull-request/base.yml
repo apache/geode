@@ -17,6 +17,14 @@
 
 ---
 
+image_resource: &alpine-tools-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
+    tag: latest
+
 resource_types:
   - name: gcs-resource
     type: docker-image
