@@ -43,3 +43,4 @@ OUTPUT_DIR=${BASE_DIR}/geode-results
 set -x
 time ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "cd geode && ./gradlew combineReports && chmod -R a+r */build/"
 time rsync -e "ssh -i ${SSHKEY_FILE}" -ah geode@${INSTANCE_IP_ADDRESS}:. ${OUTPUT_DIR}/.
+set +x
