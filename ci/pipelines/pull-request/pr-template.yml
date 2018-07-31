@@ -30,17 +30,15 @@ jobs:
   public: true
   plan:
   - do:
+    # Merged pull request SHA, for building
+    - get: geode
+      trigger: true
+      version: every
+      params:
+        fetch_merge: true
+        git:
+          depth: 100
     - aggregate:
-
-      # Merged pull request SHA, for building
-      - get: geode
-        trigger: true
-        version: every
-        params:
-          fetch_merge: true
-          git:
-            depth: 100
-
       # Unmerged pull request SHA, for writing status into GitHub
       - do:
         - get: geode-unmerged-request
@@ -54,7 +52,6 @@ jobs:
             path: geode-unmerged-request
             context: $BUILD_JOB_NAME
             status: pending
-
       # Start heavy lifter instance
       - do:
         - put: concourse-metadata-resource
