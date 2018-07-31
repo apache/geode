@@ -67,16 +67,6 @@ jobs:
         image_resource: *alpine-tools-image
         run:
           path: geode-ci/ci/scripts/rsync_code_up.sh
-    - task: prepopulate_build
-      config:
-        inputs:
-          - name: geode-ci
-          - name: geode
-          - name: instance-data
-        platform: linux
-        image_resource: *alpine-tools-image
-        run:
-          path: geode-ci/ci/scripts/prepopulate_build.sh
     - task: execute_tests
       timeout: (( grab metadata.job.timeout ))
       config:
