@@ -64,7 +64,7 @@ echo "RAM is ${RAM}"
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 echo "RAM_MEGABYTES is ${RAM_MEGABYTES}"
 
-TTL=$(($(date +%s) + 60 * 60 * 24))
+TTL=$(($(date +%s) + 60 * 60 * 6))
 
 INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \

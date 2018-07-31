@@ -27,6 +27,6 @@ metadata:
 # specified in Gigabytes.
     ram: 210
 # specified in seconds
-    call_stack_timeout: 25200
-    timeout: 8h
+    call_stack_timeout: 3600
+    timeout: 1h15m
     size: []
