@@ -42,13 +42,6 @@ resources:
     password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
     tag: latest
-- name: alpine-tools-image
-  type: docker-image
-  source:
-    username: ((!docker-username))
-    password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
-    tag: latest
 - name: geode
   type: pull-request
   source:
