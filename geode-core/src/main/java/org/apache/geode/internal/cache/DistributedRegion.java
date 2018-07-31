@@ -381,9 +381,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         // if the listeners have already seen this event, then it has already
         // been successfully applied to the cache. Distributed messages and
         // return
-        if (isTraceEnabled) {
-          logger.trace("DR.virtualPut: this cache has already seen this event {}", event);
-        }
+        logger.debug("DR.virtualPut: this cache has already seen this event {}", event);
 
         // Fix 39014: when hasSeenEvent, put will still distribute
         // event, but putAll did not. We add the logic back here, not to put
