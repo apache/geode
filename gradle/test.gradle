@@ -165,8 +165,6 @@ subprojects {
     }
     forkEvery 1
     outputs.upToDateWhen{false}
-
-    dependsOn upgradeTest
   }
 
   uiTest {
