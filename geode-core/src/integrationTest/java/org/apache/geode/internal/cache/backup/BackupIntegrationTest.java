@@ -143,9 +143,7 @@ public class BackupIntegrationTest {
     createCache();
     region = regionCreator.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for (int i = 0; i < 512; i++) {
-      assertNull(region.get(i));
-    }
+    validateEntriesDoNotExist(region, 0, 512);
 
     BackupService backup = cache.getBackupService();
     BackupWriter writer = getBackupWriter();
@@ -165,9 +163,7 @@ public class BackupIntegrationTest {
     createCache();
     region = regionCreator.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for (int i = 0; i < 512; i++) {
-      assertNull(region.get(i));
-    }
+    validateEntriesDoNotExist(region, 0, 512);
     assertEquals("A", region.get("A"));
 
     region.put("B", "B");
