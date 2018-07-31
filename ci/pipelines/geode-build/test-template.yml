@@ -30,10 +30,10 @@ jobs:
   public: true
   plan:
   - do:
+    - get: geode-ci
     - aggregate:
       - get: geode
         passed: [Build]
-      - get: geode-ci
       - get: geode-build-version
         passed: [Build]
         trigger: true
