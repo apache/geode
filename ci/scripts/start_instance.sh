@@ -60,9 +60,7 @@ echo "${PROJECT}" > "instance-data/project"
 echo "${ZONE}" > "instance-data/zone"
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
-echo "RAM is ${RAM}"
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
-echo "RAM_MEGABYTES is ${RAM_MEGABYTES}"
 
 while [ true ]; then
     TTL=$(($(date +%s) + 60 * 60 * 6))
@@ -83,7 +81,9 @@ while [ true ]; then
         break
     fi
 
-    sleep $((60 * 5))
+    TIMEOUT=$((60 * 5))
+    echo "Waiting ${TIMEOUT} seconds..."
+    sleep ${TIMEOUT}
 done
 
 
