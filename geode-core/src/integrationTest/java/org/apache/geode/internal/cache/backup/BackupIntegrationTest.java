@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -182,9 +183,7 @@ public class BackupIntegrationTest {
     createCache();
     region = regionCreator.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for (int i = 0; i < 512; i++) {
-      assertNull(region.get(i));
-    }
+    validateEntriesDoNotExist(region, 0, 512);
 
     assertNull(region.get("A"));
     assertNull(region.get("B"));
@@ -262,12 +261,8 @@ public class BackupIntegrationTest {
     region = regionCreator.createRegion();
     validateEntriesExist(region, 512, 2048);
     validateEntriesExist(region, 2560, 4096);
-    for (int i = 0; i < 512; i++) {
-      assertNull(region.get(i));
-    }
-    for (int i = 2048; i < 2560; i++) {
-      assertNull(region.get(i));
-    }
+    validateEntriesDoNotExist(region, 0, 512);
+    validateEntriesDoNotExist(region, 2048, 2560);
 
     assertNull(region.get("A"));
     assertNull(region.get("B"));
@@ -428,7 +423,12 @@ public class BackupIntegrationTest {
       for (int j = 0; j < expected.length; j++) {
         assertEquals("Byte wrong on entry " + i + ", byte " + j, expected[j], bytes[j]);
       }
+    }
+  }
 
+  private void validateEntriesDoNotExist(Region region, int start, int end) {
+    for (int i = start; i < end; i++) {
+      assertFalse("Entry " + i + " exists", region.containsKey(i));
     }
   }
 
