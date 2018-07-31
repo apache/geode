@@ -65,6 +65,7 @@ RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 while [ true ]; then
     TTL=$(($(date +%s) + 60 * 60 * 6))
 
+    set +e
     INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
       --zone=${ZONE} \
       --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
@@ -76,12 +77,13 @@ while [ true ]; then
       --labels=time-to-live=${TTL} \
       --format=json)
     CREATE_EXIT_STATUS=$?
+    set -e
 
     if [ ${CREATE_EXIT_STATUS} -eq 0 ]; then
         break
     fi
 
-    TIMEOUT=$((60 * 5))
+    TIMEOUT=60
     echo "Waiting ${TIMEOUT} seconds..."
     sleep ${TIMEOUT}
 done
