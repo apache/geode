@@ -72,7 +72,8 @@ public interface Messenger extends Service {
    * @param state messaging state is stored in this map
    * @param includeMulticast whether to record multicast state
    */
-  void getMessageState(InternalDistributedMember member, Map state, boolean includeMulticast);
+  void getMessageState(InternalDistributedMember member, Map<String, Long> state,
+      boolean includeMulticast);
 
   /**
    * The flip-side of getMessageState, this method takes the state it recorded and waits for
@@ -81,7 +82,8 @@ public interface Messenger extends Service {
    * @param member the member flushing operations to this member
    * @param state the state of that member's outgoing messaging to this member
    */
-  void waitForMessageState(InternalDistributedMember member, Map state) throws InterruptedException;
+  void waitForMessageState(InternalDistributedMember member, Map<String, Long> state)
+      throws InterruptedException;
 
   /**
    * Get the public key of member.

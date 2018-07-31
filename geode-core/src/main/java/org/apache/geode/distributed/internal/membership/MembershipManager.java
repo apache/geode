@@ -135,7 +135,8 @@ public interface MembershipManager {
    *         not receive the message because they departed the distributed system.
    * @throws NotSerializableException If content cannot be serialized
    */
-  Set send(InternalDistributedMember[] destinations, DistributionMessage content, DMStats stats)
+  Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
+      DistributionMessage content, DMStats stats)
       throws NotSerializableException;
 
   /**
@@ -163,7 +164,7 @@ public interface MembershipManager {
    *         distributed member
    * @since GemFire 5.1
    */
-  Map getMessageState(DistributedMember member, boolean includeMulticast);
+  Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast);
 
   /**
    * Waits for the given communications to reach the associated state
@@ -173,7 +174,8 @@ public interface MembershipManager {
    * @throws InterruptedException Thrown if the thread is interrupted
    * @since GemFire 5.1
    */
-  void waitForMessageState(DistributedMember member, Map state) throws InterruptedException;
+  void waitForMessageState(DistributedMember member, Map<String, Long> state)
+      throws InterruptedException;
 
   /**
    * Wait for the given member to not be in the membership view and for all direct-channel receivers

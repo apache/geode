@@ -69,7 +69,6 @@ groups:
   - AcceptanceTest
   - IntegrationTest
   - UpgradeTest
-  - UITests
 
 jobs:
 - name: Build

@@ -14,26 +14,14 @@
  */
 package org.apache.geode.cache.lucene;
 
-import java.io.File;
+import org.junit.Test;
 
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
-
-@Category({BackwardCompatibilityTest.class})
-public class LuceneSearchWithRollingUpgradeReindexFlagEnabledDUnitTest
+public class RollingUpgradeQueryReturnsCorrectResultsAfterServersRollOverOnPartitionRegion
     extends LuceneSearchWithRollingUpgradeDUnit {
-  public LuceneSearchWithRollingUpgradeReindexFlagEnabledDUnitTest(String version) {
-    super(version);
+  @Test
+  public void luceneQueryReturnsCorrectResultsAfterServersRollOverOnPartitionRegion()
+      throws Exception {
+    executeLuceneQueryWithServerRollOvers("partitionedRedundant", oldVersion);
   }
 
-  @Override
-  protected VM createLuceneIndexAndRegionOnRolledServer(String regionType, File diskdir,
-      String shortcutName, String regionName, VM rollServer) throws Exception {
-    rollServer.invoke(() -> LuceneServiceImpl.LUCENE_REINDEX = true);
-    return super.createLuceneIndexAndRegionOnRolledServer(regionType, diskdir, shortcutName,
-        regionName, rollServer);
-  }
 }

@@ -1649,7 +1649,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   @Override
   public Set<DistributedMember> getAllOtherMembers() {
-    return dm.getAllOtherMembers();
+    return (Set) dm.getAllOtherMembers();
   }
 
   @Override
@@ -1661,7 +1661,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public Set<DistributedMember> findDistributedMembers(InetAddress address) {
     Set<InternalDistributedMember> allMembers = dm.getDistributionManagerIdsIncludingAdmin();
-    Set<DistributedMember> results = new HashSet<DistributedMember>(2);
+    Set<DistributedMember> results = new HashSet<>(2);
 
     // Search through the set of all members
     for (InternalDistributedMember member : allMembers) {
@@ -1679,8 +1679,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   @Override
   public DistributedMember findDistributedMember(String name) {
-    Set<DistributedMember> allMembers = dm.getDistributionManagerIdsIncludingAdmin();
-    for (DistributedMember member : allMembers) {
+    for (DistributedMember member : dm.getDistributionManagerIdsIncludingAdmin()) {
       if (member.getName().equals(name)) {
         return member;
       }

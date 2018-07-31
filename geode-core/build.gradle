@@ -202,7 +202,7 @@ dependencies {
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
   outputs.file propertiesFile
-  inputs.dir compileJava.destinationDir
+  inputs.dir "../.git/index"
 
   doLast {
     def props = [
@@ -231,6 +231,8 @@ jar {
   exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
   exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
 }
+
+jar.dependsOn(createVersionPropertiesFile)
 
 task webJar (type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive containing the gemfire management web classes.'

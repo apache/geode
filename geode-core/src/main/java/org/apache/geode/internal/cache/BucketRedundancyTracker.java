@@ -19,10 +19,11 @@ package org.apache.geode.internal.cache;
  * {@link PartitionedRegionRedundancyTracker} of the bucket's status for the region.
  */
 class BucketRedundancyTracker {
-  private boolean redundancySatisfied = false;
-  private boolean hasAnyCopies = false;
+  // if true decrement allowed; if false increment allowed
+  private boolean noCopiesDecrementOkay = false;
+  // if true decrement allowed; if false increment allowed
+  private boolean lowRedundancyDecrementOkay = false;
   private boolean redundancyEverSatisfied = false;
-  private boolean hasEverHadCopies = false;
   private volatile int currentRedundancy = -1;
   private final int targetRedundancy;
   private final PartitionedRegionRedundancyTracker regionRedundancyTracker;
@@ -45,14 +46,8 @@ class BucketRedundancyTracker {
    * Adjust statistics based on closing a bucket
    */
   synchronized void closeBucket() {
-    if (!redundancySatisfied) {
-      regionRedundancyTracker.decrementLowRedundancyBucketCount();
-      redundancySatisfied = true;
-    }
-    if (hasEverHadCopies && !hasAnyCopies) {
-      regionRedundancyTracker.decrementNoCopiesBucketCount();
-      hasAnyCopies = true;
-    }
+    decrementLowRedundancy();
+    decrementNoCopies();
   }
 
   /**
@@ -76,34 +71,50 @@ class BucketRedundancyTracker {
   }
 
   private void updateNoCopiesStatistics(int currentBucketHosts) {
-    if (hasAnyCopies && currentBucketHosts == 0) {
-      hasAnyCopies = false;
+    if (currentBucketHosts == 0) {
+      incrementNoCopies();
+    } else if (currentBucketHosts > 0) {
+      decrementNoCopies();
+    }
+  }
+
+  private void decrementNoCopies() {
+    if (noCopiesDecrementOkay) {
+      noCopiesDecrementOkay = false;
+      regionRedundancyTracker.decrementNoCopiesBucketCount();
+    }
+  }
+
+  private void incrementNoCopies() {
+    if (!noCopiesDecrementOkay) {
+      noCopiesDecrementOkay = true;
       regionRedundancyTracker.incrementNoCopiesBucketCount();
-    } else if (!hasAnyCopies && currentBucketHosts > 0) {
-      if (hasEverHadCopies) {
-        regionRedundancyTracker.decrementNoCopiesBucketCount();
-      }
-      hasEverHadCopies = true;
-      hasAnyCopies = true;
     }
   }
 
   private void updateRedundancyStatistics(int updatedBucketHosts) {
     int updatedRedundancy = updatedBucketHosts - 1;
     updateCurrentRedundancy(updatedRedundancy);
-
     if (updatedRedundancy < targetRedundancy) {
       reportUpdatedBucketCount(updatedBucketHosts);
-      if (redundancySatisfied) {
-        regionRedundancyTracker.incrementLowRedundancyBucketCount();
-        redundancySatisfied = false;
-      } else if (!hasAnyCopies && updatedRedundancy >= 0) {
-        regionRedundancyTracker.incrementLowRedundancyBucketCount();
-      }
-    } else if (!redundancySatisfied && updatedRedundancy == targetRedundancy) {
-      regionRedundancyTracker.decrementLowRedundancyBucketCount();
-      redundancySatisfied = true;
+      incrementLowRedundancy();
+    } else if (updatedRedundancy == targetRedundancy) {
+      decrementLowRedundancy();
       redundancyEverSatisfied = true;
+    }
+  }
+
+  private void decrementLowRedundancy() {
+    if (lowRedundancyDecrementOkay) {
+      lowRedundancyDecrementOkay = false;
+      regionRedundancyTracker.decrementLowRedundancyBucketCount();
+    }
+  }
+
+  private void incrementLowRedundancy() {
+    if (!lowRedundancyDecrementOkay) {
+      lowRedundancyDecrementOkay = true;
+      regionRedundancyTracker.incrementLowRedundancyBucketCount();
     }
   }
 

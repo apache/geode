@@ -224,7 +224,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
           Awaitility.await().atMost(10, TimeUnit.SECONDS)
               .until(() -> dm.getOtherNormalDistributionManagerIds().size() == 3);
-          Set<DistributedMember> members = dm.getOtherNormalDistributionManagerIds();
+          Set<InternalDistributedMember> members = dm.getOtherNormalDistributionManagerIds();
 
           for (Iterator iterMembers = members.iterator(); iterMembers.hasNext();) {
             InternalDistributedMember member = (InternalDistributedMember) iterMembers.next();
@@ -349,7 +349,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
           Awaitility.await().atMost(10, TimeUnit.SECONDS)
               .until(() -> dm.getOtherNormalDistributionManagerIds().size() == 3);
-          Set<DistributedMember> members = dm.getOtherNormalDistributionManagerIds();
+          Set<InternalDistributedMember> members = dm.getOtherNormalDistributionManagerIds();
 
           // Make sure getAllOtherMembers returns a set
           // containing our three peers plus an admin member.

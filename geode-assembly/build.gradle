@@ -46,6 +46,10 @@ gradle.taskGraph.whenReady( { graph ->
   tasks.srcDistTar {
     classifier 'src'
   }
+  tasks.withType(Jar).each { jarTasks ->
+    distTar.dependsOn(jarTasks)
+    distZip.dependsOn(jarTasks)
+  }
 })
 
 configurations {
@@ -122,6 +126,7 @@ dependencies {
   acceptanceTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
   uiTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
   uiTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  upgradeTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 sourceSets {
@@ -280,6 +285,9 @@ task docs(type: Javadoc) {
     exclude 'org/apache/geode/test/**/'
     destinationDir = docsDir
 
+    parent.subprojects.each { project ->
+      dependsOn(project.tasks['javadoc'])
+    }
     doLast {
       parent.subprojects.each { project ->
         copy {
@@ -324,6 +332,7 @@ distributions {
         exclude '**/gradle/wrapper/gradle-wrapper.jar'
         exclude '**/.gradle'
         exclude '**/build/**'
+        exclude '**/out/**'
         exclude '**/.project'
         exclude '**/.classpath'
         exclude '**/.settings/**'
@@ -452,6 +461,7 @@ def dependOnInstalledProduct = {
 test dependOnInstalledProduct
 acceptanceTest dependOnInstalledProduct
 distributedTest dependOnInstalledProduct
+upgradeTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
 uiTest dependOnInstalledProduct
 flakyTest dependOnInstalledProduct
@@ -462,6 +472,8 @@ build.dependsOn installDist
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions/session-testing-war:war'
 distributedTest.dependsOn ':geode-old-versions:build'
+upgradeTest.dependsOn ':extensions/session-testing-war:war'
+upgradeTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
@@ -469,7 +481,7 @@ def printJars(tree) {
     if(!file.isDirectory()) {
       println file.name
     }
-  };
+  }
 }
 
 task dumpInstalledJars(dependsOn: installDist) {
@@ -490,6 +502,6 @@ task dumpInstalledJars(dependsOn: installDist) {
           println("==========================")
           printJars(warContents);
       }
-    };
+    }
   }
 }

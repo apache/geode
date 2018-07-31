@@ -48,7 +48,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
   private int replyProcessorId;
   private boolean isMcastEnabled;
   private boolean isTcpDisabled;
-  private Set interfaces;
+  private Set<InetAddress> interfaces;
   private int distributedSystemId;
   private String redundancyZone;
   private boolean enforceUniqueZone;
@@ -66,13 +66,12 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
    * @return list of addresses for this host
    * @since GemFire 5.7
    */
-  public static Set getMyAddresses(ClusterDistributionManager dm) {
+  public static Set<InetAddress> getMyAddresses(ClusterDistributionManager dm) {
     try {
-      Set addresses = SocketCreator.getMyAddresses();
-      return addresses;
+      return SocketCreator.getMyAddresses();
     } catch (IllegalArgumentException e) {
       logger.fatal(e.getMessage(), e);
-      return Collections.EMPTY_SET;
+      return Collections.emptySet();
     }
   }
 
@@ -139,11 +138,6 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     return true;
   }
 
-  // void setHostedLocatorsWithSharedConfiguration(Collection<String>
-  // hostedLocatorsWithSharedConfiguration) {
-  // this.hostedLocatorsWithSharedConfiguration = hostedLocatorsWithSharedConfiguration;
-  // }
-
   /**
    * Sets the tcpDisabled flag for this message
    *
@@ -153,7 +147,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     isTcpDisabled = flag;
   }
 
-  void setInterfaces(Set interfaces) {
+  void setInterfaces(Set<InetAddress> interfaces) {
     this.interfaces = interfaces;
     if (interfaces == null || interfaces.size() == 0) {
       throw new SystemConnectException("Unable to examine network card");
@@ -415,7 +409,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
       }
     } // for
 
-    this.interfaces = (Set) DataSerializer.readObject(in);
+    this.interfaces = DataSerializer.readObject(in);
     this.distributedSystemId = in.readInt();
     this.redundancyZone = DataSerializer.readString(in);
     this.enforceUniqueZone = in.readBoolean();

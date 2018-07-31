@@ -56,6 +56,7 @@ task createGeodeClasspathsFile {
     }
   }
 }
+createGeodeClasspathsFile.mustRunAfter(clean)
 
 def addOldVersion(def source, def geodeVersion, def downloadInstall) {
   sourceSets.create("${source}", {})

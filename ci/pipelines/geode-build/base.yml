@@ -109,10 +109,6 @@ groups:
   - UpgradeTest
   - TestExamples
   - UpdatePassingRef
-- name: UITests
-  jobs:
-  - Build
-  - UITests
 
 jobs:
 - name: Build

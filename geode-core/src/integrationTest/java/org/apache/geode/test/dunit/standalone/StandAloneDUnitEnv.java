@@ -60,8 +60,8 @@ public class StandAloneDUnitEnv extends DUnitEnv {
   }
 
   @Override
-  public BounceResult bounce(String version, int pid) throws RemoteException {
-    return master.bounce(version, pid);
+  public BounceResult bounce(String version, int pid, boolean force) throws RemoteException {
+    return master.bounce(version, pid, force);
   }
 
   @Override

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * A LinkedBlockingQueue that supports stats. Named OverflowQueue for historical reasons.
  *
  */
-public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
+public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue<E> {
   private static final long serialVersionUID = -1846248853494394996L;
 
   protected final QueueStatHelper stats;
@@ -41,7 +41,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   }
 
   @Override
-  public boolean add(Object e) {
+  public boolean add(E e) {
     preAdd(e);
     if (super.add(e)) {
       this.stats.add();
@@ -53,7 +53,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   }
 
   @Override
-  public boolean offer(Object e) {
+  public boolean offer(E e) {
     preAdd(e);
     if (super.offer(e)) {
       this.stats.add();
@@ -65,7 +65,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   }
 
   @Override
-  public void put(Object e) throws InterruptedException {
+  public void put(E e) throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
     preAddInterruptibly(e);
@@ -82,7 +82,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   }
 
   @Override
-  public boolean offer(Object e, long timeout, TimeUnit unit) throws InterruptedException {
+  public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
     preAddInterruptibly(e);
@@ -103,20 +103,20 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   }
 
   @Override
-  public Object take() throws InterruptedException {
+  public E take() throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
-    Object result = super.take();
+    E result = super.take();
     postRemove(result);
     this.stats.remove();
     return result;
   }
 
   @Override
-  public Object poll(long timeout, TimeUnit unit) throws InterruptedException {
+  public E poll(long timeout, TimeUnit unit) throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
-    Object result = super.poll(timeout, unit);
+    E result = super.poll(timeout, unit);
     if (result != null) {
       postRemove(result);
       this.stats.remove();
@@ -136,7 +136,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   }
 
   @Override
-  public int drainTo(Collection c) {
+  public int drainTo(Collection<? super E> c) {
     int result = super.drainTo(c);
     if (result > 0) {
       this.stats.remove(result);
@@ -146,7 +146,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   }
 
   @Override
-  public int drainTo(Collection c, int maxElements) {
+  public int drainTo(Collection<? super E> c, int maxElements) {
     int result = super.drainTo(c, maxElements);
     if (result > 0) {
       this.stats.remove(result);
@@ -158,7 +158,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   /**
    * Called before the specified object is added to this queue.
    */
-  protected void preAddInterruptibly(Object o) throws InterruptedException {
+  protected void preAddInterruptibly(E o) throws InterruptedException {
     // do nothing in this class. sub-classes can override
   }
 
@@ -180,7 +180,7 @@ public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
    * Called after the specified collection of objects have been drained (i.e. removed) from this
    * queue.
    */
-  protected void postDrain(Collection c) {
+  protected void postDrain(Collection<? super E> c) {
     // do nothing in this class. sub-classes can override
   }
 }

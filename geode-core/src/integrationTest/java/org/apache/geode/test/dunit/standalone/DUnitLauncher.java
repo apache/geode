@@ -425,7 +425,7 @@ public class DUnitLauncher {
 
     public BounceResult bounce(int pid) throws RemoteException;
 
-    public BounceResult bounce(String version, int pid) throws RemoteException;
+    public BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
   }
 
   public static class Master extends UnicastRemoteObject implements MasterRemote {
@@ -454,12 +454,12 @@ public class DUnitLauncher {
 
     @Override
     public BounceResult bounce(int pid) {
-      return bounce(VersionManager.CURRENT_VERSION, pid);
+      return bounce(VersionManager.CURRENT_VERSION, pid, false);
     }
 
     @Override
-    public BounceResult bounce(String version, int pid) {
-      processManager.bounce(version, pid);
+    public BounceResult bounce(String version, int pid, boolean force) {
+      processManager.bounce(version, pid, force);
 
       try {
         if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
