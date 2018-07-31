@@ -40,6 +40,7 @@ jobs:
           params:
             fetch_merge: false
         - put: pull-request-job-pending
+          resource: geode
           params:
             path: geode-unmerged-request
             context: $BUILD_JOB_NAME
