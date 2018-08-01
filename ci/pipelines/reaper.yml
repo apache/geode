@@ -32,7 +32,7 @@ resources:
   source:
     filter: 'labels.time-to-live:* AND labels.time-to-live<$(date +%s) AND status:RUNNING'
 
-- name: destroyable-instance
+- name: deletable-instance
   type: gce-instances
   source:
     filter: 'labels.time-to-live:* AND labels.time-to-live<$(($(date +%s) - 86400)) AND status:TERMINATED'
@@ -60,12 +60,12 @@ jobs:
         - |
           gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
 
-- name: destroy-instance
+- name: delete-instance
   plan:
-  - get: destroyable-instance
+  - get: deletable-instance
     version: every
     trigger: true
-  - task: destroy-instance
+  - task: delete-instance
     config:
       platform: linux
       image_resource:
@@ -74,10 +74,10 @@ jobs:
           repository: google/cloud-sdk
           tag: alpine
       inputs:
-      - name: destroyable-instance
+      - name: deletable-instance
       run:
         path: /bin/sh
         args:
         - -exc
         - |
-          gcloud compute instances destroy $(cat destroyable-instance/selfLink) --quiet
+          gcloud compute instances delete $(cat deletable-instance/selfLink) --quiet
