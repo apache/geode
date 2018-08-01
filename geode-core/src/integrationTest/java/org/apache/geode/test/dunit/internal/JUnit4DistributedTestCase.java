@@ -376,26 +376,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     logTestStart();
   }
 
-  /**
-   * {@code preSetUp()} is invoked before {@link #doSetUpDistributedTestCase()}.
-   *
-   * <p>
-   * Override this as needed. Default implementation is empty.
-   */
-  @Override
-  public void preSetUp() throws Exception {
-  }
-
-  /**
-   * {@code postSetUp()} is invoked after {@link #doSetUpDistributedTestCase()}.
-   *
-   * <p>
-   * Override this as needed. Default implementation is empty.
-   */
-  @Override
-  public void postSetUp() throws Exception {
-  }
-
   private static final String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
       final String className, final String methodName) {
     return "DiskStore-" + String.valueOf(hostIndex) + "-" + String.valueOf(vmIndex) + "-"
@@ -484,34 +464,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     if (!getDistributedSystemProperties().isEmpty()) {
       disconnectAllFromDS();
     }
-  }
-
-  /**
-   * {@code preTearDown()} is invoked before {@link #doTearDownDistributedTestCase()}.
-   *
-   * <p>
-   * Override this as needed. Default implementation is empty.
-   */
-  @Override
-  public void preTearDown() throws Exception {
-  }
-
-  /**
-   * {@code postTearDown()} is invoked after {@link #doTearDownDistributedTestCase()}.
-   *
-   * <p>
-   * Override this as needed. Default implementation is empty.
-   */
-  @Override
-  public void postTearDown() throws Exception {
-  }
-
-  @Override
-  public void preTearDownAssertions() throws Exception {
-  }
-
-  @Override
-  public void postTearDownAssertions() throws Exception {
   }
 
   public static final void cleanupAllVms() {
