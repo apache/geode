@@ -66,24 +66,20 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private static final Logger logger = LogService.getLogger();
 
   private static final Set<String> testHistory = new LinkedHashSet<>();
-
+  private static final boolean logPerTest = Boolean.getBoolean("dunitLogPerTest");
   /** This VM's connection to the distributed system */
   protected static InternalDistributedSystem system;
   private static Class lastSystemCreatedInTest;
   private static Properties lastSystemProperties;
   private static volatile String testMethodName;
-
   private static DUnitBlackboard blackboard;
-
-  private static final boolean logPerTest = Boolean.getBoolean("dunitLogPerTest");
+  @Rule
+  public SerializableTestName testNameForDistributedTestCase = new SerializableTestName();
 
   /**
    * Constructs a new distributed test. All JUnit 4 test classes need to have a no-arg constructor.
    */
   public JUnit4DistributedTestCase() {}
-
-  @Rule
-  public SerializableTestName testNameForDistributedTestCase = new SerializableTestName();
 
   @BeforeClass
   public static void initializeDistributedTestCase() {
@@ -106,6 +102,128 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     FileUtils.deleteQuietly(JUnit4CacheTestCase.getDiskDir());
     Arrays.stream(new File(".").listFiles()).forEach(
         JUnit4DistributedTestCase::deleteBACKUPDiskStoreFile);
+  }
+
+  public static InternalDistributedSystem getSystemStatic() {
+    return system;
+  }
+
+  public static void disconnectAllFromDS() {
+    Disconnect.disconnectAllFromDS();
+  }
+
+  /**
+   * Disconnects this VM from the distributed system
+   */
+  public static void disconnectFromDS() {
+    if (system != null) {
+      system.disconnect();
+      system = null;
+    }
+
+    Disconnect.disconnectFromDS();
+  }
+
+  /**
+   * Returns a DUnitBlackboard that can be used to pass data between VMs and synchronize actions.
+   *
+   * @return the blackboard
+   */
+  public static DUnitBlackboard getBlackboard() {
+    return blackboard;
+  }
+
+  public static String getTestMethodName() {
+    return testMethodName;
+  }
+
+  private static void setTestMethodName(final String testMethodName) {
+    JUnit4DistributedTestCase.testMethodName = testMethodName;
+  }
+
+  private static String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
+      final String className, final String methodName) {
+    return "DiskStore-" + String.valueOf(hostIndex) + "-" + String.valueOf(vmIndex) + "-"
+        + className + "." + methodName; // used to be getDeclaringClass()
+  }
+
+  private static void setUpVM(final String methodName, final String defaultDiskStoreName) {
+    assertNotNull("methodName must not be null", methodName);
+    assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
+    setTestMethodName(methodName);
+    GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
+    setUpCreationStackGenerator();
+  }
+
+  private static void setUpCreationStackGenerator() {
+    // the following is moved from InternalDistributedSystem to fix #51058
+    InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
+        .set(config -> {
+          StringBuilder sb = new StringBuilder();
+          String[] validAttributeNames = config.getAttributeNames();
+          for (String attName : validAttributeNames) {
+            Object actualAtt = config.getAttributeObject(attName);
+            String actualAttStr = actualAtt.toString();
+            sb.append("  ");
+            sb.append(attName);
+            sb.append("=\"");
+            if (actualAtt.getClass().isArray()) {
+              actualAttStr = InternalDistributedSystem.arrayToString(actualAtt);
+            }
+            sb.append(actualAttStr);
+            sb.append("\"");
+            sb.append("\n");
+          }
+          return new Throwable(
+              "Creating distributed system with the following configuration:\n" + sb.toString());
+        });
+  }
+
+  private static void cleanupAllVms() {
+    tearDownVM();
+    invokeInEveryVM("tearDownVM", JUnit4DistributedTestCase::tearDownVM);
+    invokeInLocator(() -> {
+      DistributionMessageObserver.setInstance(null);
+      unregisterInstantiatorsInThisVM();
+    });
+    DUnitLauncher.closeAndCheckForSuspects();
+  }
+
+  private static void tearDownVM() {
+    closeCache();
+    DistributedTestRule.TearDown.tearDownInVM();
+    cleanDiskDirs();
+  }
+
+  private static void closeCache() {
+    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+    if (cache != null && !cache.isClosed()) {
+      destroyRegions(cache);
+      cache.close();
+    }
+  }
+
+  protected static void destroyRegions(final Cache cache) {
+    if (cache != null && !cache.isClosed()) {
+      // try to destroy the root regions first so that we clean up any persistent files.
+      for (Region<?, ?> root : cache.rootRegions()) {
+        String regionFullPath = root == null ? null : root.getFullPath();
+        // for colocated regions you can't locally destroy a partitioned region.
+        if (root.isDestroyed() || root instanceof HARegion || root instanceof PartitionedRegion) {
+          continue;
+        }
+        try {
+          root.localDestroyRegion("teardown");
+        } catch (Throwable t) {
+          logger.error("Failure during tearDown destroyRegions for " + regionFullPath, t);
+        }
+      }
+    }
+  }
+
+  private static void tearDownCreationStackGenerator() {
+    InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
+        .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR);
   }
 
   public final String getName() {
@@ -249,10 +367,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     system = null;
   }
 
-  public static InternalDistributedSystem getSystemStatic() {
-    return system;
-  }
-
   /**
    * Returns a loner distributed system that isn't connected to other vms.
    *
@@ -270,39 +384,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   public final boolean isConnectedToDS() {
     return system != null && system.isConnected();
-  }
-
-  public static void disconnectAllFromDS() {
-    Disconnect.disconnectAllFromDS();
-  }
-
-  /**
-   * Disconnects this VM from the distributed system
-   */
-  public static void disconnectFromDS() {
-    if (system != null) {
-      system.disconnect();
-      system = null;
-    }
-
-    Disconnect.disconnectFromDS();
-  }
-
-  /**
-   * Returns a DUnitBlackboard that can be used to pass data between VMs and synchronize actions.
-   *
-   * @return the blackboard
-   */
-  public static DUnitBlackboard getBlackboard() {
-    return blackboard;
-  }
-
-  public static String getTestMethodName() {
-    return testMethodName;
-  }
-
-  private static void setTestMethodName(final String testMethodName) {
-    JUnit4DistributedTestCase.testMethodName = testMethodName;
   }
 
   /**
@@ -356,47 +437,9 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     logTestStart();
   }
 
-  private static String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
-      final String className, final String methodName) {
-    return "DiskStore-" + String.valueOf(hostIndex) + "-" + String.valueOf(vmIndex) + "-"
-        + className + "." + methodName; // used to be getDeclaringClass()
-  }
-
-  private static void setUpVM(final String methodName, final String defaultDiskStoreName) {
-    assertNotNull("methodName must not be null", methodName);
-    assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
-    setTestMethodName(methodName);
-    GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
-    setUpCreationStackGenerator();
-  }
-
   private void logTestStart() {
     System.out.println(
         "\n\n[setup] START TEST " + getTestClass().getSimpleName() + "." + testMethodName + "\n\n");
-  }
-
-  private static void setUpCreationStackGenerator() {
-    // the following is moved from InternalDistributedSystem to fix #51058
-    InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
-        .set(config -> {
-          StringBuilder sb = new StringBuilder();
-          String[] validAttributeNames = config.getAttributeNames();
-          for (String attName : validAttributeNames) {
-            Object actualAtt = config.getAttributeObject(attName);
-            String actualAttStr = actualAtt.toString();
-            sb.append("  ");
-            sb.append(attName);
-            sb.append("=\"");
-            if (actualAtt.getClass().isArray()) {
-              actualAttStr = InternalDistributedSystem.arrayToString(actualAtt);
-            }
-            sb.append(actualAttStr);
-            sb.append("\"");
-            sb.append("\n");
-          }
-          return new Throwable(
-              "Creating distributed system with the following configuration:\n" + sb.toString());
-        });
   }
 
   /**
@@ -442,52 +485,5 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     if (!getDistributedSystemProperties().isEmpty()) {
       disconnectAllFromDS();
     }
-  }
-
-  private static void cleanupAllVms() {
-    tearDownVM();
-    invokeInEveryVM("tearDownVM", JUnit4DistributedTestCase::tearDownVM);
-    invokeInLocator(() -> {
-      DistributionMessageObserver.setInstance(null);
-      unregisterInstantiatorsInThisVM();
-    });
-    DUnitLauncher.closeAndCheckForSuspects();
-  }
-
-  private static void tearDownVM() {
-    closeCache();
-    DistributedTestRule.TearDown.tearDownInVM();
-    cleanDiskDirs();
-  }
-
-  private static void closeCache() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    if (cache != null && !cache.isClosed()) {
-      destroyRegions(cache);
-      cache.close();
-    }
-  }
-
-  protected static void destroyRegions(final Cache cache) {
-    if (cache != null && !cache.isClosed()) {
-      // try to destroy the root regions first so that we clean up any persistent files.
-      for (Region<?, ?> root : cache.rootRegions()) {
-        String regionFullPath = root == null ? null : root.getFullPath();
-        // for colocated regions you can't locally destroy a partitioned region.
-        if (root.isDestroyed() || root instanceof HARegion || root instanceof PartitionedRegion) {
-          continue;
-        }
-        try {
-          root.localDestroyRegion("teardown");
-        } catch (Throwable t) {
-          logger.error("Failure during tearDown destroyRegions for " + regionFullPath, t);
-        }
-      }
-    }
-  }
-
-  private static void tearDownCreationStackGenerator() {
-    InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
-        .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR);
   }
 }
