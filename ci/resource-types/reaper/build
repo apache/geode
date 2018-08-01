@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-docker build --no-cache -t gce-reaper-resource .
-#docker tag gce-reaper-resource localhost:5000/gce-reaper-resource
-#docker push localhost:5000/gce-reaper-resource

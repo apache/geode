@@ -12,4 +12,4 @@ jq -n '
         --env BUILD_PIPELINE_NAME=Pipeline \
         --env BUILD_JOB_NAME=Job \
         --env BUILD_NAME=1 \
-        gce-reaper-resource /opt/resource/in /tmp
+        gce-instances-resource /opt/resource/in /tmp

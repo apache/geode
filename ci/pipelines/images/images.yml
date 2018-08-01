@@ -217,4 +217,17 @@ jobs:
   - put: metric-tools-docker-image
     params:
       build: metric-tools-dockerfile/ci/images/metric-tools
+
+- name: build-gce-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: concourse-metadata-resource-dockerfile
+      trigger: true
+  - put: concourse-metadata-resource-docker-image
+    params:
+      build: concourse-metadata-resource-dockerfile/ci/images/concourse-metadata-resource
       tag_as_latest: true

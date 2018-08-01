@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+docker build --no-cache -t gce-instances-resource .
+#docker tag gce-instances-resource localhost:5000/gce-instances-resource
+#docker push localhost:5000/gce-instances-resource
