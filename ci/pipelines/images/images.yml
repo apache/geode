@@ -97,7 +97,7 @@ resources:
     uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
-    - ci/images/concourse-metadata-resource/*
+    - ci/resources-types/concourse-metadata-resource/*
 
 - name: concourse-metadata-resource-docker-image
   type: docker-image
@@ -120,6 +120,21 @@ resources:
     username: ((!docker-username))
     password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))metric-tools
+
+- name: gce-instances-resource-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/resource-types/gce-instances-resource/*
+
+- name: gce-instances-resource-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))gce-instances-resource
 
 jobs:
 # apachegeode-build-concourse
@@ -202,7 +217,7 @@ jobs:
       trigger: true
   - put: concourse-metadata-resource-docker-image
     params:
-      build: concourse-metadata-resource-dockerfile/ci/images/concourse-metadata-resource
+      build: concourse-metadata-resource-dockerfile/ci/resource-types/concourse-metadata-resource
       tag_as_latest: true
 
 - name: build-metric-tools-docker-image
@@ -217,17 +232,18 @@ jobs:
   - put: metric-tools-docker-image
     params:
       build: metric-tools-dockerfile/ci/images/metric-tools
+      tag_as_latest: true
 
-- name: build-gce-docker-image
+- name: build-gce-instances-resource-docker-image
   public: ((!public-pipelines))
   serial: true
   plan:
   - aggregate:
     - get: alpine-docker-image
       trigger: true
-    - get: concourse-metadata-resource-dockerfile
+    - get: gce-instances-resource-dockerfile
       trigger: true
-  - put: concourse-metadata-resource-docker-image
+  - put: gce-instances-resource-docker-image
     params:
-      build: concourse-metadata-resource-dockerfile/ci/images/concourse-metadata-resource
+      build: gce-instances-resource-dockerfile/ci/resource-types/gce-instances-resource
       tag_as_latest: true
