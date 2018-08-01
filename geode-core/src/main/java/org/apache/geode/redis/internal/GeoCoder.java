@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
@@ -42,36 +41,38 @@ public class GeoCoder {
 
 
   public static ByteBuf getBulkStringGeoCoordinateArrayResponse(ByteBufAllocator alloc,
-      Collection<GeoCoord> items) {
-    Iterator<GeoCoord> it = items.iterator();
+      Collection<GeoCoord> items)
+      throws CoderException {
     ByteBuf response = alloc.buffer();
     response.writeByte(Coder.ARRAY_ID);
     ByteBuf tmp = alloc.buffer();
     int size = 0;
-    while (it.hasNext()) {
-      GeoCoord next = it.next();
-      if (next == null) {
-        tmp.writeBytes(Coder.bNIL);
-      } else {
-        tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
-            Arrays.asList(
-                Double.toString(next.getLongitude()),
-                Double.toString(next.getLatitude()))));
+    try {
+      for (GeoCoord next : items) {
+        if (next == null) {
+          tmp.writeBytes(Coder.bNIL);
+        } else {
+          tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
+              Arrays.asList(
+                  Double.toString(next.getLongitude()),
+                  Double.toString(next.getLatitude()))));
+        }
+        size++;
       }
-      size++;
+
+      response.writeBytes(Coder.intToBytes(size));
+      response.writeBytes(Coder.CRLFar);
+      response.writeBytes(tmp);
+    } finally {
+      tmp.release();
     }
-
-    response.writeBytes(Coder.intToBytes(size));
-    response.writeBytes(Coder.CRLFar);
-    response.writeBytes(tmp);
-
-    tmp.release();
 
     return response;
   }
 
   public static ByteBuf geoRadiusResponse(ByteBufAllocator alloc,
-      Collection<GeoRadiusResponseElement> list) {
+      Collection<GeoRadiusResponseElement> list)
+      throws CoderException {
     if (list.isEmpty())
       return Coder.getEmptyArrayResponse(alloc);
 

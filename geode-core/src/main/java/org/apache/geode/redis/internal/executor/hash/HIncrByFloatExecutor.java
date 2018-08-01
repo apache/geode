@@ -73,7 +73,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
 
     if (oldValue == null) {
       keyRegion.put(field, new ByteArrayWrapper(incrArray));
-      command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), increment));
+      respondBulkStrings(command, context, increment);
       return;
     }
 
@@ -98,7 +98,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
 
     value += increment;
     keyRegion.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
-    command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), value));
+    respondBulkStrings(command, context, value);
   }
 
 }

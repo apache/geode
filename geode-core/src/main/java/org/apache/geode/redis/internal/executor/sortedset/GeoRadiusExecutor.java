@@ -116,9 +116,9 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       }
     }
 
-    if (params.ascendingOrder != null && params.ascendingOrder) {
+    if (params.order == GeoRadiusParameters.SortOrder.ASC) {
       GeoRadiusResponseElement.sortByDistanceAscending(results);
-    } else if (params.ascendingOrder != null && !params.ascendingOrder) {
+    } else if (params.order == GeoRadiusParameters.SortOrder.DESC) {
       GeoRadiusResponseElement.sortByDistanceDescending(results);
     }
 
@@ -126,7 +126,7 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
       results = results.subList(0, params.count);
     }
 
-    command.setResponse(GeoCoder.geoRadiusResponse(context.getByteBufAllocator(), results));
+    respondGeoRadius(command, context, results);
   }
 
 }

@@ -47,15 +47,7 @@ public class HGetExecutor extends HashExecutor {
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
-
-    ByteArrayWrapper valueWrapper = keyRegion.get(field);
-
-    if (valueWrapper != null) {
-      command.setResponse(
-          Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
-    } else
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-
+    respondBulkStrings(command, context, keyRegion.get(field));
   }
 
 }

@@ -53,6 +53,6 @@ public class GeoHashExecutor extends GeoSortedSetExecutor {
       }
     }
 
-    command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(), hashes));
+    respondBulkStrings(command, context, hashes);
   }
 }

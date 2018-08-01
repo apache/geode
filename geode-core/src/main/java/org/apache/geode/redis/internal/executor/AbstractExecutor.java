@@ -14,12 +14,20 @@
  */
 package org.apache.geode.redis.internal.executor;
 
+import java.util.Collection;
+
+import io.netty.buffer.ByteBuf;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.CoderException;
+import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.RegionProvider;
@@ -134,5 +142,24 @@ public abstract class AbstractExecutor implements Executor {
       return Math.min(index, size);
     else
       return Math.max(index + size, -1);
+  }
+
+  protected void respondBulkStrings(Command command, ExecutionHandlerContext context,
+      Object message) {
+    ByteBuf rsp;
+    try {
+      if (message instanceof Collection) {
+        rsp = Coder.getBulkStringArrayResponse(context.getByteBufAllocator(),
+            (Collection<?>) message);
+      } else {
+        rsp = Coder.getBulkStringResponse(context.getByteBufAllocator(), message);
+      }
+    } catch (CoderException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          RedisConstants.SERVER_ERROR_MESSAGE));
+      return;
+    }
+
+    command.setResponse(rsp);
   }
 }

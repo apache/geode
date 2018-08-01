@@ -47,12 +47,6 @@ public class GetSetExecutor extends StringExecutor {
     ByteArrayWrapper oldValueWrapper = r.get(key);
     r.put(key, newValueWrapper);
 
-    if (oldValueWrapper == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-    } else {
-      command.setResponse(
-          Coder.getBulkStringResponse(context.getByteBufAllocator(), oldValueWrapper.toBytes()));
-    }
-
+    respondBulkStrings(command, context, oldValueWrapper);
   }
 }

@@ -38,14 +38,7 @@ public class GetExecutor extends StringExecutor {
     checkDataType(key, RedisDataType.REDIS_STRING, context);
     ByteArrayWrapper wrapper = r.get(key);
 
-    if (wrapper == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
-    } else {
-      command.setResponse(
-          Coder.getBulkStringResponse(context.getByteBufAllocator(), wrapper.toBytes()));
-    }
-
+    respondBulkStrings(command, context, wrapper);
   }
 
 }

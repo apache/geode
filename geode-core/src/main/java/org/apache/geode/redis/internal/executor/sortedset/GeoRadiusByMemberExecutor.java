@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.executor.sortedset;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_ARGUMENT_UNIT_NUM;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_LATLONG;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_NUMERIC;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_ZSET_MEMBER_NOT_FOUND;
 
@@ -73,15 +74,8 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
           RedisConstants.ArityDef.GEORADIUSBYMEMBER));
       return;
     } catch (CoderException e) {
-      /*
-       * This exception is technically not possible in GEORADIUSBYMEMBER, since the member, if it
-       * exists,
-       * should have a valid lat/long (otherwise it would have failed its respective GEOADD).
-       * However, since we are
-       * using the common GeoRadiusParameters class which is also used by the GeoRadiusExecutor, we
-       * have to catch
-       * this exception anyway.
-       */
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_INVALID_LATLONG));
       return;
     } catch (MemberNotFoundException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), "ERR "
@@ -127,9 +121,9 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
       }
     }
 
-    if (params.ascendingOrder != null && params.ascendingOrder) {
+    if (params.order == GeoRadiusParameters.SortOrder.ASC) {
       GeoRadiusResponseElement.sortByDistanceAscending(results);
-    } else if (params.ascendingOrder != null && !params.ascendingOrder) {
+    } else if (params.order == GeoRadiusParameters.SortOrder.DESC) {
       GeoRadiusResponseElement.sortByDistanceDescending(results);
     }
 
@@ -137,6 +131,6 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
       results = results.subList(0, params.count);
     }
 
-    command.setResponse(GeoCoder.geoRadiusResponse(context.getByteBufAllocator(), results));
+    respondGeoRadius(command, context, results);
   }
 }

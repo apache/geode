@@ -16,12 +16,21 @@ package org.apache.geode.redis.internal.executor.sortedset;
 
 import java.util.List;
 
+import io.netty.buffer.ByteBuf;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.CoderException;
+import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.GeoCoder;
+import org.apache.geode.redis.internal.GeoCoord;
+import org.apache.geode.redis.internal.GeoRadiusResponseElement;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
@@ -52,5 +61,34 @@ public abstract class GeoSortedSetExecutor extends AbstractExecutor {
     Object[] params = {hash + "%"};
     SelectResults<StructImpl> results = (SelectResults<StructImpl>) query.execute(params);
     return results.asList();
+  }
+
+  protected void respondGeoRadius(Command command, ExecutionHandlerContext context,
+      List<GeoRadiusResponseElement> results) {
+    ByteBuf rsp;
+    try {
+      rsp = GeoCoder.geoRadiusResponse(context.getByteBufAllocator(), results);
+    } catch (CoderException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          RedisConstants.SERVER_ERROR_MESSAGE));
+      return;
+    }
+
+    command.setResponse(rsp);
+  }
+
+  protected void respondGeoCoordinates(Command command, ExecutionHandlerContext context,
+      List<GeoCoord> positions) {
+    ByteBuf rsp;
+    try {
+      rsp = GeoCoder.getBulkStringGeoCoordinateArrayResponse(context.getByteBufAllocator(),
+          positions);
+    } catch (CoderException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          RedisConstants.SERVER_ERROR_MESSAGE));
+      return;
+    }
+
+    command.setResponse(rsp);
   }
 }

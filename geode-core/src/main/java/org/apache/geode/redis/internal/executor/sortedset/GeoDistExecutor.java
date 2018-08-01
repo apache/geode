@@ -53,7 +53,6 @@ public class GeoDistExecutor extends GeoSortedSetExecutor {
       dist = dist * GeoCoder.parseUnitScale(unit);
     }
 
-    command.setResponse(
-        Coder.getBulkStringResponse(context.getByteBufAllocator(), Double.toString(dist)));
+    respondBulkStrings(command, context, Double.toString(dist));
   }
 }
