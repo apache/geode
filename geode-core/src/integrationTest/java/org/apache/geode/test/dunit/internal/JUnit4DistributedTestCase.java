@@ -84,18 +84,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * Constructs a new distributed test. All JUnit 4 test classes need to have a no-arg constructor.
    */
   public JUnit4DistributedTestCase() {
-    this(null);
-  }
-
-  /**
-   * This constructor should only be used internally, not by tests.
-   */
-  protected JUnit4DistributedTestCase(final DistributedTestFixture distributedTestFixture) {
-    if (distributedTestFixture == null) {
-      this.distributedTestFixture = this;
-    } else {
-      this.distributedTestFixture = distributedTestFixture;
-    }
+    this.distributedTestFixture = this;
   }
 
   @Rule

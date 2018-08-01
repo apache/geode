@@ -76,16 +76,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   private final CacheTestFixture cacheTestFixture;
 
   public JUnit4CacheTestCase() {
-    this(null);
-  }
-
-  JUnit4CacheTestCase(final CacheTestFixture cacheTestFixture) {
-    super(cacheTestFixture);
-    if (cacheTestFixture == null) {
-      this.cacheTestFixture = this;
-    } else {
-      this.cacheTestFixture = cacheTestFixture;
-    }
+    super();
+    this.cacheTestFixture = this;
   }
 
   /**
