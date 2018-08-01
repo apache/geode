@@ -892,7 +892,7 @@ public abstract class AbstractRegionMap
                     }
                     if (owner.getServerProxy() == null
                         && owner.getVersionVector().isTombstoneTooOld(
-                        entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
+                            entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
                       // the received tombstone has already been reaped, so don't retain it
                       if (owner.getIndexManager() != null) {
                         owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
@@ -990,15 +990,13 @@ public abstract class AbstractRegionMap
           }
         }
       } // synchronized
-    }
-    catch (RegionClearedException rce) {
+    } catch (RegionClearedException rce) {
       done = false;
       cleared = true;
     } catch (QueryException qe) {
       done = false;
       cleared = true;
-    }
-    finally {
+    } finally {
       if (done && !deferLRUCallback) {
         lruUpdateCallback();
       } else if (!cleared) {
