@@ -97,7 +97,7 @@ resources:
     uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
-    - ci/resources-types/concourse-metadata-resource/*
+    - ci/resource-types/concourse-metadata-resource/*
 
 - name: concourse-metadata-resource-docker-image
   type: docker-image
