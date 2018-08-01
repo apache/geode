@@ -91,6 +91,21 @@ resources:
     password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))concourse-metadata-resource
 
+- name: metric-tools-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/metric-tools/*
+
+- name: metric-tools-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))metric-tools
+
 jobs:
 # apachegeode-build-concourse
 - name: build-apachegeode-build-concourse-docker-image
@@ -159,4 +174,18 @@ jobs:
   - put: concourse-metadata-resource-docker-image
     params:
       build: concourse-metadata-resource-dockerfile/ci/images/concourse-metadata-resource
+      tag_as_latest: true
+
+- name: build-metric-tools-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: metric-tools-dockerfile
+      trigger: true
+  - put: metric-tools-docker-image
+    params:
+      build: metric-tools-dockerfile/ci/images/metric-tools
       tag_as_latest: true
