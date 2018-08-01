@@ -29,7 +29,7 @@ subprojects {
   if (javaVersion.startsWith("1.8.0") && javaVersion.split("_")[1].toInteger() < 121) {
     throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
   }
-    
+
 
   configurations {
     testOutput {
@@ -62,20 +62,20 @@ subprojects {
     options.encoding = 'UTF-8'
     classpath += configurations.compileOnly
   }
-}
 
 // apply compiler options
-gradle.taskGraph.whenReady({ graph ->
-  tasks.withType(JavaCompile).each { javac ->
-    javac.configure {
-      sourceCompatibility '1.8'
-      targetCompatibility '1.8'
-      options.encoding = 'UTF-8'
+  gradle.taskGraph.whenReady({ graph ->
+    tasks.withType(JavaCompile).each { javac ->
+      javac.configure {
+        sourceCompatibility '1.8'
+        targetCompatibility '1.8'
+        options.encoding = 'UTF-8'
+      }
+      javac.options.incremental = true
+      javac.options.fork = true
     }
-    javac.options.incremental = true
-    javac.options.fork = true
-  }
-})
+  })
+}
 
 // apply default manifest
 gradle.taskGraph.whenReady({ graph ->
