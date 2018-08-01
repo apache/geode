@@ -73,13 +73,9 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private static Properties lastSystemProperties;
   private static volatile String testMethodName;
   private static DUnitBlackboard blackboard;
+
   @Rule
   public SerializableTestName testNameForDistributedTestCase = new SerializableTestName();
-
-  /**
-   * Constructs a new distributed test. All JUnit 4 test classes need to have a no-arg constructor.
-   */
-  public JUnit4DistributedTestCase() {}
 
   @BeforeClass
   public static void initializeDistributedTestCase() {
@@ -137,10 +133,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     return testMethodName;
   }
 
-  private static void setTestMethodName(final String testMethodName) {
-    JUnit4DistributedTestCase.testMethodName = testMethodName;
-  }
-
   private static String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
       final String className, final String methodName) {
     return "DiskStore-" + String.valueOf(hostIndex) + "-" + String.valueOf(vmIndex) + "-"
@@ -150,13 +142,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private static void setUpVM(final String methodName, final String defaultDiskStoreName) {
     assertNotNull("methodName must not be null", methodName);
     assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
-    setTestMethodName(methodName);
+    testMethodName = methodName;
     GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
-    setUpCreationStackGenerator();
-  }
-
-  private static void setUpCreationStackGenerator() {
-    // the following is moved from InternalDistributedSystem to fix #51058
     InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
         .set(config -> {
           StringBuilder sb = new StringBuilder();
@@ -190,17 +177,13 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   private static void tearDownVM() {
-    closeCache();
-    DistributedTestRule.TearDown.tearDownInVM();
-    cleanDiskDirs();
-  }
-
-  private static void closeCache() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
       destroyRegions(cache);
       cache.close();
     }
+    DistributedTestRule.TearDown.tearDownInVM();
+    cleanDiskDirs();
   }
 
   protected static void destroyRegions(final Cache cache) {
@@ -221,10 +204,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  private static void tearDownCreationStackGenerator() {
-    InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
-        .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR);
-  }
 
   public final String getName() {
     return this.testNameForDistributedTestCase.getMethodName();
@@ -477,7 +456,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private void doTearDownDistributedTestCase() {
     invokeInEveryVM("tearDownCreationStackGenerator",
-        JUnit4DistributedTestCase::tearDownCreationStackGenerator);
+        () -> InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
+        .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR));
     if (logPerTest) {
       disconnectAllFromDS();
     }
