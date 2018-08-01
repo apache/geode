@@ -57,7 +57,6 @@ import org.apache.geode.cache.util.CqListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl.PoolAttributes;
 import org.apache.geode.test.dunit.Assert;
