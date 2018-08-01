@@ -14,70 +14,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 ---
-groups: []
-resources:
-- name: 1m
-  type: time
+
+resource_types:
+- name: gce-instances
+  type: docker-image
   source:
-    interval: 1m
-resource_types: []
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))gce-instances-resource
+    tag: latest
+    insecure_registries:
+    - "registry:5000"
+
+resources:
+- name: stopable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(date +%s) AND status:RUNNING'
+
+- name: destroyable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(($(date +%s) - 86400)) AND status:TERMINATED'
+
 jobs:
-- name: reaper
-  serial: true
+- name: stop-instance
   plan:
-  - get: 1m
-    trigger: true
-  - task: reap
+  - get: stopable-instance
+    version: every
+  - task: stop-instances
     config:
       platform: linux
       image_resource:
         type: docker-image
         source:
-          password: ((!docker-password))
-          repository: gcr.io/apachegeode-ci/alpine-tools
-          tag: latest
-          username: ((!docker-username))
+          repository: google/cloud-sdk
+          tag: alpine
+      input2:
+      - name: stopable-instance
       run:
-        path: bash
+        path: /bin/sh
         args:
         - -exc
         - |
-          set -x
-          set -e
+          gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
 
-          now=$(date +%s)
-
-          # Stop running instances that are expired
-
-          instances=$(gcloud compute instances list \
-              --filter="labels.time-to-live:* AND labels.time-to-live<${now} AND status:RUNNING" \
-              --format='json(name, zone)')
-
-          zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
-
-          for zone in ${zone_names}; do
-            zoneInstances=$(echo "${instances}" | jq -r --arg ZONE "${zone}" '.[] | select(.zone == $ZONE) | .name')
-            gcloud compute instances stop ${zoneInstances} --zone=${zone} &
-          done
-
-          wait
-
-          # Delete stopped instances over 24h expired
-
-          oneDay=$((60 * 60 * 24))
-          yesterday=$((${now} - ${oneDay}))
-
-          instances=$(gcloud compute instances list \
-              --filter="labels.time-to-live:* AND labels.time-to-live<${yesterday} AND status:TERMINATED" \
-              --format='json(name, zone:sort=1)')
-
-          zone_names=$(echo "${instances}" | jq -r 'unique_by(.zone) | .[].zone')
-
-          for zone in ${zone_names}; do
-            zoneInstances=$(echo "${instances}" | jq -r --arg ZONE "${zone}" '.[] | select(.zone == $ZONE) | .name')
-            gcloud compute instances delete ${zoneInstances} --zone=${zone} --quiet &
-          done
-
-          wait
-
+- name: destroy-instance
+  plan:
+  - get: destroyable-instance
+    version: every
+  - task: reap-destroyable
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: google/cloud-sdk
+          tag: alpine
+      input2:
+      - name: destroyable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -exc
+        - |
+          gcloud compute instances destroy $(cat destroyable-instance/selfLink) --quiet
