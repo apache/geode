@@ -147,6 +147,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_LEASE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_PROVIDER;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_GATEWAY_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_JMX_ALIAS;
