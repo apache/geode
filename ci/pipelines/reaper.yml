@@ -56,7 +56,7 @@ jobs:
       run:
         path: /bin/sh
         args:
-        - -exc
+        - -ec
         - |
           gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
 
@@ -78,6 +78,6 @@ jobs:
       run:
         path: /bin/sh
         args:
-        - -exc
+        - -ec
         - |
           gcloud compute instances delete $(cat deletable-instance/selfLink) --quiet
