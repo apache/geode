@@ -44,21 +44,21 @@ jobs:
     version: every
     trigger: true
   - task: stop-instances
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: google/cloud-sdk
-            tag: alpine
-        inputs:
-        - name: stopable-instance
-        run:
-          path: /bin/sh
-          args:
-          - -exc
-          - |
-            gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: google/cloud-sdk
+          tag: alpine
+      inputs:
+      - name: stopable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -exc
+        - |
+          gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
 
 - name: destroy-instance
   plan:
