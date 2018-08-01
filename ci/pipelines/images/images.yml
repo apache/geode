@@ -197,7 +197,7 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: alpine37-docker-image
+    - get: openjdk8-docker-image
       trigger: true
     - get: test-container-dockerfile
       trigger: true
