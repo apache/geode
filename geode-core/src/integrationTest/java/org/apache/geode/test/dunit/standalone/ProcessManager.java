@@ -67,8 +67,6 @@ public class ProcessManager {
       throw new IllegalStateException("VM " + vmNum + " is already running.");
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort, version);
-    System.out.println("Executing " + Arrays.toString(cmd));
     File workingDir = getVMDir(version, vmNum);
     if (!workingDir.exists()) {
       workingDir.mkdirs();
@@ -83,6 +81,10 @@ public class ProcessManager {
       }
       workingDir.mkdirs();
     }
+
+    String[] cmd = buildJavaCommand(vmNum, namingPort, version);
+    System.out.println("Executing " + Arrays.toString(cmd));
+
     if (log4jConfig != null) {
       FileUtils.copyFileToDirectory(log4jConfig, workingDir);
     }
