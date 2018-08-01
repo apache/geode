@@ -1360,6 +1360,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SECURITY_POST_PROCESSOR,
         "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
+    m.put(SSL_USE_DEFAULT_PROVIDER, "If true allows clients to provide a custom java.security.Provider. When using this clients do not need to configure other ssl properties except ssl-enabled-components and ssl-require-authentication.");
+
     m.put(SSL_ENABLED_COMPONENTS,
         "A comma delimited list of components that require SSL communications");
 

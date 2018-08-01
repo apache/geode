@@ -1929,6 +1929,19 @@ public interface ConfigurationProperties {
    * Geode 1.0
    */
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
+
+  /**
+   * The static String definition of the <i>"ssl-use-default-provider"</i> property
+   *
+   * <U>Description</U>If true allows clients to provide a custom java.security.Provider. When using
+   *  this clients do not need to configure other ssl properties except ssl-enabled-components and
+   *  ssl-require-authentication.
+   * </p>
+   * <U>Default</U>: "false"
+   * </p>
+   * <U>Since</U>: Geode 1.8
+   */
+  String SSL_USE_DEFAULT_PROVIDER = "ssl-use-default-provider";
   /**
    * The static String definition of the <i>"ssl-enabled-components"</i> property <a
    * name="ssl-enabled-components"/a>
