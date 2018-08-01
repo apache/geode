@@ -40,5 +40,7 @@ echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
 OUTPUT_DIR=${BASE_DIR}/geode-results
 
+ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "cd geode && ./gradlew combineReports"
+
 time rsync -e "ssh -i ${SSHKEY_FILE}" -ah geode@${INSTANCE_IP_ADDRESS}:. ${OUTPUT_DIR}/.
 set +x

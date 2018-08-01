@@ -38,6 +38,10 @@ echo "Deleting images pipeline if it exists..."
 IMAGES_PIPELINE="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-images"
 fly -t ${TARGET} destroy-pipeline --non-interactive -p ${IMAGES_PIPELINE}
 
+echo "Deleting reaper pipeline if it exists..."
+REAPER_PIPELINE="${GEOD_FORK}-${SANITIZED_GEODE_BRANCH}-reaper"
+fly -t ${TARGET} destroy-pipeline --non-interactive -p ${REAPER_PIPELINE}
+
 echo "Deleting build pipeline if it exists..."
 BUILD_PIPELINE="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
 fly -t ${TARGET} destroy-pipeline --non-interactive -p ${BUILD_PIPELINE}
