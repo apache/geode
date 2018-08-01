@@ -284,7 +284,7 @@ public class HARegionQueueJUnitTest {
         !regionQueue.isEmpty(), is(true));
     assertThat(
         " Expected the available id's size not  to be zero since expiry time has not  been exceeded but it is not so ",
-        !regionQueue.getAvalaibleIds().isEmpty(), is(true));
+        !regionQueue.getAvailableIds().isEmpty(), is(true));
     assertThat(
         " Expected conflation map size not  to be zero since expiry time has not been exceeded but it is not so "
             + ((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName()))
@@ -297,7 +297,7 @@ public class HARegionQueueJUnitTest {
 
     waitAtLeast(1000, start, () -> {
       assertThat(regionQueue.getRegion().keys(), is(Collections.emptySet()));
-      assertThat(regionQueue.getAvalaibleIds(), is(Collections.emptySet()));
+      assertThat(regionQueue.getAvailableIds(), is(Collections.emptySet()));
       assertThat(regionQueue.getConflationMapForTesting().get(testName.getMethodName()),
           is(Collections.emptyMap()));
       assertThat(regionQueue.getEventsMapForTesting(), is(Collections.emptyMap()));
@@ -330,9 +330,9 @@ public class HARegionQueueJUnitTest {
         " Expected region size not to be zero since expiry time has not been exceeded but it is not so ",
         !regionQueue.isEmpty(), is(true));
     assertThat(" Expected the available id's size not  to have counter 1 but it has ",
-        !regionQueue.getAvalaibleIds().contains(1L), is(true));
+        !regionQueue.getAvailableIds().contains(1L), is(true));
     assertThat(" Expected the available id's size to have counter 2 but it does not have ",
-        regionQueue.getAvalaibleIds().contains(2L), is(true));
+        regionQueue.getAvailableIds().contains(2L), is(true));
     assertThat(" Expected eventID map not to have the first event, but it has",
         !regionQueue.getCurrentCounterSet(ev1).contains(1L), is(true));
     assertThat(" Expected eventID map to have the second event, but it does not",
@@ -393,7 +393,7 @@ public class HARegionQueueJUnitTest {
     assertThat(" Expected region peek to return cf but it is not so ", regionQueue.peek(), is(cf));
     assertThat(
         " Expected the available id's size not  to be zero since expiry time has not  been exceeded but it is not so ",
-        !regionQueue.getAvalaibleIds().isEmpty(), is(true));
+        !regionQueue.getAvailableIds().isEmpty(), is(true));
     assertThat(
         " Expected conflation map to have entry for this key since expiry time has not been exceeded but it is not so ",
         ((Map) regionQueue.getConflationMapForTesting().get(testName.getMethodName())).get("key"),
@@ -458,12 +458,12 @@ public class HARegionQueueJUnitTest {
 
     // verify 1-5 not in available Id's map
     for (int i = 1; i < 6; i++) {
-      assertThat(!regionQueue.getAvalaibleIds().contains((long) i), is(true));
+      assertThat(!regionQueue.getAvailableIds().contains((long) i), is(true));
     }
 
     // verify 6-10 in available id's map
     for (int i = 6; i < 11; i++) {
-      assertThat(regionQueue.getAvalaibleIds().contains((long) i), is(true));
+      assertThat(regionQueue.getAvailableIds().contains((long) i), is(true));
     }
   }
 
@@ -531,12 +531,12 @@ public class HARegionQueueJUnitTest {
 
     // verify 1-7 not in available Id's map
     for (int i = 4; i < 11; i++) {
-      assertThat(!regionQueue.getAvalaibleIds().contains((long) i), is(true));
+      assertThat(!regionQueue.getAvailableIds().contains((long) i), is(true));
     }
 
     // verify 8-10 in available id's map
     for (int i = 1; i < 4; i++) {
-      assertThat(regionQueue.getAvalaibleIds().contains((long) i), is(true));
+      assertThat(regionQueue.getAvailableIds().contains((long) i), is(true));
     }
   }
 
@@ -562,9 +562,9 @@ public class HARegionQueueJUnitTest {
     // the old key should not be present
     assertThat(!regionQueue.getRegion().containsKey(1L), is(true));
     // available ids should not contain the old id (the old position)
-    assertThat(!regionQueue.getAvalaibleIds().contains(1L), is(true));
+    assertThat(!regionQueue.getAvailableIds().contains(1L), is(true));
     // available id should have the new id (the new position)
-    assertThat(regionQueue.getAvalaibleIds().contains(2L), is(true));
+    assertThat(regionQueue.getAvailableIds().contains(2L), is(true));
     // events map should not contain the old position
     assertThat(regionQueue.getCurrentCounterSet(ev1).isEmpty(), is(true));
     // events map should contain the new position
@@ -589,7 +589,7 @@ public class HARegionQueueJUnitTest {
     Map conflationMap = ((HARegionQueue) regionqueue).getConflationMapForTesting();
     assertThat(((Map) conflationMap.get(testName.getMethodName())).size(), is(5));
 
-    Set availableIDs = ((HARegionQueue) regionqueue).getAvalaibleIds();
+    Set availableIDs = ((HARegionQueue) regionqueue).getAvailableIds();
     Set counters = ((HARegionQueue) regionqueue).getCurrentCounterSet(qrmID);
 
     assertThat(availableIDs.size(), is(5));

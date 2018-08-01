@@ -955,7 +955,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return hrq.getAvalaibleIds().size() == 0;
+        return hrq.getAvailableIds().size() == 0;
       }
 
       @Override
@@ -964,7 +964,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-    // assertIndexDetailsEquals(0, hrq.getAvalaibleIds().size());
+    // assertIndexDetailsEquals(0, hrq.getAvailableIds().size());
   }
 
   @Test
