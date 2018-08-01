@@ -23,8 +23,6 @@ resource_types:
   source:
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))gce-instances-resource
     tag: latest
-    insecure_registries:
-    - "registry:5000"
 
 resources:
 - name: stopable-instance

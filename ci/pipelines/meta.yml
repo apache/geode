@@ -171,6 +171,7 @@ jobs:
   plan:
   - get: geode-reaper-pipeline
     trigger: true
+  - get: apachegeode-build-concourse-docker-image
   - task: pipeline-vars
     image: apachegeode-build-concourse-docker-image
     config:
@@ -186,7 +187,6 @@ jobs:
             ---
             pipeline-prefix: "((!pipeline-prefix))"
             docker-image-prefix: "((!pipeline-prefix))"
-
   - put: apachegeode-concourse
     params:
       pipelines:
