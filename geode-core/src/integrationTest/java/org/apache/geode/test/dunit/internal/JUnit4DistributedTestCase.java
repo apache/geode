@@ -78,13 +78,10 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private static final boolean logPerTest = Boolean.getBoolean("dunitLogPerTest");
 
-  private final DistributedTestFixture distributedTestFixture;
-
   /**
    * Constructs a new distributed test. All JUnit 4 test classes need to have a no-arg constructor.
    */
   public JUnit4DistributedTestCase() {
-    this.distributedTestFixture = this;
   }
 
   @Rule
@@ -113,14 +110,14 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   public final String getName() {
-    if (this.distributedTestFixture != this) {
-      return this.distributedTestFixture.getName();
+    if (this != this) {
+      return this.getName();
     }
     return this.testNameForDistributedTestCase.getMethodName();
   }
 
   public final Class<? extends DistributedTestFixture> getTestClass() {
-    return this.distributedTestFixture.getClass();
+    return this.getClass();
   }
 
   /**
@@ -291,8 +288,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public Properties getDistributedSystemProperties() {
-    if (this.distributedTestFixture != this) {
-      return this.distributedTestFixture.getDistributedSystemProperties();
+    if (this != this) {
+      return this.getDistributedSystemProperties();
     }
     return defaultGetDistributedSystemProperties();
   }
@@ -393,8 +390,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void preSetUp() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.preSetUp();
+    if (this != this) {
+      this.preSetUp();
     }
   }
 
@@ -406,8 +403,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void postSetUp() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.postSetUp();
+    if (this != this) {
+      this.postSetUp();
     }
   }
 
@@ -509,8 +506,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void preTearDown() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.preTearDown();
+    if (this != this) {
+      this.preTearDown();
     }
   }
 
@@ -522,22 +519,22 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void postTearDown() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.postTearDown();
+    if (this != this) {
+      this.postTearDown();
     }
   }
 
   @Override
   public void preTearDownAssertions() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.preTearDownAssertions();
+    if (this != this) {
+      this.preTearDownAssertions();
     }
   }
 
   @Override
   public void postTearDownAssertions() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.postTearDownAssertions();
+    if (this != this) {
+      this.postTearDownAssertions();
     }
   }
 
