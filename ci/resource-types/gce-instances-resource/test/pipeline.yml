@@ -16,15 +16,14 @@
 #
 
 ---
-
 resource_types:
 - name: gce-instances
   type: docker-image
   source:
-    username: ((!docker-username))
-    password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))gce-instances-resource
+    repository: registry:5000/gce-instances-resource
     tag: latest
+    insecure_registries:
+    - "registry:5000"
 
 resources:
 - name: stopable-instance
@@ -32,7 +31,7 @@ resources:
   source:
     filter: 'labels.time-to-live:* AND labels.time-to-live<$(date +%s) AND status:RUNNING'
 
-- name: deletable-instance
+- name: destroyable-instance
   type: gce-instances
   source:
     filter: 'labels.time-to-live:* AND labels.time-to-live<$(($(date +%s) - 86400)) AND status:TERMINATED'
@@ -56,16 +55,16 @@ jobs:
       run:
         path: /bin/sh
         args:
-        - -ec
+        - -exc
         - |
           gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
 
-- name: delete-instance
+- name: destroy-instance
   plan:
-  - get: deletable-instance
+  - get: destroyable-instance
     version: every
     trigger: true
-  - task: delete-instance
+  - task: reap-destroyable
     config:
       platform: linux
       image_resource:
@@ -74,10 +73,10 @@ jobs:
           repository: google/cloud-sdk
           tag: alpine
       inputs:
-      - name: deletable-instance
+      - name: destroyable-instance
       run:
         path: /bin/sh
         args:
-        - -ec
+        - -exc
         - |
-          gcloud compute instances delete $(cat deletable-instance/selfLink) --quiet
+          gcloud compute instances destroy $(cat destroyable-instance/selfLink) --quiet
