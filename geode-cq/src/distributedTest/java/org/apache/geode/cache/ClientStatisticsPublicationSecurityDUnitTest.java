@@ -16,11 +16,13 @@ package org.apache.geode.cache;
 
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,12 +39,15 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -58,8 +63,15 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
   @Rule
   public final ClusterStartupRule cluster = new ClusterStartupRule();
 
+  private static final Logger log = LogService.getLogger();
+
   @Before
   public void before() {
+    invokeInEveryVM(() -> {
+      // TODO: Remove this once GEODE-5157 is fixed
+      SocketCreator.use_client_host_name = false;
+    });
+
     Properties locatorProps = new Properties();
     locatorProps.setProperty(CliStrings.START_LOCATOR__MEMBER_NAME, "locator1");
     locatorProps.setProperty("security-manager", "org.apache.geode.examples.SimpleSecurityManager");
@@ -79,12 +91,14 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
       cache.createRegionFactory(RegionShortcut.REPLICATE).create("regionName");
     });
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionName", 1);
-
   }
 
   @Test
-  public void testClientCanPublishStatisticsWithSecurity() {
+  public void testClientCanPublishStatisticsWithSecurity() throws Exception {
     final String regionName = "regionName";
+
+    // TODO: Remove this once GEODE-5157 is fixed
+    SocketCreator.use_client_host_name = false;
 
     ClientCache client = new ClientCacheFactory()
         .set(ConfigurationProperties.LOG_LEVEL, "fine")
@@ -99,6 +113,8 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
     poolFactory.setStatisticInterval(1000);
     poolFactory.setSubscriptionEnabled(true);
     Pool pool = poolFactory.create("poolName");
+
+
     Region region =
         client.createClientRegionFactory(CACHING_PROXY).setPoolName("poolName").create(regionName);
 
@@ -117,7 +133,7 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
       String... expectedPoolStatKeys) {
     final int serverPort = server.getPort();
     server.invoke(() -> {
-      Awaitility.waitAtMost(5, TimeUnit.MINUTES).until(() -> {
+      Awaitility.waitAtMost(1, TimeUnit.MINUTES).until(() -> {
         Cache cache = ClusterStartupRule.getCache();
         SystemManagementService service =
             (SystemManagementService) ManagementService.getExistingManagementService(cache);
