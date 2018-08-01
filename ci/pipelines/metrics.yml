@@ -20,7 +20,7 @@ image_resource: &docker-geode-build-image
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))metric-tools
+    repository: gcr.io/apachegeode-ci/metric-tools
     tag: latest
 
 resources:
