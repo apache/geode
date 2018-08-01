@@ -171,9 +171,27 @@ jobs:
   plan:
   - get: geode-reaper-pipeline
     trigger: true
+  - task: pipeline-vars
+    image: apachegeode-build-concourse-docker-image
+    config:
+      outputs:
+      - name: pipeline-vars
+      platform: linux
+      run:
+        path: /bin/sh
+        args:
+          - -c
+          - |
+            cat <<EOF >>pipeline-vars/vars
+            ---
+            pipeline-prefix: "((!pipeline-prefix))"
+            docker-image-prefix: "((!pipeline-prefix))"
+
   - put: apachegeode-concourse
     params:
       pipelines:
       - name: ((!pipeline-prefix))reaper
         team: ((!concourse-team))
         config_file: geode-reaper-pipeline/ci/pipelines/reaper.yml
+        vars_files:
+        - pipeline-vars/vars
