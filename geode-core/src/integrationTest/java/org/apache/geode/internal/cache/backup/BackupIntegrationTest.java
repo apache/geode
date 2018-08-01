@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -68,7 +69,7 @@ public class BackupIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private GemFireCacheImpl cache = null;
-  private File tmpDir;
+  private File incrementalDir;
   private File cacheXmlFile;
 
   private Properties props = new Properties();
@@ -83,28 +84,26 @@ public class BackupIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    if (tmpDir == null) {
-      props.setProperty(MCAST_PORT, "0");
-      props.setProperty(LOCATORS, "");
-      tmpDir = temporaryFolder.newFolder("temp");
-      try {
-        URL url = BackupIntegrationTest.class.getResource("BackupIntegrationTest.cache.xml");
-        cacheXmlFile = new File(url.toURI().getPath());
-      } catch (URISyntaxException e) {
-        throw new ExceptionInInitializerError(e);
-      }
-      props.setProperty(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath());
-      props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    incrementalDir = temporaryFolder.newFolder("incremental");
+    try {
+      URL url = BackupIntegrationTest.class.getResource("BackupIntegrationTest.cache.xml");
+      cacheXmlFile = new File(url.toURI().getPath());
+    } catch (URISyntaxException e) {
+      throw new ExceptionInInitializerError(e);
     }
+    props.setProperty(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath());
+    props.setProperty(LOG_LEVEL, "config"); // to keep diskPerf logs smaller
 
     createCache();
 
-    backupDir = new File(tmpDir, getName() + "backup_Dir");
+    backupDir = temporaryFolder.newFolder("backup_Dir");
     backupDir.mkdir();
     diskDirs = new File[2];
-    diskDirs[0] = new File(tmpDir, getName() + "_diskDir1");
+    diskDirs[0] = temporaryFolder.newFolder("disk_Dir1");
     diskDirs[0].mkdir();
-    diskDirs[1] = new File(tmpDir, getName() + "_diskDir2");
+    diskDirs[1] = temporaryFolder.newFolder("disk_Dir2");
     diskDirs[1].mkdir();
   }
 
@@ -122,61 +121,19 @@ public class BackupIntegrationTest {
 
   private void destroyDiskDirs() throws IOException {
     FileUtils.deleteDirectory(diskDirs[0]);
-    diskDirs[0].mkdir();
     FileUtils.deleteDirectory(diskDirs[1]);
-    diskDirs[1].mkdir();
   }
 
   @Test
   public void testBackupAndRecover() throws Exception {
-    backupAndRecover(() -> {
+    RegionCreator regionCreator = () -> {
       createDiskStore();
       return createRegion();
-    });
-  }
+    };
 
-  @Test
-  public void testBackupAndRecoverOldConfig() throws Exception {
-    backupAndRecover(() -> {
-      createDiskStore();
-      RegionFactory regionFactory = cache.createRegionFactory();
-      regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-      regionFactory.setDiskStoreName(DISK_STORE_NAME);
-      return regionFactory.create("region");
-    });
-  }
+    Region<Object, Object> region = regionCreator.createRegion();
 
-  private void backupAndRecover(RegionCreator regionFactory)
-      throws IOException, InterruptedException {
-    Region<Object, Object> region = regionFactory.createRegion();
-
-    // Put enough data to roll some oplogs
-    for (int i = 0; i < 1024; i++) {
-      region.put(i, getBytes(i));
-    }
-
-    for (int i = 0; i < 512; i++) {
-      region.destroy(i);
-    }
-
-    for (int i = 1024; i < 2048; i++) {
-      region.put(i, getBytes(i));
-    }
-
-    // This section of the test is for bug 43951
-    findDiskStore().forceRoll();
-    // add a put to the current crf
-    region.put("junk", "value");
-    // do a destroy of a key in a previous oplog
-    region.destroy(2047);
-    // do a destroy of the key in the current crf
-    region.destroy("junk");
-    // the current crf is now all garbage but
-    // we need to keep the drf around since the older
-    // oplog has a create that it deletes.
-    findDiskStore().forceRoll();
-    // restore the deleted entry.
-    region.put(2047, getBytes(2047));
+    putDataAndRollOplogs(0, region);
 
     for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
       store.flush();
@@ -184,11 +141,9 @@ public class BackupIntegrationTest {
 
     cache.close();
     createCache();
-    region = regionFactory.createRegion();
+    region = regionCreator.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for (int i = 0; i < 512; i++) {
-      assertNull(region.get(i));
-    }
+    validateEntriesDoNotExist(region, 0, 512);
 
     BackupService backup = cache.getBackupService();
     BackupWriter writer = getBackupWriter();
@@ -202,11 +157,86 @@ public class BackupIntegrationTest {
     cache.close();
 
     // Make sure the restore script refuses to run before we destroy the files.
-    restoreBackup(true);
+    restoreBackup(backupDir, true);
 
     // Make sure the disk store is unaffected by the failed restore
     createCache();
-    region = regionFactory.createRegion();
+    region = regionCreator.createRegion();
+    validateEntriesExist(region, 512, 2048);
+    validateEntriesDoNotExist(region, 0, 512);
+    assertEquals("A", region.get("A"));
+
+    region.put("B", "B");
+
+    cache.close();
+    // destroy the disk directories
+    destroyDiskDirs();
+
+    // Now the restore script should work
+    restoreBackup(backupDir, false);
+
+    // Make sure the cache has the restored backup
+    createCache();
+    region = regionCreator.createRegion();
+    validateEntriesExist(region, 512, 2048);
+    validateEntriesDoNotExist(region, 0, 512);
+
+    assertNull(region.get("A"));
+    assertNull(region.get("B"));
+  }
+
+  @Test
+  public void testIncrementalBackupAndRecover() throws Exception {
+    RegionCreator regionCreator = () -> {
+      createDiskStore();
+      return createRegion();
+    };
+
+    Region<Object, Object> region = regionCreator.createRegion();
+
+    putDataAndRollOplogs(0, region);
+
+    for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
+      store.flush();
+    }
+
+    cache.close();
+    createCache();
+    region = regionCreator.createRegion();
+    validateEntriesExist(region, 512, 2048);
+    for (int i = 0; i < 512; i++) {
+      assertNull(region.get(i));
+    }
+
+    BackupService backup = cache.getBackupService();
+    BackupWriter baseWriter = getBackupWriter();
+    backup.prepareBackup(cache.getMyId(), baseWriter);
+    backup.doBackup();
+
+    // Add more data for incremental to have something to backup
+    putDataAndRollOplogs(1, region);
+
+    Properties backupProperties =
+        new BackupConfigFactory()
+            .withBaselineDirPath(baseWriter.getBackupDirectory().getParent().toString())
+            .withTargetDirPath(incrementalDir.toString()).createBackupProperties();
+    BackupWriter incrementalWriter = BackupWriterFactory.FILE_SYSTEM.createWriter(backupProperties,
+        cache.getMyId().toString());
+    backup.prepareBackup(cache.getMyId(), incrementalWriter);
+    backup.doBackup();
+
+    // Put another key to make sure we restore
+    // from a backup that doesn't contain this key
+    region.put("A", "A");
+
+    cache.close();
+
+    // Make sure the restore script refuses to run before we destroy the files.
+    restoreBackup(incrementalDir, true);
+
+    // Make sure the disk store is unaffected by the failed restore
+    createCache();
+    region = regionCreator.createRegion();
     validateEntriesExist(region, 512, 2048);
     for (int i = 0; i < 512; i++) {
       assertNull(region.get(i));
@@ -220,20 +250,52 @@ public class BackupIntegrationTest {
     destroyDiskDirs();
 
     // Now the restore script should work
-    restoreBackup(false);
+    restoreBackup(incrementalDir, false);
 
     // Make sure the cache has the restored backup
     createCache();
-    region = regionFactory.createRegion();
+    region = regionCreator.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for (int i = 0; i < 512; i++) {
-      assertNull(region.get(i));
-    }
+    validateEntriesExist(region, 2560, 4096);
+    validateEntriesDoNotExist(region, 0, 512);
+    validateEntriesDoNotExist(region, 2048, 2560);
 
     assertNull(region.get("A"));
     assertNull(region.get("B"));
   }
 
+  private void putDataAndRollOplogs(int step, Region<Object, Object> region) {
+    int startOne = step * 2048;
+    int startTwo = startOne + 1024;
+
+    // Put enough data to roll some oplogs
+    for (int i = startOne; i < startOne + 1024; i++) {
+      region.put(i, getBytes(i));
+    }
+
+    for (int i = startOne; i < startOne + 512; i++) {
+      region.destroy(i);
+    }
+
+    for (int i = startTwo; i < startTwo + 1024; i++) {
+      region.put(i, getBytes(i));
+    }
+
+    // This section of the test is for bug 43951
+    findDiskStore().forceRoll();
+    // add a put to the current crf
+    region.put("junk", "value");
+    // do a destroy of a key in a previous oplog
+    region.destroy(startTwo + 1023);
+    // do a destroy of the key in the current crf
+    region.destroy("junk");
+    // the current crf is now all garbage but
+    // we need to keep the drf around since the older
+    // oplog has a create that it deletes.
+    findDiskStore().forceRoll();
+    // restore the deleted entry.
+    region.put(startTwo + 1023, getBytes(startTwo + 1023));
+  }
 
   @Test
   public void testBackupEmptyDiskStore() throws Exception {
@@ -271,7 +333,6 @@ public class BackupIntegrationTest {
         Arrays.asList(backupDir.list()));
   }
 
-
   @Test
   public void testCompactionDuringBackup() throws Exception {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -298,7 +359,7 @@ public class BackupIntegrationTest {
 
     cache.close();
     destroyDiskDirs();
-    restoreBackup(false);
+    restoreBackup(backupDir, false);
     createCache();
     createDiskStore();
     region = createRegion();
@@ -358,7 +419,12 @@ public class BackupIntegrationTest {
       for (int j = 0; j < expected.length; j++) {
         assertEquals("Byte wrong on entry " + i + ", byte " + j, expected[j], bytes[j]);
       }
+    }
+  }
 
+  private void validateEntriesDoNotExist(Region region, int start, int end) {
+    for (int i = start; i < end; i++) {
+      assertFalse("Entry " + i + " exists", region.containsKey(i));
     }
   }
 
@@ -369,7 +435,8 @@ public class BackupIntegrationTest {
     return data;
   }
 
-  private void restoreBackup(boolean expectFailure) throws IOException, InterruptedException {
+  private void restoreBackup(File backupDir, boolean expectFailure)
+      throws IOException, InterruptedException {
     Collection<File> restoreScripts = FileUtils.listFiles(backupDir,
         new RegexFileFilter(".*restore.*"), DirectoryFileFilter.DIRECTORY);
     assertNotNull(restoreScripts);
