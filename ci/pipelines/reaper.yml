@@ -21,6 +21,8 @@ resource_types:
 - name: gce-instances
   type: docker-image
   source:
+    username: ((!docker-username))
+    password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))gce-instances-resource
     tag: latest
 
