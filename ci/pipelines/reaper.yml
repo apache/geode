@@ -50,7 +50,7 @@ jobs:
         source:
           repository: google/cloud-sdk
           tag: alpine
-      input2:
+      inputs:
       - name: stopable-instance
       run:
         path: /bin/sh
@@ -71,7 +71,7 @@ jobs:
         source:
           repository: google/cloud-sdk
           tag: alpine
-      input2:
+      inputs:
       - name: destroyable-instance
       run:
         path: /bin/sh
