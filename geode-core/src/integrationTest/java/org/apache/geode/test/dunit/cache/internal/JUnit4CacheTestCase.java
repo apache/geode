@@ -111,7 +111,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
               // java.lang.NoSuchMethodError:
               // org.apache.geode.internal.cache.InternalCache.getTxManager()Lorg/apache/geode/internal/cache/TXManagerImpl
               CacheTransactionManager transactionManager =
-                  ((GemFireCacheImpl) cache).getTxManager();
+                  cache.getTxManager();
               if (transactionManager != null) {
                 if (transactionManager.exists()) {
                   try {
@@ -174,11 +174,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * Creates the {@code Cache} for this test
    */
   private void createCache() {
-    createCache(false);
-  }
-
-  private void createCache(final boolean client) {
-    createCache(client, null);
+    createCache(false, null);
   }
 
   private void createCache(final boolean client, final CacheFactory factory) {
@@ -354,20 +350,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   private void tearDownCacheTestCase() {
     remoteTearDown();
     Invoke.invokeInEveryVM(JUnit4CacheTestCase::remoteTearDown);
-  }
-
-  @Override
-  public void preTearDownCacheTestCase() throws Exception {
-    if (this != this) {
-      this.preTearDownCacheTestCase();
-    }
-  }
-
-  @Override
-  public void postTearDownCacheTestCase() throws Exception {
-    if (this != this) {
-      this.postTearDownCacheTestCase();
-    }
   }
 
   /**
