@@ -6236,7 +6236,7 @@ public class LocalizedStrings {
   public static final StringId RegionAttributesCreation__CLONING_ENABLE_IS_NOT_THE_SAME_THIS_0_OTHER_1 =
       new StringId(4741, "Cloning enabled is not the same: this:  {0}  other:  {1}");
   public static final StringId UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1 =
-      new StringId(4742, "Error applying delta for key {0} of region {1}");
+      new StringId(4742, "Error applying delta for key {0} of region {1}: {2}");
   public static final StringId RequestEventValue_0_THE_EVENT_ID_FOR_THE_GET_EVENT_VALUE_REQUEST_IS_NULL =
       new StringId(4744, "{0}: The event id for the get event value request is null.");
   public static final StringId RequestEventValue_UNABLE_TO_FIND_A_CLIENT_UPDATE_MESSAGE_FOR_0 =
