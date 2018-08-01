@@ -88,11 +88,11 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   public SerializableTestName testNameForDistributedTestCase = new SerializableTestName();
 
   @BeforeClass
-  public static final void initializeDistributedTestCase() {
+  public static void initializeDistributedTestCase() {
     DUnitLauncher.launchIfNeeded();
   }
 
-  public static final void initializeBlackboard() {
+  public static void initializeBlackboard() {
     blackboard = new DUnitBlackboard();
   }
 
@@ -103,7 +103,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  public static final void cleanDiskDirs() {
+  public static void cleanDiskDirs() {
     FileUtils.deleteQuietly(JUnit4CacheTestCase.getDiskDir());
     FileUtils.deleteQuietly(JUnit4CacheTestCase.getDiskDir());
     Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
@@ -250,7 +250,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     system = null;
   }
 
-  public static final InternalDistributedSystem getSystemStatic() {
+  public static InternalDistributedSystem getSystemStatic() {
     return system;
   }
 
@@ -292,14 +292,14 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     return new Properties();
   }
 
-  public static final void disconnectAllFromDS() {
+  public static void disconnectAllFromDS() {
     Disconnect.disconnectAllFromDS();
   }
 
   /**
    * Disconnects this VM from the distributed system
    */
-  public static final void disconnectFromDS() {
+  public static void disconnectFromDS() {
     if (system != null) {
       system.disconnect();
       system = null;
@@ -317,11 +317,11 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     return blackboard;
   }
 
-  public static final String getTestMethodName() {
+  public static String getTestMethodName() {
     return testMethodName;
   }
 
-  private static final void setTestMethodName(final String testMethodName) {
+  private static void setTestMethodName(final String testMethodName) {
     JUnit4DistributedTestCase.testMethodName = testMethodName;
   }
 
@@ -356,7 +356,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * <p>
    * Do not override this method.
    */
-  private final void doSetUpDistributedTestCase() {
+  private void doSetUpDistributedTestCase() {
     final String className = getTestClass().getCanonicalName();
     final String methodName = getName();
 
@@ -376,13 +376,13 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     logTestStart();
   }
 
-  private static final String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
+  private static String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
       final String className, final String methodName) {
     return "DiskStore-" + String.valueOf(hostIndex) + "-" + String.valueOf(vmIndex) + "-"
         + className + "." + methodName; // used to be getDeclaringClass()
   }
 
-  private static final void setUpVM(final String methodName, final String defaultDiskStoreName) {
+  private static void setUpVM(final String methodName, final String defaultDiskStoreName) {
     assertNotNull("methodName must not be null", methodName);
     assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
     setTestMethodName(methodName);
@@ -390,12 +390,12 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     setUpCreationStackGenerator();
   }
 
-  private final void logTestStart() {
+  private void logTestStart() {
     System.out.println(
         "\n\n[setup] START TEST " + getTestClass().getSimpleName() + "." + testMethodName + "\n\n");
   }
 
-  private static final void setUpCreationStackGenerator() {
+  private static void setUpCreationStackGenerator() {
     // the following is moved from InternalDistributedSystem to fix #51058
     InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
         .set(new InternalDistributedSystem.CreationStackGenerator() {
@@ -426,7 +426,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * Write a message to the log about what tests have ran previously. This makes it easier to figure
    * out if a previous test may have caused problems
    */
-  private final void logTestHistory() {
+  private void logTestHistory() {
     String classname = getTestClass().getSimpleName();
     testHistory.add(classname);
     System.out.println("Previously run tests: " + testHistory);
@@ -455,7 +455,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  private final void doTearDownDistributedTestCase() throws Exception {
+  private void doTearDownDistributedTestCase() throws Exception {
     invokeInEveryVM("tearDownCreationStackGenerator", () -> tearDownCreationStackGenerator());
     if (logPerTest) {
       disconnectAllFromDS();
@@ -466,7 +466,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  public static final void cleanupAllVms() {
+  public static void cleanupAllVms() {
     tearDownVM();
     invokeInEveryVM("tearDownVM", () -> tearDownVM());
     invokeInLocator(() -> {
@@ -476,14 +476,14 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     DUnitLauncher.closeAndCheckForSuspects();
   }
 
-  private static final void tearDownVM() {
+  private static void tearDownVM() {
     closeCache();
     DistributedTestRule.TearDown.tearDownInVM();
     cleanDiskDirs();
   }
 
   // TODO: this should move to CacheTestCase
-  private static final void closeCache() {
+  private static void closeCache() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
       destroyRegions(cache);
@@ -492,7 +492,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   // TODO: this should move to CacheTestCase
-  protected static final void destroyRegions(final Cache cache) {
+  protected static void destroyRegions(final Cache cache) {
     if (cache != null && !cache.isClosed()) {
       // try to destroy the root regions first so that we clean up any persistent files.
       for (Region<?, ?> root : cache.rootRegions()) {
@@ -510,7 +510,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  private static final void tearDownCreationStackGenerator() {
+  private static void tearDownCreationStackGenerator() {
     InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
         .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR);
   }
