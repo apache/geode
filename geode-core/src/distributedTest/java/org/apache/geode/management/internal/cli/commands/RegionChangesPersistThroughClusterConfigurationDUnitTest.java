@@ -59,8 +59,9 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    int httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int[] randomPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int jmxPort = randomPorts[0];
+    int httpPort = randomPorts[1];
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, "fine");
