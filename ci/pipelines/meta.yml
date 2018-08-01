@@ -171,13 +171,15 @@ jobs:
   plan:
   - get: geode-reaper-pipeline
     trigger: true
-  - get: apachegeode-build-concourse-docker-image
   - task: pipeline-vars
-    image: apachegeode-build-concourse-docker-image
     config:
       outputs:
       - name: pipeline-vars
       platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
       run:
         path: /bin/sh
         args:

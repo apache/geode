@@ -42,7 +42,8 @@ jobs:
   plan:
   - get: stopable-instance
     version: every
-  - task: stop-instances
+    trigger: true
+- task: stop-instances
     config:
       platform: linux
       image_resource:
@@ -63,6 +64,7 @@ jobs:
   plan:
   - get: destroyable-instance
     version: every
+    trigger: true
   - task: reap-destroyable
     config:
       platform: linux

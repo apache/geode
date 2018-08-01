@@ -24,6 +24,7 @@ jobs:
   plan:
   - get: stopable-instance
     version: every
+    trigger: true
   - task: stop-instances
     config:
       platform: linux
@@ -45,6 +46,7 @@ jobs:
   plan:
   - get: destroyable-instance
     version: every
+    trigger: true
   - task: reap-destroyable
     config:
       platform: linux

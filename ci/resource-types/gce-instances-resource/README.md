@@ -47,6 +47,7 @@ jobs:
   plan:
   - get: stopable-instance
     version: every
+    trigger: true
   - task: stop-instances
     config:
       platform: linux
@@ -55,7 +56,7 @@ jobs:
         source:
           repository: google/cloud-sdk
           tag: alpine
-      input2:
+      inputs:
       - name: stopable-instance
       run:
         path: /bin/sh
