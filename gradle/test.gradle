@@ -295,22 +295,6 @@ subprojects {
           progress << "$now Completed test $desc.className $desc.name with result: ${result.resultType}$eol"
         }
 
-        afterSuite { desc, result ->
-          if (null != desc.className) {
-            def message = "Test Suite: ${desc.name}:"
-            if (result.failedTestCount > 0) {
-              message += " FAILED: ${result.failedTestCount}"
-            }
-            if (result.skippedTestCount > 0) {
-              message += " SKIPPED: ${result.skippedTestCount}"
-            }
-            if (result.successfulTestCount > 0) {
-              message += " PASSED: ${result.successfulTestCount}"
-            }
-            logger.quiet(message)
-          }
-        }
-
         doFirst {
           resultsDir.deleteDir()
           resultsDir.mkdirs()
