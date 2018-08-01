@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 /**
  * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
- * commands.
+ * commands. This rule can't be used to start locators or servers; instead use GfshRule.
  *
  * <p>
  * if used with {@link ConnectionConfiguration}, you will need to specify a port number when
