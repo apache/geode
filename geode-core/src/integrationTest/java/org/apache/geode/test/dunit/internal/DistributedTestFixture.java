@@ -79,7 +79,9 @@ public interface DistributedTestFixture extends Serializable {
    * Override this as needed. This method is called by various {@code getSystem} methods in
    * {@code DistributedTestCase}.
    */
-  Properties getDistributedSystemProperties();
+  default Properties getDistributedSystemProperties() {
+    return new Properties();
+  }
 
   /**
    * Returns the {@code name} of the test method being executed.

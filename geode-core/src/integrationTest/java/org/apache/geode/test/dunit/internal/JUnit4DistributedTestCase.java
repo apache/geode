@@ -44,7 +44,6 @@ import org.junit.Rule;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Version;
@@ -95,7 +94,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     blackboard = new DUnitBlackboard();
   }
 
-  protected static void deleteBACKUPDiskStoreFile(final File file) {
+  private static void deleteBACKUPDiskStoreFile(final File file) {
     if (file.getName().startsWith("BACKUPDiskStore-")
         || file.getName().startsWith(CLUSTER_CONFIG_DISK_DIR_PREFIX)) {
       FileUtils.deleteQuietly(file);
@@ -105,14 +104,15 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   public static void cleanDiskDirs() {
     FileUtils.deleteQuietly(JUnit4CacheTestCase.getDiskDir());
     FileUtils.deleteQuietly(JUnit4CacheTestCase.getDiskDir());
-    Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
+    Arrays.stream(new File(".").listFiles()).forEach(
+        JUnit4DistributedTestCase::deleteBACKUPDiskStoreFile);
   }
 
   public final String getName() {
     return this.testNameForDistributedTestCase.getMethodName();
   }
 
-  public final Class<? extends DistributedTestFixture> getTestClass() {
+  private Class<? extends DistributedTestFixture> getTestClass() {
     return this.getClass();
   }
 
@@ -272,25 +272,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     return system != null && system.isConnected();
   }
 
-  /**
-   * Returns a {@code Properties} object used to configure a connection to a
-   * {@link DistributedSystem}. Unless overridden, this method will return an empty
-   * {@code Properties} object.
-   *
-   * <p>
-   * Override this as needed. Default implementation returns empty {@code Properties}.
-   *
-   * @since GemFire 3.0
-   */
-  @Override
-  public Properties getDistributedSystemProperties() {
-    return defaultGetDistributedSystemProperties();
-  }
-
-  final Properties defaultGetDistributedSystemProperties() {
-    return new Properties();
-  }
-
   public static void disconnectAllFromDS() {
     Disconnect.disconnectAllFromDS();
   }
@@ -397,27 +378,24 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private static void setUpCreationStackGenerator() {
     // the following is moved from InternalDistributedSystem to fix #51058
     InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
-        .set(new InternalDistributedSystem.CreationStackGenerator() {
-          @Override
-          public Throwable generateCreationStack(final DistributionConfig config) {
-            StringBuilder sb = new StringBuilder();
-            String[] validAttributeNames = config.getAttributeNames();
-            for (String attName : validAttributeNames) {
-              Object actualAtt = config.getAttributeObject(attName);
-              String actualAttStr = actualAtt.toString();
-              sb.append("  ");
-              sb.append(attName);
-              sb.append("=\"");
-              if (actualAtt.getClass().isArray()) {
-                actualAttStr = InternalDistributedSystem.arrayToString(actualAtt);
-              }
-              sb.append(actualAttStr);
-              sb.append("\"");
-              sb.append("\n");
+        .set(config -> {
+          StringBuilder sb = new StringBuilder();
+          String[] validAttributeNames = config.getAttributeNames();
+          for (String attName : validAttributeNames) {
+            Object actualAtt = config.getAttributeObject(attName);
+            String actualAttStr = actualAtt.toString();
+            sb.append("  ");
+            sb.append(attName);
+            sb.append("=\"");
+            if (actualAtt.getClass().isArray()) {
+              actualAttStr = InternalDistributedSystem.arrayToString(actualAtt);
             }
-            return new Throwable(
-                "Creating distributed system with the following configuration:\n" + sb.toString());
+            sb.append(actualAttStr);
+            sb.append("\"");
+            sb.append("\n");
           }
+          return new Throwable(
+              "Creating distributed system with the following configuration:\n" + sb.toString());
         });
   }
 
@@ -454,8 +432,9 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  private void doTearDownDistributedTestCase() throws Exception {
-    invokeInEveryVM("tearDownCreationStackGenerator", () -> tearDownCreationStackGenerator());
+  private void doTearDownDistributedTestCase() {
+    invokeInEveryVM("tearDownCreationStackGenerator",
+        JUnit4DistributedTestCase::tearDownCreationStackGenerator);
     if (logPerTest) {
       disconnectAllFromDS();
     }
@@ -465,9 +444,9 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  public static void cleanupAllVms() {
+  private static void cleanupAllVms() {
     tearDownVM();
-    invokeInEveryVM("tearDownVM", () -> tearDownVM());
+    invokeInEveryVM("tearDownVM", JUnit4DistributedTestCase::tearDownVM);
     invokeInLocator(() -> {
       DistributionMessageObserver.setInstance(null);
       unregisterInstantiatorsInThisVM();
@@ -481,7 +460,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     cleanDiskDirs();
   }
 
-  // TODO: this should move to CacheTestCase
   private static void closeCache() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null && !cache.isClosed()) {
@@ -490,7 +468,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     }
   }
 
-  // TODO: this should move to CacheTestCase
   protected static void destroyRegions(final Cache cache) {
     if (cache != null && !cache.isClosed()) {
       // try to destroy the root regions first so that we clean up any persistent files.
