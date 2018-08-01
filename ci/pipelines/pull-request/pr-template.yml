@@ -72,24 +72,7 @@ jobs:
               GEODE_FORK: (( grab metadata.geode-fork ))
             run:
               path: geode/ci/scripts/start_instance.sh
-    - task: start_instance
-      image: alpine-tools-image
-      timeout: 15m
-      attempts: 100
-      config:
-        inputs:
-          - name: concourse-metadata-resource
-          - name: geode
-        outputs:
-          - name: instance-data
-        platform: linux
-        params:
-          CPUS: (( grab metadata.job.cpus ))
-          RAM: (( grab metadata.job.ram ))
-          GEODE_BRANCH: (( grab metadata.geode-build-branch ))
-          GEODE_FORK: (( grab metadata.geode-fork ))
-        run:
-          path: geode/ci/scripts/start_instance.sh
+
     - task: rsync_code_up
       timeout: 5m
       config:

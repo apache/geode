@@ -40,8 +40,7 @@ jobs:
       - do:
         - put: concourse-metadata-resource
         - task: start_instance
-          timeout: 15m
-          attempts: 100
+          timeout: 5m
           config:
             inputs:
             - name: concourse-metadata-resource
