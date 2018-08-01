@@ -73,13 +73,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   protected static InternalCache cache;
 
-  private final CacheTestFixture cacheTestFixture;
-
-  public JUnit4CacheTestCase() {
-    super();
-    this.cacheTestFixture = this;
-  }
-
   /**
    * Creates the {@code Cache} for this test
    */
@@ -346,15 +339,15 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   @Override
   public void preTearDownCacheTestCase() throws Exception {
-    if (this.cacheTestFixture != this) {
-      this.cacheTestFixture.preTearDownCacheTestCase();
+    if (this != this) {
+      this.preTearDownCacheTestCase();
     }
   }
 
   @Override
   public void postTearDownCacheTestCase() throws Exception {
-    if (this.cacheTestFixture != this) {
-      this.cacheTestFixture.postTearDownCacheTestCase();
+    if (this != this) {
+      this.postTearDownCacheTestCase();
     }
   }
 
