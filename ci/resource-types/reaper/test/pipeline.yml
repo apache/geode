@@ -1,0 +1,63 @@
+---
+resource_types:
+- name: gce-instances
+  type: docker-image
+  source:
+    repository: registry:5000/gce-instances-resource
+    tag: latest
+    insecure_registries:
+    - "registry:5000"
+
+resources:
+- name: stopable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(date +%s) AND status:RUNNING'
+
+- name: destroyable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(($(date +%s) - 86400)) AND status:TERMINATED'
+
+jobs:
+- name: stop-instance
+  plan:
+  - get: stopable-instance
+    version: every
+  - task: stop-instances
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: google/cloud-sdk
+          tag: alpine
+      input2:
+      - name: stopable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -exc
+        - |
+          gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
+
+- name: destroy-instance
+  plan:
+  - get: destroyable-instance
+    version: every
+  - task: reap-destroyable
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: google/cloud-sdk
+          tag: alpine
+      input2:
+      - name: destroyable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -exc
+        - |
+          gcloud compute instances destroy $(cat destroyable-instance/selfLink) --quiet

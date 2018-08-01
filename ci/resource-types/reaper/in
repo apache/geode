@@ -1,0 +1,57 @@
+#!/bin/bash
+
+set -x
+set -e
+
+BUILD_DIR=$1
+REQUEST=$(cat <&0)
+
+echo "BUILD_DIR: ${BUILD_DIR}" >&2
+echo "REQUEST: ${REQUEST}" >&2
+
+VERSION=$(echo "${REQUEST}" | jq -r '.version.id // empty')
+
+if [ -z "${VERSION}" ]; then
+  RESPONSE=$(jq -n "{
+    version: {}
+  }")
+else
+  id="${VERSION}"
+  echo "${id}" > ${BUILD_DIR}/id
+
+  COMMAND="gcloud compute instances list --filter="id:${id}" --format=json"
+
+  echo "COMMAND: ${COMMAND}" >&2
+  RESULT=$(eval "${COMMAND}" | jq '.[0]')
+  echo "RESULT: ${RESULT}" >&2
+
+  description="${RESULT}"
+  echo "${description}" > ${BUILD_DIR}/description
+
+  name=$(jq -r '.name' ${BUILD_DIR}/description)
+  echo "${name}" > ${BUILD_DIR}/name
+
+  selfLink=$(jq -r '.selfLink' ${BUILD_DIR}/description)
+  echo "${selfLink}" > ${BUILD_DIR}/selfLink
+
+  cat ${BUILD_DIR}/id >&2
+  cat ${BUILD_DIR}/description >&2
+
+  RESPONSE=$(jq -n "{
+    version: {
+      id: $(echo ${VERSION} | jq -R .)
+    },
+    metadata: [{
+      name: \"name\",
+      value: $(echo ${name} | jq -R .)
+    },{
+      name: \"selfLink\",
+      value: $(echo ${selfLink} | jq -R .)
+    }]
+  }")
+fi
+
+echo "RESPONSE ${RESPONSE}" >&2
+echo "${RESPONSE}"
+
+exit 0

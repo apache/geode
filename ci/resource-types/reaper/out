@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo NOT IMPLEMENTED >&2
+exit 1

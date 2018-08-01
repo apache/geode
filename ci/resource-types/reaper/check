@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -x
+set -e
+
+BUILD_DIR=$1
+REQUEST=$(cat <&0)
+
+echo "BUILD_DIR: ${BUILD_DIR}" >&2
+echo "REQUEST: ${REQUEST}" >&2
+
+filter=$(echo "${REQUEST}" | jq -r '.source.filter // empty')
+
+instances=$(gcloud compute instances list \
+              --filter="$(eval echo \"${filter}\")" \
+              --format='json(id)')
+
+VERSIONS="${instances}"
+
+if [ -z "${VERSIONS}" ]; then
+  RESPONSE='[]'
+else
+  RESPONSE="${VERSIONS}"
+fi
+
+echo "RESPONSE ${RESPONSE}" >&2
+echo "${RESPONSE}"
+
+exit 0
