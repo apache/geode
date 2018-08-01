@@ -117,7 +117,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
         VM vm = servers[i];
         System.out.println("TEST: killing vm " + i);
         vm.invoke("force disconnect", () -> forceDisconnect(false));
-        asyncInvocations[i].join();
+        asyncInvocations[i].get();
         System.out.println("TEST: recreating vm " + i);
         vm.invoke("create cache", () -> createCacheAndRegion());
         asyncInvocations[i] = vm.invokeAsync("perform ops", () -> performOps());
@@ -130,7 +130,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
         int txCount = getBlackboard().getMailbox(TRANSACTION_COUNT);
         int newTxCount = txCount + 5;
         try {
-          Awaitility.await("check for new transactions").atMost(30, TimeUnit.SECONDS).until(() -> {
+          Awaitility.await("check for new transactions").atMost(5, TimeUnit.MINUTES).until(() -> {
             checkAsyncInvocations(asyncInvocations);
             int newCount = getBlackboard().getMailbox(TRANSACTION_COUNT);
             return newCount >= newTxCount;
@@ -152,7 +152,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
 
       Throwable failure = null;
       for (AsyncInvocation asyncInvocation : asyncInvocations) {
-        asyncInvocation.join(30000);
+        asyncInvocation.join(300000);
         if (asyncInvocation.exceptionOccurred()) {
           failure = asyncInvocation.getException();
         }
@@ -208,7 +208,7 @@ public class DlockAndTxlockRegressionTest extends JUnit4CacheTestCase {
     while (!cache.isClosed()) {
       boolean locked = false;
       try {
-        locked = dlockService.lock("testDLock", 500, 60_000);
+        locked = dlockService.lock("testDLock", -1, -1);
         if (!locked) {
           // this could happen if we're starved out for 30sec by other VMs
           continue;
