@@ -110,9 +110,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   public final String getName() {
-    if (this != this) {
-      return this.getName();
-    }
     return this.testNameForDistributedTestCase.getMethodName();
   }
 
@@ -288,9 +285,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public Properties getDistributedSystemProperties() {
-    if (this != this) {
-      return this.getDistributedSystemProperties();
-    }
     return defaultGetDistributedSystemProperties();
   }
 
@@ -390,9 +384,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void preSetUp() throws Exception {
-    if (this != this) {
-      this.preSetUp();
-    }
   }
 
   /**
@@ -403,9 +394,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void postSetUp() throws Exception {
-    if (this != this) {
-      this.postSetUp();
-    }
   }
 
   private static final String getDefaultDiskStoreName(final int hostIndex, final int vmIndex,
@@ -506,9 +494,6 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void preTearDown() throws Exception {
-    if (this != this) {
-      this.preTearDown();
-    }
   }
 
   /**
@@ -519,23 +504,14 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void postTearDown() throws Exception {
-    if (this != this) {
-      this.postTearDown();
-    }
   }
 
   @Override
   public void preTearDownAssertions() throws Exception {
-    if (this != this) {
-      this.preTearDownAssertions();
-    }
   }
 
   @Override
   public void postTearDownAssertions() throws Exception {
-    if (this != this) {
-      this.postTearDownAssertions();
-    }
   }
 
   public static final void cleanupAllVms() {
