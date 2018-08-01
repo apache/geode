@@ -83,15 +83,15 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   /**
    * Creates the {@code Cache} for this test
    */
-  private final void createCache() {
+  private void createCache() {
     createCache(false);
   }
 
-  private final void createCache(final boolean client) {
+  private void createCache(final boolean client) {
     createCache(client, null);
   }
 
-  private final void createCache(final boolean client, final CacheFactory factory) {
+  private void createCache(final boolean client, final CacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       try {
         System.setProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
@@ -339,7 +339,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     postTearDownCacheTestCase();
   }
 
-  private final void tearDownCacheTestCase() {
+  private void tearDownCacheTestCase() {
     remoteTearDown();
     Invoke.invokeInEveryVM(JUnit4CacheTestCase::remoteTearDown);
   }
