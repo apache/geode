@@ -90,7 +90,7 @@ public class BackupInspectorIntegrationTest {
     assertThat(inspector.isIncremental()).isTrue();
     Set<String> oplogFiles = inspector.getIncrementalOplogFileNames();
     assertThat(oplogFiles.isEmpty()).isFalse();
-    assertThat(oplogFiles).hasSize(2);
+    assertThat(oplogFiles).hasSize(3);
     assertThat(oplogFiles.contains(CRF_FILE_NAME)).isTrue();
     assertThat(oplogFiles.contains(DRF_FILE_NAME)).isTrue();
     validateIncrementalBackupScript(inspector);

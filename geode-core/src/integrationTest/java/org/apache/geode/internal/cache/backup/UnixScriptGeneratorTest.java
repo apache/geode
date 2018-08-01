@@ -83,8 +83,9 @@ public class UnixScriptGeneratorTest {
     scriptGenerator.writeCopyFile(writer, source, destinaiton);
     writer.flush();
     List<String> output = Files.readAllLines(outputFile.toPath());
-    assertThat(output).hasSize(1);
-    assertThat(output).containsExactly("cp -p '" + source + "' '" + destinaiton + "'");
+    assertThat(output).hasSize(2);
+    assertThat(output).containsExactly("mkdir -p '" + source.getParent() + "'",
+        "cp -p '" + source + "' '" + destinaiton + "'");
   }
 
   @Test
