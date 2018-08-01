@@ -65,7 +65,7 @@ jobs:
   - get: destroyable-instance
     version: every
     trigger: true
-  - task: reap-destroyable
+  - task: destroy-instance
     config:
       platform: linux
       image_resource:
