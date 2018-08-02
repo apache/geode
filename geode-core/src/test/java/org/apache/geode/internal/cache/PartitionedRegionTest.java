@@ -119,6 +119,25 @@ public class PartitionedRegionTest {
   }
 
   @Test
+  public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventOperationIsNotPresent()
+      throws Exception {
+    int bucketId = 0;
+    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
+    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
+    EntryEventImpl clientEvent = mock(EntryEventImpl.class);
+    when(clientEvent.getOperation()).thenReturn(null);
+    PartitionedRegion spyPR = spy(partitionedRegion);
+    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(eq(bucketId), isNull());
+    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(eq(bucketId));
+
+    InternalDistributedMember memberForRegisterInterestRead =
+        spyPR.getBucketNodeForReadOrWrite(bucketId, null);
+
+    assertThat(memberForRegisterInterestRead).isSameAs(secondaryMember);
+    verify(spyPR, times(1)).getNodeForBucketRead(anyInt());
+  }
+
+  @Test
   public void updateBucketMapsForInterestRegistrationWithSetOfKeysFetchesPrimaryBucketsForRead() {
     Integer[] bucketIds = new Integer[] {0, 1};
 
