@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.internal.statistics.StatisticId;
@@ -25,76 +26,63 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 /**
  * This class acts as a monitor and listen for VM stats update on behalf of MemberMBean.
  *
- *
  */
 public class VMStatsMonitor extends MBeanStatsMonitor {
-
-  private static final int VALUE_NOT_AVAILABLE = -1;
-
-  private volatile float cpuUsage = 0;
-
-  private static String processCPUTimeAttr = "ProcessCpuTime";
-
+  static final float VALUE_NOT_AVAILABLE = -1;
+  private static final String PROCESS_CPU_TIME_ATTRIBUTE = "ProcessCpuTime";
   private long lastSystemTime = 0;
-
   private long lastProcessCpuTime = 0;
+  private final boolean processCPUTimeAvailable;
+  private AtomicInteger cpuUsageBits = new AtomicInteger(Float.floatToIntBits(0f));
 
-  private boolean processCPUTimeAvailable;
+  public float getCpuUsage() {
+    return Float.intBitsToFloat(cpuUsageBits.get());
+  }
 
   public VMStatsMonitor(String name) {
     super(name);
-    processCPUTimeAvailable = MBeanJMXAdapter.isAttributeAvailable(processCPUTimeAttr,
+    processCPUTimeAvailable = MBeanJMXAdapter.isAttributeAvailable(PROCESS_CPU_TIME_ATTRIBUTE,
         ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
     if (!processCPUTimeAvailable) {
-      cpuUsage = VALUE_NOT_AVAILABLE;
+      cpuUsageBits.set(Float.floatToIntBits(VALUE_NOT_AVAILABLE));
     }
-
   }
 
-
-  @Override
-  public void handleNotification(StatisticsNotification notification) {
-
-    for (StatisticId statId : notification) {
-      StatisticDescriptor descriptor = statId.getStatisticDescriptor();
-      String name = descriptor.getName();
-      Number value;
-      try {
-        value = notification.getValue(statId);
-      } catch (StatisticNotFoundException e) {
-        value = 0;
-      }
-      log(name, value);
-      statsMap.put(name, value);
-    }
-    refreshStats();
+  long currentTimeMillis() {
+    return System.currentTimeMillis();
   }
 
+  /**
+   *
+   * @param systemTime Current system time.
+   * @param cpuTime Last gathered cpu time.
+   * @return The time (as a percentage) that this member's process time with respect to Statistics
+   *         sample time interval. If process time between two sample time t1 & t2 is p1 and p2
+   *         cpuUsage = ((p2-p1) * 100) / ((t2-t1).
+   */
+  float calculateCpuUsage(long systemTime, long cpuTime) {
+    // 10000 = (Nano conversion factor / 100 for percentage)
+    long denom = (systemTime - lastSystemTime) * 10000;
+    return (float) (cpuTime - lastProcessCpuTime) / denom;
+  }
 
   /**
    * Right now it only refreshes CPU usage in terms of percentage. This method can be used for any
    * other computation based on Stats in future.
-   *
-   * Returns the time (as a percentage) that this member's process time with respect to Statistics
-   * sample time interval. If process time between two sample time t1 & t2 is p1 and p2 cpuUsage =
-   * ((p2-p1) * 100) / ((t2-t1)
-   *
    */
-  private void refreshStats() {
-
+  void refreshStats() {
     if (processCPUTimeAvailable) {
       Number processCpuTime = statsMap.get(StatsKey.VM_PROCESS_CPU_TIME);
 
       // Some JVM like IBM is not handled by Stats layer properly. Ignoring the attribute for such
       // cases
       if (processCpuTime == null) {
-        cpuUsage = VALUE_NOT_AVAILABLE;
+        cpuUsageBits.set(Float.floatToIntBits(VALUE_NOT_AVAILABLE));
         return;
       }
 
-
       if (lastSystemTime == 0) {
-        lastSystemTime = System.currentTimeMillis();
+        lastSystemTime = currentTimeMillis();
         return;
       }
 
@@ -103,22 +91,31 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
         lastProcessCpuTime = cpuTime;
         return;
       }
-      long systemTime = System.currentTimeMillis();
 
-      // 10000 = (Nano conversion factor / 100 for percentage)
-      long denom = (systemTime - lastSystemTime) * 10000;
-
-      float processCpuUsage = (float) (cpuTime - lastProcessCpuTime) / denom;
-
+      long systemTime = currentTimeMillis();
       lastSystemTime = systemTime;
       lastProcessCpuTime = cpuTime;
-      cpuUsage = processCpuUsage;
+      cpuUsageBits.set(Float.floatToIntBits(calculateCpuUsage(systemTime, cpuTime)));
+    }
+  }
+
+  @Override
+  public void handleNotification(StatisticsNotification notification) {
+    for (StatisticId statId : notification) {
+      StatisticDescriptor descriptor = statId.getStatisticDescriptor();
+      String name = descriptor.getName();
+      Number value;
+
+      try {
+        value = notification.getValue(statId);
+      } catch (StatisticNotFoundException e) {
+        value = 0;
+      }
+
+      log(name, value);
+      statsMap.put(name, value);
     }
 
+    refreshStats();
   }
-
-  public float getCpuUsage() {
-    return cpuUsage;
-  }
-
 }

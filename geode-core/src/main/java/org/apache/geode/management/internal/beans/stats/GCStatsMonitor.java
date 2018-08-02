@@ -14,20 +14,43 @@
  */
 package org.apache.geode.management.internal.beans.stats;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 
 public class GCStatsMonitor extends MBeanStatsMonitor {
+  private AtomicLong collections = new AtomicLong(0);
+  private AtomicLong collectionTime = new AtomicLong(0);
 
-  private volatile long collections = 0;
+  long getCollections() {
+    return collections.get();
+  }
 
-  private volatile long collectionTime = 0;
-
+  long getCollectionTime() {
+    return collectionTime.get();
+  }
 
   public GCStatsMonitor(String name) {
     super(name);
+  }
+
+  void decreasePrevValues(DefaultHashMap statsMap) {
+    collections.set(collections.get() - statsMap.get(StatsKey.VM_GC_STATS_COLLECTIONS).intValue());
+    collectionTime
+        .set(collectionTime.get() - statsMap.get(StatsKey.VM_GC_STATS_COLLECTION_TIME).intValue());
+  }
+
+  void increaseStats(String name, Number value) {
+    if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
+      collections.set(collections.get() + value.longValue());
+    }
+
+    if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
+      collectionTime.set(collectionTime.get() + value.longValue());
+    }
   }
 
   @Override
@@ -35,52 +58,32 @@ public class GCStatsMonitor extends MBeanStatsMonitor {
     if (statName.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
       return getCollections();
     }
+
     if (statName.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
       return getCollectionTime();
     }
+
     return 0;
   }
-
 
   @Override
   public void handleNotification(StatisticsNotification notification) {
     decreasePrevValues(statsMap);
+
     for (StatisticId statId : notification) {
       StatisticDescriptor descriptor = statId.getStatisticDescriptor();
       String name = descriptor.getName();
       Number value;
+
       try {
         value = notification.getValue(statId);
       } catch (StatisticNotFoundException e) {
         value = 0;
       }
+
       log(name, value);
       increaseStats(name, value);
       statsMap.put(name, value);
     }
-  }
-
-  private void decreasePrevValues(DefaultHashMap statsMap) {
-    collections -= statsMap.get(StatsKey.VM_GC_STATS_COLLECTIONS).intValue();
-    collectionTime -= statsMap.get(StatsKey.VM_GC_STATS_COLLECTION_TIME).intValue();
-  }
-
-  private void increaseStats(String name, Number value) {
-    if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-      collections += value.longValue();
-      return;
-    }
-    if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-      collectionTime += value.longValue();
-      return;
-    }
-  }
-
-  public long getCollections() {
-    return collections;
-  }
-
-  public long getCollectionTime() {
-    return collectionTime;
   }
 }
