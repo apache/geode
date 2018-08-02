@@ -50,7 +50,7 @@ import org.apache.geode.internal.logging.DateFormatter;
 /**
  * StatArchiveReader provides APIs to read statistic snapshots from an archive file.
  */
-public class StatArchiveReader implements StatArchiveFormat {
+public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
   protected static final NumberFormat nf = NumberFormat.getNumberInstance();
   static {
