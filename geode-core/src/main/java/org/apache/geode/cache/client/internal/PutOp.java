@@ -130,7 +130,7 @@ public class PutOp {
     // no instances allowed
   }
 
-  private static class PutOpImpl extends AbstractOp {
+  protected static class PutOpImpl extends AbstractOp {
 
     private Object key;
 
@@ -160,7 +160,7 @@ public class PutOp {
 
     public PutOpImpl(String regionName, Object key, Object value, byte[] deltaBytes,
         EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
-        Object callbackArg, boolean sendFullObj, boolean prSingleHopEnabled) {
+        Object callbackArg, boolean respondingToInvalidDelta, boolean prSingleHopEnabled) {
       super(MessageType.PUT,
           7 + (callbackArg != null ? 1 : 0) + (expectedOldValue != null ? 1 : 0));
       final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -188,8 +188,11 @@ public class PutOp {
         getMessage().addObjPart(expectedOldValue);
       }
       getMessage().addStringOrObjPart(key);
+      if (respondingToInvalidDelta) {
+        getMessage().setIsRetry();
+      }
       // Add message part for sending either delta or full value
-      if (!sendFullObj && deltaBytes != null && op == Operation.UPDATE) {
+      if (!respondingToInvalidDelta && deltaBytes != null && op == Operation.UPDATE) {
         getMessage().addObjPart(Boolean.TRUE);
         getMessage().addBytesPart(deltaBytes);
         this.deltaSent = true;
