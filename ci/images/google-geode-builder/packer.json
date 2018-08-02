@@ -1,7 +1,7 @@
 {
   "variables": {
-    "image_family_prefix": "",
-    "geode_docker_image": ""
+    "image_family_prefix": "local-testing-",
+    "geode_docker_image": "gcr.io/apachegeode-ci/test-container"
   },
   "provisioners": [
     {
