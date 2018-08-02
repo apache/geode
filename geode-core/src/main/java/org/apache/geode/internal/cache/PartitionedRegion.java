@@ -3385,7 +3385,7 @@ public class PartitionedRegion extends LocalRegion
   InternalDistributedMember getBucketNodeForReadOrWrite(int bucketId,
       EntryEventImpl clientEvent) {
     InternalDistributedMember targetNode;
-    if (clientEvent.getOperation().isGetForRegisterInterest()) {
+    if (clientEvent != null && clientEvent.getOperation().isGetForRegisterInterest()) {
       targetNode = getNodeForBucketWrite(bucketId, null);
     } else {
       targetNode = getNodeForBucketReadOrLoad(bucketId);

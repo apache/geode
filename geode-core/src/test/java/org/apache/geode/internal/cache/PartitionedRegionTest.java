@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.test.fake.Fakes;
@@ -53,29 +52,13 @@ public class PartitionedRegionTest {
 
   @Before
   public void setup() {
-
     InternalCache internalCache = Fakes.cache();
     InternalResourceManager resourceManager =
         mock(InternalResourceManager.class, RETURNS_DEEP_STUBS);
     when(internalCache.getInternalResourceManager()).thenReturn(resourceManager);
-    RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    // when(regionAttributes.getEvictionAttributes()).thenReturn(EvictionAttributes.);
-
-
     AttributesFactory attributesFactory = new AttributesFactory();
     attributesFactory.setPartitionAttributes(
         new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
-
-    /*
-     * this.region = new PRWithLocalOps(getClass().getSimpleName(), attributesFactory.create(),
-     * null,
-     * this.cache, new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-     * .setSnapshotInputStream(null).setImageTarget(null));
-     *
-     * ((PartitionedRegion) this.region).initialize(null, null, null);
-     * ((PartitionedRegion) this.region).postCreateRegion();
-     * this.cache.setRegionByPath(this.region.getFullPath(), (LocalRegion) this.region);
-     */
     partitionedRegion = new PartitionedRegion(regionName, attributesFactory.create(),
         null, internalCache, mock(InternalRegionArguments.class));
 
@@ -113,6 +96,23 @@ public class PartitionedRegionTest {
 
     InternalDistributedMember memberForRegisterInterestRead =
         spyPR.getBucketNodeForReadOrWrite(bucketId, clientEvent);
+
+    assertThat(memberForRegisterInterestRead).isSameAs(secondaryMember);
+    verify(spyPR, times(1)).getNodeForBucketRead(anyInt());
+  }
+
+  @Test
+  public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventIsNotPresent()
+      throws Exception {
+    int bucketId = 0;
+    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
+    InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
+    PartitionedRegion spyPR = spy(partitionedRegion);
+    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(eq(bucketId), isNull());
+    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(eq(bucketId));
+
+    InternalDistributedMember memberForRegisterInterestRead =
+        spyPR.getBucketNodeForReadOrWrite(bucketId, null);
 
     assertThat(memberForRegisterInterestRead).isSameAs(secondaryMember);
     verify(spyPR, times(1)).getNodeForBucketRead(anyInt());
