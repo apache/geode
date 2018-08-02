@@ -38,6 +38,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.server.internal.ServerMetricsImpl;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
@@ -501,6 +502,7 @@ public class CacheServerBridge extends ServerBridge {
 
     Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(this.cache);
     String clientName = proxyId.getDSMembership();
+    DistributedMember clientMemberId = proxyId.getDistributedMember();
     status.setClientId(connInfo.toString());
     status.setName(clientName);
     status.setHostName(connInfo.getHostName());
@@ -517,7 +519,12 @@ public class CacheServerBridge extends ServerBridge {
       status.setSubscriptionEnabled(false);
     }
 
-    ClientHealthStats stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientName);
+    ClientHealthStats stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientMemberId);
+    if (stats == null) {
+      // Clients older than Geode 1.8 put strings in the region, rather than ids
+      // See GEODE-5157
+      stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientName);
+    }
 
     if (stats != null) {
       status.setCpus(stats.getCpus());
