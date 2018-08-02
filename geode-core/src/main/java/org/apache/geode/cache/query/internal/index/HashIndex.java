@@ -271,6 +271,17 @@ public class HashIndex extends AbstractIndex {
         entryToOldKeysMap.set(new Object2ObjectOpenHashMap(1));
         this.evaluator.evaluate(entry, false);
       }
+    } else if (opCode == REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP) {
+      // we know in this specific case, that a before op was called and stored oldKey/value
+      // we also know that a regular remove won't work due to the entry no longer being present
+      // We know the old key so let's just remove mapping from the old key
+      if (entryToOldKeysMap != null) {
+        basicRemoveMapping(entryToOldKeysMap.get().get(entry), entry, true);
+      }
+    } else if (opCode == CLEAN_UP_THREAD_LOCALS) {
+      if (entryToOldKeysMap != null) {
+        entryToOldKeysMap.remove();
+      }
     } else {
       // Need to reset the thread-local map as many puts and destroys might
       // happen in same thread.

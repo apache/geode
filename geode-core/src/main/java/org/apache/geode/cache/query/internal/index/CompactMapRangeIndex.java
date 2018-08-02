@@ -67,7 +67,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
   protected void removeMapping(RegionEntry entry, int opCode) throws IMQException {
     // this implementation has a reverse map, so it doesn't handle
     // BEFORE_UPDATE_OP
-    if (opCode == BEFORE_UPDATE_OP) {
+    if (opCode == BEFORE_UPDATE_OP || opCode == CLEAN_UP_THREAD_LOCALS) {
       return;
     }
 
