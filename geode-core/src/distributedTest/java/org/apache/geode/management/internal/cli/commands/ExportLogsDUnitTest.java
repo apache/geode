@@ -188,6 +188,9 @@ public class ExportLogsDUnitTest {
     LogLine logLineAfterCutoffTime = new LogLine(messageAfterCutoffTime, "info", true);
     server1.invoke(() -> {
       Logger logger = LogService.getLogger();
+      DateTimeFormatter dateTimeFormatter1 = DateTimeFormatter.ofPattern(FORMAT);
+      ZonedDateTime currentTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
+      System.out.println("On Server1: currentTime: " + dateTimeFormatter1.format(currentTime));
       logLineAfterCutoffTime.writeLog(logger);
     });
 
@@ -314,6 +317,10 @@ public class ExportLogsDUnitTest {
     for (LogLine logLine : expectedMessages.get(member)) {
       boolean shouldExpectLogLine =
           acceptedLogLevels.contains(logLine.level) && !logLine.shouldBeIgnoredDueToTimestamp;
+
+      System.out.println("LogLine (" + logLine.message + ") - logLine.level=" + logLine.level);
+      System.out.println("LogLine (" + logLine.message + ") - logLine.shouldBeIgnoredDueToTimeStamp=" + logLine.shouldBeIgnoredDueToTimestamp);
+      System.out.println("shouldExpectLogLine - " + shouldExpectLogLine);
 
       if (shouldExpectLogLine) {
         assertThat(logFileContents).contains(logLine.getMessage());
