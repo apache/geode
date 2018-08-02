@@ -147,7 +147,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_LEASE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_PROVIDER;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_GATEWAY_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_JMX_ALIAS;
@@ -161,6 +160,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_AL
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_PROVIDER;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
@@ -1361,7 +1361,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SECURITY_POST_PROCESSOR,
         "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
-    m.put(SSL_USE_DEFAULT_PROVIDER, "If true allows clients to provide a custom java.security.Provider. When using this clients do not need to configure other ssl properties except ssl-enabled-components and ssl-require-authentication.");
+    m.put(SSL_USE_DEFAULT_PROVIDER,
+        "If true allows clients to provide a custom java.security.Provider. When using this clients do not need to configure other ssl properties except ssl-enabled-components and ssl-require-authentication.");
 
     m.put(SSL_ENABLED_COMPONENTS,
         "A comma delimited list of components that require SSL communications");

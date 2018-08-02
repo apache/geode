@@ -1934,8 +1934,8 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"ssl-use-default-provider"</i> property
    *
    * <U>Description</U>If true allows clients to provide a custom java.security.Provider. When using
-   *  this clients do not need to configure other ssl properties except ssl-enabled-components and
-   *  ssl-require-authentication.
+   * this clients do not need to configure other ssl properties except ssl-enabled-components and
+   * ssl-require-authentication.
    * </p>
    * <U>Default</U>: "false"
    * </p>
