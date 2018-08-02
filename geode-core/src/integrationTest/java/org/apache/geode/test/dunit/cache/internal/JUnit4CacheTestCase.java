@@ -30,6 +30,7 @@ import org.awaitility.Awaitility;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -103,33 +104,22 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       cache = GemFireCacheImpl.getInstance();
     }
     try {
-      if (cache != null) {
-        try {
-          if (!cache.isClosed()) {
-            if (cache instanceof GemFireCacheImpl) {
-              // this unnecessary type-cast prevents NoSuchMethodError
-              // java.lang.NoSuchMethodError:
-              // org.apache.geode.internal.cache.InternalCache.getTxManager()Lorg/apache/geode/internal/cache/TXManagerImpl
-              CacheTransactionManager transactionManager =
-                  cache.getTxManager();
-              if (transactionManager != null) {
-                if (transactionManager.exists()) {
-                  try {
-                    // make sure we cleanup this threads txid stored in a thread local
-                    transactionManager.rollback();
-                  } catch (Exception ignore) {
-
-                  }
-                }
-              }
-            }
-            cache.close();
+      if (cache != null && !cache.isClosed()) {
+        if (cache instanceof GemFireCacheImpl) {
+          CacheTransactionManager transactionManager =
+              cache.getTxManager();
+          if (transactionManager != null && transactionManager.exists()) {
+            // make sure we cleanup this threads txid stored in a thread local
+            transactionManager.rollback();
           }
-        } finally {
-          cache = null;
         }
-      } // cache != null
+        cache.close();
+      }
+    } catch (CacheClosedException e) {
+      throw e;
+    } catch (Exception ignored) {
     } finally {
+      cache = null;
       // Make sure all pools are closed, even if we never created a cache
       PoolManager.close(false);
     }
