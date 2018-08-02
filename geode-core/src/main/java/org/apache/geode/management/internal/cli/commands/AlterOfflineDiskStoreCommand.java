@@ -114,12 +114,10 @@ public class AlterOfflineDiskStoreCommand extends InternalGfshCommand {
       }
       // Catch the IllegalArgumentException thrown by the modifyDiskStore function and sent the
     } catch (IllegalArgumentException e) {
-      return ResultModel.createInfo("Please check the parameters. " + e.getMessage());
-    } catch (IllegalStateException e) {
-      return ResultModel.createError(e.getMessage());
+      return ResultModel.createError("Please check the parameters. " + e.getMessage());
     } catch (CacheExistsException e) {
       // Indicates that the command is being used when a cache is open
-      return ResultModel.createInfo("Cannot execute " + CliStrings.ALTER_DISK_STORE
+      return ResultModel.createError("Cannot execute " + CliStrings.ALTER_DISK_STORE
           + " when a cache exists (Offline command)");
     } catch (Exception e) {
       return ResultModel.createError(e.getMessage());

@@ -404,4 +404,34 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=unknown-diskstore")
         .statusIsError().containsOutput("Unable to find missing disk store to revoke");
   }
+
+  @Test
+  public void testAlterOfflineDiskStoreCommandFailsAsExpected() throws Exception {
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+
+    gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+
+    createDiskStoreAndRegion(server1, 1);
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      Region r = cache.getRegion(REGION_1);
+      r.put("A", "B");
+    });
+
+    String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
+    gfsh.executeAndAssertThat(
+        String.format("alter disk-store --name=%s --region=%s --disk-dirs=%s --compressor=foo.Bar",
+            DISKSTORE, REGION_1, diskDirs))
+        .statusIsError().containsOutput("DISKSTORE: Could not lock");
+
+    server1.stop(false);
+    gfsh.disconnect();
+
+    gfsh.executeAndAssertThat(
+        String.format(
+            "alter disk-store --name=%s --region=INVALID --disk-dirs=%s --compressor=foo.Bar",
+            DISKSTORE, diskDirs))
+        .statusIsError().containsOutput("The disk store does not contain a region named: /INVALID");
+  }
 }
