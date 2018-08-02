@@ -1936,10 +1936,10 @@ public class TXState implements TXStateInterface {
 
   @Override
   public InternalDistributedMember getOriginatingMember() {
-    /*
-     * State will never fwd on to other nodes so this is not relevant
-     */
-    return null;
+    // During set operations we need to forward it to other nodes to avoid
+    // wrong transaction is masqueraded if the transaction is on behalf of a client.
+    // This needs to be set to the clients member id if the client originated the tx.
+    return proxy.getOnBehalfOfClientMember();
   }
 
   @Override
