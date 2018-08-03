@@ -24,6 +24,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
@@ -73,6 +74,14 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   private Set<Integer> bucketSet;
 
   private BucketMovedException bme;
+
+
+  public Version getClientVersion() {
+    if (serverSender != null && serverSender.sc != null) { // is a client-server connection
+      return serverSender.sc.getClientVersion();
+    }
+    return null;
+  }
 
   /**
    * Have to combine next two constructor in one and make a new class which will send Results back.
