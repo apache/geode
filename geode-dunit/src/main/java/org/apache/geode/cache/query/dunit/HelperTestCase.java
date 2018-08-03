@@ -55,7 +55,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category({OQLQueryTest.class})
-public class HelperTestCase extends JUnit4CacheTestCase {
+public abstract class HelperTestCase extends JUnit4CacheTestCase {
 
   protected void createPartitionRegion(VM vm, final String regionName,
       final Class valueConstraint) {

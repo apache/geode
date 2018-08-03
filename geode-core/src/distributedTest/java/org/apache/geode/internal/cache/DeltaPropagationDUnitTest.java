@@ -502,8 +502,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1));
     PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY, 1));
 
-    vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-    vm1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+    vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
     createClientCache(PORT2, -1, "0", CLIENT_LISTENER);
 
@@ -551,9 +551,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     // Do puts after slowing the dispatcher.
     try {
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-      vm1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-      vm2.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+      vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+      vm2.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
       createClientCache(new int[] {PORT1, PORT2, port3}, "1",
           DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT, CLIENT_LISTENER, null, null);
@@ -616,7 +616,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 1
     try {
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
       // Step 2
       String durableClientId = getName() + "_client";
@@ -680,9 +680,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     try {
       // Step 1
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
       PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
-      vm1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
       // Step 2
       String durableClientId = getName() + "_client";

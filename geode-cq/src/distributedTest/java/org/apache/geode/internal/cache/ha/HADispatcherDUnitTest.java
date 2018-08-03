@@ -65,7 +65,7 @@ import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -120,7 +120,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
     PORT1 = ((Integer) server1.invoke(() -> createServerCache(new Boolean(false)))).intValue();
 
-    server1.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server1.invoke(() -> makeDispatcherSlow());
     server1.invoke(() -> setQRMslow());
 

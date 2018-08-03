@@ -46,7 +46,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-public class QuerySecurityBase extends JUnit4DistributedTestCase {
+public abstract class QuerySecurityBase extends JUnit4DistributedTestCase {
 
   public RegionShortcut getRegionType() {
     return RegionShortcut.REPLICATE;

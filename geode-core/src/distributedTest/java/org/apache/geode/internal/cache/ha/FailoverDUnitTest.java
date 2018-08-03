@@ -82,8 +82,8 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     vm1 = host.getVM(1);
 
     // start servers first
-    vm0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
-    vm1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    vm0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    vm1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
     PORT1 = ((Integer) vm0.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
     PORT2 = ((Integer) vm1.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
 

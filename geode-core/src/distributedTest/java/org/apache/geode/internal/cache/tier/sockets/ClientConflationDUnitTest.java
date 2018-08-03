@@ -85,7 +85,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     setIsSlowStart();
-    vm0.invoke(() -> ClientConflationDUnitTest.setIsSlowStart());
+    vm0.invoke(() -> ClientConflationDUnitTestHelper.setIsSlowStart());
     PORT = ((Integer) vm0.invoke(() -> ClientConflationDUnitTest.createServerCache())).intValue();
   }
 
@@ -143,7 +143,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(() -> ClientConflationDUnitTest.assertAllCountersZero());
     vm1.invoke(() -> ClientConflationDUnitTest.registerInterest());
     putEntries();
-    vm0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    vm0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
     Thread.sleep(20000);
     vm0.invoke(() -> ClientConflationDUnitTest.assertAllQueuesEmpty());
 

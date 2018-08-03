@@ -94,7 +94,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
-    server1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    server1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
     client1 = host.getVM(2);
   }
 

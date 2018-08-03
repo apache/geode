@@ -20,53 +20,41 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.execute.PRColocationDUnitTest;
+import org.apache.geode.internal.cache.execute.PRColocationDUnitTestHelper;
 
-public class Customer implements DataSerializable {
-  String name;
+public class Shipment implements DataSerializable {
+  String shipmentName;
 
-  String address;
-
-  public Customer() {
+  public Shipment() {
 
   }
 
-  public Customer(String name, String address) {
-    this.name = name;
-    this.address = address + PRColocationDUnitTest.getDefaultAddOnString();
+  public Shipment(String shipmentName) {
+    this.shipmentName = shipmentName + PRColocationDUnitTestHelper.getDefaultAddOnString();
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readString(in);
-    this.address = DataSerializer.readString(in);
-
+    this.shipmentName = DataSerializer.readString(in);
   }
 
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeString(this.address, out);
+    DataSerializer.writeString(this.shipmentName, out);
   }
 
-  @Override
   public String toString() {
-    return "Customer { name=" + this.name + " address=" + this.address + "}";
+    return this.shipmentName;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
+  public boolean equals(Object obj) {
+    if (this == obj)
       return true;
 
-    if (!(o instanceof Customer))
-      return false;
-
-    Customer cust = (Customer) o;
-    return (cust.name.equals(name) && cust.address.equals(address));
+    if (obj instanceof Shipment) {
+      Shipment other = (Shipment) obj;
+      if (other.shipmentName != null && other.shipmentName.equals(this.shipmentName)) {
+        return true;
+      }
+    }
+    return false;
   }
-
-  @Override
-  public int hashCode() {
-    return this.name.hashCode() + this.address.hashCode();
-  }
-
 }

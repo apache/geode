@@ -95,7 +95,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
     // start server1
     int PORT1 = ((Integer) server0.invoke(() -> HAGIIDUnitTest.createServer1Cache())).intValue();
-    server0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    server0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server0.invoke(() -> HAGIIDUnitTest.setSystemProperty());
 
 
@@ -398,7 +398,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    ConflationDUnitTest.unsetIsSlowStart();
+    ConflationDUnitTestHelper.unsetIsSlowStart();
     Invoke.invokeInEveryVM(ConflationDUnitTest.class, "unsetIsSlowStart");
     // close the clients first
     client0.invoke(() -> HAGIIDUnitTest.closeCache());

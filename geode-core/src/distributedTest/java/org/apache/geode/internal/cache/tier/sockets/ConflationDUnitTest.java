@@ -102,38 +102,12 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * set the boolean for starting the dispatcher thread a bit later.
-   *
-   */
-  public static void setIsSlowStart() {
-    setIsSlowStart("5000");
-  }
-
-
-  /**
-   * Set the boolean to make the dispatcher thread pause <code>milis</code> miliseconds.
-   *
-   */
-  public static void setIsSlowStart(String milis) {
-    CacheClientProxy.isSlowStartForTesting = true;
-    System.setProperty("slowStartTimeForTesting", milis);
-  }
-
-  /**
-   * Unset the boolean to start the dispatcher thread.
-   *
-   */
-  public static void unsetIsSlowStart() {
-    CacheClientProxy.isSlowStartForTesting = false;
-  }
-
-  /**
    * test more messages are not sent to client from server
    *
    */
   @Test
   public void testNotMoreMessagesSent() throws Exception {
-    vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     Host host = Host.getHost(0);
     createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), new Integer(PORT));
     vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(

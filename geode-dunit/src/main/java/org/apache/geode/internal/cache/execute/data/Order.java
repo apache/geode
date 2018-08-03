@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.execute.PRColocationDUnitTest;
+import org.apache.geode.internal.cache.execute.PRColocationDUnitTestHelper;
 
 public class Order implements DataSerializable {
   String orderName;
@@ -30,7 +30,7 @@ public class Order implements DataSerializable {
   }
 
   public Order(String orderName) {
-    this.orderName = orderName + PRColocationDUnitTest.getDefaultAddOnString();
+    this.orderName = orderName + PRColocationDUnitTestHelper.getDefaultAddOnString();
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
