@@ -1291,12 +1291,10 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
       if (qs != null) {
         try {
           Collection indexes = qs.getIndexes(region);
-          if (indexes == null) {
+          if (indexes.isEmpty()) {
             return; // no IndexManager defined
           }
-          if (indexes.size() == 0) {
-            return; // no indexes defined
-          }
+
           Iterator iter = indexes.iterator();
           if (iter.hasNext()) {
             Index idx = (Index) (iter.next());

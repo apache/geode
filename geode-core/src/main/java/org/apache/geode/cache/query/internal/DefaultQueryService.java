@@ -380,16 +380,14 @@ public class DefaultQueryService implements InternalQueryService {
     Iterator rootRegions = cache.rootRegions().iterator();
     while (rootRegions.hasNext()) {
       Region region = (Region) rootRegions.next();
-      Collection indexes = getIndexes(region);
-      if (indexes != null)
-        allIndexes.addAll(indexes);
+      allIndexes.addAll(getIndexes(region));
+
       Iterator subRegions = region.subregions(true).iterator();
       while (subRegions.hasNext()) {
-        indexes = getIndexes((Region) subRegions.next());
-        if (indexes != null)
-          allIndexes.addAll(indexes);
+        allIndexes.addAll(getIndexes((Region) subRegions.next()));
       }
     }
+
     return allIndexes;
   }
 
@@ -403,9 +401,12 @@ public class DefaultQueryService implements InternalQueryService {
     if (region instanceof PartitionedRegion) {
       return ((PartitionedRegion) region).getIndexes();
     }
+
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
-    if (indexManager == null)
-      return null;
+    if (indexManager == null) {
+      return Collections.emptyList();
+    }
+
     return indexManager.getIndexes();
   }
 
@@ -417,8 +418,10 @@ public class DefaultQueryService implements InternalQueryService {
     }
 
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
-    if (indexManager == null)
-      return null;
+    if (indexManager == null) {
+      return Collections.emptyList();
+    }
+
     return indexManager.getIndexes(indexType);
   }
 
