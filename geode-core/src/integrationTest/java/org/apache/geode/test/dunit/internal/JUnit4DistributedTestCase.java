@@ -457,7 +457,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   private void doTearDownDistributedTestCase() {
     invokeInEveryVM("tearDownCreationStackGenerator",
         () -> InternalDistributedSystem.TEST_CREATION_STACK_GENERATOR
-        .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR));
+            .set(InternalDistributedSystem.DEFAULT_CREATION_STACK_GENERATOR));
     if (logPerTest) {
       disconnectAllFromDS();
     }
