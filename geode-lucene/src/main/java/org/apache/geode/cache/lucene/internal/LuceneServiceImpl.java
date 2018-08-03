@@ -52,6 +52,7 @@ import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.cache.lucene.internal.distributed.IndexingInProgressFunction;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
@@ -124,6 +125,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     FunctionService.registerFunction(new LuceneQueryFunction());
     FunctionService.registerFunction(new LuceneGetPageFunction());
     FunctionService.registerFunction(new WaitUntilFlushedFunction());
+    FunctionService.registerFunction(new IndexingInProgressFunction());
     FunctionService.registerFunction(new DumpDirectoryFiles());
     registerDataSerializables();
   }
@@ -649,5 +651,51 @@ public class LuceneServiceImpl implements InternalLuceneService {
       }
     }
     return true;
+  }
+
+  public boolean isIndexingInProgress(String indexName, String regionPath) {
+    Region region = this.cache.getRegion(regionPath);
+    if (region == null) {
+      logger.info("Data region " + regionPath + " not found");
+      return false;
+    }
+    // If it is called from a client then we assume that all servers are already
+    // rolled to a version more than or equal to client's
+    // hence we don't need to validate the servers.
+    if (!cache.isClient()) {
+      // Also a check for PartitionedRegion. As we cannot use the same method calls to
+      // to get the members hosting the region for RR (future implementation)
+      if (region instanceof PartitionedRegion) {
+        PartitionedRegion dataRegion = (PartitionedRegion) region;
+        // Validate all members are Apache Geode v1.7.0 or above
+        Set<InternalDistributedMember> remoteMembers =
+            dataRegion.getRegionAdvisor().adviseAllPRNodes();
+        if (isAnyRemoteMemberVersionLessThanGeode1_7_0(remoteMembers)) {
+          throw new IllegalStateException(
+              LocalizedStrings.LuceneIndexingInProgress_CANNOT_BE_DETERMINED_BECAUSE_OF_VERSION_MISMATCH
+                  .toLocalizedString(regionPath));
+        }
+      }
+    }
+    Execution execution = FunctionService.onRegion(region);
+    ResultCollector resultCollector =
+        execution.setArguments(indexName).execute(IndexingInProgressFunction.ID);
+    List<Boolean> results = (List<Boolean>) resultCollector.getResult();
+    for (Boolean result : results) {
+      if (result == true) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isAnyRemoteMemberVersionLessThanGeode1_7_0(
+      Set<InternalDistributedMember> remoteMembers) {
+    for (InternalDistributedMember remoteMember : remoteMembers) {
+      if (remoteMember.getVersionObject().ordinal() < Version.GEODE_170.ordinal()) {
+        return true;
+      }
+    }
+    return false;
   }
 }

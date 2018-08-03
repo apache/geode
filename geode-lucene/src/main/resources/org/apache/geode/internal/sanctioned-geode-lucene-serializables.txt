@@ -2,11 +2,12 @@ org/apache/geode/cache/lucene/LuceneIndexDestroyedException,false,indexName:java
 org/apache/geode/cache/lucene/LuceneIndexExistsException,false,indexName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/cache/lucene/LuceneIndexNotFoundException,false,indexName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/cache/lucene/LuceneQueryException,false
-org/apache/geode/cache/lucene/internal/cli/LuceneIndexStatus,false
+org/apache/geode/cache/lucene/internal/LuceneIndexCreationInProgressException,false
 org/apache/geode/cache/lucene/internal/cli/LuceneDestroyIndexInfo,false,definedDestroyOnly:boolean
 org/apache/geode/cache/lucene/internal/cli/LuceneFunctionSerializable,false,indexName:java/lang/String,regionPath:java/lang/String
 org/apache/geode/cache/lucene/internal/cli/LuceneIndexDetails,true,1,fieldAnalyzers:java/util/Map,indexStats:java/util/Map,searchableFieldNames:java/lang/String[],serializer:java/lang/String,serverName:java/lang/String,status:org/apache/geode/cache/lucene/internal/cli/LuceneIndexStatus
 org/apache/geode/cache/lucene/internal/cli/LuceneIndexInfo,true,1,fieldAnalyzers:java/lang/String[],searchableFieldNames:java/lang/String[],serializer:java/lang/String
+org/apache/geode/cache/lucene/internal/cli/LuceneIndexStatus,false
 org/apache/geode/cache/lucene/internal/cli/LuceneQueryInfo,true,1,defaultField:java/lang/String,keysOnly:boolean,limit:int,queryString:java/lang/String
 org/apache/geode/cache/lucene/internal/cli/LuceneSearchResults,false,exceptionFlag:boolean,exceptionMessage:java/lang/String,key:java/lang/String,score:float,value:java/lang/String
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneCreateIndexFunction,true,3061443846664615818
@@ -15,7 +16,7 @@ org/apache/geode/cache/lucene/internal/cli/functions/LuceneDestroyIndexFunction,
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneListIndexFunction,true,-2320432506763893879
 org/apache/geode/cache/lucene/internal/cli/functions/LuceneSearchIndexFunction,true,163818919780803222
 org/apache/geode/cache/lucene/internal/directory/DumpDirectoryFiles,true,1
+org/apache/geode/cache/lucene/internal/distributed/IndexingInProgressFunction,true,1
 org/apache/geode/cache/lucene/internal/distributed/LuceneQueryFunction,true,1
 org/apache/geode/cache/lucene/internal/distributed/WaitUntilFlushedFunction,true,1
 org/apache/geode/cache/lucene/internal/results/LuceneGetPageFunction,true,1
-org/apache/geode/cache/lucene/internal/LuceneIndexCreationInProgressException,false

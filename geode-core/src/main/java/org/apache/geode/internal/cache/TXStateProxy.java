@@ -83,4 +83,6 @@ public interface TXStateProxy extends TXStateInterface {
   void setInProgress(boolean progress);
 
   void updateProxyServer(InternalDistributedMember proxy);
+
+  InternalDistributedMember getOnBehalfOfClientMember();
 }

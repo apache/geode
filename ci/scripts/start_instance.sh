@@ -46,6 +46,9 @@ fi
 
 
 SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_PIPELINE_NAME=$(echo ${BUILD_PIPELINE_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 IMAGE_FAMILY_PREFIX=""
 
 if [[ "${GEODE_FORK}" != "apache" ]]; then
@@ -64,6 +67,7 @@ RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 
 while true; do
     TTL=$(($(date +%s) + 60 * 60 * 6))
+    LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME}"
 
     set +e
     INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
@@ -74,7 +78,7 @@ while true; do
       --image-project=${PROJECT} \
       --boot-disk-size=100GB \
       --boot-disk-type=pd-ssd \
-      --labels=time-to-live=${TTL} \
+      --labels="${LABELS}" \
       --format=json)
     CREATE_EXIT_STATUS=$?
     set -e

@@ -143,7 +143,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   @Test
   public void testBasicProcessStats() throws Exception {
     final String osName = System.getProperty("os.name", "unknown");
-    assumeFalse(osName.equals("Windows"));
+    assumeFalse(osName.contains("Windows"));
 
     connect(createGemFireProperties());
     GemFireStatSampler statSampler = getGemFireStatSampler();

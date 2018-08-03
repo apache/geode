@@ -7736,6 +7736,12 @@ public class LocalizedStrings {
 
   public static final StringId LuceneIndexCreation_INDEX_WAS_DESTROYED_WHILE_BEING_CREATED =
       new StringId(6675, "Lucene index {0} on region {1} was destroyed while being created");
+
+  public static final StringId LuceneIndexingInProgress_CANNOT_BE_DETERMINED_BECAUSE_OF_VERSION_MISMATCH =
+      new StringId(6676,
+          "Lucene indexing in progress status cannot be determined if all members hosting the user data region : {0}, are not above Apache Geode 1.6.0 version ");
+  public static final StringId LuceneQueryException_INDEX_NOT_AVAILABLE_CURRENTLY_INDEXING =
+      new StringId(6677, "Lucene Index is not available, currently indexing");
   /** Testing strings, messageId 90000-99999 **/
 
   /**

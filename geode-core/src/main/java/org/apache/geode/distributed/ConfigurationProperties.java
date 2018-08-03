@@ -1175,7 +1175,7 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"log-file"</i> property <a name="log-file"/a>
    * </p>
-   * <U>Description</U>: Name of the file to write logging messages to. If the file name if ""
+   * <U>Description</U>: Name of the file to write logging messages to. If the file name is ""
    * (default) then messages are written to standard out.
    * </p>
    * <U>Default</U>: ""

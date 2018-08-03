@@ -3364,7 +3364,7 @@ public class PartitionedRegion extends LocalRegion
         }
         allowRetry = false;
       } else {
-        targetNode = getNodeForBucketReadOrLoad(bucketId);
+        targetNode = getBucketNodeForReadOrWrite(bucketId, clientEvent);
         allowRetry = true;
       }
       if (targetNode == null) {
@@ -3380,6 +3380,18 @@ public class PartitionedRegion extends LocalRegion
       this.prStats.endGet(startTime);
     }
     return obj;
+  }
+
+  InternalDistributedMember getBucketNodeForReadOrWrite(int bucketId,
+      EntryEventImpl clientEvent) {
+    InternalDistributedMember targetNode;
+    if (clientEvent != null && clientEvent.getOperation() != null
+        && clientEvent.getOperation().isGetForRegisterInterest()) {
+      targetNode = getNodeForBucketWrite(bucketId, null);
+    } else {
+      targetNode = getNodeForBucketReadOrLoad(bucketId);
+    }
+    return targetNode;
   }
 
   /**
@@ -4434,11 +4446,11 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  private void updateNodeToBucketMap(
+  void updateNodeToBucketMap(
       HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets,
       HashMap<Integer, HashSet> bucketKeys) {
     for (int id : bucketKeys.keySet()) {
-      InternalDistributedMember node = getOrCreateNodeForBucketRead(id);
+      InternalDistributedMember node = getOrCreateNodeForBucketWrite(id, null);
       if (nodeToBuckets.containsKey(node)) {
         nodeToBuckets.get(node).put(id, bucketKeys.get(id));
       } else {
@@ -4594,10 +4606,10 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  private void updateNodeToBucketMap(
+  void updateNodeToBucketMap(
       HashMap<InternalDistributedMember, HashSet<Integer>> nodeToBuckets, Set<Integer> buckets) {
     for (int id : buckets) {
-      InternalDistributedMember node = getOrCreateNodeForBucketRead(id);
+      InternalDistributedMember node = getOrCreateNodeForBucketWrite(id, null);
       if (nodeToBuckets.containsKey(node)) {
         nodeToBuckets.get(node).add(id);
       } else {

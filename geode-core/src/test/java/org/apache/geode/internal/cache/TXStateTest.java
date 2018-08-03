@@ -35,6 +35,7 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class TXStateTest {
   private TXStateProxyImpl txStateProxy;
@@ -146,5 +147,22 @@ public class TXStateTest {
     verify(txState, never()).cleanup();
     verify(regionState1, times(1)).close();
     verify(regionState2, times(1)).close();
+  }
+
+  @Test
+  public void getOriginatingMemberReturnsNullIfNotOriginatedFromClient() {
+    TXState txState = spy(new TXState(txStateProxy, false));
+
+    assertThat(txState.getOriginatingMember()).isNull();
+  }
+
+  @Test
+  public void getOriginatingMemberReturnsClientMemberIfOriginatedFromClient() {
+    InternalDistributedMember client = mock(InternalDistributedMember.class);
+    TXStateProxyImpl proxy = new TXStateProxyImpl(mock(InternalCache.class),
+        mock(TXManagerImpl.class), mock(TXId.class), client);
+    TXState txState = spy(new TXState(proxy, false));
+
+    assertThat(txState.getOriginatingMember()).isEqualTo(client);
   }
 }

@@ -410,4 +410,8 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   @Override
   public void updateProxyServer(InternalDistributedMember proxy) {}
 
+  @Override
+  public InternalDistributedMember getOnBehalfOfClientMember() {
+    return null;
+  }
 }
