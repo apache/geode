@@ -110,6 +110,9 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
 
   @Override
   public synchronized void lastResult(Object oneResult, DistributedMember memberID) {
+    if (lastResultReceived) {
+      return;
+    }
     this.lastResultReceived = true;
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
@@ -171,6 +174,9 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
 
   @Override
   public synchronized void sendResult(Object oneResult) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -214,6 +220,9 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
 
   @Override
   public synchronized void sendResult(Object oneResult, DistributedMember memberID) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
