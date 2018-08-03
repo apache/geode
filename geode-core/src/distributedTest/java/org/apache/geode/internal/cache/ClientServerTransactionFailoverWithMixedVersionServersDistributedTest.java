@@ -115,6 +115,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     setupPartiallyRolledVersion();
 
     server1.invoke(() -> createServerRegion(1, false));
+    server1.invoke(() -> cacheRule.getCache().getRegion(regionName).put(1, "originalValue"));
     server2.invoke(() -> createServerRegion(1, true));
     server3.invoke(() -> createServerRegion(1, true));
     server4.invoke(() -> createServerRegion(1, true));
@@ -125,6 +126,8 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     int numOfTransactions = 12;
     int numOfOperations = 12;
     client.invokeAsync(() -> doTransactions(numOfTransactions, numOfOperations));
+
+    server1.invoke(() -> verifyTransactionAreStarted(numOfTransactions));
 
     unregisterClientMultipleTimes(clientProxyMembershipID);
 
@@ -351,9 +354,9 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     } else {
       region = cacheRule.getCache().getRegion(regionName);
     }
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertThat(region.get(1)).isEqualTo("value1"));
     int numOfEntries = numOfOperations * numOfTransactions;
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> assertThat(region.size()).isEqualTo(numOfEntries));
     for (int i = 1; i <= numOfEntries; i++) {
       LogService.getLogger().info("region get key {} value {} ", i, region.get(i));
     }
