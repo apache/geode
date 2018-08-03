@@ -106,7 +106,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     try {
       if (cache != null && !cache.isClosed()) {
         if (cache instanceof GemFireCacheImpl) {
-          // noinspection RedundantCast For backwards compatability during rolling upgrade tests
+          // noinspection RedundantCast For backwards compatibility during rolling upgrade tests
           CacheTransactionManager transactionManager =
               ((GemFireCacheImpl) cache).getTxManager();
           if (transactionManager != null && transactionManager.exists()) {
