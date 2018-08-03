@@ -19,9 +19,11 @@
  */
 package org.apache.geode.cache.query;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.After;
@@ -31,6 +33,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
@@ -54,7 +57,7 @@ public class QueryServiceJUnitTest {
   // tests to make sure no exception is thrown when a valid query is created
   // and an invalid query throws an exception
   @Test
-  public void testNewQuery() throws Exception {
+  public void testNewQuery() {
     CacheUtils.log("testNewQuery");
     QueryService qs = CacheUtils.getQueryService();
     qs.newQuery("SELECT DISTINCT * FROM /root");
@@ -123,21 +126,23 @@ public class QueryServiceJUnitTest {
 
     try {
       index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
-      if (index != null)
+      if (index != null) {
         fail("QueryService.createIndex allows duplicate index names");
+      }
     } catch (IndexNameConflictException e) {
     }
 
     try {
       index = qs.createIndex("statusIndex1", IndexType.FUNCTIONAL, "status", "/Portfolios");
-      if (index != null)
+      if (index != null) {
         fail("QueryService.createIndex allows duplicate indexes");
+      }
     } catch (IndexExistsException e) {
     }
   }
 
   @Test
-  public void testIndexDefinitions() throws Exception {
+  public void testIndexDefinitions() {
     Object[][] testDataFromClauses = {{"status", "/Portfolios", Boolean.TRUE},
         {"status", "/Portfolios.entries", Boolean.FALSE},
         {"status", "/Portfolios.values", Boolean.TRUE},
@@ -162,7 +167,7 @@ public class QueryServiceJUnitTest {
     runCreateIndexTests(testDataIndexExpr);
   }
 
-  private void runCreateIndexTests(Object testData[][]) throws Exception {
+  private void runCreateIndexTests(Object testData[][]) {
     QueryService qs = CacheUtils.getQueryService();
     qs.removeIndexes();
     for (int i = 0; i < testData.length; i++) {
@@ -186,8 +191,9 @@ public class QueryServiceJUnitTest {
               + " from=" + testData[i][1]);
         }
       } finally {
-        if (index != null)
+        if (index != null) {
           qs.removeIndex(index);
+        }
       }
     }
   }
@@ -197,14 +203,6 @@ public class QueryServiceJUnitTest {
   public void testGetIndex() throws Exception {
     CacheUtils.log("testGetIndex");
     QueryService qs = CacheUtils.getQueryService();
-    Object testData[][] =
-        {{"status", "/Portfolios", Boolean.TRUE}, {"status", "/Portfolios.values", Boolean.FALSE},
-            {"status", "/Portfolios p", Boolean.TRUE}, {"p.status", "/Portfolios p", Boolean.TRUE},
-            {"status", "/Portfolios.values x", Boolean.FALSE},
-            {"x.status", "/Portfolios.values x", Boolean.FALSE},
-            {"status", "/Portfolio", Boolean.FALSE}, {"p.status", "/Portfolios", Boolean.FALSE},
-            {"ID", "/Portfolios", Boolean.FALSE}, {"p.ID", "/Portfolios p", Boolean.FALSE},
-            {"is_defined(status)", "/Portfolios", Boolean.FALSE},};
 
     Region r = CacheUtils.getRegion("/Portfolios");
     Index index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
@@ -228,8 +226,9 @@ public class QueryServiceJUnitTest {
     Index index = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", "/Portfolios p");
     qs.removeIndex(index);
     index = qs.getIndex(CacheUtils.getRegion("/Portfolios"), "statusIndex");
-    if (index != null)
+    if (index != null) {
       fail("QueryService.removeIndex is not removing index");
+    }
   }
 
   @Test
@@ -242,8 +241,9 @@ public class QueryServiceJUnitTest {
     qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Ptfs");
     qs.removeIndexes();
     Collection allIndexes = qs.getIndexes();
-    if (allIndexes.size() != 0)
+    if (allIndexes.size() != 0) {
       fail("QueryService.removeIndexes() does not removes all indexes");
+    }
   }
 
   @Test
@@ -255,8 +255,58 @@ public class QueryServiceJUnitTest {
     qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Portfolios");
     qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/Ptfs");
     Collection allIndexes = qs.getIndexes();
-    if (allIndexes.size() != 2)
+    if (allIndexes.size() != 2) {
       fail("QueryService.getIndexes() does not return correct indexes");
+    }
   }
 
+  @Test
+  public void getIndexesShouldReturnEmptyCollectionWhenNoIndexesAreDefined() {
+    CacheUtils.log("getIndexesShouldReturnEmptyCollectionWhenNoIndexesAreDefined");
+    QueryService queryService = CacheUtils.getQueryService();
+    Region replicatedRegion = CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE)
+        .create("ReplicatedRegion");
+    Region partitionedRegion = CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .create("PartitionedRegion");
+
+    // Get All Indexes.
+    assertThat(queryService.getIndexes()).isNotNull();
+    assertThat(queryService.getIndexes().size()).isEqualTo(0);
+
+    // Get All Indexes For Replicated Region.
+    assertThat(queryService.getIndexes(replicatedRegion)).isNotNull();
+    assertThat(queryService.getIndexes(replicatedRegion).isEmpty()).isTrue();
+
+    // Get All Indexes For Partitioned Region.
+    assertThat(queryService.getIndexes(partitionedRegion)).isNotNull();
+    assertThat(queryService.getIndexes(partitionedRegion).isEmpty()).isTrue();
+  }
+
+  @Test
+  public void getIndexesShouldReturnEmptyCollectionWhenNoIndexesOfTheSpecifiedTypeAreDefined() {
+    CacheUtils
+        .log("getIndexesShouldReturnEmptyCollectionWhenNoIndexesOfTheSpecifiedTypeAreDefined");
+    IndexType[] indexTypes = IndexType.values();
+    QueryService queryService = CacheUtils.getQueryService();
+    Region replicatedRegion = CacheUtils.getCache().createRegionFactory(RegionShortcut.REPLICATE)
+        .create("ReplicatedRegion");
+    Region partitionedRegion = CacheUtils.getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .create("PartitionedRegion");
+
+    // Get All Indexes.
+    assertThat(queryService.getIndexes()).isNotNull();
+    assertThat(queryService.getIndexes().size()).isEqualTo(0);
+
+    // Get All Indexes For Replicated Region.
+    Arrays.stream(indexTypes).forEach(indexType -> {
+      assertThat(queryService.getIndexes(replicatedRegion, indexType)).isNotNull();
+      assertThat(queryService.getIndexes(replicatedRegion, indexType).isEmpty()).isTrue();
+    });
+
+    // Get All Indexes For Partitioned Region.
+    Arrays.stream(indexTypes).forEach(indexType -> {
+      assertThat(queryService.getIndexes(partitionedRegion, indexType)).isNotNull();
+      assertThat(queryService.getIndexes(partitionedRegion, indexType).isEmpty()).isTrue();
+    });
+  }
 }

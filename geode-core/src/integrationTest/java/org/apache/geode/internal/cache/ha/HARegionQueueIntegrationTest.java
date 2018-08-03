@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -39,6 +40,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -387,24 +389,7 @@ public class HARegionQueueIntegrationTest {
     List<HARegionQueue> regionQueues = new ArrayList<>();
 
     for (int i = 0; i < 2; ++i) {
-      HARegion haRegion = Mockito.mock(HARegion.class);
-      when(haRegion.getGemFireCache()).thenReturn((InternalCache) cache);
-
-      ConcurrentHashMap<Object, Object> mockRegion = new ConcurrentHashMap<>();
-
-      when(haRegion.put(Mockito.any(Object.class), Mockito.any(Object.class))).then(answer -> {
-        Object existingValue = mockRegion.put(answer.getArgument(0), answer.getArgument(1));
-        return existingValue;
-      });
-
-      when(haRegion.get(Mockito.any(Object.class))).then(answer -> {
-        return mockRegion.get(answer.getArgument(0));
-      });
-
-      doAnswer(answer -> {
-        mockRegion.remove(answer.getArgument(0));
-        return null;
-      }).when(haRegion).localDestroy(Mockito.any(Object.class));
+      HARegion haRegion = createMockHARegion();
 
       regionQueues.add(createHARegionQueue(haContainerWrapper, i, haRegion, false));
     }
@@ -507,6 +492,158 @@ public class HARegionQueueIntegrationTest {
     Assert.assertEquals("Reference count was not the expected value", 2,
         newWrapperInstance.getReferenceCount());
     Assert.assertEquals("Container size was not the expected value", haContainerWrapper.size(), 1);
+  }
+
+  @Test
+  public void removeDispatchedEventsViaQRMAndDestroyQueueSimultaneouslySingleDecrement()
+      throws Exception {
+    HAContainerWrapper haContainerWrapper = new HAContainerMap(new ConcurrentHashMap());
+
+    HARegion haRegion = createMockHARegion();
+    HARegionQueue haRegionQueue = createHARegionQueue(haContainerWrapper, 0, haRegion, false);
+
+    EventID eventID = new EventID(cache.getDistributedSystem());
+    ClientUpdateMessage clientUpdateMessage =
+        new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
+            (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
+            new ClientProxyMembershipID(), eventID);
+    HAEventWrapper haEventWrapper = new HAEventWrapper(clientUpdateMessage);
+    haEventWrapper.incrementPutInProgressCounter();
+    haEventWrapper.setHAContainer(haContainerWrapper);
+
+    haRegionQueue.put(haEventWrapper);
+
+    ExecutorService service = Executors.newFixedThreadPool(2);
+
+    List<Callable<Object>> callables = new ArrayList<>();
+
+    // In one thread, simulate processing a queue removal message
+    // by removing the dispatched event
+    callables.add(Executors.callable(() -> {
+      try {
+        haRegionQueue.removeDispatchedEvents(eventID);
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    }));
+
+    // In another thread, simulate that the region is being destroyed, for instance
+    // when a SocketTimeoutException is thrown and we are cleaning up
+    callables.add(Executors.callable(() -> {
+      try {
+        haRegionQueue.destroy();
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    }));
+
+    List<Future<Object>> futures = service.invokeAll(callables, 10, TimeUnit.SECONDS);
+
+    for (Future<Object> future : futures) {
+      try {
+        future.get();
+      } catch (Exception ex) {
+        throw new TestException(
+            "Exception thrown while executing queue removal and destroy region queue logic concurrently.",
+            ex);
+      }
+    }
+
+    try {
+      await().atMost(10, TimeUnit.SECONDS).until(() -> haEventWrapper.getReferenceCount() == 0);
+    } catch (ConditionTimeoutException conditionTimeoutException) {
+      throw new TestException(
+          "Expected HAEventWrapper reference count to be decremented to 0 by either the queue removal or destroy queue logic, but the actual reference count was "
+              + haEventWrapper.getReferenceCount());
+    }
+  }
+
+  @Test
+  public void removeDispatchedEventsViaMessageDispatcherAndDestroyQueueSimultaneouslySingleDecrement()
+      throws Exception {
+    HAContainerWrapper haContainerWrapper = new HAContainerMap(new ConcurrentHashMap());
+
+    HARegion haRegion = createMockHARegion();
+    HARegionQueue haRegionQueue = createHARegionQueue(haContainerWrapper, 0, haRegion, false);
+
+    EventID eventID = new EventID(cache.getDistributedSystem());
+    ClientUpdateMessage clientUpdateMessage =
+        new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE,
+            (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
+            new ClientProxyMembershipID(), eventID);
+    HAEventWrapper haEventWrapper = new HAEventWrapper(clientUpdateMessage);
+    haEventWrapper.incrementPutInProgressCounter();
+    haEventWrapper.setHAContainer(haContainerWrapper);
+
+    haRegionQueue.put(haEventWrapper);
+
+    ExecutorService service = Executors.newFixedThreadPool(2);
+
+    List<Callable<Object>> callables = new ArrayList<>();
+
+    // In one thread, simulate processing a queue removal message
+    // by removing the dispatched event
+    callables.add(Executors.callable(() -> {
+      try {
+        // Simulate dispatching a message by peeking and removing the HAEventWrapper
+        haRegionQueue.peek();
+        haRegionQueue.remove();
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    }));
+
+    // In another thread, simulate that the region is being destroyed, for instance
+    // when a SocketTimeoutException is thrown and we are cleaning up
+    callables.add(Executors.callable(() -> {
+      try {
+        haRegionQueue.destroy();
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    }));
+
+    List<Future<Object>> futures = service.invokeAll(callables, 10, TimeUnit.SECONDS);
+
+    for (Future<Object> future : futures) {
+      try {
+        future.get();
+      } catch (Exception ex) {
+        throw new TestException(
+            "Exception thrown while executing message dispatching and destroy region queue logic concurrently.",
+            ex);
+      }
+    }
+
+    try {
+      await().atMost(10, TimeUnit.SECONDS).until(() -> haEventWrapper.getReferenceCount() == 0);
+    } catch (ConditionTimeoutException conditionTimeoutException) {
+      throw new TestException(
+          "Expected HAEventWrapper reference count to be decremented to 0 by either the message dispatcher or destroy queue logic, but the actual reference count was "
+              + haEventWrapper.getReferenceCount());
+    }
+  }
+
+  private HARegion createMockHARegion() {
+    HARegion haRegion = Mockito.mock(HARegion.class);
+    when(haRegion.getGemFireCache()).thenReturn((InternalCache) cache);
+
+    ConcurrentHashMap<Object, Object> mockRegion = new ConcurrentHashMap<>();
+
+    when(haRegion.put(Mockito.any(Object.class), Mockito.any(Object.class))).then(answer -> {
+      Object existingValue = mockRegion.put(answer.getArgument(0), answer.getArgument(1));
+      return existingValue;
+    });
+
+    when(haRegion.get(Mockito.any(Object.class))).then(answer -> {
+      return mockRegion.get(answer.getArgument(0));
+    });
+
+    doAnswer(answer -> {
+      mockRegion.remove(answer.getArgument(0));
+      return null;
+    }).when(haRegion).localDestroy(Mockito.any(Object.class));
+    return haRegion;
   }
 
   private HAContainerRegion createHAContainerRegion() throws Exception {

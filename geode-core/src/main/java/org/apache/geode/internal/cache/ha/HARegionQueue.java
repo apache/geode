@@ -1724,7 +1724,7 @@ public class HARegionQueue implements RegionQueue {
    * Used for testing purposes only
    *
    */
-  Set getAvalaibleIds() {
+  Set getAvailableIds() {
     acquireReadLock();
     try {
       return Collections.unmodifiableSet(this.idsAvailable);
@@ -1744,7 +1744,8 @@ public class HARegionQueue implements RegionQueue {
    * @param lastDispatched EventID containing the ThreadIdentifier and the last dispatched sequence
    *        Id
    */
-  void removeDispatchedEvents(EventID lastDispatched) throws CacheException, InterruptedException {
+  protected void removeDispatchedEvents(EventID lastDispatched)
+      throws CacheException, InterruptedException {
     ThreadIdentifier ti = getThreadIdentifier(lastDispatched);
     long sequenceID = lastDispatched.getSequenceID();
     // get the DispatchedAndCurrentEvents object for this threadID
@@ -3645,20 +3646,22 @@ public class HARegionQueue implements RegionQueue {
    */
   private void updateHAContainer() {
     try {
-      Object[] wrapperArray = null;
+      Object[] availableIdsArray = null;
       acquireReadLock();
       try {
         if (this.availableIDsSize() != 0) {
-          wrapperArray = this.availableIDsArray();
+          availableIdsArray = this.availableIDsArray();
         }
       } finally {
         releaseReadLock();
       }
-      if (wrapperArray != null) {
+      if (availableIdsArray != null) {
         final Set wrapperSet = new HashSet();
 
-        for (int i = 0; i < wrapperArray.length; i++) {
-          wrapperSet.add(this.region.get(wrapperArray[i]));
+        for (int i = 0; i < availableIdsArray.length; i++) {
+          if (destroyFromAvailableIDs((long) availableIdsArray[i])) {
+            wrapperSet.add(this.region.get(availableIdsArray[i]));
+          }
         }
 
         // Start a new thread which will update the clientMessagesRegion for
@@ -3671,8 +3674,7 @@ public class HARegionQueue implements RegionQueue {
               while (iter.hasNext()) {
                 Conflatable conflatable = (Conflatable) iter.next();
                 if (conflatable instanceof HAEventWrapper) {
-                  HARegionQueue.this
-                      .decAndRemoveFromHAContainer((HAEventWrapper) conflatable, "Destroy");
+                  decAndRemoveFromHAContainer((HAEventWrapper) conflatable, "Destroy");
                 }
               }
             } catch (CancelException ignore) {
