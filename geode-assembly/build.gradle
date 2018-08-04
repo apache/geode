@@ -131,6 +131,8 @@ dependencies {
   acceptanceTestCompile project(":geode-dunit")
 
   uiTestCompile project(":geode-dunit")
+
+  upgradeTestCompile project(":geode-dunit")
 }
 
 sourceSets {

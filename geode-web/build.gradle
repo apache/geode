@@ -67,6 +67,8 @@ dependencies {
   integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 
   distributedTestCompile project(":geode-dunit")
+  // TODO remove dependency on sources from other test modules
+  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
 
   upgradeTestCompile project(":geode-dunit")
 }
