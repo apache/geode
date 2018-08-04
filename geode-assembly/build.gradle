@@ -129,10 +129,14 @@ dependencies {
   distributedTestCompile project(":geode-dunit")
 
   acceptanceTestCompile project(":geode-dunit")
+  // TODO refactor out common test framework
+  upgradeTestCompile sourceSets.distributedTest.output
 
   uiTestCompile project(":geode-dunit")
 
   upgradeTestCompile project(":geode-dunit")
+  // TODO refactor out common test framework
+  upgradeTestCompile sourceSets.distributedTest.output
 }
 
 sourceSets {
