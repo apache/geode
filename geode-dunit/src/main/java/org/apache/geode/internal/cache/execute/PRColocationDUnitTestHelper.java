@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.execute;
 
 public class PRColocationDUnitTestHelper {
 
-  protected static int defaultStringSize = 0;
+  public static int defaultStringSize = 0;
 
   public static String getDefaultAddOnString() {
     if (defaultStringSize == 0) {

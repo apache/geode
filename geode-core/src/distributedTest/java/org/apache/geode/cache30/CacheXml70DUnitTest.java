@@ -132,7 +132,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     factory.setParallel(false);
     factory.setDispatcherThreads(19);
 
-    AsyncEventListener eventListener = new MyAsyncEventListener();
+    AsyncEventListener eventListener = new CacheXml70DUnitTestHelper.MyAsyncEventListener();
     AsyncEventQueue asyncEventQueue = factory.create(id, eventListener);
 
     RegionAttributesCreation attrs = new RegionAttributesCreation();
@@ -167,7 +167,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     factory.setDispatcherThreads(5);
     factory.setOrderPolicy(OrderPolicy.THREAD);
 
-    AsyncEventListener eventListener = new MyAsyncEventListener();
+    AsyncEventListener eventListener = new CacheXml70DUnitTestHelper.MyAsyncEventListener();
     AsyncEventQueue asyncEventQueue = factory.create(id, eventListener);
 
     RegionAttributesCreation attrs = new RegionAttributesCreation();
@@ -205,7 +205,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
     factory.setParallel(false);
     factory.setDispatcherThreads(33);
 
-    AsyncEventListener eventListener = new MyAsyncEventListener();
+    AsyncEventListener eventListener = new CacheXml70DUnitTestHelper.MyAsyncEventListener();
     AsyncEventQueue asyncEventQueue = factory.create(id, eventListener);
 
     RegionAttributesCreation attrs = new RegionAttributesCreation();
@@ -221,7 +221,7 @@ public class CacheXml70DUnitTest extends CacheXml66DUnitTest {
         asyncEventQueuesOnCache.size() > 0);
 
     for (AsyncEventQueue asyncEventQueueOnCache : asyncEventQueuesOnCache) {
-      CacheXml70DUnitTest.validateAsyncEventQueue(asyncEventQueue, asyncEventQueueOnCache);
+      CacheXml70DUnitTestHelper.validateAsyncEventQueue(asyncEventQueue, asyncEventQueueOnCache);
     }
   }
 

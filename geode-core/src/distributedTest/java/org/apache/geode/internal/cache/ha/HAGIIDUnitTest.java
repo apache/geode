@@ -51,7 +51,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -399,7 +399,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     ConflationDUnitTestHelper.unsetIsSlowStart();
-    Invoke.invokeInEveryVM(ConflationDUnitTest.class, "unsetIsSlowStart");
+    Invoke.invokeInEveryVM(ConflationDUnitTestHelper.class, "unsetIsSlowStart");
     // close the clients first
     client0.invoke(() -> HAGIIDUnitTest.closeCache());
     // then close the servers
