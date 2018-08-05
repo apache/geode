@@ -14,13 +14,6 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static org.apache.geode.codeAnalysis.CompiledClassUtils.diffSortedClassesAndMethods;
-import static org.apache.geode.codeAnalysis.CompiledClassUtils.diffSortedClassesAndVariables;
-import static org.apache.geode.codeAnalysis.CompiledClassUtils.loadClassesAndMethods;
-import static org.apache.geode.codeAnalysis.CompiledClassUtils.loadClassesAndVariables;
-import static org.apache.geode.codeAnalysis.CompiledClassUtils.parseClassFilesInDir;
-import static org.apache.geode.codeAnalysis.CompiledClassUtils.storeClassesAndMethods;
-import static org.apache.geode.codeAnalysis.CompiledClassUtils.storeClassesAndVariables;
 import static org.apache.geode.internal.lang.SystemUtils.getJavaVersion;
 import static org.apache.geode.internal.lang.SystemUtils.isJavaVersionAtLeast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,7 +102,8 @@ public class AnalyzeSerializablesJUnitTest {
     this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
     assertThat(this.expectedDataSerializablesFile).exists().canRead();
 
-    this.expectedDataSerializables = CompiledClassUtils.loadClassesAndMethods(this.expectedDataSerializablesFile);
+    this.expectedDataSerializables =
+        CompiledClassUtils.loadClassesAndMethods(this.expectedDataSerializablesFile);
     Collections.sort(this.expectedDataSerializables);
 
   }
@@ -119,7 +113,8 @@ public class AnalyzeSerializablesJUnitTest {
         getResourceAsFile(InternalDataSerializer.class, expectedSerializablesFileName);
     assertThat(this.expectedSerializablesFile).exists().canRead();
 
-    this.expectedSerializables = CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesFile);
+    this.expectedSerializables =
+        CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesFile);
     Collections.sort(this.expectedSerializables);
   }
 

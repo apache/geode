@@ -45,7 +45,7 @@ public class CacheXml70DUnitTestHelper {
   }
 
   public static void validateAsyncEventQueue(AsyncEventQueue eventChannelFromXml,
-                                             AsyncEventQueue channel) {
+      AsyncEventQueue channel) {
     assertEquals("AsyncEventQueue id doesn't match", eventChannelFromXml.getId(), channel.getId());
     assertEquals("AsyncEventQueue batchSize doesn't match", eventChannelFromXml.getBatchSize(),
         channel.getBatchSize());
