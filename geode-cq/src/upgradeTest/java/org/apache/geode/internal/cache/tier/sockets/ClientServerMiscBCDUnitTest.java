@@ -57,7 +57,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Category({ClientServerTest.class, BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
+public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
   @Parameterized.Parameters
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
@@ -297,7 +297,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   }
 
   public static void registerCQ() throws Exception {
-    Cache cache = new ClientServerMiscDUnitTest().getCache();
+    Cache cache = new ClientServerMiscDUnitTestBase().getCache();
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
     assertNotNull(r);
     CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
