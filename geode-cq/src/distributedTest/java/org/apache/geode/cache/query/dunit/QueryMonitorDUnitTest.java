@@ -76,8 +76,7 @@ public class QueryMonitorDUnitTest {
 
   @Before
   public void setUpServers() throws Exception {
-    locator =
-        cluster.startLocatorVM(0, l -> l.withoutHttpService().withoutClusterConfigurationService());
+    locator = cluster.startLocatorVM(0, l -> l.withoutClusterConfigurationService());
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
 
