@@ -95,26 +95,19 @@ public class MethExecutorResult implements Serializable {
 
     StringWriter sw = new StringWriter();
 
-    if (thr instanceof SchedulingOrder) {
-      this.stackTrace = "No stack trace for SchedulingOrder\n";
+    thr.printStackTrace(new PrintWriter(sw, true));
+    this.stackTrace = sw.toString();
+
+    try {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(thr);
       this.exception = thr;
 
-
-    } else {
-      thr.printStackTrace(new PrintWriter(sw, true));
-      this.stackTrace = sw.toString();
-
-      try {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(thr);
-        this.exception = thr;
-
-      } catch (IOException ex) {
-        sw = new StringWriter();
-        ex.printStackTrace(new PrintWriter(sw, true));
-        this.exception = new IOException(sw.toString());
-      }
+    } catch (IOException ex) {
+      sw = new StringWriter();
+      ex.printStackTrace(new PrintWriter(sw, true));
+      this.exception = new IOException(sw.toString());
     }
   }
 
