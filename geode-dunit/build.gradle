@@ -16,15 +16,11 @@
  */
 
 dependencies {
-    compile project(path: ':geode-core', configuration: 'runtime')
-    compile project(path: ':geode-junit', configuration: 'runtime')
+    compileOnly project(':geode-core')
+    compile project(':geode-junit')
     compile project(':geode-json')
 
     compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
-
-
-
-
 
     compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
     compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
