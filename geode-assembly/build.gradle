@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
-
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
@@ -29,10 +27,17 @@ extraArchive {
   tests = false
 }
 
-// Gradle doesn't automatically remove the jar artifact even though we disabled it
-// this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.
+logger.info("Gradle doesn't automatically remove the jar artifact even though we disabled it")
+logger.info("this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.")
 configurations.all {
-  artifacts.removeAll artifacts.findAll { it instanceof ArchivePublishArtifact && !it.archiveTask.enabled }
+  def configName = it.name
+  artifacts.each {
+    logger.info("Pruning configName = " + configName + " name=" + it.name + " extension=" + it.extension + " classifier=" + it.classifier)
+  }
+  artifacts.removeAll{ it.name == jar.baseName && it.extension == 'jar' && it.classifier == jar.classifier }
+  if (artifacts) {
+    logger.info("Artifacts are now: " + artifacts)
+  }
 }
 
 gradle.taskGraph.whenReady( { graph ->
