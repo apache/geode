@@ -241,7 +241,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
           String reason =
               LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
                   .toLocalizedString();
-          query.setCanceled(new QueryExecutionLowMemoryException(reason));
+          query.setCanceled(true, new QueryExecutionLowMemoryException(reason));
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("query cancelled while gathering results, aborting due to exception "
@@ -762,7 +762,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
       String reason =
           LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
               .toLocalizedString();
-      query.setCanceled(new QueryExecutionLowMemoryException(reason));
+      query.setCanceled(true, new QueryExecutionLowMemoryException(reason));
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(5);
       }
@@ -1103,7 +1103,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
           String reason =
               LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
                   .toLocalizedString();
-          query.setCanceled(new QueryExecutionLowMemoryException(reason));
+          query.setCanceled(true, new QueryExecutionLowMemoryException(reason));
           this.abort = true;
         }
 
