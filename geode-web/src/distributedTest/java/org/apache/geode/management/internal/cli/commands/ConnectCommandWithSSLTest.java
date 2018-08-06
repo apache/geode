@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
+import org.apache.geode.util.test.TestUtil;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -79,18 +80,14 @@ public class ConnectCommandWithSSLTest {
   private static File jks;
 
   static {
-    try {
-      /*
-       * This file was generated with the following command:
-       * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
-       * -keystore trusted.keystore -keypass password -storepass password \
-       * -ext san=ip:127.0.0.1 -storetype jks
-       */
-      jks = new File(ConnectCommandWithSSLTest.class.getClassLoader()
-          .getResource("ssl/trusted.keystore").toURI());
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
+    /*
+     * This file was generated with the following command:
+     * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
+     * -keystore trusted.keystore -keypass password -storepass password \
+     * -ext san=ip:127.0.0.1 -storetype jks
+     */
+
+    jks = new File(TestUtil.getResourcePath(ConnectCommandWithSSLTest.class.getClassLoader(), "ssl/trusted.keystore"));
   }
 
   private static Properties sslProperties = new Properties() {

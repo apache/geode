@@ -37,6 +37,22 @@ public class TestUtil {
    */
   public static String getResourcePath(Class<?> clazz, String name) {
     URL resource = clazz.getResource(name);
+    return getResourcePath(name, resource);
+  }
+
+  /**
+   * Return the path to a named resource. This finds the resource on the classpath using the rules
+   * of ClassLoader.getResource.
+   *
+   * @param classLoader the ClassLoader to look up resource in
+   * @param name the name of the resource, eg "cache.xml"
+   */
+  public static String getResourcePath(ClassLoader classLoader, String name) {
+    URL resource = classLoader.getResource(name);
+    return getResourcePath(name, resource);
+  }
+
+  private static String getResourcePath(String name, URL resource) {
     if (resource == null) {
       throw new RuntimeException("Could not find resource " + name);
     }
