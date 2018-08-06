@@ -38,6 +38,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
 import javax.transaction.RollbackException;
@@ -111,6 +112,7 @@ import org.apache.geode.internal.jta.TransactionImpl;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -2851,6 +2853,21 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
   }
 
+  class CreateReplicateRegion extends SerializableCallable {
+    String regionName;
+
+    public CreateReplicateRegion(String replicateRegionName) {
+      this.regionName = replicateRegionName;
+    }
+
+    public Object call() throws Exception {
+      RegionFactory rf = getCache().createRegionFactory(RegionShortcut.REPLICATE);
+      rf.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
+      rf.create(regionName);
+      return null;
+    }
+  }
+
   /**
    * start 3 servers, accessor has r1 and r2; ds1 has r1, ds2 has r2 stop server after distributing
    * commit but b4 replying to client
@@ -2869,21 +2886,6 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
       }
     });
-
-    class CreateReplicateRegion extends SerializableCallable {
-      String regionName;
-
-      public CreateReplicateRegion(String replicateRegionName) {
-        this.regionName = replicateRegionName;
-      }
-
-      public Object call() throws Exception {
-        RegionFactory rf = getCache().createRegionFactory(RegionShortcut.REPLICATE);
-        rf.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        rf.create(regionName);
-        return null;
-      }
-    }
 
     accessor.invoke(new CreateReplicateRegion("r1"));
     accessor.invoke(new CreateReplicateRegion("r2"));
@@ -2969,6 +2971,101 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertTrue(r2.containsKey("key2"));
         return null;
       }
+    });
+  }
+
+  /**
+   * start 3 servers with region r1. stop client's server after distributing
+   * commit but before replying to client. ensure that a listener in the
+   * client is only invoked once
+   */
+  @Test
+  public void testFailoverAfterCommitDistributionInvokesListenerInClientOnlyOnce() {
+    Host host = Host.getHost(0);
+    VM server = host.getVM(0);
+    VM datastore1 = host.getVM(1);
+    VM datastore2 = host.getVM(2);
+    VM client = host.getVM(3);
+
+    final int port1 = createRegionsAndStartServer(server, false);
+    final int port2 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+
+    server.invoke(new CreateReplicateRegion("r1"));
+
+
+    client.invoke("create client cache", () -> {
+      disconnectFromDS();
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+          "true");
+      ClientCacheFactory ccf = new ClientCacheFactory();
+      ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
+      ccf.addPoolServer("localhost", port2);
+      ccf.setPoolMinConnections(5);
+      ccf.setPoolLoadConditioningInterval(-1);
+      ccf.setPoolSubscriptionEnabled(false);
+      ccf.set(LOG_LEVEL, getDUnitLogLevel());
+      ClientCache cCache = getClientCache(ccf);
+      Region r1 =
+          cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("r1");
+      Region r2 =
+          cCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("r2");
+      return null;
+    });
+
+    datastore1.invoke("create backup server", () -> {
+      CacheServer s = getCache().addCacheServer();
+      s.setPort(port2);
+      s.start();
+      return null;
+    });
+    datastore1.invoke(new CreateReplicateRegion("r1"));
+    datastore2.invoke(new CreateReplicateRegion("r1"));
+
+    final TransactionId txId = client.invoke("start transaction in client", () -> {
+      ClientCache cCache = (ClientCache) getCache();
+      Region r1 = cCache.getRegion("r1");
+      r1.put("key", "value");
+      cCache.getCacheTransactionManager().begin();
+      r1.destroy("key");
+      return cCache.getCacheTransactionManager().getTransactionId();
+    });
+
+    server.invoke("close cache after sending tx message to other servers", () -> {
+      final TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+      assertTrue(mgr.isHostedTxInProgress((TXId) txId));
+      TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getHostedTXState((TXId) txId);
+      final TXState txState = (TXState) txProxy.getRealDeal(null, null);
+      txState.setAfterSend(new Runnable() {
+        public void run() {
+          getCache().getLogger().info("server is now closing its cache");
+          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+          try {
+            mgr.removeHostedTXState((TXId) txState.getTransactionId());
+            DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
+          } finally {
+            System.getProperties()
+                .remove(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
+          }
+        }
+      });
+      return null;
+    });
+
+    client.invoke("committing transaction in client", () -> {
+      Region r1 = getCache().getRegion("r1");
+      final AtomicInteger afterDestroyInvocations = new AtomicInteger();
+      CacheListener listener = new CacheListenerAdapter() {
+        @Override
+        public void afterDestroy(EntryEvent event) {
+          afterDestroyInvocations.incrementAndGet();
+        }
+      };
+      r1.getAttributesMutator().addCacheListener(listener);
+
+      getCache().getCacheTransactionManager().commit();
+      assertFalse(r1.containsKey("key"));
+      assertEquals(1, afterDestroyInvocations.intValue());
+      return null;
     });
   }
 
