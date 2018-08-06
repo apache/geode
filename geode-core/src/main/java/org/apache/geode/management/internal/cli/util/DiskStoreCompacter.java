@@ -47,6 +47,7 @@ public class DiskStoreCompacter {
     String[] diskDirs = null;;
     String maxOpLogSize = null;;
     long maxOplogSize = -1;
+    boolean errored = false;
     try {
       if (args.length < 3) {
         throw new IllegalArgumentException(
@@ -70,6 +71,7 @@ public class DiskStoreCompacter {
 
       compact(diskStoreName, diskDirs, maxOplogSize);
     } catch (GemFireIOException e) {
+      errored = true;
       Throwable cause = e.getCause();
       if (cause instanceof IllegalStateException) {
         String message = cause.getMessage();
@@ -104,6 +106,7 @@ public class DiskStoreCompacter {
       }
       stackTraceString = ExceptionUtils.getStackTrace(e);
     } catch (IllegalArgumentException e) {
+      errored = true;
       errorString = e.getMessage();
       stackTraceString = ExceptionUtils.getStackTrace(e);
     } finally {
@@ -113,6 +116,10 @@ public class DiskStoreCompacter {
       if (stackTraceString != null) {
         System.err.println(STACKTRACE_START);
         System.err.println(stackTraceString);
+      }
+
+      if (errored) {
+        System.exit(1);
       }
     }
   }
