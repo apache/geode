@@ -47,7 +47,9 @@ import org.junit.Test;
 import org.apache.geode.ExpirationDetector;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -133,6 +135,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
   private final SerializableCallable verifyNoTxState = new SerializableCallable() {
     @Override
     public Object call() throws Exception {
+      try {
+        CacheFactory.getAnyInstance();
+      } catch (CacheClosedException e) {
+        return null;
+      }
       // TXManagerImpl mgr = getGemfireCache().getTxManager();
       // assertIndexDetailsEquals(0, mgr.hostedTransactionsInProgressForTest());
       final TXManagerImpl mgr = getGemfireCache().getTxManager();
