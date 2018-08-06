@@ -68,6 +68,18 @@ for i in ${GEODEBUILDDIR}/test-stubs/*.yml; do
     ${i} > ${TMP_DIR}/${X}
 done
 
+for i in ${SCRIPTDIR}/test-stubs/*.yml; do
+  X=pull-request-$(basename $i)
+  echo "Merging ${i} into ${TMP_DIR}/${X}"
+  ${SPRUCE} merge --prune metadata \
+    <(echo "metadata:"; \
+      echo "  geode-build-branch: ${GEODE_BRANCH}"; \
+      echo "  geode-fork: ${GEODE_FORK}"; \
+      echo "  ") \
+    ${SCRIPTDIR}/pr-template.yml \
+    ${i} > ${TMP_DIR}/${X}
+done
+
 echo "Spruce branch-name into resources"
 ${SPRUCE} merge --prune metadata \
   ${SCRIPTDIR}/base.yml \

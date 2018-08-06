@@ -199,6 +199,12 @@ subprojects {
     testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
     classpath += project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
+
+    if(project.hasProperty("failOnNoMatchingTests")) {
+      filter {
+        setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
+      }
+    }
   }
 
   task flakyTest(type:Test) {
