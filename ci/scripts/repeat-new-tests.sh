@@ -21,7 +21,7 @@ set -e
 
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-CHANGED_FILES=$(git diff --name-only HEAD $(git merge-base HEAD develop) | grep -e 'src/test/java\|src/integrationTest/java\|src/distributedTest/java')
+CHANGED_FILES=$(cd geode && git diff --name-only HEAD $(git merge-base HEAD develop) | grep -e 'src/test/java\|src/integrationTest/java\|src/distributedTest/java')
 
 TESTS_FLAG=""
 
