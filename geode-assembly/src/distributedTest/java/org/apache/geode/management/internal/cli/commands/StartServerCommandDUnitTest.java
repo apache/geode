@@ -16,21 +16,22 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CACHE_XML_NOT_FOUND_MESSAGE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_REGION;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_REGION__REGION;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_REGION__REGIONSHORTCUT;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__CACHE_XML_FILE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__DIR;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__FORCE;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__FORCE__HELP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__LOCATORS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__NAME;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__PROPERTIES;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__SECURITY_PROPERTIES;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__SERVER_PORT;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -39,27 +40,26 @@ import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import okhttp3.internal.Internal;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.AbstractLauncher;
-import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -67,6 +67,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class StartServerCommandDUnitTest {
   private static MemberVM locator;
   private static String locatorConnectionString;
+  private File workingDir;
 
   @ClassRule
   public static final ClusterStartupRule cluster = new ClusterStartupRule();
@@ -77,8 +78,13 @@ public class StartServerCommandDUnitTest {
   @Rule
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+  @Before
+  public void before() throws IOException {
+    workingDir = temporaryFolder.newFolder();
+  }
+
   @BeforeClass
-  public static void before() throws Exception {
+  public static void beforeClass() throws Exception {
     // locator used to clean up members started during tests
     locator = cluster.startLocatorVM(0, 0);
 
@@ -88,23 +94,25 @@ public class StartServerCommandDUnitTest {
   }
 
   @AfterClass
-  public static void after() throws Exception {
+  public static void afterClass() throws Exception {
     gfsh.connectAndVerify(locator);
     gfsh.execute("shutdown --include-locators");
   }
 
   @Test
-  public void testWithMissingCacheXml() {
+  public void testWithMissingCacheXml() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String missingCacheXmlPath = "/missing/cache.xml";
     final String memberName = "testWithMissingCacheXml-server";
-    final String expectedError = CliStrings.format(CACHE_XML_NOT_FOUND_MESSAGE, missingCacheXmlPath);
+    final String expectedError =
+        CliStrings.format(CACHE_XML_NOT_FOUND_MESSAGE, missingCacheXmlPath);
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
         .addOption(START_SERVER__CACHE_XML_FILE, missingCacheXmlPath)
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
     CommandResult result = gfsh.executeCommand(command);
@@ -114,17 +122,19 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithMissingGemFirePropertiesFile() {
+  public void testWithMissingGemFirePropertiesFile() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String missingGemfirePropertiesPath = "/missing/gemfire.properties";
     final String memberName = "testWithMissingGemFirePropertiesFile-server";
-    final String expectedError = CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "", missingGemfirePropertiesPath);
+    final String expectedError =
+        CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "", missingGemfirePropertiesPath);
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
         .addOption(START_SERVER__PROPERTIES, missingGemfirePropertiesPath)
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
     CommandResult result = gfsh.executeCommand(command);
@@ -134,7 +144,7 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithMissingPassword() {
+  public void testWithMissingPassword() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String memberName = "testWithMissingPassword-server";
     final String expectedError = "password must be specified.";
@@ -144,6 +154,7 @@ public class StartServerCommandDUnitTest {
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
         .addOption(START_SERVER__USERNAME, "usernameValue")
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
     CommandResult result = gfsh.executeCommand(command);
@@ -153,16 +164,18 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithMissingSecurityPropertiesFile() {
+  public void testWithMissingSecurityPropertiesFile() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String missingSecurityPropertiesPath = "/missing/security.properties";
     final String memberName = "testWithMissingSecurityPropertiesFile-server";
-    final String expectedError = CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "Security ", missingSecurityPropertiesPath);
+    final String expectedError = CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
+        "Security ", missingSecurityPropertiesPath);
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .addOption(START_SERVER__SECURITY_PROPERTIES, missingSecurityPropertiesPath)
         .getCommandString();
 
@@ -176,17 +189,20 @@ public class StartServerCommandDUnitTest {
   public void testWithUnavailablePort() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String memberName = "testWithUnavailablePort-server";
-    final String expectedError = "java.lang.RuntimeException: An IO error occurred while starting a Server";
+    final String expectedError =
+        "java.lang.RuntimeException: An IO error occurred while starting a Server";
     final String expectedCause = "Caused by: java.net.BindException: "
         + "Network is unreachable; port (" + serverPort + ") is not available on localhost.";
 
-    try(Socket interferingProcess = new Socket()) {
-      interferingProcess.bind(new InetSocketAddress(serverPort)); // make the target port unavailable
+    try (Socket interferingProcess = new Socket()) {
+      interferingProcess.bind(new InetSocketAddress(serverPort)); // make the target port
+                                                                  // unavailable
 
       String command = new CommandStringBuilder(START_SERVER)
           .addOption(START_SERVER__NAME, memberName)
           .addOption(START_SERVER__LOCATORS, locatorConnectionString)
           .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+          .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
           .getCommandString();
 
       CommandResult result = gfsh.executeCommand(command);
@@ -197,16 +213,17 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithAvailablePort() {
+  public void testWithAvailablePort() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String memberName = "testWithAvailablePort-server";
-    final String expectedMessage = "Server in " + System.getProperty("user.dir") + "/" + memberName;
+    final String expectedMessage = "Server in " + workingDir.getCanonicalPath();
     final String expectedMessage2 = "as " + memberName + " is currently online.";
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
     CommandResult result = gfsh.executeCommand(command);
@@ -237,9 +254,9 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithMissingStartDirectoryThatCanBeCreated() {
+  public void testWithMissingStartDirectoryThatCanBeCreated() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingDirPath = System.getProperty("user.dir") + "/missing/dir/to/start/in";
+    final String missingDirPath = workingDir.getCanonicalPath() + "/missing/dir/to/start/in";
     final String memberName = "testWithMissingStartDirectoryThatCanBeCreated-server";
     final String expectedMessage = "Server in " + missingDirPath;
 
@@ -268,8 +285,7 @@ public class StartServerCommandDUnitTest {
     final String memberName = "testWithConflictingPIDFile-server";
 
     // create PID file
-    File dir = temporaryFolder.newFolder();
-    File pidFile = new File(dir.getAbsolutePath(), fileName);
+    File pidFile = new File(workingDir.getAbsolutePath(), fileName);
     assertThat(pidFile.createNewFile()).isTrue();
 
     // write PID to PID file
@@ -306,8 +322,7 @@ public class StartServerCommandDUnitTest {
     final String fileName = ProcessType.SERVER.getPidFileName();
 
     // create PID file
-    File dir = temporaryFolder.newFolder();
-    File pidFile = new File(dir.getAbsolutePath(), fileName);
+    File pidFile = new File(workingDir.getAbsolutePath(), fileName);
     assertThat(pidFile.createNewFile()).isTrue();
 
     // write PID to PID file
@@ -334,15 +349,16 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithConnectionToLocator() {
+  public void testWithConnectionToLocator() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String memberName = "testWithConnectionToLocator-server";
     final String expectedVersionPattern = "Geode Version: \\d+\\.\\d+\\.\\d+";
-    final String expectedMessage = "Server in " + System.getProperty("user.dir") + "/" + memberName;
+    final String expectedMessage = "Server in " + workingDir.getCanonicalPath();
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
         .getCommandString();
 
@@ -358,56 +374,67 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testServerJVMTerminatesOnOutOfMemoryError() {
+  public void testServerJVMTerminatesOnOutOfMemoryError() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String memberName = "testServerJVMTerminatesOnOutOfMemoryError-server";
-    final String serverDir = System.getProperty("user.dir") + "/" + memberName;
-    final String regionName = "serverRegion";
-    final String regionPath = "/" + regionName;
+    final String groupName = "serverGroup";
+    final String regionName = "testRegion";
+
+    MemberVM server = cluster.startServerVM(1, locator.getPort());
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
+        .addOption("group", groupName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
+        .addOption(START_SERVER__OFF_HEAP_MEMORY_SIZE, "0M")
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
-        .addOption(START_SERVER__DIR, serverDir)
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
+
     CommandResult result = gfsh.executeCommand(command);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
+    command = new CommandStringBuilder(CREATE_REGION)
+        .addOption(CREATE_REGION__REGIONSHORTCUT, "PARTITION")
+        .addOption(GROUP, groupName)
+        .addOption(CREATE_REGION__REGION, regionName)
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
     ServerLauncher serverLauncher = new ServerLauncher.Builder()
         .setCommand(ServerLauncher.Command.STATUS)
-        .setWorkingDirectory(serverDir)
+        .setWorkingDirectory(workingDir.getCanonicalPath())
         .build();
     assertThat(serverLauncher).isNotNull();
 
-    ServerState serverState = serverLauncher.status();
-    assertThat(serverState.getStatus()).isEqualTo(Status.ONLINE);
+    ServerLauncher.ServerState serverState = serverLauncher.status();
+    assertThat(serverState.getStatus()).isEqualTo(AbstractLauncher.Status.ONLINE);
     assertThat(serverState.isVmWithProcessIdRunning()).isTrue();
 
-    command = new CommandStringBuilder(CREATE_REGION)
-        .addOption("name", regionName)
-        .addOption(CREATE_REGION__REGIONSHORTCUT, "partition")
-        .getCommandString();
-    result = gfsh.executeCommand(command);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    Integer serverPid = serverState.getPid();
+    assertThat(ProcessUtils.isProcessAlive(serverPid)).isTrue();
 
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers(regionPath, 1);
+    final String jarName = "RunOutOfMemory.jar";
+    File jar = temporaryFolder.newFile(jarName);
+    new ClassBuilder().writeJarFromClass(new RunOutOfMemoryFunction().getClass(), jar);
+    gfsh.executeAndAssertThat("deploy --groups=" + groupName + " --jar=" + jar).statusIsSuccess();
 
-    // put too much data
-    locator.invoke(() -> {
-      InternalCache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(regionPath);
-      System.out.println("HERE: " + region);
-      System.out.println(region.getName());
-    });
+    locator.invoke((() -> {
+      try {
+        FunctionService.onMember(groupName).execute(new RunOutOfMemoryFunction()).getResult();
+      } catch (FunctionException e) {
+        e.printStackTrace();
+      }
+    }));
 
-    serverState = serverLauncher.status();
-    assertThat(serverState.isVmWithProcessIdRunning()).isFalse();
-    assertThat(serverState.getStatus()).isEqualTo(Status.NOT_RESPONDING);
+    gfsh.executeAndAssertThat("list members").statusIsSuccess().doesNotContainOutput(memberName)
+        .containsOutput(server.getName());
+
+    server.stop(Boolean.TRUE);
+
+    assertThat(ProcessUtils.isProcessAlive(serverPid)).isFalse();
   }
-
-  @Test
-  public void testOutOfMemoryErrorWithDisableExitOption() {}
 
   private void deleteServerFiles(File toDelete) {
     File[] nestedToDelete = toDelete.listFiles();
@@ -440,4 +467,5 @@ public class StartServerCommandDUnitTest {
 
     return pid;
   }
+
 }
