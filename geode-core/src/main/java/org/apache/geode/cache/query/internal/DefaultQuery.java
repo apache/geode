@@ -716,11 +716,9 @@ public class DefaultQuery implements Query {
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
-   * <p>
-   * TODO: parameter isCanceled is always true
    */
-  public void setCanceled(boolean isCanceled, CacheRuntimeException canceledException) {
-    this.isCanceled = isCanceled;
+  public void setCanceled(CacheRuntimeException canceledException) {
+    this.isCanceled = true;
     this.canceledException = canceledException;
   }
 
@@ -985,8 +983,8 @@ public class DefaultQuery implements Query {
   }
 
   public interface TestHook {
-    void doTestHook(int spot);
+    default void doTestHook(int spot) {};
 
-    void doTestHook(String spot);
+    default void doTestHook(String spot) {};
   }
 }

@@ -14,21 +14,16 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * QueryMonitor class, monitors the query execution time. Instantiated based on the system property
@@ -46,13 +41,12 @@ public class QueryMonitor implements Runnable {
   private static final Logger logger = LogService.getLogger();
 
   private final InternalCache cache;
-  private boolean testingQueryMonitor = false;
   /**
    * Holds the query execution status for the thread executing the query. FALSE if the query is not
    * canceled due to max query execution timeout. TRUE it the query is canceled due to max query
    * execution timeout timeout.
    */
-  private static final ThreadLocal<AtomicBoolean> queryExecutionStatus =
+  private static final ThreadLocal<AtomicBoolean> queryCancelled =
       ThreadLocal.withInitial(() -> new AtomicBoolean(Boolean.FALSE));
 
   private final long maxQueryExecutionTime;
@@ -62,9 +56,6 @@ public class QueryMonitor implements Runnable {
   private Thread monitoringThread;
 
   private final AtomicBoolean stopped = new AtomicBoolean(Boolean.FALSE);
-
-  /** For DUnit test purpose TODO: delete this ConcurrentMap */
-  private ConcurrentMap queryMonitorTasks = null;
 
   // Variables for cancelling queries due to low memory
   private static volatile Boolean LOW_MEMORY = Boolean.FALSE;
@@ -82,14 +73,19 @@ public class QueryMonitor implements Runnable {
    * @param queryThread Thread executing the query.
    * @param query Query.
    */
-  public void monitorQueryThread(Thread queryThread, Query query) {
+  public void monitorQueryThread(Thread queryThread, DefaultQuery query) {
+    // cq query is not monitored
+    if (query.isCqQuery()) {
+      return;
+    }
+
     if (LOW_MEMORY) {
       String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
           .toLocalizedString(LOW_MEMORY_USED_BYTES);
-      ((DefaultQuery) query).setCanceled(true, new QueryExecutionLowMemoryException(reason));
+      query.setCanceled(new QueryExecutionLowMemoryException(reason));
       throw new QueryExecutionLowMemoryException(reason);
     }
-    QueryThreadTask queryTask = new QueryThreadTask(queryThread, query, queryExecutionStatus.get());
+    QueryThreadTask queryTask = new QueryThreadTask(queryThread, query, queryCancelled.get());
     synchronized (queryThreads) {
       queryThreads.add(queryTask);
       queryThreads.notifyAll();
@@ -101,28 +97,19 @@ public class QueryMonitor implements Runnable {
           queryThreads.size(), queryThread.getId(), query.getQueryString(), queryThread);
     }
 
-    // For dunit test purpose
-    if (cache != null && testingQueryMonitor) {
-      if (this.queryMonitorTasks == null) {
-        this.queryMonitorTasks = new ConcurrentHashMap();
-      }
-      this.queryMonitorTasks.put(queryThread, queryTask);
-    }
   }
 
   /**
    * Stops monitoring the query. Removes the passed thread from QueryMonitor queue.
    */
-  public void stopMonitoringQueryThread(Thread queryThread, Query query) {
+  public void stopMonitoringQueryThread(Thread queryThread, DefaultQuery query) {
     // Re-Set the queryExecution status on the LocalThread.
     QueryExecutionTimeoutException testException = null;
-    DefaultQuery defaultQuery = (DefaultQuery) query;
-    boolean[] queryCompleted = defaultQuery.getQueryCompletedForMonitoring();
+    boolean[] queryCompleted = query.getQueryCompletedForMonitoring();
 
     synchronized (queryCompleted) {
-      queryExecutionStatus.get().getAndSet(Boolean.FALSE);
-
-      defaultQuery.setQueryCompletedForMonitoring(true);
+      queryCancelled.get().getAndSet(Boolean.FALSE);
+      query.setQueryCompletedForMonitoring(true);
       // Remove the query task from the queue.
       queryThreads.remove(new QueryThreadTask(queryThread, null, null));
     }
@@ -147,7 +134,7 @@ public class QueryMonitor implements Runnable {
    * gemfire.Cache.MAX_QUERY_EXECUTION_TIME
    */
   public static void isQueryExecutionCanceled() {
-    if (queryExecutionStatus.get() != null && queryExecutionStatus.get().get()) {
+    if (queryCancelled.get() != null && queryCancelled.get().get()) {
       throw new QueryExecutionCanceledException();
     }
   }
@@ -182,24 +169,21 @@ public class QueryMonitor implements Runnable {
     try {
       QueryThreadTask queryTask;
       long sleepTime;
-      // TODO: while-block cannot complete without throwing
       while (true) {
         // Get the first query task from the queue. This query will have the shortest
         // remaining time that needs to canceled first.
         queryTask = (QueryThreadTask) queryThreads.peek();
         if (queryTask == null) {
-          // Empty queue.
           synchronized (queryThreads) {
             queryThreads.wait();
           }
           continue;
         }
 
-        long currentTime = System.currentTimeMillis();
-
+        long executionTime = System.currentTimeMillis() - queryTask.StartTime;
         // Check if the sleepTime is greater than the remaining query execution time.
-        if (currentTime - queryTask.StartTime < this.maxQueryExecutionTime) {
-          sleepTime = this.maxQueryExecutionTime - (currentTime - queryTask.StartTime);
+        if (executionTime < this.maxQueryExecutionTime) {
+          sleepTime = this.maxQueryExecutionTime - executionTime;
           // Its been noted that the sleep is not guaranteed to wait for the specified
           // time (as stated in Suns doc too), it depends on the OSs thread scheduling
           // behavior, hence thread may sleep for longer than the specified time.
@@ -207,32 +191,22 @@ public class QueryMonitor implements Runnable {
           Thread.sleep(sleepTime);
           continue;
         }
-
-        // Query execution has taken more than the max time, Set queryExecutionStatus flag
-        // to canceled (TRUE).
-        boolean[] queryCompleted =
-            ((DefaultQuery) queryTask.query).getQueryCompletedForMonitoring();
+        // Query execution has taken more than the max time, Set queryCancelled flag
+        // to true.
+        boolean[] queryCompleted = queryTask.query.getQueryCompletedForMonitoring();
         synchronized (queryCompleted) {
-          if (!queryCompleted[0] && !((DefaultQuery) queryTask.query).isCqQuery()) { // Check if the
-                                                                                     // query is
-                                                                                     // already
-                                                                                     // completed.
-            ((DefaultQuery) queryTask.query).setCanceled(true,
-                new QueryExecutionTimeoutException(
-                    LocalizedStrings.QueryMonitor_LONG_RUNNING_QUERY_CANCELED
-                        .toLocalizedString(GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME)));
-            queryTask.queryExecutionStatus.set(Boolean.TRUE);
-            // Remove the task from queue.
+          // check if query is already completed
+          if (!queryCompleted[0]) {
+            queryTask.query.setCanceled(new QueryExecutionTimeoutException(String
+                .format("Query execution cancelled after exceeding max execution time %sms.",
+                    this.maxQueryExecutionTime)));
+            queryTask.queryCancelled.set(Boolean.TRUE);
+            // remove the query threads from monitoring queue
             queryThreads.poll();
+            logger.info(String.format(
+                "%s is set as canceled after %s milliseconds", queryTask.toString(),
+                executionTime));
           }
-        }
-
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.GemFireCache_LONG_RUNNING_QUERY_EXECUTION_CANCELED,
-            new Object[] {queryTask.query.getQueryString(), queryTask.queryThread.getId()}));
-
-        if (logger.isDebugEnabled()) {
-          logger.debug("Query Execution for the thread {} got canceled.", queryTask.queryThread);
         }
       }
     } catch (InterruptedException ignore) {
@@ -275,15 +249,15 @@ public class QueryMonitor implements Runnable {
   }
 
   private void cancelQueryDueToLowMemory(QueryThreadTask queryTask, long memoryThreshold) {
-    boolean[] queryCompleted = ((DefaultQuery) queryTask.query).getQueryCompletedForMonitoring();
+    boolean[] queryCompleted = queryTask.query.getQueryCompletedForMonitoring();
     synchronized (queryCompleted) {
       if (!queryCompleted[0]) {
         // cancel if query is not completed
         String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
             .toLocalizedString(memoryThreshold);
-        ((DefaultQuery) queryTask.query).setCanceled(true,
+        queryTask.query.setCanceled(
             new QueryExecutionLowMemoryException(reason));
-        queryTask.queryExecutionStatus.set(Boolean.TRUE);
+        queryTask.queryCancelled.set(Boolean.TRUE);
       }
     }
   }
@@ -305,16 +279,16 @@ public class QueryMonitor implements Runnable {
     final Thread queryThread;
 
     // package-private to avoid synthetic accessor
-    final Query query;
+    final DefaultQuery query;
 
     // package-private to avoid synthetic accessor
-    final AtomicBoolean queryExecutionStatus;
+    final AtomicBoolean queryCancelled;
 
-    QueryThreadTask(Thread queryThread, Query query, AtomicBoolean queryExecutionStatus) {
+    QueryThreadTask(Thread queryThread, DefaultQuery query, AtomicBoolean queryCancelled) {
       this.StartTime = System.currentTimeMillis();
       this.queryThread = queryThread;
       this.query = query;
-      this.queryExecutionStatus = queryExecutionStatus;
+      this.queryCancelled = queryCancelled;
     }
 
     @Override
@@ -341,7 +315,7 @@ public class QueryMonitor implements Runnable {
       return new StringBuilder().append("QueryThreadTask[StartTime:").append(this.StartTime)
           .append(", queryThread:").append(this.queryThread).append(", threadId:")
           .append(this.queryThread.getId()).append(", query:").append(this.query.getQueryString())
-          .append(", queryExecutionStatus:").append(this.queryExecutionStatus).append(']')
+          .append(", queryCancelled:").append(this.queryCancelled).append(']')
           .toString();
     }
   }
