@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.awaitility.Awaitility;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -46,6 +47,14 @@ public class QueryMonitorTest {
     Thread monitorThread = new Thread(() -> monitor.run(), "query monitor thread");
     monitorThread.setDaemon(true);
     monitorThread.start();
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    // cleanup the thread local of the queryCancelled status
+    DefaultQuery query = mock(DefaultQuery.class);
+    when(query.getQueryCompletedForMonitoring()).thenReturn(new boolean[] {true});
+    monitor.stopMonitoringQueryThread(Thread.currentThread(), query);
   }
 
   @Test
