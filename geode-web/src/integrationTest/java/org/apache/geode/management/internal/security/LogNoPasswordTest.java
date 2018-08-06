@@ -47,7 +47,8 @@ public class LogNoPasswordTest {
     Properties properties = new Properties();
     properties.setProperty(LOG_LEVEL, "debug");
     properties.setProperty(SECURITY_MANAGER, MySecurityManager.class.getName());
-    MemberVM locator = lsRule.startLocatorVM(0, properties);
+    MemberVM locator =
+        lsRule.startLocatorVM(0, l -> l.withHttpService().withProperties(properties));
     gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http, "any",
         PASSWORD);
     gfsh.executeAndAssertThat("list members").statusIsSuccess();

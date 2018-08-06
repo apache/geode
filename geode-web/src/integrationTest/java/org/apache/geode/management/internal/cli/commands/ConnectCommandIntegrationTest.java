@@ -28,7 +28,8 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 public class ConnectCommandIntegrationTest {
 
   @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
+  public static LocatorStarterRule locator =
+      new LocatorStarterRule().withHttpService().withAutoStart();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

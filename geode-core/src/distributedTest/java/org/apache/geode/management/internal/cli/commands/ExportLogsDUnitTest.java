@@ -94,7 +94,7 @@ public class ExportLogsDUnitTest {
     Properties properties = new Properties();
     properties.setProperty(ConfigurationProperties.LOG_LEVEL, "debug");
 
-    locator = lsRule.startLocatorVM(0, properties);
+    locator = lsRule.startLocatorVM(0, l -> l.withProperties(properties).withHttpService());
     server1 = lsRule.startServerVM(1, properties, locator.getPort());
     server2 = lsRule.startServerVM(2, properties, locator.getPort());
 

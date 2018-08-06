@@ -39,7 +39,8 @@ public class HttpOperationInvokerMBeanOperationTest {
 
   @ClassRule
   public static LocatorStarterRule locator =
-      new LocatorStarterRule().withProperty(DISTRIBUTED_SYSTEM_ID, "100").withAutoStart();
+      new LocatorStarterRule().withHttpService().withProperty(DISTRIBUTED_SYSTEM_ID, "100")
+          .withAutoStart();
   private HttpOperationInvoker invoker;
 
   @Rule

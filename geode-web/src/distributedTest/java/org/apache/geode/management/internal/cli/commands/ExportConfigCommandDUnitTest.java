@@ -53,7 +53,8 @@ public class ExportConfigCommandDUnitTest {
   @Parameters({"true", "false"})
   public void testExportConfig(final boolean connectOverHttp) throws Exception {
     MemberVM server0 = startupRule.startServerVM(0,
-        x -> x.withProperty(GROUPS, "Group1").withJMXManager().withEmbeddedLocator());
+        x -> x.withProperty(GROUPS, "Group1").withJMXManager().withHttpService()
+            .withEmbeddedLocator());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);

@@ -78,11 +78,13 @@ public class MemberStarterRuleTest {
     locator = new LocatorStarterRule();
     locator.before();
 
+    // by default jmxManager is started
     assertThat(locator.getJmxPort()).isNotEqualTo(1099);
     assertThat(locator.getJmxPort()).isNotEqualTo(-1);
 
+    // by default we won't start http service
     assertThat(locator.getHttpPort()).isNotEqualTo(7070);
-    assertThat(locator.getHttpPort()).isNotEqualTo(-1);
+    assertThat(locator.getHttpPort()).isEqualTo(-1);
   }
 
   @Test
@@ -112,10 +114,17 @@ public class MemberStarterRuleTest {
   }
 
   @Test
-  public void httpPort() {
-    locator = new LocatorStarterRule().withoutHttpService();
+  public void httpPortBeforeStart() {
+    locator = new LocatorStarterRule();
     locator.before();
+    assertThat(locator.getHttpPort()).isEqualTo(-1);
+    assertThat(locator.getJmxPort()).isGreaterThan(0);
+  }
 
+  @Test
+  public void httpPortAfterStart() {
+    locator = new LocatorStarterRule().withAutoStart();
+    locator.before();
     assertThat(locator.getHttpPort()).isEqualTo(0);
     assertThat(locator.getJmxPort()).isGreaterThan(0);
   }

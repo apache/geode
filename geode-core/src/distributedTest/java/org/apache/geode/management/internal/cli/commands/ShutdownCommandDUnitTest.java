@@ -49,7 +49,7 @@ public class ShutdownCommandDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    locator = clusterStartupRule.startLocatorVM(0);
+    locator = clusterStartupRule.startLocatorVM(0, l -> l.withHttpService());
     server1 = clusterStartupRule.startServerVM(1, locator.getPort());
     server2 = clusterStartupRule.startServerVM(2, locator.getPort());
     connect(locator);

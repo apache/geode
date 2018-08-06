@@ -39,7 +39,8 @@ public class PulseSecurityTest {
 
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withJMXManager()
+      new ServerStarterRule().withSecurityManager(SimpleTestSecurityManager.class)
+          .withJMXManager().withHttpService()
           .withRegion(RegionShortcut.REPLICATE, "regionA");
 
   @Rule

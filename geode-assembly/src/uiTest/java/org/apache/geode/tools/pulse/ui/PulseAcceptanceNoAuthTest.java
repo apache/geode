@@ -34,7 +34,7 @@ public class PulseAcceptanceNoAuthTest extends PulseAcceptanceTestBase {
 
   @ClassRule
   public static LocatorStarterRule locator =
-      new LocatorStarterRule().withJMXManager().withAutoStart();
+      new LocatorStarterRule().withJMXManager().withHttpService().withAutoStart();
 
   @ClassRule
   public static ClusterStartupRule clusterRule = new ClusterStartupRule();

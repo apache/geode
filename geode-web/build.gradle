@@ -51,6 +51,7 @@ dependencies {
   compileOnly project(path: ':geode-core', configuration: 'classesOutput')
   testCompile project(path: ':geode-core', configuration: 'classesOutput')
 
+  testCompile project(':geode-core')
   testCompile project(':geode-junit')
   testRuntime project(':geode-common')
   testCompile files(project(':geode-core').sourceSets.test.output)

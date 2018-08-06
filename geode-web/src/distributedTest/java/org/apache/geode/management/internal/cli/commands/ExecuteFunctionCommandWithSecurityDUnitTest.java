@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
@@ -50,9 +49,8 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    Properties locatorProps = new Properties();
-    locatorProps.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-    locator = lsRule.startLocatorVM(0, locatorProps);
+    locator = lsRule.startLocatorVM(0,
+        l -> l.withHttpService().withSecurityManager(SimpleTestSecurityManager.class));
 
     Properties serverProps = new Properties();
     serverProps.setProperty(ResourceConstants.USER_NAME, "clusterManage");

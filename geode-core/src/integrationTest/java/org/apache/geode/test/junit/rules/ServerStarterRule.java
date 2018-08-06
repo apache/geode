@@ -73,7 +73,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   @Override
   public void before() {
-    normalizeProperties();
+    super.before();
     if (autoStart) {
       startServer();
       regions.forEach((regionName, regionType) -> {

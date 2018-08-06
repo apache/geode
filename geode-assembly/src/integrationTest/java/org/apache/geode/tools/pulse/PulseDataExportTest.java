@@ -34,7 +34,8 @@ public class PulseDataExportTest {
 
   @Rule
   public ServerStarterRule server =
-      new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "regionA");
+      new ServerStarterRule().withJMXManager().withHttpService()
+          .withRegion(RegionShortcut.REPLICATE, "regionA");
 
   @Rule
   public GeodeHttpClientRule client = new GeodeHttpClientRule(server::getHttpPort);

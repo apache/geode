@@ -55,7 +55,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
   @Before
   public void before() {
     locator =
-        cluster.startLocatorVM(0, r -> r.withoutClusterConfigurationService().withoutHttpService());
+        cluster.startLocatorVM(0, r -> r.withoutClusterConfigurationService());
     server = cluster.startServerVM(1, s -> s.withRegion(RegionShortcut.REPLICATE, "regionA")
         .withConnectionToLocator(locator.getPort()));
   }

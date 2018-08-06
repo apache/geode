@@ -63,7 +63,7 @@ public class ClusterConfigurationDUnitTest {
   // TODO mark GEODE-1606 resolved after
   @Test
   public void testStartServerAndExecuteCommands() throws Exception {
-    MemberVM locator = startupRule.startLocatorVM(0);
+    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
