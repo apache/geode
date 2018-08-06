@@ -69,7 +69,7 @@ for i in ${GEODEBUILDDIR}/test-stubs/*.yml; do
 done
 
 for i in ${SCRIPTDIR}/test-stubs/*.yml; do
-  X=$(basename $i)
+  X=pull-request-$(basename $i)
   echo "Merging ${i} into ${TMP_DIR}/${X}"
   ${SPRUCE} merge --prune metadata \
     <(echo "metadata:"; \
