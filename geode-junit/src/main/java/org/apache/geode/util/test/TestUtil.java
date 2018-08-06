@@ -46,7 +46,7 @@ public class TestUtil {
         String filename = name.replaceFirst(".*/", "");
         File tmpFile = File.createTempFile(filename, null);
         tmpFile.deleteOnExit();
-        FileUtils.copyFile(new File(resource.getFile()), tmpFile);
+        FileUtils.copyURLToFile(resource, tmpFile);
         return compatibleWithWindows(tmpFile.getAbsolutePath());
       }
       return compatibleWithWindows(path);
