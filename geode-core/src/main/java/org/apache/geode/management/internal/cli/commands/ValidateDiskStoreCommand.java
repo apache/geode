@@ -17,33 +17,40 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.DiskStoreValidater;
 
 public class ValidateDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.VALIDATE_DISK_STORE, help = CliStrings.VALIDATE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  public Result validateDiskStore(
+  public ResultModel validateDiskStore(
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.VALIDATE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__DISKDIRS, mandatory = true,
           help = CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__J,
           help = CliStrings.VALIDATE_DISK_STORE__J__HELP) String[] jvmProps) {
+
+    ResultModel result = new ResultModel();
+    InfoResultModel infoResult = result.addInfo();
+    LogWrapper logWrapper = LogWrapper.getInstance(getCache());
+    Process validateDiskStoreProcess = null;
+
     try {
       // create a new process ...bug 46075
       StringBuilder dirList = new StringBuilder();
@@ -74,31 +81,40 @@ public class ValidateDiskStoreCommand extends InternalGfshCommand {
       commandList.add(dirList.toString());
 
       ProcessBuilder procBuilder = new ProcessBuilder(commandList);
-      StringBuilder output = new StringBuilder();
-      String errorString = "";
+      procBuilder.redirectErrorStream(true);
 
-      Process validateDiskStoreProcess = procBuilder.redirectErrorStream(true).start();
+      validateDiskStoreProcess = procBuilder.redirectErrorStream(true).start();
       InputStream inputStream = validateDiskStoreProcess.getInputStream();
       BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+
       String line;
-
       while ((line = br.readLine()) != null) {
-        output.append(line).append(GfshParser.LINE_SEPARATOR);
+        infoResult.addLine(line);
       }
-      validateDiskStoreProcess.destroy();
 
-      output.append(errorString).append(GfshParser.LINE_SEPARATOR);
-      String resultString =
-          "Validating " + diskStoreName + GfshParser.LINE_SEPARATOR + output.toString();
-      return ResultBuilder.createInfoResult(resultString);
-    } catch (IOException ex) {
-      return ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.VALIDATE_DISK_STORE__MSG__IO_ERROR, diskStoreName, ex.getMessage()));
-    } catch (Exception ex) {
-      // StringPrintWriter s = new StringPrintWriter();
-      // ex.printStackTrace(s);
-      return ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.VALIDATE_DISK_STORE__MSG__ERROR, diskStoreName, ex.getMessage()));
+      validateDiskStoreProcess.waitFor(2, TimeUnit.SECONDS);
+      if (validateDiskStoreProcess.exitValue() != 0) {
+        result.setStatus(Result.Status.ERROR);
+      }
+    } catch (Exception e) {
+      infoResult.addLine(
+          String.format("Error compacting disk store %s: %s", diskStoreName, e.getMessage()));
+      result.setStatus(Result.Status.ERROR);
+      logWrapper.warning(e.getMessage(), e);
+    } finally {
+      if (validateDiskStoreProcess != null) {
+        try {
+          // just to check whether the process has exited
+          // Process.exitValue() throws IllegalThreadStateException if Process
+          // is alive
+          validateDiskStoreProcess.exitValue();
+        } catch (IllegalThreadStateException ise) {
+          // not yet terminated, destroy the process
+          validateDiskStoreProcess.destroy();
+        }
+      }
     }
+
+    return result;
   }
 }

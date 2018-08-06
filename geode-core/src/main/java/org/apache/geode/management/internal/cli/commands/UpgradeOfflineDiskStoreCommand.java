@@ -17,32 +17,29 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.DiskStoreUpgrader;
 
 public class UpgradeOfflineDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.UPGRADE_OFFLINE_DISK_STORE,
       help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  public Result upgradeOfflineDiskStore(
+  public ResultModel upgradeOfflineDiskStore(
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME, mandatory = true,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
@@ -53,12 +50,10 @@ public class UpgradeOfflineDiskStoreCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
 
-    Result result;
+    ResultModel result = new ResultModel();
+    InfoResultModel infoResult = result.addInfo();
     LogWrapper logWrapper = LogWrapper.getInstance(getCache());
 
-    StringBuilder output = new StringBuilder();
-    StringBuilder error = new StringBuilder();
-    StringBuilder errorMessage = new StringBuilder();
     Process upgraderProcess = null;
 
     try {
@@ -103,62 +98,26 @@ public class UpgradeOfflineDiskStoreCommand extends InternalGfshCommand {
       commandList.add(CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize);
 
       ProcessBuilder procBuilder = new ProcessBuilder(commandList);
-      // procBuilder.redirectErrorStream(true);
+      procBuilder.redirectErrorStream(true);
       upgraderProcess = procBuilder.start();
+
       InputStream inputStream = upgraderProcess.getInputStream();
-      InputStream errorStream = upgraderProcess.getErrorStream();
       BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputStream));
-      BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
 
       String line;
       while ((line = inputReader.readLine()) != null) {
-        output.append(line).append(GfshParser.LINE_SEPARATOR);
+        infoResult.addLine(line);
       }
 
-      boolean switchToStackTrace = false;
-      while ((line = errorReader.readLine()) != null) {
-        if (!switchToStackTrace && DiskStoreUpgrader.STACKTRACE_START.equals(line)) {
-          switchToStackTrace = true;
-        } else if (switchToStackTrace) {
-          error.append(line).append(GfshParser.LINE_SEPARATOR);
-        } else {
-          errorMessage.append(line);
-        }
+      upgraderProcess.waitFor(2, TimeUnit.SECONDS);
+      if (upgraderProcess.exitValue() != 0) {
+        result.setStatus(Result.Status.ERROR);
       }
-
-      if (errorMessage.length() > 0) {
-        throw new GemFireIOException(errorMessage.toString());
-      }
-
-      upgraderProcess.destroy();
-      result = ResultBuilder.createInfoResult(output.toString());
-    } catch (IOException e) {
-      if (output.length() != 0) {
-        Gfsh.println(output.toString());
-      }
-      String fieldsMessage = (maxOplogSize != -1
-          ? CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize + "," : "");
-      fieldsMessage += StringUtils.arrayToString(diskDirs);
-      String errorString = CliStrings.format(
-          CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2,
-          diskStoreName, fieldsMessage);
-      result = ResultBuilder.createUserErrorResult(errorString);
-      if (logWrapper.fineEnabled()) {
-        logWrapper.fine(e.getMessage(), e);
-      }
-    } catch (GemFireIOException e) {
-      if (output.length() != 0) {
-        Gfsh.println(output.toString());
-      }
-      result = ResultBuilder.createUserErrorResult(errorMessage.toString());
-      if (logWrapper.fineEnabled()) {
-        logWrapper.fine(error.toString());
-      }
-    } catch (IllegalArgumentException e) {
-      if (output.length() != 0) {
-        Gfsh.println(output.toString());
-      }
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
+    } catch (Exception e) {
+      infoResult.addLine(
+          String.format("Error upgrading disk store %s: %s", diskStoreName, e.getMessage()));
+      result.setStatus(Result.Status.ERROR);
+      logWrapper.warning(e.getMessage(), e);
     } finally {
       if (upgraderProcess != null) {
         try {
@@ -171,6 +130,7 @@ public class UpgradeOfflineDiskStoreCommand extends InternalGfshCommand {
         }
       }
     }
+
     return result;
   }
 }
