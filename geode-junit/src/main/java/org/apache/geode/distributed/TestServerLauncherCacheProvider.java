@@ -19,8 +19,7 @@ import java.util.Properties;
 import org.apache.geode.cache.Cache;
 
 /**
- * Implementation of {@link ServerLauncherCacheProvider} used by
- * {@link ServerLauncherWithProviderRegressionTest}.
+ * Implementation of {@link ServerLauncherCacheProvider}.
  */
 public class TestServerLauncherCacheProvider implements ServerLauncherCacheProvider {
 
