@@ -252,10 +252,17 @@ public class LuceneServiceImpl implements InternalLuceneService {
     LuceneIndexCreationProfile luceneIndexCreationProfile = new LuceneIndexCreationProfile(
         indexName, regionPath, fields, analyzer, fieldAnalyzers, serializer);
 
-    Runnable validateIndexProfile =
-        getIndexValidationRunnable(region, indexName, luceneIndexCreationProfile);
-    region.executeSynchronizedOperationOnCacheProfiles(validateIndexProfile);
+    region.addCacheServiceProfile(luceneIndexCreationProfile);
 
+    try {
+      validateLuceneIndexProfile(region);
+    } catch (IllegalStateException e) {
+      region.removeCacheServiceProfile(luceneIndexCreationProfile.getId());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LuceneIndexCreation_INDEX_CANNOT_BE_CREATED_DUE_TO_PROFILE_VIOLATION
+              .toString(indexName),
+          e);
+    }
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
     region.updatePRConfigWithNewGatewaySender(aeqId);
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
@@ -270,22 +277,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
 
     createLuceneIndexOnDataRegion(region, luceneIndex);
-  }
-
-  private Runnable getIndexValidationRunnable(PartitionedRegion region, String indexName,
-      LuceneIndexCreationProfile luceneIndexCreationProfile) {
-    return () -> {
-      region.addCacheServiceProfile(luceneIndexCreationProfile);
-      try {
-        validateLuceneIndexProfile(region);
-      } catch (IllegalStateException e) {
-        region.removeCacheServiceProfile(luceneIndexCreationProfile.getId());
-        throw new UnsupportedOperationException(
-            LocalizedStrings.LuceneIndexCreation_INDEX_CANNOT_BE_CREATED_DUE_TO_PROFILE_VIOLATION
-                .toString(indexName),
-            e);
-      }
-    };
   }
 
   protected void validateLuceneIndexProfile(PartitionedRegion region) {

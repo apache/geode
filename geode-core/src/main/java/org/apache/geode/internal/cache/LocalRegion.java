@@ -499,20 +499,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private final Lock clientMetaDataLock = new ReentrantLock();
 
   /**
-   * Lock for updating the cache service profile for the region.
-   */
-  private final Lock cacheServiceProfileUpdateLock = new ReentrantLock();
-
-  public void executeSynchronizedOperationOnCacheProfiles(Runnable operation) {
-    cacheServiceProfileUpdateLock.lock();
-    try {
-      operation.run();
-    } finally {
-      cacheServiceProfileUpdateLock.unlock();
-    }
-  }
-
-  /**
    * There seem to be cases where a region can be created and yet the distributed system is not yet
    * in place...
    */
@@ -674,7 +660,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         internalRegionArgs.isUsedForParallelGatewaySenderQueue();
     this.serialGatewaySender = internalRegionArgs.getSerialGatewaySender();
     if (internalRegionArgs.getCacheServiceProfiles() != null) {
-      addCacheServiceProfiles(internalRegionArgs);
+      this.cacheServiceProfiles.putAll(internalRegionArgs.getCacheServiceProfiles());
     }
 
     if (!isUsedForMetaRegion && !isUsedForPartitionedRegionAdmin
@@ -697,15 +683,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     eventTracker = createEventTracker();
 
     versionVector = createRegionVersionVector();
-  }
-
-  private void addCacheServiceProfiles(InternalRegionArguments internalRegionArgs) {
-    cacheServiceProfileUpdateLock.lock();
-    try {
-      this.cacheServiceProfiles.putAll(internalRegionArgs.getCacheServiceProfiles());
-    } finally {
-      cacheServiceProfileUpdateLock.unlock();
-    }
   }
 
   protected EventTracker createEventTracker() {
@@ -10456,13 +10433,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public void removeCacheServiceProfile(String profileID) {
-    cacheServiceProfileUpdateLock.lock();
-    try {
-      this.cacheServiceProfiles.remove(profileID);
-    } finally {
-      cacheServiceProfileUpdateLock.unlock();
-    }
-
+    this.cacheServiceProfiles.remove(profileID);
   }
 
   public AbstractGatewaySender getSerialGatewaySender() {
@@ -10524,12 +10495,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public void addCacheServiceProfile(CacheServiceProfile profile) {
-    cacheServiceProfileUpdateLock.lock();
-    try {
-      this.cacheServiceProfiles.put(profile.getId(), profile);
-    } finally {
-      cacheServiceProfileUpdateLock.unlock();
-    }
+    this.cacheServiceProfiles.put(profile.getId(), profile);
   }
 
   @Override
