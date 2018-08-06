@@ -247,6 +247,7 @@ public class AttributesFactoryJUnitTest {
     assertEquals(16, attrs.getInitialCapacity());
     assertEquals(0.75, attrs.getLoadFactor(), 0.0);
     assertFalse(attrs.getStatisticsEnabled());
+    assertFalse(attrs.isDetectReadConflicts());
     assertFalse(attrs.getPersistBackup());
     DiskWriteAttributes dwa = attrs.getDiskWriteAttributes();
     assertNotNull(dwa);

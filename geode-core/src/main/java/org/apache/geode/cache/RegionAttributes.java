@@ -71,6 +71,13 @@ public interface RegionAttributes<K, V> {
 
   Class<V> getValueConstraint();
 
+  /**
+   * Returns true if configured detect read conflict mode
+   *
+   * @return Returns true if configured read conflict mode
+   */
+  boolean isDetectReadConflicts();
+
 
   /**
    * Gets the <code>timeToLive</code> expiration attributes for the region as a whole. Default is 0

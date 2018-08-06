@@ -19,13 +19,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.Assert;
 
 /**
  * UserSpecifiedRegionAttributes provides an way to detect departures from default attribute values.
  * It may be used when collecting attributes from an XML parser or from attribute changes made using
- * the {@link org.apache.geode.cache.AttributesFactory}. Its initial usage was to validate when a
+ * the {@link AttributesFactory}. Its initial usage was to validate when a
  * user set a value which should not be set (for PartitionedRegions).
  *
  * @since GemFire 5.1
@@ -65,6 +66,7 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
   private boolean hasSubscriptionAttributes = false;
   private boolean hasEvictionAttributes = false;
   private boolean hasCustomEviction = false;
+  private boolean hasDetectReadConflict = false;
 
   /**
    * Whether this region has specified a disk store name
@@ -297,6 +299,10 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
     return this.hasDiskSynchronous;
   }
 
+  public boolean hasDetectReadConflict() {
+    return hasDetectReadConflict;
+  }
+
   public void setHasCacheListeners(boolean hasCacheListeners) {
     this.hasCacheListeners = hasCacheListeners;
   }
@@ -521,7 +527,11 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
     this.hasDiskSynchronous = val;
   }
 
-  private static final int HAS_COUNT = 41;
+  public void setHasDetectReadConflicts(boolean hasDetectReadConflict) {
+    this.hasDetectReadConflict = hasDetectReadConflict;
+  }
+
+  private static final int HAS_COUNT = 42;
 
   public void initHasFields(UserSpecifiedRegionAttributes<K, V> other) {
     Field thisFields[] = UserSpecifiedRegionAttributes.class.getDeclaredFields();

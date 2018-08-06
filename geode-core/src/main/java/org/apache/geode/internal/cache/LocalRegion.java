@@ -498,6 +498,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private final Lock clientMetaDataLock = new ReentrantLock();
 
+  private boolean detectReadConflicts;
+
   /**
    * Lock for updating the cache service profile for the region.
    */
@@ -697,6 +699,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     eventTracker = createEventTracker();
 
     versionVector = createRegionVersionVector();
+    this.detectReadConflicts = attrs.isDetectReadConflicts();
   }
 
   private void addCacheServiceProfiles(InternalRegionArguments internalRegionArgs) {
@@ -12295,5 +12298,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public Lock getClientMetaDataLock() {
     return clientMetaDataLock;
+  }
+
+  public boolean isDetectReadConflicts() {
+    return detectReadConflicts;
   }
 }

@@ -170,6 +170,8 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    */
   private boolean enableAsyncConflation;
 
+  private boolean detectReadConflicts;
+
   /**
    * The client to server Connection Pool
    *
@@ -990,6 +992,16 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   public void setDiskStoreName(String diskStoreName) {
     this.diskStoreName = diskStoreName;
     setHasDiskStoreName(true);
+  }
+
+  @Override
+  public boolean isDetectReadConflicts() {
+    return detectReadConflicts;
+  }
+
+  public void setDetectReadConflicts(boolean detectReadConflicts) {
+    this.detectReadConflicts = detectReadConflicts;
+    setHasDetectReadConflicts(true);
   }
 
   public boolean isDiskSynchronous() {

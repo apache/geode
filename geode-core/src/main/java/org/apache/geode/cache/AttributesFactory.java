@@ -378,6 +378,7 @@ public class AttributesFactory<K, V> {
     this.regionAttributes.ignoreJTA = regionAttributes.getIgnoreJTA();
     this.regionAttributes.keyConstraint = regionAttributes.getKeyConstraint();
     this.regionAttributes.valueConstraint = regionAttributes.getValueConstraint();
+    this.regionAttributes.detectReadConflicts = regionAttributes.isDetectReadConflicts();
     this.regionAttributes.initialCapacity = regionAttributes.getInitialCapacity();
     this.regionAttributes.loadFactor = regionAttributes.getLoadFactor();
     this.regionAttributes.concurrencyLevel = regionAttributes.getConcurrencyLevel();
@@ -998,6 +999,17 @@ public class AttributesFactory<K, V> {
   }
 
   /**
+   * Enables or disabled concurrent modification checks for read operations.
+   * Disabled by default.
+   *
+   * @param detectReadConflicts - whether to perform concurrency checks on read operations
+   */
+  public void setDetectReadConflicts(boolean detectReadConflicts) {
+    this.regionAttributes.detectReadConflicts = detectReadConflicts;
+    this.regionAttributes.setHasDetectReadConflicts(true);
+  }
+
+  /**
    * Sets whether or not the writing to the disk is synchronous. Default is true.
    *
    * @param isSynchronous boolean if true indicates synchronous writes
@@ -1557,6 +1569,7 @@ public class AttributesFactory<K, V> {
     Compressor compressor = null;
 
     boolean offHeap = false;
+    boolean detectReadConflicts;
 
     /**
      * Constructs an instance of {@code RegionAttributes} with default settings.
@@ -1584,6 +1597,7 @@ public class AttributesFactory<K, V> {
           .append(ignoreJTA).append("; isLockGrantor=").append(isLockGrantor)
           .append("; keyConstraint=").append(keyConstraint).append("; valueConstraint=")
           .append(valueConstraint).append("; initialCapacity=").append(initialCapacity)
+          .append("detectReadConflicts-").append(detectReadConflicts)
           .append("; loadFactor=").append(loadFactor).append("; concurrencyLevel=")
           .append(concurrencyLevel).append("; concurrencyChecksEnabled=")
           .append(concurrencyChecksEnabled).append("; enableAsyncConflation=")
@@ -1621,6 +1635,11 @@ public class AttributesFactory<K, V> {
 
     public Class<V> getValueConstraint() {
       return this.valueConstraint;
+    }
+
+    @Override
+    public boolean isDetectReadConflicts() {
+      return detectReadConflicts;
     }
 
     private boolean isForBucketRegion() {

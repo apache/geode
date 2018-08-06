@@ -603,6 +603,16 @@ public class RegionFactory<K, V> {
   }
 
   /**
+   * Enables or disabled concurrent modification checks for read operations.
+   * Disabled by default.
+   *
+   * @param detectReadConflicts - whether to perform concurrency checks on read operations
+   */
+  public void setDetectReadConflicts(boolean detectReadConflicts) {
+    this.attrsFactory.setDetectReadConflicts(detectReadConflicts);
+  }
+
+  /**
    * Sets whether or not the writing to the disk is synchronous.
    *
    * @param isSynchronous boolean if true indicates synchronous writes
@@ -836,4 +846,6 @@ public class RegionFactory<K, V> {
     this.attrsFactory.setOffHeap(offHeap);
     return this;
   }
+
+
 }

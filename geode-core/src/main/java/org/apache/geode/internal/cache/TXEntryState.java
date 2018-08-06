@@ -238,6 +238,7 @@ public class TXEntryState implements Releasable {
    */
   private static final boolean VERBOSE_CONFLICT_STRING =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "verboseConflictString");
+  private boolean detectReadConflicts;
 
   /**
    * This constructor is used to create a singleton used by LocalRegion to signal that noop
@@ -257,7 +258,8 @@ public class TXEntryState implements Releasable {
    * This constructor is used when creating an entry
    */
   protected TXEntryState(RegionEntry re, Object pvId, Object pv, TXRegionState txRegionState,
-      boolean isDistributed) {
+      boolean isDistributed, boolean detectReadConflicts) {
+
     Object vId = pvId;
     if (vId == null) {
       vId = Token.REMOVED_PHASE1;
@@ -281,6 +283,7 @@ public class TXEntryState implements Releasable {
     if (isDistributed) {
       this.distTxThinEntryState = new DistTxThinEntryState();
     }
+    this.detectReadConflicts = detectReadConflicts;
   }
 
   private byte[] getSerializedPendingValue() {
@@ -372,7 +375,7 @@ public class TXEntryState implements Releasable {
    * @since GemFire 5.1
    */
   public boolean isDirty() {
-    return DETECT_READ_CONFLICTS || this.dirty;
+    return DETECT_READ_CONFLICTS || detectReadConflicts || this.dirty;
   }
 
   /**
@@ -1958,8 +1961,8 @@ public class TXEntryState implements Releasable {
     }
 
     public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue,
-        Object entryKey, TXRegionState txrs, boolean isDistributed) {
-      return new TXEntryState(re, vId, pendingValue, txrs, isDistributed);
+        Object entryKey, TXRegionState txrs, boolean isDistributed, boolean detectReadConflicts) {
+      return new TXEntryState(re, vId, pendingValue, txrs, isDistributed, detectReadConflicts);
     }
 
   };

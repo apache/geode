@@ -696,8 +696,8 @@ fromData,27
 toData,27
 
 org/apache/geode/internal/admin/remote/RemoteRegionAttributes,2
-fromData,404
-toData,353
+fromData,414
+toData,363
 
 org/apache/geode/internal/admin/remote/RemoteRegionSnapshot,2
 fromData,59

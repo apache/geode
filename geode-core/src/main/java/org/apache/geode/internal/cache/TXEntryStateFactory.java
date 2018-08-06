@@ -24,6 +24,6 @@ public interface TXEntryStateFactory {
   TXEntryState createEntry();
 
   TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue, Object entryKey,
-      TXRegionState txrs, boolean isDistributed);
+      TXRegionState txrs, boolean isDistributed, boolean detectReadConflicts);
 
 }

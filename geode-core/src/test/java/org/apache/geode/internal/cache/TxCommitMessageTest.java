@@ -1129,7 +1129,7 @@ public class TxCommitMessageTest {
     final TXState txState = new TXState(null, false);
     final TXRegionState txRegionState = new TXRegionState(mockInternalRegion, txState);
     final TXEntryState txEntryState =
-        TXEntryState.getFactory().createEntry(null, null, null, null, txRegionState, false);
+        TXEntryState.getFactory().createEntry(null, null, null, null, txRegionState, false, false);
     txEntryState.invalidate(mockEntryEventImpl);
     txEntryState.generateEventOffsets(txState);
     return txEntryState;

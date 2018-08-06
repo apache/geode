@@ -110,7 +110,7 @@ public class TXRegionState {
       isDistributed = cache.getTxManager().isDistributed();
     }
     TXEntryState result = cache.getTXEntryStateFactory().createEntry(re, vId, pendingValue,
-        entryKey, this, isDistributed);
+        entryKey, this, isDistributed, r.isDetectReadConflicts());
     this.entryMods.put(entryKey, result);
     return result;
   }

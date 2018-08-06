@@ -73,6 +73,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   private DataPolicy dataPolicy;
   private Scope scope;
   private boolean statsEnabled;
+  private boolean detectReadConflicts;
   private boolean ignoreJTA;
   private boolean isLockGrantor;
   private int concurrencyLevel;
@@ -135,6 +136,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     this.publisher = attr.getPublisher();
     this.enableAsyncConflation = attr.getEnableAsyncConflation();
     this.diskStoreName = attr.getDiskStoreName();
+    this.detectReadConflicts = attr.isDetectReadConflicts();
     if (this.diskStoreName == null) {
       this.diskWriteAttributes = attr.getDiskWriteAttributes();
       this.diskDirs = attr.getDiskDirs();
@@ -409,6 +411,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
     DataSerializer.writeString(this.compressorDesc, out);
     out.writeBoolean(this.offHeap);
+    out.writeBoolean(this.detectReadConflicts);
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -454,6 +457,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
     this.compressorDesc = DataSerializer.readString(in);
     this.offHeap = in.readBoolean();
+    this.detectReadConflicts = in.readBoolean();
   }
 
   private String[] getDescs(Object[] l) {
@@ -613,6 +617,11 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
 
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
+  }
+
+  @Override
+  public boolean isDetectReadConflicts() {
+    return detectReadConflicts;
   }
 
   public boolean isGatewaySenderEnabled() {
