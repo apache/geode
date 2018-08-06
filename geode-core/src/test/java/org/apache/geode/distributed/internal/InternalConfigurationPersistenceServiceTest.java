@@ -305,6 +305,10 @@ public class InternalConfigurationPersistenceServiceTest {
     return "<cache>\n<gateway-receiver/>\n</cache>";
   }
 
+  private String getNoReceiversXml() {
+    return "<cache>\n</cache>";
+  }
+
   protected Object[] getXmlAndExpectedElements() {
     return $(
         new Object[] {getDuplicateReceiversWithDefaultPropertiesXml(), 2, 1},
@@ -312,6 +316,7 @@ public class InternalConfigurationPersistenceServiceTest {
         new Object[] {getDuplicateReceiversWithDifferentBindAddressesXml(), 2, 0},
         new Object[] {getSingleReceiverWithDefaultBindAddressXml(), 1, 1},
         new Object[] {getDuplicateReceiversWithDefaultBindAddressesXml(), 2, 1},
-        new Object[] {getValidReceiversXml(), 1, 1});
+        new Object[] {getValidReceiversXml(), 1, 1},
+        new Object[] {getNoReceiversXml(), 0, 0});
   }
 }
