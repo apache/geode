@@ -57,7 +57,6 @@ import org.apache.geode.cache.util.CqListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl.PoolAttributes;
 import org.apache.geode.test.dunit.Assert;
@@ -78,21 +77,19 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
   protected static final int TYPE_INVALIDATE = 2;
   protected static final int TYPE_DESTROY = 3;
 
-  public static void createCacheClient(Pool poolAttr, String regionName) throws Exception {
+  public static void createCacheClient(Pool poolAttr, String regionName) {
     createCacheClient(poolAttr, regionName, getClientProperties(), Boolean.FALSE);
   }
 
-  public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties)
-      throws Exception {
+  public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties) {
     createCacheClient(poolAttr, regionName, dsProperties, Boolean.FALSE);
   }
 
-  public static void createClientCache(Pool poolAttr, String regionName) throws Exception {
+  public static void createClientCache(Pool poolAttr, String regionName) {
     createClientCache(poolAttr, regionName, getClientProperties());
   }
 
-  public static void createClientCache(Pool poolAttr, String regionName, Properties dsProperties)
-      throws Exception {
+  public static void createClientCache(Pool poolAttr, String regionName, Properties dsProperties) {
     ClientCacheFactory ccf = new ClientCacheFactory(dsProperties);
     if (poolAttr != null) {
       ccf.setPoolFreeConnectionTimeout(poolAttr.getFreeConnectionTimeout())
@@ -125,15 +122,15 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     new CacheServerTestUtil().createClientCache(dsProperties, ccf);
     ClientCache cc = (ClientCache) cache;
     cc.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regionName);
-    pool = (PoolImpl) ((GemFireCacheImpl) cc).getDefaultPool();
+    pool = (PoolImpl) cc.getDefaultPool();
   }
 
-  public static void createPool(PoolAttributes poolAttr) throws Exception {
+  public static void createPool(PoolAttributes poolAttr) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
 
-    DistributedSystem ds = new CacheServerTestUtil().getSystem(props);;
+    DistributedSystem ds = new CacheServerTestUtil().getSystem(props);
 
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
@@ -147,12 +144,12 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
   }
 
   public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties,
-      Boolean addControlListener) throws Exception {
+      Boolean addControlListener) {
     createCacheClient(poolAttr, regionName, dsProperties, addControlListener, null);
   }
 
   public static void createCacheClient(Pool poolAttr, String regionName, Properties dsProperties,
-      Boolean addControlListener, Properties javaSystemProperties) throws Exception {
+      Boolean addControlListener, Properties javaSystemProperties) {
     new CacheServerTestUtil().createCache(dsProperties);
     IgnoredException.addIgnoredException("java.net.ConnectException||java.net.SocketException");
 
@@ -190,8 +187,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void createCacheClient(Pool poolAttr, String regionName1, String regionName2)
-      throws Exception {
+  public static void createCacheClient(Pool poolAttr, String regionName1, String regionName2) {
     new CacheServerTestUtil().createCache(getClientProperties());
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
@@ -281,7 +277,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
    * Create client regions
    */
   public static void createCacheClients(Pool poolAttr, String regionName1, String regionName2,
-      Properties dsProperties) throws Exception {
+      Properties dsProperties) {
     new CacheServerTestUtil().createCache(dsProperties);
 
     // Initialize region1
@@ -395,7 +391,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     return new Integer(server1.getPort());
   }
 
-  private void createCache(Properties props) throws Exception {
+  private void createCache(Properties props) {
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     ds.disconnect();
@@ -404,7 +400,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     assertNotNull(cache);
   }
 
-  private void createClientCache(Properties props, ClientCacheFactory ccf) throws Exception {
+  private void createClientCache(Properties props, ClientCacheFactory ccf) {
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     ds.disconnect();

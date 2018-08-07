@@ -122,9 +122,6 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           RegionDestroyedException.class.getName()};
 
   @Override
-  public final void preSetUp() throws Exception {}
-
-  @Override
   public final void postSetUp() throws Exception {
     preSetUpClientAuthorizationTestBase();
     setUpClientAuthorizationTestBase();
@@ -187,9 +184,6 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     tearDownClientAuthorizationTestBase();
     postTearDownClientAuthorizationTestBase();
   }
-
-  @Override
-  public final void postTearDown() throws Exception {}
 
   private final void tearDownClientAuthorizationTestBase() throws Exception {
     server1.invoke(() -> ServerConnection.allowInternalMessagesWithoutCredentials = true);

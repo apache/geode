@@ -30,6 +30,7 @@ import org.awaitility.Awaitility;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -73,33 +74,101 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   protected static InternalCache cache;
 
-  private final CacheTestFixture cacheTestFixture;
-
-  public JUnit4CacheTestCase() {
-    this(null);
+  /**
+   * Sets this test up with a {@code CacheCreation} as its cache. Any existing cache is closed.
+   * Whoever calls this must also call {@code finishCacheXml}.
+   */
+  public static synchronized void beginCacheXml() {
+    closeCache();
+    cache = new TestCacheCreation();
   }
 
-  JUnit4CacheTestCase(final CacheTestFixture cacheTestFixture) {
-    super(cacheTestFixture);
-    if (cacheTestFixture == null) {
-      this.cacheTestFixture = this;
-    } else {
-      this.cacheTestFixture = cacheTestFixture;
+  public static synchronized boolean hasCache() {
+    return cache != null;
+  }
+
+  /**
+   * Return current cache without creating one.
+   */
+  public static synchronized InternalCache basicGetCache() {
+    return cache;
+  }
+
+  /**
+   * Close the cache.
+   */
+  public static synchronized void closeCache() {
+    // Workaround for the fact that some classes are now extending
+    // CacheTestCase but not using it properly.
+    if (cache == null) {
+      cache = GemFireCacheImpl.getInstance();
     }
+    try {
+      if (cache != null && !cache.isClosed()) {
+        if (cache instanceof GemFireCacheImpl) {
+          // noinspection RedundantCast For backwards compatibility during rolling upgrade tests
+          CacheTransactionManager transactionManager =
+              ((GemFireCacheImpl) cache).getTxManager();
+          if (transactionManager != null && transactionManager.exists()) {
+            // make sure we cleanup this threads txid stored in a thread local
+            transactionManager.rollback();
+          }
+        }
+        cache.close();
+      }
+    } catch (CacheClosedException e) {
+      throw e;
+    } catch (Exception ignored) {
+    } finally {
+      cache = null;
+      // Make sure all pools are closed, even if we never created a cache
+      PoolManager.close(false);
+    }
+  }
+
+  /**
+   * Local destroy all root regions and close the cache.
+   */
+  private static synchronized void remoteTearDown() {
+    try {
+      DistributionMessageObserver.setInstance(null);
+      destroyRegions(cache);
+    } finally {
+      try {
+        closeCache();
+      } finally {
+        try {
+          cleanDiskDirs();
+        } catch (Exception e) {
+          logger.error("Error cleaning disk dirs", e);
+        }
+      }
+    }
+  }
+
+  public static File getDiskDir() {
+    int vmNum = VM.getCurrentVMNum();
+    File dir = new File("diskDir", "disk" + String.valueOf(vmNum)).getAbsoluteFile();
+    dir.mkdirs();
+    return dir;
+  }
+
+  /**
+   * Return a set of disk directories for persistence tests. These directories will be automatically
+   * cleaned up on test case closure.
+   */
+  public static File[] getDiskDirs() {
+    return new File[] {getDiskDir()};
   }
 
   /**
    * Creates the {@code Cache} for this test
    */
-  private final void createCache() {
-    createCache(false);
+  private void createCache() {
+    createCache(false, null);
   }
 
-  private final void createCache(final boolean client) {
-    createCache(client, null);
-  }
-
-  private final void createCache(final boolean client, final CacheFactory factory) {
+  private void createCache(final boolean client, final CacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       try {
         System.setProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
@@ -126,31 +195,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
         System.clearProperty(GEMFIRE_PREFIX + MCAST_PORT);
       }
     }
-  }
-
-  /**
-   * Creates the {@code Cache} for this test that is not connected to other members.
-   */
-  public final InternalCache createLonerCache() {
-    synchronized (JUnit4CacheTestCase.class) {
-      try {
-        System.setProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        InternalCache newCache = (InternalCache) CacheFactory.create(getLonerSystem());
-        cache = newCache;
-      } finally {
-        System.clearProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-      }
-      return cache;
-    }
-  }
-
-  /**
-   * Sets this test up with a {@code CacheCreation} as its cache. Any existing cache is closed.
-   * Whoever calls this must also call {@code finishCacheXml}.
-   */
-  public static synchronized void beginCacheXml() {
-    closeCache();
-    cache = new TestCacheCreation();
   }
 
   /**
@@ -279,59 +323,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return (GemFireCacheImpl) getCache();
   }
 
-  public static final synchronized boolean hasCache() {
-    return cache != null;
-  }
-
-  /**
-   * Return current cache without creating one.
-   */
-  public static final synchronized InternalCache basicGetCache() {
-    return cache;
-  }
-
-  /**
-   * Close the cache.
-   */
-  public static final synchronized void closeCache() {
-    // Workaround for the fact that some classes are now extending
-    // CacheTestCase but not using it properly.
-    if (cache == null) {
-      cache = GemFireCacheImpl.getInstance();
-    }
-    try {
-      if (cache != null) {
-        try {
-          if (!cache.isClosed()) {
-            if (cache instanceof GemFireCacheImpl) {
-              // this unnecessary type-cast prevents NoSuchMethodError
-              // java.lang.NoSuchMethodError:
-              // org.apache.geode.internal.cache.InternalCache.getTxManager()Lorg/apache/geode/internal/cache/TXManagerImpl
-              CacheTransactionManager transactionManager =
-                  ((GemFireCacheImpl) cache).getTxManager();
-              if (transactionManager != null) {
-                if (transactionManager.exists()) {
-                  try {
-                    // make sure we cleanup this threads txid stored in a thread local
-                    transactionManager.rollback();
-                  } catch (Exception ignore) {
-
-                  }
-                }
-              }
-            }
-            cache.close();
-          }
-        } finally {
-          cache = null;
-        }
-      } // cache != null
-    } finally {
-      // Make sure all pools are closed, even if we never created a cache
-      PoolManager.close(false);
-    }
-  }
-
   /**
    * Close the cache in all VMs.
    */
@@ -347,43 +338,9 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     postTearDownCacheTestCase();
   }
 
-  private final void tearDownCacheTestCase() {
+  private void tearDownCacheTestCase() {
     remoteTearDown();
     Invoke.invokeInEveryVM(JUnit4CacheTestCase::remoteTearDown);
-  }
-
-  @Override
-  public void preTearDownCacheTestCase() throws Exception {
-    if (this.cacheTestFixture != this) {
-      this.cacheTestFixture.preTearDownCacheTestCase();
-    }
-  }
-
-  @Override
-  public void postTearDownCacheTestCase() throws Exception {
-    if (this.cacheTestFixture != this) {
-      this.cacheTestFixture.postTearDownCacheTestCase();
-    }
-  }
-
-  /**
-   * Local destroy all root regions and close the cache.
-   */
-  private static synchronized void remoteTearDown() {
-    try {
-      DistributionMessageObserver.setInstance(null);
-      destroyRegions(cache);
-    } finally {
-      try {
-        closeCache();
-      } finally {
-        try {
-          cleanDiskDirs();
-        } catch (Exception e) {
-          logger.error("Error cleaning disk dirs", e);
-        }
-      }
-    }
   }
 
   /**
@@ -436,7 +393,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return getCache().createRegion(rootName, attributes);
   }
 
-  public final Region createExpiryRootRegion(final String rootName,
+  protected final Region createExpiryRootRegion(final String rootName,
       final RegionAttributes attributes) throws RegionExistsException, TimeoutException {
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
@@ -475,21 +432,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
             "<ExpectedException action=remove>" + exceptionStringToIgnore + "</ExpectedException>");
       }
     };
-  }
-
-  public static final File getDiskDir() {
-    int vmNum = VM.getCurrentVMNum();
-    File dir = new File("diskDir", "disk" + String.valueOf(vmNum)).getAbsoluteFile();
-    dir.mkdirs();
-    return dir;
-  }
-
-  /**
-   * Return a set of disk directories for persistence tests. These directories will be automatically
-   * cleaned up on test case closure.
-   */
-  public static final File[] getDiskDirs() {
-    return new File[] {getDiskDir()};
   }
 
   /**
