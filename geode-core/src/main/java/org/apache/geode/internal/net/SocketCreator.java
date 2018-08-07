@@ -389,6 +389,10 @@ public class SocketCreator {
    */
   private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException, IOException {
 
+    if (sslConfig.useDefaultSSLContext()) {
+      return SSLContext.getDefault();
+    }
+
     SSLContext newSSLContext = getSSLContextInstance();
     KeyManager[] keyManagers = getKeyManagers();
     TrustManager[] trustManagers = getTrustManagers();
@@ -473,112 +477,99 @@ public class SocketCreator {
 
   private TrustManager[] getTrustManagers()
       throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-    if (sslConfig.isUseDefaultProvider()) {
-      TrustManagerFactory tmf =
-          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      tmf.init((KeyStore) null);
-      return tmf.getTrustManagers();
-    } else {
-      TrustManager[] trustManagers = null;
+    TrustManager[] trustManagers = null;
 
-      String trustStoreType = sslConfig.getTruststoreType();
-      if (StringUtils.isEmpty(trustStoreType)) {
-        trustStoreType = KeyStore.getDefaultType();
-      }
+    String trustStoreType = sslConfig.getTruststoreType();
+    if (StringUtils.isEmpty(trustStoreType)) {
+      trustStoreType = KeyStore.getDefaultType();
+    }
 
-      KeyStore ts = KeyStore.getInstance(trustStoreType);
-      String trustStorePath = sslConfig.getTruststore();
-      FileInputStream fis = new FileInputStream(trustStorePath);
-      String passwordString = sslConfig.getTruststorePassword();
-      char[] password = null;
-      if (passwordString != null) {
-        if (passwordString.trim().equals("")) {
-          if (!StringUtils.isEmpty(passwordString)) {
-            String toDecrypt = "encrypted(" + passwordString + ")";
-            passwordString = PasswordUtil.decrypt(toDecrypt);
-            password = passwordString.toCharArray();
-          }
-        } else {
+    KeyStore ts = KeyStore.getInstance(trustStoreType);
+    String trustStorePath = sslConfig.getTruststore();
+    FileInputStream fis = new FileInputStream(trustStorePath);
+    String passwordString = sslConfig.getTruststorePassword();
+    char[] password = null;
+    if (passwordString != null) {
+      if (passwordString.trim().equals("")) {
+        if (!StringUtils.isEmpty(passwordString)) {
+          String toDecrypt = "encrypted(" + passwordString + ")";
+          passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
         }
+      } else {
+        password = passwordString.toCharArray();
       }
-      ts.load(fis, password);
-
-      // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in
-      // security properties
-      TrustManagerFactory tmf =
-          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      tmf.init(ts);
-      trustManagers = tmf.getTrustManagers();
-      // follow the security tip in java doc
-      if (password != null) {
-        java.util.Arrays.fill(password, ' ');
-      }
-      return trustManagers;
     }
+    ts.load(fis, password);
+
+    // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in
+    // security properties
+    TrustManagerFactory tmf =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    tmf.init(ts);
+    trustManagers = tmf.getTrustManagers();
+    // follow the security tip in java doc
+    if (password != null) {
+      java.util.Arrays.fill(password, ' ');
+    }
+
+    return trustManagers;
   }
 
   private KeyManager[] getKeyManagers() throws KeyStoreException, IOException,
       NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
-    if (sslConfig.isUseDefaultProvider()) {
-      KeyManagerFactory keyManagerFactory =
-          KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      keyManagerFactory.init(null, null);
-      return keyManagerFactory.getKeyManagers();
-    } else {
-      if (sslConfig.getKeystore() == null) {
-        return null;
-      }
+    if (sslConfig.getKeystore() == null) {
+      return null;
+    }
 
-      KeyManager[] keyManagers = null;
-      String keyStoreType = sslConfig.getKeystoreType();
-      if (StringUtils.isEmpty(keyStoreType)) {
-        keyStoreType = KeyStore.getDefaultType();
-      }
-      KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-      String keyStoreFilePath = sslConfig.getKeystore();
-      if (StringUtils.isEmpty(keyStoreFilePath)) {
-        keyStoreFilePath =
-            System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
-      }
+    KeyManager[] keyManagers = null;
+    String keyStoreType = sslConfig.getKeystoreType();
+    if (StringUtils.isEmpty(keyStoreType)) {
+      keyStoreType = KeyStore.getDefaultType();
+    }
+    KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+    String keyStoreFilePath = sslConfig.getKeystore();
+    if (StringUtils.isEmpty(keyStoreFilePath)) {
+      keyStoreFilePath =
+          System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
+    }
 
-      FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
-      String passwordString = sslConfig.getKeystorePassword();
-      char[] password = null;
-      if (passwordString != null) {
-        if (passwordString.trim().equals("")) {
-          String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
-          if (!StringUtils.isEmpty(encryptedPass)) {
-            String toDecrypt = "encrypted(" + encryptedPass + ")";
-            passwordString = PasswordUtil.decrypt(toDecrypt);
-            password = passwordString.toCharArray();
-          }
-        } else {
+    FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
+    String passwordString = sslConfig.getKeystorePassword();
+    char[] password = null;
+    if (passwordString != null) {
+      if (passwordString.trim().equals("")) {
+        String encryptedPass = System.getenv("javax.net.ssl.keyStorePassword");
+        if (!StringUtils.isEmpty(encryptedPass)) {
+          String toDecrypt = "encrypted(" + encryptedPass + ")";
+          passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
         }
+      } else {
+        password = passwordString.toCharArray();
       }
-      keyStore.load(fileInputStream, password);
-      // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in
-      // security properties
-      KeyManagerFactory keyManagerFactory =
-          KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      keyManagerFactory.init(keyStore, password);
-      keyManagers = keyManagerFactory.getKeyManagers();
-      // follow the security tip in java doc
-      if (password != null) {
-        java.util.Arrays.fill(password, ' ');
-      }
-
-      KeyManager[] extendedKeyManagers = new KeyManager[keyManagers.length];
-
-      for (int i = 0; i < keyManagers.length; i++)
-
-      {
-        extendedKeyManagers[i] = new ExtendedAliasKeyManager(keyManagers[i], sslConfig.getAlias());
-      }
-
-      return extendedKeyManagers;
     }
+    keyStore.load(fileInputStream, password);
+    // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in
+    // security properties
+    KeyManagerFactory keyManagerFactory =
+        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    keyManagerFactory.init(keyStore, password);
+    keyManagers = keyManagerFactory.getKeyManagers();
+    // follow the security tip in java doc
+    if (password != null) {
+      java.util.Arrays.fill(password, ' ');
+    }
+
+    KeyManager[] extendedKeyManagers = new KeyManager[keyManagers.length];
+
+    for (int i = 0; i < keyManagers.length; i++)
+
+    {
+      extendedKeyManagers[i] = new ExtendedAliasKeyManager(keyManagers[i], sslConfig.getAlias());
+    }
+
+    return extendedKeyManagers;
   }
 
   public SSLContext getSslContext() {

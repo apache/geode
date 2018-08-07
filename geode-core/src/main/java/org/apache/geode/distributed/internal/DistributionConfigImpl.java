@@ -606,7 +606,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private SecurableCommunicationChannel[] securableCommunicationChannels =
       DEFAULT_SSL_ENABLED_COMPONENTS;
 
-  private boolean sslUseDefaultProvider = DEFAULT_SSL_USE_DEFAULT_PROVIDER;
+  private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_SSLCONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
   private boolean sslRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
@@ -851,7 +851,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.securableCommunicationChannels =
         ((DistributionConfigImpl) other).securableCommunicationChannels;
 
-    this.sslUseDefaultProvider = other.getSSLUseDefaultProvider();
+    this.sslUseDefaultSSLContext = other.getSSLUseDefaultProvider();
     this.sslCiphers = other.getSSLCiphers();
     this.sslProtocols = other.getSSLProtocols();
     this.sslRequireAuthentication = other.getSSLRequireAuthentication();
@@ -2772,13 +2772,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public boolean getSSLUseDefaultProvider() {
-    return sslUseDefaultProvider;
+    return sslUseDefaultSSLContext;
   }
 
   @Override
   public void setSSLUseDefaultProvider(final boolean useDefaultProvider) {
     // This conversion is required due to backwards compatibility of the existing protocols code
-    this.sslUseDefaultProvider = useDefaultProvider;
+    this.sslUseDefaultSSLContext = useDefaultProvider;
   }
 
   @Override

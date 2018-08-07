@@ -25,7 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_PROVIDER;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_SSLCONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.Security;
@@ -91,7 +91,7 @@ public class CustomSSLProviderDistributedTest {
     {
       setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.SERVER);
       setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf("true"));
-      setProperty(SSL_USE_DEFAULT_PROVIDER, String.valueOf("true"));
+      setProperty(SSL_USE_DEFAULT_SSLCONTEXT, String.valueOf("true"));
     }
   };
 

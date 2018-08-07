@@ -178,7 +178,7 @@ public class SSLConfigurationFactory {
     sslConfig.setProtocols(distributionConfig.getSSLProtocols());
     sslConfig.setRequireAuth(distributionConfig.getSSLRequireAuthentication());
     sslConfig.setAlias(distributionConfig.getSSLDefaultAlias());
-    sslConfig.setUseDefaultProvider(distributionConfig.getSSLUseDefaultProvider());
+    sslConfig.setUseDefaultSSLContext(distributionConfig.getSSLUseDefaultProvider());
     return sslConfig;
   }
 

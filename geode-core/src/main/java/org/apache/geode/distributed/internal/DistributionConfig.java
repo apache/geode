@@ -161,7 +161,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_AL
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_PROVIDER;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_SSLCONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
@@ -4911,21 +4911,21 @@ public interface DistributionConfig extends Config, LogConfig {
   SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
       new SecurableCommunicationChannel[] {};
 
-  boolean DEFAULT_SSL_USE_DEFAULT_PROVIDER = false;
+  boolean DEFAULT_SSL_USE_DEFAULT_SSLCONTEXT = false;
 
   @ConfigAttribute(type = Boolean.class)
-  String SSL_USE_DEFAULT_PROVIDER_NAME = SSL_USE_DEFAULT_PROVIDER;
+  String SSL_USE_DEFAULT_SSLCONTEXT_NAME = SSL_USE_DEFAULT_SSLCONTEXT;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_PROVIDER} property.
+   * Returns the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_SSLCONTEXT} property.
    */
-  @ConfigAttributeGetter(name = SSL_USE_DEFAULT_PROVIDER)
+  @ConfigAttributeGetter(name = SSL_USE_DEFAULT_SSLCONTEXT)
   boolean getSSLUseDefaultProvider();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_PROVIDER} property.
+   * Sets the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_SSLCONTEXT} property.
    */
-  @ConfigAttributeSetter(name = SSL_USE_DEFAULT_PROVIDER)
+  @ConfigAttributeSetter(name = SSL_USE_DEFAULT_SSLCONTEXT)
   void setSSLUseDefaultProvider(boolean useProvider);
 
   /**

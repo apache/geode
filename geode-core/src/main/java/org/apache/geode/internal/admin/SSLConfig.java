@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.SSLUtil;
  */
 public class SSLConfig {
 
-  private boolean useDefaultProvider = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_PROVIDER;
+  private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_SSLCONTEXT;
   private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
   private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
   private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
@@ -110,12 +110,12 @@ public class SSLConfig {
     this.enabled = enabled;
   }
 
-  public boolean isUseDefaultProvider() {
-    return this.useDefaultProvider;
+  public boolean useDefaultSSLContext() {
+    return this.useDefaultSSLContext;
   }
 
-  public void setUseDefaultProvider(boolean useDefaultProvider) {
-    this.useDefaultProvider = useDefaultProvider;
+  public void setUseDefaultSSLContext(boolean useDefaultSSLContext) {
+    this.useDefaultSSLContext = useDefaultSSLContext;
   }
 
   public String getProtocols() {
