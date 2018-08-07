@@ -27,9 +27,7 @@ import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertRespons
 import static org.apache.geode.util.test.TestUtil.getResourcePath;
 
 import java.io.File;
-import java.net.URL;
 
-import org.apache.geode.tools.pulse.PulseSecurityWithSSLTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
