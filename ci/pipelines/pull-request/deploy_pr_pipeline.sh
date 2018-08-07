@@ -24,6 +24,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 GEODEBUILDDIR="${SCRIPTDIR}/../geode-build"
+GEODE_FORK=${GEODE_FORK:-apache}
 
 if ! [ -x "$(command -v spruce)" ]; then
     echo "Spruce must be installed for pipeline deployment to work."
@@ -47,6 +48,8 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
 fi
 
 SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+
+OUTPUT_DIRECTORY=${OUTPUT_DIRECTORY:-$SCRIPTDIR}
 
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
@@ -80,7 +83,7 @@ ${SPRUCE} merge --prune metadata \
 
 TARGET="geode"
 
-TEAM=${CONCOURSE_TEAM}
+TEAM=${CONCOURSE_TEAM:-main}
 
 #if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; then
 #  TEAM="main"
