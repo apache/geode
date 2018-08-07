@@ -133,8 +133,7 @@ dependencies {
 
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
 
-  // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
-  compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
+  compile 'io.github.classgraph:classgraph:' + project.'classgraph.version'
 
   compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
@@ -165,6 +164,7 @@ dependencies {
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
+  testCompile 'net.openhft:compiler:2.3.1'
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
