@@ -53,10 +53,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import java.util.Properties;
 
-import org.apache.geode.util.test.TestUtil;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -71,6 +69,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.util.test.TestUtil;
 
 @Category({GfshTest.class})
 public class ConnectCommandWithSSLTest {
@@ -87,7 +86,8 @@ public class ConnectCommandWithSSLTest {
      * -ext san=ip:127.0.0.1 -storetype jks
      */
 
-    jks = new File(TestUtil.getResourcePath(ConnectCommandWithSSLTest.class.getClassLoader(), "ssl/trusted.keystore"));
+    jks = new File(TestUtil.getResourcePath(ConnectCommandWithSSLTest.class.getClassLoader(),
+        "ssl/trusted.keystore"));
   }
 
   private static Properties sslProperties = new Properties() {
