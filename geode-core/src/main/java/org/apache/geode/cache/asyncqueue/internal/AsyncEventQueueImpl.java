@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -29,24 +28,24 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
 
-public class AsyncEventQueueImpl implements AsyncEventQueue {
-
-  private GatewaySender sender = null;
-
-  private AsyncEventListener asyncEventListener = null;
+public class AsyncEventQueueImpl implements InternalAsyncEventQueue {
 
   public static final String ASYNC_EVENT_QUEUE_PREFIX = "AsyncEventQueue_";
 
-  public AsyncEventQueueImpl(GatewaySender sender, AsyncEventListener eventListener) {
+  private final GatewaySender sender;
+  private final AsyncEventListener asyncEventListener;
+
+  public AsyncEventQueueImpl(GatewaySender sender, AsyncEventListener asyncEventListener) {
     this.sender = sender;
-    this.asyncEventListener = eventListener;
+    this.asyncEventListener = asyncEventListener;
   }
 
   @Override
   public String getId() {
-    return getAsyncEventQueueIdFromSenderId(this.sender.getId());
+    return getAsyncEventQueueIdFromSenderId(sender.getId());
   }
 
   @Override
@@ -133,12 +132,14 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     return size;
   }
 
-  public GatewaySender getSender() {
-    return this.sender;
+  @Override
+  public InternalGatewaySender getSender() {
+    return (InternalGatewaySender) sender;
   }
 
+  @Override
   public AsyncEventQueueStats getStatistics() {
-    AbstractGatewaySender abstractSender = (AbstractGatewaySender) this.sender;
+    AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
     return ((AsyncEventQueueStats) abstractSender.getStatistics());
   }
 
@@ -154,7 +155,7 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
       return false;
     }
     AsyncEventQueueImpl asyncEventQueue = (AsyncEventQueueImpl) obj;
-    if (asyncEventQueue.getId().equals(this.getId())) {
+    if (asyncEventQueue.getId().equals(getId())) {
       return true;
     }
     return false;
@@ -193,8 +194,8 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public void stop() {
-    if (this.sender.isRunning()) {
-      this.sender.stop();
+    if (sender.isRunning()) {
+      sender.stop();
     }
   }
 
@@ -203,8 +204,8 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public void destroy(boolean initiator) {
-    InternalCache cache = ((AbstractGatewaySender) this.sender).getCache();
-    ((AbstractGatewaySender) this.sender).destroy(initiator);
+    InternalCache cache = ((AbstractGatewaySender) sender).getCache();
+    ((AbstractGatewaySender) sender).destroy(initiator);
     cache.removeAsyncEventQueue(this);
   }
 
@@ -214,16 +215,16 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public boolean isForwardExpirationDestroy() {
-    return ((AbstractGatewaySender) this.sender).isForwardExpirationDestroy();
+    return ((AbstractGatewaySender) sender).isForwardExpirationDestroy();
   }
 
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
-    return ((AbstractGatewaySender) this.sender).waitUntilFlushed(timeout, unit);
+    return ((AbstractGatewaySender) sender).waitUntilFlushed(timeout, unit);
   }
 
   @Override
   public String toString() {
     return new StringBuffer().append(getClass().getSimpleName()).append("{").append("id=" + getId())
-        .append(",isRunning=" + this.sender.isRunning()).append("}").toString();
+        .append(",isRunning=" + sender.isRunning()).append("}").toString();
   }
 }
