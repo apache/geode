@@ -115,7 +115,7 @@ public class IgnoredException implements Serializable, AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     remove();
   }
 
