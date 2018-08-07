@@ -140,15 +140,6 @@ public class CacheRule extends AbstractDistributedTestRule {
     }
   }
 
-  private Properties config() {
-    if (replaceConfig) {
-      return config;
-    }
-    Properties allConfig = getDistributedSystemProperties();
-    allConfig.putAll(config);
-    return allConfig;
-  }
-
   public InternalCache getCache() {
     return cache;
   }
@@ -166,12 +157,12 @@ public class CacheRule extends AbstractDistributedTestRule {
   }
 
   public void createCache(final Properties config) {
-    cache = (InternalCache) new CacheFactory(config).create();
+    cache = (InternalCache) new CacheFactory(config(config)).create();
   }
 
   public void createCache(final Properties config, final Properties systemProperties) {
     System.getProperties().putAll(systemProperties);
-    cache = (InternalCache) new CacheFactory(config).create();
+    cache = (InternalCache) new CacheFactory(config(config)).create();
   }
 
   public InternalCache getOrCreateCache() {
@@ -183,9 +174,51 @@ public class CacheRule extends AbstractDistributedTestRule {
     return cache;
   }
 
+  public InternalCache getOrCreateCache(final CacheFactory cacheFactory) {
+    if (cache == null || cache.isClosed()) {
+      cache = null;
+      createCache(cacheFactory);
+      assertThat(cache).isNotNull();
+    }
+    return cache;
+  }
+
+  public InternalCache getOrCreateCache(final Properties config) {
+    if (cache == null || cache.isClosed()) {
+      cache = null;
+      createCache(config);
+      assertThat(cache).isNotNull();
+    }
+    return cache;
+  }
+
+  public InternalCache getOrCreateCache(final Properties config,
+      final Properties systemProperties) {
+    if (cache == null || cache.isClosed()) {
+      cache = null;
+      createCache(config, systemProperties);
+      assertThat(cache).isNotNull();
+    }
+    return cache;
+  }
+
   private void closeAndNullCache() {
     closeCache();
     nullCache();
+  }
+
+  private Properties config() {
+    return config(new Properties());
+  }
+
+  private Properties config(final Properties config) {
+    if (replaceConfig) {
+      return config;
+    }
+    Properties allConfig = getDistributedSystemProperties();
+    allConfig.putAll(this.config);
+    allConfig.putAll(config);
+    return allConfig;
   }
 
   private void closeCache() {
