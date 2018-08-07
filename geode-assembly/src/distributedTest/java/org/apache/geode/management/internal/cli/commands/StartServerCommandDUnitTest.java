@@ -25,6 +25,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SER
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__DIR;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__FORCE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__LOCATORS;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__MAXHEAP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__PROPERTIES;
@@ -387,6 +388,7 @@ public class StartServerCommandDUnitTest {
         .addOption("group", groupName)
         .addOption(START_SERVER__LOCATORS, locatorConnectionString)
         .addOption(START_SERVER__OFF_HEAP_MEMORY_SIZE, "0M")
+        .addOption(START_SERVER__MAXHEAP, "300M")
         .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
