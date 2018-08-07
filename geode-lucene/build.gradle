@@ -39,6 +39,8 @@ dependencies {
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
     integrationTestCompile project(":geode-dunit")
+    // TODO fix dependency on shared classes
+    integrationTestCompile sourceSets.test.output
 
     distributedTestCompile project(":geode-dunit")
 
