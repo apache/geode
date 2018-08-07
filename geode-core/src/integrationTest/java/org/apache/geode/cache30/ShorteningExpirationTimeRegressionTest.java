@@ -14,8 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.awaitility.Awaitility.await;
 
 import org.junit.BeforeClass;
@@ -47,6 +46,7 @@ public class ShorteningExpirationTimeRegressionTest {
 
   private static final int LONG_WAIT_MS = 2 * 60 * 1000;
   private static final int SHORT_WAIT_MS = 1;
+  private static final String KEY = "key";
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withAutoStart();
@@ -63,20 +63,20 @@ public class ShorteningExpirationTimeRegressionTest {
   }
 
   @Test
-  public void customEntryTimeToLiveCanBeShortened() throws Exception {
+  public void customEntryTimeToLiveCanBeShortened() {
     RegionFactory<String, String> rf = server.getCache().createRegionFactory(RegionShortcut.LOCAL);
     rf.setCustomEntryTimeToLive(new CustomExpiryTestClass<>());
     rf.setStatisticsEnabled(true);
 
     Region<String, String> region = rf.create(testName.getMethodName());
 
-    // this sets the expiration timeout to 2 minutes
-    region.put("key", "longExpire");
-    // this sets the expiration timeout to 1 ms
-    region.put("key", "quickExpire");
+    // this sets the expiration timeout to LONG_WAIT_MS
+    region.put(KEY, "longExpire");
+    // this sets the expiration timeout to SHORT_WAIT_MS
+    region.put(KEY, "quickExpire");
 
-    // make sure the entry is invalidated before 2 minutes (timeout shortened)
-    await().atMost(1, MINUTES).until(() -> !region.containsValueForKey("key"));
+    // make sure the entry is invalidated before LONG_WAIT_MS (timeout shortened)
+    await().atMost(LONG_WAIT_MS / 2, MILLISECONDS).until(() -> !region.containsValueForKey(KEY));
   }
 
   @Test
@@ -87,13 +87,13 @@ public class ShorteningExpirationTimeRegressionTest {
 
     Region<String, String> region = rf.create(testName.getMethodName());
 
-    // this sets the expiration timeout to 2 minutes
-    region.put("key", "longExpire");
-    // this sets the expiration timeout to 1 ms
-    assertThat(region.get("key")).isEqualTo("longExpire");
+    // this sets the expiration timeout to LONG_WAIT_MS
+    region.put(KEY, "longExpire");
+    // this sets the expiration timeout to SHORT_WAIT_MS
+    region.get(KEY);
 
-    // make sure the entry is invalidated before 2 minutes (timeout shortened)
-    await().atMost(1, MINUTES).until(() -> !region.containsValueForKey("key"));
+    // make sure the entry is invalidated before LONG_WAIT_MS (timeout shortened)
+    await().atMost(LONG_WAIT_MS / 2, MILLISECONDS).until(() -> !region.containsValueForKey(KEY));
   }
 
   private class CustomExpiryTestClass<K, V> implements CustomExpiry<K, V> {
