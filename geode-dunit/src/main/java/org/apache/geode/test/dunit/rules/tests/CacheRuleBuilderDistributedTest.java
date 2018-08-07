@@ -32,7 +32,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 
-
 @SuppressWarnings("serial")
 public class CacheRuleBuilderDistributedTest {
 
@@ -40,47 +39,47 @@ public class CacheRuleBuilderDistributedTest {
   public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Test
-  public void defaultDoesNothing() throws Exception {
+  public void defaultDoesNothing() {
     runTestWithValidation(DefaultDoesNothing.class);
   }
 
   @Test
-  public void createCacheInLocal() throws Exception {
+  public void createCacheInLocal() {
     runTestWithValidation(CreateCacheInLocal.class);
   }
 
   @Test
-  public void createCacheInOneVM() throws Exception {
+  public void createCacheInOneVM() {
     runTestWithValidation(CreateCacheInOneVM.class);
   }
 
   @Test
-  public void createCacheInTwoVMs() throws Exception {
+  public void createCacheInTwoVMs() {
     runTestWithValidation(CreateCacheInTwoVMs.class);
   }
 
   @Test
-  public void createCacheInAll() throws Exception {
+  public void createCacheInAll() {
     runTestWithValidation(CreateCacheInAll.class);
   }
 
   @Test
-  public void createCacheInAllExplicitly() throws Exception {
+  public void createCacheInAllExplicitly() {
     runTestWithValidation(CreateCacheInAllExplicitly.class);
   }
 
   @Test
-  public void createCacheInAllCreatesCluster() throws Exception {
+  public void createCacheInAllCreatesCluster() {
     runTestWithValidation(CreateCacheInAllCreatesCluster.class);
   }
 
   @Test
-  public void addConfigAffectsAllVMs() throws Exception {
+  public void addConfigAffectsAllVMs() {
     runTestWithValidation(AddConfigAffectsAllVMs.class);
   }
 
   @Test
-  public void replaceConfigCreatesLonersInAll() throws Exception {
+  public void replaceConfigCreatesLonersInAll() {
     runTestWithValidation(ReplaceConfigCreatesLonersInAll.class);
   }
 
@@ -93,7 +92,7 @@ public class CacheRuleBuilderDistributedTest {
     public CacheRule cacheRule = CacheRule.builder().build();
 
     @Test
-    public void getCache_returnsNullInAllVMs() throws Exception {
+    public void getCache_returnsNullInAllVMs() {
       assertThat(cacheRule.getCache()).isNull();
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> assertThat(cacheRule.getCache()).isNull());
@@ -101,7 +100,7 @@ public class CacheRuleBuilderDistributedTest {
     }
 
     @Test
-    public void getCacheSingleton_returnsNullInAllVMs() throws Exception {
+    public void getCacheSingleton_returnsNullInAllVMs() {
       assertThat(GemFireCacheImpl.getInstance()).isNull();
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> assertThat(GemFireCacheImpl.getInstance()).isNull());
@@ -118,7 +117,7 @@ public class CacheRuleBuilderDistributedTest {
     public CacheRule cacheRule = CacheRule.builder().createCacheInLocal().build();
 
     @Test
-    public void getCache_returnsCacheInLocalOnly() throws Exception {
+    public void getCache_returnsCacheInLocalOnly() {
       assertThat(cacheRule.getCache()).isNotNull();
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> assertThat(cacheRule.getCache()).isNull());
@@ -135,7 +134,7 @@ public class CacheRuleBuilderDistributedTest {
     public CacheRule cacheRule = CacheRule.builder().createCacheIn(getVM(0)).build();
 
     @Test
-    public void getCache_returnsCacheInOneVM() throws Exception {
+    public void getCache_returnsCacheInOneVM() {
       assertThat(cacheRule.getCache()).isNull();
 
       getVM(0).invoke(() -> {
@@ -160,7 +159,7 @@ public class CacheRuleBuilderDistributedTest {
         CacheRule.builder().createCacheIn(getVM(1)).createCacheIn(getVM(3)).build();
 
     @Test
-    public void getCache_returnsCacheInTwoVMs() throws Exception {
+    public void getCache_returnsCacheInTwoVMs() {
       assertThat(cacheRule.getCache()).isNull();
 
       for (int i = 0; i < getVMCount(); i++) {
@@ -186,7 +185,7 @@ public class CacheRuleBuilderDistributedTest {
     public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
 
     @Test
-    public void createCacheInAll_returnsCacheInAll() throws Exception {
+    public void createCacheInAll_returnsCacheInAll() {
       assertThat(cacheRule.getCache()).isNotNull();
       for (int i = 0; i < getVMCount(); i++) {
         getVM(i).invoke(() -> {
@@ -205,7 +204,7 @@ public class CacheRuleBuilderDistributedTest {
     public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
 
     @Test
-    public void createCacheInAllExplicitly_returnsCacheInAll() throws Exception {
+    public void createCacheInAllExplicitly_returnsCacheInAll() {
       assertThat(cacheRule.getCache()).isNotNull();
       for (int i = 0; i < getVMCount(); i++) {
         getVM(i).invoke(() -> {
@@ -224,7 +223,7 @@ public class CacheRuleBuilderDistributedTest {
     public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
 
     @Test
-    public void createCacheInAll_createsCluster() throws Exception {
+    public void createCacheInAll_createsCluster() {
       int vmCount = getVMCount();
 
       assertThat(cacheRule.getCache().getDistributionManager().getViewMembers())
@@ -248,7 +247,7 @@ public class CacheRuleBuilderDistributedTest {
         CacheRule.builder().addConfig(DISTRIBUTED_SYSTEM_ID, "1").createCacheInAll().build();
 
     @Test
-    public void addConfig_affectsAllVMs() throws Exception {
+    public void addConfig_affectsAllVMs() {
       assertThat(cacheRule.getCache().getDistributedSystem().getProperties()
           .getProperty(DISTRIBUTED_SYSTEM_ID)).isEqualTo("1");
       assertThat(
@@ -277,7 +276,7 @@ public class CacheRuleBuilderDistributedTest {
         CacheRule.builder().replaceConfig(new Properties()).createCacheInAll().build();
 
     @Test
-    public void replaceConfig_createsLonersInAll() throws Exception {
+    public void replaceConfig_createsLonersInAll() {
       assertThat(cacheRule.getCache().getDistributionManager().getViewMembers()).hasSize(1);
       for (int i = 0; i < getVMCount(); i++) {
         getVM(i).invoke(() -> {

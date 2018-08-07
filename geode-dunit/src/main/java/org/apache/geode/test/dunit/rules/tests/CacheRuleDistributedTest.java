@@ -32,7 +32,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedTestRule;
 
-
 @SuppressWarnings("serial")
 public class CacheRuleDistributedTest {
 
@@ -40,37 +39,37 @@ public class CacheRuleDistributedTest {
   public DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Test
-  public void defaultDoesNothing() throws Exception {
+  public void defaultDoesNothing() {
     runTestWithValidation(DefaultDoesNothing.class);
   }
 
   @Test
-  public void createCacheInLocal() throws Exception {
+  public void createCacheInLocal() {
     runTestWithValidation(CreateCacheInLocal.class);
   }
 
   @Test
-  public void createCacheInOneVM() throws Exception {
+  public void createCacheInOneVM() {
     runTestWithValidation(CreateCacheInOneVM.class);
   }
 
   @Test
-  public void createCacheInTwoVMs() throws Exception {
+  public void createCacheInTwoVMs() {
     runTestWithValidation(CreateCacheInTwoVMs.class);
   }
 
   @Test
-  public void createCacheInAll() throws Exception {
+  public void createCacheInAll() {
     runTestWithValidation(CreateCacheInAll.class);
   }
 
   @Test
-  public void createCacheInAllCreatesCluster() throws Exception {
+  public void createCacheInAllCreatesCluster() {
     runTestWithValidation(CreateCacheInAllCreatesCluster.class);
   }
 
   @Test
-  public void emptyConfigCreatesLonersInAll() throws Exception {
+  public void emptyConfigCreatesLonersInAll() {
     runTestWithValidation(EmptyConfigCreatesLonersInAll.class);
   }
 
@@ -83,7 +82,7 @@ public class CacheRuleDistributedTest {
     public CacheRule cacheRule = new CacheRule();
 
     @Test
-    public void getCache_returnsNullInAllVMs() throws Exception {
+    public void getCache_returnsNullInAllVMs() {
       assertThat(cacheRule.getCache()).isNull();
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> assertThat(cacheRule.getCache()).isNull());
@@ -91,7 +90,7 @@ public class CacheRuleDistributedTest {
     }
 
     @Test
-    public void getCacheSingleton_returnsNullInAllVMs() throws Exception {
+    public void getCacheSingleton_returnsNullInAllVMs() {
       assertThat(GemFireCacheImpl.getInstance()).isNull();
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> assertThat(GemFireCacheImpl.getInstance()).isNull());
@@ -113,7 +112,7 @@ public class CacheRuleDistributedTest {
     }
 
     @Test
-    public void getCache_returnsCacheInLocalOnly() throws Exception {
+    public void getCache_returnsCacheInLocalOnly() {
       assertThat(cacheRule.getCache()).isNotNull();
       for (VM vm : getAllVMs()) {
         vm.invoke(() -> assertThat(cacheRule.getCache()).isNull());
@@ -137,7 +136,7 @@ public class CacheRuleDistributedTest {
     }
 
     @Test
-    public void getCache_returnsCacheInOneVM() throws Exception {
+    public void getCache_returnsCacheInOneVM() {
       assertThat(cacheRule.getCache()).isNull();
 
       getVM(0).invoke(() -> {
@@ -171,7 +170,7 @@ public class CacheRuleDistributedTest {
     }
 
     @Test
-    public void getCache_returnsCacheInTwoVMs() throws Exception {
+    public void getCache_returnsCacheInTwoVMs() {
       assertThat(cacheRule.getCache()).isNull();
 
       for (int i = 0; i < getVMCount(); i++) {
@@ -207,7 +206,7 @@ public class CacheRuleDistributedTest {
     }
 
     @Test
-    public void createCacheInAll_returnsCacheInAll() throws Exception {
+    public void createCacheInAll_returnsCacheInAll() {
       assertThat(cacheRule.getCache()).isNotNull();
       for (int i = 0; i < getVMCount(); i++) {
         getVM(i).invoke(() -> {
@@ -240,7 +239,7 @@ public class CacheRuleDistributedTest {
     }
 
     @Test
-    public void createCacheInAll_createsCluster() throws Exception {
+    public void createCacheInAll_createsCluster() {
       assertThat(cacheRule.getCache().getDistributionManager().getViewMembers())
           .hasSize(vmCount + 2);
       for (int i = 0; i < vmCount; i++) {
@@ -260,7 +259,7 @@ public class CacheRuleDistributedTest {
     private Properties config;
 
     @Rule
-    public CacheRule cacheRule = new CacheRule();
+    public CacheRule cacheRule = CacheRule.builder().replaceConfig(new Properties()).build();
 
     @Before
     public void setUp() throws Exception {
@@ -268,14 +267,12 @@ public class CacheRuleDistributedTest {
 
       cacheRule.createCache(config);
       for (int i = 0; i < getVMCount(); i++) {
-        getVM(i).invoke(() -> {
-          cacheRule.createCache(config);
-        });
+        getVM(i).invoke(() -> cacheRule.createCache(config));
       }
     }
 
     @Test
-    public void emptyConfig_createsLonersInAll() throws Exception {
+    public void emptyConfig_createsLonersInAll() {
       assertThat(cacheRule.getCache().getDistributionManager().getViewMembers()).hasSize(1);
       for (int i = 0; i < getVMCount(); i++) {
         getVM(i).invoke(() -> {
