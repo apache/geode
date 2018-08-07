@@ -47,8 +47,10 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -7306,6 +7308,33 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             }
           }
         };
+
+
+
+    Region region;
+
+    // Make sure that a remote create done in a tx is created in a remote mirror
+    // and dropped in a remote non-mirror
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    vm0.invoke(createMirror);
+    vm1.invoke(createNonMirror);
+    region = createRegion(rgnName);
+
+    txMgr.begin();
+    region.create("key", "value");
+    getSystem().getLogWriter().info("textTXRmtMirror: create mirror and non-mirror");
+    txMgr.commit();
+
+    if (!region.getAttributes().getScope().isAck()) {
+      Awaitility.await().atMost(5, TimeUnit.MINUTES)
+          .until(() -> validateTXRmtMirror(rgnName, vm0, vm1));
+    } else {
+      validateTXRmtMirror(rgnName, vm0, vm1);
+    }
+  }
+
+  private void validateTXRmtMirror(String rgnName, VM vm0, VM vm1) {
     SerializableRunnable checkExists = new SerializableRunnable("textTXRmtMirror: checkExists") {
       @Override
       public void run() {
@@ -7360,44 +7389,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertEquals(rgn.getCache(), tl.lastEvent.getCache());
       }
     };
-
-
-    // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
-
-    try {
-      Region rgn;
-
-      // Make sure that a remote create done in a tx is created in a remote mirror
-      // and dropped in a remote non-mirror
-      Host.getHost(0).getVM(0).invoke(createMirror);
-      Host.getHost(0).getVM(1).invoke(createNonMirror);
-      rgn = createRegion(rgnName);
-
-      txMgr.begin();
-      rgn.create("key", "value");
-      // TransactionId txId = txMgr.getTransactionId();
-      getSystem().getLogWriter().info("textTXRmtMirror: create mirror and non-mirror");
-      txMgr.commit();
-      if (!rgn.getAttributes().getScope().isAck()) {
-        // pause to give cmt message a chance to be processed
-        try {
-          Thread.sleep(200);
-        } catch (InterruptedException chomp) {
-          fail("interrupted");
-        }
-      }
-      Host.getHost(0).getVM(0).invoke(checkExists);
-      Host.getHost(0).getVM(1).invoke(checkNoKey);
-      rgn.destroyRegion();
-
-      // @todo darrel/mitch: how do a get rid of the entry remotely
-      // Make sure that a remote put, that modifies an existing entry,
-      // done in a tx is dropped in a remote mirror that does not have the entry.
-    } catch (Exception e) {
-      getCache().close();
-      getSystem().getLogWriter().fine("textTXRmtMirror: Caused exception in createRegion");
-      throw e;
-    }
+    vm0.invoke(checkExists);
+    vm1.invoke(checkNoKey);
   }
 
   @Ignore("TODO: test is disabled")
