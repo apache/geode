@@ -93,7 +93,6 @@ jobs:
         status: pending
 
     - task: build
-      tags: [pr]
       image: docker-geode-build-image
       config:
         platform: linux

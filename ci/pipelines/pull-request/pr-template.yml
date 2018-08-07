@@ -85,7 +85,6 @@ jobs:
           path: geode/ci/scripts/rsync_code_up.sh
     - task: execute_tests
       timeout: (( grab metadata.job.timeout ))
-      tags: [pr]
       config:
         inputs:
           - name: geode
