@@ -170,6 +170,8 @@ public class CliStrings {
       "Unable to locate the Java executables and dependencies.  Please set the JAVA_HOME environment variable.";
   public static final String CACHE_XML_NOT_FOUND_MESSAGE =
       "Warning: The Geode cache XML file {0} could not be found.";
+  public static final String CLUSTER_CONFIG_PRECEDENCE_OVER_CACHE_XML_WARN =
+      "NOTE: If cluster configuration is enabled, then those settings will take precedence over: ";
   public static final String GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE =
       "Warning: The Geode {0}properties file {1} could not be found.";
   public static final String MEMBER_NOT_FOUND_ERROR_MESSAGE =
@@ -2473,7 +2475,7 @@ public class CliStrings {
       "The IP address on which the Server will be bound.  By default, the Server is bound to all local addresses.";
   public static final String START_SERVER__CACHE_XML_FILE = CACHE_XML_FILE;
   public static final String START_SERVER__CACHE_XML_FILE__HELP =
-      "Specifies the name of the XML file or resource to initialize the cache with when it is created.";
+      "Specifies the name of the cache XML file or resource to initialize the cache with when it is created. NOTE: If cluster configuration is enabled, then it will take precedence over this option";
   public static final String START_SERVER__CLASSPATH = "classpath";
   public static final String START_SERVER__CLASSPATH__HELP =
       "Location of user application classes required by the Server. The user classpath is prepended to the Server's classpath.";
