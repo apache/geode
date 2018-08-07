@@ -430,7 +430,7 @@ public class DefaultQuery implements Query {
       observer.beforeQueryEvaluation(this.compiledQuery, context);
 
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(6);
+        DefaultQuery.testHook.doTestHook(6, this);
       }
       Object results = null;
       try {
@@ -984,6 +984,10 @@ public class DefaultQuery implements Query {
 
   public interface TestHook {
     default void doTestHook(int spot) {};
+
+    default void doTestHook(int spot, DefaultQuery query) {
+      doTestHook(spot);
+    };
 
     default void doTestHook(String spot) {};
   }

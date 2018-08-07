@@ -263,7 +263,7 @@ public class QueryMonitor implements Runnable {
   }
 
   /** FOR TEST PURPOSE */
-  public int getQueryMonitorThreadCount() {
+  public static int getQueryMonitorThreadCount() {
     return queryThreads.size();
   }
 

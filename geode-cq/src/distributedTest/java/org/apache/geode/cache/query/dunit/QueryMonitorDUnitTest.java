@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,6 +42,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -87,6 +89,14 @@ public class QueryMonitorDUnitTest {
       GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = MAX_QUERY_EXECUTE_TIME;
     }, server1, server2);
     gfsh.connectAndVerify(locator);
+  }
+
+  @After
+  public void reset() {
+    VMProvider.invokeInEveryMember(() -> {
+      DefaultQuery.testHook = null;
+      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = -1;
+    }, server1, server2);
   }
 
   @Test
@@ -401,25 +411,16 @@ public class QueryMonitorDUnitTest {
         + "\"Query execution taking more than the max execution time\"" + "\n Found \n" + error);
   }
 
-
-  @After
-  public void reset() {
-    VMProvider.invokeInEveryMember(() -> {
-      DefaultQuery.testHook = null;
-      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = -1;
-    }, server1, server2);
-  }
-
   private static class QueryTimeoutHook implements DefaultQuery.TestHook {
-    public void doTestHook(int spot) {
+    public void doTestHook(int spot, DefaultQuery query) {
       if (spot != 6) {
         return;
       }
-      try {
-        TimeUnit.MILLISECONDS.sleep(20);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e.getMessage(), e);
+      if (query.isCqQuery() || QueryMonitor.getQueryMonitorThreadCount() == 0) {
+        return;
       }
+
+      Awaitility.await().pollDelay(5, TimeUnit.MILLISECONDS).until(() -> query.isCanceled());
     }
   }
 
