@@ -157,8 +157,6 @@ dependencies {
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
   testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
   testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
-  testCompile 'redis.clients:jedis:' + project.'jedis.version'
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'
 
 
@@ -170,6 +168,12 @@ dependencies {
   testCompile project(':geode-concurrency-test')
 
   integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(':geode-concurrency-test')
+  integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
+  integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
+  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  integrationTestCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
+
   distributedTestCompile project(":geode-dunit")
   upgradeTestCompile project(":geode-dunit")
 }
