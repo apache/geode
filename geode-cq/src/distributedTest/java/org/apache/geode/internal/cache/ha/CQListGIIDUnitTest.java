@@ -64,7 +64,7 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -155,8 +155,8 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
     closeCache();
     clientVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
     clientVM2.invoke(() -> CQListGIIDUnitTest.closeCache());
@@ -538,8 +538,8 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   public void testSpecificClientCQIsGIIedPart1() throws Exception {
     Integer size = Integer.valueOf(10);
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
     clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(Integer.valueOf(PORT1),
@@ -563,8 +563,8 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
     serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
     serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(1)));
-    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
   }
 
   /**
@@ -581,7 +581,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
             .intValue();
 
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("45000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("45000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
     createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), Integer.valueOf(port3), "1");

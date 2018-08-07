@@ -21,7 +21,6 @@ dependencies {
     compile project(':geode-protobuf-messages')
 
     testCompile project(':geode-junit')
-    testCompile files(project(':geode-core').sourceSets.test.output)
 
     testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
     testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
@@ -30,8 +29,7 @@ dependencies {
     compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
-    // TODO build - move dunit framework to shared module.
-    integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-    distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-    distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+    integrationTestCompile project(":geode-dunit")
+
+    distributedTestCompile project(":geode-dunit")
 }

@@ -169,9 +169,9 @@ dependencies {
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
 
-  distributedTestCompile files(sourceSets.integrationTest.output)
-  upgradeTestCompile files(sourceSets.distributedTest.output)
-  upgradeTestCompile files(sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
+  distributedTestCompile project(":geode-dunit")
+  upgradeTestCompile project(":geode-dunit")
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

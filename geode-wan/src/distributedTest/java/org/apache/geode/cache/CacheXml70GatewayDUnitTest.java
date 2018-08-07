@@ -34,7 +34,7 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.cache30.CacheXml70DUnitTest;
+import org.apache.geode.cache30.CacheXml70DUnitTestHelper;
 import org.apache.geode.cache30.CacheXmlTestCase;
 import org.apache.geode.cache30.MyGatewayEventFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter1;
@@ -73,7 +73,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
     factory.setDispatcherThreads(33);
     factory.addGatewayEventFilter(new MyGatewayEventFilter());
 
-    AsyncEventListener eventListener = new CacheXml70DUnitTest.MyAsyncEventListener();
+    AsyncEventListener eventListener = new CacheXml70DUnitTestHelper.MyAsyncEventListener();
     AsyncEventQueue asyncEventQueue = factory.create(id, eventListener);
 
     RegionAttributesCreation attrs = new RegionAttributesCreation();
@@ -89,7 +89,7 @@ public class CacheXml70GatewayDUnitTest extends CacheXmlTestCase {
         asyncEventQueuesOnCache.size() > 0);
 
     for (AsyncEventQueue asyncEventQueueOnCache : asyncEventQueuesOnCache) {
-      CacheXml70DUnitTest.validateAsyncEventQueue(asyncEventQueue, asyncEventQueueOnCache);
+      CacheXml70DUnitTestHelper.validateAsyncEventQueue(asyncEventQueue, asyncEventQueueOnCache);
     }
   }
 

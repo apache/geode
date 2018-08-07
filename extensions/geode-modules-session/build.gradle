@@ -21,6 +21,8 @@ dependencies {
   compile project(':extensions/geode-modules-session-internal')
   compile project(':geode-core')
 
+  testCompile project(':geode-junit')
+
   testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   testCompile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   testCompile('com.mockrunner:mockrunner-servlet:' + project.'mockrunner.version') {
@@ -33,10 +35,8 @@ dependencies {
     exclude group: 'javax.servlet'
   }
 
-  testCompile project(path: ':geode-junit')
 
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
 }
 
 jar {

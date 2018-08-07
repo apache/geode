@@ -57,7 +57,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -127,8 +127,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     clientVM2.invoke(() -> HARQueueNewImplDUnitTest.closeCache());
 
     // Unset the isSlowStartForTesting flag
-    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
 
     // then close the servers
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest.closeCache());
@@ -324,8 +324,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testClientMsgsRegionSize() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -360,8 +360,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testRefCountForNormalAndGIIPut() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("240000"));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("240000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("240000"));
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("240000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -415,7 +415,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testRefCountForPeekAndRemove() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -435,7 +435,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(new Integer(5), new Integer(5),
         new Integer(PORT1)));
 
-    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest
         .waitTillMessagesAreDispatched(new Integer(PORT1), new Long(5000)));
 
@@ -449,7 +449,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testRefCountForQRM() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -473,7 +473,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(new Integer(5), new Integer(5),
         new Integer(PORT2)));
 
-    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
 
     serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(new Integer(5), new Integer(0),
         new Integer(PORT2)));
@@ -487,8 +487,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testRefCountForDestroy() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -540,8 +540,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testConcurrentGIIAndDispatch() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("40000"));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("40000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("40000"));
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("40000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -574,8 +574,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     serverVM0.invoke(HARQueueNewImplDUnitTest.class, "populateValuesOfSomeKeysInClientMsgsRegion",
         new Object[] {new Integer(PORT1), new String[] {"k1", "k3"}});
 
-    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
   }
 
   /**
@@ -585,7 +585,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testTwoBridgeServersInOneVMDoShareCMR() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     Integer port3 = (Integer) serverVM0
         .invoke(() -> HARQueueNewImplDUnitTest.createOneMoreBridgeServer(Boolean.TRUE));
@@ -651,7 +651,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testHAEventWrapperDoesNotHoldCUMOnceInsideCMR() throws Exception {
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -696,7 +696,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
             .intValue();
     Boolean isRegion = Boolean.FALSE;
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -734,7 +734,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   public void testCMRCreatedForMemOrEntryEvictionPolicy() throws Exception {
     Boolean isRegion = Boolean.TRUE;
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -810,8 +810,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE)))
             .intValue();
 
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
     createClientCache(getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2),
         "1");
@@ -833,8 +833,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     Long usedMemInVM1 = (Long) serverVM1.invoke(() -> HARQueueNewImplDUnitTest
         .getUsedMemoryAndVerifyRegionSize(new Integer(1), numOfEntries, new Integer(-1)));
 
-    serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
 
     logger.fine("Used Mem: " + usedMemInVM1.longValue() + "(without overflow), "
         + usedMemInVM0.longValue() + "(with overflow)");
