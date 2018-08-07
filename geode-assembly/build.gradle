@@ -83,7 +83,6 @@ dependencies {
   archives project(':geode-rebalancer')
 
   testCompile project(':geode-junit')
-  testCompile project(':geode-pulse')
   testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile files(project(':geode-pulse').sourceSets.test.output)
   testCompile ('org.springframework:spring-web:' + project.'springframework.version') {
@@ -91,8 +90,6 @@ dependencies {
     exclude module: 'spring-aop'
   }
 
-  testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
   testCompile 'com.google.guava:guava:' + project.'guava.version'
   testCompile 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
 
@@ -125,6 +122,10 @@ dependencies {
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
   integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(":geode-junit")
+  integrationTestCompile project(":geode-pulse")
+  integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  integrationTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
   distributedTestCompile project(":geode-dunit")
 
