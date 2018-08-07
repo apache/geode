@@ -55,6 +55,10 @@ public class ServerToClientFunctionResultSender implements ResultSender {
 
   protected AtomicBoolean alreadySendException = new AtomicBoolean(false);
 
+  public synchronized void setLastResultReceived(boolean lastResultReceived) {
+    this.lastResultReceived = lastResultReceived;
+  }
+
   protected boolean lastResultReceived;
 
   protected ByteBuffer commBuffer;
@@ -81,6 +85,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void lastResult(Object oneResult) {
+    if (lastResultReceived) {
+      return;
+    }
     this.lastResultReceived = true;
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
@@ -90,9 +97,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       }
       return;
     }
-    if (this.lastResultReceived) {
-      return;
-    }
+
     if (logger.isDebugEnabled()) {
       logger.debug("ServerToClientFunctionResultSender sending last result1 {} " + oneResult);
     }
@@ -129,6 +134,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void lastResult(Object oneResult, DistributedMember memberID) {
+    if (lastResultReceived) {
+      return;
+    }
     this.lastResultReceived = true;
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
@@ -173,6 +181,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void sendResult(Object oneResult) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -213,6 +224,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void sendResult(Object oneResult, DistributedMember memberID) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -294,6 +308,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void setException(Throwable exception) {
+    if (lastResultReceived) {
+      return;
+    }
     this.lastResultReceived = true;
     if (logger.isDebugEnabled()) {
       logger.debug("ServerToClientFunctionResultSender setting exception {} ", exception);
