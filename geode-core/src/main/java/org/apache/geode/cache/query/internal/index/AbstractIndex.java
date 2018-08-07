@@ -66,6 +66,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -2013,7 +2014,7 @@ public abstract class AbstractIndex implements IndexProtocol {
       return;
     }
     if (!this.isIndexedPdxKeys) {
-      if (key instanceof PdxString) {
+      if (key instanceof PdxString && ((InternalRegion) this.region).getCompressor() == null) {
         this.isIndexedPdxKeys = true;
       }
     }
