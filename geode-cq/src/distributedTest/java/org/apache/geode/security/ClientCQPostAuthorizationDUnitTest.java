@@ -173,16 +173,15 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
     }
 
     // Get ports for the servers
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
-    int locatorPort = randomAvailableTCPPorts[2];
 
     // Close down any running servers
     server1.invoke(() -> closeCache());
     server2.invoke(() -> closeCache());
 
-    server1.invoke(() -> createTheServerCache(serverProps, javaProps, locatorPort, port1));
+    server1.invoke(() -> createTheServerCache(serverProps, javaProps, port1));
     client1.invoke(() -> createClientCache(javaProps2, authInit, authProps,
         new int[] {port1, port2}, numOfUsers, postAuthzAllowed));
     client2.invoke(() -> createClientCache(javaProps2, authInit, authProps,
@@ -211,7 +210,7 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
         0, !failover));
 
     if (failover) {
-      server2.invoke(() -> createTheServerCache(serverProps, javaProps, locatorPort, port2));
+      server2.invoke(() -> createTheServerCache(serverProps, javaProps, port2));
       server1.invoke(() -> closeCache());
 
       // Allow time for client1 to register its CQs on server2
@@ -225,9 +224,8 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   }
 
   private void createTheServerCache(final Properties serverProps, final Properties javaProps,
-      final int locatorPort, final int serverPort) {
-    SecurityTestUtils.createCacheServer(serverProps, javaProps, locatorPort, (String) null,
-        serverPort, true, NO_EXCEPTION);
+      final int serverPort) {
+    SecurityTestUtils.createCacheServer(serverProps, javaProps, serverPort, true, NO_EXCEPTION);
   }
 
   private void createClientCache(final Properties javaProps, final String authInit,

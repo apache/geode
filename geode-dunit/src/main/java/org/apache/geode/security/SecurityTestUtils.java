@@ -24,9 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -140,7 +137,6 @@ public class SecurityTestUtils {
   private static Locator locator = null;
   private static Cache cache = null;
   private static Properties currentJavaProps = null;
-  private static String locatorString = null;
 
   private static Pool pool = null;
   private static boolean multiUserAuthMode = false;
@@ -148,9 +144,6 @@ public class SecurityTestUtils {
   private static ProxyCache[] proxyCaches = new ProxyCache[NUMBER_OF_USERS];
 
   private static Region regionRef = null;
-
-  public SecurityTestUtils(String name) { // TODO: delete
-  }
 
   /**
    * @deprecated Please use {@link org.apache.geode.test.dunit.IgnoredException} instead
@@ -190,27 +183,6 @@ public class SecurityTestUtils {
     DynamicRegionFactory.get().open(new DynamicRegionFactory.Config(null, null, false, true));
   }
 
-  protected static int getLocatorPort() {
-    int locatorPort = getRandomAvailablePort(SOCKET);
-    String addr = getIPLiteral();
-    if (locatorString == null) {
-      locatorString = addr + "[" + locatorPort + ']';
-    } else {
-      locatorString += "," + addr + "[" + locatorPort + ']';
-    }
-    return locatorPort;
-  }
-
-  /**
-   * Note that this clears the string after returning for convenience in reusing for other tests.
-   * Hence it should normally be invoked only once for a test.
-   */
-  protected static String getAndClearLocatorString() {
-    String locString = locatorString;
-    locatorString = null;
-    return locString;
-  }
-
   protected static Properties concatProperties(final Properties[] propsList) {
     Properties props = new Properties();
     for (int index = 0; index < propsList.length; ++index) {
@@ -221,43 +193,34 @@ public class SecurityTestUtils {
     return props;
   }
 
-  protected static void registerExpectedExceptions(final String[] expectedExceptions) { // TODO:
-                                                                                        // delete
+  protected static void registerExpectedExceptions(final String[] expectedExceptions) {
     SecurityTestUtils.ignoredExceptions = expectedExceptions;
   }
 
   protected static int createCacheServer(String authenticatorFactoryMethodName) {
     Properties authProps = new Properties();
     authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticatorFactoryMethodName);
-    return createCacheServer(authProps, null, 0, null, 0, false, NO_EXCEPTION);
+    return createCacheServer(authProps, null, 0, false, NO_EXCEPTION);
   }
 
   protected static int createCacheServer(final Properties authProps, final Properties javaProps,
-      final int locatorPort, final String locatorString, final int serverPort,
-      final int expectedResult) {
-    return createCacheServer(authProps, javaProps, locatorPort, locatorString, serverPort, false,
-        expectedResult);
+      final int serverPort, final int expectedResult) {
+    return createCacheServer(authProps, javaProps, serverPort, false, expectedResult);
   }
 
   protected static int createCacheServer(Properties authProps, final Properties javaProps,
-      final int locatorPort, final String locatorString, final int serverPort,
-      final boolean setupDynamicRegionFactory, final int expectedResult) {
+      final int serverPort, final boolean setupDynamicRegionFactory, final int expectedResult) {
     if (authProps == null) {
       authProps = new Properties();
     }
     authProps.setProperty(MCAST_PORT, "0");
-    if (locatorString != null && locatorString.length() > 0) {
-      authProps.setProperty(LOCATORS, locatorString);
-      authProps.setProperty(START_LOCATOR, getIPLiteral() + "[" + locatorPort + ']');
-    } else {
-      authProps.setProperty(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
-    }
+    authProps.setProperty(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
     authProps.setProperty(SECURITY_LOG_LEVEL, "finest");
 
     getLogWriter().info("Set the server properties to: " + authProps);
     getLogWriter().info("Set the java properties to: " + javaProps);
 
-    SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");
+    SecurityTestUtils tmpInstance = new SecurityTestUtils();
     try {
       tmpInstance.createSystem(authProps, javaProps);
     } catch (AuthenticationRequiredException ex) {
@@ -378,7 +341,7 @@ public class SecurityTestUtils {
       authProps.setProperty(SECURITY_CLIENT_AUTH_INIT, authInitModule);
     }
 
-    SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");
+    SecurityTestUtils tmpInstance = new SecurityTestUtils();
     tmpInstance.createSystem(authProps, javaProps);
 
     AttributesFactory factory = new AttributesFactory();
@@ -518,7 +481,7 @@ public class SecurityTestUtils {
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");
+    SecurityTestUtils tmpInstance = new SecurityTestUtils();
     tmpInstance.createSystem(props, javaProps);
 
     AttributesFactory factory = new AttributesFactory();

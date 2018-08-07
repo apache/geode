@@ -17,8 +17,6 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.security.SecurityTestUtils.KEYS;
 import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
@@ -225,27 +223,21 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
     return concatProperties(new Properties[] {authProps, extraAuthProps, extraAuthzProps});
   }
 
-  protected static Integer createCacheServer(int locatorPort, final Properties authProps,
+  protected static Integer createCacheServer(final Properties authProps,
       final Properties javaProps) {
-    if (locatorPort == 0) {
-      locatorPort = getRandomAvailablePort(SOCKET);
-    }
-    return SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, null, 0, true,
+    return SecurityTestUtils.createCacheServer(authProps, javaProps, 0, true,
         NO_EXCEPTION);
   }
 
-  protected static int createCacheServer(int locatorPort, final int serverPort,
-      final Properties authProps, final Properties javaProps) {
-    if (locatorPort == 0) {
-      locatorPort = getRandomAvailablePort(SOCKET);
-    }
+  protected static int createCacheServer(final int serverPort, final Properties authProps,
+      final Properties javaProps) {
     Properties jprops = javaProps;
     if (jprops == null) {
       jprops = new Properties();
     }
     jprops.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
         "org.apache.geode.security.templates.UsernamePrincipal");
-    return SecurityTestUtils.createCacheServer(authProps, jprops, locatorPort, null, serverPort,
+    return SecurityTestUtils.createCacheServer(authProps, jprops, serverPort,
         true, NO_EXCEPTION);
   }
 
@@ -902,13 +894,9 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
     // Get ports for the servers
     List<Keeper> randomAvailableTCPPortKeepers =
-        AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
-    Keeper locator1PortKeeper = randomAvailableTCPPortKeepers.get(0);
-    Keeper locator2PortKeeper = randomAvailableTCPPortKeepers.get(1);
-    Keeper port1Keeper = randomAvailableTCPPortKeepers.get(2);
-    Keeper port2Keeper = randomAvailableTCPPortKeepers.get(3);
-    int locator1Port = locator1PortKeeper.getPort();
-    int locator2Port = locator2PortKeeper.getPort();
+        AvailablePortHelper.getRandomAvailableTCPPortKeepers(2);
+    Keeper port1Keeper = randomAvailableTCPPortKeepers.get(0);
+    Keeper port2Keeper = randomAvailableTCPPortKeepers.get(1);
     int port1 = port1Keeper.getPort();
     int port2 = port2Keeper.getPort();
 
@@ -925,12 +913,11 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         // End of current operation block; execute all the operations on the servers with/without
         // failover
         if (opBlock.size() > 0) {
-          locator1PortKeeper.release();
           port1Keeper.release();
 
           // Start the first server and execute the operation block
           server1.invoke("createCacheServer", () -> ClientAuthorizationTestCase
-              .createCacheServer(locator1Port, port1, serverProps, javaProps));
+              .createCacheServer(port1, serverProps, javaProps));
           server2.invoke("closeCache", () -> closeCache());
 
           executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen,
@@ -938,11 +925,10 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
           if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
             // Failover to the second server and run the block again
-            locator2PortKeeper.release();
             port2Keeper.release();
 
             server2.invoke("createCacheServer", () -> ClientAuthorizationTestCase
-                .createCacheServer(locator2Port, port2, serverProps, javaProps));
+                .createCacheServer(port2, serverProps, javaProps));
             server1.invoke("closeCache", () -> closeCache());
 
             executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen,
