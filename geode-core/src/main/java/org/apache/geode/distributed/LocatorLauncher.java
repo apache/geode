@@ -1785,7 +1785,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
                   .toLocalizedString("Locator"));
         }
 
-        if (!CURRENT_DIRECTORY.equals(getWorkingDirectory())) {
+        if (!CURRENT_DIRECTORY.equalsIgnoreCase(getWorkingDirectory())) {
           throw new IllegalStateException(
               LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
                   .toLocalizedString("Locator"));
