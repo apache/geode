@@ -72,7 +72,6 @@ dependencies {
 
   testCompile project(':geode-junit')
   testCompile project(':geode-core')
-  testCompile files(project(':geode-core').sourceSets.test.output)
 
   testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
   testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
@@ -83,6 +82,11 @@ dependencies {
   testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
   testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
   testRuntime 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
+
+  integrationTestCompile project(':geode-junit')
+  integrationTestCompile project(':geode-core')
+  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
+
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
