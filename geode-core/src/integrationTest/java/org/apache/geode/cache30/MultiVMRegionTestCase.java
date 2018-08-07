@@ -7311,7 +7311,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
 
-    Region rgn;
+    Region region;
 
     // Make sure that a remote create done in a tx is created in a remote mirror
     // and dropped in a remote non-mirror
@@ -7319,15 +7319,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = VM.getVM(1);
     vm0.invoke(createMirror);
     vm1.invoke(createNonMirror);
-    rgn = createRegion(rgnName);
+    region = createRegion(rgnName);
 
     txMgr.begin();
-    rgn.create("key", "value");
-    // TransactionId txId = txMgr.getTransactionId();
+    region.create("key", "value");
     getSystem().getLogWriter().info("textTXRmtMirror: create mirror and non-mirror");
     txMgr.commit();
 
-    if (!rgn.getAttributes().getScope().isAck()) {
+    if (!region.getAttributes().getScope().isAck()) {
       Awaitility.await().atMost(5, TimeUnit.MINUTES)
           .until(() -> validateTXRmtMirror(rgnName, vm0, vm1));
     } else {
