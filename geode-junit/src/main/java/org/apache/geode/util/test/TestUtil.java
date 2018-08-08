@@ -58,10 +58,12 @@ public class TestUtil {
     }
     try {
       String path = resource.toURI().getPath();
+      System.out.println("############### TestUtil::getResourcePath before if -" + path);
       if (path == null) {
         String filename = name.replaceFirst(".*/", "");
         File tmpFile = File.createTempFile(filename, null);
         tmpFile.deleteOnExit();
+        System.out.println("############### TestUtil::getResourcePath inside if -" + tmpFile.getAbsolutePath());
         FileUtils.copyURLToFile(resource, tmpFile);
         return compatibleWithWindows(tmpFile.getAbsolutePath());
       }
@@ -72,6 +74,7 @@ public class TestUtil {
   }
 
   private static String compatibleWithWindows(String path) {
+    System.out.println("############### TestUtil::compatibleWithWindows -" + path);
     return SystemUtils.IS_OS_WINDOWS ? path.substring(1) : path;
   }
 }
