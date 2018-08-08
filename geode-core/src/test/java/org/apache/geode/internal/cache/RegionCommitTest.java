@@ -52,4 +52,63 @@ public class RegionCommitTest {
     RegionCommit regionCommit = new RegionCommit(txCommitMessage);
     assertThat(regionCommit.getRegionByPath(dm, path)).isEqualTo(region);
   }
+
+  @Test
+  public void isOpDestroyedEventReturnsFalseIfNotDestroyOperation() {
+    RegionCommit regionCommit = new RegionCommit(txCommitMessage);
+
+    assertThat(regionCommit.isOpDestroyEvent(mock(InternalRegion.class), false, new Object()))
+        .isFalse();
+  }
+
+  @Test
+  public void isOpDestroyedEventReturnsFalseIfIsDestroyOperationAndRegionEntryToBeDestroyedIsNull() {
+    RegionCommit regionCommit = new RegionCommit(txCommitMessage);
+    Object key = new Object();
+    when(region.basicGetEntry(key)).thenReturn(null);
+
+    assertThat(regionCommit.isOpDestroyEvent(region, true, key)).isFalse();
+  }
+
+  @Test
+  public void isOpDestroyedEventReturnsFalseIfIsDestroyOperationAndRegionEntryToBeDestroyedIsRemovedToken() {
+    RegionCommit regionCommit = new RegionCommit(txCommitMessage);
+    Object key = new Object();
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(region.basicGetEntry(key)).thenReturn(regionEntry);
+    when(regionEntry.getValue()).thenReturn(Token.DESTROYED);
+
+    assertThat(regionCommit.isOpDestroyEvent(region, true, key)).isFalse();
+  }
+
+  @Test
+  public void isOpDestroyedEventReturnsFalseIfIsDestroyOperationAndRegionEntryToBeDestroyedIsTombstone() {
+    RegionCommit regionCommit = new RegionCommit(txCommitMessage);
+    Object key = new Object();
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(region.basicGetEntry(key)).thenReturn(regionEntry);
+    when(regionEntry.getValue()).thenReturn(Token.TOMBSTONE);
+
+    assertThat(regionCommit.isOpDestroyEvent(region, true, key)).isFalse();
+  }
+
+  @Test
+  public void isOpDestroyedEventReturnsTrueIfDestroyEntryOnEmptyRegion() {
+    RegionCommit regionCommit = new RegionCommit(txCommitMessage);
+    Object key = new Object();
+    when(region.isProxy()).thenReturn(true);
+
+    assertThat(regionCommit.isOpDestroyEvent(region, true, key)).isTrue();
+  }
+
+  @Test
+  public void isOpDestroyedEventReturnsTrueIfIsDestroyOperationAndRegionEntryIsNotAToken() {
+    RegionCommit regionCommit = new RegionCommit(txCommitMessage);
+    Object key = new Object();
+    RegionEntry regionEntry = mock(RegionEntry.class);
+    when(region.basicGetEntry(key)).thenReturn(regionEntry);
+    when(regionEntry.getValue()).thenReturn(new Token.NotAToken());
+
+    assertThat(regionCommit.isOpDestroyEvent(region, true, key)).isTrue();
+  }
 }
