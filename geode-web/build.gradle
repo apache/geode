@@ -60,6 +60,7 @@ dependencies {
 
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
+
   integrationTestCompile project(":geode-dunit")
   integrationTestCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
@@ -70,9 +71,12 @@ dependencies {
 
   integrationTestRuntime files(war.destinationDir)
 
+
   distributedTestCompile project(":geode-dunit")
   // TODO remove dependency on sources from other test modules
   distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
+
+  distributedTestCompile files(war.destinationDir)
 
   upgradeTestCompile project(":geode-dunit")
 }
