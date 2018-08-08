@@ -690,6 +690,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           this.prepareProcessor.processRemoveRequest(mbr);
         }
       }
+      if (isCoordinator) {
+        if (!v.contains(mbr)) {
+          // removing a rogue process
+          RemoveMemberMessage removeMemberMessage = new RemoveMemberMessage(mbr, mbr,
+              incomingRequest.getReason());
+          services.getMessenger().send(removeMemberMessage);
+        }
+      }
     }
   }
 
@@ -1004,7 +1012,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       // if we're still waiting for a join response and we're in this view we
       // should install the view so join() can finish its work
       for (InternalDistributedMember mbr : view.getMembers()) {
-        if (localAddress.compareTo(mbr) == 0) {
+        if (localAddress.compareTo(mbr) == 0
+            && !services.getMessenger().isOldMembershipIdentifier(mbr)) {
           viewContainsMyUnjoinedAddress = true;
           break;
         }
@@ -2219,10 +2228,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                 continue;
               }
             } else {
-              if (System.currentTimeMillis() < okayToCreateView) {
+              long timeRemaining = okayToCreateView - System.currentTimeMillis();
+              if (timeRemaining > 0) {
                 // sleep to let more requests arrive
                 try {
-                  viewRequests.wait(100);
+                  viewRequests.wait(Math.min(100, timeRemaining));
                   continue;
                 } catch (InterruptedException e) {
                   return;
@@ -2389,9 +2399,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                 removalReqs.add(mbr);
                 removalReasons.add(((RemoveMemberMessage) msg).getReason());
               } else {
+                // unknown, probably rogue, process - send it a removal message
                 sendRemoveMessages(Collections.singletonList(mbr),
                     Collections.singletonList(((RemoveMemberMessage) msg).getReason()),
-                    new HashSet<InternalDistributedMember>());
+                    new HashSet<>());
               }
             }
             break;

@@ -21,7 +21,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,7 +52,7 @@ public class GMSQuorumCheckerJUnitTest {
   private JGAddress address;
 
   @Before
-  public void initMocks() throws Exception {
+  public void initMocks() {
     mockMembers = new InternalDistributedMember[12];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
@@ -70,14 +69,14 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumCheckerAllRespond() throws Exception {
     NetView view = prepareView();
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertTrue(quorum);
@@ -89,14 +88,14 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumCheckerMajorityRespond() throws Exception {
     NetView view = prepareView();
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length - 1; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertTrue(quorum);
@@ -106,12 +105,12 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumCheckerNotEnoughWeightForQuorum() throws Exception {
     NetView view = prepareView();
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     pongResponders.add(mockMembers[0].getPort());
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertFalse(quorum);
@@ -125,7 +124,7 @@ public class GMSQuorumCheckerJUnitTest {
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertFalse(quorum);
@@ -138,7 +137,7 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
@@ -152,7 +151,7 @@ public class GMSQuorumCheckerJUnitTest {
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertTrue(quorum);
@@ -165,7 +164,7 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
@@ -182,7 +181,7 @@ public class GMSQuorumCheckerJUnitTest {
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertTrue(quorum);
@@ -196,7 +195,7 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
@@ -215,7 +214,7 @@ public class GMSQuorumCheckerJUnitTest {
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertFalse(quorum);
@@ -229,7 +228,7 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
@@ -246,7 +245,7 @@ public class GMSQuorumCheckerJUnitTest {
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertFalse(quorum);
@@ -260,7 +259,7 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < numMembers; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
@@ -270,7 +269,7 @@ public class GMSQuorumCheckerJUnitTest {
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertTrue(quorum);
@@ -284,7 +283,7 @@ public class GMSQuorumCheckerJUnitTest {
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
-    Set<Integer> pongResponders = new HashSet<Integer>();
+    Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < numMembers; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
@@ -295,20 +294,20 @@ public class GMSQuorumCheckerJUnitTest {
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
-    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
+    GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel, null);
     qc.initialize();
     boolean quorum = qc.checkForQuorum(500);
     assertFalse(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
 
-  private NetView prepareView() throws IOException {
+  private NetView prepareView() {
     return prepareView(mockMembers.length);
   }
 
-  private NetView prepareView(int numMembers) throws IOException {
+  private NetView prepareView(int numMembers) {
     int viewId = 1;
-    List<InternalDistributedMember> mbrs = new LinkedList<InternalDistributedMember>();
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
     for (int i = 0; i < numMembers; i++) {
       mbrs.add(mockMembers[i]);
     }
