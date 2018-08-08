@@ -63,7 +63,7 @@ public class TestUtil {
         File tmpFile = File.createTempFile(filename, null);
         tmpFile.deleteOnExit();
         FileUtils.copyURLToFile(resource, tmpFile);
-        return compatibleWithWindows(tmpFile.getAbsolutePath());
+        return tmpFile.getAbsolutePath();
       }
       return compatibleWithWindows(path);
     } catch (URISyntaxException | IOException e) {
