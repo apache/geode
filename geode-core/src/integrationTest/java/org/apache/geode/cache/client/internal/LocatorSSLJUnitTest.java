@@ -48,6 +48,9 @@ public class LocatorSSLJUnitTest {
 
   @Test
   public void canStopLocatorWithSSL() throws IOException {
+    System.out.println("############### SERVER_KEY_STORE=" + SERVER_KEY_STORE);
+    System.out.println("############### SERVER_TRUST_STORE=" + SERVER_TRUST_STORE);
+
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
     properties.put(SSL_ENABLED_COMPONENTS, "all");
