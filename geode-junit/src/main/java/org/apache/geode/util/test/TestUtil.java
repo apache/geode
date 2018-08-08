@@ -58,14 +58,17 @@ public class TestUtil {
     }
     try {
       String path = resource.toURI().getPath();
-      System.out.println("############### TestUtil::getResourcePath before if -" + path);
+      System.out.println("############### TestUtil::getResourcePath before if resource.toURI() - "
+          + resource.toURI());
+      System.out.println("############### TestUtil::getResourcePath before if path - " + path);
       if (path == null) {
         String filename = name.replaceFirst(".*/", "");
         File tmpFile = File.createTempFile(filename, null);
         tmpFile.deleteOnExit();
-        System.out.println("############### TestUtil::getResourcePath inside if -" + tmpFile.getAbsolutePath());
+        System.out.println(
+            "############### TestUtil::getResourcePath inside if -" + tmpFile.getAbsolutePath());
         FileUtils.copyURLToFile(resource, tmpFile);
-        return compatibleWithWindows(tmpFile.getAbsolutePath());
+        return tmpFile.getAbsolutePath();
       }
       return compatibleWithWindows(path);
     } catch (URISyntaxException | IOException e) {
