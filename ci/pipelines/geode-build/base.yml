@@ -93,6 +93,10 @@ groups:
   - DistributedTest
   - AcceptanceTest
   - IntegrationTest
+  - WindowsUnitTests
+  - WindowsIntegrationTests
+  - WindowsAcceptanceTests
+  - WindowsGfshDistributedTest
   - UpgradeTest
   - UpdatePassingRef
 
@@ -167,3 +171,297 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
         run:
           path: geode-ci/ci/scripts/update-passing-ref.sh
+
+- name: WindowsUnitTests
+  serial: true
+  public: true
+  plan:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+    - task: cleanup-java-processes
+      tags: [windows-unit-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java -force
+            exit 0
+    - task: run-unit-tests
+      tags: [windows-unit-tests]
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: geode-build-version
+        outputs:
+          - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+        platform: windows
+        run:
+          path: bash
+          args:
+            - geode-ci/ci/scripts/windows/test-run.sh
+            - test
+            - windows-unittestfiles
+      ensure:
+        aggregate:
+        - task: archive-unit-test-results
+          tags: [windows-unit-tests]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+            platform: windows
+            run:
+              path: bash
+              args:
+              - geode-ci/ci/scripts/windows/test-archive.sh
+              - test
+              - windows-unittestfiles
+
+- name: WindowsAcceptanceTests
+  serial: true
+  public: true
+  plan:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+    - task: cleanup-java-processes
+      tags: [windows-acceptance-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java -force
+            exit 0
+    - task: run-acceptance-tests
+      tags: [windows-acceptance-tests]
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: geode-build-version
+        outputs:
+          - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+        platform: windows
+        run:
+          path: bash
+          args:
+            - geode-ci/ci/scripts/windows/test-run.sh
+            - :geode-assembly:acceptanceTest
+            - windows-acceptancetestfiles
+      ensure:
+        aggregate:
+        - task: archive-acceptance-test-results
+          tags: [windows-acceptance-tests]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+            platform: windows
+            run:
+              path: bash
+              args:
+              - geode-ci/ci/scripts/windows/test-archive.sh
+              - :geode-assembly:acceptanceTest
+              - windows-acceptancetestfiles
+
+- name: WindowsIntegrationTests
+  serial: true
+  public: true
+  plan:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+    - task: cleanup-java-processes
+      tags: [windows-integration-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java -force
+            exit 0
+    - task: run-integration-tests
+      tags: [windows-integration-tests]
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: geode-build-version
+        outputs:
+          - name: built-geode
+        params:
+          CALL_STACK_TIMEOUT: 25200
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+        platform: windows
+        run:
+          path: bash
+          args:
+            - geode-ci/ci/scripts/windows/test-run.sh
+            - integrationTest
+            - windows-integrationtestfiles
+      ensure:
+        aggregate:
+        - task: archive-integration-test-results
+          tags: [windows-integration-tests]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+            platform: windows
+            run:
+              path: bash
+              args:
+                - geode-ci/ci/scripts/windows/test-archive.sh
+                - integrationTest
+                - windows-integrationtestfiles
+
+- name: WindowsGfshDistributedTest
+  serial: true
+  public: true
+  plan:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+    - task: cleanup-java-processes
+      tags: [windows-distributed-tests]
+      config:
+        platform: windows
+        run:
+          path: powershell
+          args:
+          - -command
+          - |
+            gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+            kill -name java -force
+            exit 0
+    - task: run-gfsh-distributed-test
+      tags: [windows-distributed-tests]
+      privileged: true
+      timeout: 8h
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+          - name: geode-build-version
+        platform: windows
+        outputs:
+          - name: built-geode
+        params:
+          DUNIT_PARALLEL_FORKS: 0
+          MAINTENANCE_VERSION: develop
+          PARALLEL_DUNIT: false
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+          CALL_STACK_TIMEOUT: 25200
+          JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+        run:
+          path: bash
+          args:
+          - geode-ci/ci/scripts/windows/test-run.sh
+          - distributedTest
+          - windows-gfshdistributedtest
+          - org.apache.geode.test.junit.categories.GfshTest
+      ensure:
+        aggregate:
+        - task: archive-results-core
+          tags: [windows-distributed-tests]
+          config:
+            inputs:
+              - name: geode
+              - name: geode-ci
+              - name: geode-build-version
+              - name: built-geode
+            platform: windows
+            params:
+              MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              PUBLIC_BUCKET: ((!public-bucket))
+              JAVA_HOME: "C:\\progra~1\\java\\jdk1.8.0_181"
+            run:
+              path: bash
+              args:
+              - geode-ci/ci/scripts/windows/test-archive.sh
+              - distributedTest
+              - windows-gfshdistributedtest
