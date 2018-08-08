@@ -278,6 +278,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return senderAdvisor;
   }
 
+  @Override
   public GatewaySenderStats getStatistics() {
     return statistics;
   }
@@ -295,6 +296,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     this.getSenderAdvisor().setIsPrimary(isPrimary);
   }
 
+  @Override
   public InternalCache getCache() {
     return this.cache;
   }
@@ -356,6 +358,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return !this.listeners.isEmpty();
   }
 
+  @Override
   public boolean isForwardExpirationDestroy() {
     return this.forwardExpirationDestroy;
   }
@@ -461,6 +464,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return this.isBucketSorted;
   }
 
+  @Override
   public boolean getIsMetaQueue() {
     return this.isMetaQueue;
   }
@@ -550,6 +554,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     destroy(true);
   }
 
+  @Override
   public void destroy(boolean initiator) {
     try {
       this.getLifeCycleLock().writeLock().lock();
@@ -1321,6 +1326,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return lifeCycleLock;
   }
 
+  @Override
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
     boolean result = false;
     if (isParallel()) {
