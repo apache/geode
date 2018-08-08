@@ -30,14 +30,16 @@ jobs:
   public: true
   plan:
   - do:
-    # Merged pull request SHA, for building
-    - get: geode
-      trigger: true
-      version: every
-      params:
-        fetch_merge: true
-        git:
-          depth: 100
+    - aggregate:
+      # Merged pull request SHA, for building
+      - get: geode
+        trigger: true
+        version: every
+        params:
+          fetch_merge: true
+          git:
+            depth: 100
+      - get: geode-ci
     - aggregate:
       # Unmerged pull request SHA, for writing status into GitHub
       - do:
@@ -62,6 +64,7 @@ jobs:
             inputs:
             - name: concourse-metadata-resource
             - name: geode
+            - name: geode-ci
             outputs:
             - name: instance-data
             platform: linux
@@ -72,22 +75,24 @@ jobs:
               GEODE_BRANCH: (( grab metadata.geode-build-branch ))
               GEODE_FORK: (( grab metadata.geode-fork ))
             run:
-              path: geode/ci/scripts/start_instance.sh
+              path: geode-ci/ci/scripts/start_instance.sh
     - task: rsync_code_up
       timeout: 5m
       config:
         inputs:
           - name: geode
+          - name: geode-ci
           - name: instance-data
         platform: linux
         image_resource: *alpine-tools-image
         run:
-          path: geode/ci/scripts/rsync_code_up.sh
+          path: geode-ci/ci/scripts/rsync_code_up.sh
     - task: execute_tests
       timeout: (( grab metadata.job.timeout ))
       config:
         inputs:
           - name: geode
+          - name: geode-ci
           - name: instance-data
         platform: linux
         image_resource: *alpine-tools-image
@@ -102,7 +107,7 @@ jobs:
           GRADLE_TASK_OPTIONS: (( grab metadata.job.gradle_task_options || "" ))
           ARTIFACT_SLUG: (( grab metadata.job.artifact_slug ))
         run:
-          path: geode/ci/scripts/execute_tests.sh
+          path: geode-ci/ci/scripts/execute_tests.sh
     on_success:
       do:
       - put: pull-request-job-success
@@ -126,13 +131,14 @@ jobs:
         config:
           inputs:
           - name: geode
+          - name: geode-ci
           - name: instance-data
           outputs:
           - name: geode-results
           platform: linux
           image_resource: *alpine-tools-image
           run:
-            path: geode/ci/scripts/rsync_code_down.sh
+            path: geode-ci/ci/scripts/rsync_code_down.sh
       ensure:
         aggregate:
         - task: archive-results
@@ -140,6 +146,7 @@ jobs:
             inputs:
             - name: concourse-metadata-resource
             - name: geode
+            - name: geode-ci
             - name: geode-results
             platform: linux
             image_resource: *alpine-tools-image
@@ -150,15 +157,16 @@ jobs:
               GRADLE_TASK: (( grab metadata.job.gradle_task ))
               ARTIFACT_SLUG: (( grab metadata.job.artifact_slug ))
             run:
-              path: geode/ci/scripts/archive_results.sh
+              path: geode-ci/ci/scripts/archive_results.sh
         - task: stop_instance
           timeout: 1h
           config:
             inputs:
             - name: geode
+            - name: geode-ci
             - name: instance-data
             platform: linux
             image_resource: *alpine-tools-image
             run:
-              path: geode/ci/scripts/stop_instance.sh
+              path: geode-ci/ci/scripts/stop_instance.sh
 

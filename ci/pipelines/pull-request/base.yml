@@ -51,6 +51,15 @@ resources:
     ignore_paths:
     - geode-docs/*
     - geode-book/*
+- name: geode-ci
+  type: git
+  source:
+    depth: 1
+    uri: https://github.com/apache/geode.git
+    branch: develop
+    paths:
+    - ci/pipelines/geode-build/*
+    - ci/scripts/*
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
 
@@ -76,6 +85,7 @@ jobs:
         fetch_merge: true
         git:
           depth: 100
+    - get: geode-ci
     - get: docker-geode-build-image
       params:
         rootfs: true
@@ -98,6 +108,7 @@ jobs:
         platform: linux
         inputs:
         - name: geode
+        - name: geode-ci
         outputs:
         - name: built-geode
         - name: results
@@ -106,7 +117,7 @@ jobs:
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
           PUBLIC_BUCKET: ((!public-bucket))
         run:
-          path: geode/ci/scripts/build.sh
+          path: geode-ci/ci/scripts/build.sh
       on_failure:
         aggregate:
           - put: geode
