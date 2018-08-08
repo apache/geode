@@ -53,18 +53,22 @@ dependencies {
 
   testCompile project(':geode-core')
   testCompile project(':geode-junit')
-  testRuntime project(':geode-common')
 
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
 
-  testRuntime files(war.destinationDir)
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
   integrationTestCompile project(":geode-dunit")
+  integrationTestCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+  }
   // TODO remove dependency on sources from other test modules
   integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+
+  integrationTestRuntime files(war.destinationDir)
 
   distributedTestCompile project(":geode-dunit")
   // TODO remove dependency on sources from other test modules
