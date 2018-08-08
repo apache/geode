@@ -45,6 +45,11 @@ dependencies {
     distributedTestCompile project(":geode-dunit")
 
     upgradeTestCompile project(":geode-dunit")
+
+
+    performanceTestCompile project(":geode-junit")
+    // TODO fix dependency on shared classes
+    performanceTestCompile sourceSets.test.output
 }
 
 //The lucene integration tests don't have any issues that requiring forking

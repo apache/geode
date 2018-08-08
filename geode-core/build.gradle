@@ -182,6 +182,9 @@ dependencies {
   distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
 
   upgradeTestCompile project(":geode-dunit")
+
+
+  performanceTestCompile project(":geode-junit")
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
