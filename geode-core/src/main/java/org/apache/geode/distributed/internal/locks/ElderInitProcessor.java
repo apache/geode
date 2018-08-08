@@ -63,7 +63,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
    */
   static void init(DistributionManager dm, HashMap<String, GrantorInfo> map) {
     HashSet<String> crashedGrantors = new HashSet<>();
-    if (!dm.isAdam()) {
+    if (!dm.thisVMIsTheOnlyElderCandidate()) {
       Set others = dm.getOtherDistributionManagerIds();
       if (!others.isEmpty()) {
         ElderInitProcessor processor = new ElderInitProcessor(dm, others, map, crashedGrantors);

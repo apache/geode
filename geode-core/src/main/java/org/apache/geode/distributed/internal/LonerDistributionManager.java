@@ -219,7 +219,7 @@ public class LonerDistributionManager implements DistributionManager {
     return getDistributionManagerId();
   }
 
-  public boolean isAdam() {
+  public boolean thisVMIsTheOnlyElderCandidate() {
     return true;
   }
 

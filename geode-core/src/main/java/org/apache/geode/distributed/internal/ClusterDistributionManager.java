@@ -3060,7 +3060,7 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public boolean isAdam() {
+  public boolean thisVMIsTheOnlyElderCandidate() {
     List<InternalDistributedMember> cleanedUpMembers = getElderCandidates();
 
     return cleanedUpMembers.size() == 1 && this.localAddress.equals(cleanedUpMembers.get(0));

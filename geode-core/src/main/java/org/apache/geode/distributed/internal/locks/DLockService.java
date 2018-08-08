@@ -2826,10 +2826,10 @@ public class DLockService extends DistributedLockService {
             needsRecovery.remove(serviceName);
           }
         }
-        // fix for elder init bug... adam elder was hitting the following
+        // fix for elder init bug... a lonely elder was hitting the following
         // block and found no grantors for services that were just created
         // and flagged them as needing recovery even though it's not needed
-        if (!foundGrantor && !(dm.isAdam() && !service.hasHeldLocks())) {
+        if (!foundGrantor && !(dm.thisVMIsTheOnlyElderCandidate() && !service.hasHeldLocks())) {
           // !F && !(T && !T) ==> T && !F ==> T
           if (!grantors.containsKey(serviceName)) {
             needsRecovery.add(serviceName);
