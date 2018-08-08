@@ -57,6 +57,9 @@ public class StartServerCommand extends InternalGfshCommand {
   public Result startServer(
       @CliOption(key = CliStrings.START_SERVER__NAME,
           help = CliStrings.START_SERVER__NAME__HELP) String memberName,
+      @CliOption(key = CliStrings.FOREGROUND, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.FOREGROUND__HELP) final Boolean foreground,
       @CliOption(key = CliStrings.START_SERVER__ASSIGN_BUCKETS, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__ASSIGN_BUCKETS__HELP) final Boolean assignBuckets,
@@ -371,6 +374,7 @@ public class StartServerCommand extends InternalGfshCommand {
         }
       } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())
           && serverState.isStartingOrNotResponding());
+
     } finally {
       stderrReader.stopAsync(StartMemberUtils.PROCESS_STREAM_READER_ASYNC_STOP_TIMEOUT_MILLIS); // stop
                                                                                                 // will
@@ -388,7 +392,22 @@ public class StartServerCommand extends InternalGfshCommand {
       Gfsh.print(String.format(CliStrings.ASYNC_PROCESS_LAUNCH_MESSAGE, SERVER_TERM_NAME));
       return ResultBuilder.createInfoResult("");
     } else {
-      return ResultBuilder.createInfoResult(serverState.toString());
+      String resultString = "";
+      if (foreground) {
+        Gfsh.println();
+        Gfsh.println("Server has started as a foreground process.");
+        Gfsh.println(serverState.toString());
+        do {
+          serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory, memberName);
+          Gfsh.print("\r" + serverState.getUpTimeInFormattedString());
+          synchronized (this) {
+            TimeUnit.MILLISECONDS.timedWait(this, 1000);
+          }
+        } while (serverState.isOnline());
+      } else {
+        resultString = serverState.toString();
+      }
+      return ResultBuilder.createInfoResult(resultString);
     }
   }
 

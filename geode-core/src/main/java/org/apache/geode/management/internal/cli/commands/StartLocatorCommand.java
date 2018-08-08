@@ -64,6 +64,9 @@ public class StartLocatorCommand extends InternalGfshCommand {
   public Result startLocator(
       @CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME,
           help = CliStrings.START_LOCATOR__MEMBER_NAME__HELP) String memberName,
+      @CliOption(key = CliStrings.FOREGROUND, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.FOREGROUND__HELP) final Boolean foreground,
       @CliOption(key = CliStrings.START_LOCATOR__BIND_ADDRESS,
           help = CliStrings.START_LOCATOR__BIND_ADDRESS__HELP) final String bindAddress,
       @CliOption(key = CliStrings.START_LOCATOR__CLASSPATH,
@@ -310,8 +313,23 @@ public class StartLocatorCommand extends InternalGfshCommand {
             locatorPort, configProperties));
       }
     }
-
-    return ResultBuilder.buildResult(infoResultData);
+    if (foreground) {
+      Gfsh.println();
+      Gfsh.println("Locator has started as a foreground process.");
+      infoResultData.getGfJsonObject().getJSONObject("content").getArrayValues("message").stream()
+          .forEach(msg -> Gfsh.print(msg));
+      Gfsh.println();
+      do {
+        locatorState = LocatorLauncher.LocatorState.fromDirectory(workingDirectory, memberName);
+        Gfsh.print("\r" + locatorState.getUpTimeInFormattedString());
+        synchronized (this) {
+          TimeUnit.MILLISECONDS.timedWait(this, 1000);
+        }
+      } while (locatorState.isOnline());
+      return ResultBuilder.buildResult(ResultBuilder.createInfoResultData());
+    } else {
+      return ResultBuilder.buildResult(infoResultData);
+    }
 
   }
 
