@@ -128,12 +128,17 @@ dependencies {
   integrationTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
   distributedTestCompile project(":geode-dunit")
+  // TODO refactor out common test framework
+  distributedTestCompile sourceSets.integrationTest.output
 
   acceptanceTestCompile project(":geode-dunit")
   // TODO refactor out common test framework
   upgradeTestCompile sourceSets.distributedTest.output
 
   uiTestCompile project(":geode-dunit")
+  uiTestCompile project(":geode-pulse")
+  // TODO refactor out common test framework
+  uiTestCompile sourceSets.integrationTest.output
 
   upgradeTestCompile project(":geode-dunit")
   // TODO refactor out common test framework
