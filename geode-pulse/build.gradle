@@ -66,9 +66,6 @@ dependencies {
   providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
 
   compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  testCompile 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  compileOnly 'com.google.guava:guava:' + project.'guava.version'
-  testCompile 'com.google.guava:guava:' + project.'guava.version'
 
   testCompile project(':geode-junit')
   testCompile project(':geode-core')
@@ -87,6 +84,8 @@ dependencies {
   integrationTestCompile project(':geode-core')
   integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
 
+  // TODO remove dependency on test sourceSet
+  integrationTestRuntime sourceSets.test.output
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
