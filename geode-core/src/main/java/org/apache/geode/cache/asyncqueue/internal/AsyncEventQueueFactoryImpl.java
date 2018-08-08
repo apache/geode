@@ -28,6 +28,7 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
@@ -166,7 +167,8 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       }
 
       addAsyncEventListener(listener);
-      GatewaySender sender = create(getSenderIdFromAsyncEventQueueId(asyncQueueId));
+      InternalGatewaySender sender =
+          (InternalGatewaySender) create(getSenderIdFromAsyncEventQueueId(asyncQueueId));
       AsyncEventQueueImpl asyncEventQueueImpl = new AsyncEventQueueImpl(sender, listener);
       asyncEventQueue = asyncEventQueueImpl;
       cache.addAsyncEventQueue(asyncEventQueueImpl);

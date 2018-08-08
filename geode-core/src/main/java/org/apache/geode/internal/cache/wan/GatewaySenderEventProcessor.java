@@ -16,30 +16,7 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+public interface GatewaySenderEventProcessor {
 
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionQueue;
-
-public interface InternalGatewaySender extends GatewaySender {
-
-  Set<RegionQueue> getQueues();
-
-  AbstractGatewaySenderEventProcessor getEventProcessor();
-
-  boolean isPrimary();
-
-  GatewaySenderStats getStatistics();
-
-  boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException;
-
-  boolean isForwardExpirationDestroy();
-
-  boolean getIsMetaQueue();
-
-  InternalCache getCache();
-
-  void destroy(boolean initiator);
+  int getTotalQueueSize();
 }
