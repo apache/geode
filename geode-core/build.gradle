@@ -179,6 +179,8 @@ dependencies {
   distributedTestCompile project(":geode-dunit")
   distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
 
+  distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
+
   upgradeTestCompile project(":geode-dunit")
 }
 
