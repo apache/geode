@@ -151,7 +151,6 @@ dependencies {
   // External
   testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  testRuntime 'org.apache.derby:derby:' + project.'derby.version'
   testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
   testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
@@ -173,6 +172,8 @@ dependencies {
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
   integrationTestCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
+
+  integrationTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
 
   distributedTestCompile project(":geode-dunit")
   distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
