@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URI;
@@ -36,6 +37,8 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
+
+import org.apache.commons.io.IOUtils;
 
 /**
  * Test framework utility class to programmatically create classes, JARs and ClassLoaders that
@@ -137,6 +140,15 @@ public class ClassBuilder implements Serializable {
    */
   public void writeJarFromContent(final String className, final String content,
       final OutputStream outStream) throws IOException {
+
+    byte[] bytes = compileClass(className, content);
+
+    createJar(className, outStream, bytes);
+    return;
+  }
+
+  private void createJar(String className, OutputStream outStream, byte[] bytes)
+      throws IOException {
     JarOutputStream jarOutputStream = new JarOutputStream(outStream);
 
     // Add the class file to the JAR file
@@ -148,10 +160,21 @@ public class ClassBuilder implements Serializable {
     JarEntry entry = new JarEntry(formattedName);
     entry.setTime(System.currentTimeMillis());
     jarOutputStream.putNextEntry(entry);
-    jarOutputStream.write(compileClass(className, content));
+    jarOutputStream.write(bytes);
     jarOutputStream.closeEntry();
 
     jarOutputStream.close();
+  }
+
+  public void writeJarFromClass(Class clazz, File jar) throws IOException {
+    String className = clazz.getName();
+    String classAsPath = className.replace('.', '/') + ".class";
+    InputStream stream = clazz.getClassLoader().getResourceAsStream(classAsPath);
+    byte[] bytes = IOUtils.toByteArray(stream);
+    try (FileOutputStream out = new FileOutputStream(jar)) {
+      createJar(classAsPath, out, bytes);
+    }
+
   }
 
   /**

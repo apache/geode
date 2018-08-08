@@ -35,7 +35,6 @@ import java.text.MessageFormat;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -226,14 +225,13 @@ public class StartLocatorCommandDUnitTest {
     assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
   }
 
-  @Ignore // Ignore until test until tests in CI use a different user
   @Test
   public void testInMissingRelativeDirectoryWithoutCreatePermissions() {
     // path to a missing dir that cannot be created due to insufficient permissions
     final String missingDirPath = "/missing/path/to/start/in";
     final String expectedMessage = "Could not create directory " + missingDirPath
         + ". Please verify directory path or user permissions.";
-    final String memberName = "testWithMissingRelativeDirectory-locator";
+    final String memberName = "testInMissingRelativeDirectoryWithoutCreatePermissions-locator";
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
@@ -250,7 +248,7 @@ public class StartLocatorCommandDUnitTest {
   public void testInMissingRelativeDirectoryThatCanBeCreated() {
     // path to a missing dir that can be created
     final String missingDirPath = System.getProperty("user.dir") + "/missing/path/to/start/in";
-    final String memberName = "testWithMissingRelativeDirectory-locator";
+    final String memberName = "testInMissingRelativeDirectoryThatCanBeCreated-locator";
     final String expectedMessage = "Locator in " + missingDirPath;
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
@@ -307,7 +305,7 @@ public class StartLocatorCommandDUnitTest {
       assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
       assertThat(result.getMessageFromContent()).contains(expectedMessage);
 
-      // Verify GEODE-2138
+      // Verify GEODE-2138 (Geode commands do not contain GemFire in output)
       assertThat(result.getMessageFromContent()).doesNotContain("Gemfire")
           .doesNotContain("GemFire");
       assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);

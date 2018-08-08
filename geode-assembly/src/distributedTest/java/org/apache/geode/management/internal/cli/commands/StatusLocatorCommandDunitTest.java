@@ -15,9 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.internal.i18n.LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE;
-import static org.apache.geode.internal.i18n.LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_TERM_NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.STATUS_LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -35,7 +32,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
@@ -69,21 +65,6 @@ public class StatusLocatorCommandDunitTest {
   }
 
   @Test
-  public void testWithDisconnectedGfsh() throws Exception {
-    final String expectedResult =
-        CliStrings.format(CliStrings.STATUS_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE,
-            LOCATOR_TERM_NAME);
-
-    if (gfsh.isConnected()) {
-      gfsh.disconnect();
-    }
-
-    gfsh.executeAndAssertThat(STATUS_LOCATOR + " --name=" + locatorName)
-        .statusIsError()
-        .containsOutput(expectedResult);
-  }
-
-  @Test
   public void testWithMemberAddress() throws Exception {
     gfsh.connectAndVerify(locator.getPort(), PortType.locator);
 
@@ -94,20 +75,6 @@ public class StatusLocatorCommandDunitTest {
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertStatusCommandOutput(result.getMessageFromContent(), state);
-  }
-
-  @Test
-  public void testWithInvalidMemberAddress() throws Exception {
-    final String expectedError =
-        Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE.toString(LOCATOR_TERM_NAME);
-
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    CommandResult result =
-        gfsh.executeCommand(STATUS_LOCATOR + " --host=invalidHostName --port=" + locator.getPort());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
   }
 
   @Test
@@ -123,19 +90,6 @@ public class StatusLocatorCommandDunitTest {
   }
 
   @Test
-  public void testWithInvalidMemberName() throws Exception {
-    final String expectedError = CliStrings.format(
-        CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, "invalidLocatorName");
-
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    CommandResult result = gfsh.executeCommand(STATUS_LOCATOR + " --name=invalidLocatorName");
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
-  }
-
-  @Test
   public void testWithMemberID() throws Exception {
     gfsh.connectAndVerify(locator.getPort(), PortType.locator);
 
@@ -145,21 +99,6 @@ public class StatusLocatorCommandDunitTest {
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertStatusCommandOutput(result.getMessageFromContent(), state);
-  }
-
-  @Test
-  public void testWithInvalidMemberID() throws Exception {
-    final String expectedError =
-        CliStrings.format(CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE,
-            locator.getMemberId() + "1");
-
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    CommandResult result =
-        gfsh.executeCommand(STATUS_LOCATOR + " --name=" + locator.getMemberId() + "1");
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
   }
 
   @Test
@@ -188,34 +127,6 @@ public class StatusLocatorCommandDunitTest {
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     assertStatusCommandOutput(result.getMessageFromContent(), state);
-  }
-
-  @Test
-  public void testWithInvalidDirOnline() throws Exception {
-    final String expectedError =
-        Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE.toString(LOCATOR_TERM_NAME);
-
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    CommandResult result = gfsh.executeCommand(STATUS_LOCATOR + " --dir=/invalid/working/dir");
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
-  }
-
-  @Test
-  public void testWithInvalidDirOffline() throws Exception {
-    final String expectedError =
-        Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE.toString(LOCATOR_TERM_NAME);
-
-    if (gfsh.isConnected()) {
-      gfsh.disconnect();
-    }
-
-    CommandResult result = gfsh.executeCommand(STATUS_LOCATOR + " --dir=/invalid/working/dir");
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
   }
 
   public void assertStatusCommandOutput(String locatorStatusCommandMessage, LocatorState state) {
