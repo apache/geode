@@ -27,6 +27,7 @@ dependencies {
       exclude module: 'lucene-sandbox'
     }
 
+
     testCompile project(':geode-junit')
 
     //Lucene test framework.
@@ -38,11 +39,17 @@ dependencies {
 
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
+
     integrationTestCompile project(":geode-dunit")
+    integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
     // TODO fix dependency on shared classes
     integrationTestCompile sourceSets.test.output
 
-    distributedTestCompile project(":geode-dunit")
+
+    distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+    // TODO fix dependency on shared classes
+    distributedTestCompile sourceSets.test.output
+
 
     upgradeTestCompile project(":geode-dunit")
 
