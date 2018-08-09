@@ -72,7 +72,8 @@ dependencies {
   integrationTestRuntime files(war.destinationDir)
 
 
-  distributedTestCompile project(":geode-dunit")
+  distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+  // TODO remove dependency on sources from other test modules
   distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
 
   distributedTestCompile files(war.destinationDir)
