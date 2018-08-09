@@ -74,6 +74,8 @@ while true; do
       --zone=${ZONE} \
       --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
       --min-cpu-platform=Intel\ Skylake \
+      --network="heavy-lifters" \
+      --subnet="heavy-lifters" \
       --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
       --image-project=${PROJECT} \
       --boot-disk-size=100GB \
