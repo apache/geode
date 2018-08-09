@@ -45,10 +45,24 @@ public abstract class BaseProcessStreamReaderIntegrationTest
     givenRunningProcessWithStreamReaders(ProcessSleeps.class);
 
     // act
-    process.destroy(); // results in SIGTERM which usually has an exit code of 143
+    process.destroyForcibly(); // results in SIGTERM which usually has an exit code of 143
 
     // assert
     waitUntilProcessStops(10, MINUTES);
     assertThatProcessAndReadersDied();
+  }
+
+  @Test
+  public void capturesStderrWhenProcessFailsDuringStart() throws Exception {
+    // arrange
+    givenStartedProcessWithStreamListeners(ProcessThrowsError.class);
+
+    // act
+    waitUntilProcessStops();
+
+    // assert
+    assertThatProcessAndReadersStoppedWithExitValue(1);
+    assertThatStdOutContainsExactly(ProcessThrowsError.STDOUT);
+    assertThatStdErrContains(ProcessThrowsError.ERROR_MSG);
   }
 }

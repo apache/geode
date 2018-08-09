@@ -96,7 +96,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   }
 
   protected void assertThatProcessAndReadersDied() throws InterruptedException {
-    assertThat(process.exitValue()).isGreaterThan(0);
+    assertThat(process.isAlive()).isFalse();
     assertThat(stdout.join(READER_JOIN_TIMEOUT_MILLIS).isRunning()).isFalse();
     assertThat(stderr.join(READER_JOIN_TIMEOUT_MILLIS).isRunning()).isFalse();
   }
