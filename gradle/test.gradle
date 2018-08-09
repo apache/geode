@@ -106,7 +106,6 @@ subprojects {
       includeInCheckLifecycle = false
     }
     uiTest {
-      parentSourceSet = 'test'
       testTaskName = 'uiTest'
       includeInCheckLifecycle = false
     }

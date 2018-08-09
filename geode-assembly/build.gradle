@@ -92,6 +92,8 @@ dependencies {
 
   testCompile 'com.google.guava:guava:' + project.'guava.version'
   testCompile 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
+  testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
   testCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
 
@@ -105,10 +107,6 @@ dependencies {
   }
 
   testCompile project(':extensions/session-testing-war')
-
-  testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
 
   testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
   testRuntime files("$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar")
@@ -135,14 +133,25 @@ dependencies {
   // TODO refactor out common test framework
   upgradeTestCompile sourceSets.distributedTest.output
 
+
   uiTestCompile project(":geode-dunit")
   uiTestCompile project(":geode-pulse")
+  uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
   // TODO refactor out common test framework
   uiTestCompile sourceSets.integrationTest.output
+  uiTestCompile project(":geode-pulse").sourceSets.uiTest.output
+
+  uiTestRuntime project(":geode-core")
+  uiTestRuntime 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
+
 
   upgradeTestCompile project(":geode-dunit")
   // TODO refactor out common test framework
   upgradeTestCompile sourceSets.distributedTest.output
+
+
 }
 
 sourceSets {
