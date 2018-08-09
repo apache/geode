@@ -82,7 +82,8 @@ public class GMSQuorumCheckerJUnitTest {
     assertTrue(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
     assertTrue(qc.checkForQuorum(500));
-    assertSame(qc.getMembershipInfo(), channel);
+    assertSame(OldMembershipInformation.class, qc.getMembershipInfo().getClass());
+    assertSame(((OldMembershipInformation) qc.getMembershipInfo()).getChannel(), channel);
   }
 
   @Test
