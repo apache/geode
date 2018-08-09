@@ -14,21 +14,29 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+
+import java.util.Properties;
+
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.test.junit.categories.AEQTest;
 
+@Category(AEQTest.class)
 @SuppressWarnings("serial")
-@Category({AEQTest.class})
-public class AsyncEventListenerOffHeapDUnitTest extends AsyncEventListenerDUnitTest {
+public class AsyncEventListenerWithOffHeapDistributedTest
+    extends AsyncEventListenerDistributedTest {
 
-  public AsyncEventListenerOffHeapDUnitTest() {
-    super();
+  @Override
+  protected Properties getDistributedSystemProperties() {
+    Properties config = new Properties();
+    config.setProperty(OFF_HEAP_MEMORY_SIZE, "300m");
+    return config;
   }
 
   @Override
-  public boolean isOffHeap() {
-    return true;
+  protected RegionFactory<?, ?> configureRegion(RegionFactory<?, ?> regionFactory) {
+    return regionFactory.setOffHeap(true);
   }
-
 }

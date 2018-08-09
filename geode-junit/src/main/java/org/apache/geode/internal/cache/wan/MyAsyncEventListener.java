@@ -14,34 +14,35 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.logging.LogService;
 
 public class MyAsyncEventListener implements AsyncEventListener, Declarable {
+  private static final Logger logger = LogService.getLogger();
 
   private final Map eventsMap;
 
   public MyAsyncEventListener() {
-    this.eventsMap = new ConcurrentHashMap();
+    eventsMap = new HashMap();
   }
 
-  public boolean processEvents(List<AsyncEvent> events) {
+  @Override
+  public synchronized boolean processEvents(List<AsyncEvent> events) {
     for (AsyncEvent event : events) {
-      if (this.eventsMap.containsKey(event.getKey())) {
-        InternalDistributedSystem.getConnectedInstance().getLogWriter()
-            .fine("This is a duplicate event --> " + event.getKey());
+      if (eventsMap.containsKey(event.getKey())) {
+        logger.debug("This is a duplicate event --> {}", event.getKey());
       }
-      this.eventsMap.put(event.getKey(), event.getDeserializedValue());
+      eventsMap.put(event.getKey(), event.getDeserializedValue());
 
-      InternalDistributedSystem.getConnectedInstance().getLogWriter()
-          .fine("Received an event --> " + event.getKey());
+      logger.debug("Received an event --> {}", event.getKey());
     }
     return true;
   }
@@ -49,9 +50,4 @@ public class MyAsyncEventListener implements AsyncEventListener, Declarable {
   public Map getEventsMap() {
     return eventsMap;
   }
-
-  public void close() {}
-
-  @Override
-  public void init(Properties props) {}
 }
