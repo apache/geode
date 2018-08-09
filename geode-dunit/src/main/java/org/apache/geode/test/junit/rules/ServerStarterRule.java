@@ -41,7 +41,7 @@ import org.apache.geode.pdx.PdxSerializer;
  * the configuration of the rule like this: ServerStarterRule server = new ServerStarterRule()
  * .withProperty(key, value) .withName(name) .withProperties(properties) .withSecurityManager(class)
  * .withJmxManager() .withRestService() .withEmbeddedLocator() .withRegion(type, name) etc, etc. If
- * your rule calls withAutoStart(), the server will be started before your test code.
+ * your rule calls withAutoStart(), the cache and server will be started before your test code.
  *
  * <p>
  * In your test code, you can use the rule to access the server's attributes, like the port
@@ -58,6 +58,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   private boolean pdxPersistent = false;
   private PdxSerializer pdxSerializer = null;
   private boolean pdxReadSerialized = false;
+  private boolean noCacheServer = false;
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
 
@@ -122,6 +123,14 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
+  /**
+   * If your only needs a cache and does not need a server for clients to connect
+   */
+  public ServerStarterRule withNoCacheServer() {
+    this.noCacheServer = true;
+    return this;
+  }
+
   public ServerStarterRule withEmbeddedLocator() {
     embeddedLocatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
     properties.setProperty("start-locator", "localhost[" + embeddedLocatorPort + "]");
@@ -172,18 +181,21 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     cache = (InternalCache) cf.create();
     DistributionConfig config =
         ((InternalDistributedSystem) cache.getDistributedSystem()).getConfig();
-    server = cache.addCacheServer();
-    // memberPort is by default zero, which translates to "randomly select an available port,"
-    // which is why it is updated after this try block
-    server.setPort(memberPort);
-    try {
-      server.start();
-    } catch (IOException e) {
-      throw new RuntimeException("unable to start server", e);
-    }
-    memberPort = server.getPort();
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
+
+    if (!noCacheServer) {
+      server = cache.addCacheServer();
+      // memberPort is by default zero, which translates to "randomly select an available port,"
+      // which is why it is updated after this try block
+      server.setPort(memberPort);
+      try {
+        server.start();
+      } catch (IOException e) {
+        throw new RuntimeException("unable to start server", e);
+      }
+      memberPort = server.getPort();
+    }
   }
 
   @Override

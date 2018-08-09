@@ -49,7 +49,8 @@ public class ShorteningExpirationTimeRegressionTest {
   private static final String KEY = "key";
 
   @ClassRule
-  public static ServerStarterRule server = new ServerStarterRule().withAutoStart();
+  public static ServerStarterRule server =
+      new ServerStarterRule().withNoCacheServer().withAutoStart();
 
   @ClassRule
   public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
