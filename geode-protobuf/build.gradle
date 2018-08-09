@@ -30,6 +30,8 @@ dependencies {
     testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
     integrationTestCompile project(":geode-dunit")
+    // TODO remove common source dependency
+    integrationTestCompile sourceSets.test.output
 
     distributedTestCompile project(":geode-dunit")
 }
