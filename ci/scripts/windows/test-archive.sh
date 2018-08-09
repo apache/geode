@@ -42,7 +42,6 @@ if [ ${UNAME_O} = "Msys" ]; then
   GSUTIL=gsutil.cmd
 fi
 
-env | sort
 
 GEODE_BUILD_VERSION_FILE=${BUILDROOT}/geode-build-version/number
 
@@ -55,19 +54,6 @@ if [ -z ${MAINTENANCE_VERSION+x} ]; then
   exit 1
 fi
 
-EMAIL_SUBJECT="${BUILDROOT}/built-geode/subject"
-EMAIL_BODY="${BUILDROOT}/built-geode/body"
-
-# Called by trap when the script is exiting
-function error_exit() {
-  echo "Geode unit tests completed in '\${BUILD_PIPELINE_NAME}/\${BUILD_JOB_NAME}' with non-zero exit code" > $EMAIL_SUBJECT
-  echo "Pipeline results can be found at:" >$EMAIL_BODY
-  echo "" >>$EMAIL_BODY
-  echo "Concourse: \${ATC_EXTERNAL_URL}/teams/\${BUILD_TEAM_NAME}/pipelines/\${BUILD_PIPELINE_NAME}/jobs/\${BUILD_JOB_NAME}/builds/\${BUILD_NAME}" >>$EMAIL_BODY
-  echo "" >>$EMAIL_BODY
-}
-
-trap error_exit ERR
 
 if [ -z "${GEODE_PULL_REQUEST_ID}" ]; then
 CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
