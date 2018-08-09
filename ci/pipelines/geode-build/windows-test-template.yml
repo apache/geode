@@ -83,7 +83,7 @@ jobs:
           run:
             path: bash
             args:
-              - geode-ci/ci/scripts/windows/test_archive.sh
+              - geode-ci/ci/scripts/windows/test-archive.sh
               - (( grab metadata.job.gradle_task ))
               - (( grab metadata.job.artifact_slug ))
 
