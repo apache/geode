@@ -2560,7 +2560,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       public void run() {
         logger.info("[testGrantTokenCleanup] vmGrantor creates grantor");
         connectDistributedSystem();
-        DistributedLockService dls = DistributedLockService.create(dlsName, getSystem());
+        DistributedLockService dls = DLockService.create(dlsName, getSystem(), true, true, true);
         assertTrue(dls.lock(key1, -1, -1));
         assertTrue(dls.isLockGrantor());
         DLockGrantor grantor = ((DLockService) dls).getGrantor();
@@ -2573,31 +2573,29 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       }
     });
 
-    if (true)
-      return; // TODO: remove early-out and complete this test
-
     // vm1 locks and frees key1
     vm1.invoke(new SerializableRunnable() {
       public void run() {
         logger.info("[testTokenCleanup] vm1 locks key1");
         connectDistributedSystem();
-        DLockService dls = (DLockService) DistributedLockService.create(dlsName, getSystem());
+        DLockService dls =
+            (DLockService) DLockService.create(dlsName, getSystem(), true, true, false);
         assertTrue(dls.lock(key1, -1, -1));
 
         logger.info("[testTokenCleanup] vm1 frees key1");
         dls.unlock(key1);
 
-        // token for key1 still exists until freeResources is called
+        // Without automateFreeResources, token for key1 still exists until freeResources is called
         assertNotNull(dls.getToken(key1));
         dls.freeResources(key1);
 
         // make sure token for key1 is gone
         DLockToken token = dls.getToken(key1);
-        assertNull("Failed with bug 38180: " + token, token);
+        assertNull("token should have been cleaned up", token);
 
         // make sure there are NO tokens at all
         Collection tokens = dls.getTokens();
-        assertEquals("Failed with bug 38180: tokens=" + tokens, 0, tokens.size());
+        assertEquals("There should be no tokens", 0, tokens.size());
       }
     });
 
@@ -2607,32 +2605,21 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         logger.info("[testTokenCleanup] vmGrantor frees key1");
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
 
-        // NOTE: DLockToken and DLockGrantToken should have been removed when
-        // vm1 unlocked key1
-
-        if (true)
-          return; // TODO: remove this when 38180/38179 are fixed
-
-        // check for bug 38180...
+        // Because automateFreeResources is true, DLockToken and DLockGrantToken should have been
+        // removed when vm1 unlocked key1
 
         // make sure token for key1 is gone
         DLockToken token = dls.getToken(key1);
-        assertNull("Failed with bug 38180: " + token, token);
+        assertNull("token should have been cleaned up", token);
 
         // make sure there are NO tokens at all
         Collection tokens = dls.getTokens();
-        assertEquals("Failed with bug 38180: tokens=" + tokens, 0, tokens.size());
-
-        // check for bug 38179...
+        assertEquals("There should be no tokens", 0, tokens.size());
 
         // make sure there are NO grant tokens at all
         DLockGrantor grantor = dls.getGrantor();
         Collection grantTokens = grantor.getGrantTokens();
-        assertEquals("Failed with bug 38179: grantTokens=" + grantTokens, 0, grantTokens.size());
-
-        // dls.freeResources(key1);
-        // TODO: assert that DLockGrantToken for key1 is gone
-        assertNull(dls.getToken(key1));
+        assertEquals("There should be no tokens", 0, grantTokens.size());
       }
     });
   }
