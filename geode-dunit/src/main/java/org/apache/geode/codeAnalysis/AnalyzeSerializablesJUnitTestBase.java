@@ -69,7 +69,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
-public class AnalyzeSerializablesJUnitTest {
+public abstract class AnalyzeSerializablesJUnitTestBase {
 
   private static final String NEW_LINE = System.getProperty("line.separator");
 
@@ -146,9 +146,7 @@ public class AnalyzeSerializablesJUnitTest {
   /**
    * Override only this one method in sub-classes
    */
-  protected String getModuleName() {
-    return "geode-core";
-  }
+  protected abstract String getModuleName();
 
   @Test
   public void testDataSerializables() throws Exception {

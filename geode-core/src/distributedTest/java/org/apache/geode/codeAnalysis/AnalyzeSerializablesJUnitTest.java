@@ -14,15 +14,17 @@
  */
 package org.apache.geode.codeAnalysis;
 
+
+
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({ClientSubscriptionTest.class})
-public class AnalyzeCQSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+@Category({SerializationTest.class})
+public class AnalyzeSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
 
-  @Override
   protected String getModuleName() {
-    return "geode-cq";
+    return "geode-core";
   }
+
 }
