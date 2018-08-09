@@ -311,7 +311,7 @@ subprojects {
   })
 
   // Make precheckin task run all validation tests for checking in code.
-  task precheckin (dependsOn: [ build, ":geode-assembly:acceptanceTest", integrationTest, distributedTest, flakyTest ]) {
+  task precheckin (dependsOn: [ build, acceptanceTest, integrationTest, distributedTest, flakyTest, uiTest, upgradeTest ]) {
     description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
 

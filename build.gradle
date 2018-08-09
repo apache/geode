@@ -53,7 +53,7 @@ allprojects {
   version = versionNumber + releaseQualifier + releaseType
   ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-  // We want to see all test results.  This is equivalatent to setting --continue
+  // We want to see all test results.  This is equivalent to setting --continue
   // on the command line.
   gradle.startParameter.continueOnFailure = true
 
@@ -101,4 +101,14 @@ subprojects {
   clean.finalizedBy rootProject.cleanAll
 
   apply plugin: 'com.github.ben-manes.versions'
+}
+
+task devBuild(dependsOn: [":assemble"]) {
+  description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
+  // spotless targets are not available until after evaluation.
+  subprojects {
+    afterEvaluate {
+      this.devBuild.dependsOn(project.spotlessApply)
+    }
+  }
 }
