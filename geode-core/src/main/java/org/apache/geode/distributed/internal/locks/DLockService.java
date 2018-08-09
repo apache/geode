@@ -2819,8 +2819,8 @@ public class DLockService extends DistributedLockService {
         DLockGrantor grantor = service.getGrantor();
         if (grantor != null && grantor.getVersionId() != -1 && !grantor.isDestroyed()) {
           foundGrantor = true;
-          GrantorInfo oldgi = grantors.get(serviceName);
-          if (oldgi == null || oldgi.getVersionId() < grantor.getVersionId()) {
+          GrantorInfo oldGrantorInfo = grantors.get(serviceName);
+          if (oldGrantorInfo == null || oldGrantorInfo.getVersionId() < grantor.getVersionId()) {
             grantors.put(serviceName, new GrantorInfo(dm.getId(), grantor.getVersionId(),
                 service.getSerialNumber(), false));
             needsRecovery.remove(serviceName);

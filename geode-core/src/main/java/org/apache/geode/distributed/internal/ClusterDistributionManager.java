@@ -3182,9 +3182,9 @@ public class ClusterDistributionManager implements DistributionManager {
    * @return true if newElder is the elder; false if he is no longer a member or we are the elder.
    */
   public boolean waitForElder(final InternalDistributedMember desiredElder) {
-    MembershipChangeListener l = new MembershipChangeListener();
+    MembershipChangeListener listener = new MembershipChangeListener();
 
-    addMembershipListener(l);
+    addMembershipListener(listener);
 
     boolean interrupted = false;
     try {
@@ -3192,8 +3192,6 @@ public class ClusterDistributionManager implements DistributionManager {
         if (closeInProgress)
           return false;
         InternalDistributedMember currentElder = this.getElderCandidate();
-        // Assert.assertTrue(
-        // currentElder.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE);
         if (desiredElder.equals(currentElder)) {
           return true;
         }
@@ -3211,13 +3209,13 @@ public class ClusterDistributionManager implements DistributionManager {
             new Object[] {currentElder, desiredElder}));
 
         try {
-          l.waitForMembershipChange();
+          listener.waitForMembershipChange();
         } catch (InterruptedException e) {
           interrupted = true;
         }
       } // while true
     } finally {
-      removeMembershipListener(l);
+      removeMembershipListener(listener);
 
       if (interrupted) {
         Thread.currentThread().interrupt();
