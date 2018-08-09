@@ -20,4 +20,4 @@ metadata:
     gradle_task: :geode-assembly:acceptanceTest
     artifact_slug: windows-acceptancetestfiles
     call_stack_timeout: 1800
-    tags: windows-acceptence-tests
+    tags: windows-acceptance-tests

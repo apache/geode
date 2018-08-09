@@ -47,6 +47,8 @@ jobs:
       inputs:
         - name: geode-ci
         - name: geode
+      outputs:
+        - name: built-geode
       platform: windows
       params:
         CALL_STACK_TIMEOUT: (( grab metadata.job.call_stack_timeout ))
@@ -72,9 +74,8 @@ jobs:
           inputs:
             - name: geode-ci
             - name: geode-build-version
-            - name: geode-results
             - name: built-geode
-          platform: linux
+          platform: windows
           params:
             MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
             SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -82,7 +83,7 @@ jobs:
           run:
             path: bash
             args:
-              - geode-ci/ci/scripts/windows/archive_results.sh
+              - geode-ci/ci/scripts/windows/test_archive_results.sh
               - (( grab metadata.job.gradle_task ))
               - (( grab metadata.job.artifact_slug ))
 
