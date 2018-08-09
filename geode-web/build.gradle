@@ -76,7 +76,12 @@ dependencies {
   // TODO remove dependency on sources from other test modules
   distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
 
-  distributedTestCompile files(war.destinationDir)
+  distributedTestRuntime files(war.destinationDir)
+  distributedTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+  }
+
 
   upgradeTestCompile project(":geode-dunit")
 }

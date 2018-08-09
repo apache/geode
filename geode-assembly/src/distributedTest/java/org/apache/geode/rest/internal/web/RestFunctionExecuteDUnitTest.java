@@ -39,6 +39,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.util.test.TestUtil;
 
 @Category({RestAPITest.class})
 public class RestFunctionExecuteDUnitTest {
@@ -111,13 +112,12 @@ public class RestFunctionExecuteDUnitTest {
   }
 
   // find ImplementsFunction.java in the geode-core resource
-  private static File loadClassToFile() throws URISyntaxException {
-    URL resourceFileURL = Function.class.getClassLoader()
-        .getResource("org/apache/geode/management/internal/deployment/ImplementsFunction.java");
-    assertThat(resourceFileURL).isNotNull();
+  private static File loadClassToFile() {
+    String resourcePath = TestUtil.getResourcePath(Function.class.getClassLoader(),
+        "org/apache/geode/management/internal/deployment/ImplementsFunction.java");
+    assertThat(resourcePath).isNotNull();
 
-    URI resourceUri = resourceFileURL.toURI();
-    return new File(resourceUri);
+    return new File(resourcePath);
   }
 
 
