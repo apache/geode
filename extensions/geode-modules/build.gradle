@@ -31,10 +31,10 @@ dependencies {
   testCompile project(':geode-junit')
 
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-  testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
   integrationTestCompile project(":geode-dunit")
+  integrationTestCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
+  integrationTestCompile 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 }
 
 disableMavenPublishing()
