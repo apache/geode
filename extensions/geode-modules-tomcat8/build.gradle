@@ -45,6 +45,9 @@ dependencies {
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
   distributedTestCompile project(":geode-dunit")
+  // TODO remove shared source dependency
+  distributedTestCompile sourceSets.integrationTest.output
+  distributedTestCompile project(':extensions/geode-modules').sourceSets.integrationTest.output
 
   eclipse.classpath.file {
     whenMerged { classpath ->
