@@ -93,6 +93,10 @@ groups:
   - DistributedTest
   - AcceptanceTest
   - IntegrationTest
+  - WindowsUnitTests
+  - WindowsIntegrationTests
+  - WindowsAcceptanceTests
+  - WindowsGfshDistributedTest
   - UpgradeTest
   - UpdatePassingRef
 
