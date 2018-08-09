@@ -16,6 +16,9 @@
 package org.apache.geode.management.internal.cli.shell;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.Enumeration;
 import java.util.logging.LogManager;
@@ -23,6 +26,9 @@ import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.shell.core.CommandResult;
+
+import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
 
 
 public class GfshJunitTest {
@@ -57,7 +63,7 @@ public class GfshJunitTest {
   }
 
   @Test
-  public void getAppContextPath() throws Exception {
+  public void getAppContextPath() {
     gfsh = new Gfsh();
     assertThat(gfsh.getEnvAppContextPath()).isEqualTo("");
     gfsh.setEnvProperty(Gfsh.ENV_APP_CONTEXT_PATH, "test");
@@ -111,5 +117,25 @@ public class GfshJunitTest {
         assertThat(logger.getParent().getName()).doesNotEndWith("LogWrapper");
       }
     }
+  }
+
+  @Test
+  public void executeCommandShouldSubstituteVariablesWhenNeededAndDelegateToDefaultImplementation() {
+    gfsh = spy(Gfsh.class);
+    CommandResult commandResult;
+
+    // No '$' character, should only delegate to default implementation.
+    commandResult = gfsh.executeCommand("echo --string=ApacheGeode!");
+    assertThat(commandResult.isSuccess()).isTrue();
+    verify(gfsh, times(0)).expandProperties("echo --string=ApacheGeode!");
+    assertThat(((LegacyCommandResult) commandResult.getResult()).getMessageFromContent())
+        .isEqualTo("ApacheGeode!");
+
+    // '$' character present, should expand properties and delegate to default implementation.
+    commandResult = gfsh.executeCommand("echo --string=SYS_USER:${SYS_USER}");
+    assertThat(commandResult.isSuccess()).isTrue();
+    verify(gfsh, times(1)).expandProperties("echo --string=SYS_USER:${SYS_USER}");
+    assertThat(((LegacyCommandResult) commandResult.getResult()).getMessageFromContent())
+        .isEqualTo("SYS_USER:" + System.getProperty("user.name"));
   }
 }
