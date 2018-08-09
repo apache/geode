@@ -95,8 +95,6 @@ dependencies {
   testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
   testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
-  testCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
-
   testCompile (project(':extensions/geode-modules')) {
     // Remove everything related to Tomcat
     exclude group: 'org.apache.tomcat'
@@ -119,19 +117,21 @@ dependencies {
 
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
+
   integrationTestCompile project(":geode-dunit")
   integrationTestCompile project(":geode-junit")
   integrationTestCompile project(":geode-pulse")
   integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
   integrationTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
+
   distributedTestCompile project(":geode-dunit")
+  distributedTestCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
   // TODO refactor out common test framework
   distributedTestCompile sourceSets.integrationTest.output
 
+
   acceptanceTestCompile project(":geode-dunit")
-  // TODO refactor out common test framework
-  upgradeTestCompile sourceSets.distributedTest.output
 
 
   uiTestCompile project(":geode-dunit")
@@ -150,8 +150,11 @@ dependencies {
   upgradeTestCompile project(":geode-dunit")
   // TODO refactor out common test framework
   upgradeTestCompile sourceSets.distributedTest.output
+  upgradeTestCompile sourceSets.test.output
 
-
+  upgradeTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  upgradeTestRuntime 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  upgradeTestRuntime project(':extensions/session-testing-war')
 }
 
 sourceSets {
