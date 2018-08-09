@@ -93,9 +93,9 @@ groups:
   - DistributedTest
   - AcceptanceTest
   - IntegrationTest
-  - WindowsUnitTests
-  - WindowsIntegrationTests
-  - WindowsAcceptanceTests
+  - WindowsUnitTest
+  - WindowsIntegrationTest
+  - WindowsAcceptanceTest
   - WindowsGfshDistributedTest
   - UpgradeTest
   - UpdatePassingRef
