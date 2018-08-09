@@ -29,6 +29,7 @@ import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.data.PortfolioPdx;
+import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.pdx.internal.PdxString;
@@ -79,6 +80,21 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
     statusIndex.setPdxStringFlag("PdxString Key");
     assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
     assertTrue(statusIndex.isIndexOnPdxKeys());
+  }
+
+  @Test
+  public void setPdxStringFlagWithAPdxStringOnACompressedRegionShouldBeFalse() throws Exception {
+    CacheUtils.startCache();
+    Cache cache = CacheUtils.getCache();
+    cache.createRegionFactory(RegionShortcut.REPLICATE).setCompressor(new SnappyCompressor())
+        .create("portfolios");
+    QueryService qs = cache.getQueryService();
+    AbstractIndex statusIndex =
+        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+
+    statusIndex.setPdxStringFlag(new PdxString("PdxString Key"));
+    assertTrue(statusIndex.isIndexedPdxKeysFlagSet);
+    assertFalse(statusIndex.isIndexOnPdxKeys());
   }
 
   @Test
