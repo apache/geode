@@ -92,7 +92,6 @@ subprojects {
       includeInCheckLifecycle = false
     }
     distributedTest {
-      parentSourceSet = 'test'
       testTaskName = 'distributedTest'
       includeInCheckLifecycle = false
     }
@@ -124,7 +123,7 @@ subprojects {
     integrationTestCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
     integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
 
-    integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+    distributedTestCompile project(":geode-dunit")
   }
 
   integrationTest {
