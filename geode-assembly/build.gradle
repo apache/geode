@@ -125,8 +125,10 @@ dependencies {
   integrationTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
 
-  distributedTestCompile project(":geode-dunit")
+  distributedTestCompile project(':extensions/session-testing-war')
   distributedTestCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  distributedTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
   // TODO refactor out common test framework
   distributedTestCompile sourceSets.integrationTest.output
 
