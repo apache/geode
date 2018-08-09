@@ -20,9 +20,6 @@ import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertRespons
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Properties;
 
 import org.junit.BeforeClass;
