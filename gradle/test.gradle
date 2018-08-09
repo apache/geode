@@ -101,7 +101,6 @@ subprojects {
       includeInCheckLifecycle = false
     }
     acceptanceTest {
-      parentSourceSet = 'test'
       testTaskName = 'acceptanceTest'
       includeInCheckLifecycle = false
     }
