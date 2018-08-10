@@ -600,7 +600,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (!isCoordinator && !isStopping && !services.getCancelCriterion().isCancelInProgress()) {
       logger.debug("Checking to see if I should become coordinator");
       NetView check = new NetView(v, v.getViewId() + 1);
-      check.remove(incomingRequest.getMemberID());
+      check.remove(mbr);
       synchronized (removedMembers) {
         check.removeAll(removedMembers);
         check.addCrashedMembers(removedMembers);
@@ -611,7 +611,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
       if (check.getCoordinator().equals(localAddress)) {
         synchronized (viewInstallationLock) {
-          becomeCoordinator(incomingRequest.getMemberID());
+          becomeCoordinator(mbr);
         }
       }
     } else {
@@ -1429,8 +1429,18 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       if (!newView.getCreator().equals(this.localAddress)) {
-        if (newView.shouldBeCoordinator(this.localAddress)) {
-          becomeCoordinator();
+        NetView check = new NetView(newView, newView.getViewId() + 1);
+        synchronized (leftMembers) {
+          check.removeAll(leftMembers);
+        }
+        synchronized (removedMembers) {
+          check.removeAll(removedMembers);
+          check.addCrashedMembers(removedMembers);
+        }
+        if (check.shouldBeCoordinator(this.localAddress)) {
+          if (!isCoordinator) {
+            becomeCoordinator();
+          }
         } else if (this.isCoordinator) {
           // stop being coordinator
           stopCoordinatorServices();
