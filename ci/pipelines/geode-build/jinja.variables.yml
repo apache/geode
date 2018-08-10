@@ -43,3 +43,25 @@ tests:
   DUNIT_PARALLEL_FORKS: "48"
   GRADLE_TASK: upgradeTest
   execute_test_timeout: 1h
+
+windowstests:
+- name: WindowsAcceptance
+  tags: acceptance
+  target_arg: :geode-assembly:acceptanceTest
+  dir_arg: windows-acceptancetestfiles
+  package_arg: ""
+- name: WindowsGfshDistributed
+  tags: distributed
+  target_arg: distributedTest
+  dir_arg: windows-gfshdistributedtest
+  package_arg: org.apache.geode.test.junit.categories.GfshTest
+- name: WindowsIntegration
+  tags: integration
+  target_arg: integrationTest
+  dir_arg: windows-integrationtestfiles
+  package_arg: ""
+- name: WindowsUnit
+  tags: unit
+  target_arg: test
+  dir_arg: windows-unittestfiles
+  package_arg: ""
