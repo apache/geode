@@ -176,12 +176,11 @@ abstract class RVVException
 
   protected abstract void writeReceived(DataOutput out) throws IOException;
 
-  public abstract ReceivedVersionsIterator receivedVersionsIterator();
+  public abstract ReceivedVersionsReverseIterator receivedVersionsReverseIterator();
 
   public abstract long getHighestReceivedVersion();
 
-  /** it's a shame that BitSet has no iterator */
-  public abstract class ReceivedVersionsIterator {
+  public abstract class ReceivedVersionsReverseIterator {
 
     abstract boolean hasNext();
 

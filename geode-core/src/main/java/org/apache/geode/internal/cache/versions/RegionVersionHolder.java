@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -751,7 +750,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    *
    * @return The canonicalized set of exceptions.
    */
-  protected List<RVVException> canonicalExceptions(List<RVVException> exceptions) {
+  protected static List<RVVException> canonicalExceptions(List<RVVException> exceptions) {
     LinkedList<RVVException> canon = new LinkedList<RVVException>();
     if (exceptions != null) {
       // Iterate through the set of exceptions
@@ -759,33 +758,31 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
         if (exception.isEmpty()) {
           canon.add(exception);
         } else {
-          long previous = exception.previousVersion;
+          long previous = exception.nextVersion;
           // Iterate through the set of received versions for this exception
-          int insertAt = canon.size();
-          for (ReceivedVersionsIterator it = exception.receivedVersionsIterator(); it.hasNext();) {
+          for (RVVException.ReceivedVersionsReverseIterator it =
+              exception.receivedVersionsReverseIterator(); it.hasNext();) {
             Long received = it.next();
             // If we find a gap between the previous received version and the
             // next received version, add an exception.
-            if (received != previous + 1) {
-              canon.add(insertAt, RVVException.createException(previous, received));
+            if (received != previous - 1) {
+              canon.add(RVVException.createException(received, previous));
             }
             // move the previous reference
             previous = received;
           }
 
-          // if there is a gap between the last received version and the next
+          // if there is a gap between the first received version and the previous
           // version, add an exception
           // this also handles the case where the RVV has no received versions,
-          // because previous==exception.previousVersion in that case.
-          if (exception.nextVersion != previous + 1) {
-            canon.add(insertAt, RVVException.createException(previous, exception.nextVersion));
+          // because previous==exception.nextVersion in that case.
+          if (exception.previousVersion != previous - 1) {
+            canon.add(RVVException.createException(exception.previousVersion, previous));
           }
         }
       }
     }
     return canon;
   }
-
-
 
 }
