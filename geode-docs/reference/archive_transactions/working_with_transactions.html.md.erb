@@ -92,7 +92,7 @@ or similar methods from within a transaction.
       - A function within a transaction can request a particular region&mdash;that is, the `FunctionService.onRegion()` method is permitted.
 
 
-See [Function Execution](../function_exec/chapter_overview.html) for more about functions.
+See [Function Execution](../../developing/function_exec/chapter_overview.html) for more about functions.
 
 See [Transaction Embedded within a Function Example](transaction_coding_examples.html#transactional_function_example) for an example.
 
@@ -174,7 +174,7 @@ The `EntryEvent` that a callback receives has a unique <%=vars.product_name%> tr
 -   `CacheWriter`. During a transaction, if a cache writer exists, its methods are invoked as usual for all operations, as the operations are called in the transactions. The `netWrite` operation is not used. The only cache writer used is the one in the member where the transactional data resides.
 -   `CacheListener`. The cache listener callbacks - local and remote - are triggered after the transaction commits. The system sends the conflated transaction events, in the order they were stored.
 
-For more information on writing cache event handlers, see [Implementing Cache Event Handlers](../events/implementing_cache_event_handlers.html).
+For more information on writing cache event handlers, see [Implementing Cache Event Handlers](../../developing/events/implementing_cache_event_handlers.html).
 
 ## <a id="concept_ocw_vf1_wk" class="no-quick-link"></a>Configuring Transaction Plug-In Event Handlers
 
