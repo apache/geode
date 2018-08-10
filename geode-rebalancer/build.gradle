@@ -25,6 +25,9 @@ dependencies {
     exclude module: 'spring-aop'
   }
 
+  testCompile project(':geode-core')
 
   integrationTestCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
+  // Only needed for category Flaky by Gradle
+  integrationTestRuntime project(':geode-junit')
 }
