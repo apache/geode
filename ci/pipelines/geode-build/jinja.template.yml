@@ -156,7 +156,8 @@ jobs:
       outputs:
       - name: results
     image: docker-geode-build-image
-- name: AcceptanceTest
+{% for test in tests %}
+- name: {{test.name}}Test
   public: true
   plan:
   - do:
@@ -182,10 +183,10 @@ jobs:
                 tag: latest
                 username: ((!docker-username))
             params:
-              CPUS: "8"
+              CPUS: {{test.CPUS}}
               GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
-              RAM: "12"
+              RAM: {{test.RAM}}
             run:
               path: geode-ci/ci/scripts/start_instance.sh
             inputs:
@@ -223,10 +224,10 @@ jobs:
             tag: latest
             username: ((!docker-username))
         params:
-          ARTIFACT_SLUG: acceptancetestfiles
-          CALL_STACK_TIMEOUT: "1800"
-          DUNIT_PARALLEL_FORKS: "7"
-          GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+          ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+          CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
+          DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
+          GRADLE_TASK: {{test.GRADLE_TASK}}
           GRADLE_TASK_OPTIONS: ""
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: "true"
@@ -238,7 +239,7 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-      timeout: 45m
+      timeout: {{test.execute_test_timeout}}
     ensure:
       do:
       - task: rsync_code_down
@@ -273,8 +274,8 @@ jobs:
                   tag: latest
                   username: ((!docker-username))
               params:
-                ARTIFACT_SLUG: acceptancetestfiles
-                GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+                ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+                GRADLE_TASK: {{test.GRADLE_TASK}}
                 MAINTENANCE_VERSION: {{repository.branch}}
                 PUBLIC_BUCKET: ((!public-bucket))
                 SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -302,298 +303,8 @@ jobs:
               - name: geode-ci
               - name: instance-data
             timeout: 1h
-- name: DistributedTest
-  public: true
-  plan:
-  - do:
-    - get: geode-ci
-    - aggregate:
-      - get: geode
-        passed:
-        - Build
-      - get: geode-build-version
-        passed:
-        - Build
-        trigger: true
-      - do:
-        - put: concourse-metadata-resource
-        - task: start_instance
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                tag: latest
-                username: ((!docker-username))
-            params:
-              CPUS: "96"
-              GEODE_BRANCH: {{repository.branch}}
-              GEODE_FORK: {{repository.fork}}
-              RAM: "180"
-            run:
-              path: geode-ci/ci/scripts/start_instance.sh
-            inputs:
-            - name: concourse-metadata-resource
-            - name: geode-ci
-            outputs:
-            - name: instance-data
-          timeout: 15m
-          attempts: 100
-    - task: rsync_code_up
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-            tag: latest
-            username: ((!docker-username))
-        run:
-          path: geode-ci/ci/scripts/rsync_code_up.sh
-        inputs:
-        - name: geode-ci
-        - name: geode
-        - name: instance-data
-      timeout: 5m
-    - task: execute_tests
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-            tag: latest
-            username: ((!docker-username))
-        params:
-          ARTIFACT_SLUG: distributedtestfiles
-          CALL_STACK_TIMEOUT: "3600"
-          DUNIT_PARALLEL_FORKS: "48"
-          GRADLE_TASK: distributedTest
-          GRADLE_TASK_OPTIONS: ""
-          MAINTENANCE_VERSION: {{repository.branch}}
-          PARALLEL_DUNIT: "true"
-          PUBLIC_BUCKET: ((!public-bucket))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
-        run:
-          path: geode-ci/ci/scripts/execute_tests.sh
-        inputs:
-        - name: geode-ci
-        - name: geode
-        - name: instance-data
-      timeout: 1h15m
-    ensure:
-      do:
-      - task: rsync_code_down
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-              tag: latest
-              username: ((!docker-username))
-          run:
-            path: geode-ci/ci/scripts/rsync_code_down.sh
-          inputs:
-          - name: geode-ci
-          - name: instance-data
-          outputs:
-          - name: geode-results
-        timeout: 5m
-      ensure:
-        do:
-        - aggregate:
-          - task: archive_results
-            config:
-              platform: linux
-              image_resource:
-                type: docker-image
-                source:
-                  password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                  tag: latest
-                  username: ((!docker-username))
-              params:
-                ARTIFACT_SLUG: distributedtestfiles
-                GRADLE_TASK: distributedTest
-                MAINTENANCE_VERSION: {{repository.branch}}
-                PUBLIC_BUCKET: ((!public-bucket))
-                SERVICE_ACCOUNT: ((!concourse-gcp-account))
-              run:
-                path: geode-ci/ci/scripts/archive_results.sh
-              inputs:
-              - name: concourse-metadata-resource
-              - name: geode-ci
-              - name: geode-build-version
-              - name: geode-results
-            timeout: 1h
-          - task: stop_instance
-            config:
-              platform: linux
-              image_resource:
-                type: docker-image
-                source:
-                  password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                  tag: latest
-                  username: ((!docker-username))
-              run:
-                path: geode-ci/ci/scripts/stop_instance.sh
-              inputs:
-              - name: geode-ci
-              - name: instance-data
-            timeout: 1h
-- name: IntegrationTest
-  public: true
-  plan:
-  - do:
-    - get: geode-ci
-    - aggregate:
-      - get: geode
-        passed:
-        - Build
-      - get: geode-build-version
-        passed:
-        - Build
-        trigger: true
-      - do:
-        - put: concourse-metadata-resource
-        - task: start_instance
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                tag: latest
-                username: ((!docker-username))
-            params:
-              CPUS: "96"
-              GEODE_BRANCH: {{repository.branch}}
-              GEODE_FORK: {{repository.fork}}
-              RAM: "90"
-            run:
-              path: geode-ci/ci/scripts/start_instance.sh
-            inputs:
-            - name: concourse-metadata-resource
-            - name: geode-ci
-            outputs:
-            - name: instance-data
-          timeout: 15m
-          attempts: 100
-    - task: rsync_code_up
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-            tag: latest
-            username: ((!docker-username))
-        run:
-          path: geode-ci/ci/scripts/rsync_code_up.sh
-        inputs:
-        - name: geode-ci
-        - name: geode
-        - name: instance-data
-      timeout: 5m
-    - task: execute_tests
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-            tag: latest
-            username: ((!docker-username))
-        params:
-          ARTIFACT_SLUG: integrationtestfiles
-          CALL_STACK_TIMEOUT: "1500"
-          DUNIT_PARALLEL_FORKS: "48"
-          GRADLE_TASK: integrationTest
-          GRADLE_TASK_OPTIONS: ""
-          MAINTENANCE_VERSION: {{repository.branch}}
-          PARALLEL_DUNIT: "true"
-          PUBLIC_BUCKET: ((!public-bucket))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
-        run:
-          path: geode-ci/ci/scripts/execute_tests.sh
-        inputs:
-        - name: geode-ci
-        - name: geode
-        - name: instance-data
-      timeout: 40m
-    ensure:
-      do:
-      - task: rsync_code_down
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-              tag: latest
-              username: ((!docker-username))
-          run:
-            path: geode-ci/ci/scripts/rsync_code_down.sh
-          inputs:
-          - name: geode-ci
-          - name: instance-data
-          outputs:
-          - name: geode-results
-        timeout: 5m
-      ensure:
-        do:
-        - aggregate:
-          - task: archive_results
-            config:
-              platform: linux
-              image_resource:
-                type: docker-image
-                source:
-                  password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                  tag: latest
-                  username: ((!docker-username))
-              params:
-                ARTIFACT_SLUG: integrationtestfiles
-                GRADLE_TASK: integrationTest
-                MAINTENANCE_VERSION: {{repository.branch}}
-                PUBLIC_BUCKET: ((!public-bucket))
-                SERVICE_ACCOUNT: ((!concourse-gcp-account))
-              run:
-                path: geode-ci/ci/scripts/archive_results.sh
-              inputs:
-              - name: concourse-metadata-resource
-              - name: geode-ci
-              - name: geode-build-version
-              - name: geode-results
-            timeout: 1h
-          - task: stop_instance
-            config:
-              platform: linux
-              image_resource:
-                type: docker-image
-                source:
-                  password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                  tag: latest
-                  username: ((!docker-username))
-              run:
-                path: geode-ci/ci/scripts/stop_instance.sh
-              inputs:
-              - name: geode-ci
-              - name: instance-data
-            timeout: 1h
+{% endfor %}
+
 - name: UpgradeTest
   public: true
   plan:
