@@ -10,6 +10,17 @@ config:
       username: ((!docker-username))
 {% endmacro %}
 
+{% macro plan_resource_gets() %}
+- get: geode-ci
+- aggregate:
+  - get: geode
+    passed:
+    - Build
+  - get: geode-build-version
+    passed:
+    - Build
+    trigger: true
+{% endmacro %}
 
 groups:
 - name: main
@@ -174,15 +185,7 @@ jobs:
   public: true
   plan:
   - do:
-    - get: geode-ci
-    - aggregate:
-      - get: geode
-        passed:
-        - Build
-      - get: geode-build-version
-        passed:
-        - Build
-        trigger: true
+    {{ plan_resource_gets() |indent(4) }}
       - do:
         - put: concourse-metadata-resource
         - task: start_instance
@@ -273,15 +276,7 @@ jobs:
 - name: {{test.name}}Test
   public: true
   plan:
-  - get: geode-ci
-  - aggregate:
-    - get: geode
-      passed:
-      - Build
-    - get: geode-build-version
-      passed:
-      - Build
-      trigger: true
+  {{ plan_resource_gets() |indent(2) }}
   - task: cleanup-java-processes
     config:
       platform: windows
