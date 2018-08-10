@@ -1,0 +1,1034 @@
+groups:
+- name: main
+  jobs:
+  - Build
+  - DistributedTest
+  - AcceptanceTest
+  - IntegrationTest
+  - WindowsUnitTest
+  - WindowsIntegrationTest
+  - WindowsAcceptanceTest
+  - WindowsGfshDistributedTest
+  - UpgradeTest
+  - UpdatePassingRef
+resources:
+- name: geode-build-artifact
+  type: gcs-resource
+  source:
+    bucket: ((!public-bucket))
+    json_key: ((!concourse-gcp-key))
+    regexp: artifacts/jinja/geodefiles-(.*).tgz
+- name: send-notification-email
+  type: email
+  source:
+    from: ((!source-email-address))
+    smtp:
+      host: ((!source-email-server))
+      password: ((!source-email-password))
+      port: "587"
+      username: ((!source-email-username))
+    to:
+    - ((!notification-email-address))
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
+  source: {}
+- name: docker-geode-build-image
+  type: docker-image
+  source:
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-((!docker-image-name))
+    tag: latest
+    username: ((!docker-username))
+- name: geode
+  type: git
+  source:
+    branch: jinja
+    depth: 1
+    ignore_paths:
+    - ci/*
+    uri: https://github.com/rhoughton-pivot/geode.git
+- name: geode-ci
+  type: git
+  source:
+    branch: jinja
+    depth: 1
+    paths:
+    - ci/pipelines/geode-build/*
+    - ci/scripts/*
+    uri: https://github.com/rhoughton-pivot/geode.git
+- name: geode-build-version
+  type: semver
+  source:
+    bucket: ((!concourse-bucket))
+    driver: gcs
+    initial_version: 1.3.0
+    json_key: ((!concourse-gcp-key))
+    key: jinja/version
+resource_types:
+- name: concourse-metadata-resource
+  type: docker-image
+  source:
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-concourse-metadata-resource
+    tag: latest
+    username: ((!docker-username))
+- name: gcs-resource
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+- name: email
+  type: docker-image
+  source:
+    repository: pcfseceng/email-resource
+jobs:
+- name: Build
+  public: true
+  serial: true
+  plan:
+  - get: geode
+    trigger: true
+  - get: geode-ci
+  - get: geode-build-version
+    params:
+      pre: build
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          password: ((!docker-password))
+          repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-((!docker-image-name))
+          tag: latest
+          username: ((!docker-username))
+      params:
+        MAINTENANCE_VERSION: jinja
+        PUBLIC_BUCKET: ((!public-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: geode-ci/ci/scripts/build.sh
+      inputs:
+      - name: geode
+      - name: geode-ci
+      - name: geode-build-version
+      outputs:
+      - name: built-geode
+      - name: results
+    on_failure:
+      aggregate:
+      - put: send-notification-email
+        params:
+          body: results/body
+          subject: results/subject
+    ensure:
+      aggregate:
+      - put: geode-build-artifact
+        params:
+          file: built-geode/geodefiles-*.tgz
+      - put: geode-build-version
+        params:
+          file: results/number
+- name: UpdatePassingRef
+  public: true
+  serial: true
+  plan:
+  - get: geode
+    passed:
+    - AcceptanceTest
+    - DistributedTest
+    - IntegrationTest
+    - UpgradeTest
+    trigger: true
+  - get: geode-ci
+  - get: docker-geode-build-image
+  - task: updatepassingref
+    config:
+      platform: linux
+      params:
+        MAINTENANCE_VERSION: jinja
+        PUBLIC_BUCKET: ((!public-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: geode-ci/ci/scripts/update-passing-ref.sh
+      inputs:
+      - name: geode
+      - name: geode-ci
+      outputs:
+      - name: results
+    image: docker-geode-build-image
+- name: AcceptanceTest
+  public: true
+  plan:
+  - do:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+      - do:
+        - put: concourse-metadata-resource
+        - task: start_instance
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                password: ((!docker-password))
+                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                tag: latest
+                username: ((!docker-username))
+            params:
+              CPUS: "8"
+              GEODE_BRANCH: jinja
+              GEODE_FORK: rhoughton-pivot
+              RAM: "12"
+            run:
+              path: geode-ci/ci/scripts/start_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode-ci
+            outputs:
+            - name: instance-data
+          timeout: 15m
+          attempts: 100
+    - task: rsync_code_up
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 5m
+    - task: execute_tests
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        params:
+          ARTIFACT_SLUG: acceptancetestfiles
+          CALL_STACK_TIMEOUT: "1800"
+          DUNIT_PARALLEL_FORKS: "7"
+          GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: jinja
+          PARALLEL_DUNIT: "true"
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        run:
+          path: geode-ci/ci/scripts/execute_tests.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 45m
+    ensure:
+      do:
+      - task: rsync_code_down
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              password: ((!docker-password))
+              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              tag: latest
+              username: ((!docker-username))
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
+      ensure:
+        do:
+        - aggregate:
+          - task: archive_results
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              params:
+                ARTIFACT_SLUG: acceptancetestfiles
+                GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+                MAINTENANCE_VERSION: jinja
+                PUBLIC_BUCKET: ((!public-bucket))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              run:
+                path: geode-ci/ci/scripts/archive_results.sh
+              inputs:
+              - name: concourse-metadata-resource
+              - name: geode-ci
+              - name: geode-build-version
+              - name: geode-results
+            timeout: 1h
+          - task: stop_instance
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              run:
+                path: geode-ci/ci/scripts/stop_instance.sh
+              inputs:
+              - name: geode-ci
+              - name: instance-data
+            timeout: 1h
+- name: DistributedTest
+  public: true
+  plan:
+  - do:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+      - do:
+        - put: concourse-metadata-resource
+        - task: start_instance
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                password: ((!docker-password))
+                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                tag: latest
+                username: ((!docker-username))
+            params:
+              CPUS: "96"
+              GEODE_BRANCH: jinja
+              GEODE_FORK: rhoughton-pivot
+              RAM: "180"
+            run:
+              path: geode-ci/ci/scripts/start_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode-ci
+            outputs:
+            - name: instance-data
+          timeout: 15m
+          attempts: 100
+    - task: rsync_code_up
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 5m
+    - task: execute_tests
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        params:
+          ARTIFACT_SLUG: distributedtestfiles
+          CALL_STACK_TIMEOUT: "3600"
+          DUNIT_PARALLEL_FORKS: "48"
+          GRADLE_TASK: distributedTest
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: jinja
+          PARALLEL_DUNIT: "true"
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        run:
+          path: geode-ci/ci/scripts/execute_tests.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 1h15m
+    ensure:
+      do:
+      - task: rsync_code_down
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              password: ((!docker-password))
+              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              tag: latest
+              username: ((!docker-username))
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
+      ensure:
+        do:
+        - aggregate:
+          - task: archive_results
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              params:
+                ARTIFACT_SLUG: distributedtestfiles
+                GRADLE_TASK: distributedTest
+                MAINTENANCE_VERSION: jinja
+                PUBLIC_BUCKET: ((!public-bucket))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              run:
+                path: geode-ci/ci/scripts/archive_results.sh
+              inputs:
+              - name: concourse-metadata-resource
+              - name: geode-ci
+              - name: geode-build-version
+              - name: geode-results
+            timeout: 1h
+          - task: stop_instance
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              run:
+                path: geode-ci/ci/scripts/stop_instance.sh
+              inputs:
+              - name: geode-ci
+              - name: instance-data
+            timeout: 1h
+- name: IntegrationTest
+  public: true
+  plan:
+  - do:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+      - do:
+        - put: concourse-metadata-resource
+        - task: start_instance
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                password: ((!docker-password))
+                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                tag: latest
+                username: ((!docker-username))
+            params:
+              CPUS: "96"
+              GEODE_BRANCH: jinja
+              GEODE_FORK: rhoughton-pivot
+              RAM: "90"
+            run:
+              path: geode-ci/ci/scripts/start_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode-ci
+            outputs:
+            - name: instance-data
+          timeout: 15m
+          attempts: 100
+    - task: rsync_code_up
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 5m
+    - task: execute_tests
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        params:
+          ARTIFACT_SLUG: integrationtestfiles
+          CALL_STACK_TIMEOUT: "1500"
+          DUNIT_PARALLEL_FORKS: "48"
+          GRADLE_TASK: integrationTest
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: jinja
+          PARALLEL_DUNIT: "true"
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        run:
+          path: geode-ci/ci/scripts/execute_tests.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 40m
+    ensure:
+      do:
+      - task: rsync_code_down
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              password: ((!docker-password))
+              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              tag: latest
+              username: ((!docker-username))
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
+      ensure:
+        do:
+        - aggregate:
+          - task: archive_results
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              params:
+                ARTIFACT_SLUG: integrationtestfiles
+                GRADLE_TASK: integrationTest
+                MAINTENANCE_VERSION: jinja
+                PUBLIC_BUCKET: ((!public-bucket))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              run:
+                path: geode-ci/ci/scripts/archive_results.sh
+              inputs:
+              - name: concourse-metadata-resource
+              - name: geode-ci
+              - name: geode-build-version
+              - name: geode-results
+            timeout: 1h
+          - task: stop_instance
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              run:
+                path: geode-ci/ci/scripts/stop_instance.sh
+              inputs:
+              - name: geode-ci
+              - name: instance-data
+            timeout: 1h
+- name: UpgradeTest
+  public: true
+  plan:
+  - do:
+    - get: geode-ci
+    - aggregate:
+      - get: geode
+        passed:
+        - Build
+      - get: geode-build-version
+        passed:
+        - Build
+        trigger: true
+      - do:
+        - put: concourse-metadata-resource
+        - task: start_instance
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                password: ((!docker-password))
+                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                tag: latest
+                username: ((!docker-username))
+            params:
+              CPUS: "96"
+              GEODE_BRANCH: jinja
+              GEODE_FORK: rhoughton-pivot
+              RAM: "160"
+            run:
+              path: geode-ci/ci/scripts/start_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode-ci
+            outputs:
+            - name: instance-data
+          timeout: 15m
+          attempts: 100
+    - task: rsync_code_up
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 5m
+    - task: execute_tests
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            password: ((!docker-password))
+            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            tag: latest
+            username: ((!docker-username))
+        params:
+          ARTIFACT_SLUG: upgradetestfiles
+          CALL_STACK_TIMEOUT: "3000"
+          DUNIT_PARALLEL_FORKS: "48"
+          GRADLE_TASK: upgradeTest
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: jinja
+          PARALLEL_DUNIT: "true"
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        run:
+          path: geode-ci/ci/scripts/execute_tests.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 1h
+    ensure:
+      do:
+      - task: rsync_code_down
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              password: ((!docker-password))
+              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              tag: latest
+              username: ((!docker-username))
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
+      ensure:
+        do:
+        - aggregate:
+          - task: archive_results
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              params:
+                ARTIFACT_SLUG: upgradetestfiles
+                GRADLE_TASK: upgradeTest
+                MAINTENANCE_VERSION: jinja
+                PUBLIC_BUCKET: ((!public-bucket))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+              run:
+                path: geode-ci/ci/scripts/archive_results.sh
+              inputs:
+              - name: concourse-metadata-resource
+              - name: geode-ci
+              - name: geode-build-version
+              - name: geode-results
+            timeout: 1h
+          - task: stop_instance
+            config:
+              platform: linux
+              image_resource:
+                type: docker-image
+                source:
+                  password: ((!docker-password))
+                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  tag: latest
+                  username: ((!docker-username))
+              run:
+                path: geode-ci/ci/scripts/stop_instance.sh
+              inputs:
+              - name: geode-ci
+              - name: instance-data
+            timeout: 1h
+- name: WindowsAcceptanceTest
+  public: true
+  plan:
+  - get: geode-ci
+  - aggregate:
+    - get: geode
+      passed:
+      - Build
+    - get: geode-build-version
+      passed:
+      - Build
+      trigger: true
+  - task: cleanup-java-processes
+    config:
+      platform: windows
+      run:
+        path: powershell
+        args:
+        - -command
+        - |
+          gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+          kill -name java -force
+          exit 0
+    tags:
+    - windows-acceptance-tests
+  - task: execute_tests
+    config:
+      platform: windows
+      params:
+        CALL_STACK_TIMEOUT: "1800"
+        DUNIT_PARALLEL_FORKS: "0"
+        JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
+        MAINTENANCE_VERSION: jinja
+        PARALLEL_DUNIT: "false"
+        PUBLIC_BUCKET: ((!public-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: bash
+        args:
+        - geode-ci/ci/scripts/windows/test-run.sh
+        - :geode-assembly:acceptanceTest
+        - windows-acceptancetestfiles
+        - ""
+      inputs:
+      - name: geode-ci
+      - name: geode
+      outputs:
+      - name: built-geode
+    tags:
+    - windows-acceptance-tests
+    ensure:
+      aggregate:
+      - task: archive_results
+        config:
+          platform: windows
+          params:
+            MAINTENANCE_VERSION: jinja
+            PUBLIC_BUCKET: ((!public-bucket))
+            SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          run:
+            path: bash
+            args:
+            - geode-ci/ci/scripts/windows/test-archive.sh
+            - :geode-assembly:acceptanceTest
+            - windows-acceptancetestfiles
+          inputs:
+          - name: geode-ci
+          - name: geode-build-version
+          - name: built-geode
+        tags:
+        - windows-acceptance-tests
+        timeout: 1h
+    timeout: 4h
+- name: WindowsGfshDistributedTest
+  public: true
+  plan:
+  - get: geode-ci
+  - aggregate:
+    - get: geode
+      passed:
+      - Build
+    - get: geode-build-version
+      passed:
+      - Build
+      trigger: true
+  - task: cleanup-java-processes
+    config:
+      platform: windows
+      run:
+        path: powershell
+        args:
+        - -command
+        - |
+          gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+          kill -name java -force
+          exit 0
+    tags:
+    - windows-distributed-tests
+  - task: execute_tests
+    config:
+      platform: windows
+      params:
+        CALL_STACK_TIMEOUT: "1800"
+        DUNIT_PARALLEL_FORKS: "0"
+        JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
+        MAINTENANCE_VERSION: jinja
+        PARALLEL_DUNIT: "false"
+        PUBLIC_BUCKET: ((!public-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: bash
+        args:
+        - geode-ci/ci/scripts/windows/test-run.sh
+        - distributedTest
+        - windows-gfshdistributedtest
+        - org.apache.geode.test.junit.categories.GfshTest
+      inputs:
+      - name: geode-ci
+      - name: geode
+      outputs:
+      - name: built-geode
+    tags:
+    - windows-distributed-tests
+    ensure:
+      aggregate:
+      - task: archive_results
+        config:
+          platform: windows
+          params:
+            MAINTENANCE_VERSION: jinja
+            PUBLIC_BUCKET: ((!public-bucket))
+            SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          run:
+            path: bash
+            args:
+            - geode-ci/ci/scripts/windows/test-archive.sh
+            - distributedTest
+            - windows-gfshdistributedtest
+          inputs:
+          - name: geode-ci
+          - name: geode-build-version
+          - name: built-geode
+        tags:
+        - windows-distributed-tests
+        timeout: 1h
+    timeout: 4h
+- name: WindowsIntegrationTest
+  public: true
+  plan:
+  - get: geode-ci
+  - aggregate:
+    - get: geode
+      passed:
+      - Build
+    - get: geode-build-version
+      passed:
+      - Build
+      trigger: true
+  - task: cleanup-java-processes
+    config:
+      platform: windows
+      run:
+        path: powershell
+        args:
+        - -command
+        - |
+          gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+          kill -name java -force
+          exit 0
+    tags:
+    - windows-integration-tests
+  - task: execute_tests
+    config:
+      platform: windows
+      params:
+        CALL_STACK_TIMEOUT: "1800"
+        DUNIT_PARALLEL_FORKS: "0"
+        JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
+        MAINTENANCE_VERSION: jinja
+        PARALLEL_DUNIT: "false"
+        PUBLIC_BUCKET: ((!public-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: bash
+        args:
+        - geode-ci/ci/scripts/windows/test-run.sh
+        - integrationTest
+        - windows-integrationtestfiles
+        - ""
+      inputs:
+      - name: geode-ci
+      - name: geode
+      outputs:
+      - name: built-geode
+    tags:
+    - windows-integration-tests
+    ensure:
+      aggregate:
+      - task: archive_results
+        config:
+          platform: windows
+          params:
+            MAINTENANCE_VERSION: jinja
+            PUBLIC_BUCKET: ((!public-bucket))
+            SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          run:
+            path: bash
+            args:
+            - geode-ci/ci/scripts/windows/test-archive.sh
+            - integrationTest
+            - windows-integrationtestfiles
+          inputs:
+          - name: geode-ci
+          - name: geode-build-version
+          - name: built-geode
+        tags:
+        - windows-integration-tests
+        timeout: 1h
+    timeout: 4h
+- name: WindowsUnitTest
+  public: true
+  plan:
+  - get: geode-ci
+  - aggregate:
+    - get: geode
+      passed:
+      - Build
+    - get: geode-build-version
+      passed:
+      - Build
+      trigger: true
+  - task: cleanup-java-processes
+    config:
+      platform: windows
+      run:
+        path: powershell
+        args:
+        - -command
+        - |
+          gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
+          kill -name java -force
+          exit 0
+    tags:
+    - windows-unit-tests
+  - task: execute_tests
+    config:
+      platform: windows
+      params:
+        CALL_STACK_TIMEOUT: "1800"
+        DUNIT_PARALLEL_FORKS: "0"
+        JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
+        MAINTENANCE_VERSION: jinja
+        PARALLEL_DUNIT: "false"
+        PUBLIC_BUCKET: ((!public-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: bash
+        args:
+        - geode-ci/ci/scripts/windows/test-run.sh
+        - test
+        - windows-unittestfiles
+        - ""
+      inputs:
+      - name: geode-ci
+      - name: geode
+      outputs:
+      - name: built-geode
+    tags:
+    - windows-unit-tests
+    ensure:
+      aggregate:
+      - task: archive_results
+        config:
+          platform: windows
+          params:
+            MAINTENANCE_VERSION: jinja
+            PUBLIC_BUCKET: ((!public-bucket))
+            SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          run:
+            path: bash
+            args:
+            - geode-ci/ci/scripts/windows/test-archive.sh
+            - test
+            - windows-unittestfiles
+          inputs:
+          - name: geode-ci
+          - name: geode-build-version
+          - name: built-geode
+        tags:
+        - windows-unit-tests
+        timeout: 1h
+    timeout: 4h

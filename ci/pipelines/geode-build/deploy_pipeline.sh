@@ -24,6 +24,16 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+for cmd in Jinja2 PyYAML; do
+  if ! [[ $(pip3 list |grep ${cmd}) ]]; then
+    echo "${cmd} must be installed for pipeline deployment to work."
+    echo " 'pip3 install ${cmd}'"
+    echo ""
+    exit 1
+  fi
+done
+
+
 if ! [ -x "$(command -v spruce)" ]; then
     echo "Spruce must be installed for pipeline deployment to work."
     echo "For macos: 'brew tap starkandwayne/cf; brew install spruce'"
@@ -102,6 +112,9 @@ else
   DOCKER_IMAGE_PREFIX="${PIPELINE_NAME}-"
 fi
 
+python3 render.py
+
+exit 1
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
 fly -t ${TARGET} set-pipeline --non-interactive \
   --pipeline ${PIPELINE_NAME} \
