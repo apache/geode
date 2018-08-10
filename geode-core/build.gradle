@@ -164,7 +164,6 @@ dependencies {
   testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
   testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
-  testCompile 'net.openhft:compiler:2.3.1'
 
   testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
   testCompile project(':geode-concurrency-test')
