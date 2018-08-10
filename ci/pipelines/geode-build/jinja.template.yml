@@ -22,6 +22,15 @@ config:
     trigger: true
 {% endmacro %}
 
+{% macro common_test_params(test) %}
+CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
+DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
+MAINTENANCE_VERSION: {{repository.branch}}
+PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
+PUBLIC_BUCKET: ((!public-bucket))
+SERVICE_ACCOUNT: ((!concourse-gcp-account))
+{% endmacro %}
+
 groups:
 - name: main
   jobs:
@@ -217,14 +226,9 @@ jobs:
       {{ alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
-          CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
-          DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
           GRADLE_TASK_OPTIONS: ""
-          MAINTENANCE_VERSION: {{repository.branch}}
-          PARALLEL_DUNIT: "true"
-          PUBLIC_BUCKET: ((!public-bucket))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          {{ common_test_params(test) | indent(10) }}
         run:
           path: geode-ci/ci/scripts/execute_tests.sh
         inputs:
@@ -294,13 +298,8 @@ jobs:
     config:
       platform: windows
       params:
-        CALL_STACK_TIMEOUT: "1800"
-        DUNIT_PARALLEL_FORKS: "0"
         JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
-        MAINTENANCE_VERSION: {{repository.branch}}
-        PARALLEL_DUNIT: "false"
-        PUBLIC_BUCKET: ((!public-bucket))
-        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        {{ common_test_params(test) | indent(8) }}
       run:
         path: bash
         args:
