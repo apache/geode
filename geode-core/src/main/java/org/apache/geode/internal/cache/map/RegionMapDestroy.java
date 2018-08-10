@@ -484,7 +484,7 @@ public class RegionMapDestroy {
     if (!hasVersionStamp(entry)) {
       removePhase2(entry);
     } else if (isRemoteDestroyOfTombstone(entry)) {
-      rescheduleTombstoneUsingEntryTag(entry); // TODO coverage
+      rescheduleTombstoneUsingEntryTag(entry); // TODO coverage: needs removeRecoveredEntry=true
     }
     lruEntryDestroy(entry);
     opCompleted = true;
@@ -577,7 +577,7 @@ public class RegionMapDestroy {
         }
         throwException = false;
         setRedestroyedEntry();
-        doPart3 = true;
+        doDestroyPart2(entryForDistribution, false);
         // Distribution of this op happens on regionEntry in part 3 so ensure it is not null
         setRegionEntry(entryForDistribution);
       }
