@@ -31,15 +31,9 @@ dependencies {
 
 
   testCompile project(':geode-junit')
-  testCompile group: 'com.pholser', name: 'junit-quickcheck-core', version: project.'junit-quickcheck.version'
-  testCompile group: 'com.pholser', name: 'junit-quickcheck-generators', version: project.'junit-quickcheck.version'
-  testCompile project(':geode-old-versions').sourceSets.main.output
 
 
   integrationTestCompile project(":geode-dunit")
-
-
-  distributedTestCompile project(":geode-dunit")
 
 
   acceptanceTestCompile project(":geode-dunit")
