@@ -19,6 +19,9 @@ apply plugin: 'war'
 
 dependencies {
 
+  compileOnly project(':geode-core')
+  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
@@ -56,16 +59,13 @@ dependencies {
     exclude module: 'spring-beans'
   }
 
+
   testCompile project(':geode-junit')
-
-  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  compileOnly project(':geode-core')
   testCompile project(':geode-core')
+  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
 
-  integrationTestCompile project(":geode-dunit")
 
-  distributedTestCompile project(":geode-dunit")
+  integrationTestCompile project(":geode-junit")
 }
 
 war {
