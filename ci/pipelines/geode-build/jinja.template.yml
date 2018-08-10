@@ -36,13 +36,13 @@ resources:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-((!docker-image-name))
     tag: latest
     username: ((!docker-username))
 - name: geode
   type: git
   source:
-    branch: jinja
+    branch: {{repository.branch}}
     depth: 1
     ignore_paths:
     - ci/*
@@ -50,7 +50,7 @@ resources:
 - name: geode-ci
   type: git
   source:
-    branch: jinja
+    branch: {{repository.branch}}
     depth: 1
     paths:
     - ci/pipelines/geode-build/*
@@ -63,13 +63,13 @@ resources:
     driver: gcs
     initial_version: 1.3.0
     json_key: ((!concourse-gcp-key))
-    key: jinja/version
+    key: {{repository.branch}}/version
 resource_types:
 - name: concourse-metadata-resource
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-concourse-metadata-resource
+    repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 - name: gcs-resource
@@ -98,11 +98,11 @@ jobs:
         type: docker-image
         source:
           password: ((!docker-password))
-          repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-((!docker-image-name))
+          repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-((!docker-image-name))
           tag: latest
           username: ((!docker-username))
       params:
-        MAINTENANCE_VERSION: jinja
+        MAINTENANCE_VERSION: {{repository.branch}}
         PUBLIC_BUCKET: ((!public-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
       run:
@@ -145,7 +145,7 @@ jobs:
     config:
       platform: linux
       params:
-        MAINTENANCE_VERSION: jinja
+        MAINTENANCE_VERSION: {{repository.branch}}
         PUBLIC_BUCKET: ((!public-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
       run:
@@ -178,12 +178,12 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "8"
-              GEODE_BRANCH: jinja
+              GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
               RAM: "12"
             run:
@@ -202,7 +202,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -219,7 +219,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -228,7 +228,7 @@ jobs:
           DUNIT_PARALLEL_FORKS: "7"
           GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
           GRADLE_TASK_OPTIONS: ""
-          MAINTENANCE_VERSION: jinja
+          MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: "true"
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -248,7 +248,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -269,13 +269,13 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
                 ARTIFACT_SLUG: acceptancetestfiles
                 GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
-                MAINTENANCE_VERSION: jinja
+                MAINTENANCE_VERSION: {{repository.branch}}
                 PUBLIC_BUCKET: ((!public-bucket))
                 SERVICE_ACCOUNT: ((!concourse-gcp-account))
               run:
@@ -293,7 +293,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:
@@ -324,12 +324,12 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "96"
-              GEODE_BRANCH: jinja
+              GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
               RAM: "180"
             run:
@@ -348,7 +348,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -365,7 +365,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -374,7 +374,7 @@ jobs:
           DUNIT_PARALLEL_FORKS: "48"
           GRADLE_TASK: distributedTest
           GRADLE_TASK_OPTIONS: ""
-          MAINTENANCE_VERSION: jinja
+          MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: "true"
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -394,7 +394,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -415,13 +415,13 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
                 ARTIFACT_SLUG: distributedtestfiles
                 GRADLE_TASK: distributedTest
-                MAINTENANCE_VERSION: jinja
+                MAINTENANCE_VERSION: {{repository.branch}}
                 PUBLIC_BUCKET: ((!public-bucket))
                 SERVICE_ACCOUNT: ((!concourse-gcp-account))
               run:
@@ -439,7 +439,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:
@@ -470,12 +470,12 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "96"
-              GEODE_BRANCH: jinja
+              GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
               RAM: "90"
             run:
@@ -494,7 +494,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -511,7 +511,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -520,7 +520,7 @@ jobs:
           DUNIT_PARALLEL_FORKS: "48"
           GRADLE_TASK: integrationTest
           GRADLE_TASK_OPTIONS: ""
-          MAINTENANCE_VERSION: jinja
+          MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: "true"
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -540,7 +540,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -561,13 +561,13 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
                 ARTIFACT_SLUG: integrationtestfiles
                 GRADLE_TASK: integrationTest
-                MAINTENANCE_VERSION: jinja
+                MAINTENANCE_VERSION: {{repository.branch}}
                 PUBLIC_BUCKET: ((!public-bucket))
                 SERVICE_ACCOUNT: ((!concourse-gcp-account))
               run:
@@ -585,7 +585,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:
@@ -616,12 +616,12 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "96"
-              GEODE_BRANCH: jinja
+              GEODE_BRANCH: {{repository.branch}}
               GEODE_FORK: {{repository.fork}}
               RAM: "160"
             run:
@@ -640,7 +640,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -657,7 +657,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -666,7 +666,7 @@ jobs:
           DUNIT_PARALLEL_FORKS: "48"
           GRADLE_TASK: upgradeTest
           GRADLE_TASK_OPTIONS: ""
-          MAINTENANCE_VERSION: jinja
+          MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: "true"
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -686,7 +686,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -707,13 +707,13 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
                 ARTIFACT_SLUG: upgradetestfiles
                 GRADLE_TASK: upgradeTest
-                MAINTENANCE_VERSION: jinja
+                MAINTENANCE_VERSION: {{repository.branch}}
                 PUBLIC_BUCKET: ((!public-bucket))
                 SERVICE_ACCOUNT: ((!concourse-gcp-account))
               run:
@@ -731,7 +731,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:
@@ -772,7 +772,7 @@ jobs:
         CALL_STACK_TIMEOUT: "1800"
         DUNIT_PARALLEL_FORKS: "0"
         JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
-        MAINTENANCE_VERSION: jinja
+        MAINTENANCE_VERSION: {{repository.branch}}
         PARALLEL_DUNIT: "false"
         PUBLIC_BUCKET: ((!public-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -796,7 +796,7 @@ jobs:
         config:
           platform: windows
           params:
-            MAINTENANCE_VERSION: jinja
+            MAINTENANCE_VERSION: {{repository.branch}}
             PUBLIC_BUCKET: ((!public-bucket))
             SERVICE_ACCOUNT: ((!concourse-gcp-account))
           run:
@@ -845,7 +845,7 @@ jobs:
         CALL_STACK_TIMEOUT: "1800"
         DUNIT_PARALLEL_FORKS: "0"
         JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
-        MAINTENANCE_VERSION: jinja
+        MAINTENANCE_VERSION: {{repository.branch}}
         PARALLEL_DUNIT: "false"
         PUBLIC_BUCKET: ((!public-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -869,7 +869,7 @@ jobs:
         config:
           platform: windows
           params:
-            MAINTENANCE_VERSION: jinja
+            MAINTENANCE_VERSION: {{repository.branch}}
             PUBLIC_BUCKET: ((!public-bucket))
             SERVICE_ACCOUNT: ((!concourse-gcp-account))
           run:
@@ -918,7 +918,7 @@ jobs:
         CALL_STACK_TIMEOUT: "1800"
         DUNIT_PARALLEL_FORKS: "0"
         JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
-        MAINTENANCE_VERSION: jinja
+        MAINTENANCE_VERSION: {{repository.branch}}
         PARALLEL_DUNIT: "false"
         PUBLIC_BUCKET: ((!public-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -942,7 +942,7 @@ jobs:
         config:
           platform: windows
           params:
-            MAINTENANCE_VERSION: jinja
+            MAINTENANCE_VERSION: {{repository.branch}}
             PUBLIC_BUCKET: ((!public-bucket))
             SERVICE_ACCOUNT: ((!concourse-gcp-account))
           run:
@@ -991,7 +991,7 @@ jobs:
         CALL_STACK_TIMEOUT: "1800"
         DUNIT_PARALLEL_FORKS: "0"
         JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
-        MAINTENANCE_VERSION: jinja
+        MAINTENANCE_VERSION: {{repository.branch}}
         PARALLEL_DUNIT: "false"
         PUBLIC_BUCKET: ((!public-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -1015,7 +1015,7 @@ jobs:
         config:
           platform: windows
           params:
-            MAINTENANCE_VERSION: jinja
+            MAINTENANCE_VERSION: {{repository.branch}}
             PUBLIC_BUCKET: ((!public-bucket))
             SERVICE_ACCOUNT: ((!concourse-gcp-account))
           run:

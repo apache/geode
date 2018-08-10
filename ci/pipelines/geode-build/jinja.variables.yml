@@ -1,6 +1,7 @@
 repository:
   fork: rhoughton-pivot
   project: geode
+  branch: jinja
 
 
 platforms:
