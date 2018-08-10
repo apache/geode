@@ -43,3 +43,5 @@ dependencies {
   acceptanceTestRuntime group: 'org.apache.derby', name: 'derby', version: project.'derby.version'
   acceptanceTestRuntime group: 'org.postgresql', name: 'postgresql', version: '42.2.2'
 }
+
+integrationTest.forkEvery 0
