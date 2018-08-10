@@ -18,9 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.SystemUtils;
 
 public class TestUtil {
 
@@ -57,21 +58,24 @@ public class TestUtil {
       throw new RuntimeException("Could not find resource " + name);
     }
     try {
-      String path = resource.toURI().getPath();
-      if (path == null) {
-        String filename = name.replaceFirst(".*/", "");
-        File tmpFile = File.createTempFile(filename, null);
-        tmpFile.deleteOnExit();
-        FileUtils.copyURLToFile(resource, tmpFile);
-        return tmpFile.getAbsolutePath();
-      }
-      return compatibleWithWindows(path);
-    } catch (URISyntaxException | IOException e) {
+      return Paths.get(resource.toURI()).toAbsolutePath().toString();
+    } catch (FileSystemNotFoundException e) {
+      // create a temporary copy when Paths.get() fails (eg: jar:file:/...)
+      return createTemporaryCopy(name, resource);
+    } catch (URISyntaxException e) {
       throw new RuntimeException("Failed getting path to resource " + name, e);
     }
   }
 
-  private static String compatibleWithWindows(String path) {
-    return SystemUtils.IS_OS_WINDOWS ? path.substring(1) : path;
+  private static String createTemporaryCopy(String name, URL resource) {
+    try {
+      String filename = name.replaceFirst(".*/", "");
+      File tmpFile = File.createTempFile(filename, null);
+      tmpFile.deleteOnExit();
+      FileUtils.copyURLToFile(resource, tmpFile);
+      return tmpFile.getAbsolutePath();
+    } catch (IOException e1) {
+      throw new RuntimeException("Failed getting path to resource " + name, e1);
+    }
   }
 }
