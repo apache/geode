@@ -21,10 +21,9 @@ dependencies {
 
   testCompile project(':geode-core')
   testCompile project(':geode-junit')
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
 
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(":geode-junit")
 
 
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
