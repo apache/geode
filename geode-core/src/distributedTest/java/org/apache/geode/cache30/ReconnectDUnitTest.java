@@ -357,7 +357,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         };
 
     vm0.invoke(create1);
-    DistributedMember dm = (DistributedMember) vm1.invoke(create2);
+    final DistributedMember dm = (DistributedMember) vm1.invoke(create2);
 
     IgnoredException.addIgnoredException("ForcedDisconnectException");
     forceDisconnect(vm1);
@@ -391,6 +391,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               failure = false;
               cache = ((InternalLocator) locator).getCache();
               system = cache.getInternalDistributedSystem();
+              assertTrue(
+                  ((GMSMembershipManager) MembershipManagerHelper.getMembershipManager(system))
+                      .getServices().getMessenger().isOldMembershipIdentifier(dm));
               return ds.getReconnectedSystem().getDistributedMember();
             } catch (InterruptedException e) {
               LogWriterUtils.getLogWriter().warning("interrupted while waiting for reconnect");
@@ -434,10 +437,10 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     assertTrue("expected DistributedSystem to disconnect", stopped);
 
     // recreate the system in vm1 without a locator and crash it
-    dm = (DistributedMember) vm1.invoke(create1);
+    DistributedMember evenNewerdm = (DistributedMember) vm1.invoke(create1);
     forceDisconnect(vm1);
     newdm = waitForReconnect(vm1);
-    assertNotSame("expected a reconnect to occur in member", dm, newdm);
+    assertNotSame("expected a reconnect to occur in member", evenNewerdm, newdm);
     DistributedTestUtils.deleteLocatorStateFile(locPort);
     DistributedTestUtils.deleteLocatorStateFile(secondLocPort);
   }

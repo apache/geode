@@ -32,6 +32,7 @@ import org.jgroups.Message;
 import org.jgroups.Receiver;
 import org.jgroups.View;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
@@ -53,11 +54,14 @@ public class GMSQuorumChecker implements QuorumChecker {
   private final JChannel channel;
   private JGAddress myAddress;
   private final int partitionThreshold;
+  private Set<DistributedMember> oldDistributedMemberIdentifiers;
 
-  public GMSQuorumChecker(NetView jgView, int partitionThreshold, JChannel channel) {
+  public GMSQuorumChecker(NetView jgView, int partitionThreshold, JChannel channel,
+      Set<DistributedMember> oldDistributedMemberIdentifiers) {
     this.lastView = jgView;
     this.partitionThreshold = partitionThreshold;
     this.channel = channel;
+    this.oldDistributedMemberIdentifiers = oldDistributedMemberIdentifiers;
   }
 
   public void initialize() {
@@ -120,8 +124,8 @@ public class GMSQuorumChecker implements QuorumChecker {
   }
 
   @Override
-  public Object getMembershipInfo() {
-    return channel;
+  public MembershipInformation getMembershipInfo() {
+    return new MembershipInformation(channel, oldDistributedMemberIdentifiers);
   }
 
   private boolean calculateQuorum() {
