@@ -18,29 +18,19 @@
 dependencies {
     compile project(':geode-core')
     compile project(':geode-common')
-
     compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
-    compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
-    compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
-    compile ('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
     compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
       exclude module: 'lucene-sandbox'
     }
 
 
     testCompile project(':geode-junit')
-
-    //Lucene test framework.
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
-    testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
-    testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-    testCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
 
     integrationTestCompile project(":geode-dunit")
+    integrationTestCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
     integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
     // TODO fix dependency on shared classes
     integrationTestCompile sourceSets.test.output
