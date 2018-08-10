@@ -5736,19 +5736,25 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @throws LowMemoryException if the target member for this operation is sick
    */
   private void checkIfAboveThreshold(final Object key) throws LowMemoryException {
-    if (this.memoryThresholdReached.get()) {
-      Set<DistributedMember> membersThatReachedThreshold = getMemoryThresholdReachedMembers();
-
+    MemoryThresholdInfo info = getAtomicThresholdInfo();
+    boolean thresholdReached = info.isMemoryThresholdReached();
+    Set<DistributedMember> membersThatReachedThreshold = info.getMembersThatReachedThreshold();
+    if (thresholdReached) {
       // #45603: trigger a background eviction since we're above the the critical
       // threshold
       InternalResourceManager.getInternalResourceManager(this.cache).getHeapMonitor()
           .updateStateAndSendEvent();
-
       throw new LowMemoryException(
           LocalizedStrings.ResourceManager_LOW_MEMORY_IN_0_FOR_PUT_1_MEMBER_2.toLocalizedString(
               getFullPath(), key, membersThatReachedThreshold),
           membersThatReachedThreshold);
     }
+  }
+
+  protected MemoryThresholdInfo getAtomicThresholdInfo() {
+    MemoryThresholdInfo info = new MemoryThresholdInfo(this.memoryThresholdReached.get(),
+        getMemoryThresholdReachedMembers());
+    return info;
   }
 
   /**

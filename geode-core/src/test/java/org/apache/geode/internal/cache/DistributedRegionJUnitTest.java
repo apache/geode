@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.event.BulkOperationHolder;
 import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -152,6 +154,26 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
       events[i].setVersionTag(mock(VersionTag.class));
       eventTracker.recordEvent(events[i]);
     }
+  }
+
+  @Test
+  public void testThatMemoryThresholdInfoDoesNotChangeWhenDistributedRegionChanges() {
+    InternalDistributedMember internalDM = mock(InternalDistributedMember.class);
+    DistributedRegion distRegion = prepare(true, false);
+
+    MemoryThresholdInfo info = distRegion.getAtomicThresholdInfo();
+
+    assertThat(distRegion.memoryThresholdReached.get()).isFalse();
+    assertThat(distRegion.getMemoryThresholdReachedMembers()).isEmpty();
+    assertThat(info.isMemoryThresholdReached()).isFalse();
+    assertThat(info.getMembersThatReachedThreshold()).isEmpty();
+
+    distRegion.setMemoryThresholdReachedCounterTrue(internalDM);
+
+    assertThat(distRegion.memoryThresholdReached.get()).isTrue();
+    assertThat(distRegion.getMemoryThresholdReachedMembers()).containsExactly(internalDM);
+    assertThat(info.isMemoryThresholdReached()).isFalse();
+    assertThat(info.getMembersThatReachedThreshold()).isEmpty();
   }
 
 }

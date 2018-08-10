@@ -1113,7 +1113,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /**
    * A reference counter to protected the memoryThresholdReached boolean
    */
-  private final Set<DistributedMember> memoryThresholdReachedMembers = new CopyOnWriteArraySet<>();
+  private final Set<DistributedMember> memoryThresholdReachedMembers =
+      new CopyOnWriteArraySet<>();
 
   // TODO: cleanup getInitialImageAndRecovery
   private void getInitialImageAndRecovery(InputStream snapshotInputStream,
@@ -3794,12 +3795,20 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /**
    * @param idm member whose threshold has been exceeded
    */
-  private void setMemoryThresholdReachedCounterTrue(final DistributedMember idm) {
+  protected void setMemoryThresholdReachedCounterTrue(final DistributedMember idm) {
     synchronized (this.memoryThresholdReachedMembers) {
       this.memoryThresholdReachedMembers.add(idm);
       if (this.memoryThresholdReachedMembers.size() > 0) {
         memoryThresholdReached.set(true);
       }
+    }
+  }
+
+  @Override
+  protected MemoryThresholdInfo getAtomicThresholdInfo() {
+    synchronized (this.memoryThresholdReachedMembers) {
+      return new MemoryThresholdInfo(this.memoryThresholdReached.get(),
+          new HashSet<DistributedMember>(getMemoryThresholdReachedMembers()));
     }
   }
 
