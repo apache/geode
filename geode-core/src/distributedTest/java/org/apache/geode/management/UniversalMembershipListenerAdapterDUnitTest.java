@@ -585,17 +585,17 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // should trigger both adapter and bridge listener but not system listener
     synchronized (adapter) {
-      if (!firedAdapter[JOINED]) {
+      while (!firedAdapter[JOINED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[JOINED]) {
+      while (!firedBridge[JOINED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (systemListener) {
-      if (!firedSystem[JOINED]) {
+      while (!firedSystem[JOINED]) {
         systemListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -665,12 +665,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     });
 
     synchronized (adapter) {
-      if (!firedAdapter[LEFT]) {
+      while (!firedAdapter[LEFT]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[LEFT]) {
+      while (!firedBridge[LEFT]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -726,12 +726,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     clientMemberId = clientMember.getId();
 
     synchronized (adapter) {
-      if (!firedAdapter[JOINED]) {
+      while (!firedAdapter[JOINED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[JOINED]) {
+      while (!firedBridge[JOINED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -801,17 +801,17 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     });
 
     synchronized (adapter) {
-      if (!firedAdapter[LEFT]) {
+      while (!firedAdapter[LEFT]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (systemListener) {
-      if (!firedSystem[LEFT]) {
+      while (!firedSystem[LEFT]) {
         systemListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[LEFT]) {
+      while (!firedBridge[LEFT]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -867,17 +867,17 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     clientMemberId = clientMember.getId();
 
     synchronized (adapter) {
-      if (!firedAdapter[JOINED]) {
+      while (!firedAdapter[JOINED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (systemListener) {
-      if (!firedSystem[JOINED]) {
+      while (!firedSystem[JOINED]) {
         systemListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[JOINED]) {
+      while (!firedBridge[JOINED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -949,12 +949,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     });
 
     synchronized (adapter) {
-      if (!firedAdapter[CRASHED]) {
+      while (!firedAdapter[CRASHED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[CRASHED]) {
+      while (!firedBridge[CRASHED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
