@@ -35,4 +35,11 @@ tests:
   DUNIT_PARALLEL_FORKS: "48"
   GRADLE_TASK: integrationTest
   execute_test_timeout: 40m
-
+- name: "Upgrade"
+  CPUS: "96"
+  RAM: "160"
+  ARTIFACT_SLUG: upgradetestfiles
+  CALL_STACK_TIMEOUT: "3000"
+  DUNIT_PARALLEL_FORKS: "48"
+  GRADLE_TASK: upgradeTest
+  execute_test_timeout: 1h
