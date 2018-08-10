@@ -30,12 +30,10 @@ dependencies {
     exclude module: 'tomcat-servlet-api'
   }
   compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version'
-
-  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
+  compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
 
   testRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
   testRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
-  compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
   testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
   testCompile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
 
@@ -45,6 +43,10 @@ dependencies {
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
   distributedTestCompile project(":geode-dunit")
+  distributedTestCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
+  // TODO remove shared source dependency
+  distributedTestCompile sourceSets.integrationTest.output
+  distributedTestCompile project(':extensions/geode-modules').sourceSets.integrationTest.output
 
   eclipse.classpath.file {
     whenMerged { classpath ->

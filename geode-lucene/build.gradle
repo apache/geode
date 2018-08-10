@@ -18,31 +18,36 @@
 dependencies {
     compile project(':geode-core')
     compile project(':geode-common')
-
     compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
-    compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
-    compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
-    compile ('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
     compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
       exclude module: 'lucene-sandbox'
     }
 
-    testCompile project(':geode-junit')
+    runtime 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
 
-    //Lucene test framework.
+    testCompile project(':geode-junit')
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
-    testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
-    testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-    testCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
     integrationTestCompile project(":geode-dunit")
+    integrationTestCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
+    integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+    // TODO fix dependency on shared classes
+    integrationTestCompile sourceSets.test.output
 
-    distributedTestCompile project(":geode-dunit")
+
+    distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+    // TODO fix dependency on shared classes
+    distributedTestCompile sourceSets.test.output
+
 
     upgradeTestCompile project(":geode-dunit")
+
+
+    performanceTestCompile project(":geode-junit")
+    // TODO fix dependency on shared classes
+    performanceTestCompile sourceSets.test.output
 }
 
 //The lucene integration tests don't have any issues that requiring forking

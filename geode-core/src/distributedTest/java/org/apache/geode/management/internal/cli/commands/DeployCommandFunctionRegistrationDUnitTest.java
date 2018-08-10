@@ -17,9 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 
 import org.junit.Before;
@@ -38,6 +36,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.util.test.TestUtil;
 
 @Category({FunctionServiceTest.class})
 public class DeployCommandFunctionRegistrationDUnitTest {
@@ -96,11 +95,10 @@ public class DeployCommandFunctionRegistrationDUnitTest {
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {
-    URL resourceFileURL = this.getClass().getResource(fileName);
-    assertThat(resourceFileURL).isNotNull();
+    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    assertThat(filePath).isNotNull();
 
-    URI resourceUri = resourceFileURL.toURI();
-    return new File(resourceUri);
+    return new File(filePath);
   }
 
   private static void assertThatFunctionHasVersion(String functionId, String version) {

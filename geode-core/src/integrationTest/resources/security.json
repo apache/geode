@@ -1,0 +1,30 @@
+{
+  "roles": [
+    {
+      "name": "admin",
+      "operationsAllowed": [
+        "CLUSTER:MANAGE",
+        "DATA:MANAGE"
+      ]
+    },
+    {
+      "name": "readRegionA",
+      "operationsAllowed": [
+        "DATA:READ"
+      ],
+      "regions": ["RegionA", "RegionB"]
+    }
+  ],
+  "users": [
+    {
+      "name": "admin",
+      "password": "secret",
+      "roles": ["admin"]
+    },
+    {
+      "name": "guest",
+      "password": "guest",
+      "roles": ["readRegionA"]
+    }
+  ]
+}

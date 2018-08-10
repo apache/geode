@@ -65,9 +65,6 @@ configurations {
 }
 
 dependencies {
-  compileOnly project(':geode-core')
-  testCompile project(':geode-core')
-
   archives project(':geode-common')
   archives project(':geode-json')
   archives project(':geode-core')
@@ -82,74 +79,67 @@ dependencies {
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
 
+
+  testCompile project(':geode-core')
   testCompile project(':geode-junit')
-  testCompile project(':geode-pulse')
-  testCompile files(project(':geode-core').sourceSets.test.output)
-  testCompile files(project(':geode-pulse').sourceSets.test.output)
-  testCompile ('org.springframework:spring-web:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-  }
 
-  testCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  testCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
-  testCompile 'com.google.guava:guava:' + project.'guava.version'
-  testCompile 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
 
-  testCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  integrationTestCompile project(':geode-core')
+  integrationTestCompile project(":geode-junit")
+  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(":geode-pulse")
+  integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
 
-  testCompile (project(':extensions/geode-modules')) {
-    // Remove everything related to Tomcat
-    exclude group: 'org.apache.tomcat'
-  }
-  testCompile (project(':extensions/geode-modules-session-internal')) {
-    // Remove everything related to Tomcat
+
+  distributedTestCompile project(':geode-core')
+  distributedTestCompile project(':extensions/session-testing-war')
+  distributedTestCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  // TODO refactor out common test framework
+  distributedTestCompile sourceSets.integrationTest.output
+
+  distributedTestRuntime (project(':extensions/geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
 
-  testCompile project(':extensions/session-testing-war')
 
-  testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
+  acceptanceTestCompile project(':geode-core')
+  acceptanceTestCompile project(":geode-dunit")
 
-  testRuntime files("${System.getProperty('java.home')}/../lib/tools.jar")
-  testRuntime files("$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar")
+
+  uiTestCompile project(':geode-core')
+  uiTestCompile project(":geode-dunit")
+  uiTestCompile project(":geode-pulse")
+  uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
+  // TODO refactor out common test framework
+  uiTestCompile sourceSets.integrationTest.output
+  uiTestCompile project(":geode-pulse").sourceSets.uiTest.output
+
+  uiTestRuntime project(":geode-core")
+  uiTestRuntime 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
+
+
+  upgradeTestCompile project(':geode-core')
+  upgradeTestCompile project(":geode-dunit")
+  // TODO refactor out common test framework
+  upgradeTestCompile sourceSets.distributedTest.output
+  upgradeTestCompile sourceSets.test.output
+
+  upgradeTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  upgradeTestRuntime 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  upgradeTestRuntime project(':extensions/session-testing-war')
 
 
   gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
-
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
-
-  integrationTestCompile project(":geode-dunit")
-
-  distributedTestCompile project(":geode-dunit")
-
-  acceptanceTestCompile project(":geode-dunit")
-  // TODO refactor out common test framework
-  upgradeTestCompile sourceSets.distributedTest.output
-
-  uiTestCompile project(":geode-dunit")
-
-  upgradeTestCompile project(":geode-dunit")
-  // TODO refactor out common test framework
-  upgradeTestCompile sourceSets.distributedTest.output
-}
-
-sourceSets {
-}
-
-test {
-  // test from the actual classpath not the gradle classpath
-  dependsOn installDist
-  // @TODO: this doesn't seem to be working need to get basename first.
-  classpath += files "$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar"
 }
 
 tasks.withType(Test){
+  dependsOn installDist
   environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }
 

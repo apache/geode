@@ -66,23 +66,31 @@ dependencies {
   providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
 
   compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  testCompile 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  compileOnly 'com.google.guava:guava:' + project.'guava.version'
-  testCompile 'com.google.guava:guava:' + project.'guava.version'
+
 
   testCompile project(':geode-junit')
   testCompile project(':geode-core')
-  testCompile files(project(':geode-core').sourceSets.test.output)
-
-  testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  testCompile 'com.tdunning:json:' + project.'open-json.version'
 
-  testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
-  testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
-  testRuntime 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
+
+  integrationTestCompile project(':geode-junit')
+  integrationTestCompile project(':geode-core')
+  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
+
+  // TODO remove dependency on test sourceSet
+  integrationTestRuntime sourceSets.test.output
+
+
+  uiTestCompile project(':geode-junit')
+  uiTestCompile project(':geode-json')
+  uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
+  // TODO remove dependency on test sourceSet
+  uiTestCompile sourceSets.test.output
+
+  uiTestRuntime project(':geode-core')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
