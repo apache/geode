@@ -178,13 +178,6 @@ public class RegionMapDestroyTest {
         anyBoolean())).thenReturn(true);
   }
 
-  private void givenExistingEvictableEntryWithMockedIsTombstone() throws RegionClearedException {
-    givenExistingEvictableEntry("value");
-    when(evictableEntry.isTombstone()).thenReturn(true);
-    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
-        anyBoolean())).thenReturn(true);
-  }
-
   private void givenDestroyThrowsRegionClearedException() throws RegionClearedException {
     when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
         anyBoolean())).thenThrow(RegionClearedException.class);

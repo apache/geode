@@ -411,15 +411,15 @@ public class RegionMapDestroy {
     try {
       handleEntryNotFound(entry);
     } finally {
-      handleVersionTag(entry);
+      handleTombstoneVersionTag(entry);
     }
   }
 
-  private void handleVersionTag(RegionEntry entry) {
+  private void handleTombstoneVersionTag(RegionEntry entry) {
     if (noVersionTag()) {
       setVersionTag(entry);
     } else {
-      updateVersionTag(entry);
+      updateTombstoneVersionTag(entry);
     }
   }
 
@@ -526,32 +526,35 @@ public class RegionMapDestroy {
     removeFromMap(entry);
   }
 
-  private void updateVersionTag(RegionEntry entry) {
-    processVersionTag(entry);
-    // This code used to call generateAndSetVersionTag if doPart3 was true.
-    // But none of the code that calls this method ever sets doPart3 to true.
-    assert !doPart3;
-    // This is not conflict, we need to persist the tombstone again with new
-    // version tag
+  private void updateTombstoneVersionTag(RegionEntry entry) {
+    processTombstoneVersionTag(entry);
+    // This is not a conflict,
+    // so we need to persist the tombstone again with the new version tag
     setValue(entry, Token.TOMBSTONE);
-    recordEvent();
     rescheduleTombstone(entry);
-    // TODO is it correct that the following code always says "true" for conflictWithClear?
-    // Seems like it should only be true if we caught RegionClearedException above.
-    doDestroyPart2(entry, true);
-    doPart3 = false;
+    if (!doPart3) {
+      // TODO is it correct that the following code always says "true" for conflictWithClear?
+      // Seems like it should only be true if we caught RegionClearedException above.
+      doDestroyPart2(entry, true);
+      // TODO why no part3?
+      doPart3 = false;
+    }
     opCompleted = true;
   }
 
   private void makeTombstone(RegionEntry entry) {
+    processTombstoneVersionTag(entry);
+    makeTombstoneAndIgnoreClear(entry);
+    opCompleted = true;
+    // lruEntryCreate(entry);
+  }
+
+  private void processTombstoneVersionTag(RegionEntry entry) {
     processVersionTag(entry);
     if (doPart3) {
       generateAndSetVersionTag(entry);
     }
     recordEvent();
-    makeTombstoneAndIgnoreClear(entry);
-    opCompleted = true;
-    // lruEntryCreate(entry);
   }
 
   private void handleEntryNotFound(RegionEntry entryForDistribution) {
