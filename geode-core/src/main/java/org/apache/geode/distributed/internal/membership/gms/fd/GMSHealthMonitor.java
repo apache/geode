@@ -387,8 +387,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     if (cTS != null && cTS.getTime() < timeStamp) {
       cTS.setTime(timeStamp);
     }
-    if (suspectedMemberIds.remove(sender) != null) {
-      logger.info("No longer suspecting {}", sender);
+    if (suspectedMemberIds.containsKey(sender)) {
+      memberUnsuspected(sender);
       setNextNeighbor(currentView, null);
     }
   }
@@ -424,7 +424,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         initiateSuspicion(mbr, reason);
       } else {
         logger.trace("Setting next neighbor as member {} has responded.", mbr);
-        suspectedMemberIds.remove(mbr);
+        memberUnsuspected(mbr);
         // back to previous one
         setNextNeighbor(currentView, null);
       }
@@ -1002,6 +1002,40 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public void memberSuspected(InternalDistributedMember initiator,
       InternalDistributedMember suspect, String reason) {
     suspectedMemberIds.putIfAbsent(suspect, currentView);
+    synchronized (suspectRequestsInView) {
+      Collection<SuspectRequest> requests = suspectRequestsInView.get(currentView);
+      boolean found = false;
+      if (requests == null) {
+        requests = new HashSet<>();
+        requests.add(new SuspectRequest(suspect, reason));
+      }
+      for (SuspectRequest request : requests) {
+        if (suspect.equals(request.getSuspectMember())) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        requests.add(new SuspectRequest(suspect, reason));
+      }
+    }
+  }
+
+  private void memberUnsuspected(InternalDistributedMember mbr) {
+    logger.info("No longer suspecting {}", mbr);
+    suspectedMemberIds.remove(mbr);
+    synchronized (suspectRequestsInView) {
+      Collection<SuspectRequest> suspectRequests = suspectRequestsInView.get(currentView);
+      if (suspectRequests != null) {
+        Collection<SuspectRequest> removals = new ArrayList<>(suspectRequests.size());
+        for (SuspectRequest suspectRequest : suspectRequests) {
+          if (mbr.equals(suspectRequest.getSuspectMember())) {
+            removals.add(suspectRequest);
+          }
+        }
+        suspectRequests.removeAll(removals);
+      }
+    }
   }
 
   @Override
@@ -1307,10 +1341,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         logger.info("Final check passed for suspect member " + mbr);
       }
     } finally {
-      // whether it's alive or not, at this point we allow it to
-      // be watched again
-      suspectedMemberIds.remove(mbr);
-      setNextNeighbor(currentView, null);
+      if (!failed) {
+        memberUnsuspected(mbr);
+        setNextNeighbor(currentView, null);
+      }
       membersInFinalCheck.remove(mbr);
     }
     return !failed;
@@ -1327,7 +1361,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private void sendSuspectRequest(final List<SuspectRequest> requests) {
     logger.debug("Sending suspect request for members {}", requests);
     List<InternalDistributedMember> recipients;
-    if (currentView.size() > 4) {
+    if (currentView.size() > 9) {
       HashSet<InternalDistributedMember> filter = new HashSet<>();
       for (Enumeration<InternalDistributedMember> e = suspectedMemberIds.keys(); e
           .hasMoreElements();) {
@@ -1336,7 +1370,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       filter.addAll(
           requests.stream().map(SuspectRequest::getSuspectMember).collect(Collectors.toList()));
       recipients =
-          currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 5);
+          currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 10);
     } else {
       recipients = currentView.getMembers();
     }
