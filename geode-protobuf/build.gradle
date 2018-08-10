@@ -23,10 +23,6 @@ dependencies {
 
     testCompile project(':geode-core')
     testCompile project(':geode-junit')
-    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
 
     integrationTestCompile project(":geode-dunit")
