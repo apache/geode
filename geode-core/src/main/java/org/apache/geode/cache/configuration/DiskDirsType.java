@@ -89,7 +89,7 @@ public class DiskDirsType {
    */
   public List<DiskDirType> getDiskDirs() {
     if (diskDirs == null) {
-      diskDirs = new ArrayList<DiskDirType>();
+      diskDirs = new ArrayList<>();
     }
     return this.diskDirs;
   }

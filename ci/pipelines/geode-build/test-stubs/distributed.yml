@@ -25,8 +25,8 @@ metadata:
       forks: 48
     cpus: 96
 # specified in Gigabytes.
-    ram: 210
+    ram: 180
 # specified in seconds
-    call_stack_timeout: 25200
-    timeout: 8h
+    call_stack_timeout: 3600
+    timeout: 1h15m
     size: []

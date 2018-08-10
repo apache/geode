@@ -82,6 +82,7 @@ subprojects {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
   }
 
   apply plugin: 'nebula.facet'
@@ -165,8 +166,6 @@ subprojects {
     }
     forkEvery 1
     outputs.upToDateWhen{false}
-
-    dependsOn upgradeTest
   }
 
   uiTest {
@@ -201,6 +200,12 @@ subprojects {
     testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
     classpath += project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
+
+    if(project.hasProperty("failOnNoMatchingTests")) {
+      filter {
+        setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
+      }
+    }
   }
 
   task flakyTest(type:Test) {
@@ -295,22 +300,6 @@ subprojects {
         afterTest { desc, result ->
           def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
           progress << "$now Completed test $desc.className $desc.name with result: ${result.resultType}$eol"
-        }
-
-        afterSuite { desc, result ->
-          if (null != desc.className) {
-            def message = "Test Suite: ${desc.name}:"
-            if (result.failedTestCount > 0) {
-              message += " FAILED: ${result.failedTestCount}"
-            }
-            if (result.skippedTestCount > 0) {
-              message += " SKIPPED: ${result.skippedTestCount}"
-            }
-            if (result.successfulTestCount > 0) {
-              message += " PASSED: ${result.successfulTestCount}"
-            }
-            logger.quiet(message)
-          }
         }
 
         doFirst {

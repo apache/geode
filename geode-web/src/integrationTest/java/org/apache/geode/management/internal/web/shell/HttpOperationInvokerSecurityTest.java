@@ -42,7 +42,8 @@ public class HttpOperationInvokerSecurityTest {
 
   @ClassRule
   public static LocatorStarterRule locator =
-      new LocatorStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
+      new LocatorStarterRule().withHttpService()
+          .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

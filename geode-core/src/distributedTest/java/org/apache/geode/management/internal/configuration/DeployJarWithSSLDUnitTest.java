@@ -24,11 +24,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
+import static org.apache.geode.util.test.TestUtil.getResourcePath;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -45,7 +45,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class DeployJarWithSSLDUnitTest {
 
-  private static File jks;
+  private static File jks =
+      new File(getResourcePath(DeployJarWithSSLDUnitTest.class, "/ssl/trusted.keystore"));
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -59,21 +60,6 @@ public class DeployJarWithSSLDUnitTest {
   private static MemberVM locator;
 
   private File sslConfigFile = null;
-
-  static {
-    try {
-      /*
-       * This file was generated with the following command:
-       * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
-       * -keystore trusted.keystore -keypass password -storepass password \
-       * -ext san=ip:127.0.0.1 -storetype jks
-       */
-      jks = new File(DeployJarWithSSLDUnitTest.class.getClassLoader()
-          .getResource("ssl/trusted.keystore").toURI());
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
-  }
 
   private static Properties sslProperties = new Properties() {
     {

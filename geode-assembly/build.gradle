@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import org.gradle.api.internal.artifacts.publish.ArchivePublishArtifact;
-
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
@@ -29,10 +27,17 @@ extraArchive {
   tests = false
 }
 
-// Gradle doesn't automatically remove the jar artifact even though we disabled it
-// this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.
+logger.info("Gradle doesn't automatically remove the jar artifact even though we disabled it")
+logger.info("this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.")
 configurations.all {
-  artifacts.removeAll artifacts.findAll { it instanceof ArchivePublishArtifact && !it.archiveTask.enabled }
+  def configName = it.name
+  artifacts.each {
+    logger.info("Pruning configName = " + configName + " name=" + it.name + " extension=" + it.extension + " classifier=" + it.classifier)
+  }
+  artifacts.removeAll{ it.name == jar.baseName && it.extension == 'jar' && it.classifier == jar.classifier }
+  if (artifacts) {
+    logger.info("Artifacts are now: " + artifacts)
+  }
 }
 
 gradle.taskGraph.whenReady( { graph ->
@@ -45,6 +50,10 @@ gradle.taskGraph.whenReady( { graph ->
   }
   tasks.srcDistTar {
     classifier 'src'
+  }
+  tasks.withType(Jar).each { jarTasks ->
+    distTar.dependsOn(jarTasks)
+    distZip.dependsOn(jarTasks)
   }
 })
 
@@ -115,13 +124,19 @@ dependencies {
 
   testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-  acceptanceTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  uiTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  uiTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
+
+  distributedTestCompile project(":geode-dunit")
+
+  acceptanceTestCompile project(":geode-dunit")
+  // TODO refactor out common test framework
+  upgradeTestCompile sourceSets.distributedTest.output
+
+  uiTestCompile project(":geode-dunit")
+
+  upgradeTestCompile project(":geode-dunit")
+  // TODO refactor out common test framework
+  upgradeTestCompile sourceSets.distributedTest.output
 }
 
 sourceSets {
@@ -280,6 +295,9 @@ task docs(type: Javadoc) {
     exclude 'org/apache/geode/test/**/'
     destinationDir = docsDir
 
+    parent.subprojects.each { project ->
+      dependsOn(project.tasks['javadoc'])
+    }
     doLast {
       parent.subprojects.each { project ->
         copy {
@@ -324,6 +342,7 @@ distributions {
         exclude '**/gradle/wrapper/gradle-wrapper.jar'
         exclude '**/.gradle'
         exclude '**/build/**'
+        exclude '**/out/**'
         exclude '**/.project'
         exclude '**/.classpath'
         exclude '**/.settings/**'
@@ -452,9 +471,11 @@ def dependOnInstalledProduct = {
 test dependOnInstalledProduct
 acceptanceTest dependOnInstalledProduct
 distributedTest dependOnInstalledProduct
+upgradeTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
 uiTest dependOnInstalledProduct
 flakyTest dependOnInstalledProduct
+repeatTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
@@ -462,6 +483,8 @@ build.dependsOn installDist
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions/session-testing-war:war'
 distributedTest.dependsOn ':geode-old-versions:build'
+upgradeTest.dependsOn ':extensions/session-testing-war:war'
+upgradeTest.dependsOn ':geode-old-versions:build'
 
 /**Print the names of all jar files in a fileTree */
 def printJars(tree) {
@@ -469,7 +492,7 @@ def printJars(tree) {
     if(!file.isDirectory()) {
       println file.name
     }
-  };
+  }
 }
 
 task dumpInstalledJars(dependsOn: installDist) {
@@ -490,6 +513,6 @@ task dumpInstalledJars(dependsOn: installDist) {
           println("==========================")
           printJars(warContents);
       }
-    };
+    }
   }
 }

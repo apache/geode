@@ -22,7 +22,9 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -215,16 +217,18 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   private void validateStats(long messagesReceived, long messagesSent, long bytesReceived,
       long bytesSent, int clientConnectionStarts, int clientConnectionTerminations) {
     Host.getLocator().invoke(() -> {
-      Statistics statistics = getStatistics();
-      assertEquals(0, statistics.get("currentClientConnections"));
-      assertEquals(messagesSent, statistics.get("messagesSent"));
-      assertEquals(messagesReceived, statistics.get("messagesReceived"));
-      assertEquals(bytesSent, statistics.get("bytesSent").longValue());
-      assertEquals(bytesReceived, statistics.get("bytesReceived").longValue());
-      assertEquals(clientConnectionStarts, statistics.get("clientConnectionStarts"));
-      assertEquals(clientConnectionTerminations, statistics.get("clientConnectionTerminations"));
-      assertEquals(0L, statistics.get("authorizationViolations"));
-      assertEquals(0L, statistics.get("authenticationFailures"));
+      Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> {
+        Statistics statistics = getStatistics();
+        assertEquals(0, statistics.get("currentClientConnections"));
+        assertEquals(messagesSent, statistics.get("messagesSent"));
+        assertEquals(messagesReceived, statistics.get("messagesReceived"));
+        assertEquals(bytesSent, statistics.get("bytesSent").longValue());
+        assertEquals(bytesReceived, statistics.get("bytesReceived").longValue());
+        assertEquals(clientConnectionStarts, statistics.get("clientConnectionStarts"));
+        assertEquals(clientConnectionTerminations, statistics.get("clientConnectionTerminations"));
+        assertEquals(0L, statistics.get("authorizationViolations"));
+        assertEquals(0L, statistics.get("authenticationFailures"));
+      });
     });
   }
 

@@ -108,6 +108,13 @@ public class BucketRedundancyTrackerTest {
   }
 
   @Test
+  public void doesNotIncrementNoCopiesWhenNeverHadAnyCopies() {
+    bucketRedundancyTracker.updateStatistics(0);
+    verify(regionRedundancyTracker, never()).incrementNoCopiesBucketCount();
+    assertEquals(-1, bucketRedundancyTracker.getCurrentRedundancy());
+  }
+
+  @Test
   public void incrementsBucketCountOnHavingNoCopiesForBucket() {
     bucketRedundancyTracker.updateStatistics(1);
     bucketRedundancyTracker.updateStatistics(0);

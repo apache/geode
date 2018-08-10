@@ -23,6 +23,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.lucene.internal.LuceneIndexCreationInProgressException;
 
 /**
  *
@@ -172,4 +173,19 @@ public interface LuceneService {
    */
   boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
       throws InterruptedException;
+
+  /**
+   * Returns if the indexing process is in progress
+   *
+   * Before executing a lucene query, it can be checked if the indexing operation is in progress.
+   * Queries executed during the indexing process will get a
+   * {@link LuceneIndexCreationInProgressException}
+   *
+   * @param indexName index name
+   *
+   * @param regionPath region name
+   *
+   * @return true if the indexing operation is in progress otherwise false.
+   */
+  boolean isIndexingInProgress(String indexName, String regionPath);
 }

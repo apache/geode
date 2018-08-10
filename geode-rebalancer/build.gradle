@@ -28,6 +28,5 @@ dependencies {
   }
   testCompile project(':geode-junit')
 
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
 }

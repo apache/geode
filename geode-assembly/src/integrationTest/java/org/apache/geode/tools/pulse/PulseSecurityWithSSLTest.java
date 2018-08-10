@@ -50,7 +50,7 @@ public class PulseSecurityWithSSLTest {
       new File(getResourcePath(PulseSecurityWithSSLTest.class, "/ssl/trusted.keystore"));
 
   @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule();
+  public static LocatorStarterRule locator = new LocatorStarterRule().withHttpService();
 
   @BeforeClass
   public static void beforeClass() throws Exception {

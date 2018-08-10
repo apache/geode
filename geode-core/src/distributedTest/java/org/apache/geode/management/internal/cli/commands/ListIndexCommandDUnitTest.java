@@ -48,7 +48,7 @@ public class ListIndexCommandDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = lsRule.startLocatorVM(0);
+    locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
     server = lsRule.startServerVM(1, locator.getPort());
 
     server.invoke(() -> {

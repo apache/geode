@@ -46,6 +46,9 @@ fi
 
 
 SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_PIPELINE_NAME=$(echo ${BUILD_PIPELINE_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 IMAGE_FAMILY_PREFIX=""
 
 if [[ "${GEODE_FORK}" != "apache" ]]; then
@@ -60,25 +63,42 @@ echo "${PROJECT}" > "instance-data/project"
 echo "${ZONE}" > "instance-data/zone"
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
-echo "RAM is ${RAM}"
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
-echo "RAM_MEGABYTES is ${RAM_MEGABYTES}"
-INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
-  --zone=${ZONE} \
-  --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
-  --min-cpu-platform=Intel\ Skylake \
-  --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
-  --image-project=${PROJECT} \
-  --boot-disk-size=100GB \
-  --boot-disk-type=pd-ssd \
-  --format=json)
-CREATE_EXIT_STATUS=$?
 
+while true; do
+    TTL=$(($(date +%s) + 60 * 60 * 6))
+    LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME}"
 
-while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
-  echo -n .
+    set +e
+    INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
+      --zone=${ZONE} \
+      --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
+      --min-cpu-platform=Intel\ Skylake \
+      --network="heavy-lifters" \
+      --subnet="heavy-lifters" \
+      --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
+      --image-project=${PROJECT} \
+      --boot-disk-size=100GB \
+      --boot-disk-type=pd-ssd \
+      --labels="${LABELS}" \
+      --format=json)
+    CREATE_EXIT_STATUS=$?
+    set -e
+
+    if [ ${CREATE_EXIT_STATUS} -eq 0 ]; then
+        break
+    fi
+
+    TIMEOUT=60
+    echo "Waiting ${TIMEOUT} seconds..."
+    sleep ${TIMEOUT}
 done
+
 echo "${INSTANCE_INFORMATION}" > instance-data/instance-information
 
 INSTANCE_IP_ADDRESS=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].networkInterfaces[0].accessConfigs[0].natIP')
 echo "${INSTANCE_IP_ADDRESS}" > "instance-data/instance-ip-address"
+
+while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
+  echo -n .
+done

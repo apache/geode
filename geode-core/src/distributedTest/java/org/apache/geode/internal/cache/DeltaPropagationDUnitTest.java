@@ -63,7 +63,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallableIF;
@@ -169,8 +169,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     vm3.invoke((SerializableCallableIF) this::closeCache);
 
     // Unset the isSlowStartForTesting flag
-    vm0.invoke(ConflationDUnitTest::unsetIsSlowStart);
-    vm1.invoke(ConflationDUnitTest::unsetIsSlowStart);
+    vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     // then close the servers
     vm0.invoke((SerializableRunnableIF) this::closeCache);
     vm1.invoke((SerializableRunnableIF) this::closeCache);
@@ -502,8 +502,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1));
     PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY, 1));
 
-    vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-    vm1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+    vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
     createClientCache(PORT2, -1, "0", CLIENT_LISTENER);
 
@@ -514,7 +514,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(this::createAndUpdateDeltas);
     vm1.invoke(() -> confirmEviction(PORT2));
 
-    vm1.invoke(ConflationDUnitTest::unsetIsSlowStart);
+    vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
     waitForLastKey();
 
@@ -551,9 +551,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     // Do puts after slowing the dispatcher.
     try {
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-      vm1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-      vm2.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+      vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+      vm2.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
       createClientCache(new int[] {PORT1, PORT2, port3}, "1",
           DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT, CLIENT_LISTENER, null, null);
@@ -575,9 +575,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       primary = (((PoolImpl) testPool).getPrimaryPort() == PORT1) ? vm0
           : ((((PoolImpl) testPool).getPrimaryPort() == PORT2) ? vm1 : vm2);
 
-      vm0.invoke(ConflationDUnitTest::unsetIsSlowStart);
-      vm1.invoke(ConflationDUnitTest::unsetIsSlowStart);
-      vm2.invoke(ConflationDUnitTest::unsetIsSlowStart);
+      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      vm2.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
       primary.invoke((SerializableRunnableIF) this::closeCache);
       Thread.sleep(5000);
@@ -590,9 +590,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnClient,
           fromDeltasOnClient == (EVENTS_SIZE - 1));
     } finally {
-      vm0.invoke(ConflationDUnitTest::unsetIsSlowStart);
-      vm1.invoke(ConflationDUnitTest::unsetIsSlowStart);
-      vm2.invoke(ConflationDUnitTest::unsetIsSlowStart);
+      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      vm2.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     }
   }
 
@@ -616,7 +616,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 1
     try {
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
       // Step 2
       String durableClientId = getName() + "_client";
@@ -637,7 +637,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       vm0.invoke((SerializableRunnableIF) this::doPuts);
 
       // Step 4
-      vm0.invoke(ConflationDUnitTest::unsetIsSlowStart);
+      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
       // Step 5
       // verifyDurableClientDisconnected();
@@ -656,7 +656,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
           fromDeltasOnClient < 1);
     } finally {
       // Step 4
-      vm0.invoke(ConflationDUnitTest::unsetIsSlowStart);
+      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     }
 
   }
@@ -680,9 +680,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     try {
       // Step 1
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
       PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
-      vm1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+      vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
 
       // Step 2
       String durableClientId = getName() + "_client";
@@ -704,8 +704,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
       vm0.invoke((SerializableRunnableIF) this::doPuts);
     } finally {
       // Step 4
-      vm0.invoke(ConflationDUnitTest::unsetIsSlowStart);
-      vm1.invoke(ConflationDUnitTest::unsetIsSlowStart);
+      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     }
 
     // Step 5

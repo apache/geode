@@ -18,7 +18,6 @@ ENTRYPOINT []
 
 ARG CHROME_DRIVER_VERSION=2.35
 ENV SPRUCE_VERSION 1.17.0
-ENV GRADLE_USER_HOME /usr/local/maven_files
 
 WORKDIR /tmp/work
 COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer

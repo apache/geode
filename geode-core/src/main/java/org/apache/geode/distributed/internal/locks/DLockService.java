@@ -1100,7 +1100,7 @@ public class DLockService extends DistributedLockService {
         getStats().incFreeResourcesFailed();
         return false;
       }
-      DLockToken token = (DLockToken) this.tokens.get(name);
+      DLockToken token = this.tokens.get(name);
       if (token != null) {
         synchronized (token) {
           if (!token.isBeingUsed()) {
@@ -1134,16 +1134,15 @@ public class DLockService extends DistributedLockService {
         getStats().incFreeResourcesFailed();
         return;
       }
-      Set unusedTokens = Collections.EMPTY_SET;
-      for (Iterator iter = this.tokens.values().iterator(); iter.hasNext();) {
-        DLockToken token = (DLockToken) iter.next();
+      Set<DLockToken> unusedTokens = Collections.emptySet();
+      for (DLockToken token : this.tokens.values()) {
         synchronized (token) {
           if (!token.isBeingUsed()) {
             if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
               logger.trace(LogMarker.DLS_VERBOSE, "Freeing {} in {}", token, this);
             }
             if (unusedTokens == Collections.EMPTY_SET) {
-              unusedTokens = new HashSet();
+              unusedTokens = new HashSet<>();
             }
             unusedTokens.add(token);
           } else {
@@ -1151,8 +1150,7 @@ public class DLockService extends DistributedLockService {
           }
         }
       }
-      for (Iterator iter = unusedTokens.iterator(); iter.hasNext();) {
-        DLockToken token = (DLockToken) iter.next();
+      for (DLockToken token : unusedTokens) {
         synchronized (token) {
           int tokensSizeBefore = this.tokens.size();
           Object obj = removeTokenFromMap(token.getName());
@@ -1174,8 +1172,7 @@ public class DLockService extends DistributedLockService {
   private void removeAllTokens() {
     synchronized (this.tokens) {
       Assert.assertTrue(this.destroyed);
-      for (Iterator iter = this.tokens.values().iterator(); iter.hasNext();) {
-        DLockToken token = (DLockToken) iter.next();
+      for (DLockToken token : this.tokens.values()) {
         synchronized (token) {
           token.destroy();
         }
@@ -2186,8 +2183,7 @@ public class DLockService extends DistributedLockService {
    */
   boolean hasHeldLocks() {
     synchronized (this.tokens) {
-      for (Iterator iter = this.tokens.values().iterator(); iter.hasNext();) {
-        DLockToken token = (DLockToken) iter.next();
+      for (DLockToken token : this.tokens.values()) {
         if (token.isLeaseHeld()) {
           return true;
         }
@@ -2398,8 +2394,7 @@ public class DLockService extends DistributedLockService {
     synchronized (this.lockGrantorIdLock) {
       synchronized (this.tokens) {
         // build up set of currently held locks
-        for (Iterator iter = this.tokens.values().iterator(); iter.hasNext();) {
-          DLockToken token = (DLockToken) iter.next();
+        for (DLockToken token : this.tokens.values()) {
           synchronized (token) {
             if (token.isLeaseHeld()) {
 
@@ -2435,7 +2430,7 @@ public class DLockService extends DistributedLockService {
    */
   public DLockToken getToken(Object name) {
     synchronized (this.tokens) {
-      return (DLockToken) this.tokens.get(name);
+      return this.tokens.get(name);
     }
   }
 
@@ -2446,7 +2441,7 @@ public class DLockService extends DistributedLockService {
    * @return the named lock token or null if it doesn't exist
    */
   private DLockToken basicGetToken(Object name) {
-    return (DLockToken) this.tokens.get(name);
+    return this.tokens.get(name);
   }
 
   /**
@@ -2470,7 +2465,7 @@ public class DLockService extends DistributedLockService {
   DLockToken getOrCreateToken(Object name) {
     synchronized (this.tokens) {
       checkDestroyed(); // check destroy after acquiring tokens map sync
-      DLockToken token = (DLockToken) this.tokens.get(name);
+      DLockToken token = this.tokens.get(name);
       boolean createNewToken = token == null;
       if (createNewToken) {
         token = new DLockToken(this.dm, name);
@@ -2502,8 +2497,7 @@ public class DLockService extends DistributedLockService {
   private int numLocksHeldInThisVM() {
     int numLocksHeld = 0;
     synchronized (this.tokens) {
-      for (Iterator iter = this.tokens.values().iterator(); iter.hasNext();) {
-        DLockToken token = (DLockToken) iter.next();
+      for (DLockToken token : this.tokens.values()) {
         synchronized (token) {
           if (token.isLeaseHeld()) {
             numLocksHeld++;
@@ -2523,10 +2517,9 @@ public class DLockService extends DistributedLockService {
       StringBuffer buffer = new StringBuffer();
       buffer.append("  ").append(this.tokens.size()).append(" tokens, ");
       buffer.append(numLocksHeldInThisVM()).append(" locks held\n");
-      for (Iterator iter = this.tokens.entrySet().iterator(); iter.hasNext();) {
-        Map.Entry entry = (Map.Entry) iter.next();
+      for (Map.Entry<Object, DLockToken> entry : this.tokens.entrySet()) {
         buffer.append("    ").append(entry.getKey()).append(": ");
-        DLockToken token = (DLockToken) entry.getValue();
+        DLockToken token = entry.getValue();
         buffer.append(token.toString()).append("\n");
       }
       logger.info(LogMarker.DLS_MARKER, LocalizedMessage.create(LocalizedStrings.ONE_ARG, buffer));

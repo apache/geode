@@ -53,5 +53,7 @@ if [[ "${GEODE_FORK}" != "apache" ]]; then
   -j ${META_PIPELINE}/set-pr-pipeline
   fly -t ${TARGET} pause-job \
   -j ${META_PIPELINE}/set-metrics-pipeline
+  fly -t ${TARGET} pause-job \
+  -j ${META_PIPELINE}/set-reaper-pipeline
   set +x
 fi

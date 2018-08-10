@@ -363,7 +363,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     logger.info("Set the server properties to: " + authProps);
     logger.info("Set the java properties to: " + javaProps);
 
-    SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");
+    SecurityTestUtils tmpInstance = new SecurityTestUtils();
     DistributedSystem ds = tmpInstance.createSystem(authProps, (Properties) javaProps);
     assertNotNull(ds);
     assertTrue(ds.isConnected());

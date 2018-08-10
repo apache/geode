@@ -187,16 +187,15 @@ public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCas
     }
 
     // Get ports for the servers
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
-    int locatorPort = randomAvailableTCPPorts[2];
 
     // Close down any running servers
     server1.invoke(() -> closeCache());
     server2.invoke(() -> closeCache());
 
-    server1.invoke(() -> createServerCache(serverProps, javaProps, locatorPort, port1));
+    server1.invoke(() -> createServerCache(serverProps, javaProps, port1));
     client1.invoke(() -> createClientCache(javaProps2, authInit, authProps,
         new int[] {port1, port2}, numOfUsers, durableClientId, postAuthzAllowed));
 
@@ -249,8 +248,8 @@ public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCas
   }
 
   private void createServerCache(final Properties serverProps, final Properties javaProps,
-      final int locatorPort, final int serverPort) {
-    SecurityTestUtils.createCacheServer(serverProps, javaProps, locatorPort, null, serverPort, true,
+      final int serverPort) {
+    SecurityTestUtils.createCacheServer(serverProps, javaProps, serverPort, true,
         NO_EXCEPTION);
   }
 

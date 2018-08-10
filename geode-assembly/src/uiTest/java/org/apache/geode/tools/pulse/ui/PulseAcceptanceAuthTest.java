@@ -36,7 +36,8 @@ import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 public class PulseAcceptanceAuthTest extends PulseAcceptanceTestBase {
 
   @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule().withJMXManager()
+  public static LocatorStarterRule locator = new LocatorStarterRule()
+      .withJMXManager().withHttpService()
       .withSecurityManager(SimpleSecurityManager.class).withAutoStart();
 
   @ClassRule

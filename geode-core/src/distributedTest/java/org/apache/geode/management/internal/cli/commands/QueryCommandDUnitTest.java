@@ -84,7 +84,8 @@ public class QueryCommandDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = cluster.startLocatorVM(0, locatorProperties());
+    Properties locatorProps = locatorProperties();
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(locatorProps));
     server1 = cluster.startServerVM(1, serverProperties(), locator.getPort());
     server2 = cluster.startServerVM(2, serverProperties(), locator.getPort());
 

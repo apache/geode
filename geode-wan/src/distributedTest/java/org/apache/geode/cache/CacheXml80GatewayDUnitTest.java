@@ -31,7 +31,7 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.cache30.CacheXml70DUnitTest;
+import org.apache.geode.cache30.CacheXml70DUnitTestHelper;
 import org.apache.geode.cache30.CacheXmlTestCase;
 import org.apache.geode.cache30.MyGatewayTransportFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter2;
@@ -85,7 +85,8 @@ public class CacheXml80GatewayDUnitTest extends CacheXmlTestCase {
     String id = getName();
     AsyncEventQueueFactory factory = cache.createAsyncEventQueueFactory();
     factory.setGatewayEventSubstitutionListener(new MyGatewayEventSubstitutionFilter());
-    AsyncEventQueue queue = factory.create(id, new CacheXml70DUnitTest.MyAsyncEventListener());
+    AsyncEventQueue queue =
+        factory.create(id, new CacheXml70DUnitTestHelper.MyAsyncEventListener());
 
     // Verify the GatewayEventSubstitutionFilter is set on the AsyncEventQueue.
     assertNotNull(queue.getGatewayEventSubstitutionFilter());

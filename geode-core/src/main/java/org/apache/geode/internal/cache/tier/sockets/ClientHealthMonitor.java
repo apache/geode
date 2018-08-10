@@ -30,9 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.IncomingGatewayStatus;
@@ -40,7 +38,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
@@ -282,15 +279,12 @@ public class ClientHealthMonitor {
     }
   }
 
-  private final Set<TXId> scheduledToBeRemovedTx =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
-          ? new ConcurrentHashSet<TXId>() : null;
-
   /**
    * provide a test hook to track client transactions to be removed
    */
   public Set<TXId> getScheduledToBeRemovedTx() {
-    return scheduledToBeRemovedTx;
+    final TXManagerImpl txMgr = (TXManagerImpl) this._cache.getCacheTransactionManager();
+    return txMgr.getScheduledToBeRemovedTx();
   }
 
   /**
@@ -301,33 +295,13 @@ public class ClientHealthMonitor {
    */
   private void expireTXStates(ClientProxyMembershipID proxyID) {
     final TXManagerImpl txMgr = (TXManagerImpl) this._cache.getCacheTransactionManager();
-    final Set<TXId> txids =
+    final Set<TXId> txIds =
         txMgr.getTransactionsForClient((InternalDistributedMember) proxyID.getDistributedMember());
     if (this._cache.isClosed()) {
       return;
     }
-    long timeout = txMgr.getTransactionTimeToLive() * 1000;
-    if (!txids.isEmpty()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("expiring {} transaction contexts for {} timeout={}", txids.size(), proxyID,
-            timeout / 1000);
-      }
-
-      if (timeout <= 0) {
-        txMgr.removeTransactions(txids, true);
-      } else {
-        if (scheduledToBeRemovedTx != null)
-          scheduledToBeRemovedTx.addAll(txids);
-        SystemTimerTask task = new SystemTimerTask() {
-          @Override
-          public void run2() {
-            txMgr.removeTransactions(txids, true);
-            if (scheduledToBeRemovedTx != null)
-              scheduledToBeRemovedTx.removeAll(txids);
-          }
-        };
-        this._cache.getCCPTimer().schedule(task, timeout);
-      }
+    if (!txIds.isEmpty()) {
+      txMgr.expireDisconnectedClientTransactions(txIds, true);
     }
   }
 

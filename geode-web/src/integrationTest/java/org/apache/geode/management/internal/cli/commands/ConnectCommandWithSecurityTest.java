@@ -30,8 +30,9 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 public class ConnectCommandWithSecurityTest {
 
   @ClassRule
-  public static LocatorStarterRule locator =
-      new LocatorStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
+  public static LocatorStarterRule locator = new LocatorStarterRule()
+      .withHttpService()
+      .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

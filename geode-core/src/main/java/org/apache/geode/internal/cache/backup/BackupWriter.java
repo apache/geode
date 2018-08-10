@@ -30,4 +30,6 @@ public interface BackupWriter {
   void backupFiles(BackupDefinition backupDefinition) throws IOException;
 
   Path getBaselineDirectory();
+
+  Path getBackupDirectory();
 }

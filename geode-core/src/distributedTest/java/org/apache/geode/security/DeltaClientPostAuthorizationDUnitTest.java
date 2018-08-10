@@ -20,7 +20,6 @@ import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.closeCache;
 import static org.apache.geode.security.SecurityTestUtils.concatProperties;
 import static org.apache.geode.security.SecurityTestUtils.createCacheClient;
-import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -105,8 +104,8 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
         // End of current operation block; execute all the operations on the servers with failover
         if (opBlock.size() > 0) {
           // Start the first server and execute the operation block
-          server1.invoke(() -> ClientAuthorizationTestCase.createCacheServer(getLocatorPort(),
-              port1, serverProps, javaProps));
+          server1.invoke(
+              () -> ClientAuthorizationTestCase.createCacheServer(port1, serverProps, javaProps));
           server2.invoke(() -> closeCache());
 
           executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen,
@@ -114,8 +113,8 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
 
           if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
             // Failover to the second server and run the block again
-            server2.invoke(() -> ClientAuthorizationTestCase.createCacheServer(getLocatorPort(),
-                port2, serverProps, javaProps));
+            server2.invoke(
+                () -> ClientAuthorizationTestCase.createCacheServer(port2, serverProps, javaProps));
             server1.invoke(() -> closeCache());
 
             executeOpBlock(opBlock, port1, port2, authInit, extraAuthProps, extraAuthzProps, tgen,

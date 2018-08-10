@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.io.FileUtils.listFiles;
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.FORMAT;
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -37,14 +39,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -70,19 +76,25 @@ public class ExportLogsDUnitTest {
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
 
-  private MemberVM locator;
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  protected MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
 
   private Map<MemberVM, List<LogLine>> expectedMessages;
 
+  public File getWorkingDirectory() throws Exception {
+    return locator.getWorkingDir();
+  }
 
   @Before
   public void setup() throws Exception {
     Properties properties = new Properties();
     properties.setProperty(ConfigurationProperties.LOG_LEVEL, "debug");
 
-    locator = lsRule.startLocatorVM(0, properties);
+    locator = lsRule.startLocatorVM(0, l -> l.withProperties(properties).withHttpService());
     server1 = lsRule.startServerVM(1, properties, locator.getPort());
     server2 = lsRule.startServerVM(2, properties, locator.getPort());
 
@@ -103,7 +115,51 @@ public class ExportLogsDUnitTest {
       });
     }
 
+    connect();
+  }
+
+  public void connect() throws Exception {
     gfshConnector.connectAndVerify(locator);
+  }
+
+  @After
+  public void after() throws Exception {
+    Stream.of(getWorkingDirectory().listFiles())
+        .filter(f -> f.getName().endsWith(".zip")).forEach(file -> file.delete());
+  }
+
+  @Test
+  public void withFiles_savedToLocatorWorkingDir() throws Exception {
+    String[] extensions = {"zip"};
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfshConnector.executeCommand("export logs");
+    assertThat(listFiles(getWorkingDirectory(), extensions, false)).isNotEmpty();
+  }
+
+  @Test
+  public void withFiles_savedToLocatorSpecifiedRelativeDir() throws Exception {
+    String[] extensions = {"zip"};
+    Path workingDirPath = getWorkingDirectory().toPath();
+    Path subdirPath = workingDirPath.resolve("some").resolve("test").resolve("directory");
+    Path relativeDir = workingDirPath.relativize(subdirPath);
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfshConnector.executeCommand("export logs --dir=" + relativeDir.toString());
+    assertThat(listFiles(getWorkingDirectory(), extensions, false)).isEmpty();
+    assertThat(listFiles(getWorkingDirectory(), extensions, true)).isNotEmpty();
+    assertThat(listFiles(subdirPath.toFile(), extensions, false)).isNotEmpty();
+  }
+
+  @Test
+  public void withFiles_savedToLocatorSpecifiedAbsoluteDir() throws Exception {
+    String[] extensions = {"zip"};
+    Path workingDirPath = getWorkingDirectory().toPath();
+    Path absoluteDirPath =
+        workingDirPath.resolve("some").resolve("test").resolve("directory").toAbsolutePath();
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfshConnector.executeCommand("export logs --dir=" + absoluteDirPath.toString());
+    assertThat(listFiles(getWorkingDirectory(), extensions, false)).isEmpty();
+    assertThat(listFiles(getWorkingDirectory(), extensions, true)).isNotEmpty();
+    assertThat(listFiles(absoluteDirPath.toFile(), extensions, false)).isNotEmpty();
   }
 
   @Test
@@ -128,6 +184,11 @@ public class ExportLogsDUnitTest {
   @Test
   public void testExportWithStartAndEndDateTimeFiltering() throws Exception {
     ZonedDateTime cutoffTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
+
+    // wait for atleast 1 second to reduce flakiness on windows
+    // on windows the flakiness is caused due to the cutoffTime
+    // being same as the log message logged on server1.
+    Awaitility.await().atLeast(1, TimeUnit.MILLISECONDS).until(() -> true);
 
     String messageAfterCutoffTime =
         "[this message should not show up since it is after cutoffTime]";
@@ -219,7 +280,7 @@ public class ExportLogsDUnitTest {
   }
 
 
-  private void verifyZipFileContents(Set<String> acceptedLogLevels) throws IOException {
+  private void verifyZipFileContents(Set<String> acceptedLogLevels) throws Exception {
     File unzippedLogFileDir = unzipExportedLogs();
 
     Set<File> dirsFromZipFile =
@@ -270,19 +331,19 @@ public class ExportLogsDUnitTest {
 
   }
 
-  private File unzipExportedLogs() throws IOException {
-    File locatorWorkingDir = locator.getWorkingDir();
-    List<File> filesInDir = Stream.of(locatorWorkingDir.listFiles()).collect(toList());
+  private File unzipExportedLogs() throws Exception {
+    File locatorWorkingDir = getWorkingDirectory();
+    List<File> filesInDir = Stream.of(getWorkingDirectory().listFiles()).collect(toList());
     assertThat(filesInDir).isNotEmpty();
 
 
-    List<File> zipFilesInDir = Stream.of(locatorWorkingDir.listFiles())
+    List<File> zipFilesInDir = Stream.of(getWorkingDirectory().listFiles())
         .filter(f -> f.getName().endsWith(".zip")).collect(toList());
     assertThat(zipFilesInDir)
         .describedAs(filesInDir.stream().map(File::getAbsolutePath).collect(joining(",")))
         .hasSize(1);
 
-    File unzippedLogFileDir = new File(locatorWorkingDir, "unzippedLogs");
+    File unzippedLogFileDir = temporaryFolder.newFolder("unzippedLogs");
     ZipUtils.unzip(zipFilesInDir.get(0).getCanonicalPath(), unzippedLogFileDir.getCanonicalPath());
     return unzippedLogFileDir;
   }

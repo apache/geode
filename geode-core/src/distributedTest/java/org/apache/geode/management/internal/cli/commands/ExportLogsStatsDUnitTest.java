@@ -62,7 +62,7 @@ public class ExportLogsStatsDUnitTest {
   @BeforeClass
   public static void beforeClass() {
     // start the locator in vm0 and then connect to it over http
-    locator = lsRule.startLocatorVM(0);
+    locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
 
     Properties serverProperties = new Properties();
     serverProperties.setProperty(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");

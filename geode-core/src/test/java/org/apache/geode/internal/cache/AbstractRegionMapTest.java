@@ -32,11 +32,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -46,11 +51,13 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -811,6 +818,238 @@ public class AbstractRegionMapTest {
   }
 
   @Test
+  public void initialImagePut_givenPutIfAbsentReturningRemoveTokenOnFirstTryWillTryUntilRegionEntryIsPut()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.isDestroyedOrRemoved()).thenReturn(false);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    RegionEntry removedTokenEntry = mock(RegionEntry.class);
+    when(removedTokenEntry.isRemovedPhase2()).thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+
+    Answer returnRemovedTokenAnswer = new Answer() {
+      private int putTimes = 0;
+
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        if (putTimes++ == 0) {
+          return removedTokenEntry;
+        }
+        return entry;
+      }
+    };
+    when(map.putIfAbsent(eq(KEY), any())).thenAnswer(returnRemovedTokenAnswer);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, null);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+
+    verify(map, times(2)).putIfAbsent(eq(KEY), any());
+  }
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturningRegionEntryAndProcessVersionTagThrowsConcurrentCacheModificationException_createdEntryRemovedFromMapAndNotInitialImageInit()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.isDestroyedOrRemoved()).thenReturn(false);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    doThrow(new ConcurrentCacheModificationException()).when(versionStamp).processVersionTag(any(),
+        any(), anyBoolean(), anyBoolean(), any(), any(), anyBoolean());
+    RegionEntry createdEntry = mock(RegionEntry.class);
+    when(createdEntry.getVersionStamp()).thenReturn(versionStamp);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(createdEntry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+
+    verify(map, times(1)).remove(eq(KEY), eq(createdEntry));
+    verify(entry, never()).initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean());
+  }
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturningRegionEntryAndSameTombstoneWillAttemptToRemoveREAndInvokeNothingElse()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(false);
+    when(entry.isDestroyedOrRemoved()).thenReturn(false);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(entry.isTombstone()).thenReturn(true);
+    TestableVersionTag versionTag = new TestableVersionTag();
+    versionTag.setVersionSource(mock(VersionSource.class));
+    when(versionStamp.asVersionTag()).thenReturn(versionTag);
+    RegionEntry createdEntry = mock(RegionEntry.class);
+    when(createdEntry.getVersionStamp()).thenReturn(versionStamp);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(createdEntry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(map.putIfAbsent(eq(KEY), eq(createdEntry))).thenReturn(entry);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+
+    verify(map, times(1)).remove(eq(KEY), eq(createdEntry));
+    verify(entry, never()).initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean());
+  }
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturningRegionEntryOldIsTombstone_callUnscheduleTombstone()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+    RegionEntry entry = mock(RegionEntry.class);
+    when(entry.isTombstone()).thenReturn(true);
+    when(entry.isDestroyedOrRemoved()).thenReturn(false);
+    when(entry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+    when(versionStamp.asVersionTag()).thenReturn(mock(VersionTag.class));
+    RegionEntry createdEntry = mock(RegionEntry.class);
+    when(createdEntry.getVersionStamp()).thenReturn(versionStamp);
+    when(createdEntry.initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(createdEntry);
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+
+    verify(arm._getOwner(), times(1)).unscheduleTombstone(entry);
+  }
+
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturnsNullAndProcessVersionTagThrowsConcurrentCacheModificationException_createdEntryRemovedFromMapAndNotInitialImageInit()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(null);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    VersionStamp mockVersionStamp = mock(VersionStamp.class);
+    doThrow(new ConcurrentCacheModificationException()).when(mockVersionStamp)
+        .processVersionTag(any(), any(), anyBoolean(), anyBoolean(), any(), any(), anyBoolean());
+    RegionEntry createdEntry = mock(RegionEntry.class);
+    when(createdEntry.getVersionStamp()).thenReturn(mockVersionStamp);
+    when(factory.createEntry(any(), any(), any())).thenReturn(createdEntry);
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+    verify(map, times(1)).remove(eq(KEY), eq(createdEntry));
+    verify(createdEntry, never()).initialImageInit(any(), anyLong(), any(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+  }
+
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturnsNullAndValueIsTombstone_callToScheduleTombstone()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(null);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    VersionStamp mockVersionStamp = mock(VersionStamp.class);
+    RegionEntry createdEntry = mock(RegionEntry.class);
+    when(createdEntry.getVersionStamp()).thenReturn(mockVersionStamp);
+    when(createdEntry.initialImageInit(any(), anyLong(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(factory.createEntry(any(), any(), any())).thenReturn(createdEntry);
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
+    verify(arm._getOwner(), times(1)).scheduleTombstone(any(), any());
+  }
+
+
+  @Test
+  public void initialImagePut_givenPutIfAbsentReturnsNullAndValueIsNotTombstone_callUpdateSizeOnCreate()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(null);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    VersionStamp mockVersionStamp = mock(VersionStamp.class);
+    RegionEntry createdEntry = mock(RegionEntry.class);
+    when(createdEntry.getVersionStamp()).thenReturn(mockVersionStamp);
+    when(createdEntry.initialImageInit(any(), anyLong(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(factory.createEntry(any(), any(), any())).thenReturn(createdEntry);
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    arm.initialImagePut(KEY, 0, "", false, false, versionTag, null, false);
+    verify(arm._getOwner(), times(1)).updateSizeOnCreate(any(), anyInt());
+  }
+
+
+  @Test
+  public void initialImagePut_ExceptionThrownWhenCreatingNewRegionEntry_removeDoesNotGetCalled()
+      throws RegionClearedException {
+    ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
+
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(null);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    VersionStamp mockVersionStamp = mock(VersionStamp.class);
+    RegionEntry createdEntry = mock(RegionEntry.class);
+    when(createdEntry.getVersionStamp()).thenReturn(mockVersionStamp);
+    when(createdEntry.initialImageInit(any(), anyLong(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(factory.createEntry(any(), any(), any())).thenThrow(new RuntimeException());
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    when(arm._getOwner().getConcurrencyChecksEnabled()).thenReturn(true);
+    when(arm._getOwner().getServerProxy()).thenReturn(mock(ServerRegionProxy.class));
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.getMemberID()).thenReturn(mock(VersionSource.class));
+
+    try {
+      arm.initialImagePut(KEY, 0, "", false, false, versionTag, null, false);
+    } catch (RuntimeException e) {
+      // expected to be thrown, we set up the test this way
+    }
+    verify(map, never()).remove(eq(KEY), eq(createdEntry));
+  }
+
+
+  @Test
   public void txApplyDestroy_givenExistingDestroyedOrRemovedEntry_neverCallsUpdateSizeOnRemove() {
     RegionEntry regionEntry = mock(RegionEntry.class);
     when(regionEntry.isTombstone()).thenReturn(false);
@@ -1172,4 +1411,41 @@ public class AbstractRegionMapTest {
     }
   }
 
+  private static class TestableVersionTag extends VersionTag {
+
+    private VersionSource versionSource;
+
+    @Override
+    public boolean equals(Object o) {
+      return true;
+    }
+
+    @Override
+    public Version[] getSerializationVersions() {
+      return new Version[0];
+    }
+
+    @Override
+    public VersionSource readMember(DataInput in) throws IOException, ClassNotFoundException {
+      return null;
+    }
+
+    @Override
+    public void writeMember(VersionSource memberID, DataOutput out) throws IOException {
+
+    }
+
+    @Override
+    public int getDSFID() {
+      return 0;
+    }
+
+    public VersionSource getMemberID() {
+      return versionSource;
+    }
+
+    public void setVersionSource(VersionSource versionSource) {
+      this.versionSource = versionSource;
+    }
+  }
 }

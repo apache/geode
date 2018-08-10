@@ -43,6 +43,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PeerTXStateStub;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -265,6 +266,30 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     region.put(key, newValue);
     txManager.commit();
     assertEquals(newValue, region.get(key));
+  }
+
+  @Test
+  public void locksHeldInBeforeCompletionCanBeReleaseIfOriginatorDeparted() {
+    server1.invoke(() -> createServerRegion(1, false));
+    server1.invoke(() -> doPut(key, value));
+    server2.invoke(() -> createServerRegion(1, true));
+
+    server2.invoke(() -> doBeforeCompletionOnPeer());
+    server2.invoke(() -> cacheRule.getCache().close());
+
+    server1.invoke(() -> doPutTransaction(false));
+  }
+
+  private void doBeforeCompletionOnPeer() {
+    InternalCache cache = cacheRule.getCache();
+    Region region = cache.getRegion(regionName);
+    TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
+    txManager.begin();
+    region.put(key, newValue);
+
+    TXStateProxyImpl txStateProxy = (TXStateProxyImpl) txManager.getTXState();
+    PeerTXStateStub txStateStub = (PeerTXStateStub) txStateProxy.getRealDeal(null, null);
+    txStateStub.beforeCompletion();
   }
 
 }

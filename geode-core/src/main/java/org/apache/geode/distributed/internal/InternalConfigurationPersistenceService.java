@@ -128,7 +128,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   /**
    * Name of the region which is used to store the configuration information
    */
-  private static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
+  public static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
 
   private final String configDirPath;
   private final String configDiskDirPath;
@@ -517,6 +517,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     this.status.set(SharedConfigurationStatus.STARTED);
     Region<String, Configuration> configRegion = this.getConfigurationRegion();
     lockSharedConfiguration();
+    removeInvalidXmlConfigurations(configRegion);
     try {
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
@@ -541,6 +542,65 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
 
     this.status.set(SharedConfigurationStatus.RUNNING);
+  }
+
+  void removeInvalidXmlConfigurations(Region<String, Configuration> configRegion)
+      throws IOException, SAXException, ParserConfigurationException, TransformerException {
+    for (Map.Entry<String, Configuration> entry : configRegion.entrySet()) {
+      String group = entry.getKey();
+      Configuration configuration = entry.getValue();
+      String configurationXml = configuration.getCacheXmlContent();
+      if (configurationXml != null && !configurationXml.isEmpty()) {
+        Document document = XmlUtils.createDocumentFromXml(configurationXml);
+        boolean removedInvalidReceivers = removeInvalidGatewayReceivers(document);
+        boolean removedDuplicateReceivers = removeDuplicateGatewayReceivers(document);
+        if (removedInvalidReceivers || removedDuplicateReceivers) {
+          configuration.setCacheXmlContent(XmlUtils.prettyXml(document));
+          configRegion.put(group, configuration);
+        }
+      }
+    }
+  }
+
+  boolean removeInvalidGatewayReceivers(Document document) throws TransformerException {
+    boolean modified = false;
+    NodeList receiverNodes = document.getElementsByTagName("gateway-receiver");
+    for (int i = receiverNodes.getLength() - 1; i >= 0; i--) {
+      Element receiverElement = (Element) receiverNodes.item(i);
+
+      // Check hostname-for-senders
+      String hostNameForSenders = receiverElement.getAttribute("hostname-for-senders");
+      if (StringUtils.isNotBlank(hostNameForSenders)) {
+        receiverElement.getParentNode().removeChild(receiverElement);
+        logger.info("Removed invalid cluster configuration gateway-receiver element="
+            + XmlUtils.prettyXml(receiverElement));
+        modified = true;
+      }
+
+      // Check bind-address
+      String bindAddress = receiverElement.getAttribute("bind-address");
+      if (StringUtils.isNotBlank(bindAddress) && !bindAddress.equals("0.0.0.0")) {
+        receiverElement.getParentNode().removeChild(receiverElement);
+        logger.info("Removed invalid cluster configuration gateway-receiver element="
+            + XmlUtils.prettyXml(receiverElement));
+        modified = true;
+      }
+    }
+    return modified;
+  }
+
+  boolean removeDuplicateGatewayReceivers(Document document) throws TransformerException {
+    boolean modified = false;
+    NodeList receiverNodes = document.getElementsByTagName("gateway-receiver");
+    while (receiverNodes.getLength() > 1) {
+      Element receiverElement = (Element) receiverNodes.item(0);
+      receiverElement.getParentNode().removeChild(receiverElement);
+      logger.info("Removed duplicate cluster configuration gateway-receiver element="
+          + XmlUtils.prettyXml(receiverElement));
+      modified = true;
+      receiverNodes = document.getElementsByTagName("gateway-receiver");
+    }
+    return modified;
   }
 
   private void persistSecuritySettings(final Region<String, Configuration> configRegion) {

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -75,6 +76,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   protected InternalDistributedMember onBehalfOfClientMember = null;
 
   private final InternalCache cache;
+  private long lastOperationTimeFromClient;
 
   public TXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
       InternalDistributedMember clientMember) {
@@ -956,4 +958,30 @@ public class TXStateProxyImpl implements TXStateProxy {
       ((TXState) this.realDeal).setProxyServer(proxy);
     }
   }
+
+  public boolean isOverTransactionTimeoutLimit() {
+    if (getCurrentTime() - getLastOperationTimeFromClient() > TimeUnit.SECONDS
+        .toMillis(txMgr.getTransactionTimeToLive())) {
+      return true;
+    }
+    return false;
+  }
+
+  long getCurrentTime() {
+    return System.currentTimeMillis();
+  }
+
+  synchronized long getLastOperationTimeFromClient() {
+    return lastOperationTimeFromClient;
+  }
+
+  public synchronized void setLastOperationTimeFromClient(long lastOperationTimeFromClient) {
+    this.lastOperationTimeFromClient = lastOperationTimeFromClient;
+  }
+
+  @Override
+  public InternalDistributedMember getOnBehalfOfClientMember() {
+    return onBehalfOfClientMember;
+  }
+
 }

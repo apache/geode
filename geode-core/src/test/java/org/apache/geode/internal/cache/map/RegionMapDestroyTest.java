@@ -38,6 +38,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractRegionMap;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -196,6 +197,20 @@ public class RegionMapDestroyTest {
     arm.getEntryMap().put(KEY, entry);
   }
 
+  private void givenExistingEntryWithValueAndVersion(Object value, VersionTag version) {
+    RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, value);
+    ((VersionStamp) entry).setVersions(version);
+    arm.getEntryMap().put(KEY, entry);
+  }
+
+  private void givenExistingEntryWithValueAndSameVersion(Object value, VersionTag version) {
+    givenExistingEntryWithValueAndVersion(value, version);
+
+    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
+    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
+    event.setVersionTag(version);
+  }
+
   private void givenExistingEntry(Object value) {
     RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, value);
     arm.getEntryMap().put(KEY, entry);
@@ -251,6 +266,23 @@ public class RegionMapDestroyTest {
   private boolean doDestroy() {
     return arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
         removeRecoveredEntry);
+  }
+
+  @Test
+  public void destroyWithDuplicateVersionInvokesListener() {
+    givenEmptyRegionMap();
+    givenConcurrencyChecks(true);
+    VersionTag version = VersionTag.create(new InternalDistributedMember("localhost", 123));
+    version.setEntryVersion(1);
+    version.setRegionVersion(1);
+    givenExistingEntryWithValueAndSameVersion(Token.TOMBSTONE, version);
+    // make this a client/server operation
+    event.setContext(new ClientProxyMembershipID());
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.getIsRedestroyedEntry()).isTrue();
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test

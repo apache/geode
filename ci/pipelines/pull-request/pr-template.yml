@@ -15,6 +15,15 @@
 # limitations under the License.
 
 ---
+
+image_resource: &alpine-tools-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
+    tag: latest
+
 jobs:
 - name: (( grab metadata.job.name ))
   serial: false
@@ -22,7 +31,7 @@ jobs:
   plan:
   - do:
     - aggregate:
-      - put: concourse-metadata-resource
+      # Merged pull request SHA, for building
       - get: geode
         trigger: true
         version: every
@@ -30,67 +39,63 @@ jobs:
           fetch_merge: true
           git:
             depth: 100
-      - get: alpine-tools-image
-        params:
-          rootfs: true
-    # Unmerged pull request SHA, for writing status into GitHub
-    - get: geode-unmerged-request
-      resource: geode
-      version: every
-      params:
-        fetch_merge: false
+      - get: geode-ci
     - aggregate:
-      - put: geode
-        params:
-          path: geode-unmerged-request
-          context: $BUILD_JOB_NAME
-          status: pending
-
-    - task: start_instance
-      image: alpine-tools-image
-      timeout: 5m
-      config:
-        inputs:
-          - name: concourse-metadata-resource
-          - name: geode
-        outputs:
-          - name: instance-data
-        platform: linux
-        params:
-          CPUS: (( grab metadata.job.cpus ))
-          RAM: (( grab metadata.job.ram ))
-          GEODE_BRANCH: (( grab metadata.geode-build-branch ))
-          GEODE_FORK: (( grab metadata.geode-fork ))
-        run:
-          path: geode/ci/scripts/start_instance.sh
+      # Unmerged pull request SHA, for writing status into GitHub
+      - do:
+        - get: geode-unmerged-request
+          resource: geode
+          version: every
+          params:
+            fetch_merge: false
+        - put: pull-request-job-pending
+          resource: geode
+          params:
+            path: geode-unmerged-request
+            context: $BUILD_JOB_NAME
+            status: pending
+      # Start heavy lifter instance
+      - do:
+        - put: concourse-metadata-resource
+        - task: start_instance
+          timeout: 15m
+          attempts: 100
+          config:
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            outputs:
+            - name: instance-data
+            platform: linux
+            image_resource: *alpine-tools-image
+            params:
+              CPUS: (( grab metadata.job.cpus ))
+              RAM: (( grab metadata.job.ram ))
+              GEODE_BRANCH: (( grab metadata.geode-build-branch ))
+              GEODE_FORK: (( grab metadata.geode-fork ))
+            run:
+              path: geode-ci/ci/scripts/start_instance.sh
     - task: rsync_code_up
-      image: alpine-tools-image
       timeout: 5m
       config:
         inputs:
           - name: geode
+          - name: geode-ci
           - name: instance-data
         platform: linux
+        image_resource: *alpine-tools-image
         run:
-          path: geode/ci/scripts/rsync_code_up.sh
-    - task: prepopulate_build
-      image: alpine-tools-image
-      config:
-        inputs:
-          - name: geode
-          - name: instance-data
-        platform: linux
-        run:
-          path: geode/ci/scripts/prepopulate_build.sh
+          path: geode-ci/ci/scripts/rsync_code_up.sh
     - task: execute_tests
-      image: alpine-tools-image
       timeout: (( grab metadata.job.timeout ))
-      tags: [pr]
       config:
         inputs:
           - name: geode
+          - name: geode-ci
           - name: instance-data
         platform: linux
+        image_resource: *alpine-tools-image
         params:
           MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -102,31 +107,49 @@ jobs:
           GRADLE_TASK_OPTIONS: (( grab metadata.job.gradle_task_options || "" ))
           ARTIFACT_SLUG: (( grab metadata.job.artifact_slug ))
         run:
-          path: geode/ci/scripts/execute_tests.sh
+          path: geode-ci/ci/scripts/execute_tests.sh
+    on_success:
+      do:
+      - put: pull-request-job-success
+        resource: geode
+        params:
+          path: geode-unmerged-request
+          context: $BUILD_JOB_NAME
+          status: success
+    on_failure:
+      do:
+      - put: pull-request-job-failure
+        resource: geode
+        params:
+          path: geode-unmerged-request
+          status: failure
+          context: $BUILD_JOB_NAME
     ensure:
       do:
       - task: rsync_code_down
-        image: alpine-tools-image
         timeout: 5m
         config:
           inputs:
-            - name: geode
-            - name: instance-data
+          - name: geode
+          - name: geode-ci
+          - name: instance-data
           outputs:
-            - name: geode-results
+          - name: geode-results
           platform: linux
+          image_resource: *alpine-tools-image
           run:
-            path: geode/ci/scripts/rsync_code_down.sh
+            path: geode-ci/ci/scripts/rsync_code_down.sh
       ensure:
         aggregate:
         - task: archive-results
-          image: alpine-tools-image
           config:
             inputs:
-              - name: concourse-metadata-resource
-              - name: geode
-              - name: geode-results
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            - name: geode-results
             platform: linux
+            image_resource: *alpine-tools-image
             params:
               MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
               SERVICE_ACCOUNT: ((!concourse-gcp-account))
@@ -134,29 +157,16 @@ jobs:
               GRADLE_TASK: (( grab metadata.job.gradle_task ))
               ARTIFACT_SLUG: (( grab metadata.job.artifact_slug ))
             run:
-              path: geode/ci/scripts/archive_results.sh
+              path: geode-ci/ci/scripts/archive_results.sh
         - task: stop_instance
-          image: alpine-tools-image
           timeout: 1h
           config:
             inputs:
-              - name: geode
-              - name: instance-data
+            - name: geode
+            - name: geode-ci
+            - name: instance-data
             platform: linux
+            image_resource: *alpine-tools-image
             run:
-              path: geode/ci/scripts/stop_instance.sh
-    on_failure:
-      aggregate:
-      - put: geode
-        params:
-          path: geode-unmerged-request
-          status: failure
-          context: $BUILD_JOB_NAME
-    on_success:
-      aggregate:
-      - put: geode
-        params:
-          path: geode-unmerged-request
-          context: $BUILD_JOB_NAME
-          status: success
+              path: geode-ci/ci/scripts/stop_instance.sh
 

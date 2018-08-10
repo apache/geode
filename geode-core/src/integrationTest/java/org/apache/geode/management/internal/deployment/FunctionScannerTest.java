@@ -56,7 +56,7 @@ public class FunctionScannerTest {
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
     assertThat(functionsFoundInJar)
-        .containsExactly("org.apache.geode.management.internal.deployment.ImplementsFunction");
+        .contains("org.apache.geode.management.internal.deployment.ImplementsFunction");
   }
 
   @Test
@@ -67,7 +67,7 @@ public class FunctionScannerTest {
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
     assertThat(functionsFoundInJar)
-        .containsExactly("org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter");
+        .contains("org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter");
   }
 
   @Test
@@ -78,7 +78,7 @@ public class FunctionScannerTest {
     jarBuilder.buildJar(outputJar, sourceFileOne, sourceFileTwo);
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
-    assertThat(functionsFoundInJar).containsExactlyInAnyOrder(
+    assertThat(functionsFoundInJar).contains(
         "org.apache.geode.management.internal.deployment.ConcreteExtendsAbstractExtendsFunctionAdapter",
         "org.apache.geode.management.internal.deployment.AbstractExtendsFunctionAdapter");
   }
@@ -91,7 +91,7 @@ public class FunctionScannerTest {
     jarBuilder.buildJar(outputJar, sourceFileOne, sourceFileTwo);
 
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
-    assertThat(functionsFoundInJar).containsExactlyInAnyOrder(
+    assertThat(functionsFoundInJar).contains(
         "org.apache.geode.management.internal.deployment.ConcreteExtendsAbstractImplementsFunction",
         "org.apache.geode.management.internal.deployment.AbstractImplementsFunction");
   }
@@ -108,7 +108,7 @@ public class FunctionScannerTest {
 
     jarBuilder.buildJar(outputJar, sourceFileTwo);
     Collection<String> functionsFoundInJar = functionScanner.findFunctionsInJar(outputJar);
-    assertThat(functionsFoundInJar).containsExactlyInAnyOrder(
+    assertThat(functionsFoundInJar).contains(
         "org.apache.geode.management.internal.deployment.AnnotatedFunction");
   }
 

@@ -90,14 +90,14 @@ public class PutOp {
   }
 
   public static Object execute(ExecutablePool pool, String regionName, Object key, Object value,
-      byte[] deltaBytes, EntryEventImpl event, Operation operation, boolean requireOldValue,
-      Object expectedOldValue, Object callbackArg, boolean prSingleHopEnabled,
-      boolean isMetaRegionPutOp) {
+      byte[] deltaBytes, EntryEventImpl event, Operation operation,
+      boolean requireOldValue,
+      Object expectedOldValue, Object callbackArg,
+      boolean prSingleHopEnabled) {
 
     AbstractOp op = new PutOpImpl(regionName, key, value, deltaBytes, event, operation,
         requireOldValue, expectedOldValue, callbackArg, false/* donot send full obj; send delta */,
         prSingleHopEnabled);
-    ((PutOpImpl) op).setMetaRegionPutOp(isMetaRegionPutOp);
     return pool.execute(op);
   }
 
@@ -130,7 +130,7 @@ public class PutOp {
     // no instances allowed
   }
 
-  private static class PutOpImpl extends AbstractOp {
+  protected static class PutOpImpl extends AbstractOp {
 
     private Object key;
 
@@ -151,8 +151,6 @@ public class PutOp {
 
     private Object callbackArg;
 
-    private boolean isMetaRegionPutOp;
-
     private boolean prSingleHopEnabled;
 
     private boolean requireOldValue;
@@ -162,7 +160,7 @@ public class PutOp {
 
     public PutOpImpl(String regionName, Object key, Object value, byte[] deltaBytes,
         EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
-        Object callbackArg, boolean sendFullObj, boolean prSingleHopEnabled) {
+        Object callbackArg, boolean respondingToInvalidDelta, boolean prSingleHopEnabled) {
       super(MessageType.PUT,
           7 + (callbackArg != null ? 1 : 0) + (expectedOldValue != null ? 1 : 0));
       final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -190,8 +188,11 @@ public class PutOp {
         getMessage().addObjPart(expectedOldValue);
       }
       getMessage().addStringOrObjPart(key);
+      if (respondingToInvalidDelta) {
+        getMessage().setIsRetry();
+      }
       // Add message part for sending either delta or full value
-      if (!sendFullObj && deltaBytes != null && op == Operation.UPDATE) {
+      if (!respondingToInvalidDelta && deltaBytes != null && op == Operation.UPDATE) {
         getMessage().addObjPart(Boolean.TRUE);
         getMessage().addBytesPart(deltaBytes);
         this.deltaSent = true;
@@ -393,26 +394,6 @@ public class PutOp {
     }
 
     @Override
-    protected void sendMessage(Connection cnx) throws Exception {
-      if (!this.isMetaRegionPutOp) {
-        super.sendMessage(cnx);
-      } else {
-        getMessage().send(false);
-      }
-    }
-
-    @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {
-      super.processSecureBytes(cnx, message);
-    }
-
-    @Override
-    protected boolean needsUserId() {
-      boolean ret = this.isMetaRegionPutOp ? false : super.needsUserId();
-      return ret;
-    }
-
-    @Override
     protected boolean isErrorResponse(int msgType) {
       return msgType == MessageType.PUT_DATA_ERROR;
     }
@@ -470,10 +451,6 @@ public class PutOp {
       } else {
         return null;
       }
-    }
-
-    void setMetaRegionPutOp(boolean bool) {
-      this.isMetaRegionPutOp = bool;
     }
   }
 

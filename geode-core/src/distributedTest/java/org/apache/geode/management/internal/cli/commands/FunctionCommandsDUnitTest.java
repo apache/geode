@@ -61,7 +61,7 @@ public class FunctionCommandsDUnitTest {
 
   @BeforeClass
   public static void before() throws Exception {
-    locator = lsRule.startLocatorVM(0);
+    locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
 
     Properties props = new Properties();
     props.setProperty("groups", "group-1");

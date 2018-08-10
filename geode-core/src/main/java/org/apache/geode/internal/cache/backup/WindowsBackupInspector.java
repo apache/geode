@@ -62,6 +62,7 @@ class WindowsBackupInspector extends BackupInspector {
     String oplogName;
     while (null != (line = reader.readLine())) {
       if (line.startsWith("IF")) {
+        // skip IF statements as they have oplog file exists checks.
         continue;
       } else if (line.contains(WindowsScriptGenerator.EXIT_MARKER)) {
         break;

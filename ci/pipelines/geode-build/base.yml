@@ -42,13 +42,6 @@ resources:
     password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
     tag: latest
-- name: alpine-tools-image
-  type: docker-image
-  source:
-    username: ((!docker-username))
-    password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
-    tag: latest
 - name: geode
   type: git
   source:
@@ -66,12 +59,6 @@ resources:
     paths:
     - ci/pipelines/geode-build/*
     - ci/scripts/*
-- name: geode-examples
-  type: git
-  source:
-    uri: https://github.com/apache/geode-examples.git
-    branch: develop
-    depth: 10
 - name: geode-build-version
   type: semver
   source:
@@ -106,8 +93,11 @@ groups:
   - DistributedTest
   - AcceptanceTest
   - IntegrationTest
+  - WindowsUnitTest
+  - WindowsIntegrationTest
+  - WindowsAcceptanceTest
+  - WindowsGfshDistributedTest
   - UpgradeTest
-  - TestExamples
   - UpdatePassingRef
 
 jobs:
@@ -157,38 +147,6 @@ jobs:
           - put: geode-build-version
             params:
               file: results/number
-- name: TestExamples
-  serial: true
-  public: true
-  plan:
-    - get: geode
-      passed: [AcceptanceTest, DistributedTest, IntegrationTest, UpgradeTest]
-      trigger: true
-    - aggregate:
-      - get: geode-ci
-      - get: geode-examples
-        trigger: true
-      - get: docker-geode-build-image
-        params:
-          rootfs: true
-    - task: testexamples
-      image: docker-geode-build-image
-      privileged: true
-      timeout: 7h
-      config:
-        inputs:
-          - name: geode-ci
-          - name: geode-examples
-          - name: docker-geode-build-image
-        platform: linux
-        params:
-          MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
-          SERVICE_ACCOUNT: ((!concourse-gcp-account))
-          PUBLIC_BUCKET: ((!public-bucket))
-        run:
-          args:
-          path: geode-ci/ci/scripts/build-examples.sh
-
 - name: UpdatePassingRef
   serial: true
   public: true

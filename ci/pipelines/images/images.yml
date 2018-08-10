@@ -76,13 +76,28 @@ resources:
     password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))alpine-tools
 
+- name: test-container-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/test-container/*
+
+- name: test-container-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))test-container
+
 - name: concourse-metadata-resource-dockerfile
   type: git
   source:
     uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
-    - ci/images/concourse-metadata-resource/*
+    - ci/resource-types/concourse-metadata-resource/*
 
 - name: concourse-metadata-resource-docker-image
   type: docker-image
@@ -90,6 +105,36 @@ resources:
     username: ((!docker-username))
     password: ((!docker-password))
     repository: gcr.io/apachegeode-ci/((!docker-image-prefix))concourse-metadata-resource
+
+- name: metric-tools-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/metric-tools/*
+
+- name: metric-tools-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))metric-tools
+
+- name: gce-instances-resource-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/resource-types/gce-instances-resource/*
+
+- name: gce-instances-resource-docker-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))gce-instances-resource
 
 jobs:
 # apachegeode-build-concourse
@@ -112,8 +157,8 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: apachegeode-build-concourse-docker-image
-      passed: [build-apachegeode-build-concourse-docker-image]
+    - get: test-container-docker-image
+      passed: [build-test-container-docker-image]
       trigger: true
     - get: google-geode-builder
       trigger: true
@@ -129,7 +174,7 @@ jobs:
       params:
         GEODE_FORK: ((!geode-fork))
         GEODE_BRANCH: ((!geode-build-branch))
-        GEODE_DOCKER_IMAGE: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
+        GEODE_DOCKER_IMAGE: gcr.io/apachegeode-ci/((!docker-image-prefix))test-container
       run:
         path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
 
@@ -147,6 +192,20 @@ jobs:
       build: alpine-tools-dockerfile/ci/images/alpine-tools
       tag_as_latest: true
 
+- name: build-test-container-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: openjdk8-docker-image
+      trigger: true
+    - get: test-container-dockerfile
+      trigger: true
+  - put: test-container-docker-image
+    params:
+      build: test-container-dockerfile/ci/images/test-container
+      tag_as_latest: true
+
 - name: build-concourse-metadata-resource-docker-image
   public: ((!public-pipelines))
   serial: true
@@ -158,5 +217,33 @@ jobs:
       trigger: true
   - put: concourse-metadata-resource-docker-image
     params:
-      build: concourse-metadata-resource-dockerfile/ci/images/concourse-metadata-resource
+      build: concourse-metadata-resource-dockerfile/ci/resource-types/concourse-metadata-resource
+      tag_as_latest: true
+
+- name: build-metric-tools-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: metric-tools-dockerfile
+      trigger: true
+  - put: metric-tools-docker-image
+    params:
+      build: metric-tools-dockerfile/ci/images/metric-tools
+      tag_as_latest: true
+
+- name: build-gce-instances-resource-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: alpine-docker-image
+      trigger: true
+    - get: gce-instances-resource-dockerfile
+      trigger: true
+  - put: gce-instances-resource-docker-image
+    params:
+      build: gce-instances-resource-dockerfile/ci/resource-types/gce-instances-resource
       tag_as_latest: true

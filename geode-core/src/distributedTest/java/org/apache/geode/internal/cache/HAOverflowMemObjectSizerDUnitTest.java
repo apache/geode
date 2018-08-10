@@ -42,7 +42,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
@@ -94,13 +94,13 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
 
   @Override
   public final void preTearDown() throws Exception {
-    serverVM.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    serverVM.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
     client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
     serverVM.invoke(() -> HAOverflowMemObjectSizerDUnitTest.closeCache());
   }
 
   public static void cleanUp(Long limit) {
-    ConflationDUnitTest.unsetIsSlowStart();
+    ConflationDUnitTestHelper.unsetIsSlowStart();
     if (region != null) {
       Set entries = region.entrySet();
       entries = region.entrySet();
@@ -182,7 +182,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     Integer port1 = (Integer) serverVM
         .invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer(new Boolean(true)));
     serverPort1 = port1;
-    serverVM.invoke(() -> ConflationDUnitTest.setIsSlowStart("15000"));
+    serverVM.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("15000"));
 
     client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheClient(port1,
         NetworkUtils.getServerHostName(client.getHost())));
@@ -205,7 +205,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
         .invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheServer(new Boolean(false)));
     serverPort2 = port2;
 
-    serverVM.invoke(() -> ConflationDUnitTest.setIsSlowStart("15000"));
+    serverVM.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("15000"));
 
     client.invoke(() -> HAOverflowMemObjectSizerDUnitTest.createCacheClient(port2,
         NetworkUtils.getServerHostName(client.getHost())));

@@ -1,0 +1,48 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+version: '3'
+
+services:
+  concourse-db:
+    image: postgres
+    environment:
+    - POSTGRES_DB=concourse
+    - POSTGRES_PASSWORD=concourse_pass
+    - POSTGRES_USER=concourse_user
+    - PGDATA=/database
+
+  registry:
+    image: registry
+    ports: ["5000:5000"]
+
+  concourse:
+    image: concourse/concourse
+    command: quickstart
+    privileged: true
+    depends_on: [concourse-db, registry]
+    ports: ["8080:8080"]
+    environment:
+    - CONCOURSE_POSTGRES_HOST=concourse-db
+    - CONCOURSE_POSTGRES_USER=concourse_user
+    - CONCOURSE_POSTGRES_PASSWORD=concourse_pass
+    - CONCOURSE_POSTGRES_DATABASE=concourse
+    - CONCOURSE_EXTERNAL_URL
+    - CONCOURSE_ADD_LOCAL_USER=test:$$2a$$10$$0W9/ilCpYXY/yCPpaOD.6eCrGda/fnH3D4lhsw1Mze0WTID5BuiTW
+    - CONCOURSE_MAIN_TEAM_ALLOW_ALL_USERS=true
+    - CONCOURSE_WORKER_GARDEN_NETWORK
+    - CONCOURSE_NO_REALLY_I_DONT_WANT_ANY_AUTH=true

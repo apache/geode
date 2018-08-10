@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.management.internal.cli.CommandManager;
-import org.apache.geode.management.internal.cli.commands.CommandAvailabilityIndicatorTest;
+import org.apache.geode.management.internal.cli.commands.CommandAvailabilityIndicatorTestHelper;
 
 
 public class JDBCCommandsAvailabilityTest {
@@ -40,6 +40,6 @@ public class JDBCCommandsAvailabilityTest {
     // make sure the jdbc commands are loaded
     assertThat(collections).contains(CreateConnectionCommand.class);
 
-    CommandAvailabilityIndicatorTest.assertOnlineCommandsHasAvailabilityIndicator(manager);
+    CommandAvailabilityIndicatorTestHelper.assertOnlineCommandsHasAvailabilityIndicator(manager);
   }
 }

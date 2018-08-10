@@ -58,7 +58,8 @@ public class IndexCommandsIntegrationTest {
 
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withProperty(GROUPS, groupName).withJMXManager().withAutoStart();
+      new ServerStarterRule().withProperty(GROUPS, groupName).withJMXManager().withHttpService()
+          .withAutoStart();
 
   @BeforeClass
   public static void beforeClass() throws Exception {

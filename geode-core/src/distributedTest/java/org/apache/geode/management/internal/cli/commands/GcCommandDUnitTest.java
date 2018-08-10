@@ -57,7 +57,8 @@ public class GcCommandDUnitTest {
     managerProps.setProperty(NAME, MANAGER_NAME);
     managerProps.setProperty(GROUPS, GROUP0);
     managerProps.setProperty(LOG_FILE, "someLog.log");
-    locator = clusterStartupRule.startLocatorVM(0, managerProps);
+    locator =
+        clusterStartupRule.startLocatorVM(0, l -> l.withHttpService().withProperties(managerProps));
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);

@@ -90,7 +90,7 @@ public class RegionMembershipMBeanDUnitTest {
 
     Properties serverProps = new Properties();
     serverProps.setProperty(SERIALIZABLE_OBJECT_FILTER, SERIALIZATION_FILTER);
-    locator = cluster.startLocatorVM(0, props);
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(props));
     server1 = cluster.startServerVM(1, serverProps, locator.getPort());
     server2 = cluster.startServerVM(2, serverProps, locator.getPort());
 

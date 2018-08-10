@@ -25,9 +25,17 @@
         </disk-dirs>
     </disk-store>
 
-<region name="persistentTestRegion">
-<region-attributes refid="PARTITION_REDUNDANT_PERSISTENT" disk-store-name="diskStore" >
-</region-attributes>
-<index name="persistentTestRegion_ID" from-clause="/persistentTestRegion" expression="ID" type="range"/>
-</region>
+    <region name="persistentTestRegion">
+        <region-attributes refid="PARTITION_REDUNDANT_PERSISTENT" disk-store-name="diskStore">
+        </region-attributes>
+        <index name="persistentTestRegion_ID" from-clause="/persistentTestRegion" expression="ID"
+               type="range"/>
+    </region>
+
+    <region name="persistentTestRegionWithEntrySetIndex">
+        <region-attributes refid="PARTITION_REDUNDANT_PERSISTENT" disk-store-name="diskStore">
+        </region-attributes>
+        <index name="persistentTestRegion_ID" from-clause="/persistentTestRegionWithEntrySetIndex.entrySet" expression="value.ID"
+               type="range"/>
+    </region>
 </cache>

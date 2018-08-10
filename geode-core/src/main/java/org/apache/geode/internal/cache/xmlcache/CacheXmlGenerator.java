@@ -1664,11 +1664,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
 
     // generate index data here
-    Collection indexesForRegion = this.cache.getQueryService().getIndexes(region);
-    if (indexesForRegion != null) {
-      for (Object index : indexesForRegion) {
-        generate((Index) index);
-      }
+    Collection<Index> indexesForRegion = this.cache.getQueryService().getIndexes(region);
+    for (Index index : indexesForRegion) {
+      generate(index);
     }
 
     if (region instanceof PartitionedRegion) {

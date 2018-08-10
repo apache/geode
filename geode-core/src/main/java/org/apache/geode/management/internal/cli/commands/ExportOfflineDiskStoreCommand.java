@@ -23,16 +23,15 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class ExportOfflineDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.EXPORT_OFFLINE_DISK_STORE,
       help = CliStrings.EXPORT_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  public Result exportOfflineDiskStore(
+  public ResultModel exportOfflineDiskStore(
       @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
           help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
@@ -52,17 +51,17 @@ public class ExportOfflineDiskStoreCommand extends InternalGfshCommand {
       // not be moved to a separate process unless we provide a way for the user
       // to configure the size of that process.
       DiskStoreImpl.exportOfflineSnapshot(diskStoreName, dirs, output);
-      String resultString =
-          CliStrings.format(CliStrings.EXPORT_OFFLINE_DISK_STORE__SUCCESS, diskStoreName, dir);
-      return ResultBuilder.createInfoResult(resultString);
+
+      return ResultModel.createInfo(
+          CliStrings.format(CliStrings.EXPORT_OFFLINE_DISK_STORE__SUCCESS, diskStoreName, dir));
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable th) {
       SystemFailure.checkFailure();
       LogWrapper.getInstance(getCache()).warning(th.getMessage(), th);
-      return ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.EXPORT_OFFLINE_DISK_STORE__ERROR, diskStoreName, th.toString()));
+      return ResultModel.createError(CliStrings.format(CliStrings.EXPORT_OFFLINE_DISK_STORE__ERROR,
+          diskStoreName, th.toString()));
     }
   }
 }
