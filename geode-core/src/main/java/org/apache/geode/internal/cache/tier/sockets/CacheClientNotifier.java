@@ -1034,11 +1034,8 @@ public class CacheClientNotifier {
         // try to canonicalize the ID.
         CacheClientProxy proxy = getClientProxy((ClientProxyMembershipID) id, true);
         if (proxy != null) {
-          // this._logger.info(LocalizedStrings.DEBUG, "BRUCE: found match for " + id + ": " +
-          // proxy.getProxyID());
           result.add(proxy.getProxyID());
         } else {
-          // this._logger.info(LocalizedStrings.DEBUG, "BRUCE: did not find match for " + id);
           // this was causing OOMEs in HARegion initial image processing because
           // messages had routing for clients unknown to this server
           // result.add((ClientProxyMembershipID)id);
