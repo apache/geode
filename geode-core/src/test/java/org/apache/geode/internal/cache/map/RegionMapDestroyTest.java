@@ -975,8 +975,7 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isTrue();
 
     verifyMapContainsTokenValue(Token.TOMBSTONE);
-    verifyNoPart2();
-    verifyPart3();
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -992,8 +991,7 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isTrue();
 
     verifyMapContainsTokenValue(Token.TOMBSTONE);
-    verifyNoPart2();
-    verifyPart3();
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   /**
