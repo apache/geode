@@ -19,12 +19,12 @@ import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import com.sun.tools.javac.util.List;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.awaitility.core.ConditionTimeoutException;
 import org.awaitility.core.Predicate;
@@ -86,7 +86,7 @@ public class MemberStarterRuleAwaitIntegrationTest {
 
   @Test
   public void waitCanPrintMoreComplexResults() throws Exception {
-    Supplier<List<String>> abcListProvider = () -> List.of("A", "B", "C");
+    Supplier<List<String>> abcListProvider = () -> Arrays.asList("A", "B", "C");
     Function<List<String>, Integer> examiner = list -> list.size();
     String description = "Awaiting until list becomes empty.";
     assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(abcListProvider,
