@@ -80,23 +80,18 @@ dependencies {
   archives project(':geode-rebalancer')
 
 
-  testCompile project(':geode-core')
-  testCompile project(':geode-junit')
-
-
   integrationTestCompile project(':geode-core')
   integrationTestCompile project(":geode-junit")
   integrationTestCompile project(":geode-dunit")
   integrationTestCompile project(":geode-pulse")
+  integrationTestCompile project(':geode-assembly/geode-assembly-test')
   integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
 
 
   distributedTestCompile project(':geode-core')
   distributedTestCompile project(':extensions/session-testing-war')
-  distributedTestCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  distributedTestCompile project(':geode-assembly/geode-assembly-test')
   distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  // TODO refactor out common test framework
-  distributedTestCompile sourceSets.integrationTest.output
 
   distributedTestRuntime (project(':extensions/geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
@@ -107,14 +102,13 @@ dependencies {
   acceptanceTestCompile project(":geode-dunit")
 
 
-  uiTestCompile project(':geode-core')
   uiTestCompile project(":geode-dunit")
   uiTestCompile project(":geode-pulse")
+  uiTestCompile project(':geode-assembly/geode-assembly-test')
   uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
   uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
   uiTestCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
   // TODO refactor out common test framework
-  uiTestCompile sourceSets.integrationTest.output
   uiTestCompile project(":geode-pulse").sourceSets.uiTest.output
 
   uiTestRuntime project(":geode-core")
@@ -123,11 +117,8 @@ dependencies {
 
   upgradeTestCompile project(':geode-core')
   upgradeTestCompile project(":geode-dunit")
-  // TODO refactor out common test framework
-  upgradeTestCompile sourceSets.distributedTest.output
-  upgradeTestCompile sourceSets.test.output
+  upgradeTestCompile project(':geode-assembly/geode-assembly-test')
 
-  upgradeTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
   upgradeTestRuntime 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
   upgradeTestRuntime project(':extensions/session-testing-war')
 
