@@ -92,7 +92,7 @@ public class MemberStarterRuleAwaitIntegrationTest {
     assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(abcListProvider,
         examiner, 0, description, 1, TimeUnit.SECONDS)))
             .isInstanceOf(ConditionTimeoutException.class)
-            .hasMessageContaining("A,B,C")
+            .hasMessageContaining("A, B, C")
             .hasMessageContaining(description);
   }
 
