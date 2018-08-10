@@ -67,15 +67,11 @@ dependencies {
 
   compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
 
+
   testCompile project(':geode-junit')
   testCompile project(':geode-core')
-
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  testCompile 'com.tdunning:json:' + project.'open-json.version'
 
-  testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
-  testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
-  testRuntime 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
 
   integrationTestCompile project(':geode-junit')
   integrationTestCompile project(':geode-core')
