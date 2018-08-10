@@ -23,6 +23,7 @@ dependencies {
       exclude module: 'lucene-sandbox'
     }
 
+    runtime 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
 
     testCompile project(':geode-junit')
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
