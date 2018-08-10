@@ -85,18 +85,16 @@ dependencies {
 
 
   integrationTestCompile project(':geode-core')
-  integrationTestCompile project(":geode-dunit")
   integrationTestCompile project(":geode-junit")
+  integrationTestCompile project(":geode-dunit")
   integrationTestCompile project(":geode-pulse")
   integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  integrationTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
 
 
   distributedTestCompile project(':geode-core')
   distributedTestCompile project(':extensions/session-testing-war')
   distributedTestCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
   distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
-  distributedTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
   // TODO refactor out common test framework
   distributedTestCompile sourceSets.integrationTest.output
 
@@ -140,17 +138,8 @@ dependencies {
   }
 }
 
-sourceSets {
-}
-
-test {
-  // test from the actual classpath not the gradle classpath
-  dependsOn installDist
-  // @TODO: this doesn't seem to be working need to get basename first.
-  classpath += files "$buildDir/install/${distributions.main.baseName}/lib/geode-dependencies.jar"
-}
-
 tasks.withType(Test){
+  dependsOn installDist
   environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }
 
