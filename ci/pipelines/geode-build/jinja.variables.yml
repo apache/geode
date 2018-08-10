@@ -1,3 +1,10 @@
-repository-info:
+repository:
   fork: rhoughton-pivot
   project: geode
+
+
+platforms:
+- name: linux
+  prefix: ""
+- name: windows
+  prefix: "Windows"

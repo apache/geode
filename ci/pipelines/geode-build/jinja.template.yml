@@ -3,11 +3,11 @@ groups:
   jobs:
   - Build
   - DistributedTest
-  - AcceptanceTest
-  - IntegrationTest
+{% for p in platforms %}
+  - {{p.prefix}}AcceptanceTest
+  - {{p.prefix}}IntegrationTest
+{% endfor %}
   - WindowsUnitTest
-  - WindowsIntegrationTest
-  - WindowsAcceptanceTest
   - WindowsGfshDistributedTest
   - UpgradeTest
   - UpdatePassingRef
@@ -36,7 +36,7 @@ resources:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-((!docker-image-name))
     tag: latest
     username: ((!docker-username))
 - name: geode
@@ -46,7 +46,7 @@ resources:
     depth: 1
     ignore_paths:
     - ci/*
-    uri: https://github.com/rhoughton-pivot/geode.git
+    uri: https://github.com/{{repository.fork}}/{{repository.project}}.git
 - name: geode-ci
   type: git
   source:
@@ -55,7 +55,7 @@ resources:
     paths:
     - ci/pipelines/geode-build/*
     - ci/scripts/*
-    uri: https://github.com/rhoughton-pivot/geode.git
+    uri: https://github.com/{{repository.fork}}/{{repository.project}}.git
 - name: geode-build-version
   type: semver
   source:
@@ -69,7 +69,7 @@ resource_types:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-concourse-metadata-resource
+    repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 - name: gcs-resource
@@ -98,7 +98,7 @@ jobs:
         type: docker-image
         source:
           password: ((!docker-password))
-          repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-((!docker-image-name))
+          repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-((!docker-image-name))
           tag: latest
           username: ((!docker-username))
       params:
@@ -178,13 +178,13 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "8"
               GEODE_BRANCH: jinja
-              GEODE_FORK: rhoughton-pivot
+              GEODE_FORK: {{repository.fork}}
               RAM: "12"
             run:
               path: geode-ci/ci/scripts/start_instance.sh
@@ -202,7 +202,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -219,7 +219,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -248,7 +248,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -269,7 +269,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
@@ -293,7 +293,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:
@@ -324,13 +324,13 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "96"
               GEODE_BRANCH: jinja
-              GEODE_FORK: rhoughton-pivot
+              GEODE_FORK: {{repository.fork}}
               RAM: "180"
             run:
               path: geode-ci/ci/scripts/start_instance.sh
@@ -348,7 +348,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -365,7 +365,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -394,7 +394,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -415,7 +415,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
@@ -439,7 +439,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:
@@ -470,13 +470,13 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "96"
               GEODE_BRANCH: jinja
-              GEODE_FORK: rhoughton-pivot
+              GEODE_FORK: {{repository.fork}}
               RAM: "90"
             run:
               path: geode-ci/ci/scripts/start_instance.sh
@@ -494,7 +494,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -511,7 +511,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -540,7 +540,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -561,7 +561,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
@@ -585,7 +585,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:
@@ -616,13 +616,13 @@ jobs:
               type: docker-image
               source:
                 password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                 tag: latest
                 username: ((!docker-username))
             params:
               CPUS: "96"
               GEODE_BRANCH: jinja
-              GEODE_FORK: rhoughton-pivot
+              GEODE_FORK: {{repository.fork}}
               RAM: "160"
             run:
               path: geode-ci/ci/scripts/start_instance.sh
@@ -640,7 +640,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         run:
@@ -657,7 +657,7 @@ jobs:
           type: docker-image
           source:
             password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+            repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
             tag: latest
             username: ((!docker-username))
         params:
@@ -686,7 +686,7 @@ jobs:
             type: docker-image
             source:
               password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+              repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
               tag: latest
               username: ((!docker-username))
           run:
@@ -707,7 +707,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               params:
@@ -731,7 +731,7 @@ jobs:
                 type: docker-image
                 source:
                   password: ((!docker-password))
-                  repository: gcr.io/apachegeode-ci/rhoughton-pivot-jinja-alpine-tools
+                  repository: gcr.io/apachegeode-ci/{{repository.fork}}-jinja-alpine-tools
                   tag: latest
                   username: ((!docker-username))
               run:

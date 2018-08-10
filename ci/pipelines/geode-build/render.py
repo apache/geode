@@ -9,6 +9,7 @@ if __name__ == "__main__":
     variables = yaml.load(variablesFromYml)
     variablesFromYml.close()
 
+    print(variables)
     file = open('generated-pipeline.yml', 'w')
     if variables is None:
         file.write(template.render())
