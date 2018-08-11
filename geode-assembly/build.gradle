@@ -94,6 +94,7 @@ dependencies {
   distributedTestCompile project(':geode-assembly/geode-assembly-test')
   distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
 
+  distributedTestRuntime 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   distributedTestRuntime (project(':extensions/geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
