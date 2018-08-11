@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.util;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -38,15 +39,22 @@ public class ClasspathScanLoadHelper {
         .enableAnnotationInfo().scan();
   }
 
-  public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface) {
+  public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
+      String... onlyFromPackages) {
     ClassInfoList classInfoList = scanResult.getClassesImplementing(implementedInterface.getName())
         .filter(ci -> !ci.isAbstract() && !ci.isInterface() && ci.isPublic());
+
+    classInfoList = classInfoList
+        .filter(ci -> Arrays.stream(onlyFromPackages).anyMatch(p -> ci.getName().startsWith(p)));
 
     return classInfoList.loadClasses().stream().collect(toSet());
   }
 
-  public Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation) {
+  public Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation, String... onlyFromPackages) {
     ClassInfoList classInfoList = scanResult.getClassesWithAnnotation(annotation.getName());
+
+    classInfoList = classInfoList
+        .filter(ci -> Arrays.stream(onlyFromPackages).anyMatch(p -> ci.getName().startsWith(p)));
 
     return classInfoList.loadClasses().stream().collect(toSet());
   }

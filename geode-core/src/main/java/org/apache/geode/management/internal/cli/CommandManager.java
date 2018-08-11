@@ -125,10 +125,15 @@ public class CommandManager {
     return userCommandPackages;
   }
 
-  private void loadUserCommands(ClasspathScanLoadHelper scanner) {
+  private void loadUserCommands(ClasspathScanLoadHelper scanner, Set<String> restrictedToPackages) {
+    if (restrictedToPackages.size() == 0) {
+      return;
+    }
+
     // Load commands found in all of the packages
     try {
-      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class);
+      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
+          restrictedToPackages.toArray(new String[] {}));
       for (Class<?> klass : foundClasses) {
         try {
           add((CommandMarker) klass.newInstance());
@@ -167,7 +172,8 @@ public class CommandManager {
   }
 
   private void loadCommands() {
-    Set<String> packagesToScan = getUserCommandPackages();
+    Set<String> userCommandPackages = getUserCommandPackages();
+    Set<String> packagesToScan = new HashSet<>(userCommandPackages);
     packagesToScan.add("org.apache.geode.management.internal.cli.converters");
     packagesToScan.add("org.springframework.shell.converters");
     packagesToScan.add(GfshCommand.class.getPackage().getName());
@@ -176,7 +182,7 @@ public class CommandManager {
     // Create one scanner to be used everywhere
     ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
 
-    loadUserCommands(scanner);
+    loadUserCommands(scanner, userCommandPackages);
     loadPluginCommands();
     loadGeodeCommands(scanner);
     loadConverters(scanner);
@@ -186,7 +192,8 @@ public class CommandManager {
     Set<Class<?>> foundClasses;
     // Converters
     try {
-      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class);
+      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
+          "org.apache.geode.management.internal.cli.converters");
       for (Class<?> klass : foundClasses) {
         try {
           Converter<?> object = (Converter<?>) klass.newInstance();
@@ -200,7 +207,8 @@ public class CommandManager {
       raiseExceptionIfEmpty(foundClasses, "Converters");
 
       // Spring shell's converters
-      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class);
+      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
+          "org.springframework.shell.converters");
       for (Class<?> klass : foundClasses) {
         if (!SHL_CONVERTERS_TOSKIP.contains(klass)) {
           try {
@@ -223,7 +231,9 @@ public class CommandManager {
     Set<Class<?>> foundClasses;
     try {
       // geode's commands
-      foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class);
+      foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
+          GfshCommand.class.getPackage().getName(),
+          InternalGfshCommand.class.getPackage().getName());
 
       for (Class<?> klass : foundClasses) {
         try {

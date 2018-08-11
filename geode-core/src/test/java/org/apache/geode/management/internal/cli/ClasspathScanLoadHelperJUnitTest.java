@@ -43,55 +43,33 @@ public class ClasspathScanLoadHelperJUnitTest {
 
   @Test
   public void testLoadAndGet() throws Exception {
-    Set<String> package1 = new HashSet<String>() {
+    Set<String> packages = new HashSet<String>() {
       {
         add(PACKAGE_NAME);
+        add(WRONG_PACKAGE_NAME);
       }
     };
-    ClasspathScanLoadHelper scanner1 = new ClasspathScanLoadHelper(package1);
-    Set<Class<?>> classLoaded = scanner1.scanPackagesForClassesImplementing(INTERFACE1);
+    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages);
+    Set<Class<?>> classLoaded =
+        scanner.scanPackagesForClassesImplementing(INTERFACE1, PACKAGE_NAME);
     assertEquals(2, classLoaded.size());
     assertTrue(classLoaded.contains(IMPL1));
     assertTrue(classLoaded.contains(IMPL2));
 
-    Set<String> package2 = new HashSet<String>() {
-      {
-        add(PACKAGE_NAME);
-      }
-    };
-    ClasspathScanLoadHelper scanner2 = new ClasspathScanLoadHelper(package2);
     classLoaded =
-        scanner2.scanPackagesForClassesImplementing(INTERFACE2);
+        scanner.scanPackagesForClassesImplementing(INTERFACE2, PACKAGE_NAME);
     assertEquals(1, classLoaded.size());
     assertTrue(classLoaded.contains(IMPL2));
 
-    Set<String> package3 = new HashSet<String>() {
-      {
-        add(WRONG_PACKAGE_NAME);
-      }
-    };
-    ClasspathScanLoadHelper scanner3 = new ClasspathScanLoadHelper(package3);
     classLoaded =
-        scanner3.scanPackagesForClassesImplementing(INTERFACE2);
+        scanner.scanPackagesForClassesImplementing(INTERFACE2, WRONG_PACKAGE_NAME);
     assertEquals(0, classLoaded.size());
 
-    Set<String> package4 = new HashSet<String>() {
-      {
-        add(PACKAGE_NAME);
-      }
-    };
-    ClasspathScanLoadHelper scanner4 = new ClasspathScanLoadHelper(package4);
     classLoaded =
-        scanner4.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE);
+        scanner.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE, PACKAGE_NAME);
     assertEquals(0, classLoaded.size());
 
-    Set<String> package5 = new HashSet<String>() {
-      {
-        add(WRONG_PACKAGE_NAME);
-      }
-    };
-    ClasspathScanLoadHelper scanner5 = new ClasspathScanLoadHelper(package5);
-    classLoaded = scanner5.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE);
+    classLoaded = scanner.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE, WRONG_PACKAGE_NAME);
     assertEquals(0, classLoaded.size());
   }
 }
