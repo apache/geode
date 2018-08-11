@@ -26,28 +26,26 @@ dependencies {
     runtime 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
 
     testCompile project(':geode-junit')
+    testCompile project(':geode-lucene/geode-lucene-test')
     testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
     testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
     integrationTestCompile project(":geode-dunit")
+    integrationTestCompile project(':geode-lucene/geode-lucene-test')
     integrationTestCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
     integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-    // TODO fix dependency on shared classes
-    integrationTestCompile sourceSets.test.output
 
 
+    distributedTestCompile project(':geode-lucene/geode-lucene-test')
     distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-    // TODO fix dependency on shared classes
-    distributedTestCompile sourceSets.test.output
 
 
     upgradeTestCompile project(":geode-dunit")
 
 
     performanceTestCompile project(":geode-junit")
-    // TODO fix dependency on shared classes
-    performanceTestCompile sourceSets.test.output
+    performanceTestCompile project(':geode-lucene/geode-lucene-test')
 }
 
 //The lucene integration tests don't have any issues that requiring forking
