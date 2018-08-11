@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.util;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Collection;
 import java.util.Set;
 
 import io.github.classgraph.ClassGraph;
@@ -28,21 +29,23 @@ import io.github.classgraph.ScanResult;
  * @since GemFire 7.0
  */
 public class ClasspathScanLoadHelper {
-  public static Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
-      String... packagesToScan) {
-    ScanResult scanResult = new ClassGraph().whitelistPackages(packagesToScan).enableClassInfo()
-        .enableAnnotationInfo().scan();
 
+  private final ScanResult scanResult;
+
+  public ClasspathScanLoadHelper(Collection<String> packagesToScan) {
+    scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
+        .enableClassInfo()
+        .enableAnnotationInfo().scan();
+  }
+
+  public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface) {
     ClassInfoList classInfoList = scanResult.getClassesImplementing(implementedInterface.getName())
         .filter(ci -> !ci.isAbstract() && !ci.isInterface() && ci.isPublic());
 
     return classInfoList.loadClasses().stream().collect(toSet());
   }
 
-  public static Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation,
-      String... packagesToScan) {
-    ScanResult scanResult = new ClassGraph().whitelistPackages(packagesToScan).enableClassInfo()
-        .enableAnnotationInfo().scan();
+  public Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation) {
     ClassInfoList classInfoList = scanResult.getClassesWithAnnotation(annotation.getName());
 
     return classInfoList.loadClasses().stream().collect(toSet());

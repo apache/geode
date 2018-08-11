@@ -180,19 +180,21 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
     // else, scan the classpath to find all the classes annotated with XSDRootElement
     else {
-      String[] packages = getPackagesToScan();
-      Set<Class<?>> scannedClasses =
-          ClasspathScanLoadHelper.scanClasspathForAnnotation(XSDRootElement.class, packages);
+      Set<String> packages = getPackagesToScan();
+      ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages);
+      Set<Class<?>> scannedClasses = scanner.scanClasspathForAnnotation(XSDRootElement.class);
       this.jaxbService = new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
     }
     jaxbService.validateWithLocalCacheXSD();
   }
 
-  protected String[] getPackagesToScan() {
+  protected Set<String> getPackagesToScan() {
+    Set<String> packages = new HashSet<>();
     String sysProperty = SystemPropertyHelper.getProperty(SystemPropertyHelper.PACKAGES_TO_SCAN);
-    String[] packages = {"org.apache.geode"};
     if (sysProperty != null) {
-      packages = sysProperty.split(",");
+      packages = Arrays.stream(sysProperty.split(",")).collect(Collectors.toSet());
+    } else {
+      packages.add("org.apache.geode");
     }
     return packages;
   }
