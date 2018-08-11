@@ -82,13 +82,11 @@ dependencies {
 
 
   uiTestCompile project(':geode-junit')
+  uiTestCompile project(':geode-core')
   uiTestCompile project(':geode-json')
   uiTestCompile project(':geode-pulse/geode-pulse-test-ui')
   uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
-  // TODO remove dependency on test sourceSet
-  uiTestCompile sourceSets.test.output
 
-  uiTestRuntime project(':geode-core')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
