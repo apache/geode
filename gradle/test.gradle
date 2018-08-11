@@ -124,6 +124,16 @@ subprojects {
     integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
 
     distributedTestCompile project(":geode-dunit")
+
+
+    // TODO - we shouldn't need to include xerces, but without it all dunits fail now. Hmm?
+    // And with it we get - javax.xml.parsers.ParserConfigurationException:
+    // Feature 'http://apache.org/xml/features/xinclude' is not recognized
+    // but the tests still pass
+    integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
+    distributedTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
+    upgradeTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
+
   }
 
   integrationTest {
