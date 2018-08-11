@@ -193,7 +193,7 @@ public class InternalConfigurationPersistenceServiceTest {
   public void getPackagesToScanWithoutSystemProperty() {
     String[] packages = service.getPackagesToScan();
     assertThat(packages).hasSize(1);
-    assertThat(packages[0]).isEqualTo("org.apache.geode");
+    assertThat(packages[0]).isEqualTo("");
   }
 
   @Test

@@ -2,7 +2,6 @@ activation
 antlr
 aopalliance
 byte-buddy
-classgraph
 classmate
 commons-beanutils
 commons-codec
@@ -14,6 +13,7 @@ commons-lang
 commons-logging
 commons-modeler
 commons-validator
+fast-classpath-scanner
 fastutil
 findbugs-annotations
 gfsh-dependencies.jar

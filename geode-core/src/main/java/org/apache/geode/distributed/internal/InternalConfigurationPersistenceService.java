@@ -190,7 +190,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
   protected String[] getPackagesToScan() {
     String sysProperty = SystemPropertyHelper.getProperty(SystemPropertyHelper.PACKAGES_TO_SCAN);
-    String[] packages = {"org.apache.geode"};
+    String[] packages = {""};
     if (sysProperty != null) {
       packages = sysProperty.split(",");
     }

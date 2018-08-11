@@ -16,11 +16,12 @@ package org.apache.geode.management.internal.cli.util;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.Set;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+
 
 /**
  * Utility class to scan class-path & load classes.
@@ -30,22 +31,26 @@ import io.github.classgraph.ScanResult;
 public class ClasspathScanLoadHelper {
   public static Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
       String... packagesToScan) {
-    ScanResult scanResult = new ClassGraph().whitelistPackages(packagesToScan).enableClassInfo()
-        .enableAnnotationInfo().scan();
+    Set<Class<?>> classesImplementing = new HashSet<>();
+    new FastClasspathScanner(packagesToScan)
+        .matchClassesImplementing(implementedInterface, classesImplementing::add).scan();
 
-    ClassInfoList classInfoList = scanResult.getClassesImplementing(implementedInterface.getName())
-        .filter(ci -> !ci.isAbstract() && !ci.isInterface() && ci.isPublic());
-
-    return classInfoList.loadClasses().stream().collect(toSet());
+    return classesImplementing.stream().filter(ClasspathScanLoadHelper::isInstantiable)
+        .collect(toSet());
   }
 
   public static Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation,
       String... packagesToScan) {
-    ScanResult scanResult = new ClassGraph().whitelistPackages(packagesToScan).enableClassInfo()
-        .enableAnnotationInfo().scan();
-    ClassInfoList classInfoList = scanResult.getClassesWithAnnotation(annotation.getName());
-
-    return classInfoList.loadClasses().stream().collect(toSet());
+    Set<Class<?>> classesWithAnnotation = new HashSet<>();
+    new FastClasspathScanner(packagesToScan)
+        .matchClassesWithAnnotation(annotation, classesWithAnnotation::add).scan();
+    return classesWithAnnotation;
   }
 
+  private static boolean isInstantiable(Class<?> klass) {
+    int modifiers = klass.getModifiers();
+
+    return !Modifier.isAbstract(modifiers) && !Modifier.isInterface(modifiers)
+        && Modifier.isPublic(modifiers);
+  }
 }

@@ -132,7 +132,8 @@ dependencies {
 
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
 
-  compile 'io.github.classgraph:classgraph:' + project.'classgraph.version'
+  // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
+  compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
 
   compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
