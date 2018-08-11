@@ -79,6 +79,7 @@ dependencies {
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
 
+  testCompile project(':geode-core')
 
   integrationTestCompile project(':geode-core')
   integrationTestCompile project(":geode-junit")

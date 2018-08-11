@@ -27,6 +27,7 @@ dependencies {
   }
   compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
 
+  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
 
   integrationTestCompile project(":geode-dunit")
   integrationTestCompile project(":extensions/geode-modules-test")
