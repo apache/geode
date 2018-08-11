@@ -182,7 +182,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     else {
       Set<String> packages = getPackagesToScan();
       ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages);
-      Set<Class<?>> scannedClasses = scanner.scanClasspathForAnnotation(XSDRootElement.class);
+      Set<Class<?>> scannedClasses = scanner.scanClasspathForAnnotation(XSDRootElement.class,
+          packages.toArray(new String[] {}));
       this.jaxbService = new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
     }
     jaxbService.validateWithLocalCacheXSD();
