@@ -1,5 +1,6 @@
 import yaml
 from jinja2 import Environment, FileSystemLoader
+import sys
 
 if __name__ == "__main__":
     env = Environment(loader=FileSystemLoader('.'))
@@ -9,10 +10,12 @@ if __name__ == "__main__":
     variables = yaml.load(variablesFromYml)
     variablesFromYml.close()
 
+    # Add repo variables from command line args
+    variables['repository']['fork'] = sys.argv[1]
+    variables['repository']['branch'] = sys.argv[2]
+
     print(variables)
+
     file = open('generated-pipeline.yml', 'w')
-    if variables is None:
-        file.write(template.render())
-    else:
-        file.write(template.render(variables))
+    file.write(template.render(variables))
     file.close()

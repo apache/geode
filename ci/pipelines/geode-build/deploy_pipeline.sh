@@ -33,17 +33,6 @@ for cmd in Jinja2 PyYAML; do
   fi
 done
 
-
-if ! [ -x "$(command -v spruce)" ]; then
-    echo "Spruce must be installed for pipeline deployment to work."
-    echo "For macos: 'brew tap starkandwayne/cf; brew install spruce'"
-    echo "For Ubuntu: follow the instructions at https://github.com/geofffranks/spruce"
-    echo ""
-    exit 1
-else
-    SPRUCE=$(which spruce || true)
-fi
-
 set -e
 
 if [ -z "${GEODE_BRANCH}" ]; then
@@ -65,38 +54,6 @@ chmod +x ${BIN_DIR}/fly
 
 PATH=${PATH}:${BIN_DIR}
 
-for i in ${SCRIPTDIR}/test-stubs/*.yml; do
-  X=$(basename $i)
-  echo "Merging ${i} into ${TMP_DIR}/${X}"
-  ${SPRUCE} merge --prune metadata \
-    <(echo "metadata:"; \
-      echo "  geode-build-branch: ${GEODE_BRANCH}"; \
-      echo "  geode-fork: ${GEODE_FORK}") \
-    ${SCRIPTDIR}/test-template.yml \
-    ${i} > ${TMP_DIR}/${X}
-done
-
-for i in ${SCRIPTDIR}/test-stubs/windows/*.yml; do
-  X=$(basename $i)
-  echo "Merging ${i} into ${TMP_DIR}/${X}"
-  ${SPRUCE} merge --prune metadata \
-    <(echo "metadata:"; \
-      echo "  geode-build-branch: ${GEODE_BRANCH}"; \
-      echo "  geode-fork: ${GEODE_FORK}") \
-    ${SCRIPTDIR}/windows-test-template.yml \
-    ${i} > ${TMP_DIR}/${X}
-done
-
-echo "Spruce branch-name into resources"
-${SPRUCE} merge --prune metadata \
-  ${SCRIPTDIR}/base.yml \
-  <(echo "metadata:"; \
-    echo "  geode-build-branch: ${GEODE_BRANCH}"; \
-    echo "  geode-fork: ${GEODE_FORK}"; \
-    echo "  ") \
-  ${TMP_DIR}/*.yml > ${TMP_DIR}/final.yml
-
-
 TARGET="geode"
 
 TEAM="staging"
@@ -112,12 +69,11 @@ else
   DOCKER_IMAGE_PREFIX="${PIPELINE_NAME}-"
 fi
 
-python3 render.py
+python3 render.py ${GEODE_FORK} ${GEODE_BRANCH}|| exit 1
 
-exit 1
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
 fly -t ${TARGET} set-pipeline --non-interactive \
   --pipeline ${PIPELINE_NAME} \
   --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-  --config ${TMP_DIR}/final.yml
+  --config generated_pipeline.yml
 
