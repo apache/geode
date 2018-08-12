@@ -95,8 +95,8 @@ public class CommandManager {
     }
   }
 
-  private void loadUserCommands() {
-    final Set<String> userCommandPackages = new HashSet<String>();
+  private Set<String> getUserCommandPackages() {
+    final Set<String> userCommandPackages = new HashSet<>();
 
     List<String> userCommandSources = new ArrayList<>();
     // Find by packages specified by the system property
@@ -122,24 +122,30 @@ public class CommandManager {
       Arrays.stream(source.split(",")).forEach(userCommandPackages::add);
     }
 
+    return userCommandPackages;
+  }
+
+  private void loadUserCommands(ClasspathScanLoadHelper scanner, Set<String> restrictedToPackages) {
+    if (restrictedToPackages.size() == 0) {
+      return;
+    }
+
     // Load commands found in all of the packages
-    for (String userCommandPackage : userCommandPackages) {
-      try {
-        Set<Class<?>> foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(
-            CommandMarker.class, userCommandPackage, GfshCommand.class.getPackage().getName());
-        for (Class<?> klass : foundClasses) {
-          try {
-            add((CommandMarker) klass.newInstance());
-          } catch (Exception e) {
-            logWrapper.warning("Could not load User Commands from: " + klass + " due to "
-                + e.getLocalizedMessage()); // continue
-          }
+    try {
+      Set<Class<?>> foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
+          restrictedToPackages.toArray(new String[] {}));
+      for (Class<?> klass : foundClasses) {
+        try {
+          add((CommandMarker) klass.newInstance());
+        } catch (Exception e) {
+          logWrapper.warning("Could not load User Commands from: " + klass + " due to "
+              + e.getLocalizedMessage()); // continue
         }
-        raiseExceptionIfEmpty(foundClasses, "User Command");
-      } catch (IllegalStateException e) {
-        logWrapper.warning(e.getMessage(), e);
-        throw e;
       }
+      raiseExceptionIfEmpty(foundClasses, "User Command");
+    } catch (IllegalStateException e) {
+      logWrapper.warning(e.getMessage(), e);
+      throw e;
     }
   }
 
@@ -166,18 +172,27 @@ public class CommandManager {
   }
 
   private void loadCommands() {
-    loadUserCommands();
+    Set<String> userCommandPackages = getUserCommandPackages();
+    Set<String> packagesToScan = new HashSet<>(userCommandPackages);
+    packagesToScan.add("org.apache.geode.management.internal.cli.converters");
+    packagesToScan.add("org.springframework.shell.converters");
+    packagesToScan.add(GfshCommand.class.getPackage().getName());
+    packagesToScan.add(InternalGfshCommand.class.getPackage().getName());
 
+    // Create one scanner to be used everywhere
+    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
+
+    loadUserCommands(scanner, userCommandPackages);
     loadPluginCommands();
-    loadGeodeCommands();
-    loadConverters();
+    loadGeodeCommands(scanner);
+    loadConverters(scanner);
   }
 
-  private void loadConverters() {
+  private void loadConverters(ClasspathScanLoadHelper scanner) {
     Set<Class<?>> foundClasses;
     // Converters
     try {
-      foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(Converter.class,
+      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
           "org.apache.geode.management.internal.cli.converters");
       for (Class<?> klass : foundClasses) {
         try {
@@ -192,7 +207,7 @@ public class CommandManager {
       raiseExceptionIfEmpty(foundClasses, "Converters");
 
       // Spring shell's converters
-      foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(Converter.class,
+      foundClasses = scanner.scanPackagesForClassesImplementing(Converter.class,
           "org.springframework.shell.converters");
       for (Class<?> klass : foundClasses) {
         if (!SHL_CONVERTERS_TOSKIP.contains(klass)) {
@@ -211,12 +226,12 @@ public class CommandManager {
     }
   }
 
-  private void loadGeodeCommands() {
+  private void loadGeodeCommands(ClasspathScanLoadHelper scanner) {
     // CommandMarkers
     Set<Class<?>> foundClasses;
     try {
       // geode's commands
-      foundClasses = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(CommandMarker.class,
+      foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
           GfshCommand.class.getPackage().getName(),
           InternalGfshCommand.class.getPackage().getName());
 
