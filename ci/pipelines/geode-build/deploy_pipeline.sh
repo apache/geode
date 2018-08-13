@@ -81,6 +81,6 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
   fly -t ${TARGET} set-pipeline --non-interactive \
     --pipeline ${PIPELINE_NAME} \
     --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-    --config generated_pipeline.yml
+    --config generated-pipeline.yml
 
 popd 2>&1 > /dev/null
