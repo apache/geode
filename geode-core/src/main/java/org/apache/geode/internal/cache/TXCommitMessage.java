@@ -1297,13 +1297,9 @@ public class TXCommitMessage extends PooledDistributionMessage
         entryOp.versionTag.replaceNullIDs(this.msg.getSender());
       }
       if (entryOp.op.isDestroy()) {
-        boolean invokeCallbacks =
-            isOpDestroyEvent(internalRegion, entryOp);
-        List<EntryEventImpl> whichPendingCallbacks =
-            invokeCallbacks ? pendingCallbacks : new ArrayList<EntryEventImpl>();
         this.internalRegion.txApplyDestroy(entryOp.key, this.msg.txIdent, this.txEvent,
             this.needsUnlock,
-            entryOp.op, getEventId(entryOp), entryOp.callbackArg, whichPendingCallbacks,
+            entryOp.op, getEventId(entryOp), entryOp.callbackArg, pendingCallbacks,
             entryOp.filterRoutingInfo, this.msg.bridgeContext, false /* origin remote */,
             null/* txEntryState */, entryOp.versionTag, entryOp.tailKey);
       } else if (entryOp.op.isInvalidate()) {
@@ -1318,14 +1314,6 @@ public class TXCommitMessage extends PooledDistributionMessage
             pendingCallbacks, entryOp.filterRoutingInfo, this.msg.bridgeContext,
             null/* txEntryState */, entryOp.versionTag, entryOp.tailKey);
       }
-    }
-
-    boolean isOpDestroyEvent(InternalRegion internalRegion, FarSideEntryOp entryOp) {
-      // Note that if the region is a proxy(empty) then we go ahead and add
-      // the destroy callback because we may need to forward the event to clients.
-      RegionEntry regionEntry = internalRegion.basicGetEntry(entryOp.key);
-      return entryOp.op.isDestroy() && (internalRegion.isProxy()
-          || (regionEntry != null && !Token.isRemoved(regionEntry.getValue())));
     }
 
     /**
@@ -1542,14 +1530,6 @@ public class TXCommitMessage extends PooledDistributionMessage
        * call to fromData
        */
       public FarSideEntryOp() {}
-
-      public void setOp(Operation op) {
-        this.op = op;
-      }
-
-      public void setKey(Object key) {
-        this.key = key;
-      }
 
       /**
        * Creates and returns a new instance of a tx entry op on the far side. The "toData" that this

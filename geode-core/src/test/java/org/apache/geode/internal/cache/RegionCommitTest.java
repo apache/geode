@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.TXCommitMessage.RegionCommit;
@@ -34,7 +33,6 @@ public class RegionCommitTest {
   private TXCommitMessage txCommitMessage;
   private RegionCommit regionCommit;
   private final Object key = new Object();
-  private RegionCommit.FarSideEntryOp entryOp;
 
   @Before
   public void setUp() {
@@ -46,9 +44,6 @@ public class RegionCommitTest {
     region = mock(LocalRegion.class);
     txCommitMessage = mock(TXCommitMessage.class);
     regionCommit = new RegionCommit(txCommitMessage);
-    entryOp = regionCommit.new FarSideEntryOp();
-    entryOp.setOp(Operation.DESTROY);
-    entryOp.setKey(key);
 
     when(dm.getCache()).thenReturn(cache);
     when(cache.getRegionByPath(path)).thenReturn(region);
@@ -58,51 +53,5 @@ public class RegionCommitTest {
   @Test
   public void getsRegionFromCacheFromDM() {
     assertThat(regionCommit.getRegionByPath(dm, path)).isEqualTo(region);
-  }
-
-  @Test
-  public void isOpDestroyedEventReturnsFalseIfNotDestroyOperation() {
-    entryOp.setOp(Operation.UPDATE);
-
-    assertThat(regionCommit.isOpDestroyEvent(mock(InternalRegion.class), entryOp)).isFalse();
-  }
-
-  @Test
-  public void isOpDestroyedEventReturnsFalseIfIsDestroyOperationAndRegionEntryToBeDestroyedIsNull() {
-    when(region.basicGetEntry(key)).thenReturn(null);
-
-    assertThat(regionCommit.isOpDestroyEvent(region, entryOp)).isFalse();
-  }
-
-  @Test
-  public void isOpDestroyedEventReturnsFalseIfIsDestroyOperationAndRegionEntryToBeDestroyedIsRemovedToken() {
-    RegionEntry regionEntry = mock(RegionEntry.class);
-
-    assertThat(regionCommit.isOpDestroyEvent(region, entryOp)).isFalse();
-  }
-
-  @Test
-  public void isOpDestroyedEventReturnsFalseIfIsDestroyOperationAndRegionEntryToBeDestroyedIsTombstone() {
-    RegionEntry regionEntry = mock(RegionEntry.class);
-    when(region.basicGetEntry(key)).thenReturn(regionEntry);
-    when(regionEntry.getValue()).thenReturn(Token.TOMBSTONE);
-
-    assertThat(regionCommit.isOpDestroyEvent(region, entryOp)).isFalse();
-  }
-
-  @Test
-  public void isOpDestroyedEventReturnsTrueIfDestroyEntryOnEmptyRegion() {
-    when(region.isProxy()).thenReturn(true);
-
-    assertThat(regionCommit.isOpDestroyEvent(region, entryOp)).isTrue();
-  }
-
-  @Test
-  public void isOpDestroyedEventReturnsTrueIfIsDestroyOperationAndRegionEntryIsNotAToken() {
-    RegionEntry regionEntry = mock(RegionEntry.class);
-    when(region.basicGetEntry(key)).thenReturn(regionEntry);
-    when(regionEntry.getValue()).thenReturn(new Token.NotAToken());
-
-    assertThat(regionCommit.isOpDestroyEvent(region, entryOp)).isTrue();
   }
 }
