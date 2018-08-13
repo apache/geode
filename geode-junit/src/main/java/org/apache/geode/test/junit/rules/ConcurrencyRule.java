@@ -51,7 +51,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
   public ConcurrencyRule() {
     toRun = new ArrayList<>();
     futures = new ArrayList<>();
-    timeout = Duration.ofSeconds(30);
+    timeout = Duration.ofSeconds(300);
     errorCollector = new ProtectedErrorCollector();
   }
 

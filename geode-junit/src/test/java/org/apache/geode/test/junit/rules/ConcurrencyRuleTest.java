@@ -198,47 +198,47 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterations(Execution execution) {
-    int iterations = 4;
+    int expectedIterations = 4;
     this.iterations.set(0);
 
-    concurrencyRule.repeatForIterations(callWithRetValAndRepeatCount, iterations);
+    concurrencyRule.repeatForIterations(callWithRetValAndRepeatCount, expectedIterations);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(iterations);
+    assertThat(this.iterations.get()).isEqualTo(expectedIterations);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectExceptionForEach_byExceptionClass(Execution execution) {
-    int iterations = 4;
+    int expectedIterations = 4;
     this.iterations.set(0);
 
     concurrencyRule.repeatForIterationsAndExpectExceptionForEach(callWithExceptionAndRepeatCount,
-        iterations, expectedException.getClass());
+        expectedIterations, expectedException.getClass());
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(iterations);
+    assertThat(this.iterations.get()).isEqualTo(expectedIterations);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectExceptionForEach_byExceptionInstance(
       Execution execution) {
-    int iterations = 4;
+    int expectedIteration = 4;
     this.iterations.set(0);
 
     concurrencyRule.repeatForIterationsAndExpectExceptionForEach(callWithExceptionAndRepeatCount,
-        iterations, expectedException);
+        expectedIteration, expectedException);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(iterations);
+    assertThat(this.iterations.get()).isEqualTo(expectedIteration);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectException_byExceptionType(Execution execution) {
-    int iterations = 4;
+    int expectedIteration = 4;
     this.iterations.set(0);
 
     concurrencyRule.repeatForIterationsAndExpectException(callWithOneExceptionAndRepeatCount,
-        iterations, expectedException.getClass());
+        expectedIteration, expectedException.getClass());
     execution.execute(concurrencyRule);
     assertThat(this.iterations.get()).isEqualTo(2);
   }
@@ -259,23 +259,23 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectValueForEach(Execution execution) {
-    int iterations = 4;
+    int ExpectedIterations = 4;
     this.iterations.set(0);
 
     concurrencyRule.repeatForIterationsAndExpectValueForEach(callWithRetValAndRepeatCount,
-        iterations, expectedRetVal);
+        ExpectedIterations, expectedRetVal);
     execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(iterations);
+    assertThat(this.iterations.get()).isEqualTo(ExpectedIterations);
   }
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectValueForEach_failsWithOneWrongValue(Execution execution) {
-    int iterations = 4;
+    int ExpectedIterations = 4;
     this.iterations.set(0);
 
     concurrencyRule.repeatForIterationsAndExpectValueForEach(
-        callWithRetValAndRepeatCountAndOneWrongValue, iterations, expectedRetVal);
+        callWithRetValAndRepeatCountAndOneWrongValue, ExpectedIterations, expectedRetVal);
     assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
     assertThat(this.iterations.get()).isEqualTo(stopIteration);
   }
@@ -528,7 +528,7 @@ public class ConcurrencyRuleTest {
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
-  public void timeoutValueIsRespected_inSeries(Execution execution) {
+  public void timeoutValueIsRespected(Execution execution) {
 
     Callable<Void> c1 = () -> {
       Thread.sleep(5000);
