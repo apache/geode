@@ -128,7 +128,8 @@ subprojects {
     distributedTestCompile project(":geode-dunit")
   }
 
-  integrationTest {
+  configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
+             upgradeTest]) {
     useJUnit {
       if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
@@ -143,60 +144,6 @@ subprojects {
     }
     outputs.upToDateWhen { false }
   }
-
-  distributedTest {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-
-    forkEvery 1
-    outputs.upToDateWhen { false }
-  }
-
-  performanceTest {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-
-    forkEvery 1
-  }
-
-  acceptanceTest {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-    }
-    forkEvery 1
-    outputs.upToDateWhen { false }
-  }
-
-  uiTest {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-    }
-    forkEvery 1
-    outputs.upToDateWhen { false }
-  }
-
-  upgradeTest {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-    }
-    forkEvery 1
-    outputs.upToDateWhen { false }
-  }
-
 
   if (project.hasProperty("forceTest")) {
     // All test facets already force rerun.  Only :test can be upToDate.
