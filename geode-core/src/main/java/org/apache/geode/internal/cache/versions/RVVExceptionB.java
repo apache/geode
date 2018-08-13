@@ -126,32 +126,26 @@ public class RVVExceptionB extends RVVException {
   }
 
   protected void writeReceived(DataOutput out) throws IOException {
-    int size = 0;
-    long[] deltas = null;
-    long last = this.previousVersion;
+    final int size = received == null ? 1 : received.length() + 1;
+
+    int deltaIndex = size - 1;
+    long[] deltas = new long[size];
+    long last = this.nextVersion;
 
     // TODO - it would be better just to serialize the longs[] in the BitSet
     // as is, rather than go through this delta encoding.
-    for (ReceivedVersionsIterator it = receivedVersionsIterator(); it.hasNext();) {
+    for (ReceivedVersionsReverseIterator it = receivedVersionsReverseIterator(); it.hasNext();) {
       Long version = it.next();
-      long delta = version.longValue() - last;
-      if (deltas == null) {
-        deltas = new long[this.received.length()];
-      }
-      deltas[size++] = delta;
+      long delta = last - version.longValue();
+      deltas[--deltaIndex] = delta;
       last = version.longValue();
     }
-    InternalDataSerializer.writeUnsignedVL(size, out);
+    deltas[0] = last - this.previousVersion;
+    InternalDataSerializer.writeUnsignedVL(size - 1, out);
 
-    for (int i = 0; i < size; i++) {
-      InternalDataSerializer.writeUnsignedVL(deltas[i], out);
+    for (long value : deltas) {
+      InternalDataSerializer.writeUnsignedVL(value, out);
     }
-
-    // Write each version in the exception as a delta from the previous version
-    // this will likely be smaller than the absolute value, so it will
-    // be more likely to fit into a byte or a short.
-    long delta = this.nextVersion - last;
-    InternalDataSerializer.writeUnsignedVL(delta, out);
   }
 
   @Override
@@ -177,17 +171,6 @@ public class RVVExceptionB extends RVVException {
     }
     return "e(n=" + this.nextVersion + " p=" + this.previousVersion + "; rb=[])";
   }
-
-  // @Override
-  // public int hashCode() {
-  // final int prime = 31;
-  // int result = 1;
-  // result = prime * result + (int) (nextVersion ^ (nextVersion >>> 32));
-  // result = prime * result
-  // + (int) (previousVersion ^ (previousVersion >>> 32));
-  // result = prime * result + ((this.received == null) ? 0 : this.received.hashCode());
-  // return result;
-  // }
 
   /**
    * For test purposes only. This isn't quite accurate, because I think two RVVs that have
@@ -225,10 +208,8 @@ public class RVVExceptionB extends RVVException {
     return (this.received == null) || (this.received.isEmpty());
   }
 
-  public ReceivedVersionsIterator receivedVersionsIterator() {
-    ReceivedVersionsIteratorB result = new ReceivedVersionsIteratorB();
-    result.initForForwardIteration();
-    return result;
+  public ReceivedVersionsReverseIterator receivedVersionsReverseIterator() {
+    return new ReceivedVersionsReverseIteratorB();
   }
 
   @Override
@@ -244,21 +225,19 @@ public class RVVExceptionB extends RVVException {
 
   }
 
-
-
   /** it's a shame that BitSet has no iterator */
-  protected class ReceivedVersionsIteratorB extends ReceivedVersionsIterator {
+  protected class ReceivedVersionsReverseIteratorB extends ReceivedVersionsReverseIterator {
     int index;
     int nextIndex;
 
-    void initForForwardIteration() {
+    ReceivedVersionsReverseIteratorB() {
       this.index = -1;
       if (received == null) {
-        this.nextIndex = -1;
+        nextIndex = -1;
       } else {
-        this.nextIndex = received.nextSetBit((int) (previousVersion - receivedBaseVersion + 1));
-        if (this.nextIndex + receivedBaseVersion >= nextVersion) {
-          this.nextIndex = -1;
+        this.nextIndex = received.previousSetBit((int) (nextVersion - receivedBaseVersion - 1));
+        if (nextIndex + receivedBaseVersion <= previousVersion) {
+          nextIndex = -1;
         }
       }
     }
@@ -272,7 +251,10 @@ public class RVVExceptionB extends RVVException {
       if (this.index < 0) {
         throw new NoSuchElementException("no more elements available");
       }
-      advance();
+      this.nextIndex = received.previousSetBit(this.index - 1);
+      if (nextIndex + receivedBaseVersion <= previousVersion) {
+        nextIndex = -1;
+      }
       return this.index + receivedBaseVersion;
     }
 
@@ -282,13 +264,5 @@ public class RVVExceptionB extends RVVException {
       }
       received.clear(this.index);
     }
-
-    private void advance() {
-      this.nextIndex = received.nextSetBit(this.index + 1);
-      if ((this.nextIndex + receivedBaseVersion) >= nextVersion) {
-        this.nextIndex = -1;
-      }
-    }
-
   }
 }
