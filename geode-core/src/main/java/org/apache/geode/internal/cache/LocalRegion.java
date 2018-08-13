@@ -6896,7 +6896,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       final boolean inTokenMode = needTokensForGII || needRIDestroyToken;
-      this.entries.txApplyDestroy(key, rmtOrigin, event, inTokenMode, needRIDestroyToken, op,
+      if (!needsPendingCallbacksForDestroy(key, txEntryState)) {
+        pendingCallbacks = new ArrayList<>();
+      }
+      getRegionMap().txApplyDestroy(key, rmtOrigin, event, inTokenMode, needRIDestroyToken, op,
           eventId, aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext,
           isOriginRemote, txEntryState, versionTag, tailKey);
     } finally {
@@ -6904,6 +6907,24 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         unlockRIReadLock();
       }
     }
+  }
+
+  boolean needsPendingCallbacksForDestroy(Object key, TXEntryState txEntryState) {
+    if (isProxy()) {
+      return true;
+    }
+    if (txEntryState != null) {
+      // nearside on tx host
+      // a destroy on destroyed or removed token, to local committed state, becomes a noop
+      // since nothing needed to be done locally.
+      // We don't want to actually do the destroy since we told the
+      // transaction listener that no destroy was done.
+      Object originalValue = txEntryState.getOriginalValue();
+      return originalValue != null && !Token.isRemoved(originalValue);
+    }
+    // farside without TXEntryState
+    RegionEntry regionEntry = basicGetEntry(key);
+    return regionEntry != null && !regionEntry.isDestroyedOrRemoved();
   }
 
   /**
