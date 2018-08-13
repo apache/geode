@@ -28,13 +28,15 @@ task combineReports(type: TestReport) {
 }
 
 gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect{ it.tasks.withType(Test) }.flatten()
+  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
+    it.tasks.withType(Test)
+  }.flatten()
 })
 
 
 subprojects {
   dependencies {
-    testCompile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+    testCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
       exclude module: 'junit-dep'
     }
     testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
@@ -128,7 +130,7 @@ subprojects {
 
   integrationTest {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
@@ -139,24 +141,24 @@ subprojects {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
   distributedTest {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
 
     forkEvery 1
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
   performanceTest {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
@@ -167,57 +169,57 @@ subprojects {
 
   acceptanceTest {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
     }
     forkEvery 1
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
   uiTest {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
     }
     forkEvery 1
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
   upgradeTest {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
     }
     forkEvery 1
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
 
-  task repeatTest(type:RepeatTest) {
-    times= Integer.parseInt(repeat)
+  task repeatTest(type: RepeatTest) {
+    times = Integer.parseInt(repeat)
 
     useJUnit {}
 
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
 
     classpath += project.sourceSets.distributedTest.runtimeClasspath
     testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
     classpath += project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
 
-    if(project.hasProperty("failOnNoMatchingTests")) {
+    if (project.hasProperty("failOnNoMatchingTests")) {
       filter {
         setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
       }
     }
   }
 
-  task flakyTest(type:Test) {
+  task flakyTest(type: Test) {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
       includeCategories += 'org.apache.geode.test.junit.categories.FlakyTest'
@@ -229,7 +231,7 @@ subprojects {
     }
 
     reports.junitXml.destination = file "$buildDir/test-reports-flaky"
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
   /*
@@ -241,7 +243,6 @@ subprojects {
    *
   */
 
-
   // By proving a file with an arbitrary list of test classes, we can select only those
   // tests to run. Activated using -Dcustom.tests=<file> customTest
   def customTestList = []
@@ -250,20 +251,20 @@ subprojects {
     new File(customTestFile).eachLine { customTestList << it }
   }
 
-  task customTest(type:Test) {
+  task customTest(type: Test) {
     include { x ->
-      (x.isDirectory() || customTestList.any { y -> x.getName().contains(y) } ) ? true : false
+      (x.isDirectory() || customTestList.any { y -> x.getName().contains(y) }) ? true : false
     }
 
     forkEvery 30
   }
 
   // apply common test configuration
-  gradle.taskGraph.whenReady( { graph ->
+  gradle.taskGraph.whenReady({ graph ->
     tasks.withType(Test).each { test ->
       check.dependsOn test
       test.configure {
-        onlyIf { ! Boolean.getBoolean('skip.tests') }
+        onlyIf { !Boolean.getBoolean('skip.tests') }
 
         def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
         test.workingDir = resultsDir
@@ -276,8 +277,8 @@ subprojects {
         maxHeapSize '768m'
 //        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea',"-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps"]
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
-        if(!testJVM.trim().isEmpty()) {
-          executable="${testJVM}/bin/java"
+        if (!testJVM.trim().isEmpty()) {
+          executable = "${testJVM}/bin/java"
         }
 
         systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
@@ -294,7 +295,7 @@ subprojects {
 
         // The distributed tests seem to need to use /tmp directly,
         // so exclude them from using the supplied temp directory.
-        if (! test.name.contains("distributed")) {
+        if (!test.name.contains("distributed")) {
           systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir')
         }
 
@@ -318,12 +319,14 @@ subprojects {
   })
 
   // Make precheckin task run all validation tests for checking in code.
-  task precheckin (dependsOn: [ build, acceptanceTest, integrationTest, distributedTest, upgradeTest ]) {
+  task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {
     description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
   }
 
   combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {it.finalizedBy combineReports}
+  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {
+    it.finalizedBy combineReports
+  }
 }
 
 classes.dependsOn subprojects.compileIntegrationTestJava
