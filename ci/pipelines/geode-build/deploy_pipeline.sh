@@ -69,11 +69,18 @@ else
   DOCKER_IMAGE_PREFIX="${PIPELINE_NAME}-"
 fi
 
-python3 render.py || exit 1
+pushd ${SCRIPTDIR} 2>&1 > /dev/null
+  python3 render.py || exit 1
 
-fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
-fly -t ${TARGET} set-pipeline --non-interactive \
-  --pipeline ${PIPELINE_NAME} \
-  --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-  --config generated_pipeline.yml
+  fly login -t ${TARGET} \
+            -n ${TEAM} \
+            -c https://concourse.apachegeode-ci.info \
+            -u ${CONCOURSE_USERNAME} \
+            -p ${CONCOURSE_PASSWORD}
 
+  fly -t ${TARGET} set-pipeline --non-interactive \
+    --pipeline ${PIPELINE_NAME} \
+    --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
+    --config generated_pipeline.yml
+
+popd 2>&1 > /dev/null
