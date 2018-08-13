@@ -13,31 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM openjdk:8
+FROM openjdk:8-jdk-alpine
 ENTRYPOINT []
 
-ARG CHROME_DRIVER_VERSION=2.35
 
-WORKDIR /tmp/work
-RUN  apt-get update \
-  && apt-get install -y --no-install-recommends \
-     apt-transport-https \
-     lsb-release \
-  && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
-  && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends \
-    aptitude \
-    ca-certificates \
-    google-chrome-stable \
-  && wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-  && rm -rf /opt/selenium/chromedriver \
-  && unzip /tmp/chromedriver_linux64.zip -d /opt/selenium \
-  && rm /tmp/chromedriver_linux64.zip \
-  && mv /opt/selenium/chromedriver /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
-  && chmod 755 /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
-  && ln -fs /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION /usr/bin/chromedriver \
-  && useradd --shell /bin/bash -u 93043 -o -c "" -m geode \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* \
-  && rm -rf /tmp/work
+RUN apk --no-cache add \
+      bash \
+      shadow \
+  && useradd --shell /bin/bash -u 93043 -o -c "" -m geode
+WORKDIR /home/geode
