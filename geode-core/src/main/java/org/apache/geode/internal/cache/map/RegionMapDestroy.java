@@ -484,7 +484,7 @@ public class RegionMapDestroy {
     if (!hasVersionStamp(entry)) {
       removePhase2(entry);
     } else if (isRemoteDestroyOfTombstone(entry)) {
-      rescheduleTombstoneUsingEntryTag(entry); // TODO coverage: needs removeRecoveredEntry=true
+      rescheduleTombstoneUsingEntryTag(entry);
     }
     lruEntryDestroy(entry);
     opCompleted = true;
@@ -495,9 +495,9 @@ public class RegionMapDestroy {
       return false;
     }
     if (!isOriginRemote()) {
-      return false; // TODO coverage
+      return false;
     }
-    return true; // TODO coverage
+    return true;
   }
 
   private void makeTombstoneOrRemove(RegionEntry entry) {
@@ -635,7 +635,6 @@ public class RegionMapDestroy {
   }
 
   private void destroyExistingOrAddDestroyedEntryWhileInIndexUpdateMode() {
-    // removeRecoveredEntry should be false in this case
     RegionEntry newEntry = createNewRegionEntry();
     synchronized (newEntry) {
       if (destroyExistingOrAddNew(newEntry)) {

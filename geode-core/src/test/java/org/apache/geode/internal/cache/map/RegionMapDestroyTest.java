@@ -502,6 +502,51 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
+    verify(owner, never()).rescheduleTombstone(any(), any());
+    verify(evictableEntry, never()).removePhase2();
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyTombstoneWithRemoveRecoveredEntryAndVersionStampCallsRescheduleTombstone()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(evictableEntry.isTombstone()).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    event.setOriginRemote(true);
+    removeRecoveredEntry = true;
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(owner, times(1)).rescheduleTombstone(eq(evictableEntry), any());
+    verify(evictableEntry, never()).removePhase2();
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyTombstoneWithLocalOriginAndRemoveRecoveredEntryAndVersionStampDoesNotCallRescheduleTombstone()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(evictableEntry.isTombstone()).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    removeRecoveredEntry = true;
+    event.setOriginRemote(false);
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(owner, never()).rescheduleTombstone(eq(evictableEntry), any());
     verify(evictableEntry, never()).removePhase2();
     verifyNoDestroyInvocationsOnRegion();
   }
