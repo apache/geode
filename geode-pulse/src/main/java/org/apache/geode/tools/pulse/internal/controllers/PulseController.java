@@ -319,27 +319,7 @@ public class PulseController {
       logger.debug(e);
     }
 
-    ObjectNode queryResult = mapper.createObjectNode();
-    try {
-
-      if (StringUtils.isNotBlank(query)) {
-        // get cluster object
-        Cluster cluster = Repository.get().getCluster();
-        String userName = request.getUserPrincipal().getName();
-
-        // Call execute query method
-        queryResult = cluster.executeQuery(query, members, limit);
-
-        // Add query in history if query is executed successfully
-        if (!queryResult.has("error")) {
-          // Add html escaped query to history
-          String escapedQuery = StringEscapeUtils.escapeHtml(query);
-          cluster.addQueryInHistory(escapedQuery, userName);
-        }
-      }
-    } catch (Exception e) {
-      logger.debug("Exception Occurred : ", e);
-    }
+    ObjectNode queryResult = executeQuery(request, query, members, limit);
 
     response.getOutputStream().write(queryResult.toString().getBytes());
   }
@@ -406,27 +386,7 @@ public class PulseController {
       logger.debug(e);
     }
 
-    ObjectNode queryResult = mapper.createObjectNode();
-    try {
-
-      if (StringUtils.isNotBlank(query)) {
-        // get cluster object
-        Cluster cluster = Repository.get().getCluster();
-        String userName = request.getUserPrincipal().getName();
-
-        // Call execute query method
-        queryResult = cluster.executeQuery(query, members, limit);
-
-        // Add query in history if query is executed successfully
-        if (!queryResult.has("error")) {
-          // Add html escaped query to history
-          String escapedQuery = StringEscapeUtils.escapeHtml(query);
-          cluster.addQueryInHistory(escapedQuery, userName);
-        }
-      }
-    } catch (Exception e) {
-      logger.debug("Exception Occurred : ", e);
-    }
+    ObjectNode queryResult = executeQuery(request, query, members, limit);
 
     response.setContentType("application/json");
     response.setHeader("Content-Disposition", "attachment; filename=results.json");
@@ -473,5 +433,28 @@ public class PulseController {
     } catch (Exception e) {
       logger.debug("Exception Occurred : ", e);
     }
+  }
+
+  private ObjectNode executeQuery(HttpServletRequest request, String query, String members,
+      int limit) {
+    ObjectNode queryResult = mapper.createObjectNode();
+    try {
+
+      if (StringUtils.isNotBlank(query)) {
+        // get cluster object
+        Cluster cluster = Repository.get().getCluster();
+        String userName = request.getUserPrincipal().getName();
+
+        // Add html escaped query to history
+        String escapedQuery = StringEscapeUtils.escapeHtml(query);
+        cluster.addQueryInHistory(escapedQuery, userName);
+
+        // Call execute query method
+        queryResult = cluster.executeQuery(query, members, limit);
+      }
+    } catch (Exception e) {
+      logger.debug("Exception Occurred : ", e);
+    }
+    return queryResult;
   }
 }
