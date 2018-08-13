@@ -581,6 +581,42 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingEntryInTokenModeInhibitsCacheListenerNotification() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    givenInTokenMode();
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.inhibitCacheListenerNotification()).isTrue();
+  }
+
+  @Test
+  public void destroyOfExistingEntryInTokenModeDuringRegisterInterestDoesNotInhibitCacheListenerNotification() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    givenInTokenMode();
+    duringRI = true;
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.inhibitCacheListenerNotification()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingEntryDoesNotInhibitCacheListenerNotification() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.inhibitCacheListenerNotification()).isFalse();
+  }
+
+  @Test
   public void destroyOfExistingEntryInTokenModeCallsUpdateSizeOnRemove() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();

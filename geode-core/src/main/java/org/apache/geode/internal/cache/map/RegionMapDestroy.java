@@ -943,9 +943,13 @@ public class RegionMapDestroy {
   }
 
   private void inhibitCacheListenerNotification() {
-    if (inTokenMode && !duringRI) {
-      event.inhibitCacheListenerNotification(true);
+    if (!inTokenMode) {
+      return;
     }
+    if (duringRI) {
+      return;
+    }
+    event.inhibitCacheListenerNotification(true);
   }
 
   // methods that call focusedRegionMap
