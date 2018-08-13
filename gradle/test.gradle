@@ -199,6 +199,7 @@ subprojects {
 
 
   if (project.hasProperty("forceTest")) {
+    // All test facets already force rerun.  Only :test can be upToDate.
     test {
       outputs.upToDateWhen { false }
     }
