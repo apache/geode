@@ -198,6 +198,12 @@ subprojects {
   }
 
 
+  if (project.hasProperty("forceTest")) {
+    test {
+      outputs.upToDateWhen { false }
+    }
+  }
+
   task repeatTest(type: RepeatTest) {
     times = Integer.parseInt(repeat)
 
