@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.FunctionResult.StatusState;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 /**
  * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event

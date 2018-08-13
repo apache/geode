@@ -34,6 +34,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.test.junit.categories.GfshTest;
 

@@ -19,6 +19,7 @@ import javax.naming.NamingException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class DestroyJndiBindingFunction extends CliFunction<String> {

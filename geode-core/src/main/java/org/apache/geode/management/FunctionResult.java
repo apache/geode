@@ -12,7 +12,7 @@ import java.util.List;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class FunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
   protected String memberIdOrName;

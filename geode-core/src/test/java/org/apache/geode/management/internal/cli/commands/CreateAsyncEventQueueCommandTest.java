@@ -47,8 +47,8 @@ import org.junit.Test;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.FunctionResult.StatusState;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 

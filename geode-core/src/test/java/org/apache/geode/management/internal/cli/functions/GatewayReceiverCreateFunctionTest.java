@@ -30,6 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class GatewayReceiverCreateFunctionTest {
 

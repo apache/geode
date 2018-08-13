@@ -17,7 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.management.cli.CliFunction;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class DescribeMappingFunction extends CliFunction<String> {
 

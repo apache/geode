@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.

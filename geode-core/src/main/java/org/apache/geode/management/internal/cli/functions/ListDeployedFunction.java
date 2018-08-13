@@ -28,6 +28,7 @@ import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class ListDeployedFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();

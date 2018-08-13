@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.functions;
+package org.apache.geode.management.cli;
 
 import java.io.DataInput;
 import java.io.DataOutput;

@@ -26,6 +26,7 @@ import javax.naming.Context;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class ListJndiBindingFunction extends CliFunction<Void> {
 

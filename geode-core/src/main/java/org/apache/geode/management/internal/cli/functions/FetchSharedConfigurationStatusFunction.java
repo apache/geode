@@ -21,6 +21,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 
 public class FetchSharedConfigurationStatusFunction implements InternalFunction {

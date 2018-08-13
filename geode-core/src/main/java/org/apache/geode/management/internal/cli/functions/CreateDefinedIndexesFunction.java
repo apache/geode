@@ -29,6 +29,7 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class CreateDefinedIndexesFunction implements InternalFunction<Set<RegionConfig.Index>> {

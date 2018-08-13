@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;

@@ -47,6 +47,7 @@ import org.apache.geode.cache.query.internal.index.CompactMapRangeIndex;
 import org.apache.geode.cache.query.internal.index.HashIndex;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.test.fake.Fakes;
 
 public class CreateDefinedIndexesFunctionTest {

@@ -26,6 +26,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.FunctionResult.StatusState;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.CliUtil;
 
 public class DestroyGatewayReceiverFunction extends CliFunction {

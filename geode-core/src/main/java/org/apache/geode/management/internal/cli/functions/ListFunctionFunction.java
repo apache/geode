@@ -31,6 +31,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class ListFunctionFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
