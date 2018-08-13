@@ -48,8 +48,8 @@ RUN chmod +x /usr/local/bin/tini \
     aptitude \
     ca-certificates \
     cgroupfs-mount \
-    docker-compose \
     docker-ce \
+    docker-compose \
     golang \
     google-chrome-stable \
     google-cloud-sdk \
@@ -57,6 +57,7 @@ RUN chmod +x /usr/local/bin/tini \
     jq \
     python3 \
     python3-pip \
+    python3-setuptools \
     unzip \
     vim \
   && pip3 install Jinja2 PyYAML \
