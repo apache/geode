@@ -1,6 +1,6 @@
 import yaml
 from jinja2 import Environment, FileSystemLoader
-import sys
+import os
 
 if __name__ == "__main__":
     env = Environment(loader=FileSystemLoader('.'))
@@ -10,9 +10,8 @@ if __name__ == "__main__":
     variables = yaml.load(variablesFromYml)
     variablesFromYml.close()
 
-    # Add repo variables from command line args
-    variables['repository']['fork'] = sys.argv[1]
-    variables['repository']['branch'] = sys.argv[2]
+    variables['repository']['branch'] = os.environ['GEODE_BRANCH']
+    variables['repository']['fork'] = os.environ['GEODE_FORK']
 
     print(variables)
 

@@ -69,7 +69,7 @@ else
   DOCKER_IMAGE_PREFIX="${PIPELINE_NAME}-"
 fi
 
-python3 render.py ${GEODE_FORK} ${GEODE_BRANCH}|| exit 1
+python3 render.py || exit 1
 
 fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
 fly -t ${TARGET} set-pipeline --non-interactive \
