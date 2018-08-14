@@ -462,6 +462,11 @@ public class RegionMapDestroy {
         focusedRegionMap.processVersionTag(newRegionEntry, event);
         if (doPart3) {
           internalRegion.generateAndSetVersionTag(event, newRegionEntry);
+          if (!event.getVersionTag().isGatewayTag()) {
+            // invoke listeners and inform clients
+            internalRegion.basicDestroyPart2(regionEntry, event, inTokenMode,
+                false, duringRI, true);
+          }
         }
         try {
           internalRegion.recordEvent(event);
@@ -551,9 +556,6 @@ public class RegionMapDestroy {
         if (regionEntry == null) {
           regionEntry = newRegionEntry;
         }
-        // invoke listeners and inform clients
-        internalRegion.basicDestroyPart2(regionEntry, event, inTokenMode,
-            false, duringRI, true);
         doPart3 = true;
       }
     }
