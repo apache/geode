@@ -20,7 +20,7 @@
 set -e
 
 SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a symlink
   SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
   SOURCE="$(readlink "$SOURCE")"
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
@@ -36,13 +36,13 @@ TESTS_FLAG=""
 
 echo "${NUM_CHANGED_FILES} changed tests"
 
-if [  ${NUM_CHANGED_FILES} -eq 0 ]
+if [[  "${NUM_CHANGED_FILES}" -eq 0 ]]
   then
     echo "No changed test files, nothing to test."
     exit 0
 fi
 
-if [ ${NUM_CHANGED_FILES} -gt 25 ]
+if [[ "${NUM_CHANGED_FILES}" -gt 25 ]]
   then
     echo "${NUM_CHANGED_FILES} is many changed tests to stress test. Allowing this job to pass without stress testing."
     exit 0
