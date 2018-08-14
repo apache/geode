@@ -15,19 +15,15 @@
  * limitations under the License.
  */
 
+
 dependencies {
-    compileOnly project(':geode-core')
-    compile project(':geode-protobuf-messages')
-    compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
+  compileOnly project(':geode-protobuf')
+  compileOnly project(':geode-core')
 
+  compile project(':geode-common')
+  compile 'junit:junit:' + project.'junit.version'
+  compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
 
-    testCompile project(':geode-core')
-    testCompile project(':geode-junit')
-    testCompile project(":geode-protobuf/geode-protobuf-test")
-
-
-    integrationTestCompile project(":geode-dunit")
-    integrationTestCompile project(":geode-protobuf/geode-protobuf-test")
-
-    distributedTestCompile project(":geode-protobuf/geode-protobuf-test")
 }
+
+disableMavenPublishing()
