@@ -19,13 +19,11 @@ package org.apache.geode.test.junit.rules;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.awaitility.Duration.FIVE_SECONDS;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,6 +48,11 @@ public class ConcurrencyRuleTest {
   private final Integer expectedRetVal = Integer.valueOf(72);
   private final Throwable expectedException =
       new IllegalStateException("Oh boy, here I go testin' again");
+  private final IllegalStateException expectedExceptionWithCause =
+      new IllegalStateException("Oh boy, here I go testin' again");
+  {
+    expectedExceptionWithCause.initCause(new NullPointerException());
+  }
 
   private final Callable<Integer> callWithRetVal = () -> {
     invoked.set(Boolean.TRUE);
@@ -91,30 +94,43 @@ public class ConcurrencyRuleTest {
   }
 
   @Test
+  public void testChaining() {
+    concurrencyRule.add(() -> {
+      return 2;
+    }).repeatForIterations(3).expectValue(2);
+    concurrencyRule.executeInSeries();
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runAndExpectExceptionType(Execution execution) {
+    concurrencyRule.add(() -> {
+      throw new NullPointerException();
+    }).expectExceptionType(NullPointerException.class);
+    execution.execute(concurrencyRule);
+  }
+
+  @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectException(Execution execution) {
-    concurrencyRule.runAndExpectException(() -> {
-      throw new NullPointerException();
-    }, NullPointerException.class);
-    execution.execute(concurrencyRule);
-  }
-
-  @Test
-  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
-  public void runAndExpectException_throwableClass(Execution execution) {
-    concurrencyRule.runAndExpectException(() -> {
-      throw new NullPointerException("my custom message");
-    }, NullPointerException.class);
-    execution.execute(concurrencyRule);
-  }
-
-  @Test
-  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
-  public void runAndExpectException_throwableInstance(Execution execution) {
     Throwable expected = new NullPointerException("my custom message");
-    concurrencyRule.runAndExpectException(() -> {
+    concurrencyRule.add(() -> {
       throw new NullPointerException("my custom message");
-    }, expected);
+    }).expectException(expected);
+    execution.execute(concurrencyRule);
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runAndExpectException_throwableInstanceWithCauses(Execution execution) {
+    Callable<?> callable = () -> {
+      NullPointerException cause = new NullPointerException();
+      IllegalStateException toThrow = new IllegalStateException("Oh boy, here I go testin' again");
+      toThrow.initCause(cause);
+      throw toThrow;
+    };
+
+    concurrencyRule.add(callable).expectException(expectedExceptionWithCause);
     execution.execute(concurrencyRule);
   }
 
@@ -122,17 +138,11 @@ public class ConcurrencyRuleTest {
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectException_throwableInstanceWithCauses_failsIfCauseDoesNotMatch(
       Execution execution) {
-    Throwable expectedDeepestCause = new RuntimeException("this is the first cause");
-    Throwable expectedMiddleCause =
-        new NullPointerException("this is the middle error").initCause(expectedDeepestCause);
-    Throwable expected = new IllegalStateException("This is the expected outer error")
-        .initCause(expectedMiddleCause);
-
     Callable<Void> callable = () -> {
-      throw new IllegalStateException("This is the expected outer error");
+      throw new IllegalStateException("Oh boy, here I go testin' again");
     };
 
-    concurrencyRule.runAndExpectException(callable, expected);
+    concurrencyRule.add(callable).expectException(expectedExceptionWithCause);
 
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class)
@@ -142,9 +152,11 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectException_throwableInstance_wrongMessage_fails(Execution execution) {
-    concurrencyRule.runAndExpectException(() -> {
+    Callable<?> callable = () -> {
       throw new NullPointerException("foo");
-    }, new NullPointerException("bar"));
+    };
+
+    concurrencyRule.add(callable).expectException(new NullPointerException("bar"));
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class);
   }
@@ -152,9 +164,11 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectException_throwableInstance_wrongClass_fails(Execution execution) {
-    concurrencyRule.runAndExpectException(() -> {
+    Callable<?> callable = () -> {
       throw new IllegalArgumentException("foo");
-    }, new NullPointerException("foo"));
+    };
+
+    concurrencyRule.add(callable).expectException(new NullPointerException("foo"));
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class);
   }
@@ -162,7 +176,7 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectNoException_withNoReturn(Execution execution) {
-    concurrencyRule.runAndExpectNoException(ConcurrencyRule.toCallable(() -> invoked.set(true)));
+    concurrencyRule.add(ConcurrencyRule.toCallable(() -> invoked.set(true)));
     execution.execute(concurrencyRule);
     assertThat(invoked.get()).isTrue();
   }
@@ -170,7 +184,7 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectNoException_withReturn(Execution execution) {
-    concurrencyRule.runAndExpectNoException(() -> {
+    concurrencyRule.add(() -> {
       invoked.set(true);
       return true;
     });
@@ -181,7 +195,7 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectValue(Execution execution) {
-    concurrencyRule.runAndExpectValue(callWithRetVal, expectedRetVal);
+    concurrencyRule.add(callWithRetVal).expectValue(expectedRetVal);
     execution.execute(concurrencyRule);
     assertThat(invoked.get()).isTrue();
   }
@@ -189,7 +203,7 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectValue_failsForWrongValue(Execution execution) {
-    concurrencyRule.runAndExpectValue(callWithRetVal, Integer.valueOf(3));
+    concurrencyRule.add(callWithRetVal).expectValue(Integer.valueOf(3));
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class);
     assertThat(invoked.get()).isTrue();
@@ -201,7 +215,7 @@ public class ConcurrencyRuleTest {
     int expectedIterations = 4;
     this.iterations.set(0);
 
-    concurrencyRule.repeatForIterations(callWithRetValAndRepeatCount, expectedIterations);
+    concurrencyRule.add(callWithRetValAndRepeatCount).repeatForIterations(4);
     execution.execute(concurrencyRule);
     assertThat(this.iterations.get()).isEqualTo(expectedIterations);
   }
@@ -212,8 +226,8 @@ public class ConcurrencyRuleTest {
     int expectedIterations = 4;
     this.iterations.set(0);
 
-    concurrencyRule.repeatForIterationsAndExpectExceptionForEach(callWithExceptionAndRepeatCount,
-        expectedIterations, expectedException.getClass());
+    concurrencyRule.add(callWithExceptionAndRepeatCount)
+        .expectExceptionType(expectedException.getClass()).repeatForIterations(4);
     execution.execute(concurrencyRule);
     assertThat(this.iterations.get()).isEqualTo(expectedIterations);
   }
@@ -225,35 +239,10 @@ public class ConcurrencyRuleTest {
     int expectedIteration = 4;
     this.iterations.set(0);
 
-    concurrencyRule.repeatForIterationsAndExpectExceptionForEach(callWithExceptionAndRepeatCount,
-        expectedIteration, expectedException);
+    concurrencyRule.add(callWithExceptionAndRepeatCount).expectException(expectedException)
+        .repeatForIterations(4);
     execution.execute(concurrencyRule);
     assertThat(this.iterations.get()).isEqualTo(expectedIteration);
-  }
-
-  @Test
-  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
-  public void repeatForIterationsAndExpectException_byExceptionType(Execution execution) {
-    int expectedIteration = 4;
-    this.iterations.set(0);
-
-    concurrencyRule.repeatForIterationsAndExpectException(callWithOneExceptionAndRepeatCount,
-        expectedIteration, expectedException.getClass());
-    execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(2);
-  }
-
-
-  @Test
-  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
-  public void repeatForIterationsAndExpectException_byExceptionInstance(Execution execution) {
-    int iterations = 4;
-    this.iterations.set(0);
-
-    concurrencyRule.repeatForIterationsAndExpectException(callWithOneExceptionAndRepeatCount,
-        iterations, expectedException);
-    execution.execute(concurrencyRule);
-    assertThat(this.iterations.get()).isEqualTo(2);
   }
 
   @Test
@@ -262,8 +251,8 @@ public class ConcurrencyRuleTest {
     int ExpectedIterations = 4;
     this.iterations.set(0);
 
-    concurrencyRule.repeatForIterationsAndExpectValueForEach(callWithRetValAndRepeatCount,
-        ExpectedIterations, expectedRetVal);
+    concurrencyRule.add(callWithRetValAndRepeatCount).repeatForIterations(4)
+        .expectValue(expectedRetVal);
     execution.execute(concurrencyRule);
     assertThat(this.iterations.get()).isEqualTo(ExpectedIterations);
   }
@@ -271,11 +260,11 @@ public class ConcurrencyRuleTest {
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void repeatForIterationsAndExpectValueForEach_failsWithOneWrongValue(Execution execution) {
-    int ExpectedIterations = 4;
+    int expectedIterations = 4;
     this.iterations.set(0);
 
-    concurrencyRule.repeatForIterationsAndExpectValueForEach(
-        callWithRetValAndRepeatCountAndOneWrongValue, ExpectedIterations, expectedRetVal);
+    concurrencyRule.add(callWithRetValAndRepeatCountAndOneWrongValue).expectValue(expectedRetVal)
+        .repeatForIterations(expectedIterations);
     assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
     assertThat(this.iterations.get()).isEqualTo(stopIteration);
   }
@@ -286,8 +275,8 @@ public class ConcurrencyRuleTest {
     Duration duration = Duration.ofMillis(200);
     this.iterations.set(0);
 
-    concurrencyRule.repeatForDuration(callWithRetValAndRepeatCount, duration);
-    Awaitility.await("Execution did not respect given duration").atMost(2, TimeUnit.SECONDS)
+    concurrencyRule.add(callWithRetValAndRepeatCount).repeatForDuration(duration);
+    Awaitility.await("Execution did not respect given duration").atMost(2, TimeUnit.MINUTES)
         .until(() -> {
           execution.execute(concurrencyRule);
           return true;
@@ -301,13 +290,13 @@ public class ConcurrencyRuleTest {
     final AtomicBoolean lock1 = new AtomicBoolean();
     final AtomicBoolean lock2 = new AtomicBoolean();
 
-    concurrencyRule.runAndExpectNoException(() -> {
+    concurrencyRule.add(() -> {
       Awaitility.await().until(() -> lock2.equals(Boolean.TRUE));
       lock1.set(true);
       return null;
     });
 
-    concurrencyRule.runAndExpectNoException(() -> {
+    concurrencyRule.add(() -> {
       Awaitility.await().until(() -> lock1.equals(Boolean.TRUE));
       lock2.set(true);
       return null;
@@ -350,12 +339,12 @@ public class ConcurrencyRuleTest {
     };
 
     // submit some threads and check they did what they're supposed to
-    concurrencyRule.runAndExpectNoException(c1);
-    concurrencyRule.runAndExpectNoException(c2);
-    concurrencyRule.runAndExpectException(c3, IllegalArgumentException.class);
-    concurrencyRule.executeInParallel();
+    concurrencyRule.add(c1);
+    concurrencyRule.add(c2);
+    concurrencyRule.add(c3).expectExceptionType(IllegalArgumentException.class);
+    Throwable thrown = catchThrowable(() -> concurrencyRule.executeInParallel());
 
-    assertThat(concurrencyRule.getErrors().get(0)).isInstanceOf(AssertionError.class);
+    assertThat(thrown).isInstanceOf(AssertionError.class);
     assertThat(b1).isTrue();
     assertThat(b2).isTrue();
     assertThat(b3).isTrue();
@@ -371,11 +360,10 @@ public class ConcurrencyRuleTest {
     concurrencyRule.clear();
 
     // submit some more threads and check that ONLY those were executed
-    concurrencyRule.runAndExpectNoException(c3);
-    concurrencyRule.runAndExpectNoException(c4);
-    concurrencyRule.executeInParallel();
+    concurrencyRule.add(c3);
+    concurrencyRule.add(c4);
 
-    assertThat(catchThrowable(() -> concurrencyRule.processResults())).isNull();
+    assertThat(catchThrowable(() -> concurrencyRule.executeInParallel())).isNull();
     assertThat(b1).isFalse();
     assertThat(b2).isFalse();
     assertThat(b3).isTrue();
@@ -383,147 +371,39 @@ public class ConcurrencyRuleTest {
   }
 
   @Test
-  public void threadPoolCanBeUsedAfterCancellingThreads() {
-    final AtomicBoolean b1 = new AtomicBoolean(false);
-    final AtomicBoolean b2 = new AtomicBoolean(false);
-
-    Callable c1 = () -> {
-      b1.set(true);
-      Awaitility.await("Thread cancellation signal").atLeast(FIVE_SECONDS).until(() -> false);
-      b2.set(true);
-      return null;
-    };
-
-    Callable c2 = () -> {
-      b2.set(true);
-      return null;
-    };
-
-    // start a thread
-    concurrencyRule.runAndExpectException(c1, new InterruptedException(null));
-    concurrencyRule.executeInParallel();
-
-    // wait a second for thread to hit its Awaitility then cancel it
-    catchThrowable(() -> Awaitility.waitAtMost(org.awaitility.Duration.ONE_SECOND)
-        .until(() -> b1.get() == Boolean.TRUE));
-    concurrencyRule.cancelThreads();
-
-    // check the results
-    assertThat(catchThrowable(() -> concurrencyRule.processResults()))
-        .isInstanceOf(CancellationException.class);
-    assertThat(b1).isTrue();
-    assertThat(b2).isFalse();
-
-    // reset variables
-    b1.set(false);
-    b2.set(false);
-    concurrencyRule.clear();
-
-    // submit and start a new thread
-    concurrencyRule.runAndExpectNoException(c2);
-    concurrencyRule.executeInParallel();
-
-    // check that it was executed successfully
-    assertThat(catchThrowable(() -> concurrencyRule.processResults())).isNull();
-    assertThat(b1.get()).isFalse();
-    assertThat(b2.get()).isTrue();
-  }
-
-  @Test
-  public void resultsCanBeGatheredAfterThreadCancellation() {
-    final AtomicBoolean b1 = new AtomicBoolean(false);
-    final AtomicBoolean b2 = new AtomicBoolean(false);
-
-    Callable c1 = () -> {
-      b1.set(true);
-      Awaitility.await("Thread cancellation signal").atLeast(FIVE_SECONDS).until(() -> false);
-      b2.set(true);
-      return null;
-    };
-
-    Callable c2 = () -> {
-      b2.set(true);
-      return null;
-    };
-
-    // start a thread
-    concurrencyRule.runAndExpectException(c1, new InterruptedException(null));
-    concurrencyRule.runAndExpectException(c2, new IllegalArgumentException());
-    concurrencyRule.executeInParallel();
-
-    // wait a second for thread to hit its Awaitility then cancel it
-    catchThrowable(() -> Awaitility.waitAtMost(org.awaitility.Duration.ONE_SECOND)
-        .until(() -> b1.get() == Boolean.TRUE && b2.get() == Boolean.TRUE));
-    concurrencyRule.cancelThreads();
-
-    List<Throwable> errors = concurrencyRule.getErrors();
-    assertThat(errors).hasSize(2);
-    assertThat(errors.get(0)).isInstanceOf(CancellationException.class);
-    assertThat(errors.get(1)).isInstanceOf(AssertionError.class);
-  }
-
-  @Test
-  public void runManyThreads_inParallel() {
-    concurrencyRule.runAndExpectException(() -> {
-      throw new IllegalArgumentException("foo");
-    }, new NullPointerException("foo"));
-    concurrencyRule.runAndExpectException(() -> {
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runManyThreads(Execution execution) {
+    Callable<Void> exceptionCallable = () -> {
       throw new IOException("foo");
-    }, new IOException("foo"));
-    concurrencyRule.runAndExpectValue(() -> {
+    };
+
+    Callable<String> valueCallable = () -> {
       return "successful value";
-    }, "successful value");
-    concurrencyRule.runAndExpectValue(() -> {
-      return "failing value";
-    }, "wrong value");
-    concurrencyRule.runAndExpectNoException(() -> {
+    };
+
+    Callable<Void> setInvokedCallable = () -> {
       invoked.set(true);
       return null;
-    });
-    concurrencyRule.runAndExpectNoException(() -> {
-      throw new IllegalStateException();
-    });
+    };
 
-    concurrencyRule.executeInParallel();
-    List<Throwable> errors = concurrencyRule.getErrors();
-    assertThat(errors).hasSize(3).hasOnlyElementsOfType(AssertionError.class);
-    assertThat(errors.get(0)).hasMessageContaining(IllegalArgumentException.class.getName());
-    assertThat(errors.get(1)).hasMessageContaining("[faili]ng value")
-        .hasMessageContaining("[wro]ng value");
-    assertThat(errors.get(2)).hasMessageContaining("null")
-        .hasMessageContaining(IllegalStateException.class.getName());
-  }
+    concurrencyRule.add(exceptionCallable).expectException(new NullPointerException("foo"));
+    concurrencyRule.add(exceptionCallable).expectException(new IOException("foo"));
+    concurrencyRule.add(valueCallable).expectValue("successful value");
+    concurrencyRule.add(valueCallable).expectValue("wrong value");
+    concurrencyRule.add(setInvokedCallable);
+    concurrencyRule.add(exceptionCallable);
 
-  @Test
-  public void runManyThreads_inSeries() {
-    concurrencyRule.runAndExpectException(() -> {
-      throw new IllegalArgumentException("foo");
-    }, new NullPointerException("foo"));
-    concurrencyRule.runAndExpectException(() -> {
-      throw new IOException("foo");
-    }, new IOException("foo"));
-    concurrencyRule.runAndExpectValue(() -> {
-      return "successful value";
-    }, "successful value");
-    concurrencyRule.runAndExpectValue(() -> {
-      return "failing value";
-    }, "wrong value");
-    concurrencyRule.runAndExpectNoException(() -> {
-      invoked.set(true);
-      return null;
-    });
-    concurrencyRule.runAndExpectNoException(() -> {
-      throw new IllegalStateException();
-    });
-
-    Throwable thrown = catchThrowable(() -> concurrencyRule.executeInSeries());
+    Throwable thrown = catchThrowable(() -> execution.execute(concurrencyRule));
     List<Throwable> errors = ((MultipleFailureException) thrown.getCause()).getFailures();
-    assertThat(errors).hasSize(3).hasOnlyElementsOfType(AssertionError.class);
-    assertThat(errors.get(0)).hasMessageContaining(IllegalArgumentException.class.getName());
-    assertThat(errors.get(1)).hasMessageContaining("[faili]ng value")
-        .hasMessageContaining("[wro]ng value");
-    assertThat(errors.get(2)).hasMessageContaining("null")
-        .hasMessageContaining(IllegalStateException.class.getName());
+
+    assertThat(errors).hasSize(3);
+    assertThat(errors.get(0)).isInstanceOf(AssertionError.class)
+        .hasMessageContaining(IOException.class.getName());
+    assertThat(errors.get(1)).isInstanceOf(AssertionError.class)
+        .hasMessageContaining("[successful] value")
+        .hasMessageContaining("[wrong] value");
+    assertThat(errors.get(2)).hasMessageContaining("foo")
+        .isInstanceOf(IOException.class);
   }
 
   @Test
@@ -536,11 +416,10 @@ public class ConcurrencyRuleTest {
     };
 
     concurrencyRule.setTimeout(Duration.ofSeconds(1));
-    concurrencyRule.runAndExpectNoException(c1);
-    concurrencyRule.runAndExpectNoException(c1);
+    concurrencyRule.add(c1);
+    concurrencyRule.add(c1);
     Awaitility.await("timeout is respected").atMost(3, TimeUnit.SECONDS).until(() -> {
       Throwable thrown = catchThrowable(() -> execution.execute(concurrencyRule));
-      System.out.println(thrown);
       assertThat(((MultipleFailureException) thrown.getCause()).getFailures()).hasSize(2)
           .hasOnlyElementsOfType(TimeoutException.class);
       return true;
@@ -554,7 +433,6 @@ public class ConcurrencyRuleTest {
     }),
     EXECUTE_IN_PARALLEL(concurrencyRule -> {
       concurrencyRule.executeInParallel();
-      concurrencyRule.processResults();
     });
 
     private final Consumer<ConcurrencyRule> execution;

@@ -15,8 +15,6 @@
 package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.lang.reflect.Field;
@@ -36,10 +34,43 @@ import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
+/**
+ * A rule for testing using multiple threads. This rule should not be used as a class rule. This
+ * rule accepts threads to be run, runs them in series or parallel, and throws exceptions if any of
+ * the threads threw an unexpected exception or returned an incorrect value.
+ *
+ * Basic Steps for Usage:
+ * 1. Declare the rule as a test rule with the @Rule annotation
+ * 2. Create a Callable, or create a Runnable and use toCallable(runnable) to convert it
+ * 3. Add the Callable to the rule using add(callable)
+ * 4. (Optional) Add expectations for the outcome of running the Callable (values or exceptions),
+ * and/or any repetition of threads (for N iterations or for a duration)
+ * 5. Run all submitted callables in series or in parallel
+ * 6. Before re-executing within the same test, use clear() to empty the list of callables and
+ * errors
+ *
+ * Example Usage:
+ *
+ * @Rule
+ *       public ConcurrencyRule concurrencyRule = new ConcurrencyRule(); // step 1
+ *
+ * @Test
+ *       public void testName() {
+ *       Callable<String> c1 = () -> {
+ *       return "some Value";
+ *       }; // step 2
+ *
+ *       concurrencyRule.add(c1).expectValue("some Value").repeatForIterations(3); // steps 3&4
+ *       concurrencyRule.executeInParallel(); // step 5
+ *       concurrencyRule.clear(); // step 6
+ *       // keep using the rule as above, or ConcurrencyRule.after() will be called for cleanup
+ *       }
+ *
+ */
 public class ConcurrencyRule extends SerializableExternalResource {
 
   private final ExecutorService threadPool = Executors.newCachedThreadPool();
-  private final Collection<Callable<Void>> toRun;
+  private final Collection<ConcurrentOperation> toInvoke;
   private final Collection<Future<Void>> futures;
 
   private ProtectedErrorCollector errorCollector;
@@ -49,7 +80,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
    * A default constructor that sets the timeout to a default of 30 seconds
    */
   public ConcurrencyRule() {
-    toRun = new ArrayList<>();
+    toInvoke = new ArrayList<>();
     futures = new ArrayList<>();
     timeout = Duration.ofSeconds(300);
     errorCollector = new ProtectedErrorCollector();
@@ -58,13 +89,13 @@ public class ConcurrencyRule extends SerializableExternalResource {
   /**
    * A non-default constructor that sets the timeout to the given duration
    *
-   * @param duration the maximum duration that threads should execute, given that the submitted
+   * @param timeout the maximum duration that threads should execute, given that the submitted
    *        tasks respond to cancellation signals.
    */
-  public ConcurrencyRule(Duration duration) {
-    toRun = new ArrayList<>();
+  public ConcurrencyRule(Duration timeout) {
+    toInvoke = new ArrayList<>();
     futures = new ArrayList<>();
-    timeout = duration;
+    this.timeout = timeout;
     errorCollector = new ProtectedErrorCollector();
   }
 
@@ -74,309 +105,62 @@ public class ConcurrencyRule extends SerializableExternalResource {
     stopThreadPool();
   }
 
+
   /**
-   * Submit the given callable to toRun and assert that an exception of the given type is thrown.
-   * The thread will be cancelled when the class timeout is reached. The exception thrown will be
-   * checked by class only.
+   * Adds a Callable to the concurrency rule to be run. Expectations for return values and thrown
+   * exceptions, as well as any repetition of the thread should be added using ConcurrentOperation.
    *
-   * @param callable a Callable that throws an exception and responds to cancellation signal
-   * @param exceptionType a Class of Exception that is expected to be thrown by the callable
+   * @param callable, a Callable to be run. If the Callable throws an exception that is not expected
+   *        it will be thrown up to the test that the threads are run from.
+   * @return concurrentOperation, the ConcurrentOperation that has been added to the rule
    */
-  public void runAndExpectException(Callable<?> callable, Class exceptionType) {
-    Callable toSubmit = () -> {
-      assertThatThrownBy(() -> callable.call()).isInstanceOf(exceptionType);
-      return null;
-    };
-    toRun.add(toSubmit);
+  public ConcurrentOperation add(Callable<?> callable) {
+    ConcurrentOperation concurrentOperation = new ConcurrentOperation(callable);
+    toInvoke.add(concurrentOperation);
+
+    return concurrentOperation;
   }
 
-  /**
-   * Submit the given callable to toRun and assert that an exception of the given type is thrown.
-   * The thread will be cancelled when the class timeout is reached. The exception thrown will be
-   * checked by class, then message, then any nested causes.
-   *
-   * @param callable a Callable that throws an exception and responds to cancellation signal. The
-   *        exception can't currently contain causes.
-   * @param throwable a Throwable that is expected to be thrown by the callable. The
-   *        exception can contain causes, but if it does the assertion will fail (until the
-   *        callables can
-   *        throw with causes)
-   */
-  public void runAndExpectException(Callable<?> callable, Throwable throwable) {
-    Callable toSubmit = () -> {
-      Throwable thrown = catchThrowable(() -> callable.call());
-
-      checkThrown(throwable, thrown);
-
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
 
   /**
-   * Submit the given Callable to toRun and assert that no exceptions are thrown. The thread will be
-   * cancelled when the class timeout is reached. The Callable throwing an exception will result in
-   * an assertion failure in the results.
-   *
-   * @param callable a Callable that does not throw an exception and responds to cancellation
-   *        signal. Callable may have a return value but it will not be checked or collected.
-   */
-  public void runAndExpectNoException(Callable<?> callable) {
-    Callable toSubmit = () -> {
-      assertThatCode(() -> callable.call()).doesNotThrowAnyException();
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Submit the given Callable to toRun and assert that the result of that callable is the given
-   * expected value. The thread will be cancelled when the class timeout is reached. The Callable
-   * throwing an exception will result in an assertion failure in the results.
-   *
-   * @param callable a Callable that returns an object, does not throw exceptions and responds to
-   *        cancellation signal
-   * @param value an Object that is the expected return value from the Callable.
-   */
-  public <T> void runAndExpectValue(Callable<T> callable, T value) {
-    Callable toSubmit = () -> {
-      assertThat(callable.call()).isEqualTo(value);
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Run the given callable in a loop for some number of iterations. Fails if the callable throws an
-   * exception in any iteration. After the number of iterations has been met, the loop will not
-   * restart the runnable. The running iteration of the Runnable will be cancelled when the
-   * timeout set on the class is reached, regardless of if the number of desired iterations has
-   * been reached. A cancellation will result in a test failure.
-   *
-   * @param callable a Callable that does not throw an exception and responds to cancellation signal
-   * @param iterations a maximum number of iterations to repeat for
-   */
-  public void repeatForIterations(Callable<?> callable, int iterations) {
-    Callable toSubmit = () -> {
-      for (int i = 0; i < iterations; i++) {
-        callable.call();
-      }
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Run the given callable in a loop for some number of iterations. Fails if the callable throws an
-   * exception in any iteration. After the number of iterations has been met, the loop will not
-   * restart the runnable. The running iteration of the Callable will be cancelled when the
-   * timeout set on the class is reached, regardless of if the number of desired iterations has
-   * been reached. A cancellation will result in a test failure.
-   *
-   * @param callable a Callable that does not throw an exception and responds to cancellation signal
-   * @param iterations a maximum number of iterations to repeat for
-   * @param exceptionType the type of exception to expect
-   */
-  public void repeatForIterationsAndExpectExceptionForEach(Callable<?> callable, int iterations,
-      Class exceptionType) {
-    Callable toSubmit = () -> {
-      for (int i = 0; i < iterations; i++) {
-        assertThatThrownBy(() -> callable.call()).isInstanceOf(exceptionType);
-      }
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Run the given callable in a loop for some number of iterations. Fails if the callable throws an
-   * exception in any iteration. After the number of iterations has been met, the loop will not
-   * restart the runnable. The running iteration of the Callable will be cancelled when the
-   * timeout set on the class is reached, regardless of if the number of desired iterations has
-   * been reached. A cancellation will result in a test failure.
-   *
-   * @param callable a Callable that does not throw an exception and responds to cancellation signal
-   * @param iterations a maximum number of iterations to repeat for
-   * @param exception the exception to expect
-   */
-  public void repeatForIterationsAndExpectExceptionForEach(Callable<?> callable, int iterations,
-      Throwable exception) {
-    Callable toSubmit = () -> {
-      for (int i = 0; i < iterations; i++) {
-        Throwable thrown = catchThrowable(() -> callable.call());
-        checkThrown(thrown, exception);
-      }
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Run the given callable in a loop for some number of iterations. Fails if the expected error is
-   * not thrown by the final iteration or if an unexpected exception is thrown on any iteration.
-   * After the number of iterations has been met, the loop will not restart the runnable. The
-   * running iteration of the Callable will be cancelled when the timeout set on the class is
-   * reached, regardless of if the number of desired iterations has been reached. A cancellation
-   * will result in a test failure.
-   *
-   * @param callable a Callable that throws an exception and responds to cancellation signal
-   * @param iterations a maximum number of iterations to repeat for
-   * @param exceptionType the type of exception to expect
-   */
-  public void repeatForIterationsAndExpectException(Callable<?> callable, int iterations,
-      Class exceptionType) {
-    Callable toSubmit = () -> {
-      Boolean foundException = Boolean.FALSE;
-      try {
-        for (int i = 0; i < iterations; i++) {
-          callable.call();
-        }
-      } catch (Exception e) {
-        foundException = Boolean.TRUE;
-        assertThat(e).isInstanceOf(exceptionType);
-      }
-
-      assertThat(foundException).isTrue();
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Run the given callable in a loop for some number of iterations. Fails if the expected error is
-   * not thrown by the final iteration or if an unexpected exception is thrown on any iteration.
-   * After the number of iterations has been met, the loop will not restart the runnable. The
-   * running iteration of the Callable will be cancelled when the timeout set on the class is
-   * reached, regardless of if the number of desired iterations has been reached. A cancellation
-   * will result in a test failure.
-   *
-   * @param callable a Callable that throws an exception and responds to cancellation signal
-   * @param iterations a maximum number of iterations to repeat for
-   * @param exception the of exception to expect
-   */
-  public void repeatForIterationsAndExpectException(Callable<?> callable, int iterations,
-      Throwable exception) {
-    Callable toSubmit = () -> {
-      Boolean foundException = Boolean.FALSE;
-      try {
-        for (int i = 0; i < iterations; i++) {
-          callable.call();
-        }
-      } catch (Exception e) {
-        foundException = Boolean.TRUE;
-        checkThrown(e, exception);
-      }
-
-      assertThat(foundException).isTrue();
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Run the given callable in a loop for some number of iterations. Fails if the callable throws an
-   * exception in any iteration. After the number of iterations has been met, the loop will not
-   * restart the callable. The running iteration of the Callable will be cancelled when the
-   * timeout set on the class is reached, regardless of if the number of desired iterations has
-   * been reached. A cancellation will result in a test failure. The expected value will be checked
-   * for each iteration and will fail if the values are not equal.
-   *
-   * @param callable a Callable that does not throw an exception and responds to cancellation signal
-   * @param iterations a maximum number of iterations to repeat for
-   */
-  public <T> void repeatForIterationsAndExpectValueForEach(Callable<T> callable, int iterations,
-      T value) {
-    Callable toSubmit = () -> {
-      for (int i = 0; i < iterations; i++) {
-        assertThat(callable.call()).isEqualTo(value);
-      }
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Run the given callable in a loop for a certain duration. Fails if the callable throws an
-   * exception in any iteration. After the duration has been exceeded, the loop will not restart
-   * the callable, however the current iteration will not be cancelled until the timeout value for
-   * the class has been reached. A cancellation will result in a test failure.
-   *
-   * @param callable a Callable that does not throw exceptions and responds to cancellation signal
-   * @param duration a maximum amount of time to repeat for
-   */
-  public void repeatForDuration(Callable callable, Duration duration) {
-    Callable toSubmit = () -> {
-      Stopwatch stopwatch = Stopwatch.createStarted();
-      do {
-        callable.call();
-      } while (stopwatch.elapsed(TimeUnit.SECONDS) <= duration.getSeconds());
-      return null;
-    };
-
-    toRun.add(toSubmit);
-  }
-
-  /**
-   * Runs all callables in toRun in parallel and fail if threads' conditions were not met. Runs
-   * until timeout is reached.
-   *
-   * NOTE: in order to consider the results of this execution, processResults() OR getErrors() must
-   * be called.
+   * Runs all callables in the rule in parallel and fails if threads' conditions were not met. Each
+   * thread runs until timeout has been reached. This method will not return until all
+   * threads have completed or been cancelled.
    *
    * @throws InterruptedException if interrupted before timeout
+   * @throws RuntimeException with cause of MultipleFailureException with a list of failures
+   *         including AssertionErrors for all threads whose expectations were not met (if there are
+   *         multiple failures).
+   * @throws AssertionError if a single thread's expectations are not met
+   * @throws Exception if a thread throws an unexpected exception
    */
   public void executeInParallel() {
-    for (Callable<Void> toSubmit : toRun) {
-      futures.add(threadPool.submit(toSubmit));
+    for (ConcurrentOperation op : toInvoke) {
+      futures.add(threadPool.submit(op));
     }
+
+    awaitFutures();
+    errorCollector.verify();
   }
 
   /**
-   * Runs all callables in toRun in the order that they were added and fail if threads' conditions
-   * were not met. Each thread runs until timeout is reached. This method will not return until all
-   * threads in toRun have completed or been cancelled.
+   * Runs all callables in the rule in the order that they were added and fail if threads'
+   * conditions
+   * are not met. Each thread runs until timeout is reached. This method will not return until all
+   * threads have completed or been cancelled.
    *
-   * @throws InterruptedException if interrupted before timeout
    * @throws RuntimeException with cause of MultipleFailureException with a list of failures
-   *         including AssertionErrors for all threads whose expectations were not met.
+   *         including AssertionErrors for all threads whose expectations were not met (if there are
+   *         multiple failures).
+   * @throws AssertionError if a single thread's expectations are not met
+   * @throws Exception if a thread throws an unexpected exception
    */
   public void executeInSeries() {
-    for (Callable<Void> toSubmit : toRun) {
-      awaitFuture(threadPool.submit(toSubmit));
+    for (ConcurrentOperation op : toInvoke) {
+      awaitFuture(threadPool.submit(op));
     }
 
     errorCollector.verify();
-  }
-
-  /**
-   * Awaits the results from parallel executions of callables and rethrows the resulting errors.
-   *
-   * @throws InterruptedException if interrupted before timeout
-   * @throws RuntimeException with cause of MultipleFailureException with a list of failures
-   *         including AssertionErrors for all threads whose expectations were not met.
-   */
-  public void processResults() throws AssertionError, RuntimeException {
-    awaitFutures();
-    errorCollector.verify();
-  }
-
-  /**
-   * Awaits the results from parallel executions of callables and returns the resulting errors.
-   *
-   * @throws InterruptedException if interrupted before timeout
-   */
-  public List<Throwable> getErrors() {
-    awaitFutures();
-    return errorCollector.getErrors();
   }
 
   /**
@@ -384,33 +168,9 @@ public class ConcurrencyRule extends SerializableExternalResource {
    * avoid rerunning and rethrowing callables from the previous executions.
    */
   public void clear() {
-    toRun.clear();
+    toInvoke.clear();
     futures.clear();
     errorCollector = new ProtectedErrorCollector();
-  }
-
-  /**
-   * Safely clears the lists of callables, futures, and errors, cancelling futures before clearing
-   * the list of futures. Use between calls to execute methods to avoid rerunning and rethrowing
-   * callables from the previous executions.
-   */
-  public void safeClear() {
-    for (Future<Void> future : futures) {
-      if (!future.isDone() && !future.isCancelled()) {
-        future.cancel(true);
-      }
-    }
-
-    clear();
-  }
-
-  /**
-   * Attempts to cancel all futures from parallel execution
-   */
-  public void cancelThreads() {
-    for (Future<Void> future : futures) {
-      future.cancel(true);
-    }
   }
 
   /**
@@ -424,8 +184,8 @@ public class ConcurrencyRule extends SerializableExternalResource {
    * Set the timeout for the threads. After the timeout is reached, the threads will be interrupted
    * and will throw a CancellationException
    */
-  public void setTimeout(Duration duration) {
-    timeout = duration;
+  public void setTimeout(Duration timeout) {
+    this.timeout = timeout;
   }
 
   /**
@@ -474,16 +234,158 @@ public class ConcurrencyRule extends SerializableExternalResource {
     futures.removeIf(future -> future.isCancelled() || future.isDone());
   }
 
+  public static class ConcurrentOperation implements Callable<Void> {
+    private final int DEFAULT_ITERATIONS = 1;
+    private final Duration DEFAULT_DURATION = Duration.ofSeconds(300);
 
-  private void checkThrown(Throwable expected, Throwable actual) {
-    assertThat(actual).isInstanceOf(expected.getClass());
+    private Callable<?> callable;
+    private int iterations;
+    private Throwable expectedException;
+    private Object expectedValue;
+    private Duration duration;
+    private Class expectedExceptionType;
 
-    if (!expected.getMessage().isEmpty()) {
-      assertThat(actual).hasMessage(expected.getMessage());
+    public ConcurrentOperation() {
+      callable = null;
+      iterations = DEFAULT_ITERATIONS;
+      duration = DEFAULT_DURATION;
+      expectedException = null;
+      expectedExceptionType = null;
+      expectedValue = null;
     }
 
-    if (expected.getCause() != null) {
-      checkThrown(expected.getCause(), actual.getCause());
+    public ConcurrentOperation(Callable<?> toAdd) {
+      this.callable = toAdd;
+      iterations = DEFAULT_ITERATIONS;
+      duration = DEFAULT_DURATION;
+      expectedException = null;
+      expectedExceptionType = null;
+      expectedValue = null;
+    }
+
+    /**
+     * Sets a callable to be repeated the given number of times. If there is also an expected result
+     * for the callable, that expectation must be met for each iteration of the callable.
+     *
+     * @param iterations the number of times to run the callable
+     * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
+     */
+    public ConcurrentOperation repeatForIterations(int iterations) {
+      if (!duration.equals(DEFAULT_DURATION)) {
+        throw new IllegalArgumentException("Specify only Duration or Iterations");
+      }
+
+      this.iterations = iterations;
+      return this;
+    }
+
+    /**
+     * Sets a callable to be repeated for some duration. If there is also an expected result
+     * for the callable, that expectation must be met for each iteration of the callable. The
+     * callable will not be restarted after the duration has been met, however the current
+     * iteration will be allowed to continue until the timeout is reached.
+     *
+     * @param duration, the Duration for which to repeat the callable
+     * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
+     */
+    public ConcurrentOperation repeatForDuration(Duration duration) {
+      if (iterations != DEFAULT_ITERATIONS) {
+        throw new IllegalArgumentException("Specify only Duration or Iterations");
+      }
+
+      this.duration = duration;
+      return this;
+    }
+
+    /**
+     * Sets the expected result of running the thread to be an exception matching the given
+     * exception
+     *
+     * @param expectedException the expected exception. If the message is null, the message of the
+     *        thrown exception will not be checked, however if the message is empty, the thrown
+     *        exception
+     *        must also have a null or empty message.
+     * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
+     */
+    public ConcurrentOperation expectException(Throwable expectedException) {
+      if (expectedExceptionType != null || expectedValue != null) {
+        throw new IllegalArgumentException("Specify only one expected outcome.");
+      }
+
+      this.expectedException = expectedException;
+      return this;
+    }
+
+    /**
+     * Sets the expected result of running the thread to be an exception that is an instance of the
+     * given class
+     *
+     * @param expectedExceptionType the class of the expected exception. Causes will not be checked.
+     * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
+     */
+    public ConcurrentOperation expectExceptionType(Class expectedExceptionType) {
+      if (expectedException != null || expectedValue != null) {
+        throw new IllegalArgumentException("Specify only one expected outcome.");
+      }
+
+      this.expectedExceptionType = expectedExceptionType;
+      return this;
+    }
+
+    /**
+     * Sets the expected result of running the thread to be a value matching the given value
+     *
+     * @param expectedValue the value expected to be returned from the thread. The value must
+     *        implement equals
+     * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
+     */
+    public ConcurrentOperation expectValue(Object expectedValue) {
+      if (expectedExceptionType != null || expectedException != null) {
+        throw new IllegalArgumentException("Specify only one expected outcome.");
+      }
+
+      this.expectedValue = expectedValue;
+      return this;
+    }
+
+    @Override
+    public Void call() throws Exception {
+      Stopwatch timeRun = duration != DEFAULT_DURATION ? Stopwatch.createStarted() : null;
+      int numRuns = 0;
+
+      do {
+        numRuns++;
+        callAndValidate();
+      } while ((iterations != DEFAULT_ITERATIONS && numRuns < iterations) ||
+          (duration != DEFAULT_DURATION
+              && timeRun.elapsed(TimeUnit.SECONDS) <= duration.getSeconds()));
+      return null;
+    }
+
+    private void callAndValidate() throws Exception {
+      if (expectedValue != null) {
+        assertThat(this.callable.call()).isEqualTo(this.expectedValue);
+      } else if (expectedException != null) {
+        Throwable thrown = catchThrowable(() -> this.callable.call());
+        checkThrown(this.expectedException, thrown);
+      } else if (expectedExceptionType != null) {
+        Throwable thrown = catchThrowable(() -> this.callable.call());
+        assertThat(thrown).isInstanceOf(this.expectedExceptionType);
+      } else {
+        this.callable.call();
+      }
+    }
+
+    private void checkThrown(Throwable expected, Throwable actual) {
+      assertThat(actual).isInstanceOf(expected.getClass());
+
+      if (expected.getMessage() != null) {
+        assertThat(actual).hasMessage(expected.getMessage());
+      }
+
+      if (expected.getCause() != null) {
+        checkThrown(expected.getCause(), actual.getCause());
+      }
     }
   }
 
