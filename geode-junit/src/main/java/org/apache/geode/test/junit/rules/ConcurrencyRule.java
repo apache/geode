@@ -114,8 +114,8 @@ public class ConcurrencyRule extends SerializableExternalResource {
    *        it will be thrown up to the test that the threads are run from.
    * @return concurrentOperation, the ConcurrentOperation that has been added to the rule
    */
-  public ConcurrentOperation add(Callable<?> callable) {
-    ConcurrentOperation concurrentOperation = new ConcurrentOperation(callable);
+  public <T> ConcurrentOperation<T> add(Callable<T> callable) {
+    ConcurrentOperation<T> concurrentOperation = new ConcurrentOperation(callable);
     toInvoke.add(concurrentOperation);
 
     return concurrentOperation;
@@ -234,14 +234,14 @@ public class ConcurrencyRule extends SerializableExternalResource {
     futures.removeIf(future -> future.isCancelled() || future.isDone());
   }
 
-  public static class ConcurrentOperation implements Callable<Void> {
+  public static class ConcurrentOperation<T> implements Callable<Void> {
     private final int DEFAULT_ITERATIONS = 1;
     private final Duration DEFAULT_DURATION = Duration.ofSeconds(300);
 
-    private Callable<?> callable;
+    private Callable<T> callable;
     private int iterations;
     private Throwable expectedException;
-    private Object expectedValue;
+    private T expectedValue;
     private Duration duration;
     private Class expectedExceptionType;
 
@@ -254,7 +254,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
       expectedValue = null;
     }
 
-    public ConcurrentOperation(Callable<?> toAdd) {
+    public ConcurrentOperation(Callable<T> toAdd) {
       this.callable = toAdd;
       iterations = DEFAULT_ITERATIONS;
       duration = DEFAULT_DURATION;
@@ -339,7 +339,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
      *        implement equals
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
-    public ConcurrentOperation expectValue(Object expectedValue) {
+    public ConcurrentOperation expectValue(T expectedValue) {
       if (expectedExceptionType != null || expectedException != null) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
