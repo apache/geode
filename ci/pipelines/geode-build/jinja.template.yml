@@ -35,15 +35,11 @@ groups:
 - name: main
   jobs:
   - Build
-  - DistributedTest
-{% for p in platforms %}
-  - {{p.prefix}}AcceptanceTest
-  - {{p.prefix}}IntegrationTest
+{% for test in tests + windowstests %}
+  - {{test.name}}Test
 {% endfor %}
-  - WindowsUnitTest
-  - WindowsGfshDistributedTest
-  - UpgradeTest
   - UpdatePassingRef
+
 resources:
 - name: geode-build-artifact
   type: gcs-resource
@@ -97,6 +93,7 @@ resources:
     initial_version: 1.3.0
     json_key: ((!concourse-gcp-key))
     key: {{repository.branch}}/version
+
 resource_types:
 - name: concourse-metadata-resource
   type: docker-image
@@ -113,6 +110,7 @@ resource_types:
   type: docker-image
   source:
     repository: pcfseceng/email-resource
+
 jobs:
 - name: Build
   public: true
@@ -167,10 +165,9 @@ jobs:
   plan:
   - get: geode
     passed:
-    - AcceptanceTest
-    - DistributedTest
-    - IntegrationTest
-    - UpgradeTest
+    {% for test in tests %}
+    - {{test.name}}Test
+    {% endfor %}
     trigger: true
   - get: geode-ci
   - get: docker-geode-build-image

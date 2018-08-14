@@ -1,11 +1,22 @@
+{% macro alpine_tools_config() %}
+config:
+  platform: linux
+  image_resource:
+    type: docker-image
+    source:
+      password: ((!docker-password))
+      repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
+      tag: latest
+      username: ((!docker-username))
+{% endmacro %}
+
 groups:
 - name: main
   jobs:
   - Build
-  - DistributedTest
-  - AcceptanceTest
-  - IntegrationTest
-  - UpgradeTest
+{% for test in tests %}
+  - {{test.name}}Test
+{% endfor %}
 resources:
 - name: docker-geode-build-image
   type: docker-image
@@ -138,15 +149,7 @@ jobs:
       - do:
         - put: concourse-metadata-resource
         - task: start_instance
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                tag: latest
-                username: ((!docker-username))
+          {{ alpine_tools_config()|indent(10) }}
             params:
               CPUS: {{test.CPUS}}
               GEODE_BRANCH: {{repository.branch}}
@@ -163,15 +166,7 @@ jobs:
           timeout: 15m
           attempts: 100
     - task: rsync_code_up
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-            tag: latest
-            username: ((!docker-username))
+      {{ alpine_tools_config()|indent(6) }}
         run:
           path: geode-ci/ci/scripts/rsync_code_up.sh
         inputs:
@@ -180,15 +175,7 @@ jobs:
         - name: instance-data
       timeout: 5m
     - task: execute_tests
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            password: ((!docker-password))
-            repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-            tag: latest
-            username: ((!docker-username))
+      {{ alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
@@ -217,15 +204,7 @@ jobs:
     ensure:
       do:
       - task: rsync_code_down
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              password: ((!docker-password))
-              repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-              tag: latest
-              username: ((!docker-username))
+        {{ alpine_tools_config()|indent(8) }}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
@@ -238,15 +217,7 @@ jobs:
       ensure:
         aggregate:
         - task: archive-results
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                tag: latest
-                username: ((!docker-username))
+          {{ alpine_tools_config()|indent(10) }}
             params:
               ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
               GRADLE_TASK: {{test.GRADLE_TASK}}
@@ -261,15 +232,7 @@ jobs:
             - name: geode-ci
             - name: geode-results
         - task: stop_instance
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                password: ((!docker-password))
-                repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
-                tag: latest
-                username: ((!docker-username))
+          {{ alpine_tools_config()|indent(10) }}
             run:
               path: geode-ci/ci/scripts/stop_instance.sh
             inputs:
