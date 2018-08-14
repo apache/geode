@@ -21,7 +21,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Server;
 
 @Category({GfshTest.class})
-public class QueryCommandOverHttpTest extends QueryCommandIntegrationTest {
+public class QueryCommandOverHttpTest extends QueryCommandIntegrationTestBase {
 
   @Override
   protected void connect(Server server) throws Exception {
