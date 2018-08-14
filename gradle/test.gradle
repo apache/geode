@@ -209,6 +209,8 @@ subprojects {
     testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
     classpath += project.sourceSets.upgradeTest.runtimeClasspath
     testClassesDirs += project.sourceSets.upgradeTest.output.classesDirs
+    classpath += project.sourceSets.acceptanceTest.runtimeClasspath
+    testClassesDirs += project.sourceSets.acceptanceTest.output.classesDirs
 
     if(project.hasProperty("failOnNoMatchingTests")) {
       filter {
