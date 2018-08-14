@@ -22,7 +22,6 @@ ENV SPRUCE_VERSION 1.17.0
 WORKDIR /tmp/work
 COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
 
-ADD https://github.com/geofffranks/spruce/releases/download/v${SPRUCE_VERSION}/spruce-linux-amd64 /usr/local/bin/spruce
 ADD https://github.com/krallin/tini/releases/download/v0.14.0/tini-static-amd64 /usr/local/bin/tini
 ADD tini-wrapper.go .
 ADD ./initdocker /usr/local/bin/initdocker
