@@ -27,7 +27,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-CHANGED_FILES=$(cd geode && git diff --name-only HEAD $(git merge-base HEAD origin/develop)  -- */src/test/java */src/integrationTest/java */src/distributedTest/java)
+CHANGED_FILES=$(cd geode && git diff --name-only HEAD $(git merge-base HEAD origin/develop)  -- */src/test/java */src/integrationTest/java */src/distributedTest/java */src/upgradeTest/java)
 
 CHANGED_FILES_ARRAY=( $CHANGED_FILES )
 NUM_CHANGED_FILES=${#CHANGED_FILES_ARRAY[@]}
