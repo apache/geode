@@ -15,24 +15,15 @@
  * limitations under the License.
  */
 
-evaluationDependsOn(":geode-core")
 
 dependencies {
-  compile project(':geode-core')
-  compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-  compile ('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
-    exclude module: 'annotations-api'
-    exclude module: 'coyote'
-    exclude module: 'tribes'
-  }
-  compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
+  compileOnly project(':geode-core')
+  compileOnly project(':geode-pulse')
 
-  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-
-  integrationTestCompile project(":geode-dunit")
-  integrationTestCompile project(":extensions/geode-modules-test")
-
-  integrationTestRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
+  compile 'junit:junit:' + project.'junit.version'
+  compile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
+  compile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
+  compile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
 }
 
 disableMavenPublishing()
