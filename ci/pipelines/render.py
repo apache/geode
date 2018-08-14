@@ -3,11 +3,12 @@ import argparse
 import logging
 
 import yaml
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, Undefined
+import jinja2.exceptions
 import os
 
 def main(template_file, variables_file, output_file):
-    env = Environment(loader=FileSystemLoader('.'))
+    env = Environment(loader=FileSystemLoader('.'), undefined=RaiseExceptionIfUndefined)
     template = env.get_template(template_file)
 
     with open(variables_file, 'r') as variablesFromYml:
@@ -18,8 +19,20 @@ def main(template_file, variables_file, output_file):
 
     logging.debug(f"Variables = {variables}")
 
+    logging.info(template.render(variables))
     with open(output_file, 'w') as pipeline_file:
         pipeline_file.write(template.render(variables))
+
+
+class RaiseExceptionIfUndefined(Undefined):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __str__(self):
+        raise jinja2.exceptions.UndefinedError("Interpolating undefined variables has been disabled.")
+
+    def __iter__(self):
+        raise jinja2.exceptions.UndefinedError("Interpolating undefined variables has been disabled.")
 
 
 if __name__ == '__main__':
@@ -29,10 +42,10 @@ if __name__ == '__main__':
     parser.add_argument("output", help="Output target.")
     parser.add_argument("--debug", help="It's debug.  If you have to ask, you'll never know.", action="store_true")
 
-    args = parser.parse_args()
+    _args = parser.parse_args()
 
-    if args.debug:
+    if _args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    main(args.template, args.variables, args.output)
+    main(_args.template, _args.variables, _args.output)
 

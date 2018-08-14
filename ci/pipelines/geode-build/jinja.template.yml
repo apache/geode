@@ -35,9 +35,9 @@ groups:
 - name: main
   jobs:
   - Build
-{% for test in tests + windowstests %}
+  {% for test in tests + windowstests -%}
   - {{test.name}}Test
-{% endfor %}
+  {% endfor -%}
   - UpdatePassingRef
 
 resources:
@@ -165,7 +165,7 @@ jobs:
   plan:
   - get: geode
     passed:
-    {% for test in tests %}
+    {% for test in tests -%}
     - {{test.name}}Test
     {% endfor %}
     trigger: true
@@ -272,7 +272,7 @@ jobs:
               - name: geode-ci
               - name: instance-data
             timeout: 1h
-{% endfor %}
+{% endfor -%}
 {% for test in windowstests %}
 - name: {{test.name}}Test
   public: true
