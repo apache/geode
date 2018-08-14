@@ -23,12 +23,11 @@ dependencies {
 
     testCompile project(':geode-core')
     testCompile project(':geode-junit')
+    testCompile project(":geode-protobuf/geode-protobuf-test")
 
 
     integrationTestCompile project(":geode-dunit")
-    // TODO remove common source dependency
-    integrationTestCompile sourceSets.test.output
+    integrationTestCompile project(":geode-protobuf/geode-protobuf-test")
 
-    // TODO remove common source dependency
-    distributedTestCompile sourceSets.test.output
+    distributedTestCompile project(":geode-protobuf/geode-protobuf-test")
 }

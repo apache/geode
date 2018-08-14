@@ -19,8 +19,6 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.TX
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -1554,21 +1552,14 @@ public class TXEntryState implements Releasable {
   }
 
   private void txApplyDestroyLocally(InternalRegion r, Object key, TXState txState) {
-    boolean invokeCallbacks = isOpDestroyEvent(r);
-    List<EntryEventImpl> pendingCallbacks =
-        invokeCallbacks ? txState.getPendingCallbacks() : new ArrayList<EntryEventImpl>();
     try {
       r.txApplyDestroy(key, txState.getTransactionId(), null, false/* inTokenMode */,
-          getDestroyOperation(), getNearSideEventId(txState), callBackArgument, pendingCallbacks,
+          getDestroyOperation(), getNearSideEventId(txState), callBackArgument,
+          txState.getPendingCallbacks(),
           getFilterRoutingInfo(), txState.bridgeContext, false, this, null, -1);
     } catch (RegionDestroyedException ignore) {
     } catch (EntryDestroyedException ignore) {
     }
-    // if !isOpDestroyEvent then
-    // this destroy, to local committed state, becomes a noop
-    // since nothing needed to be done locally.
-    // We don't want to actually do the destroy since we told the
-    // transaction listener that no destroy was done.
   }
 
   private void txApplyInvalidateLocally(InternalRegion r, Object key, Object newValue,

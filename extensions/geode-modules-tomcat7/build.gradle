@@ -33,10 +33,7 @@ dependencies {
   compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version'
 
   integrationTestCompile project(":geode-dunit")
-  integrationTestCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-
-  // TODO fix test dependency on other projects
-  integrationTestCompile files(project(':extensions/geode-modules').sourceSets.integrationTest.output)
+  integrationTestCompile project(":extensions/geode-modules-test")
 
   integrationTestRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
   integrationTestRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
