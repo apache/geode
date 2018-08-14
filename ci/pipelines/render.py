@@ -8,7 +8,9 @@ import jinja2.exceptions
 import os
 
 def main(template_file, variables_file, output_file):
-    env = Environment(loader=FileSystemLoader('.'), undefined=RaiseExceptionIfUndefined)
+    # TODO Delete this TODO
+    # Also TODO: Make the FileSystemLoader accept the script-dir, current-dir, and commons-dir more sensibly.
+    env = Environment(loader=FileSystemLoader(['.', '..']), undefined=RaiseExceptionIfUndefined)
     template = env.get_template(template_file)
 
     with open(variables_file, 'r') as variablesFromYml:
@@ -46,6 +48,8 @@ if __name__ == '__main__':
 
     if _args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
+
+    logging.debug(f"cwd: {os.getcwd()}")
 
     main(_args.template, _args.variables, _args.output)
 

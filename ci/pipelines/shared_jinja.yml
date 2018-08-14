@@ -1,0 +1,17 @@
+{% macro alpine_tools_config() %}
+{{ docker_config() }}
+{% endmacro %}
+
+{% macro docker_config(repository_url) %}
+config:
+  platform: linux
+  image_resource:
+    type: docker-image
+    source:
+      username: ((!docker-username))
+      password: ((!docker-password))
+      repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
+      tag: latest
+{% endmacro %}
+
+echo
