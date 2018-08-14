@@ -15,13 +15,19 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -206,5 +212,60 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
         }
       }
     });
+  }
+
+  @Test
+  public void NoDestroyInvocationIfCreateEntryAndDestroyItInTransaction() throws Throwable {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+
+    int redundancy = 2;
+
+    vm0.invoke(() -> getCacheSetAlwaysFireLocalListeners());
+    vm1.invoke(() -> getCacheSetAlwaysFireLocalListeners());
+    vm2.invoke(() -> getCacheSetAlwaysFireLocalListeners());
+
+    createPR(vm0, redundancy);
+    createPR(vm1, redundancy);
+    createPR(vm2, redundancy);
+
+    vm0.invoke(() -> addListener());
+    vm1.invoke(() -> addListener());
+    vm2.invoke(() -> addListener());
+
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
+      Region region = cache.getRegion(getPartitionedRegionName());
+      txManager.begin();
+      region.create(1, "toBeDestroyed");
+      region.destroy(1);
+      txManager.commit();
+    });
+
+    vm0.invoke(() -> verifyNoDestroyInvocation());
+    vm1.invoke(() -> verifyNoDestroyInvocation());
+    vm2.invoke(() -> verifyNoDestroyInvocation());
+  }
+
+  private void getCacheSetAlwaysFireLocalListeners() {
+    System.setProperty("gemfire.BucketRegion.alwaysFireLocalListeners", "true");
+    getCache();
+  }
+
+  private void addListener() {
+    Cache cache = getCache();
+    Region region = cache.getRegion(getPartitionedRegionName());
+    CacheListener listener = spy(new CacheListenerAdapter() {});
+    region.getAttributesMutator().addCacheListener(listener);
+  }
+
+  private void verifyNoDestroyInvocation() throws Exception {
+    Cache cache = getCache();
+    Region region = cache.getRegion(getPartitionedRegionName());
+    CacheListener listener = region.getAttributes().getCacheListeners()[0];
+    verify(listener, never()).afterDestroy(any());
   }
 }

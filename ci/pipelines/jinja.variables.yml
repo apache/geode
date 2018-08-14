@@ -38,10 +38,10 @@ tests:
   CPUS: "96"
   RAM: "180"
   ARTIFACT_SLUG: distributedtestfiles
-  CALL_STACK_TIMEOUT: "3600"
-  DUNIT_PARALLEL_FORKS: "48"
+  CALL_STACK_TIMEOUT: "7200"
+  DUNIT_PARALLEL_FORKS: "24"
   GRADLE_TASK: distributedTest
-  execute_test_timeout: 1h15m
+  execute_test_timeout: 2h15m
   PARALLEL_DUNIT: "true"
 - name: "Integration"
   CPUS: "96"

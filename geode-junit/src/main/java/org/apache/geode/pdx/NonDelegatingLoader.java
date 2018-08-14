@@ -14,7 +14,6 @@
  */
 package org.apache.geode.pdx;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -34,7 +33,7 @@ class NonDelegatingLoader extends ClassLoader {
     if (!name.contains("SeparateClassloaderPdx")) {
       return super.loadClass(name, resolve);
     }
-    URL url = super.getResource(name.replace('.', File.separatorChar) + ".class");
+    URL url = super.getResource(name.replace('.', '/') + ".class");
     if (url == null) {
       throw new ClassNotFoundException();
     }
