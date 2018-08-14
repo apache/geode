@@ -75,20 +75,17 @@ dependencies {
 
   integrationTestCompile project(':geode-junit')
   integrationTestCompile project(':geode-core')
+  integrationTestCompile project(':geode-pulse/geode-pulse-test')
   integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
-
-  // TODO remove dependency on test sourceSet
-  integrationTestRuntime sourceSets.test.output
 
 
   uiTestCompile project(':geode-junit')
   uiTestCompile project(':geode-json')
+  uiTestCompile project(':geode-pulse/geode-pulse-test')
   uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
   uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
   uiTestCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
   uiTestCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
-  // TODO remove dependency on test sourceSet
-  uiTestCompile sourceSets.test.output
 
   uiTestRuntime project(':geode-core')
 }
@@ -100,7 +97,7 @@ sourceSets {
     output.dir(generatedResources, builtBy: 'copyGemFireVersionFile')
   }
 
-  test {
+  integrationTest {
     resources {
       srcDir 'src/main/webapp/WEB-INF'
     }

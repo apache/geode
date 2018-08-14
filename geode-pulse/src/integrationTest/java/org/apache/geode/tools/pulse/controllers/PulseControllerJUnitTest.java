@@ -65,7 +65,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration("classpath*:mvc-dispatcher-servlet.xml")
-@PowerMockIgnore({"*.IntegrationTest", "*.PulseTest"})
+@PowerMockIgnore("javax.management.*")
 public class PulseControllerJUnitTest {
 
   private static final String PRINCIPAL_USER = "test-user";
@@ -776,7 +776,8 @@ public class PulseControllerJUnitTest {
     this.mockMvc
         .perform(get("/clearAlerts").param("alertType", "1")
             .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
-        .andExpect(status().isOk()).andExpect(jsonPath("$.pageNumber").value(1))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pageNumber").value(1))
         .andExpect(jsonPath("$.systemAlerts").isEmpty())
         .andExpect(jsonPath("$.connectedFlag").value(false))
         .andExpect(jsonPath("$.status").value("deleted"));
