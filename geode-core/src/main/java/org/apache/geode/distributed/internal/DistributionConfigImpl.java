@@ -603,6 +603,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = DEFAULT_SSL_ALIAS;
 
+  private boolean sslEndpointIdentificationEnabled = DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+
   private SecurableCommunicationChannel[] securableCommunicationChannels =
       DEFAULT_SSL_ENABLED_COMPONENTS;
 
@@ -847,6 +849,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.serverSSLAlias = other.getServerSSLAlias();
     this.locatorSSLAlias = other.getLocatorSSLAlias();
 
+    this.sslEndpointIdentificationEnabled = other.getSSLEndpointIdentificationEnabled();
     this.securableCommunicationChannels =
         ((DistributionConfigImpl) other).securableCommunicationChannels;
 
@@ -2755,6 +2758,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setServerSSLAlias(final String alias) {
     serverSSLAlias = alias;
+  }
+
+  @Override
+  public boolean getSSLEndpointIdentificationEnabled() {
+    return sslEndpointIdentificationEnabled;
+  }
+
+  @Override
+  public void setSSLEndpointIdentificationEnabled(final boolean sslEnabledIdentification) {
+    this.sslEndpointIdentificationEnabled = sslEnabledIdentification;
   }
 
   @Override
