@@ -94,14 +94,6 @@ public class ConcurrencyRuleTest {
   }
 
   @Test
-  public void testChaining() {
-    concurrencyRule.add(() -> {
-      return 2;
-    }).repeatForIterations(3).expectValue(2);
-    concurrencyRule.executeInSeries();
-  }
-
-  @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectExceptionType(Execution execution) {
     concurrencyRule.add(() -> {

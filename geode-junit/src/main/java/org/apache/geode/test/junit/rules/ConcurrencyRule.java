@@ -211,7 +211,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
 
   private void awaitFuture(Future<Void> future) {
     try {
-      future.get(timeout.getSeconds(), TimeUnit.SECONDS);
+      future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
     } catch (ExecutionException e) {
       errorCollector.addError(e.getCause());
     } catch (Exception e) {
