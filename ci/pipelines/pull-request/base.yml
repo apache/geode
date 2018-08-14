@@ -71,6 +71,7 @@ groups:
   - AcceptanceTest
   - IntegrationTest
   - UpgradeTest
+  - StressNewTests
 
 jobs:
 - name: Build
