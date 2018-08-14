@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
@@ -15,7 +16,7 @@ def main(template_file, variables_file, output_file):
     variables['repository']['branch'] = os.environ['GEODE_BRANCH']
     variables['repository']['fork'] = os.environ['GEODE_FORK']
 
-    print(variables)
+    logging.debug(f"Variables = {variables}")
 
     with open(output_file, 'w') as pipeline_file:
         pipeline_file.write(template.render(variables))
@@ -23,11 +24,15 @@ def main(template_file, variables_file, output_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--template", default="jinja.template.yml", help="Jinja template file.")
-    parser.add_argument("--variables", default="jinja.variables.yml", help="Jinja variables file.")
-    parser.add_argument("--output", default="generated-pipeline.yml", help="Output target.")
+    parser.add_argument("template", help="Jinja template file.")
+    parser.add_argument("variables", help="Jinja variables file.")
+    parser.add_argument("output", help="Output target.")
+    parser.add_argument("--debug", help="It's debug.  If you have to ask, you'll never know.", action="store_true")
 
     args = parser.parse_args()
+
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     main(args.template, args.variables, args.output)
 
