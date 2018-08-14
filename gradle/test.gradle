@@ -130,19 +130,22 @@ subprojects {
 
   configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
              upgradeTest]) {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-
     forkEvery 1
 
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
     outputs.upToDateWhen { false }
+  }
+
+  // Until the category can be removed, we exclude FlakyTest from some targets.
+  configure([integrationTest, distributedTest, performanceTest]) {
+    useJUnit {
+      if (project.hasProperty("testCategory")) {
+        includeCategories += project.testCategory
+      }
+      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+    }
   }
 
   if (project.hasProperty("forceTest")) {
