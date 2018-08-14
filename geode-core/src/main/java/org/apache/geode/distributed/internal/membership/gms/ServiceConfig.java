@@ -27,11 +27,12 @@ public class ServiceConfig {
   public static final long MEMBER_REQUEST_COLLECTION_INTERVAL =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "member-request-collection-interval", 300);
 
+  /** in a small cluster we might want to involve all members in operations */
+  public static final int SMALL_CLUSTER_SIZE = 9;
+
   /** various settings from Geode configuration */
   private final long joinTimeout;
   private final int[] membershipPortRange;
-  private final int udpRecvBufferSize;
-  private final int udpSendBufferSize;
   private final long memberTimeout;
   private Integer lossThreshold;
   private final Integer memberWeight;
@@ -79,12 +80,8 @@ public class ServiceConfig {
     return networkPartitionDetectionEnabled;
   }
 
-  public void setNetworkPartitionDetectionEnabled(boolean enabled) {
-    this.networkPartitionDetectionEnabled = enabled;
-  }
-
   public boolean areLocatorsPreferredAsCoordinators() {
-    boolean locatorsAreCoordinators = false;
+    boolean locatorsAreCoordinators;
 
     if (networkPartitionDetectionEnabled) {
       locatorsAreCoordinators = true;
@@ -139,23 +136,7 @@ public class ServiceConfig {
 
     membershipPortRange = theConfig.getMembershipPortRange();
 
-    udpRecvBufferSize = DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED;
-    udpSendBufferSize = theConfig.getUdpSendBufferSize();
-
     memberTimeout = theConfig.getMemberTimeout();
-
-    // The default view-ack timeout in 7.0 is 12347 ms but is adjusted based on the member-timeout.
-    // We don't want a longer timeout than 12437 because new members will likely time out trying to
-    // connect because their join timeouts are set to expect a shorter period
-    int ackCollectionTimeout = theConfig.getMemberTimeout() * 2 * 12437 / 10000;
-    if (ackCollectionTimeout < 1500) {
-      ackCollectionTimeout = 1500;
-    } else if (ackCollectionTimeout > 12437) {
-      ackCollectionTimeout = 12437;
-    }
-    ackCollectionTimeout = Integer
-        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout)
-        .intValue();
 
     lossThreshold =
         Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "network-partition-threshold", 51);

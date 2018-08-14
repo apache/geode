@@ -66,6 +66,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
@@ -1001,8 +1002,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public void memberSuspected(InternalDistributedMember initiator,
       InternalDistributedMember suspect, String reason) {
-    suspectedMemberIds.putIfAbsent(suspect, currentView);
     synchronized (suspectRequestsInView) {
+      suspectedMemberIds.putIfAbsent(suspect, currentView);
       Collection<SuspectRequest> requests = suspectRequestsInView.get(currentView);
       boolean found = false;
       if (requests == null) {
@@ -1022,9 +1023,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   }
 
   private void memberUnsuspected(InternalDistributedMember mbr) {
-    logger.info("No longer suspecting {}", mbr);
-    suspectedMemberIds.remove(mbr);
     synchronized (suspectRequestsInView) {
+      if (suspectedMemberIds.remove(mbr) != null) {
+        logger.info("No longer suspecting {}", mbr);
+      }
       Collection<SuspectRequest> suspectRequests = suspectRequestsInView.get(currentView);
       if (suspectRequests != null) {
         Collection<SuspectRequest> removals = new ArrayList<>(suspectRequests.size());
@@ -1361,7 +1363,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private void sendSuspectRequest(final List<SuspectRequest> requests) {
     logger.debug("Sending suspect request for members {}", requests);
     List<InternalDistributedMember> recipients;
-    if (currentView.size() > 9) {
+    if (currentView.size() > ServiceConfig.SMALL_CLUSTER_SIZE) {
       HashSet<InternalDistributedMember> filter = new HashSet<>();
       for (Enumeration<InternalDistributedMember> e = suspectedMemberIds.keys(); e
           .hasMoreElements();) {
@@ -1370,7 +1372,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       filter.addAll(
           requests.stream().map(SuspectRequest::getSuspectMember).collect(Collectors.toList()));
       recipients =
-          currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(), 10);
+          currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(),
+              ServiceConfig.SMALL_CLUSTER_SIZE + 1);
     } else {
       recipients = currentView.getMembers();
     }
