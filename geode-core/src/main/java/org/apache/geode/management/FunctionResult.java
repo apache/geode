@@ -10,10 +10,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.management.cli.CliFunctionResult;
 
+@Experimental
 public class FunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
   protected String memberIdOrName;
   protected Serializable[] serializables = new String[0];

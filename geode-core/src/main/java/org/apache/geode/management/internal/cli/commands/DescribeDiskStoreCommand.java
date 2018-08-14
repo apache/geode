@@ -26,13 +26,13 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.result.DataResultModel;
+import org.apache.geode.management.cli.result.ResultModel;
+import org.apache.geode.management.cli.result.TabularResultModel;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.DescribeDiskStoreFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 

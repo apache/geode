@@ -30,6 +30,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.CommandResponse;
@@ -42,7 +43,6 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**

@@ -28,9 +28,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.result.ResultModel;
+import org.apache.geode.management.cli.result.TabularResultModel;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 

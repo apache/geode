@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.result.model;
+package org.apache.geode.management.cli.result;
 
 import static org.apache.geode.management.FunctionResult.StatusState.ERROR;
 import static org.apache.geode.management.FunctionResult.StatusState.IGNORABLE;

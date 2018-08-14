@@ -27,7 +27,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 
 @Category({JDBCConnectorTest.class})

@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
 
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.cli.result.InfoResultModel;
 
 public class InfoResultModelAssert
     extends AbstractResultModelAssert<InfoResultModelAssert, InfoResultModel> {

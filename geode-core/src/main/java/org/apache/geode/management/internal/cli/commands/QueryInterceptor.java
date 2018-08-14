@@ -25,13 +25,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.springframework.shell.event.ParseResult;
 
+import org.apache.geode.management.cli.result.DataResultModel;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class QueryInterceptor extends AbstractCliAroundInterceptor {
   public static final String FILE_ALREADY_EXISTS_MESSAGE =

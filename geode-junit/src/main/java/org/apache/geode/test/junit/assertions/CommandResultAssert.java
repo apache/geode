@@ -27,12 +27,12 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.result.DataResultModel;
+import org.apache.geode.management.cli.result.InfoResultModel;
+import org.apache.geode.management.cli.result.ResultModel;
+import org.apache.geode.management.cli.result.TabularResultModel;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 
 public class CommandResultAssert

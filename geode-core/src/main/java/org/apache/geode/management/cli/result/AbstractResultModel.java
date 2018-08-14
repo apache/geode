@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.result.model;
+package org.apache.geode.management.cli.result;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

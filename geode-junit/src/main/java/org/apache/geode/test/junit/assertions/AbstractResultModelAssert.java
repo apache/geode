@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 
-import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
+import org.apache.geode.management.cli.result.AbstractResultModel;
 
 public abstract class AbstractResultModelAssert<S extends AbstractResultModelAssert<S, T>, T extends AbstractResultModel>
     extends

@@ -27,6 +27,7 @@ import org.springframework.shell.core.Converter;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -35,7 +36,6 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {

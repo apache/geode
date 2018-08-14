@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.MapAssert;
 
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.cli.result.DataResultModel;
 
 public class DataResultModelAssert
     extends AbstractResultModelAssert<DataResultModelAssert, DataResultModel> {

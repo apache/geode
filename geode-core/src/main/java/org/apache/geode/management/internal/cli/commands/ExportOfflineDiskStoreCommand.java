@@ -23,9 +23,9 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class ExportOfflineDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.EXPORT_OFFLINE_DISK_STORE,

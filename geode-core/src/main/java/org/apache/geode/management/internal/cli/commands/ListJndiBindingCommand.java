@@ -29,9 +29,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliFunctionResult;
+import org.apache.geode.management.cli.result.ResultModel;
+import org.apache.geode.management.cli.result.TabularResultModel;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
