@@ -178,7 +178,9 @@ dependencies {
   distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
 
 
-  upgradeTestCompile project(":geode-dunit")
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
 
 
   performanceTestCompile project(":geode-junit")

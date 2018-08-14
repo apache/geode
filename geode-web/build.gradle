@@ -72,7 +72,6 @@ dependencies {
     exclude module: 'spring-aop'
   }
 
-
   upgradeTestCompile project(":geode-dunit")
 }
 

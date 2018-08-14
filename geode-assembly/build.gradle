@@ -122,7 +122,9 @@ dependencies {
 
 
   upgradeTestCompile project(':geode-core')
-  upgradeTestCompile project(":geode-dunit")
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
   // TODO refactor out common test framework
   upgradeTestCompile sourceSets.distributedTest.output
   upgradeTestCompile sourceSets.test.output

@@ -23,5 +23,7 @@ dependencies {
 
   integrationTestCompile project(":geode-dunit")
 
-  upgradeTestCompile project(":geode-dunit")
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
 }
