@@ -158,7 +158,9 @@ dependencies {
   testRuntime 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile project(':geode-concurrency-test')
   integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
