@@ -17,7 +17,6 @@ FROM openjdk:8
 ENTRYPOINT []
 
 ARG CHROME_DRIVER_VERSION=2.35
-ENV SPRUCE_VERSION 1.17.0
 
 WORKDIR /tmp/work
 COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
@@ -28,7 +27,6 @@ ADD ./initdocker /usr/local/bin/initdocker
 ADD cache_dependencies.sh cache_dependencies.sh
 
 RUN chmod +x /usr/local/bin/tini \
-  && chmod +x /usr/local/bin/spruce \
   && chmod +x /usr/local/bin/initdocker \
   && chmod +x cache_dependencies.sh \
   && apt-get update \

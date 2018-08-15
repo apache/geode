@@ -21,9 +21,9 @@ groups:
 - name: main
   jobs:
   - Build
-{% for test in tests %}
+{%- for test in tests %}
   - {{test.name}}Test
-{% endfor %}
+{%- endfor %}
 resources:
 - name: docker-geode-build-image
   type: docker-image
@@ -156,7 +156,7 @@ jobs:
       - do:
         - put: concourse-metadata-resource
         - task: start_instance
-          {{ alpine_tools_config()|indent(10) }}
+          {{- alpine_tools_config()|indent(10) }}
             params:
               CPUS: {{test.CPUS}}
               GEODE_BRANCH: {{repository.branch}}
@@ -173,7 +173,7 @@ jobs:
           timeout: 15m
           attempts: 100
     - task: rsync_code_up
-      {{ alpine_tools_config()|indent(6) }}
+      {{- alpine_tools_config()|indent(6) }}
         run:
           path: geode-ci/ci/scripts/rsync_code_up.sh
         inputs:
@@ -182,7 +182,7 @@ jobs:
         - name: instance-data
       timeout: 5m
     - task: execute_tests
-      {{ alpine_tools_config()|indent(6) }}
+      {{- alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
@@ -194,7 +194,11 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
         run:
+          {%- if test.name=="StressNew" %}
+          path: geode/ci/scripts/repeat-new-tests.sh
+          {%- else %}
           path: geode-ci/ci/scripts/execute_tests.sh
+          {%- endif %}
         inputs:
         - name: geode
         - name: geode-ci
@@ -211,7 +215,7 @@ jobs:
     ensure:
       do:
       - task: rsync_code_down
-        {{ alpine_tools_config()|indent(8) }}
+        {{- alpine_tools_config()|indent(8) }}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
@@ -224,7 +228,7 @@ jobs:
       ensure:
         aggregate:
         - task: archive-results
-          {{ alpine_tools_config()|indent(10) }}
+          {{- alpine_tools_config()|indent(10) }}
             params:
               ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
               GRADLE_TASK: {{test.GRADLE_TASK}}
@@ -239,7 +243,7 @@ jobs:
             - name: geode-ci
             - name: geode-results
         - task: stop_instance
-          {{ alpine_tools_config()|indent(10) }}
+          {{- alpine_tools_config()|indent(10) }}
             run:
               path: geode-ci/ci/scripts/stop_instance.sh
             inputs:

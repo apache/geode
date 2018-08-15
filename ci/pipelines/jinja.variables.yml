@@ -61,6 +61,15 @@ tests:
   GRADLE_TASK: upgradeTest
   execute_test_timeout: 1h
   PARALLEL_DUNIT: "true"
+- name: "StressNew"
+  CPUS: "96"
+  RAM: "210"
+  ARTIFACT_SLUG: stressnewtestfiles
+  CALL_STACK_TIMEOUT: "7200"
+  DUNIT_PARALLEL_FORKS: "24"
+  GRADLE_TASK: repeatTest
+  execute_test_timeout: 2h15m
+  PARALLEL_DUNIT: "true"
 
 windowstests:
 - name: "WindowsAcceptance"

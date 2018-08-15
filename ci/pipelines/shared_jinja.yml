@@ -15,11 +15,11 @@
 # limitations under the License.
 #
 
-{% macro alpine_tools_config() %}
-{{ docker_config() }}
-{% endmacro %}
+{%- macro alpine_tools_config() %}
+{{- docker_config() }}
+{%- endmacro %}
 
-{% macro docker_config(repository_url) %}
+{%- macro docker_config(repository_url) %}
 config:
   platform: linux
   image_resource:
@@ -29,6 +29,4 @@ config:
       password: ((!docker-password))
       repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
       tag: latest
-{% endmacro %}
-
-echo
+{%- endmacro %}
