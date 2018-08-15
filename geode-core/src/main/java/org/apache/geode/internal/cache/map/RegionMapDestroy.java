@@ -154,9 +154,7 @@ public class RegionMapDestroy {
   }
 
   private void handleNullRegionEntry(RegionEntry tombstone) {
-    if (tombstone != null) {
-      retainForConcurrency = false;
-    } else {
+    if (tombstone == null) {
       retainForConcurrency = isConcurrentFromRemoteOnReplicaOrFromServer();
     }
     if (inTokenMode || retainForConcurrency) {
