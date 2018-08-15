@@ -15,9 +15,9 @@
 
 package org.apache.geode.management.cli.result;
 
-import static org.apache.geode.management.FunctionResult.StatusState.ERROR;
-import static org.apache.geode.management.FunctionResult.StatusState.IGNORABLE;
-import static org.apache.geode.management.FunctionResult.StatusState.OK;
+import static org.apache.geode.management.AbstractFunctionResult.StatusState.ERROR;
+import static org.apache.geode.management.AbstractFunctionResult.StatusState.IGNORABLE;
+import static org.apache.geode.management.AbstractFunctionResult.StatusState.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;

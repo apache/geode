@@ -5,24 +5,14 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.management.cli.CliFunctionResult;
 
-@Experimental
-public class FunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
-  protected String memberIdOrName;
-  protected Serializable[] serializables = new String[0];
-  protected Object resultObject;
-  protected byte[] byteData = new byte[0];
-  protected FunctionResult.StatusState state;
-
+public interface FunctionResult extends Comparable<CliFunctionResult>, DataSerializableFixedID {
   /**
    * Remove elements from the list that are not instances of CliFunctionResult and then sort the
    * results.
@@ -30,7 +20,7 @@ public class FunctionResult implements Comparable<CliFunctionResult>, DataSerial
    * @param results The results to clean.
    * @return The cleaned results.
    */
-  public static List<CliFunctionResult> cleanResults(List<?> results) {
+  static List<CliFunctionResult> cleanResults(List<?> results) {
     List<CliFunctionResult> returnResults = new ArrayList<CliFunctionResult>(results.size());
     for (Object result : results) {
       if (result instanceof CliFunctionResult) {
@@ -42,152 +32,49 @@ public class FunctionResult implements Comparable<CliFunctionResult>, DataSerial
     return returnResults;
   }
 
-  public String getMemberIdOrName() {
-    return this.memberIdOrName;
-  }
+  String getMemberIdOrName();
 
   @Deprecated
-  public String getMessage() {
-    if (this.serializables.length == 0 || !(this.serializables[0] instanceof String)) {
-      return null;
-    }
+  String getMessage();
 
-    return (String) this.serializables[0];
-  }
+  String getStatus();
 
-  public String getStatus() {
-    return state.name();
-  }
-
-  public String getStatusMessage() {
-    String message = getMessage();
-
-    if (isSuccessful()) {
-      return message;
-    }
-
-    String errorMessage = "";
-    if (message != null
-        && (resultObject == null || !((Throwable) resultObject).getMessage().contains(message))) {
-      errorMessage = message;
-    }
-
-    if (resultObject != null) {
-      errorMessage = errorMessage.trim() + " " + ((Throwable) resultObject).getClass().getName()
-          + ": " + ((Throwable) resultObject).getMessage();
-    }
-
-    return errorMessage;
-  }
+  String getStatusMessage();
 
   @Deprecated
-  public Serializable[] getSerializables() {
-    return this.serializables;
-  }
+  Serializable[] getSerializables();
 
   @Deprecated
-  public Throwable getThrowable() {
-    if (isSuccessful()) {
-      return null;
-    }
-    return ((Throwable) resultObject);
-  }
+  Throwable getThrowable();
 
-  public Object getResultObject() {
-    return resultObject;
-  }
+  Object getResultObject();
 
   @Override
-  public int getDSFID() {
-    return DataSerializableFixedID.CLI_FUNCTION_RESULT;
-  }
+  int getDSFID();
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.memberIdOrName, out);
-    DataSerializer.writePrimitiveBoolean(this.isSuccessful(), out);
-    // DataSerializer.writeObject(this.xmlEntity, out);
-    DataSerializer.writeObjectArray(this.serializables, out);
-    DataSerializer.writeObject(this.resultObject, out);
-    DataSerializer.writeByteArray(this.byteData, out);
-    // toDataPre_GEODE_1_6_0_0(out);
-    DataSerializer.writeEnum(this.state, out);
-  }
+  void toData(DataOutput out) throws IOException;
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.memberIdOrName = DataSerializer.readString(in);
-    this.state = DataSerializer.readPrimitiveBoolean(in) ? StatusState.OK : StatusState.ERROR;
-    // this.xmlEntity = DataSerializer.readObject(in);
-    this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
-    this.resultObject = DataSerializer.readObject(in);
-    this.byteData = DataSerializer.readByteArray(in);
-    // fromDataPre_GEODE_1_6_0_0(in);
-    this.state = DataSerializer.readEnum(StatusState.class, in);
-  }
+  void fromData(DataInput in) throws IOException, ClassNotFoundException;
 
-  public boolean isSuccessful() {
-    return this.state == StatusState.OK;
-  }
+  boolean isSuccessful();
 
   @Deprecated
-  public byte[] getByteData() {
-    return this.byteData;
-  }
+  byte[] getByteData();
 
   @Override
-  public int compareTo(CliFunctionResult o) {
-    if (this.memberIdOrName == null && o.memberIdOrName == null) {
-      return 0;
-    }
-    if (this.memberIdOrName == null && o.memberIdOrName != null) {
-      return -1;
-    }
-    if (this.memberIdOrName != null && o.memberIdOrName == null) {
-      return 1;
-    }
-    return getMemberIdOrName().compareTo(o.memberIdOrName);
-  }
+  int compareTo(CliFunctionResult o);
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((this.memberIdOrName == null) ? 0 : this.memberIdOrName.hashCode());
-    return result;
-  }
+  int hashCode();
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    CliFunctionResult other = (CliFunctionResult) obj;
-    if (this.memberIdOrName == null) {
-      if (other.memberIdOrName != null)
-        return false;
-    } else if (!this.memberIdOrName.equals(other.memberIdOrName))
-      return false;
-    return true;
-  }
+  boolean equals(Object obj);
 
   @Override
-  public String toString() {
-    return "CliFunctionResult [memberId=" + this.memberIdOrName + ", successful="
-        + this.isSuccessful() + ", serializables="
-        + Arrays.toString(this.serializables) + ", throwable=" + this.resultObject + ", byteData="
-        + Arrays.toString(this.byteData) + "]";
-  }
+  String toString();
 
   @Override
-  public Version[] getSerializationVersions() {
-    return new Version[] {Version.GFE_80};
-  }
-
-  public enum StatusState {
-    OK, ERROR, IGNORABLE
-  }
+  Version[] getSerializationVersions();
 }

@@ -21,10 +21,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.management.FunctionResult;
+import org.apache.geode.management.AbstractFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class CliFunctionResult extends FunctionResult {
+public class CliFunctionResult extends AbstractFunctionResult {
   private XmlEntity xmlEntity;
 
   @Deprecated
