@@ -15,12 +15,29 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 
 public class ServerToClientFunctionResultSender65JUnitTest
     extends ServerToClientFunctionResultSenderJUnitTest {
 
   @Override
   protected ServerToClientFunctionResultSender getResultSender() {
-    return mock(ServerToClientFunctionResultSender65.class);
+    ChunkedMessage msg = mock(ChunkedMessage.class);
+    serverConnection = mock(ServerConnection.class);
+    Function function = mock(Function.class);
+    ExecuteFunctionOperationContext executeFunctionOperationContext =
+        mock(ExecuteFunctionOperationContext.class);
+    AcceptorImpl acceptor = mock(AcceptorImpl.class);
+    when(serverConnection.getAcceptor()).thenReturn(acceptor);
+    when(acceptor.isSelector()).thenReturn(true);
+    when(acceptor.isRunning()).thenReturn(true);
+    return new ServerToClientFunctionResultSender65(msg, 1, serverConnection, function,
+        executeFunctionOperationContext);
   }
 }
