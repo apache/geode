@@ -28,6 +28,11 @@ public class TxCommitMessageBCClientToServerTxBothTest extends TxCommitMessageBC
     String regionNameRepl = REPLICATE_REGION_NAME;
     String regionNamePart = PARTITION_REGION_NAME;
 
+
+
+
+
+
     List<Integer> beforeValuesRepl =
         client.invoke(() -> TxCommitMessageBCTestBase.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
