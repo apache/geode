@@ -335,7 +335,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void evictDestroyWithExistingTombstoneInTokenModeChangesToDestroyToken() {
+  public void evictDestroyWithExistingTombstoneInTokenModeChangesToDestroyToken() { // todo
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntry(Token.TOMBSTONE);
@@ -348,7 +348,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void evictDestroyWithExistingTombstoneInTokenModeNeverCallsUpdateSizeOnRemove() {
+  public void evictDestroyWithExistingTombstoneInTokenModeNeverCallsUpdateSizeOnRemove() { // todo
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntry(Token.TOMBSTONE);
@@ -674,7 +674,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksDoesNothing() {
+  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksDoesNothing() { // todo
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
@@ -688,7 +688,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksNeverCallsUpdateSizeOnRemove() {
+  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksNeverCallsUpdateSizeOnRemove() { // todo
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
