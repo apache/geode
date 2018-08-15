@@ -241,7 +241,6 @@ public class RegionMapDestroy {
   }
 
   private void handleEntryAlreadyRemoved(RegionEntry entry) {
-    updateVersionTagOnTombstone(entry);
     if (isOldValueExpected()) {
       cancelDestroy();
       return;
@@ -319,26 +318,6 @@ public class RegionMapDestroy {
     // If concurrency conflict is there and event contains gateway version tag then
     // do NOT distribute.
     doPart3 = false;
-  }
-
-  private void updateVersionTagOnTombstone(RegionEntry entry) {
-    if (!isTombstone(entry)) {
-      return;
-    } // TODO coverage to get here need the following:
-    // 1. an existing entry that becomes a tombstone AFTER ifTombstoneSetRegionEntryToNull is called
-    // and BEFORE we sync on "regionEntry".
-    // 2. event.isOriginRemote to return false
-    // 3. removeRecoveredRegion to be false
-    // 4. event.getContext to return null
-    // 5. concurrencyChecks to be true
-    if (noVersionTag()) {
-      // When will tombstone entries not have a version tag?
-      return;
-    }
-    // if we're dealing with a tombstone and this is a remote event
-    // (e.g., from cache client update thread) we need to update
-    // the tombstone's version information
-    makeTombstone(entry);
   }
 
   private void cancelDestroy() {

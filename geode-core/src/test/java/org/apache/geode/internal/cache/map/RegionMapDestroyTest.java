@@ -730,7 +730,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksNeverCallsUpdateSizeOnRemove() { // todo
+  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksNeverCallsUpdateSizeOnRemove() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
