@@ -43,7 +43,7 @@ groups:
 - name: main
   jobs:
   - Build
-  {% for test in tests + windowstests -%}
+  {% for test in (tests + windowstests) if not test.name=="StressNew" -%}
   - {{test.name}}Test
   {% endfor -%}
   - UpdatePassingRef
@@ -173,7 +173,7 @@ jobs:
   plan:
   - get: geode
     passed:
-    {% for test in tests -%}
+    {% for test in tests if not test.name=="StressNew" -%}
     - {{test.name}}Test
     {% endfor %}
     trigger: true
@@ -194,7 +194,7 @@ jobs:
       outputs:
       - name: results
     image: docker-geode-build-image
-{% for test in tests %}
+{% for test in tests if not test.name=="StressNew" %}
 - name: {{test.name}}Test
   public: true
   plan:
