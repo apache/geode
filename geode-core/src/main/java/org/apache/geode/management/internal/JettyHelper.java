@@ -16,6 +16,7 @@ package org.apache.geode.management.internal;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang.StringUtils;
@@ -190,11 +191,12 @@ public class JettyHelper {
 
   private static String getWebAppBaseDirectory(final String context) {
     String underscoredContext = context.replace("/", "_");
+    String uuid = UUID.randomUUID().toString().substring(0, 8);
     final String workingDirectory = USER_DIR.concat(FILE_PATH_SEPARATOR)
         .concat("GemFire_" + USER_NAME).concat(FILE_PATH_SEPARATOR).concat("services")
         .concat(FILE_PATH_SEPARATOR).concat("http").concat(FILE_PATH_SEPARATOR)
         .concat((StringUtils.isBlank(bindAddress)) ? "0.0.0.0" : bindAddress).concat("_")
-        .concat(String.valueOf(port).concat(underscoredContext));
+        .concat(String.valueOf(port).concat(underscoredContext)).concat("_").concat(uuid);
 
     return workingDirectory;
   }
