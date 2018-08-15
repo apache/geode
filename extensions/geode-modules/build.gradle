@@ -19,7 +19,6 @@ evaluationDependsOn(":geode-core")
 
 dependencies {
   compile project(':geode-core')
-  
   compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   compile ('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
     exclude module: 'annotations-api'
@@ -28,13 +27,12 @@ dependencies {
   }
   compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
 
-  testCompile project(':geode-junit')
-
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
 
   integrationTestCompile project(":geode-dunit")
-  integrationTestCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-  integrationTestCompile 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
+  integrationTestCompile project(":extensions/geode-modules-test")
+
+  integrationTestRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 }
 
 disableMavenPublishing()

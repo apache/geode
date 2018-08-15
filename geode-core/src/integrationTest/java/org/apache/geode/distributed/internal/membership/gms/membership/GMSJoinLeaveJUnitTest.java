@@ -717,6 +717,25 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
+  public void testBecomeCoordinatorThroughViewChangeWhenCoordinatorIsShuttingDown()
+      throws Exception {
+    initMocks();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
+    NetView oldView = gmsJoinLeave.getView();
+    oldView.add(gmsJoinLeaveMemberId);
+    NetView view = new NetView(oldView, oldView.getViewId() + 1);
+    InternalDistributedMember creator = view.getCreator();
+    LeaveRequestMessage leaveRequestMessage =
+        new LeaveRequestMessage(gmsJoinLeaveMemberId, mockMembers[0], "leaving for test");
+    gmsJoinLeave.processMessage(leaveRequestMessage);
+    assertTrue(gmsJoinLeave.isCoordinator());
+    InstallViewMessage msg = getInstallViewMessage(view, creator, false);
+    msg.setSender(creator);
+    gmsJoinLeave.processMessage(msg);
+    assertTrue("Expected it to remain coordinator", gmsJoinLeave.isCoordinator());
+  }
+
+  @Test
   public void testBecomeParticipantThroughViewChange() throws Exception {
     initMocks();
     prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
