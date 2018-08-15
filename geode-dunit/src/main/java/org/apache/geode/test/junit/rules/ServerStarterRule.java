@@ -22,8 +22,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -156,6 +160,23 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     this.autoStart = true;
     regions.put(name, type);
     return this;
+  }
+
+  public Region createRegion(RegionShortcut type, String name,
+      Consumer<RegionFactory> regionFactoryConsumer) {
+    RegionFactory factory = getCache().createRegionFactory(type);
+    regionFactoryConsumer.accept(factory);
+    return factory.create(name);
+  }
+
+  public Region createPRRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
+      Consumer<PartitionAttributesFactory> prAttributesFactory) {
+    return createRegion(RegionShortcut.PARTITION, name, rf -> {
+      regionFactoryConsumer.accept(rf);
+      PartitionAttributesFactory factory = new PartitionAttributesFactory();
+      prAttributesFactory.accept(factory);
+      rf.setPartitionAttributes(factory.create());
+    });
   }
 
   public void startServer(Properties properties, int locatorPort) {

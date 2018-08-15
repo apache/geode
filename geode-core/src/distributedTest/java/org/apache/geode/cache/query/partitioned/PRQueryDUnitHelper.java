@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import util.TestException;
 
@@ -49,7 +48,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -76,8 +74,6 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -845,7 +841,6 @@ public class PRQueryDUnitHelper implements Serializable {
             "p, pos from /REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",};
 
         Object r[][] = new Object[queries.length][2];
-        Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
 
@@ -963,7 +958,6 @@ public class PRQueryDUnitHelper implements Serializable {
             "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId",};
 
         Object r[][] = new Object[1][2];
-        Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
 
@@ -1588,66 +1582,6 @@ public class PRQueryDUnitHelper implements Serializable {
   }
 
   /**
-   * This function <br>
-   * 1. calls the cache.close on the VM <br>
-   * 2. creates the cache again & also the PR <br>
-   *
-   * @return cacheSerializable object
-   *
-   *         NOTE: Closing of the cache must be done from the test case rather than in
-   *         PRQueryDUintHelper
-   *
-   */
-
-  public CacheSerializableRunnable getCacheSerializableRunnableForCacheClose(
-      final String regionName, final int redundancy, final Class constraint) {
-    SerializableRunnable PrRegion = new CacheSerializableRunnable("cacheClose") {
-      @Override
-      public void run2() throws CacheException {
-        final String expectedCacheClosedException = CacheClosedException.class.getName();
-        final String expectedReplyException = ReplyException.class.getName();
-        getCache().getLogger().info("<ExpectedException action=add>" + expectedCacheClosedException
-            + "</ExpectedException>");
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + expectedReplyException + "</ExpectedException>");
-        Cache cache = getCache();
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
-            "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: Recreating the cache ");
-        AttributesFactory attr = new AttributesFactory();
-        attr.setValueConstraint(constraint);
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        PartitionAttributes prAttr = paf.setRedundantCopies(redundancy).create();
-        attr.setPartitionAttributes(prAttr);
-        final CountDownLatch cdl = new CountDownLatch(1);
-        ResourceObserverAdapter observer = new InternalResourceManager.ResourceObserverAdapter() {
-          @Override
-          public void recoveryFinished(Region region) {
-            cdl.countDown();
-          }
-        };
-        InternalResourceManager.setResourceObserver(observer);
-        try {
-          cache.createRegion(regionName, attr.create());
-          // Wait for recovery to finish
-          cdl.await();
-        } catch (InterruptedException e) {
-          Assert.fail("interupted", e);
-        } finally {
-          InternalResourceManager.setResourceObserver(null);
-        }
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
-            "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForCacheClose: cache Recreated on VM ");
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + expectedReplyException + "</ExpectedException>");
-        getCache().getLogger().info("<ExpectedException action=remove>"
-            + expectedCacheClosedException + "</ExpectedException>");
-      }
-
-    };
-    return (CacheSerializableRunnable) PrRegion;
-  }
-
-  /**
    * This function creates a appropriate index on a PR given the name and other parameters.
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRIndexCreate(
@@ -2046,7 +1980,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
       }
     };
-    return (CacheSerializableRunnable) PrRegion;
+    return PrRegion;
 
   }
 
@@ -2160,7 +2094,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
       }
     };
-    return (CacheSerializableRunnable) PrRegion;
+    return PrRegion;
 
   }
 
@@ -2272,7 +2206,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
       }
     };
-    return (CacheSerializableRunnable) PrRegion;
+    return PrRegion;
 
   }
 
@@ -2288,11 +2222,14 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         // Querying the PR region
 
-        String[] queries = new String[] {"r1.ID = r2.id", "r1.ID = r2.id AND r1.ID > 5",
+        String[] queries = new String[] {"r1.ID = r2.id",
+            "r1.ID = r2.id AND r1.ID > 5",
             "r1.ID = r2.id AND r1.status = 'active'",
             // "r1.ID = r2.id LIMIT 10",
-            "r1.ID = r2.id ORDER BY r1.ID", "r1.ID = r2.id ORDER BY r2.id",
-            "r1.ID = r2.id ORDER BY r2.status", "r1.ID = r2.id AND r1.status != r2.status",
+            "r1.ID = r2.id ORDER BY r1.ID",
+            "r1.ID = r2.id ORDER BY r2.id",
+            "r1.ID = r2.id ORDER BY r2.status",
+            "r1.ID = r2.id AND r1.status != r2.status",
             "r1.ID = r2.id AND r1.status = r2.status",
             "r1.ID = r2.id AND r1.positions.size = r2.positions.size",
             "r1.ID = r2.id AND r1.positions.size > r2.positions.size",
@@ -2323,7 +2260,6 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         QueryService qs = getCache().getQueryService();
-        Object[] params;
         try {
           for (int j = 0; j < queries.length; j++) {
             getCache().getLogger().info("About to execute local query: " + queries[j]);
@@ -2386,12 +2322,12 @@ public class PRQueryDUnitHelper implements Serializable {
 
       }
     };
-    return (CacheSerializableRunnable) PrRegion;
+    return PrRegion;
 
   }
 
   // Helper classes and function
-  class TestQueryFunction extends FunctionAdapter {
+  public static class TestQueryFunction implements Function {
 
     @Override
     public boolean hasResult() {

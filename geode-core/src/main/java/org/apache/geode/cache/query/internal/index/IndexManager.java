@@ -181,11 +181,15 @@ public class IndexManager {
    * aggressively. But the large hiccup will eventually be rolled off as time is always increasing
    * This is a fix for #47475
    *
-   * @param operationTime the last modified time from version tag
+   * @param lastModifiedTime the last modified time from version tag
    */
-  public static boolean setIndexBufferTime(long operationTime, long currentCacheTime) {
-    long timeDifference = currentCacheTime - operationTime;
-    return setNewLargestValue(SAFE_QUERY_TIME, currentCacheTime + timeDifference);
+  public static void setIndexBufferTime(long lastModifiedTime, long currentCacheTime) {
+    long oldValue = SAFE_QUERY_TIME.get();
+    long newValue = currentCacheTime + currentCacheTime - lastModifiedTime;
+    if (oldValue < newValue) {
+      // use compare and set in case the value has been changed since we got the old value
+      SAFE_QUERY_TIME.compareAndSet(oldValue, newValue);
+    }
   }
 
   /**
@@ -213,21 +217,9 @@ public class IndexManager {
    * Small amounts of false positives are ok as it will have a slight impact on performance
    */
   public static boolean needsRecalculation(long queryStartTime, long lastModifiedTime) {
-    return ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION
-        && queryStartTime <= SAFE_QUERY_TIME.get() - queryStartTime + lastModifiedTime;
-  }
-
-  private static boolean setNewLargestValue(AtomicLong value, long newValue) {
-    boolean done = false;
-    while (!done) {
-      long oldValue = value.get();
-      if (oldValue < newValue) {
-        return value.compareAndSet(oldValue, newValue);
-      } else {
-        done = true;
-      }
-    }
-    return false;
+    boolean needsRecalculate =
+        (queryStartTime <= (lastModifiedTime + (SAFE_QUERY_TIME.get() - queryStartTime)));
+    return ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION && needsRecalculate;
   }
 
   /** Test Hook */
