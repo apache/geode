@@ -246,7 +246,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
       httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
-      properties.putIfAbsent(HTTP_SERVICE_PORT, httpPort + "");
+      properties.put(HTTP_SERVICE_PORT, httpPort + "");
     } else {
       // indicate start http service but with default port
       // (different from Gemfire properties, 0 means do not start http service)
