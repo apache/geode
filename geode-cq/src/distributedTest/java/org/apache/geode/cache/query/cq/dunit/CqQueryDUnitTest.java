@@ -220,17 +220,17 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
         for (int i = 0; i < regions.length; i++) {
           createRegion(regions[i], factory.createRegionAttributes());
+          if (getRootRegion("root").getSubregion(regions[i]).isEmpty()) {
+            LogWriterUtils.getLogWriter().info("### CreateServer: Region is empty ###");
+          }
         }
-        Wait.pause(2000);
 
         try {
           startBridgeServer(thePort, true);
-        }
-
-        catch (Exception ex) {
+        } catch (Exception ex) {
           Assert.fail("While starting CacheServer", ex);
         }
-        Wait.pause(2000);
+
 
       }
     };
@@ -294,7 +294,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
         stopBridgeServer(getCache());
       }
     });
-    Wait.pause(2 * 1000);
+
   }
 
   public void crashServer(VM server) {
@@ -773,32 +773,21 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new CacheSerializableRunnable("Execute CQ :" + cqName) {
 
       private void work() throws CacheException {
-        // pause(60 * 1000);
-        LogWriterUtils.getLogWriter().info("### DEBUG EXECUTE CQ START ####");
-        // pause(20 * 1000);
 
         // Get CQ Service.
         QueryService cqService = null;
         CqQuery cq1 = null;
-        // try {
+
         cqService = getCache().getQueryService();
-        // } catch (Exception cqe) {
-        // getLogWriter().error(cqe);
-        // AssertionError err = new AssertionError("Failed to get QueryService" + cqName);
-        // err.initCause(ex);
-        // throw err;
-        // fail("Failed to getCQService.");
-        // }
 
         // Get CqQuery object.
         try {
           cq1 = cqService.getCq(cqName);
           if (cq1 == null) {
-            LogWriterUtils.getLogWriter()
-                .info("Failed to get CqQuery object for CQ name: " + cqName);
+
             fail("Failed to get CQ " + cqName);
           } else {
-            LogWriterUtils.getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
+
             assertTrue("newCq() state mismatch", cq1.getState().isStopped());
           }
         } catch (Exception ex) {
@@ -821,7 +810,6 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
             err.initCause(ex);
             throw err;
           }
-          LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
           assertTrue("executeWithInitialResults() state mismatch", cq1.getState().isRunning());
           if (expectedResultsSize >= 0) {
             assertEquals("unexpected results size", expectedResultsSize, cqResults.size());
