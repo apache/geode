@@ -72,8 +72,9 @@ dependencies {
     exclude module: 'spring-aop'
   }
 
-
-  upgradeTestCompile project(":geode-dunit")
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
 }
 
 //Remove the gradle output directories from the eclipse classpath. These

@@ -16,7 +16,7 @@
  */
 
 dependencies {
-  compileOnly project(':geode-core')
+  compile project(':geode-core')
   //compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
 
   compile project(':geode-junit')
