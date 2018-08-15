@@ -19,12 +19,16 @@
 dependencies {
 
   compileOnly project(':geode-core')
-  compileOnly project(':geode-junit')
   compileOnly project(':geode-pulse')
+  compileOnly project(':extensions/geode-modules-test')
 
-  compile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
-  compile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
-  compile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
+  compileOnly group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
+  compileOnly 'org.assertj:assertj-core:' + project.'assertj-core.version'
+  compileOnly 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+  compileOnly 'commons-io:commons-io:' + project.'commons-io.version'
+  compileOnly 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compileOnly 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  compileOnly 'junit:junit:' + project.'junit.version'
 }
 
 disableMavenPublishing()
