@@ -53,7 +53,7 @@ resources:
   source:
     bucket: ((!public-bucket))
     json_key: ((!concourse-gcp-key))
-    regexp: artifacts/jinja/geodefiles-(.*).tgz
+    regexp: artifacts/{{repository.branch}}/geodefiles-(.*).tgz
 - name: send-notification-email
   type: email
   source:
