@@ -31,7 +31,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 
@@ -43,23 +42,23 @@ import org.apache.geode.test.dunit.VM;
 class SimpleWaitFunction<T> implements Function<T> {
   private static CountDownLatch countDownLatch;
 
-  public void setLatch() {
+  public static void setLatch() {
     countDownLatch = new CountDownLatch(1);
+  }
+
+  public static void clearLatch() {
+    countDownLatch.countDown();
   }
 
   @Override
   public void execute(FunctionContext<T> context) {
-    T args = context.getArguments();
-    if (args == Boolean.TRUE) {
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    } else {
-      countDownLatch.countDown();
+    try {
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
   }
+
 }
 
 
@@ -93,15 +92,14 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
   public void testNumOfRunningFunctions() {
     initManagement(false);
     VM client = managedNodeList.get(2);
-
     client.invokeAsync(new SerializableRunnable() {
       public void run() {
         Cache cache = getCache();
-        SimpleWaitFunction<Boolean> sf = new SimpleWaitFunction<>();
-        sf.setLatch();
+        SimpleWaitFunction<Boolean> simpleWaitFunction = new SimpleWaitFunction();
+        simpleWaitFunction.setLatch();
         Execution execution =
             FunctionService.onMember(cache.getDistributedSystem().getDistributedMember());
-        execution.setArguments(Boolean.TRUE).execute(sf);
+        execution.setArguments(Boolean.TRUE).execute(simpleWaitFunction);
       }
     });
 
@@ -110,13 +108,9 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
 
     assertTrue(numOfRunningFunctions > 0);
 
-    Invoke.invokeInEveryVM(new SerializableRunnable() {
+    client.invoke(new SerializableRunnable() {
       public void run() {
-        Cache cache = getCache();
-        SimpleWaitFunction<Boolean> sf = new SimpleWaitFunction<>();
-        Execution execution =
-            FunctionService.onMember(cache.getDistributedSystem().getDistributedMember());
-        execution.setArguments(Boolean.FALSE).execute(sf);
+        SimpleWaitFunction.clearLatch();
       }
     });
   }
