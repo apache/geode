@@ -31,6 +31,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class ExportConfigFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();

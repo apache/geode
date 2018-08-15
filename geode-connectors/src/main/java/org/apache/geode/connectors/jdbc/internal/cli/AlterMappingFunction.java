@@ -22,7 +22,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
 import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.management.cli.CliFunction;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 @Experimental
 public class AlterMappingFunction extends CliFunction<ConnectorService.RegionMapping> {

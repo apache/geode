@@ -13,28 +13,31 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.result.model;
+package org.apache.geode.management.cli.result;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DataResultModel extends AbstractResultModel {
 
-  private Map<String, String> data = new LinkedHashMap<>();
 
-  DataResultModel() {}
+public class InfoResultModel extends AbstractResultModel {
+
+  private List<String> messages = new ArrayList<>();
+
+  InfoResultModel() {}
 
   @Override
-  public Map<String, String> getContent() {
-    return data;
+  public List<String> getContent() {
+    return messages;
   }
 
-  public void setContent(Map<String, String> content) {
-    this.data = content;
+  public void setContent(List<String> messages) {
+    this.messages = messages;
   }
 
-  public void addData(String key, Object value) {
-    data.put(key, value != null ? value.toString() : "");
+  public InfoResultModel addLine(String line) {
+    messages.add(line);
+    return this;
   }
 
 }

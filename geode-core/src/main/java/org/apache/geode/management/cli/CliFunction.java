@@ -18,7 +18,6 @@ package org.apache.geode.management.cli;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 /**
  * An abstract function implementation to be extended by cli functions. Any cli function extending

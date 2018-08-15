@@ -41,7 +41,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.ConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class AlterConnectionFunctionTest {
 

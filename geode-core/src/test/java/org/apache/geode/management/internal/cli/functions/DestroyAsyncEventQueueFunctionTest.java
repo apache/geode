@@ -31,6 +31,7 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.fake.Fakes;
 

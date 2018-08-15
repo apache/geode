@@ -25,9 +25,9 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;

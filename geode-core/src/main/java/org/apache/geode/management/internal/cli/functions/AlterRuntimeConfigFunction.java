@@ -28,6 +28,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class AlterRuntimeConfigFunction implements InternalFunction {

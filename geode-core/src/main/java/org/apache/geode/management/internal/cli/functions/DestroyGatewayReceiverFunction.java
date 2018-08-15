@@ -24,9 +24,10 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.AbstractFunctionResult.StatusState;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
 public class DestroyGatewayReceiverFunction extends CliFunction {
   private static final Logger logger = LogService.getLogger();

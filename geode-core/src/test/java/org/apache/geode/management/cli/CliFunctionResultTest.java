@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.functions;
+package org.apache.geode.management.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

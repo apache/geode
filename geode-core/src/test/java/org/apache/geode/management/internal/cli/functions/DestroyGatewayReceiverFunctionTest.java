@@ -34,6 +34,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 public class DestroyGatewayReceiverFunctionTest {
   private DestroyGatewayReceiverFunction function;

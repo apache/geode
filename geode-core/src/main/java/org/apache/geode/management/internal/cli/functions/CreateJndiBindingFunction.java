@@ -25,6 +25,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class CreateJndiBindingFunction extends CliFunction<JndiBindingsType.JndiBinding> {

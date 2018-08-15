@@ -25,14 +25,14 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import org.apache.geode.management.cli.result.AbstractResultModel;
+import org.apache.geode.management.cli.result.DataResultModel;
+import org.apache.geode.management.cli.result.FileResultModel;
+import org.apache.geode.management.cli.result.InfoResultModel;
+import org.apache.geode.management.cli.result.ResultModel;
+import org.apache.geode.management.cli.result.TabularResultModel;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.FileResultModel;
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class ModelCommandResult implements CommandResult {
   private static final String DO_NOT_USE_PERSISTED_FLAG =

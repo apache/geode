@@ -19,11 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  *

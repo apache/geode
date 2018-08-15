@@ -24,8 +24,8 @@ import org.apache.geode.cache.CacheExistsException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class AlterOfflineDiskStoreCommand extends InternalGfshCommand {
   @CliCommand(value = CliStrings.ALTER_DISK_STORE, help = CliStrings.ALTER_DISK_STORE__HELP)

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.management.internal.cli.result.model;
+package org.apache.geode.management.cli.result;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -66,7 +66,7 @@ public class TabularResultModelTest {
 
     String json = result.toJson();
     assertThat(json).contains(
-        "{\"table1\":{\"modelClass\":\"org.apache.geode.management.internal.cli.result.model.TabularResultModel\",\"header\":\"\",\"footer\":\"\",\"content\":{\"c1\":[\"v1\"],\"c2\":[\"v2\"]}}}");
+        "{\"table1\":{\"modelClass\":\"org.apache.geode.management.cli.result.TabularResultModel\",\"header\":\"\",\"footer\":\"\",\"content\":{\"c1\":[\"v1\"],\"c2\":[\"v2\"]}}}");
     // these make sure we don't serialize extra info
     assertThat(json).doesNotContain("headers");
     assertThat(json).doesNotContain("values");

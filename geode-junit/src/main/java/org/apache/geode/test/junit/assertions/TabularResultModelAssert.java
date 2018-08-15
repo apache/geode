@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.ListAssert;
 
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.cli.result.TabularResultModel;
 
 public class TabularResultModelAssert
     extends AbstractResultModelAssert<TabularResultModelAssert, TabularResultModel> {

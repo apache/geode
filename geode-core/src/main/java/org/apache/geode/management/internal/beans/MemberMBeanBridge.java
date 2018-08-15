@@ -97,6 +97,7 @@ import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.OSMetrics;
+import org.apache.geode.management.cli.result.ResultModel;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -113,7 +114,6 @@ import org.apache.geode.management.internal.beans.stats.VMStatsMonitor;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and Distributed System

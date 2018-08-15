@@ -25,6 +25,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.cli.Result;
 
 public class CreateDiskStoreFunction extends CliFunction {

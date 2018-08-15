@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 

@@ -32,6 +32,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.CliFunctionResult;
 
 
 public class RegionDestroyFunctionTest {

@@ -13,11 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.result.model;
+package org.apache.geode.management.cli.result;
 
-import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.ERROR;
-import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.IGNORABLE;
-import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.OK;
+import static org.apache.geode.management.AbstractFunctionResult.StatusState.ERROR;
+import static org.apache.geode.management.AbstractFunctionResult.StatusState.IGNORABLE;
+import static org.apache.geode.management.AbstractFunctionResult.StatusState.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -26,8 +26,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 
 public class ResultModelTest {

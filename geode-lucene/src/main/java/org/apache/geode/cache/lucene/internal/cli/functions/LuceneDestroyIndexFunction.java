@@ -24,7 +24,7 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
 import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class LuceneDestroyIndexFunction implements InternalFunction {

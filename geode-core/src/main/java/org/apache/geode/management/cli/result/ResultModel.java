@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.result.model;
+package org.apache.geode.management.cli.result;
 
 import static org.apache.geode.management.internal.cli.result.AbstractResultData.FILE_TYPE_BINARY;
 import static org.apache.geode.management.internal.cli.result.AbstractResultData.FILE_TYPE_TEXT;
@@ -29,9 +29,10 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.cli.CliFunctionResult;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.
@@ -67,7 +68,8 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
  * </ul>
  *
  */
-public class ResultModel {
+@Experimental
+public class ResultModel extends AbstractResultModel {
 
   public static final String INFO_SECTION = "info";
   public static final String MEMBER_STATUS_SECTION = "member-status";
@@ -116,21 +118,21 @@ public class ResultModel {
     return status;
   }
 
-  public String getHeader() {
-    return header;
-  }
-
-  public void setHeader(String header) {
-    this.header = header;
-  }
-
-  public String getFooter() {
-    return footer;
-  }
-
-  public void setFooter(String footer) {
-    this.footer = footer;
-  }
+  // public String getHeader() {
+  // return header;
+  // }
+  //
+  // public void setHeader(String header) {
+  // this.header = header;
+  // }
+  //
+  // public String getFooter() {
+  // return footer;
+  // }
+  //
+  // public void setFooter(String footer) {
+  // this.footer = footer;
+  // }
 
   public Map<String, AbstractResultModel> getContent() {
     return sections;
