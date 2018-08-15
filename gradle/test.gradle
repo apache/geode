@@ -330,6 +330,7 @@ subprojects {
   [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {it.finalizedBy combineReports}
 }
 
+classes.dependsOn subprojects.compileTestJava
 classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava
 classes.dependsOn subprojects.compileAcceptanceTestJava
