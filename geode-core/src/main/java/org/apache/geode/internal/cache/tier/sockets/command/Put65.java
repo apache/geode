@@ -420,7 +420,7 @@ public class Put65 extends BaseCommand {
     } catch (InvalidDeltaException ide) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1,
-          new Object[] {key, regionName, ide.getMessage()}));
+          new Object[] {key, regionName}));
       writeException(clientMessage, MessageType.PUT_DELTA_ERROR, ide, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       region.getCachePerfStats().incDeltaFullValuesRequested();
