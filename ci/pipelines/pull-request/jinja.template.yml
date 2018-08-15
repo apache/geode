@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 
-{% from 'shared_jinja.yml' import alpine_tools_config with context %}
-{% from 'shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared/shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared/shared_jinja.yml' import pipeline_prefix with context %}
 
 groups:
 - name: main
