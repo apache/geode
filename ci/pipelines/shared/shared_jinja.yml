@@ -35,6 +35,6 @@ config:
     source:
       username: ((!docker-username))
       password: ((!docker-password))
-      repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}-alpine-tools
+      repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}alpine-tools
       tag: latest
 {%- endmacro %}
