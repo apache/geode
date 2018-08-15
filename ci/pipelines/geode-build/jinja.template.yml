@@ -16,6 +16,7 @@
 #
 
 {% from 'shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared_jinja.yml' import pipeline_prefix with context %}
 
 {% macro plan_resource_gets() %}
 - get: geode-ci
@@ -72,7 +73,7 @@ resources:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
     tag: latest
     username: ((!docker-username))
 - name: geode
@@ -106,7 +107,7 @@ resource_types:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-concourse-metadata-resource
+    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 - name: gcs-resource
@@ -136,7 +137,7 @@ jobs:
         type: docker-image
         source:
           password: ((!docker-password))
-          repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-((!docker-image-name))
+          repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
           tag: latest
           username: ((!docker-username))
       params:
@@ -283,6 +284,7 @@ jobs:
 {% for test in windowstests %}
 - name: {{test.name}}Test
   public: true
+  serial: true
   plan:
   {{ plan_resource_gets() |indent(2) }}
   - task: cleanup-java-processes

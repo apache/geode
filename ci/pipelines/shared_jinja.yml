@@ -30,3 +30,10 @@ config:
       repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-alpine-tools
       tag: latest
 {%- endmacro %}
+
+{%- macro pipeline_prefix() %}
+{%- if repository.fork=="apache" %}
+{%- else %}
+{{repository.fork}}-{{repository.branch}}-
+{%- endif %}
+{%- endmacro %}

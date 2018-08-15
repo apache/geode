@@ -16,6 +16,7 @@
 #
 
 {% from 'shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared_jinja.yml' import pipeline_prefix with context %}
 
 groups:
 - name: main
@@ -29,7 +30,7 @@ resources:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
     tag: latest
     username: ((!docker-username))
 - name: geode
@@ -66,7 +67,7 @@ resource_types:
   type: docker-image
   source:
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/{{repository.fork}}-{{repository.branch}}-concourse-metadata-resource
+    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}concourse-metadata-resource
     tag: latest
     username: ((!docker-username))
 jobs:
