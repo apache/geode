@@ -727,9 +727,6 @@ public class RegionMapDestroy {
         // But when this does happen on a bucket we need to make sure and
         // distribute that destroy to secondaries. I see no reason why we
         // test "retainForConcurrency".
-        // TODO coverage: this will only happen if we find an existing entry after the initial
-        // getEntry returned null.
-        // So we need putIfAbsent to return an existing entry when getEntry returned null.
         distributeBucketDestroy(existing);
       }
     } catch (RegionClearedException rce) {

@@ -335,7 +335,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void evictDestroyWithExistingTombstoneInTokenModeChangesToDestroyToken() { // todo
+  public void evictDestroyWithExistingTombstoneInTokenModeChangesToDestroyToken() {
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntry(Token.TOMBSTONE);
@@ -348,7 +348,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void evictDestroyWithExistingTombstoneInTokenModeNeverCallsUpdateSizeOnRemove() { // todo
+  public void evictDestroyWithExistingTombstoneInTokenModeNeverCallsUpdateSizeOnRemove() {
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntry(Token.TOMBSTONE);
@@ -674,7 +674,7 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksDoesNothing() { // todo
+  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksDoesNothing() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
@@ -685,6 +685,48 @@ public class RegionMapDestroyTest {
     // why not DESTROY token? since it was already destroyed why do we do the parts?
     verifyMapContainsTokenValue(Token.TOMBSTONE);
     verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyOfExistingFromPutIfAbsentWithRemoteOriginCallsBasicDestroyBeforeRemoval()
+      throws Exception {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    RegionEntry existingEntry = mock(RegionEntry.class);
+    when(existingEntry.getValue()).thenReturn("value");
+    when(entryMap.get(KEY)).thenReturn(null);
+    RegionEntry newUnusedEntry = mock(RegionEntry.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(newUnusedEntry);
+    when(entryMap.putIfAbsent(eq(KEY), any())).thenReturn(existingEntry);
+    when(existingEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    givenOriginIsRemote();
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(arm._getOwner(), times(1)).basicDestroyBeforeRemoval(existingEntry, event);
+  }
+
+  @Test
+  public void destroyOfExistingFromPutIfAbsentWithTokenModeAndLocalOriginDoesNotCallBasicDestroyBeforeRemoval()
+      throws Exception {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    RegionEntry existingEntry = mock(RegionEntry.class);
+    when(existingEntry.getValue()).thenReturn("value");
+    when(entryMap.get(KEY)).thenReturn(null);
+    RegionEntry newUnusedEntry = mock(RegionEntry.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(newUnusedEntry);
+    when(entryMap.putIfAbsent(eq(KEY), any())).thenReturn(existingEntry);
+    when(existingEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    givenInTokenMode();
+
+    assertThat(doDestroy()).isTrue();
+
+    // TODO: this seems like a bug in the product. See the comment in:
+    // RegionMapDestroy.destroyExistingFromPutIfAbsent(RegionEntry)
+    verify(arm._getOwner(), never()).basicDestroyBeforeRemoval(existingEntry, event);
   }
 
   @Test
