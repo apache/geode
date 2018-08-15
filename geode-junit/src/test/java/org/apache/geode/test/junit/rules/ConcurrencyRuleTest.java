@@ -16,10 +16,10 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.apache.geode.internal.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.time.Duration;
