@@ -97,7 +97,9 @@ public class RegionMapDestroyTest {
     when(owner.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
-    doThrow(EntryNotFoundException.class).when(owner).checkEntryNotFound(any());
+    // Instead of mocking checkEntryNotFound to throw an exception,
+    // this test now just verifies that checkEntryNotFound was called.
+    // Having the mock throw the exception confuses the code coverage tools.
 
     evictionController = mock(EvictionController.class);
     when(evictionController.getEvictionAlgorithm()).thenReturn(evictionAttributes.getAlgorithm());
@@ -283,7 +285,10 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+    // assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
@@ -307,6 +312,22 @@ public class RegionMapDestroyTest {
     assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void destroyInvokesTestHook() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenInTokenMode();
+    Runnable testHook = mock(Runnable.class);
+    RegionMapDestroy.testHookRunnableForConcurrentOperation = testHook;
+    try {
+      doDestroy();
+    } finally {
+      RegionMapDestroy.testHookRunnableForConcurrentOperation = null;
+    }
+
+    verify(testHook, times(1)).run();
   }
 
   @Test
@@ -747,7 +768,9 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -779,7 +802,9 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry(Token.TOMBSTONE);
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -837,7 +862,9 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
     givenRemoveRecoveredEntry();
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -846,7 +873,9 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -885,7 +914,9 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -1059,7 +1090,9 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -1069,7 +1102,9 @@ public class RegionMapDestroyTest {
     when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
     givenOriginIsRemote();
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -1081,7 +1116,34 @@ public class RegionMapDestroyTest {
     this.cacheWrite = true;
     this.removeRecoveredEntry = false;
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteAndRemoveRecoveredEntryDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = true;
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteAndBridgeWriteBeforeDestroyReturningTrueDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    when(this.owner.bridgeWriteBeforeDestroy(eq(event), any())).thenReturn(true);
+
+    assertThat(doDestroy()).isFalse();
   }
 
   @Test
@@ -1107,7 +1169,9 @@ public class RegionMapDestroyTest {
     givenEventWithVersionTag();
     event.setOperation(Operation.LOCAL_DESTROY);
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test

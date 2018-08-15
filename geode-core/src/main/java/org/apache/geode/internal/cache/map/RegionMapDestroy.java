@@ -22,7 +22,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -31,7 +30,6 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
 /**
@@ -102,7 +100,6 @@ public class RegionMapDestroy {
       initializeState();
       RegionEntry existing = getEntry();
       invokeTestHookForConcurrentOperation();
-      logDestroy(existing);
       if (existing == null) {
         handleNullRegionEntry(null);
       } else {
@@ -128,10 +125,14 @@ public class RegionMapDestroy {
       disablePart3IfGatewayConflict();
       triggerDistributionAndListenerNotification(destroyedEntry);
     } finally {
-      if (opCompleted) {
-        EntryLogger.logDestroy(event);
-        cancelExpiryTaskIfEntryWasDestroyed(destroyedEntry);
-      }
+      afterDestroyCompletedActions(destroyedEntry);
+    }
+  }
+
+  private void afterDestroyCompletedActions(RegionEntry destroyedEntry) {
+    if (opCompleted) {
+      EntryLogger.logDestroy(event);
+      cancelExpiryTaskIfEntryWasDestroyed(destroyedEntry);
     }
   }
 
@@ -175,18 +176,6 @@ public class RegionMapDestroy {
       return false;
     }
     return true;
-  }
-
-  private void logDestroy(RegionEntry entry) {
-    if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT_VERBOSE)
-        && !(internalRegion instanceof HARegion)) {
-      logger.trace(LogMarker.LRU_TOMBSTONE_COUNT_VERBOSE,
-          "ARM.destroy() inTokenMode={}; duringRI={}; riLocalDestroy={}; withRepl={}; fromServer={}; concurrencyEnabled={}; isOriginRemote={}; isEviction={}; operation={}; re={}",
-          inTokenMode, duringRI, isFromRILocalDestroy(),
-          isReplicate(), isFromServer(),
-          hasConcurrencyChecks(), isOriginRemote(), isEviction,
-          getOperation(), entry);
-    }
   }
 
   private boolean isConcurrentFromRemoteOnReplicaOrFromServer() {
@@ -379,10 +368,6 @@ public class RegionMapDestroy {
   }
 
   private void finishTombstone(RegionEntry entry) {
-    // Since we sync before testing the region entry to see
-    // if it is a tombstone, it is impossible for it to change
-    // to something else.
-    assert isTombstone(entry);
     // tombstoneRegionEntry came from doing a get on the map.
     // So at this point we know it is still in the map.
     try {
@@ -423,10 +408,14 @@ public class RegionMapDestroy {
       inhibitCacheListenerNotification();
       handleRegionClearedException(existing);
     } finally {
-      if (isNonTombstoneRemoved(existing)) {
-        removeExistingFromMap(existing);
-      }
+      cleanupNonTombstoneRemovedEntry(existing);
       checkRegionReadiness();
+    }
+  }
+
+  private void cleanupNonTombstoneRemovedEntry(RegionEntry existing) {
+    if (isNonTombstoneRemoved(existing)) {
+      removeExistingFromMap(existing);
     }
   }
 
@@ -552,8 +541,7 @@ public class RegionMapDestroy {
       if (isVersionedOpFromClientOrWAN()) {
         // we must distribute these since they will update the version information in peers
         if (logger.isDebugEnabled()) {
-          logger.debug("ARM.destroy is allowing wan/client destroy of {} to continue",
-              getKey());
+          logger.debug("ARM.destroy is allowing wan/client destroy of {} to continue", getKey());
         }
         throwException = false;
         setRedestroyedEntry();
@@ -644,23 +632,27 @@ public class RegionMapDestroy {
     } catch (RegionClearedException rce) {
       handleRegionClearedException(entry);
     } finally {
-      if (opCompleted) {
-        return;
-      }
-      if (wasTombstone) {
-        // TODO: why leave the newRegionEntry in the map
-        // if we originally had a tombstone?
-        // If we get this far with adding newRegionEntry
-        // then the original tombstone we saw was gone
-        // (because putIfAbsent did not find it in the map
-        // if we get here). And since the op did not complete
-        // we should then leave newRegionEntry in the map?
-        // I think it would be better to just call
-        // removeNewRegionEntryFromMap if !opCompleted.
-        return;
-      }
-      removeFromMap(entry);
+      cleanupAfterNormalDestroy(entry);
     }
+  }
+
+  private void cleanupAfterNormalDestroy(RegionEntry entry) {
+    if (opCompleted) {
+      return;
+    }
+    if (wasTombstone) {
+      // TODO: why leave the newRegionEntry in the map
+      // if we originally had a tombstone?
+      // If we get this far with adding newRegionEntry
+      // then the original tombstone we saw was gone
+      // (because putIfAbsent did not find it in the map
+      // if we get here). And since the op did not complete
+      // we should then leave newRegionEntry in the map?
+      // I think it would be better to just call
+      // removeNewRegionEntryFromMap if !opCompleted.
+      return;
+    }
+    removeFromMap(entry);
   }
 
   /**
