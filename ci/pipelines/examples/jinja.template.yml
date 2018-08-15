@@ -35,8 +35,8 @@ resources:
   type: git
   source:
     depth: 1
-    uri: (( concat "https://github.com/" metadata.geode-fork "/geode.git" ))
-    branch: (( grab metadata.geode-build-branch ))
+    uri: https://github.com/{{repository.fork}}/geode.git
+    branch: {{ repository.branch }}
     paths:
     - ci/pipelines/geode-build/*
     - ci/scripts/*
@@ -76,7 +76,7 @@ jobs:
       - name: docker-geode-build-image
       platform: linux
       params:
-        MAINTENANCE_VERSION: (( grab metadata.geode-build-branch ))
+        MAINTENANCE_VERSION: {{repository.branch}}
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
         PUBLIC_BUCKET: ((!public-bucket))
       run:

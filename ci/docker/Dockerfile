@@ -17,19 +17,16 @@ FROM openjdk:8
 ENTRYPOINT []
 
 ARG CHROME_DRIVER_VERSION=2.35
-ENV SPRUCE_VERSION 1.17.0
 
 WORKDIR /tmp/work
 COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
 
-ADD https://github.com/geofffranks/spruce/releases/download/v${SPRUCE_VERSION}/spruce-linux-amd64 /usr/local/bin/spruce
 ADD https://github.com/krallin/tini/releases/download/v0.14.0/tini-static-amd64 /usr/local/bin/tini
 ADD tini-wrapper.go .
 ADD ./initdocker /usr/local/bin/initdocker
 ADD cache_dependencies.sh cache_dependencies.sh
 
 RUN chmod +x /usr/local/bin/tini \
-  && chmod +x /usr/local/bin/spruce \
   && chmod +x /usr/local/bin/initdocker \
   && chmod +x cache_dependencies.sh \
   && apt-get update \
@@ -48,8 +45,8 @@ RUN chmod +x /usr/local/bin/tini \
     aptitude \
     ca-certificates \
     cgroupfs-mount \
-    docker-compose \
     docker-ce \
+    docker-compose \
     golang \
     google-chrome-stable \
     google-cloud-sdk \
@@ -57,8 +54,10 @@ RUN chmod +x /usr/local/bin/tini \
     jq \
     python3 \
     python3-pip \
+    python3-setuptools \
     unzip \
     vim \
+  && pip3 install Jinja2 PyYAML \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
   && gcloud config set metrics/environment github_docker_image \

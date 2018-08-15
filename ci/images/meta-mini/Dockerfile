@@ -20,6 +20,7 @@ RUN apk --no-cache add \
       curl \
       jq \
       python3 \
-  && curl -L -o /usr/local/bin/spruce https://github.com/geofffranks/spruce/releases/download/$(curl --silent "https://api.github.com/repos/geofffranks/spruce/releases/latest" | jq -r .tag_name)/spruce-linux-amd64 \
   && curl -L -o /usr/local/bin/fly "https://concourse.apachegeode-ci.info/api/v1/cli?arch=amd64&platform=linux" \
-  && chmod +x /usr/local/bin/*
+  && pip3 install --upgrade pip \
+  && pip3 install Jinja2 pyYAML \
+  && chmod +x /usr/local/bin/* \
