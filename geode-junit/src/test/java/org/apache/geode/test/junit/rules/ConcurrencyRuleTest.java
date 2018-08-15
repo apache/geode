@@ -16,6 +16,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.internal.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -416,6 +417,31 @@ public class ConcurrencyRuleTest {
           .hasOnlyElementsOfType(TimeoutException.class);
       return true;
     });
+  }
+
+  @Test
+  public void afterFailsIfThreadsWereNotRun() {
+    Callable<Integer> c1 = () -> {
+      return 2;
+    };
+
+    Callable<String> c2 = () -> {
+      return "some string";
+    };
+
+    concurrencyRule.add(c1).expectValue(2);
+    concurrencyRule.add(c1).expectValue(2).repeatForIterations(5);
+    concurrencyRule.executeInParallel();
+
+    concurrencyRule.add(c1).expectValue(3);
+    concurrencyRule.add(c2).expectValue("some string");
+    try {
+      concurrencyRule.after();
+      fail("exception should have been thrown");
+    } catch (IllegalStateException e) {
+      assertThat(e).isNotNull();
+    }
+    concurrencyRule.clear(); // so that this test's after succeeds
   }
 
   @SuppressWarnings("unused")
