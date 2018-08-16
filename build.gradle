@@ -80,7 +80,7 @@ if (name == 'geode') {
   ext.scriptDir = 'gradle'
 }
 
-
+// utilities.gradle MUST be read before publish.gradle for reasons
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"

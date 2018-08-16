@@ -17,7 +17,8 @@
 
 subprojects {
   apply plugin: 'com.bmuschko.nexus'
-  
+  apply plugin: 'maven-publish'
+
   extraArchive {
     sources = true
     javadoc = true
@@ -122,7 +123,37 @@ subprojects {
       }
     }
   }
-}
+
+
+  publishing {
+    publications {
+      maven(MavenPublication) {
+        from components.java
+
+        // uses the tasks created by nexus for sources and javadoc
+        if (! getTasksByName('sourcesJar', false).isEmpty()) {
+          artifact sourcesJar
+        }
+        if (! getTasksByName('javadocJar', false).isEmpty()) {
+          artifact javadocJar
+        }
+      }
+    }
+    repositories {
+      maven {
+        if (project.hasProperty("mavenRepository")) {
+          url = project.mavenRepository
+        } else {
+          if (version.endsWith('SNAPSHOT')) {
+            url = "gcs://maven.apachegeode-ci.info/snapshots"
+          }
+        }
+      }
+    }
+  }
+
+
+} // subprojects
 
 //Prompt the user for a password to sign archives or upload artifacts, if requested
 gradle.taskGraph.whenReady { taskGraph ->
