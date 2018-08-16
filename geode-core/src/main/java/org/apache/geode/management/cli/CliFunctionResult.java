@@ -18,7 +18,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.management.AbstractFunctionResult;
@@ -26,6 +29,25 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CliFunctionResult extends AbstractFunctionResult {
   private XmlEntity xmlEntity;
+
+  /**
+   * Remove elements from the list that are not instances of CliFunctionResult and then sort the
+   * results.
+   *
+   * @param results The results to clean.
+   * @return The cleaned results.
+   */
+  public static List<CliFunctionResult> cleanResults(List<?> results) {
+    List<CliFunctionResult> returnResults = new ArrayList<CliFunctionResult>(results.size());
+    for (Object result : results) {
+      if (result instanceof CliFunctionResult) {
+        returnResults.add((CliFunctionResult) result);
+      }
+    }
+
+    Collections.sort(returnResults);
+    return returnResults;
+  }
 
   @Deprecated
   public CliFunctionResult() {}
