@@ -342,5 +342,5 @@ jobs:
         tags:
         - windows-{{test.tags}}-tests
         timeout: 1h
-    timeout: 4h
+    timeout: 6h
 {% endfor %}
