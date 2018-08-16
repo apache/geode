@@ -169,49 +169,19 @@ public class RegionMapDestroy {
     // the logic in this class is already very involved, and adding tombstone
     // permutations to (re != null) greatly complicates it. So, we check
     // for a tombstone here and, if found, pretend for a bit that the entry is null
-    if (removeRecoveredEntry) {
-      return false;
-    }
-    if (!isTombstone(entry)) {
-      return false;
-    }
-    return true;
+    return isTombstone(entry) && !removeRecoveredEntry;
   }
 
   private boolean isConcurrentFromRemoteOnReplicaOrFromServer() {
-    if (!hasConcurrencyChecks()) {
-      return false;
-    }
-    if (!isReplicaOrFromServer()) {
-      return false;
-    }
-    if (!isRemote()) {
-      return false;
-    }
-    return true;
+    return hasConcurrencyChecks() && isRemote() && isReplicaOrFromServer();
   }
 
   private boolean isReplicaOrFromServer() {
-    if (isReplicate()) {
-      return true;
-    }
-    if (isFromServer()) {
-      return true;
-    }
-    return false;
+    return isReplicate() || isFromServer();
   }
 
   private boolean isRemote() {
-    if (isOriginRemote()) {
-      return true;
-    }
-    if (isFromWANAndVersioned()) {
-      return true;
-    }
-    if (hasClientOrigin()) {
-      return true;
-    }
-    return false;
+    return isOriginRemote() || isFromWANAndVersioned() || hasClientOrigin();
   }
 
   private void destroyExistingWithIndexInUpdateMode(RegionEntry existing) {
@@ -276,37 +246,22 @@ public class RegionMapDestroy {
   }
 
   private boolean isNotRemovedOrNeedTombstone(RegionEntry entry) {
-    if (!isRemoved(entry)) {
-      return true;
-    }
+    return !isRemoved(entry) || isNeedsTombstone();
+  }
+
+  private boolean isNeedsTombstone() {
     if (!hasConcurrencyChecks()) {
       return false;
     }
-    if (removeRecoveredEntry) {
-      return true;
-    }
-    if (isOriginRemote()) {
-      return true;
-    }
-    if (hasContext()) {
-      return true;
-    }
-    return false;
+    return removeRecoveredEntry || isOriginRemote() || hasContext();
   }
 
   private void disablePart3IfGatewayConflict() {
-    if (!isConcurrencyConflict()) {
-      return;
+    if (isConcurrencyConflict() && isGatewayTag()) {
+      // If concurrency conflict is there and event contains gateway version tag then
+      // do NOT distribute.
+      doPart3 = false;
     }
-    if (noVersionTag()) {
-      return;
-    }
-    if (!getVersionTag().isGatewayTag()) {
-      return;
-    }
-    // If concurrency conflict is there and event contains gateway version tag then
-    // do NOT distribute.
-    doPart3 = false;
   }
 
   private void cancelDestroy() {
@@ -319,16 +274,7 @@ public class RegionMapDestroy {
    *         otherwise true
    */
   private boolean isEntryReadyForExpiration(RegionEntry entry) {
-    if (!isExpiration()) {
-      return true;
-    }
-    if (isOriginRemote()) {
-      return true;
-    }
-    if (!isInUseByTransaction(entry)) {
-      return true;
-    }
-    return false;
+    return !isExpiration() || isOriginRemote() || !isInUseByTransaction(entry);
   }
 
   private void cleanupRemovedPhase2(RegionEntry entry) {
@@ -420,10 +366,7 @@ public class RegionMapDestroy {
   }
 
   private boolean isNonTombstoneRemoved(RegionEntry entry) {
-    if (isTombstone(entry)) {
-      return false;
-    }
-    return isRemoved(entry);
+    return isRemoved(entry) && !isTombstone(entry);
   }
 
   private void handleCompletedDestroy(RegionEntry existing) {
@@ -457,13 +400,7 @@ public class RegionMapDestroy {
   }
 
   private boolean isRemoteDestroyOfTombstone(RegionEntry entry) {
-    if (!isTombstone(entry)) {
-      return false;
-    }
-    if (!isOriginRemote()) {
-      return false;
-    }
-    return true;
+    return isTombstone(entry) && isOriginRemote();
   }
 
   private void makeTombstoneOrRemove(RegionEntry entry) {
@@ -475,16 +412,7 @@ public class RegionMapDestroy {
   }
 
   private boolean destroyUsingTombstone() {
-    if (!hasConcurrencyChecks()) {
-      return false;
-    }
-    if (isOriginRemote()) {
-      return false;
-    }
-    if (noVersionTag()) {
-      return false;
-    }
-    return true;
+    return hasConcurrencyChecks() && !isOriginRemote() && !noVersionTag();
   }
 
   private void remove(RegionEntry entry) {
@@ -559,19 +487,10 @@ public class RegionMapDestroy {
   }
 
   private boolean isVersionedOpFromClientOrWAN() {
-    if (isOriginRemote()) {
+    if (isOriginRemote() || isLocal()) {
       return false;
     }
-    if (isLocal()) {
-      return false;
-    }
-    if (isFromBridgeAndVersioned()) {
-      return true;
-    }
-    if (isFromWANAndVersioned()) {
-      return true;
-    }
-    return false;
+    return isFromBridgeAndVersioned() || isFromWANAndVersioned();
   }
 
   private void runWithIndexInUpdateMode(Runnable r) {
@@ -891,6 +810,11 @@ public class RegionMapDestroy {
     return getVersionTag() == null;
   }
 
+  private boolean isGatewayTag() {
+    VersionTag versionTag = getVersionTag();
+    return versionTag != null && versionTag.isGatewayTag();
+  }
+
   private VersionTag getVersionTag() {
     return event.getVersionTag();
   }
@@ -965,13 +889,7 @@ public class RegionMapDestroy {
    * @return false if op is an eviction and entry is not ready to be evicted; otherwise true
    */
   private boolean isEntryReadyForEviction(RegionEntry entry) {
-    if (!isEviction) {
-      return true;
-    }
-    if (focusedRegionMap.confirmEvictionDestroy(entry)) {
-      return true;
-    }
-    return false;
+    return !isEviction || focusedRegionMap.confirmEvictionDestroy(entry);
   }
 
   // RegionEntry helper methods
