@@ -104,3 +104,11 @@ windowstests:
   target_arg: test
   dir_arg: windows-unittestfiles
   package_arg: ""
+- name: "WindowsUpgradeTest"
+  tags: "upgrade"
+  CALL_STACK_TIMEOUT: "1800"
+  DUNIT_PARALLEL_FORKS: "0"
+  PARALLEL_DUNIT: "false"
+  target_arg: upgradeTest
+  dir_arg: windows-upgradetestfiles
+  package_arg: ""
