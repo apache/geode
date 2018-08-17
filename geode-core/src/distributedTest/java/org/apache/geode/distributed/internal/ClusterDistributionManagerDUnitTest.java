@@ -287,13 +287,13 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
 
     vm1.invoke("wait for forced disconnect", () -> {
       await("vm1's system should have been disconnected").atMost(1, MINUTES)
-          .until(() -> assertThat(basicGetSystem().isConnected()).isFalse());
+          .untilAsserted(() -> assertThat(basicGetSystem().isConnected()).isFalse());
 
       await("vm1's cache is not closed").atMost(30, SECONDS)
-          .until(() -> assertThat(myCache.isClosed()).isTrue());
+          .untilAsserted(() -> assertThat(myCache.isClosed()).isTrue());
 
       await("vm1's listener should have received afterRegionDestroyed notification")
-          .atMost(30, SECONDS).until(() -> assertThat(regionDestroyedInvoked).isTrue());
+          .atMost(30, SECONDS).untilAsserted(() -> assertThat(regionDestroyedInvoked).isTrue());
     });
   }
 
@@ -345,7 +345,8 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     NetView newView = new NetView(view, view.getViewId() + 1);
     membershipManager.installView(newView);
 
-    await().atMost(30, SECONDS).until(() -> assertThat(waitForViewInstallationDone.get()).isTrue());
+    await().atMost(30, SECONDS)
+        .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());
   }
 
   private CacheListener<String, String> getSleepingListener(final boolean playDead) {

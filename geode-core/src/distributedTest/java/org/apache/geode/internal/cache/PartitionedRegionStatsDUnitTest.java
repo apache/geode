@@ -182,7 +182,7 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
       PartitionedRegionStats prStats = region.getPrStats();
       await().atMost(30, SECONDS)
-          .until(() -> assertThat(prStats.getLowRedundancyBucketCount()).isEqualTo(0));
+          .untilAsserted(() -> assertThat(prStats.getLowRedundancyBucketCount()).isEqualTo(0));
     });
 
     vm2.invoke(() -> validateEntryCount(regionName, 3));

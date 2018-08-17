@@ -307,7 +307,9 @@ public class LuceneQueryFunctionJUnitTest {
     repos.remove(1);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
     when(mockManager.newCollector(eq("repo1"))).thenReturn(mockCollector);
-    when(mockManager.reduce(any(Collection.class))).thenThrow(IOException.class);
+    doAnswer((m) -> {
+      throw new IOException();
+    }).when(mockManager).reduce(any(Collection.class));
 
     LuceneQueryFunction function = new LuceneQueryFunction();
 

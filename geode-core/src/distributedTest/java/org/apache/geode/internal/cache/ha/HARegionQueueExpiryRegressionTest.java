@@ -191,6 +191,6 @@ public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
    */
   private void validateEventCountAtClient() {
     await().atMost(1, MINUTES)
-        .until(() -> verify(spyCacheListener, times(PUT_COUNT)).afterCreate(any()));
+        .untilAsserted(() -> verify(spyCacheListener, times(PUT_COUNT)).afterCreate(any()));
   }
 }

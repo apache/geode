@@ -220,7 +220,7 @@ public class WANClusterConfigurationDUnitTest {
   }
 
   private void waitTillAllGatewaySendersAreReady() {
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).untilAsserted(() -> {
       CommandStringBuilder csb2 = new CommandStringBuilder(CliStrings.LIST_GATEWAY);
       CommandResult cmdResult = gfsh.executeCommand(csb2.toString());
       assertThat(cmdResult).isNotNull();

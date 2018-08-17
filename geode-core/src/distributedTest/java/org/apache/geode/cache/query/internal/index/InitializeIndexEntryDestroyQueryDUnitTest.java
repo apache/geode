@@ -191,9 +191,10 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
       }
       Region region = cache.getRegion(regionName);
       Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertNotNull(cache.getQueryService().getIndex(region, "statusIndex")));
+          .untilAsserted(
+              () -> assertNotNull(cache.getQueryService().getIndex(region, "statusIndex")));
       getCache().getQueryService().removeIndex(index);
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(
           () -> assertEquals(null, getCache().getQueryService().getIndex(region, "statusIndex")));
     }
   }
@@ -207,7 +208,8 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
       logger.debug("Going to destroy the value" + p);
       r.destroy(j);
       final int key = j;
-      Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> assertEquals(null, r.get(key)));
+      Awaitility.await().atMost(20, TimeUnit.SECONDS)
+          .untilAsserted(() -> assertEquals(null, r.get(key)));
 
       // Put the value back again.
       getCache().getLogger().fine("Putting the value back" + p);
@@ -260,6 +262,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
     }
     Region region = getCache().getRegion(regionName);
     Awaitility.await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> assertNotNull(getCache().getQueryService().getIndex(region, indexName)));
+        .untilAsserted(
+            () -> assertNotNull(getCache().getQueryService().getIndex(region, indexName)));
   }
 }

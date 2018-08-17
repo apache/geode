@@ -63,7 +63,7 @@ public class NativeProcessUtilsIntegrationTest {
     assertThat(process.isAlive()).isTrue();
 
     pidFile = new File(directory, FILE_NAME);
-    await().atMost(2, MINUTES).until(() -> assertThat(pidFile).exists());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(pidFile).exists());
 
     pid = new PidFile(pidFile).readPid();
     assertThat(pid).isGreaterThan(0);
@@ -82,7 +82,7 @@ public class NativeProcessUtilsIntegrationTest {
     nativeProcessUtils.killProcess(pid);
 
     // assert
-    await().atMost(2, MINUTES).until(() -> assertThat(process.isAlive()).isFalse());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   @Test
@@ -97,7 +97,7 @@ public class NativeProcessUtilsIntegrationTest {
     process.destroyForcibly();
 
     // act/assert
-    await().atMost(2, MINUTES).until(() -> assertThat(process.isAlive()).isFalse());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(process.isAlive()).isFalse());
     assertThat(nativeProcessUtils.isProcessAlive(pid)).isFalse();
   }
 

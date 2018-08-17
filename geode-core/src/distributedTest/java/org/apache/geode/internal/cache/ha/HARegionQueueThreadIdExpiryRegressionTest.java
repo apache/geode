@@ -171,7 +171,7 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
   }
 
   private void awaitToVerifyStatsAfterExpiration(int numOfEvents) {
-    await().atMost(2, MINUTES).until(() -> {
+    await().atMost(2, MINUTES).untilAsserted(() -> {
       verifyStatsAfterExpiration(numOfEvents);
     });
   }

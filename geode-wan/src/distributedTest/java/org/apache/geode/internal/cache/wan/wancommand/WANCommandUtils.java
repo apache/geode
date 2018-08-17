@@ -346,7 +346,7 @@ public class WANCommandUtils implements Serializable {
       final String senderId, final boolean isRunning, final boolean isPaused) {
     GatewaySenderMXBean gatewaySenderMXBean = awaitGatewaySenderMXBeanProxy(member, senderId);
     await("Awaiting GatewaySenderMXBean.isRunning(" + isRunning + ").isPaused(" + isPaused + ")")
-        .until(() -> {
+        .untilAsserted(() -> {
           assertThat(gatewaySenderMXBean.isRunning()).isEqualTo(isRunning);
           assertThat(gatewaySenderMXBean.isPaused()).isEqualTo(isPaused);
         });
@@ -356,7 +356,7 @@ public class WANCommandUtils implements Serializable {
   public static void validateGatewayReceiverMXBeanProxy(final InternalDistributedMember member,
       final boolean isRunning) {
     GatewayReceiverMXBean gatewayReceiverMXBean = awaitGatewayReceiverMXBeanProxy(member);
-    await("Awaiting GatewayReceiverMXBean.isRunning(" + isRunning + ")").until(() -> {
+    await("Awaiting GatewayReceiverMXBean.isRunning(" + isRunning + ")").untilAsserted(() -> {
       assertThat(gatewayReceiverMXBean.isRunning()).isEqualTo(isRunning);
     });
     assertThat(gatewayReceiverMXBean).isNotNull();

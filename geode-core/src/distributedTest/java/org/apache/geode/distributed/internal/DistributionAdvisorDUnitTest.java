@@ -118,14 +118,14 @@ public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
     thread.start();
 
     try {
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
         verify(logger, atLeastOnce()).warn(isA(String.class), isA(Long.class));
       });
-      Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
         verify(logger, atLeastOnce()).fatal(isA(String.class), isA(Long.class));
       });
       advisor.endOperation(membershipVersion);
-      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
         verify(logger, atLeastOnce()).info("Wait for current operations completed");
       });
       Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> !thread.isAlive());

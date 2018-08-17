@@ -152,7 +152,7 @@ public class CacheClientNotifierIntegrationTest {
     }
 
     // Verify that we do not hang in peek() for the second proxy due to the wrapper
-    Awaitility.waitAtMost(new Duration(30, TimeUnit.SECONDS)).until(() -> {
+    Awaitility.waitAtMost(new Duration(30, TimeUnit.SECONDS)).untilAsserted(() -> {
       try {
         Object eventPeeked = null;
         while (eventPeeked == null) {

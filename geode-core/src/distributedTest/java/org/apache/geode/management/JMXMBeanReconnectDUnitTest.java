@@ -224,7 +224,7 @@ public class JMXMBeanReconnectDUnitTest {
 
   private void waitForMBeanFederationFrom(int numMemberMBeans, MemberVM member) {
     String memberName = "server-" + member.getVM().getId();
-    Awaitility.waitAtMost(10, SECONDS).until(() -> {
+    Awaitility.waitAtMost(10, SECONDS).untilAsserted(() -> {
       List<ObjectName> beans = null;
       try {
         beans = getFederatedGemfireBeansFrom(locator1);

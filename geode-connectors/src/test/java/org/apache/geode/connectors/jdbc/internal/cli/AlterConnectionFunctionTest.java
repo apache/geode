@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -105,7 +105,9 @@ public class AlterConnectionFunctionTest {
   @Test
   public void alterConnectionConfigThrowsConnectionNotFound() {
     AlterConnectionFunction alterFunction = mock(AlterConnectionFunction.class);
-    doThrow(ConnectionConfigNotFoundException.class).when(alterFunction)
+    doAnswer((m) -> {
+      throw new ConnectionConfigNotFoundException();
+    }).when(alterFunction)
         .alterConnectionConfig(any(), any());
 
     assertThatThrownBy(() -> alterFunction.alterConnectionConfig(connectionConfig, existingConfig))
@@ -122,7 +124,9 @@ public class AlterConnectionFunctionTest {
 
   @Test
   public void executeReportsErrorIfConnectionConfigNotFound() throws Exception {
-    doThrow(ConnectionConfigNotFoundException.class).when(service)
+    doAnswer((m) -> {
+      throw new ConnectionConfigNotFoundException();
+    }).when(service)
         .replaceConnectionConfig(eq(connectionConfig));
 
     function.execute(context);

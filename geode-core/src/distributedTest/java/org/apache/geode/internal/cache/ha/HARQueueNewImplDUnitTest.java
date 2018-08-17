@@ -396,7 +396,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void ValidateRegionSizes(int port) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       Region region = cache.getRegion("/" + regionName);
       Region msgsRegion = cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
       int clientMsgRegionSize = msgsRegion.size();
@@ -1076,7 +1076,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
       Iterator iter = msgsRegion.entrySet().iterator();
       while (iter.hasNext()) {
-        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
           Region.Entry entry = (Region.Entry) iter.next();
           HAEventWrapper wrapper = (HAEventWrapper) entry.getKey();
           ClientUpdateMessage cum = (ClientUpdateMessage) entry.getValue();

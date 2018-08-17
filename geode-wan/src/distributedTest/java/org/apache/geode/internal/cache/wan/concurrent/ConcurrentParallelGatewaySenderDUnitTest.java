@@ -600,7 +600,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         vm7.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 5000));
 
     vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS)
-        .until(() -> assertEquals(
+        .untilAsserted(() -> assertEquals(
             "Failure in waiting for at least 10 events to be received by the receiver", true,
             (getRegionSize(getTestMethodName() + "_PR") > 10))));
 
@@ -612,7 +612,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
         vm6.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10000));
 
     vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS)
-        .until(() -> assertEquals(
+        .untilAsserted(() -> assertEquals(
             "Failure in waiting for additional 20 events to be received by the receiver ", true,
             getRegionSize(getTestMethodName() + "_PR") > 20 + prevRegionSize)));
 

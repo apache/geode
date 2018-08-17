@@ -101,7 +101,7 @@ public abstract class LauncherIntegrationTestCase {
   protected abstract ProcessType getProcessType();
 
   protected void assertDeletionOf(final File file) {
-    await().until(() -> assertThat(file).doesNotExist());
+    await().untilAsserted(() -> assertThat(file).doesNotExist());
   }
 
   protected void assertThatServerPortIsFree(final int serverPort) {

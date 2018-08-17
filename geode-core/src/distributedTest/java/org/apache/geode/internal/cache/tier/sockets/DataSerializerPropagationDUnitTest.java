@@ -163,7 +163,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
 
   private static void verifyDataSerializers(final int numOfDataSerializers) {
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(
+        .untilAsserted(() -> assertEquals(
             "serializers: " + Arrays.toString(InternalDataSerializer.getSerializers()),
             InternalDataSerializer.getSerializers().length, numOfDataSerializers));
   }
@@ -412,7 +412,7 @@ public final class DataSerializerPropagationDUnitTest extends JUnit4DistributedT
     registerDataSerializer(DSObject1.class);
 
     assertNotNull(eventId);
-    Awaitility.await("event propagates to client 2").until(() -> assertEquals(eventId,
+    Awaitility.await("event propagates to client 2").untilAsserted(() -> assertEquals(eventId,
         client2.invoke(DataSerializerPropagationDUnitTest::getObservedEventID)));
   }
 

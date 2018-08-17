@@ -178,7 +178,8 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
 
   private void verifyDispatchedMessagesMapIsEmpty() {
     await().atMost(1, MINUTES)
-        .until(() -> assertThat(HARegionQueue.getDispatchedMessagesMapForTesting()).isEmpty());
+        .untilAsserted(
+            () -> assertThat(HARegionQueue.getDispatchedMessagesMapForTesting()).isEmpty());
   }
 
   private void doEntryOperations() {

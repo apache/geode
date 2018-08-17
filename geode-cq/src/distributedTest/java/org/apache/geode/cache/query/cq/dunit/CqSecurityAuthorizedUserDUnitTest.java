@@ -85,7 +85,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
 
     specificUserClient.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, cqListener.getNumEvent()));
+          .untilAsserted(() -> assertEquals(1, cqListener.getNumEvent()));
     });
   }
 
@@ -138,7 +138,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
 
     specificUserClient.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, cqListener.getNumErrors()));
+          .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
     });
   }
 
@@ -161,7 +161,7 @@ public class CqSecurityAuthorizedUserDUnitTest extends QuerySecurityBase {
 
     specificUserClient.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, cqListener.getNumErrors()));
+          .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
     });
   }
 

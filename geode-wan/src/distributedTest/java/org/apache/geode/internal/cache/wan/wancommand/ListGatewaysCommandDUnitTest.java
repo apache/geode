@@ -438,9 +438,10 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
           awaitGatewayReceiverMXBeanProxy(getMember(server1.getVM()));
       assertThat(gatewayReceiverMXBean).isNotNull();
       await("Awaiting GatewayReceiverMXBean.isRunning(true)")
-          .until(() -> assertThat(gatewayReceiverMXBean.isRunning()).isTrue());
+          .untilAsserted(() -> assertThat(gatewayReceiverMXBean.isRunning()).isTrue());
       await("Awaiting GatewayReceiverMXBean.getClientConnectionCount() > 0")
-          .until(() -> assertThat(gatewayReceiverMXBean.getClientConnectionCount()).isPositive());
+          .untilAsserted(
+              () -> assertThat(gatewayReceiverMXBean.getClientConnectionCount()).isPositive());
     });
 
     // Verify Results

@@ -210,6 +210,6 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
 
   private void waitForMemberMXBean(final MBeanServer mbeanServer, final ObjectName pattern) {
     await().atMost(2, MINUTES)
-        .until(() -> assertThat(mbeanServer.queryNames(pattern, null)).isNotEmpty());
+        .untilAsserted(() -> assertThat(mbeanServer.queryNames(pattern, null)).isNotEmpty());
   }
 }

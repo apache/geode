@@ -1047,24 +1047,24 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     assertEquals(0, dss.getQueueSize());
     put100Int();
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(100, dss.getQueueSize()));
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(100, dss.getQueueSize()));
 
     assertEquals(0, dss.getFlushes());
 
     DiskRegion diskRegion = ((LocalRegion) region).getDiskRegion();
     diskRegion.getDiskStore().flush();
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(0, dss.getQueueSize()));
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(0, dss.getQueueSize()));
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(100, dss.getFlushes()));
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(100, dss.getFlushes()));
     put100Int();
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(100, dss.getQueueSize()));
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(100, dss.getQueueSize()));
     diskRegion.getDiskStore().flush();
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(0, dss.getQueueSize()));
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(0, dss.getQueueSize()));
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .timeout(10, TimeUnit.SECONDS).until(() -> assertEquals(200, dss.getFlushes()));
+        .timeout(10, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(200, dss.getFlushes()));
     closeDown();
   }
 

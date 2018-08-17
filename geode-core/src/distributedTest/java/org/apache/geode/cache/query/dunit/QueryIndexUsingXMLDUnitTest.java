@@ -518,7 +518,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   public void validateIndexSize() {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       boolean indexSizeCheck_NAME = validateIndexSizeForRegion(NAME);
       boolean indexSizeCheck_REP_REG_NAME = validateIndexSizeForRegion(REP_REG_NAME);
       boolean indexSizeCheck_PERSISTENT_REG_NAME = validateIndexSizeForRegion(PERSISTENT_REG_NAME);

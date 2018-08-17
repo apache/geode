@@ -357,7 +357,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   }
 
   private void waitForRegionToHaveExpectedSize(String regionName, int expectedRegionSize) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       try {
         Object region =
             cache.getClass().getMethod("getRegion", String.class).invoke(cache, regionName);

@@ -295,7 +295,7 @@ public class HARQAddOperationJUnitTest {
       // entry
       // removed from Region, LastDispatchedWrapperSet should have size 0.
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertEquals(0, regionqueue.getRegion().entrySet(false).size()));
+          .untilAsserted(() -> assertEquals(0, regionqueue.getRegion().entrySet(false).size()));
       assertEquals(0, regionqueue.getAvailableIds().size());
       assertNull(regionqueue.getCurrentCounterSet(id1));
 

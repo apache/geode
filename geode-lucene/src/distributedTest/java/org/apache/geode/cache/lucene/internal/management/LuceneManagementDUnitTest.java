@@ -176,7 +176,8 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     SystemManagementService service = (SystemManagementService) getManagementService();
     ObjectName objectName = MBeanJMXAdapter.getCacheServiceMBeanName(member, "LuceneService");
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertNotNull(service.getMBeanProxy(objectName, LuceneServiceMXBean.class)));
+        .untilAsserted(
+            () -> assertNotNull(service.getMBeanProxy(objectName, LuceneServiceMXBean.class)));
     return service.getMBeanProxy(objectName, LuceneServiceMXBean.class);
   }
 

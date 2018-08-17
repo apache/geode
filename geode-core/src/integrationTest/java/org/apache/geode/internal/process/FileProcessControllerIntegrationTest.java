@@ -127,7 +127,7 @@ public class FileProcessControllerIntegrationTest {
     new StringFileWriter(statusFile).writeToFile(STATUS_JSON);
 
     // then: returned status should be the json in the file
-    await().until(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
+    await().untilAsserted(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
   }
 
   /**
@@ -155,7 +155,7 @@ public class FileProcessControllerIntegrationTest {
     new EmptyFileWriter(statusFile).createNewFile();
 
     // then: returned status should be the json in the file
-    await().until(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
+    await().untilAsserted(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
   }
 
   @Test
@@ -202,7 +202,7 @@ public class FileProcessControllerIntegrationTest {
     new StringFileWriter(statusFile).writeToFile(STATUS_JSON);
 
     // assert
-    await().until(() -> assertThat(statusRequestFile).exists());
+    await().untilAsserted(() -> assertThat(statusRequestFile).exists());
   }
 
   @Test
@@ -222,7 +222,7 @@ public class FileProcessControllerIntegrationTest {
     });
 
     // assert
-    await().until(() -> assertThat(statusRequestFile).exists());
+    await().untilAsserted(() -> assertThat(statusRequestFile).exists());
   }
 
   private ConditionFactory await() {

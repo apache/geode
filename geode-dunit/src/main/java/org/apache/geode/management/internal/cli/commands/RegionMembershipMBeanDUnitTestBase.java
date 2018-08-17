@@ -359,7 +359,7 @@ public class RegionMembershipMBeanDUnitTestBase {
     return locator.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
 
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+      Awaitility.waitAtMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
         DistributedRegionMXBean bean = ManagementService.getManagementService(cache)
             .getDistributedRegionMXBean(regionPath);
         assertThat(bean).isNotNull();

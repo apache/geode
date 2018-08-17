@@ -676,12 +676,12 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForAsyncEventListenerWithEventsMapSize(int expectedSize) {
-    await().atMost(TWO_MINUTES).until(
+    await().atMost(TWO_MINUTES).untilAsserted(
         () -> assertThat(getSpyAsyncEventListener().getEventsMap()).hasSize(expectedSize));
   }
 
   private void waitForAsyncEventQueueSize(int expectedRegionQueueSize) {
-    await().atMost(TWO_MINUTES).until(
+    await().atMost(TWO_MINUTES).untilAsserted(
         () -> assertThat(getTotalRegionQueueSize()).isEqualTo(expectedRegionQueueSize));
   }
 
@@ -690,12 +690,13 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForRegionQueuesToEmpty() {
-    await().atMost(TWO_MINUTES).until(() -> assertRegionQueuesAreEmpty(getInternalGatewaySender()));
+    await().atMost(TWO_MINUTES)
+        .untilAsserted(() -> assertRegionQueuesAreEmpty(getInternalGatewaySender()));
   }
 
   private void waitForSenderToBecomePrimary() {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
-    await().atMost(TWO_MINUTES).until(
+    await().atMost(TWO_MINUTES).untilAsserted(
         () -> assertThat(gatewaySender.isPrimary()).as("gatewaySender: " + gatewaySender).isTrue());
   }
 

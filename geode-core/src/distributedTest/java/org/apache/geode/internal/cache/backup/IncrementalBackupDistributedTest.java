@@ -285,7 +285,8 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
     // After reconnecting make sure the other members agree that the missing member is back online.
     await().atMost(2, MINUTES)
-        .until(() -> assertThat(getMissingPersistentMembers()).doesNotContain(missingMember));
+        .untilAsserted(
+            () -> assertThat(getMissingPersistentMembers()).doesNotContain(missingMember));
 
     // Perform performBackupIncremental and make sure we have no offline disk stores.
     BackupStatus incrementalStatus =

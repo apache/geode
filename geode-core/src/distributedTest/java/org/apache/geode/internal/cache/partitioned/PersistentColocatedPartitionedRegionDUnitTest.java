@@ -395,7 +395,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // Let this thread continue running long enough for the missing region to be logged a
             // couple times.
             // Child regions do not get created by this thread.
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
               verify(mockAppender, times(numExpectedLogMessages))
                   .append(loggingEventCaptor.capture());
             });
@@ -437,14 +437,14 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             createPR(getPartitionedRegionName(), true);
             // Delay creation of second (i.e child) region to see missing colocated region log
             // message (logInterval/2 < delay < logInterval)
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
               verify(mockAppender, times(1)).append(loggingEventCaptor.capture());
             });
             logEvents = loggingEventCaptor.getAllValues();
             createPR("region2", getPartitionedRegionName(), true);
             // Another delay before exiting the thread to make sure that missing region logging
             // doesn't continue after missing region is created (delay > logInterval)
-            await().atMost(logInterval * 2, TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost(logInterval * 2, TimeUnit.MILLISECONDS).untilAsserted(() -> {
               verifyNoMoreInteractions(mockAppender);
             });
             fail("Unexpected missing colocated region log message");
@@ -494,7 +494,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // delay between starting generations of child regions until the expected missing
             // colocation messages are logged
             int n = (generation - 1) * generation / 2;
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
               verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
             });
             // check for log messages
@@ -557,7 +557,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // delay between starting generations of child regions until the expected missing
             // colocation messages are logged
             int n = regionNum - 1;
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
               verify(mockAppender, times(n)).append(loggingEventCaptor.capture());
             });
             // check for expected number of log messages
@@ -620,7 +620,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             // couple times.
             // Grandchild region does not get created by this thread. (1.5*logInterval < delay <
             // 2*logInterval)
-            await().atMost((int) (1.75 * logInterval), TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost((int) (1.75 * logInterval), TimeUnit.MILLISECONDS).untilAsserted(() -> {
               verify(mockAppender, times(numExpectedLogMessages))
                   .append(loggingEventCaptor.capture());
             });
@@ -1224,7 +1224,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             String colocatedWithRegionName = (String) regionInfo[1];
 
             // delay between starting generations of child regions and verify expected logging
-            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
+            await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).untilAsserted(() -> {
               verify(mockAppender, times(nExpectedLogs)).append(loggingEventCaptor.capture());
             });
 

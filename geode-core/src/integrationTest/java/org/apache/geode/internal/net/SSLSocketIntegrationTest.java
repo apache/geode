@@ -184,7 +184,7 @@ public class SSLSocketIntegrationTest {
     int serverPort = this.serverSocket.getLocalPort();
     Socket socket = new Socket();
     socket.connect(new InetSocketAddress(localHost, serverPort));
-    await().atMost(5, TimeUnit.SECONDS).until(() -> assertFalse(serverThread.isAlive()));
+    await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(serverThread.isAlive()));
     assertNotNull(serverException);
     throw serverException;
   }

@@ -115,7 +115,7 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
     doRegionOps.await();
 
-    await().until(() -> region.values().isEmpty());
+    await().untilAsserted(() -> region.values().isEmpty());
 
     assertThat(region.values()).hasSize(0);
     assertThat(region.keySet()).hasSize(ENTRY_COUNT);
@@ -130,7 +130,8 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
     CacheDistributionAdvisor advisor = ((DistributedRegion) region).getCacheDistributionAdvisor();
     int expectedProfiles = 1;
     await().atMost(2, MINUTES)
-        .until(() -> assertThat(numberProfiles(advisor)).isGreaterThanOrEqualTo(expectedProfiles));
+        .untilAsserted(
+            () -> assertThat(numberProfiles(advisor)).isGreaterThanOrEqualTo(expectedProfiles));
 
     // start doing updates of the keys to see if we can get deadlocked
     int updateCount = 1;
