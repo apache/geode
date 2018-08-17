@@ -65,7 +65,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
@@ -228,8 +228,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
         dataStore2.invoke(() -> createCacheServerWithPR(REGION_NAME, 1, 50, 8, false, null));
 
     // Do puts after slowing the dispatcher.
-    dataStore1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-    dataStore2.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+    dataStore1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    dataStore2.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
     createClientCache(port1, port2);
     client1.invoke(() -> createClientCache(port1, port2));
 
@@ -249,7 +249,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     Thread.sleep(5000);
 
-    secondary.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    secondary.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
 
     client1.invoke(() -> waitForLastKey());
     client1.invoke(() -> checkDeltaInvoked(deltaSent));
@@ -267,8 +267,8 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     });
 
     // Do puts after slowing the dispatcher.
-    dataStore1.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
-    dataStore2.invoke(() -> ConflationDUnitTest.setIsSlowStart("60000"));
+    dataStore1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    dataStore2.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
     createClientCache(port1, port2);
     client1.invoke(() -> createClientCache(port1, port2));
 
@@ -288,7 +288,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     Thread.sleep(5000);
 
-    secondary.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    secondary.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
 
     client1.invoke(() -> waitForLastKey());
     client1.invoke(() -> checkDeltaInvoked(deltaSent));
@@ -1098,7 +1098,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
   private void resetAll() {
     DeltaTestImpl.resetDeltaInvokationCounters();
-    ConflationDUnitTest.unsetIsSlowStart();
+    ConflationDUnitTestHelper.unsetIsSlowStart();
   }
 
   private void setBadToDelta(boolean value) {

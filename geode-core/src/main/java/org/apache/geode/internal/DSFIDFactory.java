@@ -215,6 +215,7 @@ import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllMe
 import org.apache.geode.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.ExpireDisconnectedClientTransactionsMessage;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FindDurableQueueProcessor.FindDurableQueueMessage;
 import org.apache.geode.internal.cache.FindDurableQueueProcessor.FindDurableQueueReply;
@@ -256,7 +257,6 @@ import org.apache.geode.internal.cache.TXCommitMessage.CommitProcessQueryMessage
 import org.apache.geode.internal.cache.TXCommitMessage.CommitProcessQueryReplyMessage;
 import org.apache.geode.internal.cache.TXEntryState;
 import org.apache.geode.internal.cache.TXId;
-import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXRemoteCommitMessage;
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.TXRemoteCommitReplyMessage;
 import org.apache.geode.internal.cache.TXRemoteRollbackMessage;
@@ -699,7 +699,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(PR_BECOME_PRIMARY_BUCKET_MESSAGE, BecomePrimaryBucketMessage.class);
     registerDSFID(PR_BECOME_PRIMARY_BUCKET_REPLY, BecomePrimaryBucketReplyMessage.class);
     registerDSFID(PR_REMOVE_BUCKET_MESSAGE, RemoveBucketMessage.class);
-    registerDSFID(TX_MANAGER_REMOVE_TRANSACTIONS, TXManagerImpl.TXRemovalMessage.class);
+    registerDSFID(EXPIRE_CLIENT_TRANSACTIONS, ExpireDisconnectedClientTransactionsMessage.class);
     registerDSFID(PR_REMOVE_BUCKET_REPLY, RemoveBucketReplyMessage.class);
     registerDSFID(PR_MOVE_BUCKET_MESSAGE, MoveBucketMessage.class);
     registerDSFID(PR_MOVE_BUCKET_REPLY, MoveBucketReplyMessage.class);

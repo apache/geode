@@ -21,9 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -563,6 +565,67 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
+  public void testRemoveMessageForRogueCausesImmediateRemovalMessageToRogue() throws Exception {
+    initMocks();
+    synchronized (gmsJoinLeave.getViewInstallationLock()) {
+      gmsJoinLeave.becomeCoordinator();
+    }
+    prepareAndInstallView(gmsJoinLeaveMemberId,
+        createMemberList(gmsJoinLeaveMemberId, mockMembers[0], mockMembers[1]));
+    reset(messenger);
+    RemoveMemberMessage msg = new RemoveMemberMessage(gmsJoinLeaveMemberId,
+        new InternalDistributedMember("localhost", 10000), "removing for test");
+    msg.setSender(mockMembers[0]);
+    gmsJoinLeave.processMessage(msg);
+    verify(messenger).send(isA(RemoveMemberMessage.class));
+  }
+
+  @Test
+  public void testRemoveRequestCausesForcedDisconnectInRogue() throws Exception {
+    initMocks();
+    // gmsJoinLeave mistakenly uses an old viewID when joining, making it a rogue member
+    gmsJoinLeaveMemberId.setVmViewId(-1);
+    InternalDistributedMember previousMemberId =
+        new InternalDistributedMember(gmsJoinLeaveMemberId.getId(), gmsJoinLeaveMemberId.getPort());
+    previousMemberId.setVmViewId(0);
+    NetView view = new NetView(mockMembers[0], 1,
+        createMemberList(mockMembers[0], previousMemberId, mockMembers[1]));
+    InstallViewMessage viewMessage = new InstallViewMessage(view, 0, true);
+    viewMessage.setSender(mockMembers[0]);
+    gmsJoinLeave.processMessage(viewMessage);
+    assertEquals(0, gmsJoinLeaveMemberId.getVmViewId());
+    // a RemoveMember message should cause it to force-disconnect
+    RemoveMemberMessage msg =
+        new RemoveMemberMessage(gmsJoinLeaveMemberId, gmsJoinLeaveMemberId, "removing for test");
+    msg.setSender(mockMembers[0]);
+    gmsJoinLeave.processMessage(msg);
+    verify(manager).forceDisconnect("removing for test");
+  }
+
+  @Test
+  public void testViewWithOldIDNotAcceptedAsJoinResponse() throws Exception {
+    initMocks();
+    when(messenger.isOldMembershipIdentifier(any(DistributedMember.class)))
+        .thenReturn(Boolean.TRUE);
+    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    Set<InternalDistributedMember> shutdowns = new HashSet<>();
+    Set<InternalDistributedMember> crashes = new HashSet<>();
+    mbrs.add(mockMembers[0]);
+    mbrs.add(mockMembers[1]);
+    mbrs.add(mockMembers[2]);
+    InternalDistributedMember oldId = new InternalDistributedMember(
+        gmsJoinLeaveMemberId.getInetAddress(), gmsJoinLeaveMemberId.getPort());
+    oldId.setVmViewId(0);
+    mbrs.add(oldId);
+
+    // prepare the view
+    NetView netView = new NetView(mockMembers[0], 1, mbrs, shutdowns, crashes);
+    gmsJoinLeave.processMessage(new InstallViewMessage(netView, null, true));
+    assertEquals(-1, gmsJoinLeaveMemberId.getVmViewId());
+    verify(messenger).isOldMembershipIdentifier(isA(DistributedMember.class));
+  }
+
+  @Test
   public void testRemoveCausesForcedDisconnect() throws Exception {
     String reason = "testing";
     initMocks();
@@ -651,6 +714,25 @@ public class GMSJoinLeaveJUnitTest {
     msg.setSender(creator);
     gmsJoinLeave.processMessage(msg);
     assertTrue("Expected it to become coordinator", gmsJoinLeave.isCoordinator());
+  }
+
+  @Test
+  public void testBecomeCoordinatorThroughViewChangeWhenCoordinatorIsShuttingDown()
+      throws Exception {
+    initMocks();
+    prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
+    NetView oldView = gmsJoinLeave.getView();
+    oldView.add(gmsJoinLeaveMemberId);
+    NetView view = new NetView(oldView, oldView.getViewId() + 1);
+    InternalDistributedMember creator = view.getCreator();
+    LeaveRequestMessage leaveRequestMessage =
+        new LeaveRequestMessage(gmsJoinLeaveMemberId, mockMembers[0], "leaving for test");
+    gmsJoinLeave.processMessage(leaveRequestMessage);
+    assertTrue(gmsJoinLeave.isCoordinator());
+    InstallViewMessage msg = getInstallViewMessage(view, creator, false);
+    msg.setSender(creator);
+    gmsJoinLeave.processMessage(msg);
+    assertTrue("Expected it to remain coordinator", gmsJoinLeave.isCoordinator());
   }
 
   @Test

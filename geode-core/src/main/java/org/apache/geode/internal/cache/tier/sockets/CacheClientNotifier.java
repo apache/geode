@@ -892,9 +892,15 @@ public class CacheClientNotifier {
       }
     } else {
       HAEventWrapper wrapper = new HAEventWrapper(clientMessage);
-      // Set the putInProgress flag to true before starting the put on proxy's
-      // HA queues. Nowhere else, this flag is being set to true.
-      wrapper.setPutInProgress(true);
+      wrapper.incrementPutInProgressCounter();
+
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Initial increment PutInProgressCounter on HAEventWrapper with Event ID hash code: "
+                + wrapper.hashCode() + "; System ID hash code: "
+                + System.identityHashCode(wrapper) + "; Wrapper details: " + wrapper);
+      }
+
       conflatable = wrapper;
     }
 
@@ -990,7 +996,11 @@ public class CacheClientNotifier {
         this.blackListSlowReceiver(proxy);
       }
     }
-    checkAndRemoveFromClientMsgsRegion(conflatable);
+
+    if (conflatable instanceof HAEventWrapper) {
+      ((HAEventWrapper) conflatable).decrementPutInProgressCounter();
+    }
+
     // Remove any dead clients from the clients to notify
     if (deadProxies != null) {
       closeDeadProxies(deadProxies, false);
@@ -1024,11 +1034,8 @@ public class CacheClientNotifier {
         // try to canonicalize the ID.
         CacheClientProxy proxy = getClientProxy((ClientProxyMembershipID) id, true);
         if (proxy != null) {
-          // this._logger.info(LocalizedStrings.DEBUG, "BRUCE: found match for " + id + ": " +
-          // proxy.getProxyID());
           result.add(proxy.getProxyID());
         } else {
-          // this._logger.info(LocalizedStrings.DEBUG, "BRUCE: did not find match for " + id);
           // this was causing OOMEs in HARegion initial image processing because
           // messages had routing for clients unknown to this server
           // result.add((ClientProxyMembershipID)id);
@@ -1298,47 +1305,6 @@ public class CacheClientNotifier {
     if (proxy != null) {
       proxy.setKeepAlive(keepalive);
       proxy.unregisterClientInterest(regionName, keysOfInterest, isClosing);
-    }
-  }
-
-  /**
-   * If the conflatable is an instance of HAEventWrapper, and if the corresponding entry is present
-   * in the haContainer, set the reference to the clientUpdateMessage to null and putInProgress flag
-   * to false. Also, if the ref count is zero, then remove the entry from the haContainer.
-   *
-   * @since GemFire 5.7
-   */
-  private void checkAndRemoveFromClientMsgsRegion(Conflatable conflatable) {
-    if (haContainer == null) {
-      return;
-    }
-    if (conflatable instanceof HAEventWrapper) {
-      HAEventWrapper wrapper = (HAEventWrapper) conflatable;
-      if (!wrapper.getIsRefFromHAContainer()) {
-        wrapper = (HAEventWrapper) haContainer.getKey(wrapper);
-        if (wrapper != null && !wrapper.getPutInProgress()) {
-          synchronized (wrapper) {
-            if (wrapper.getReferenceCount() == 0L) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("Removing event from haContainer: {}", wrapper);
-              }
-              haContainer.remove(wrapper);
-            }
-          }
-        }
-      } else {
-        // This wrapper resides in haContainer.
-        wrapper.setClientUpdateMessage(null);
-        wrapper.setPutInProgress(false);
-        synchronized (wrapper) {
-          if (wrapper.getReferenceCount() == 0L) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Removing event from haContainer: {}", wrapper);
-            }
-            haContainer.remove(wrapper);
-          }
-        }
-      }
     }
   }
 

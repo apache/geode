@@ -257,6 +257,8 @@ The MIT License (http://opensource.org/licenses/mit-license.html)
 
 Apache Geode bundles the following files under the MIT license:
 
+  - ClassGraph v4.0.6 (https://github.com/classgraph/classgraph), Copyright (c)
+    2015 Luke Hutchison
   - HTML5 Shiv vpre3.5 (https://github.com/aFarkas/html5shiv), Copyright
     (c) 2014 Alexander Farkas (aFarkas)
   - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),

@@ -46,7 +46,6 @@ dependencies {
 
   // External
   compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
-  testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
   compile 'org.jgroups:jgroups:' + project.'jgroups.version'
   compile 'antlr:antlr:' + project.'antlr.version'
@@ -133,45 +132,60 @@ dependencies {
 
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
 
-  // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
-  compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
+  compile 'io.github.classgraph:classgraph:' + project.'classgraph.version'
 
   compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
   compile project(':geode-common')
   compile project(':geode-json')
 
+
   jcaCompile sourceSets.main.output
 
+
   testCompile project(':geode-junit')
-
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
-
-  // Test Dependencies
-  // External
-  testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
+  testCompile project(':geode-concurrency-test')
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  testRuntime 'org.apache.derby:derby:' + project.'derby.version'
   testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
+  testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
+
   testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
   testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
   testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
-  testCompile 'redis.clients:jedis:' + project.'jedis.version'
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  testRuntime 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
-  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
+  integrationTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile project(':geode-concurrency-test')
+  integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
+  integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
+  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  integrationTestCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
+  integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
-  testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
-  testCompile project(':geode-concurrency-test')
+  integrationTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
+  integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 
-  distributedTestCompile files(sourceSets.integrationTest.output)
-  upgradeTestCompile files(sourceSets.distributedTest.output)
-  upgradeTestCompile files(sourceSets.integrationTest.output)
+
+  distributedTestCompile project(":geode-dunit")
+  distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
+  distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+  distributedTestCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
+
+  distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
+
+
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
+
+
+  performanceTestCompile project(":geode-junit")
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

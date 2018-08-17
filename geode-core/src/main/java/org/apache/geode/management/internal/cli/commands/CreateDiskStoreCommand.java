@@ -22,27 +22,28 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.DiskDirType;
+import org.apache.geode.cache.configuration.DiskDirsType;
+import org.apache.geode.cache.configuration.DiskStoreType;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDiskStoreFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateDiskStoreCommand extends InternalGfshCommand {
+public class CreateDiskStoreCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.CREATE_DISK_STORE, help = CliStrings.CREATE_DISK_STORE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DISK)
-  public Result createDiskStore(
+  public ResultModel createDiskStore(
       @CliOption(key = CliStrings.CREATE_DISK_STORE__NAME, mandatory = true,
           optionContext = ConverterHint.DISKSTORE,
           help = CliStrings.CREATE_DISK_STORE__NAME__HELP) String name,
@@ -78,7 +79,6 @@ public class CreateDiskStoreCommand extends InternalGfshCommand {
           unspecifiedDefaultValue = "99",
           help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT__HELP) float diskUsageCriticalPercentage) {
 
-
     DiskStoreAttributes diskStoreAttributes = new DiskStoreAttributes();
     diskStoreAttributes.allowForceCompaction = allowForceCompaction;
     diskStoreAttributes.autoCompact = autoCompact;
@@ -87,6 +87,7 @@ public class CreateDiskStoreCommand extends InternalGfshCommand {
     diskStoreAttributes.queueSize = queueSize;
     diskStoreAttributes.timeInterval = timeInterval;
     diskStoreAttributes.writeBufferSize = writeBufferSize;
+    diskStoreAttributes.name = name;
 
     File[] directories = new File[directoriesAndSizes.length];
     int[] sizes = new int[directoriesAndSizes.length];
@@ -109,21 +110,51 @@ public class CreateDiskStoreCommand extends InternalGfshCommand {
     Set<DistributedMember> targetMembers = findMembers(groups, null);
 
     if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    List<CliFunctionResult> results = executeAndGetFunctionResult(new CreateDiskStoreFunction(),
-        new Object[] {name, diskStoreAttributes}, targetMembers);
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+        new CreateDiskStoreFunction(), new Object[] {name, diskStoreAttributes}, targetMembers);
 
-    CommandResult result = ResultBuilder.buildResult(results);
-    XmlEntity xmlEntity = findXmlEntity(results);
-
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-              .addXmlEntity(xmlEntity, groups));
-    }
+    ResultModel result = ResultModel.createMemberStatusResult(functionResults);
+    result.setConfigObject(createDiskStoreType(name, diskStoreAttributes));
 
     return result;
+  }
+
+  private DiskStoreType createDiskStoreType(String name, DiskStoreAttributes diskStoreAttributes) {
+    DiskStoreType diskStoreType = new DiskStoreType();
+    diskStoreType.setAllowForceCompaction(diskStoreAttributes.getAllowForceCompaction());
+    diskStoreType.setAutoCompact(diskStoreAttributes.getAutoCompact());
+    diskStoreType
+        .setCompactionThreshold(Integer.toString(diskStoreAttributes.getCompactionThreshold()));
+
+    DiskDirsType diskDirsType = new DiskDirsType();
+    List<DiskDirType> diskDirs = diskDirsType.getDiskDirs();
+    for (int i = 0; i < diskStoreAttributes.getDiskDirs().length; i++) {
+      DiskDirType diskDir = new DiskDirType();
+      diskDir.setContent(diskStoreAttributes.getDiskDirs()[i].getName());
+      diskDir.setDirSize(Integer.toString(diskStoreAttributes.getDiskDirSizes()[i]));
+
+      diskDirs.add(diskDir);
+    }
+    diskStoreType.setDiskDirs(diskDirsType);
+    diskStoreType.setDiskUsageCriticalPercentage(
+        Integer.toString((int) diskStoreAttributes.getDiskUsageCriticalPercentage()));
+    diskStoreType.setDiskUsageWarningPercentage(
+        Integer.toString((int) diskStoreAttributes.getDiskUsageWarningPercentage()));
+    diskStoreType.setMaxOplogSize(Integer.toString((int) diskStoreAttributes.getMaxOplogSize()));
+    diskStoreType.setName(diskStoreAttributes.getName());
+    diskStoreType.setQueueSize(Integer.toString(diskStoreAttributes.getQueueSize()));
+    diskStoreType.setTimeInterval(Integer.toString((int) diskStoreAttributes.getTimeInterval()));
+    diskStoreType.setWriteBufferSize(Integer.toString(diskStoreAttributes.getWriteBufferSize()));
+
+    return diskStoreType;
+  }
+
+  @Override
+  public void updateClusterConfig(String group, CacheConfig config, Object configObject) {
+    DiskStoreType diskStoreType = (DiskStoreType) configObject;
+    config.getDiskStores().add(diskStoreType);
   }
 }

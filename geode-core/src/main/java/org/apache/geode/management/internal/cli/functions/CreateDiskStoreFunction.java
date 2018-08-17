@@ -20,62 +20,29 @@ package org.apache.geode.management.internal.cli.functions;
  * @since GemFire 8.0
  */
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.cli.Result;
 
-public class CreateDiskStoreFunction implements InternalFunction {
-  private static final Logger logger = LogService.getLogger();
+public class CreateDiskStoreFunction extends CliFunction {
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
-    // Declared here so that it's available when returning a Throwable
-    String memberId = "";
-    try {
-      final Object[] args = (Object[]) context.getArguments();
-      final String diskStoreName = (String) args[0];
-      final DiskStoreAttributes diskStoreAttrs = (DiskStoreAttributes) args[01];
+  public CliFunctionResult executeFunction(FunctionContext context) {
+    final Object[] args = (Object[]) context.getArguments();
+    final String diskStoreName = (String) args[0];
+    final DiskStoreAttributes diskStoreAttrs = (DiskStoreAttributes) args[1];
 
-      InternalCache cache = (InternalCache) context.getCache();
+    InternalCache cache = (InternalCache) context.getCache();
+    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory(diskStoreAttrs);
+    diskStoreFactory.create(diskStoreName);
 
-      DistributedMember member = cache.getDistributedSystem().getDistributedMember();
-
-      memberId = member.getId();
-      // If they set a name use it instead
-      if (!member.getName().equals("")) {
-        memberId = member.getName();
-      }
-
-      DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory(diskStoreAttrs);
-      diskStoreFactory.create(diskStoreName);
-
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.DISK_STORE, "name", diskStoreName);
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity, "Success"));
-
-    } catch (CacheClosedException cce) {
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, false, null));
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      logger.error("Could not create disk store: {}", th.getMessage(), th);
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, th, null));
-    }
+    return new CliFunctionResult(context.getMemberName(), Result.Status.OK,
+        "Created disk store " + diskStoreName);
   }
 
   @Override

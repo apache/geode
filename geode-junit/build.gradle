@@ -16,12 +16,12 @@
  */
 
 dependencies {
+  compileOnly project(':geode-core')
+
   compile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'
   }
   compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
-  testCompile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  testCompile 'com.google.guava:guava:' + project.'guava.version'
   compile 'org.assertj:assertj-core:' + project.'assertj-core.version'
   compile 'commons-io:commons-io:' + project.'commons-io.version'
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
@@ -30,12 +30,12 @@ dependencies {
   compile 'org.awaitility:awaitility:' + project.'awaitility.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
-  compile project(":geode-old-versions")
+
+  runtime project(":geode-old-versions")
 }
 
 test {

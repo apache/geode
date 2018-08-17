@@ -551,6 +551,9 @@ public class RegionMapDestroy {
         if (regionEntry == null) {
           regionEntry = newRegionEntry;
         }
+        // invoke listeners and inform clients
+        internalRegion.basicDestroyPart2(regionEntry, event, inTokenMode,
+            false, duringRI, true);
         doPart3 = true;
       }
     }

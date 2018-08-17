@@ -278,8 +278,8 @@ public class CreateDefinedIndexesCommandDUnitTest {
       QueryService queryService = cache.getQueryService();
       Region region1 = cache.getRegion(region1Name);
 
-      // Returns null instead of an empty collection if there are no indexes...
-      assertThat(queryService.getIndexes(region1)).isNull();
+      assertThat(queryService.getIndexes(region1)).isNotNull();
+      assertThat(queryService.getIndexes(region1).isEmpty()).isTrue();
     }, server1, server2);
 
     VMProvider.invokeInEveryMember(() -> {
@@ -287,7 +287,8 @@ public class CreateDefinedIndexesCommandDUnitTest {
       QueryService queryService = cache.getQueryService();
       Region region2 = cache.getRegion(region2Name);
 
-      assertThat(queryService.getIndexes(region2)).isNull();
+      assertThat(queryService.getIndexes(region2)).isNotNull();
+      assertThat(queryService.getIndexes(region2).isEmpty()).isTrue();
     }, server3);
 
     locator.invoke(() -> {

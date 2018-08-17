@@ -90,8 +90,10 @@ ln -s ${ROOT_DIR}/geode ${GEODE_BUILD_DIR}
 
 pushd ${GEODE_BUILD_DIR}
 set +e
-./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" build
+set -x
+./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" build install
 GRADLE_EXIT_STATUS=$?
+set +x
 set -e
 
 popd

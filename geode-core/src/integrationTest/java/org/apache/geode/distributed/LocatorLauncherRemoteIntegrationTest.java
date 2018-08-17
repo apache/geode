@@ -139,7 +139,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
     assertThat(locatorState.getMemberName()).isEqualTo(getUniqueName());
     assertThat(locatorState.getPid().intValue()).isEqualTo(getLocatorPid());
     assertThat(locatorState.getUptime()).isGreaterThan(0);
-    assertThat(locatorState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+    assertThat(locatorState.getWorkingDirectory()).isEqualToIgnoringCase(getWorkingDirectoryPath());
   }
 
   @Test
@@ -159,7 +159,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
     assertThat(locatorState.getMemberName()).isEqualTo(getUniqueName());
     assertThat(locatorState.getPid().intValue()).isEqualTo(readPidFile());
     assertThat(locatorState.getUptime()).isGreaterThan(0);
-    assertThat(locatorState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
+    assertThat(locatorState.getWorkingDirectory()).isEqualToIgnoringCase(getWorkingDirectoryPath());
   }
 
   @Test

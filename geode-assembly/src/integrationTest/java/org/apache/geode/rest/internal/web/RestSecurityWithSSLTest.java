@@ -24,8 +24,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
+import static org.apache.geode.util.test.TestUtil.getResourcePath;
 
-import java.net.URL;
+import java.io.File;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,8 +43,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class, RestAPITest.class})
 public class RestSecurityWithSSLTest {
 
-  private static final URL KEYSTORE_URL =
-      RestSecurityWithSSLTest.class.getClassLoader().getResource("ssl/trusted.keystore");
+  private static File KEYSTORE_FILE =
+      new File(getResourcePath(RestSecurityWithSSLTest.class, "/ssl/trusted.keystore"));
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
@@ -52,14 +53,14 @@ public class RestSecurityWithSSLTest {
   public ServerStarterRule serverStarter = new ServerStarterRule().withRestService()
       .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
       .withProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant())
-      .withProperty(SSL_KEYSTORE, KEYSTORE_URL.getPath())
+      .withProperty(SSL_KEYSTORE, KEYSTORE_FILE.getPath())
       .withProperty(SSL_KEYSTORE_PASSWORD, "password").withProperty(SSL_KEYSTORE_TYPE, "JKS")
-      .withProperty(SSL_TRUSTSTORE, KEYSTORE_URL.getPath())
+      .withProperty(SSL_TRUSTSTORE, KEYSTORE_FILE.getPath())
       .withProperty(SSL_TRUSTSTORE_PASSWORD, "password")
       .withProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1").withAutoStart();
 
   @Test
-  public void testRestSecurityWithSSL() throws Exception {
+  public void testRestSecurityWithSSL() {
     GeodeDevRestClient restClient =
         new GeodeDevRestClient("localhost", serverStarter.getHttpPort(), true);
     assertResponse(restClient.doGet("/servers", "cluster", "cluster"))

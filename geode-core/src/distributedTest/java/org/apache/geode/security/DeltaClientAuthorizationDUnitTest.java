@@ -20,7 +20,6 @@ import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
 import static org.apache.geode.security.SecurityTestUtils.REGION_NAME;
 import static org.apache.geode.security.SecurityTestUtils.closeCache;
 import static org.apache.geode.security.SecurityTestUtils.getCache;
-import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
@@ -123,11 +122,11 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
   }
 
   private int createServer2(final Properties javaProps, final Properties serverProps) {
-    return server2.invoke(() -> createCacheServer(getLocatorPort(), serverProps, javaProps));
+    return server2.invoke(() -> createCacheServer(serverProps, javaProps));
   }
 
   private int createServer1(final Properties javaProps, final Properties serverProps) {
-    return server1.invoke(() -> createCacheServer(getLocatorPort(), serverProps, javaProps));
+    return server1.invoke(() -> createCacheServer(serverProps, javaProps));
   }
 
   private void doPuts(final int num, final int expectedResult) {
@@ -180,8 +179,6 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
     deltas[3].setByteArr(new byte[] {1, 2, 3, 4, 5});
     deltas[4].setByteArr(new byte[] {1, 2, 3, 4, 5});
     deltas[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    // deltas[6].setByteArr(new byte[] { 1, 2, 3, 4, 5 });
-    // deltas[7].setByteArr(new byte[] { 1, 2, 3, 4, 5 });
 
     deltas[3].resetDeltaStatus();
     deltas[3].setDoubleVar(new Double(5));
@@ -194,7 +191,6 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
     deltas[4].setStr("str changed");
     deltas[5].setStr("str changed");
     deltas[6].setStr("str changed");
-    // deltas[7].setStr("str changed");
 
     deltas[5].resetDeltaStatus();
     deltas[5].setIntVar(100);

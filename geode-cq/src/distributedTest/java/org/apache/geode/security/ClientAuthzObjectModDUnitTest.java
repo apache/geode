@@ -15,7 +15,6 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.security.SecurityTestUtils.closeCache;
-import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,13 +111,13 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
         if (opBlock.size() > 0) {
           // Start the first server and execute the operation block
           port1 = server1.invoke("createCacheServer",
-              () -> createCacheServer(getLocatorPort(), 0, serverProps, javaProps));
+              () -> createCacheServer(serverProps, javaProps));
           server2.invoke("closeCache", () -> closeCache());
           executeOpBlock(opBlock, port1, port2, authInit, extraProps, null, tgen, rnd);
           if (!currentOp.equals(OperationWithAction.OPBLOCK_NO_FAILOVER)) {
             // Failover to the second server and run the block again
             port2 = server2.invoke("createCacheServer",
-                () -> createCacheServer(getLocatorPort(), 0, serverProps, javaProps));
+                () -> createCacheServer(serverProps, javaProps));
             server1.invoke("closeCache", () -> closeCache());
             executeOpBlock(opBlock, port1, port2, authInit, extraProps, null, tgen, rnd);
           }

@@ -87,7 +87,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   // Keep a 60 second history @ an estimated 1092 transactions/second ~= 16^4
   protected static final TXFarSideCMTracker txTracker = new TXFarSideCMTracker((60 * 1092));
 
-  private ArrayList regions; // list of RegionCommit instances
+  private ArrayList<RegionCommit> regions; // list of RegionCommit instances
   protected TXId txIdent;
   protected int processorId; // 0 unless needsAck is true
   protected TXLockIdImpl lockId;
@@ -991,14 +991,15 @@ public class TXCommitMessage extends PooledDistributionMessage
   public void combine(TXCommitMessage other) {
     assert other != null;
     Iterator it = other.regions.iterator();
-    while (it.hasNext()) {
-      RegionCommit rc = (RegionCommit) it.next();
-      if (!this.regions.contains(rc)) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("TX: adding region commit: {} to: {}", rc, this);
-        }
-        rc.msg = this;
-        this.regions.add(rc);
+    Map<String, RegionCommit> regionCommits = new HashMap<>();
+    for (RegionCommit commit : regions) {
+      regionCommits.put(commit.getRegionPath(), commit);
+    }
+    for (RegionCommit commit : other.regions) {
+      if (!regionCommits.containsKey(commit.getRegionPath())) {
+        commit.msg = this;
+        this.regions.add(commit);
+        regionCommits.put(commit.getRegionPath(), commit);
       }
     }
   }
@@ -1129,6 +1130,10 @@ public class TXCommitMessage extends PooledDistributionMessage
      */
     RegionCommit(TXCommitMessage msg) {
       this.msg = msg;
+    }
+
+    public String getRegionPath() {
+      return regionPath;
     }
 
     public void incRefCount() {

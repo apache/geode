@@ -28,15 +28,16 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class BackupDiskStoreCommand extends InternalGfshCommand {
+  public static final String BACKED_UP_DISKSTORES_SECTION = "backed-up-diskstores";
+  public static final String OFFLINE_DISKSTORES_SECTION = "offline-diskstores";
+
   /**
    * Internally, we also verify the resource operation permissions CLUSTER:WRITE:DISK if the region
    * is persistent
@@ -45,7 +46,7 @@ public class BackupDiskStoreCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.READ)
-  public Result backupDiskStore(
+  public ResultModel backupDiskStore(
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__DISKDIRS,
           help = CliStrings.BACKUP_DISK_STORE__DISKDIRS__HELP, mandatory = true) String targetDir,
       @CliOption(key = CliStrings.BACKUP_DISK_STORE__BASELINEDIR,
@@ -53,7 +54,8 @@ public class BackupDiskStoreCommand extends InternalGfshCommand {
 
     authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
         ResourcePermission.Target.DISK);
-    Result result;
+
+    ResultModel result = new ResultModel();
     try {
       InternalCache cache = (InternalCache) getCache();
       DistributionManager dm = cache.getDistributionManager();
@@ -70,12 +72,10 @@ public class BackupDiskStoreCommand extends InternalGfshCommand {
           backupStatus.getBackedUpDiskStores();
 
       Set<DistributedMember> backedupMembers = backedupMemberDiskstoreMap.keySet();
-      CompositeResultData crd = ResultBuilder.createCompositeResultData();
 
       if (!backedupMembers.isEmpty()) {
-        CompositeResultData.SectionResultData backedupDiskStoresSection = crd.addSection();
-        backedupDiskStoresSection.setHeader(CliStrings.BACKUP_DISK_STORE_MSG_BACKED_UP_DISK_STORES);
-        TabularResultData backedupDiskStoresTable = backedupDiskStoresSection.addTable();
+        TabularResultModel backedupDiskStoresTable = result.addTable(BACKED_UP_DISKSTORES_SECTION);
+        backedupDiskStoresTable.setHeader(CliStrings.BACKUP_DISK_STORE_MSG_BACKED_UP_DISK_STORES);
 
         for (DistributedMember member : backedupMembers) {
           Set<PersistentID> backedupDiskStores = backedupMemberDiskstoreMap.get(member);
@@ -103,17 +103,15 @@ public class BackupDiskStoreCommand extends InternalGfshCommand {
           }
         }
       } else {
-        CompositeResultData.SectionResultData noMembersBackedUp = crd.addSection();
-        noMembersBackedUp.setHeader(CliStrings.BACKUP_DISK_STORE_MSG_NO_DISKSTORES_BACKED_UP);
+        result.addInfo().addLine(CliStrings.BACKUP_DISK_STORE_MSG_NO_DISKSTORES_BACKED_UP);
       }
 
       Set<PersistentID> offlineDiskStores = backupStatus.getOfflineDiskStores();
 
       if (!offlineDiskStores.isEmpty()) {
-        CompositeResultData.SectionResultData offlineDiskStoresSection = crd.addSection();
-        TabularResultData offlineDiskStoresTable = offlineDiskStoresSection.addTable();
+        TabularResultModel offlineDiskStoresTable = result.addTable(OFFLINE_DISKSTORES_SECTION);
+        offlineDiskStoresTable.setHeader(CliStrings.BACKUP_DISK_STORE_MSG_OFFLINE_DISK_STORES);
 
-        offlineDiskStoresSection.setHeader(CliStrings.BACKUP_DISK_STORE_MSG_OFFLINE_DISK_STORES);
         for (PersistentID offlineDiskStore : offlineDiskStores) {
           offlineDiskStoresTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_UUID,
               offlineDiskStore.getUUID().toString());
@@ -123,19 +121,18 @@ public class BackupDiskStoreCommand extends InternalGfshCommand {
               offlineDiskStore.getDirectory());
         }
       }
-      result = ResultBuilder.buildResult(crd);
 
     } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+      return ResultModel.createError(e.getMessage());
     }
     return result;
   }
 
-  private void writeToBackupDiskStoreTable(TabularResultData backedupDiskStoreTable,
-      String memberId, String UUID, String host, String directory) {
-    backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_MEMBER, memberId);
-    backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_UUID, UUID);
-    backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_DIRECTORY, directory);
-    backedupDiskStoreTable.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_HOST, host);
+  private void writeToBackupDiskStoreTable(TabularResultModel table, String memberId, String UUID,
+      String host, String directory) {
+    table.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_MEMBER, memberId);
+    table.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_UUID, UUID);
+    table.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_DIRECTORY, directory);
+    table.accumulate(CliStrings.BACKUP_DISK_STORE_MSG_HOST, host);
   }
 }

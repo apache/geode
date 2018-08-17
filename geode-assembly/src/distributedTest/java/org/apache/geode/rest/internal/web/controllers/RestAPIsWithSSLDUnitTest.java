@@ -404,8 +404,9 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
             ids.disconnect();
           }
           // try a different port
-          int httpServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
-          int jmxManagerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+          int[] randomPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+          int httpServicePort = randomPorts[0];
+          int jmxManagerPort = randomPorts[1];
           props.setProperty(HTTP_SERVICE_PORT, Integer.toString(httpServicePort));
           props.setProperty(JMX_MANAGER_PORT, Integer.toString(jmxManagerPort));
           System.out.println("Try a different http-service-port " + httpServicePort);

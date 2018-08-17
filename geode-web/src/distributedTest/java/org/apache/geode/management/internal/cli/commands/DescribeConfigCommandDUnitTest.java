@@ -58,7 +58,8 @@ public class DescribeConfigCommandDUnitTest {
     localProps.setProperty(ENABLE_TIME_STATISTICS, "true");
     localProps.setProperty(GROUPS, "G1");
     MemberVM server0 =
-        startupRule.startServerVM(0, x -> x.withProperties(localProps).withJMXManager());
+        startupRule.startServerVM(0,
+            x -> x.withProperties(localProps).withJMXManager().withHttpService());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);

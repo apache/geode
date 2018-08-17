@@ -84,6 +84,15 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   @Override
+  public int getTotalQueueSize() {
+    int totalSize = 0;
+    for (RegionQueue regionQueue : queues) {
+      totalSize = totalSize + regionQueue.size();
+    }
+    return totalSize;
+  }
+
+  @Override
   protected void initializeMessageQueue(String id) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors.add(

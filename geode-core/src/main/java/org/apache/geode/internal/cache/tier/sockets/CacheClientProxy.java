@@ -1544,6 +1544,7 @@ public class CacheClientProxy implements ClientSession {
   protected void deliverMessage(Conflatable conflatable) {
     ThreadState state = this.securityService.bindSubject(this.subject);
     ClientUpdateMessage clientMessage = null;
+
     if (conflatable instanceof HAEventWrapper) {
       clientMessage = ((HAEventWrapper) conflatable).getClientUpdateMessage();
     } else {
@@ -1571,7 +1572,22 @@ public class CacheClientProxy implements ClientSession {
                   "Message dispatcher for proxy {} is getting initialized. Adding message to the queuedEvents.",
                   this);
             }
+
+            if (conflatable instanceof HAEventWrapper) {
+              HAEventWrapper haEventWrapper = (HAEventWrapper) conflatable;
+              haEventWrapper.incrementPutInProgressCounter();
+              if (logger.isDebugEnabled()) {
+                logger.debug(
+                    "Incremented PutInProgressCounter on HAEventWrapper with Event ID hash code: "
+                        + haEventWrapper.hashCode()
+                        + "; System ID hash code: "
+                        + System.identityHashCode(haEventWrapper) + "; Wrapper details: "
+                        + haEventWrapper);
+              }
+            }
+
             this.queuedEvents.add(conflatable);
+
             return;
           }
         }
@@ -1581,13 +1597,24 @@ public class CacheClientProxy implements ClientSession {
         this._messageDispatcher.enqueueMessage(conflatable);
       } else {
         this._statistics.incMessagesFailedQueued();
+
         if (logger.isDebugEnabled()) {
           logger.debug(
-              "Message is not added to the queue. Message dispatcher for proxy: {} doesn't exist.",
-              this);
+              "Message was not added to the queue. Message dispatcher was null for proxy: " + this
+                  + ". Event ID hash code: " + conflatable.hashCode() + "; System ID hash code: "
+                  + System.identityHashCode(conflatable) + "; Conflatable details: " + conflatable
+                      .toString());
         }
       }
     } else {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Message was not added to the queue. Event ID hash code: " + conflatable.hashCode()
+                + "; System ID hash code: "
+                + System.identityHashCode(conflatable) + "; Conflatable details: " + conflatable
+                    .toString());
+      }
+
       this._statistics.incMessagesFailedQueued();
     }
 
@@ -1690,23 +1717,42 @@ public class CacheClientProxy implements ClientSession {
         logger.debug("{} draining {} events from init queue into intialized queue", this,
             this.queuedEvents.size());
       }
-      Conflatable nextEvent;
-      while ((nextEvent = queuedEvents.poll()) != null) {
-        this._messageDispatcher.enqueueMessage(nextEvent);
-      }
+
+      drainQueuedEvents(false);
 
       // Now finish emptying the queue with synchronization to make
       // sure we don't miss any events.
       synchronized (this.queuedEventsSync) {
-        while ((nextEvent = queuedEvents.poll()) != null) {
-          this._messageDispatcher.enqueueMessage(nextEvent);
-        }
+        drainQueuedEvents(true);
 
         this.messageDispatcherInit = false; // Done initialization.
       }
     } finally {
       if (this.messageDispatcherInit) { // If its not successfully completed.
         this._statistics.close();
+      }
+    }
+  }
+
+  private void drainQueuedEvents(boolean withSynchronization) {
+    Conflatable nextEvent;
+    while ((nextEvent = queuedEvents.poll()) != null) {
+      if (logger.isDebugEnabled()) {
+        if (nextEvent instanceof HAEventWrapper) {
+          logger.debug(
+              "Draining events queued during message dispatcher initialization "
+                  + (withSynchronization ? "with" : "without")
+                  + " synchronization. Event ID hash code: "
+                  + nextEvent.hashCode()
+                  + "; System ID hash code: " + System.identityHashCode(nextEvent)
+                  + "; Wrapper details: " + nextEvent);
+        }
+      }
+
+      this._messageDispatcher.enqueueMessage(nextEvent);
+
+      if (nextEvent instanceof HAEventWrapper) {
+        ((HAEventWrapper) nextEvent).decrementPutInProgressCounter();
       }
     }
   }

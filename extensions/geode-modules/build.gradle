@@ -19,7 +19,6 @@ evaluationDependsOn(":geode-core")
 
 dependencies {
   compile project(':geode-core')
-  
   compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   compile ('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
     exclude module: 'annotations-api'
@@ -29,15 +28,11 @@ dependencies {
   compile 'org.apache.tomcat:juli:' + project.'tomcat6.version'
 
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-  testRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 
-  testCompile project(path: ':geode-junit')
-  // TODO build - move shared source to common library.
-  testCompile files(project(':geode-core').sourceSets.test.output)
+  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(":extensions/geode-modules-test")
 
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestRuntime 'org.apache.tomcat:coyote:' + project.'tomcat6.version'
 }
 
 disableMavenPublishing()

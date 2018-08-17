@@ -39,7 +39,7 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
@@ -106,7 +106,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
     int PORT1 = ((Integer) server1
         .invoke(() -> HAConflationDUnitTest.createServerCache(new Boolean(false)))).intValue();
-    server1.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     server1.invoke(() -> HAConflationDUnitTest.makeDispatcherSlow());
     client1
         .invoke(() -> HAConflationDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),

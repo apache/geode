@@ -84,7 +84,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  *
  * @since GemFire 7.0
  */
-public abstract class AbstractGatewaySender implements GatewaySender, DistributionAdvisee {
+public abstract class AbstractGatewaySender implements InternalGatewaySender, DistributionAdvisee {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -278,6 +278,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return senderAdvisor;
   }
 
+  @Override
   public GatewaySenderStats getStatistics() {
     return statistics;
   }
@@ -286,6 +287,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     // no op
   }
 
+  @Override
   public boolean isPrimary() {
     return this.getSenderAdvisor().isPrimary();
   }
@@ -294,34 +296,42 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     this.getSenderAdvisor().setIsPrimary(isPrimary);
   }
 
+  @Override
   public InternalCache getCache() {
     return this.cache;
   }
 
+  @Override
   public int getAlertThreshold() {
     return this.alertThreshold;
   }
 
+  @Override
   public int getBatchSize() {
     return this.batchSize;
   }
 
+  @Override
   public int getBatchTimeInterval() {
     return this.batchTimeInterval;
   }
 
+  @Override
   public String getDiskStoreName() {
     return this.diskStoreName;
   }
 
+  @Override
   public List<GatewayEventFilter> getGatewayEventFilters() {
     return this.eventFilters;
   }
 
+  @Override
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
     return this.substitutionFilter;
   }
 
+  @Override
   public String getId() {
     return this.id;
   }
@@ -330,10 +340,12 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return this.startTime;
   }
 
+  @Override
   public int getRemoteDSId() {
     return this.remoteDSId;
   }
 
+  @Override
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
     return this.transFilters;
   }
@@ -346,14 +358,17 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return !this.listeners.isEmpty();
   }
 
+  @Override
   public boolean isForwardExpirationDestroy() {
     return this.forwardExpirationDestroy;
   }
 
+  @Override
   public boolean isManualStart() {
     return this.manualStart;
   }
 
+  @Override
   public int getMaximumQueueMemory() {
     return this.queueMemory;
   }
@@ -362,14 +377,17 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return this.maxMemoryPerDispatcherQueue;
   }
 
+  @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
 
+  @Override
   public int getSocketReadTimeout() {
     return this.socketReadTimeout;
   }
 
+  @Override
   public boolean isBatchConflationEnabled() {
     return this.isConflation;
   }
@@ -378,14 +396,17 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     this.isConflation = enableConflation;
   }
 
+  @Override
   public boolean isPersistenceEnabled() {
     return this.isPersistence;
   }
 
+  @Override
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
   }
 
+  @Override
   public int getMaxParallelismForReplicatedRegion() {
     return this.parallelismForReplicatedRegion;
   }
@@ -394,38 +415,47 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return this.locatorDiscoveryCallback;
   }
 
+  @Override
   public DistributionAdvisor getDistributionAdvisor() {
     return this.senderAdvisor;
   }
 
+  @Override
   public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 
+  @Override
   public String getFullPath() {
     return getId();
   }
 
+  @Override
   public String getName() {
     return getId();
   }
 
+  @Override
   public DistributionAdvisee getParentAdvisee() {
     return null;
   }
 
+  @Override
   public int getDispatcherThreads() {
     return this.dispatcherThreads;
   }
 
+  @Override
   public OrderPolicy getOrderPolicy() {
     return this.policy;
   }
 
+  @Override
   public Profile getProfile() {
     return this.senderAdvisor.createProfile();
   }
 
+  @Override
   public int getSerialNumber() {
     return this.serialNumber;
   }
@@ -434,12 +464,14 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return this.isBucketSorted;
   }
 
+  @Override
   public boolean getIsMetaQueue() {
     return this.isMetaQueue;
   }
 
+  @Override
   public InternalDistributedSystem getSystem() {
-    return (InternalDistributedSystem) this.cache.getDistributedSystem();
+    return this.cache.getInternalDistributedSystem();
   }
 
   public int getEventIdIndex() {
@@ -473,10 +505,12 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return proxy;
   }
 
+  @Override
   public void removeGatewayEventFilter(GatewayEventFilter filter) {
     this.eventFilters.remove(filter);
   }
 
+  @Override
   public void addGatewayEventFilter(GatewayEventFilter filter) {
     if (this.eventFilters.isEmpty()) {
       this.eventFilters = new ArrayList<GatewayEventFilter>();
@@ -489,6 +523,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     this.eventFilters.add(filter);
   }
 
+  @Override
   public boolean isParallel() {
     return this.isParallel;
   }
@@ -497,8 +532,10 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return this.isForInternalUse;
   }
 
+  @Override
   public abstract void start();
 
+  @Override
   public abstract void stop();
 
   /**
@@ -517,6 +554,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     destroy(true);
   }
 
+  @Override
   public void destroy(boolean initiator) {
     try {
       this.getLifeCycleLock().writeLock().lock();
@@ -580,6 +618,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
+  @Override
   public void rebalance() {
     try {
       // Pause the sender
@@ -622,6 +661,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
   protected void stompProxyDead() {
     Runnable stomper = new Runnable() {
+      @Override
       public void run() {
         PoolImpl bpi = proxy;
         if (bpi != null) {
@@ -719,6 +759,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return null;
   }
 
+  @Override
   public Set<RegionQueue> getQueues() {
     if (this.eventProcessor != null) {
       if (!(this.eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
@@ -750,6 +791,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
+  @Override
   public void pause() {
     if (this.eventProcessor != null) {
       this.getLifeCycleLock().writeLock().lock();
@@ -772,6 +814,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
+  @Override
   public void resume() {
     if (this.eventProcessor != null) {
       this.getLifeCycleLock().writeLock().lock();
@@ -795,6 +838,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
+  @Override
   public boolean isPaused() {
     if (this.eventProcessor != null) {
       return this.eventProcessor.isPaused();
@@ -802,6 +846,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return false;
   }
 
+  @Override
   public boolean isRunning() {
     if (this.eventProcessor != null) {
       return !this.eventProcessor.isStopped();
@@ -809,6 +854,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return false;
   }
 
+  @Override
   public AbstractGatewaySenderEventProcessor getEventProcessor() {
     return this.eventProcessor;
   }
@@ -1204,6 +1250,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
       // Create a stats holder for the meta data stats
       final HasCachePerfStats statsHolder = new HasCachePerfStats() {
+        @Override
         public CachePerfStats getCachePerfStats() {
           return new CachePerfStats(cache.getDistributedSystem(), META_DATA_REGION_NAME);
         }
@@ -1240,6 +1287,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       return singleton;
     }
 
+    @Override
     public boolean enqueueEvent(EntryEventImpl event) {
       return true;
     }
@@ -1278,6 +1326,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return lifeCycleLock;
   }
 
+  @Override
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
     boolean result = false;
     if (isParallel()) {

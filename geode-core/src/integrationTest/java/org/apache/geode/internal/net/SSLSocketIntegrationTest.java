@@ -267,7 +267,7 @@ public class SSLSocketIntegrationTest {
     assertThat(resource).isNotNull();
 
     File file = this.temporaryFolder.newFile(name.replaceFirst(".*/", ""));
-    FileUtils.copyFile(new File(resource.getFile()), file);
+    FileUtils.copyURLToFile(resource, file);
     return file;
   }
 

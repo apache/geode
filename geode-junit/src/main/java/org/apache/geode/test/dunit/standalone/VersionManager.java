@@ -39,6 +39,7 @@ public class VersionManager {
   public static final String GEODE_110 = "110";
   public static final String GEODE_120 = "120";
   public static final String GEODE_130 = "130";
+  public static final String GEODE_140 = "140";
 
   private static VersionManager instance;
 

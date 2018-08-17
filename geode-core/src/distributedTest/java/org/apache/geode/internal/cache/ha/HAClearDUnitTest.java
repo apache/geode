@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
+import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -91,10 +91,10 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
 
     server1 = host.getVM(0);
-    server1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    server1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
 
     server2 = host.getVM(1);
-    server2.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
+    server2.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
 
     client1 = host.getVM(2);
 

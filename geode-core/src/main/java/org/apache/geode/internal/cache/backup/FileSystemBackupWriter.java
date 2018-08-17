@@ -72,6 +72,11 @@ class FileSystemBackupWriter implements BackupWriter {
     return incrementalBaselineLocation.getMemberBackupLocationDir().getParent();
   }
 
+  @Override
+  public Path getBackupDirectory() {
+    return backupDirectory;
+  }
+
   private void backupAllFilesets(BackupDefinition backupDefinition) throws IOException {
     RestoreScript restoreScript = backupDefinition.getRestoreScript();
     backupDiskInitFiles(backupDefinition.getDiskInitFiles());

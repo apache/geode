@@ -19,6 +19,9 @@ apply plugin: 'war'
 
 dependencies {
 
+  compileOnly project(':geode-core')
+  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
@@ -56,18 +59,13 @@ dependencies {
     exclude module: 'spring-beans'
   }
 
+
   testCompile project(':geode-junit')
-  testCompile files(project(':geode-core').sourceSets.test.output)
-
-  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  compileOnly project(':geode-core')
   testCompile project(':geode-core')
+  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
 
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+
+  integrationTestCompile project(":geode-junit")
 }
 
 war {

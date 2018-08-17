@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
@@ -50,6 +51,11 @@ public interface Messenger extends Service {
    * returns the endpoint ID for this member
    */
   InternalDistributedMember getMemberID();
+
+  /**
+   * check to see if a member ID has already been used
+   */
+  boolean isOldMembershipIdentifier(DistributedMember id);
 
   /**
    * retrieves the quorum checker that is used during auto-reconnect attempts

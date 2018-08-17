@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase {
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersions();
     if (result.size() < 1) {

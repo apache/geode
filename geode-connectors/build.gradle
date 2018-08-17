@@ -18,37 +18,30 @@
 evaluationDependsOn(":geode-core")
 
 repositories {
-    maven {
-        url 'https://dl.bintray.com/palantir/releases'
-        // docker-compose-rule is published on bintray
-    }
+  maven {
+    // docker-compose-rule is published on bintray
+    url 'https://dl.bintray.com/palantir/releases'
+  }
 }
 
 dependencies {
-    compile project(':geode-core')
-    compile project(':geode-common')
-    compile group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version'
+  compile project(':geode-core')
+  compile project(':geode-common')
+  compile group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version'
 
 
-    testCompile project(':geode-junit')
+  testCompile project(':geode-junit')
 
-    //Connectors test framework.
-    testRuntime 'org.apache.derby:derby:' + project.'derby.version'
-    testCompile group: 'mysql', name: 'mysql-connector-java', version: '5.1.46'
-    testCompile group: 'org.postgresql', name: 'postgresql', version: '42.2.2'
-    testCompile 'com.palantir.docker.compose:docker-compose-rule-junit4:0.31.1'
-    testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-    testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-    testCompile files(project(':geode-core').sourceSets.test.output)
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
-    // TODO build - move dunit framework to shared module.
-    integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-    distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-    distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-    acceptanceTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-    acceptanceTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
+
+
+  acceptanceTestCompile project(":geode-dunit")
+  acceptanceTestCompile group: 'mysql', name: 'mysql-connector-java', version: '5.1.46'
+  acceptanceTestCompile group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1'
+
+  acceptanceTestRuntime group: 'org.apache.derby', name: 'derby', version: project.'derby.version'
+  acceptanceTestRuntime group: 'org.postgresql', name: 'postgresql', version: '42.2.2'
 }
 
 integrationTest.forkEvery 0
-

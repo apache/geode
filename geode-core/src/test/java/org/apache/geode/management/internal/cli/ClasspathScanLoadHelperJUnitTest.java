@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
@@ -42,27 +43,33 @@ public class ClasspathScanLoadHelperJUnitTest {
 
   @Test
   public void testLoadAndGet() throws Exception {
+    Set<String> packages = new HashSet<String>() {
+      {
+        add(PACKAGE_NAME);
+        add(WRONG_PACKAGE_NAME);
+      }
+    };
+    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages);
     Set<Class<?>> classLoaded =
-        ClasspathScanLoadHelper.scanPackagesForClassesImplementing(INTERFACE1, PACKAGE_NAME);
+        scanner.scanPackagesForClassesImplementing(INTERFACE1, PACKAGE_NAME);
     assertEquals(2, classLoaded.size());
     assertTrue(classLoaded.contains(IMPL1));
     assertTrue(classLoaded.contains(IMPL2));
 
     classLoaded =
-        ClasspathScanLoadHelper.scanPackagesForClassesImplementing(INTERFACE2, PACKAGE_NAME);
+        scanner.scanPackagesForClassesImplementing(INTERFACE2, PACKAGE_NAME);
     assertEquals(1, classLoaded.size());
     assertTrue(classLoaded.contains(IMPL2));
 
     classLoaded =
-        ClasspathScanLoadHelper.scanPackagesForClassesImplementing(INTERFACE2, WRONG_PACKAGE_NAME);
+        scanner.scanPackagesForClassesImplementing(INTERFACE2, WRONG_PACKAGE_NAME);
     assertEquals(0, classLoaded.size());
 
     classLoaded =
-        ClasspathScanLoadHelper.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE, PACKAGE_NAME);
+        scanner.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE, PACKAGE_NAME);
     assertEquals(0, classLoaded.size());
 
-    classLoaded = ClasspathScanLoadHelper.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE,
-        WRONG_PACKAGE_NAME);
+    classLoaded = scanner.scanPackagesForClassesImplementing(NO_IMPL_INTERFACE, WRONG_PACKAGE_NAME);
     assertEquals(0, classLoaded.size());
   }
 }

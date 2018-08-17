@@ -494,9 +494,9 @@ public class RangeIndex extends AbstractIndex {
    * @param opCode one of REMOVE_OP, BEFORE_UPDATE_OP, AFTER_UPDATE_OP.
    */
   void removeMapping(RegionEntry entry, int opCode) throws IMQException {
-    // Shobhit: Now we are not going to remove anything before update.
+    // Now we are not going to remove anything before update or when cleaning thread locals
     // In fact we will only Replace not remove and add now on.
-    if (opCode == BEFORE_UPDATE_OP) {
+    if (opCode == BEFORE_UPDATE_OP || opCode == CLEAN_UP_THREAD_LOCALS) {
       return;
     }
     // System.out.println("RangeIndex.removeMapping "+entry.getKey());

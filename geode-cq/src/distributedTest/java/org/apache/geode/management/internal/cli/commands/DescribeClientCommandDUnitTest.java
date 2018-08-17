@@ -40,7 +40,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -151,7 +150,7 @@ public class DescribeClientCommandDUnitTest {
     }
 
     assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS)).isEqualTo("2");
-    assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS)).isEqualTo("1");
+    assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS)).isEqualTo("0");
     assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_DURABLE)).isEqualTo("No");
     assertThat(Integer.parseInt(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_THREADS)))
         .isGreaterThan(0);
@@ -193,8 +192,6 @@ public class DescribeClientCommandDUnitTest {
       cf.setPoolStatisticInterval(100);
       cf.setPoolSubscriptionRedundancy(1);
       cf.setPoolMinConnections(1);
-      // TODO: Remove this once GEODE-5157 is fixed
-      SocketCreator.use_client_host_name = false;
     };
 
     Properties clientProps = new Properties();

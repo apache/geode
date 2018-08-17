@@ -1346,7 +1346,7 @@ org/apache/geode/internal/cache/TXId,2
 fromData,19
 toData,19
 
-org/apache/geode/internal/cache/TXManagerImpl$TXRemovalMessage,2
+org/apache/geode/internal/cache/ExpireDisconnectedClientTransactionsMessage,2
 fromData,9
 toData,12
 

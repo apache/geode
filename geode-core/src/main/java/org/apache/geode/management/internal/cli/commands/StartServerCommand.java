@@ -202,9 +202,14 @@ public class StartServerCommand extends InternalGfshCommand {
 
     cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
 
-    if (StringUtils.isNotBlank(cacheXmlPathname) && !IOUtils.isExistingPathname(cacheXmlPathname)) {
-      return ResultBuilder.createUserErrorResult(
-          CliStrings.format(CliStrings.CACHE_XML_NOT_FOUND_MESSAGE, cacheXmlPathname));
+    if (StringUtils.isNotBlank(cacheXmlPathname)) {
+      if (!IOUtils.isExistingPathname(cacheXmlPathname)) {
+        return ResultBuilder.createUserErrorResult(
+            CliStrings.format(CliStrings.CACHE_XML_NOT_FOUND_MESSAGE, cacheXmlPathname));
+      } else {
+        getGfsh().logWarning(
+            CliStrings.CLUSTER_CONFIG_PRECEDENCE_OVER_CACHE_XML_WARN + cacheXmlPathname, null);
+      }
     }
 
     if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {

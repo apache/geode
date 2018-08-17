@@ -54,7 +54,7 @@ scp -i ${SSHKEY_FILE} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_AD
 
 
 if [[ -n "${PARALLEL_DUNIT}" && "${PARALLEL_DUNIT}" == "true" ]]; then
-  PARALLEL_DUNIT="-PparallelDunit"
+  PARALLEL_DUNIT="-PparallelDunit -PdunitDockerUser=geode"
   if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
     DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS}"
   fi
@@ -68,12 +68,13 @@ if [ -v CALL_STACK_TIMEOUT ]; then
   ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
 fi
 
-ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ./gradlew ${DEFAULT_GRADLE_TASK_OPTIONS} -Dskip.tests=true build"
-
-ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ./gradlew \
+GRADLE_COMMAND="./gradlew \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
     -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_TASK} \
     ${GRADLE_TASK_OPTIONS}"
+
+echo "${GRADLE_COMMAND}"
+ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${GRADLE_COMMAND}"

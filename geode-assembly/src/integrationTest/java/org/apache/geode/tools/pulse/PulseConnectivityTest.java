@@ -43,7 +43,7 @@ import org.apache.geode.tools.pulse.internal.data.Cluster;
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PulseConnectivityTest {
   @Rule
-  public LocatorStarterRule locator = new LocatorStarterRule().withJMXManager();
+  public LocatorStarterRule locator = new LocatorStarterRule().withHttpService();
 
   @Rule
   public EmbeddedPulseRule pulse = new EmbeddedPulseRule();

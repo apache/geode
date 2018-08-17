@@ -38,7 +38,9 @@ public class CommandOverHttpTest {
 
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withWorkingDir().withLogFile().withJMXManager().withAutoStart();
+      new ServerStarterRule().withWorkingDir().withLogFile().withJMXManager()
+          .withHttpService()
+          .withAutoStart();
 
   @Rule
   public GfshCommandRule gfshRule = new GfshCommandRule();

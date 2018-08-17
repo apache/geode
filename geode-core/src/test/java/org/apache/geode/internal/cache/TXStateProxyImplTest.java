@@ -15,7 +15,9 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -76,5 +78,25 @@ public class TXStateProxyImplTest {
   public void getCacheReturnsInjectedCache() {
     TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false);
     assertThat(tx.getCache()).isSameAs(cache);
+  }
+
+  @Test
+  public void isOverTransactionTimeoutLimitReturnsTrueIfHavingRecentOperation() {
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    doReturn(0L).when(tx).getLastOperationTimeFromClient();
+    doReturn(1001L).when(tx).getCurrentTime();
+    when(txManager.getTransactionTimeToLive()).thenReturn(1);
+
+    assertThat(tx.isOverTransactionTimeoutLimit()).isEqualTo(true);
+  }
+
+  @Test
+  public void isOverTransactionTimeoutLimitReturnsFalseIfNotHavingRecentOperation() {
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    doReturn(0L).when(tx).getLastOperationTimeFromClient();
+    doReturn(1000L).when(tx).getCurrentTime();
+    when(txManager.getTransactionTimeToLive()).thenReturn(1);
+
+    assertThat(tx.isOverTransactionTimeoutLimit()).isEqualTo(false);
   }
 }

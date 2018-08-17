@@ -68,7 +68,8 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  *
  * @since GemFire 7.0
  */
-public abstract class AbstractGatewaySenderEventProcessor extends Thread {
+public abstract class AbstractGatewaySenderEventProcessor extends Thread
+    implements GatewaySenderEventProcessor {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -152,6 +153,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
     this.threadMonitoring = tMonitoring;
+  }
+
+  @Override
+  public int getTotalQueueSize() {
+    return getQueue().size();
   }
 
   protected abstract void initializeMessageQueue(String id);

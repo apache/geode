@@ -22,7 +22,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.Server;
 
 @Category({GfshTest.class})
-public class IndexCommandOverHttpTest extends IndexCommandsIntegrationTest {
+public class IndexCommandOverHttpTest extends IndexCommandsIntegrationTestBase {
   @Override
   public void connect(Server server) throws Exception {
     gfsh.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);

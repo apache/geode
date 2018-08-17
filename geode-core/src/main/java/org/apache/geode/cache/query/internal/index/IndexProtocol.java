@@ -40,6 +40,8 @@ public interface IndexProtocol extends Index {
   int OTHER_OP = 0; // not an UPDATE but some other operation
   int BEFORE_UPDATE_OP = 1; // handled when there is no reverse map
   int AFTER_UPDATE_OP = 2; // handled when there is a reverse map
+  int REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP = 3;
+  int CLEAN_UP_THREAD_LOCALS = 4;
 
   boolean addIndexMapping(RegionEntry entry) throws IMQException;
 

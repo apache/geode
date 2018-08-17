@@ -137,21 +137,22 @@ public class StatTypesAreRolledOverRegressionTest {
 
   private void verifyStatisticsTypeIsInArchiveFile(final File archiveFile,
       final int expectedResources) throws IOException {
-    StatArchiveReader reader = new StatArchiveReader(new File[] {archiveFile}, null, false);
+    try (StatArchiveReader reader = new StatArchiveReader(new File[] {archiveFile}, null, false)) {
 
-    // compare all resourceInst values against what was printed above
+      // compare all resourceInst values against what was printed above
 
-    List<ResourceInst> resources = reader.getResourceInstList();
-    if (expectedResources > 0) {
-      assertThat(resources).hasAtLeastOneElementOfType(ResourceInst.class);
-    }
+      List<ResourceInst> resources = reader.getResourceInstList();
+      if (expectedResources > 0) {
+        assertThat(resources).hasAtLeastOneElementOfType(ResourceInst.class);
+      }
 
-    for (ResourceInst resourceInstance : resources) {
-      if (resourceInstance == null)
-        continue;
-      assertThat(resourceInstance.getName()).isNotNull();
-      assertThat(resourceInstance.getType()).isNotNull();
-      assertThat(resourceInstance.getType().getName()).isEqualTo(this.statisticsType.getName());
+      for (ResourceInst resourceInstance : resources) {
+        if (resourceInstance == null)
+          continue;
+        assertThat(resourceInstance.getName()).isNotNull();
+        assertThat(resourceInstance.getType()).isNotNull();
+        assertThat(resourceInstance.getType().getName()).isEqualTo(this.statisticsType.getName());
+      }
     }
   }
 

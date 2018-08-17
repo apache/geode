@@ -122,7 +122,7 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
       entries = rc.getResult();
     } catch (FunctionException e) {
       if (e.getCause() instanceof LuceneQueryException) {
-        throw new LuceneQueryException(e);
+        throw (LuceneQueryException) e.getCause();
       } else if (e.getCause() instanceof TransactionException) {
         // When run from client with single hop disabled
         throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
@@ -133,8 +133,6 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     } catch (TransactionException e) {
       // When function execution is run from server
       throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
-    } catch (LuceneIndexCreationInProgressException e) {
-      throw new LuceneQueryException("Lucene Index is not available, currently indexing");
     }
 
     return entries;

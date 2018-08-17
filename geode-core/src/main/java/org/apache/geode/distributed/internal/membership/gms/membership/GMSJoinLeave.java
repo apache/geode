@@ -65,6 +65,7 @@ import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
@@ -600,7 +601,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     if (!isCoordinator && !isStopping && !services.getCancelCriterion().isCancelInProgress()) {
       logger.debug("Checking to see if I should become coordinator");
       NetView check = new NetView(v, v.getViewId() + 1);
-      check.remove(incomingRequest.getMemberID());
+      check.remove(mbr);
       synchronized (removedMembers) {
         check.removeAll(removedMembers);
         check.addCrashedMembers(removedMembers);
@@ -611,7 +612,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
       if (check.getCoordinator().equals(localAddress)) {
         synchronized (viewInstallationLock) {
-          becomeCoordinator(incomingRequest.getMemberID());
+          becomeCoordinator(mbr);
         }
       }
     } else {
@@ -688,6 +689,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           recordViewRequest(incomingRequest);
           this.viewProcessor.processRemoveRequest(mbr);
           this.prepareProcessor.processRemoveRequest(mbr);
+        }
+      }
+      if (isCoordinator) {
+        if (!v.contains(mbr)) {
+          // removing a rogue process
+          RemoveMemberMessage removeMemberMessage = new RemoveMemberMessage(mbr, mbr,
+              incomingRequest.getReason());
+          services.getMessenger().send(removeMemberMessage);
         }
       }
     }
@@ -999,13 +1008,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return;
     }
 
-    boolean viewContainsMyUnjoinedAddress = false;
+    boolean viewContainsMyNewAddress = false;
     if (!this.isJoined) {
       // if we're still waiting for a join response and we're in this view we
       // should install the view so join() can finish its work
       for (InternalDistributedMember mbr : view.getMembers()) {
-        if (localAddress.compareTo(mbr) == 0) {
-          viewContainsMyUnjoinedAddress = true;
+        if (localAddress.equals(mbr)
+            && !services.getMessenger().isOldMembershipIdentifier(mbr)) {
+          viewContainsMyNewAddress = true;
           break;
         }
       }
@@ -1017,7 +1027,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
       } else {
         this.preparedView = view;
-        if (viewContainsMyUnjoinedAddress) {
+        if (viewContainsMyNewAddress) {
           installView(view); // this will notifyAll the joinResponse
         }
         ackView(m);
@@ -1029,7 +1039,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             localAddress, view);
         forceDisconnect("This node is no longer in the membership view");
       } else {
-        if (isJoined || viewContainsMyUnjoinedAddress) {
+        if (isJoined || viewContainsMyNewAddress) {
           installView(view);
         }
         if (!m.isRebroadcast()) { // no need to ack a rebroadcast view
@@ -1429,8 +1439,18 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       if (!newView.getCreator().equals(this.localAddress)) {
-        if (newView.shouldBeCoordinator(this.localAddress)) {
-          becomeCoordinator();
+        NetView check = new NetView(newView, newView.getViewId() + 1);
+        synchronized (leftMembers) {
+          check.removeAll(leftMembers);
+        }
+        synchronized (removedMembers) {
+          check.removeAll(removedMembers);
+          check.addCrashedMembers(removedMembers);
+        }
+        if (check.shouldBeCoordinator(this.localAddress)) {
+          if (!isCoordinator) {
+            becomeCoordinator();
+          }
         } else if (this.isCoordinator) {
           // stop being coordinator
           stopCoordinatorServices();
@@ -1651,7 +1671,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       processRemoveRequest(msg);
       if (!this.isCoordinator) {
         msg.resetRecipients();
-        msg.setRecipients(v.getPreferredCoordinators(Collections.emptySet(), localAddress, 10));
+        msg.setRecipients(v.getPreferredCoordinators(Collections.emptySet(), localAddress,
+            ServiceConfig.SMALL_CLUSTER_SIZE + 1));
         services.getMessenger().send(msg);
       }
     } else {
@@ -2219,10 +2240,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                 continue;
               }
             } else {
-              if (System.currentTimeMillis() < okayToCreateView) {
+              long timeRemaining = okayToCreateView - System.currentTimeMillis();
+              if (timeRemaining > 0) {
                 // sleep to let more requests arrive
                 try {
-                  viewRequests.wait(100);
+                  viewRequests.wait(Math.min(100, timeRemaining));
                   continue;
                 } catch (InterruptedException e) {
                   return;
@@ -2389,9 +2411,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                 removalReqs.add(mbr);
                 removalReasons.add(((RemoveMemberMessage) msg).getReason());
               } else {
+                // unknown, probably rogue, process - send it a removal message
                 sendRemoveMessages(Collections.singletonList(mbr),
                     Collections.singletonList(((RemoveMemberMessage) msg).getReason()),
-                    new HashSet<InternalDistributedMember>());
+                    new HashSet<>());
               }
             }
             break;

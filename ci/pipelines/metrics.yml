@@ -20,7 +20,7 @@ image_resource: &docker-geode-build-image
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/((!docker-image-name))
+    repository: gcr.io/apachegeode-ci/metric-tools
     tag: latest
 
 resources:
@@ -53,14 +53,15 @@ jobs:
         - name: workspace
       platform: linux
       image_resource: *docker-geode-build-image
-      params:
-        CONCOURSE_URL: https://concourse.apachegeode-ci.info
-        CONCOURSE_PIPELINE: develop
-        CONCOURSE_JOB: Build
-        COUNT: 50
       run:
-        args: [workspace]
-        path: geode-ci/ci/scripts/concourse_job_performance.sh
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - Build
+        - 50
+
 
 - name: GeodeAcceptanceTestMetrics
   serial: true
@@ -77,14 +78,14 @@ jobs:
         - name: workspace
       platform: linux
       image_resource: *docker-geode-build-image
-      params:
-        CONCOURSE_URL: https://concourse.apachegeode-ci.info
-        CONCOURSE_PIPELINE: develop
-        CONCOURSE_JOB: AcceptanceTest
-        COUNT: 50
       run:
-        args: [workspace]
-        path: geode-ci/ci/scripts/concourse_job_performance.sh
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - AcceptanceTest
+        - 50
 
 - name: GeodeDistributedTestMetrics
   serial: true
@@ -101,14 +102,15 @@ jobs:
         - name: workspace
       platform: linux
       image_resource: *docker-geode-build-image
-      params:
-        CONCOURSE_URL: https://concourse.apachegeode-ci.info
-        CONCOURSE_PIPELINE: develop
-        CONCOURSE_JOB: DistributedTest
-        COUNT: 50
       run:
-        args: [workspace]
-        path: geode-ci/ci/scripts/concourse_job_performance.sh
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - DistributedTest
+        - 50
+
 
 - name: GeodeIntegrationTestMetrics
   serial: true
@@ -125,14 +127,15 @@ jobs:
         - name: workspace
       platform: linux
       image_resource: *docker-geode-build-image
-      params:
-        CONCOURSE_URL: https://concourse.apachegeode-ci.info
-        CONCOURSE_PIPELINE: develop
-        CONCOURSE_JOB: IntegrationTest
-        COUNT: 50
       run:
-        args: [workspace]
-        path: geode-ci/ci/scripts/concourse_job_performance.sh
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - IntegrationTest
+        - 50
+
 
 - name: GeodeUpgradeTestMetrics
   serial: true
@@ -149,11 +152,12 @@ jobs:
       - name: workspace
       platform: linux
       image_resource: *docker-geode-build-image
-      params:
-        CONCOURSE_URL: https://concourse.apachegeode-ci.info
-        CONCOURSE_PIPELINE: develop
-        CONCOURSE_JOB: UpgradeTest
-        COUNT: 50
       run:
-        args: [workspace]
-        path: geode-ci/ci/scripts/concourse_job_performance.sh
+        path: /usr/bin/python3
+        args:
+        - geode-ci/ci/bin/concourse_job_performance.py
+        - https://concourse.apachegeode-ci.info
+        - develop
+        - UpgradeTest
+        - 50
+

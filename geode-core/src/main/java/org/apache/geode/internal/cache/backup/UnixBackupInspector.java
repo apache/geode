@@ -59,6 +59,10 @@ class UnixBackupInspector extends BackupInspector {
     String line;
 
     while (null != (line = reader.readLine())) {
+      if (line.startsWith("mkdir")) {
+        // ensure that statements creating directories is not interpreted as oplog files.
+        continue;
+      }
       int beginIndex = line.lastIndexOf(File.separator) + 1;
       int endIndex = line.length() - 1;
       String oplogName = line.substring(beginIndex, endIndex);

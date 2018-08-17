@@ -23,6 +23,7 @@ class BucketRedundancyTracker {
   private boolean noCopiesDecrementOkay = false;
   // if true decrement allowed; if false increment allowed
   private boolean lowRedundancyDecrementOkay = false;
+  private boolean hasEverHadCopies = false;
   private boolean redundancyEverSatisfied = false;
   private volatile int currentRedundancy = -1;
   private final int targetRedundancy;
@@ -71,9 +72,10 @@ class BucketRedundancyTracker {
   }
 
   private void updateNoCopiesStatistics(int currentBucketHosts) {
-    if (currentBucketHosts == 0) {
+    if (currentBucketHosts == 0 && hasEverHadCopies) {
       incrementNoCopies();
     } else if (currentBucketHosts > 0) {
+      hasEverHadCopies = true;
       decrementNoCopies();
     }
   }

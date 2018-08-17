@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -35,6 +36,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractRegionMap;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -49,7 +51,9 @@ import org.apache.geode.internal.cache.VMLRURegionMap;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -172,6 +176,20 @@ public class RegionMapDestroyTest {
     arm.getEntryMap().put(KEY, entry);
   }
 
+  private void givenExistingEntryWithValueAndVersion(Object value, VersionTag version) {
+    RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, value);
+    ((VersionStamp) entry).setVersions(version);
+    arm.getEntryMap().put(KEY, entry);
+  }
+
+  private void givenExistingEntryWithValueAndSameVersion(Object value, VersionTag version) {
+    givenExistingEntryWithValueAndVersion(value, version);
+
+    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
+    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
+    event.setVersionTag(version);
+  }
+
   private void givenExistingEntry(Object value) {
     RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, value);
     arm.getEntryMap().put(KEY, entry);
@@ -221,6 +239,23 @@ public class RegionMapDestroyTest {
 
   private void givenOriginIsRemote() {
     event.setOriginRemote(true);
+  }
+
+  @Test
+  public void destroyWithDuplicateVersionInvokesListener() {
+    givenEmptyRegionMap();
+    givenConcurrencyChecks(true);
+    VersionTag version = VersionTag.create(new InternalDistributedMember("localhost", 123));
+    version.setEntryVersion(1);
+    version.setRegionVersion(1);
+    givenExistingEntryWithValueAndSameVersion(Token.TOMBSTONE, version);
+    // make this a client/server operation
+    event.setContext(new ClientProxyMembershipID());
+    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+    assertThat(event.getIsRedestroyedEntry()).isTrue();
+    verify(owner).basicDestroyPart2(isA(RegionEntry.class), isA(EntryEventImpl.class),
+        isA(Boolean.class), isA(Boolean.class), isA(Boolean.class), isA(Boolean.class));
   }
 
   @Test
