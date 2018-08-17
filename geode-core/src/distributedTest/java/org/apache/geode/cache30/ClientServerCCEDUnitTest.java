@@ -675,9 +675,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   private void unregisterInterest(VM vm) {
     vm.invoke(new SerializableRunnable("unregister interest in all keys") {
       public void run() {
-        // TestRegion.dumpBackingMap();
         TestRegion.unregisterInterestRegex(".*");
-        // TestRegion.dumpBackingMap();
       }
     });
   }
@@ -886,8 +884,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         for (int i = 0; i < 10; i++) {
           TestRegion.invalidate("Object" + i, Integer.valueOf(i));
         }
-        TestRegion.dumpBackingMap();
-        // assertEquals(10, TestRegion.size());
+        assertEquals(10, TestRegion.size());
         return null;
       }
     });
