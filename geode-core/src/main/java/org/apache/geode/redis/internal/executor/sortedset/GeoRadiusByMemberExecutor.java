@@ -85,7 +85,7 @@ public class GeoRadiusByMemberExecutor extends GeoSortedSetExecutor {
 
     HashNeighbors hn;
     try {
-      hn = GeoCoder.geoHashGetAreasByRadius(params.lon, params.lat, params.radius);
+      hn = GeoCoder.geohashSearchAreas(params.lon, params.lat, params.radius);
     } catch (CoderException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
       return;

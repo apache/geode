@@ -61,7 +61,7 @@ public class GeoRadiusParameters {
         byte[] latArray = commandElems.get(3);
         radArray = commandElems.get(4);
         unit = new String(commandElems.get(5));
-        centerHashPrecise = GeoCoder.geoHashBits(lonArray, latArray, GeoCoder.LEN_GEOHASH);
+        centerHashPrecise = GeoCoder.geohashBits(lonArray, latArray, GeoCoder.LEN_GEOHASH);
         lon = Coder.bytesToDouble(lonArray);
         lat = Coder.bytesToDouble(latArray);
         member = null;

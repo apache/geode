@@ -28,16 +28,16 @@ public class GeoCoderTest {
 
   @Test
   public void testGeoHash() throws CoderException {
-    String hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(),
+    String hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
         Double.toString(38.115556).getBytes(), 60);
     assertEquals("sqc8b49rnyte", hash);
-    hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(),
+    hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
         Double.toString(38.115556).getBytes(), 52);
     assertEquals("sqc8b49rny3", hash);
-    hash = GeoCoder.geoHash(Double.toString(15.087269).getBytes(),
+    hash = GeoCoder.geohash(Double.toString(15.087269).getBytes(),
         Double.toString(37.502669).getBytes(), 52);
     assertEquals("sqdtr74hyu0", hash);
-    hash = GeoCoder.geoHash(Double.toString(13.361389).getBytes(),
+    hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
         Double.toString(38.115556).getBytes(), 6);
     assertEquals("s1", hash);
   }
@@ -52,16 +52,16 @@ public class GeoCoderTest {
   @Test
   public void testEstimateStepsByRadius() {
     int steps;
-    steps = GeoCoder.geohashEstimateStepsByRadius(2000000, 0, 26);
+    steps = GeoCoder.geohashLengthByRadius(2000000, 0);
     assertEquals(3, steps);
 
-    steps = GeoCoder.geohashEstimateStepsByRadius(2000000, 71, 26);
+    steps = GeoCoder.geohashLengthByRadius(2000000, 71);
     assertEquals(2, steps);
 
-    steps = GeoCoder.geohashEstimateStepsByRadius(2000000, 81, 26);
+    steps = GeoCoder.geohashLengthByRadius(2000000, 81);
     assertEquals(1, steps);
 
-    steps = GeoCoder.geohashEstimateStepsByRadius(100000, 15, 26);
+    steps = GeoCoder.geohashLengthByRadius(100000, 15);
     assertEquals(7, steps);
   }
 
@@ -128,21 +128,21 @@ public class GeoCoderTest {
   @Test
   public void testGeoHashTile() {
     HashArea t;
-    t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9"));
+    t = GeoCoder.geohashTile(GeoCoder.hashToBits("9"));
     assertEquals(0, t.minlat, 0.0);
     assertEquals(-135.0, t.minlon, 0.0);
     assertEquals(45, t.maxlat, 0.0);
     assertEquals(-90, t.maxlon, 0.0);
 
     // 34.40917, -119.70703, 34.45312, -119.66308
-    t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9q4gu"));
+    t = GeoCoder.geohashTile(GeoCoder.hashToBits("9q4gu"));
     assertEquals(34.40917, t.minlat, 0.00001);
     assertEquals(-119.70703, t.minlon, 0.00001);
     assertEquals(34.45312, t.maxlat, 0.00001);
     assertEquals(-119.66308, t.maxlon, 0.00001);
 
     // 34.41926, -119.69849, 34.41930, -119.69844
-    t = GeoCoder.geoHashTile(GeoCoder.hashToBits("9q4gu1y4z"));
+    t = GeoCoder.geohashTile(GeoCoder.hashToBits("9q4gu1y4z"));
     assertEquals(34.41926, t.minlat, 0.00001);
     assertEquals(-119.69849, t.minlon, 0.00001);
     assertEquals(34.41930, t.maxlat, 0.00001);

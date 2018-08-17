@@ -154,11 +154,11 @@ public class GeoCoder {
    * @param lat byte array encoding latitude as decimal
    * @return geohash as base32
    */
-  public static String geoHash(byte[] lon, byte[] lat, int length) throws CoderException {
-    return bitsToHash(geoHashBits(lon, lat, length));
+  public static String geohash(byte[] lon, byte[] lat, int length) throws CoderException {
+    return bitsToHash(geohashBits(lon, lat, length));
   }
 
-  public static char[] geoHashBits(byte[] lon, byte[] lat, int length) throws CoderException {
+  public static char[] geohashBits(byte[] lon, byte[] lat, int length) throws CoderException {
     Double longitude = Coder.bytesToDouble(lon);
     Double latitude = Coder.bytesToDouble(lat);
 
@@ -177,44 +177,32 @@ public class GeoCoder {
     return interleave(longDigits, latDigits);
   }
 
-  /**
-   * Return a set of hashes (center + 8) that are able to cover a range query
-   * for the specified position and radius.
-   */
-  public static HashNeighbors geoHashGetAreasByRadius(double longitude, double latitude,
+  public static HashNeighbors geohashSearchAreas(double longitude, double latitude,
       double radiusMeters) throws CoderException {
-    HashArea boundingBox = geoHashBoundingBox(longitude, latitude, radiusMeters);
-    int steps = geohashEstimateStepsByRadius(radiusMeters, latitude, LEN_GEOHASH / 2);
+    HashArea boundingBox = geohashBoundingBox(longitude, latitude, radiusMeters);
+    int steps = geohashLengthByRadius(radiusMeters, latitude);
     char[] hash =
-        geoHashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
+        geohashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
             2 * steps);
     HashNeighbors neighbors = getNeighbors(hash);
-    HashArea centerArea = geoHashTile(hash);
-    HashArea northArea = geoHashTile(neighbors.north.toCharArray());
-    HashArea southArea = geoHashTile(neighbors.south.toCharArray());
-    HashArea eastArea = geoHashTile(neighbors.east.toCharArray());
-    HashArea westArea = geoHashTile(neighbors.west.toCharArray());
+    HashArea centerArea = geohashTile(hash);
+    HashArea northArea = geohashTile(neighbors.north.toCharArray());
+    HashArea southArea = geohashTile(neighbors.south.toCharArray());
+    HashArea eastArea = geohashTile(neighbors.east.toCharArray());
+    HashArea westArea = geohashTile(neighbors.west.toCharArray());
 
-    /*
-     * Check if the step is enough at the limits of the covered area.
-     * Sometimes when the search area is near an edge of the
-     * area, the estimated step is not small enough, since one of the
-     * north / south / west / east square is too near to the search area
-     * to cover everything.
-     */
     if ((dist(longitude, latitude, longitude, northArea.maxlat) < radiusMeters
         || dist(longitude, latitude, longitude, southArea.minlat) < radiusMeters
         || dist(longitude, latitude, eastArea.maxlon, latitude) < radiusMeters
         || dist(longitude, latitude, westArea.minlon, latitude) < radiusMeters) && steps > 1) {
       steps--;
       hash =
-          geoHashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
+          geohashBits(Double.toString(longitude).getBytes(), Double.toString(latitude).getBytes(),
               2 * steps);
       neighbors = getNeighbors(hash);
-      centerArea = geoHashTile(hash);
+      centerArea = geohashTile(hash);
     }
 
-    /* Exclude the search areas that are useless. */
     if (steps >= 2) {
       if (centerArea.minlat < boundingBox.minlat) {
         neighbors.south = null;
@@ -244,46 +232,34 @@ public class GeoCoder {
     return neighbors;
   }
 
-  /**
-   * This function is used in order to estimate the step (bits precision)
-   * of the 9 search area boxes during radius queries.
-   */
-  public static int geohashEstimateStepsByRadius(double rangeMeters, double lat, int maxStep) {
-    if (rangeMeters == 0)
-      return maxStep;
-    int step = 1;
-    while (rangeMeters < MERCATOR_MAX) {
-      rangeMeters *= 2;
-      step++;
-    }
-    step -= 2; /* Make sure range is included in most of the base cases. */
-
-    /*
-     * Wider range torwards the poles... Note: it is possible to do better
-     * than this approximation by computing the distance between meridians
-     * at this latitude, but this does the trick for now.
-     */
-    if (lat > 66 || lat < -66) {
-      step--;
-      if (lat > 80 || lat < -80)
-        step--;
-    }
-
-    /* Frame to valid range. */
-    if (step < 1)
-      step = 1;
-    if (step > maxStep)
-      step = maxStep;
-    return step;
+  public static double log2(double n) {
+    return (Math.log(n) / Math.log(2));
   }
 
-  /**
-   * Return the bounding box of the search area centered at latitude,longitude
-   * having a radius of radius_meter. bounds[0] - bounds[2] is the minimum
-   * and maxium longitude, while bounds[1] - bounds[3] is the minimum and
-   * maximum latitude.
-   */
-  public static HashArea geoHashBoundingBox(double longitude, double latitude,
+  public static int geohashLengthByRadius(double rangeMeters, double lat) {
+    int maxStep = LEN_GEOHASH / 2;
+    double range = rangeMeters;
+
+    if (range == 0) {
+      return maxStep;
+    }
+
+    int length = (int) (Math.ceil(log2(MERCATOR_MAX / range)) - 1);
+
+    if (lat > 66 || lat < -66) {
+      length--;
+    }
+
+    if (lat > 80 || lat < -80) {
+      length--;
+    }
+
+    length = Math.max(1, Math.min(length, maxStep));
+
+    return length;
+  }
+
+  public static HashArea geohashBoundingBox(double longitude, double latitude,
       double radiusMeters) {
     double minlon = longitude - Math
         .toDegrees((radiusMeters / EARTH_RADIUS_IN_METERS) * Math.cos(Math.toRadians(latitude)));
@@ -303,7 +279,7 @@ public class GeoCoder {
     return EARTH_RADIUS_IN_METERS * distAngle;
   }
 
-  public static HashArea geoHashTile(char[] hash) {
+  public static HashArea geohashTile(char[] hash) {
     Pair<char[], char[]> coordBits = deinterleave(hash);
     Pair<Double, Double> lonRange = getRange(coordBits.fst, LONG_MIN, LONG_MAX);
     Pair<Double, Double> latRange = getRange(coordBits.snd, LAT_MIN, LAT_MAX);
