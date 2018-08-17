@@ -100,6 +100,7 @@ dependencies {
   distributedTestRuntime (project(':extensions/geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
+  distributedTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
 
 
   acceptanceTestCompile project(':geode-core')
