@@ -474,7 +474,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     } else {
       ResourceAdvisor advisor = getPartitionedRegion().getCache().getResourceAdvisor();
-      boolean sick = advisor.adviseCritialMembers().contains(member);
+      boolean sick = advisor.adviseCriticalMembers().contains(member);
       if (logger.isDebugEnabled()) {
         logger.debug("updateBucketStatus:({}):member:{}:sick:{}",
             getPartitionedRegion().bucketStringForLogs(bucketId), member, sick);

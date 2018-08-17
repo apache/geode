@@ -408,4 +408,6 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   default void handleWANEvent(EntryEventImpl event) {}
 
+  MemoryThresholdInfo getAtomicThresholdInfo();
+
 }

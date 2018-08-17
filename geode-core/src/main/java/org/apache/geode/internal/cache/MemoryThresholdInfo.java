@@ -14,13 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.distributed.DistributedMember;
 
-class MemoryThresholdInfo {
+public class MemoryThresholdInfo {
   private final boolean memoryThresholdReached;
   private final Set<DistributedMember> membersThatReachedThreshold;
+  private static final MemoryThresholdInfo NOT_REACHED = new MemoryThresholdInfo(false,
+      Collections.EMPTY_SET);
 
   MemoryThresholdInfo(boolean memoryThresholdReached,
       Set<DistributedMember> membersThatReachedThreshold) {
@@ -28,12 +31,16 @@ class MemoryThresholdInfo {
     this.membersThatReachedThreshold = membersThatReachedThreshold;
   }
 
-  Set<DistributedMember> getMembersThatReachedThreshold() {
+  public Set<DistributedMember> getMembersThatReachedThreshold() {
     return membersThatReachedThreshold;
   }
 
-  boolean isMemoryThresholdReached() {
+  public boolean isMemoryThresholdReached() {
     return memoryThresholdReached;
+  }
+
+  static MemoryThresholdInfo getNotReached() {
+    return NOT_REACHED;
   }
 
   @Override

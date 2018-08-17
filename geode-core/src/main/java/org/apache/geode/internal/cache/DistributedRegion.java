@@ -3769,7 +3769,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     synchronized (this.memoryThresholdReachedMembers) {
       this.memoryThresholdReachedMembers.remove(member);
       if (this.memoryThresholdReachedMembers.size() == 0) {
-        memoryThresholdReached.set(false);
+        setMemoryThresholdReached(false);
       }
     }
   }
@@ -3799,16 +3799,19 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     synchronized (this.memoryThresholdReachedMembers) {
       this.memoryThresholdReachedMembers.add(idm);
       if (this.memoryThresholdReachedMembers.size() > 0) {
-        memoryThresholdReached.set(true);
+        setMemoryThresholdReached(true);
       }
     }
   }
 
   @Override
-  protected MemoryThresholdInfo getAtomicThresholdInfo() {
-    synchronized (this.memoryThresholdReachedMembers) {
-      return new MemoryThresholdInfo(this.memoryThresholdReached.get(),
-          new HashSet<DistributedMember>(getMemoryThresholdReachedMembers()));
+  public MemoryThresholdInfo getAtomicThresholdInfo() {
+    if (!isMemoryThresholdReached()) {
+      return MemoryThresholdInfo.getNotReached();
+    }
+    synchronized (memoryThresholdReachedMembers) {
+      return new MemoryThresholdInfo(isMemoryThresholdReached(),
+          new HashSet<DistributedMember>(memoryThresholdReachedMembers));
     }
   }
 

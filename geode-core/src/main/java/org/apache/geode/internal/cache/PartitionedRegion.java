@@ -154,17 +154,13 @@ import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DestroyPartitionedRegionMessage.DestroyPartitionedRegionResponse;
 import org.apache.geode.internal.cache.PutAllPartialResultException.PutAllPartialResult;
-import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
-import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
-import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -3617,16 +3613,7 @@ public class PartitionedRegion extends LocalRegion
     InternalDistributedMember targetNode = null;
     if (function.optimizeForWrite()) {
       targetNode = createBucket(bucketId, 0, null /* retryTimeKeeper */);
-      HeapMemoryMonitor hmm =
-          ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
-      if (hmm.isMemberHeapCritical(targetNode)
-          && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-        Set<DistributedMember> sm = Collections.singleton((DistributedMember) targetNode);
-        throw new LowMemoryException(
-            LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                .toLocalizedString(function.getId(), sm),
-            sm);
-      }
+      cache.getInternalResourceManager().getHeapMonitor().checkForLowMemory(function, targetNode);
     } else {
       targetNode = getOrCreateNodeForBucketRead(bucketId);
     }
@@ -3796,16 +3783,8 @@ public class PartitionedRegion extends LocalRegion
     }
 
     Set<InternalDistributedMember> dest = memberToBuckets.keySet();
-    if (function.optimizeForWrite()
-        && cache.getInternalResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
-        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
-      Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-              .toLocalizedString(function.getId(), sm),
-          sm);
-    }
+    cache.getInternalResourceManager().getHeapMonitor().checkForLowMemory(function,
+        Collections.unmodifiableSet(dest));
 
     boolean isSelf = false;
     execution.setExecutionNodes(dest);

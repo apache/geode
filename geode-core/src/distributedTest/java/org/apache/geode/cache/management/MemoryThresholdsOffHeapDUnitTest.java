@@ -602,7 +602,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               }
 
               public boolean done() {
-                return r.memoryThresholdReached.get();
+                return r.isMemoryThresholdReached();
               }
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -618,7 +618,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               }
 
               public boolean done() {
-                return !r.memoryThresholdReached.get();
+                return !r.isMemoryThresholdReached();
               }
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -670,7 +670,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
 
           public boolean done() {
-            return r.memoryThresholdReached.get();
+            return r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -686,7 +686,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
 
           public boolean done() {
-            return !r.memoryThresholdReached.get();
+            return !r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -1235,7 +1235,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
 
           public boolean done() {
-            return r.memoryThresholdReached.get();
+            return r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -1258,7 +1258,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
 
           public boolean done() {
-            return !r.memoryThresholdReached.get();
+            return !r.isMemoryThresholdReached();
           }
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -1514,12 +1514,12 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             @Override
             public String description() {
               return "Expected to go critical: isCritical=" + ohm.getState().isCritical()
-                  + " memoryThresholdReached=" + r.memoryThresholdReached.get();
+                  + " memoryThresholdReached=" + r.isMemoryThresholdReached();
             }
 
             @Override
             public boolean done() {
-              return ohm.getState().isCritical() && r.memoryThresholdReached.get();
+              return ohm.getState().isCritical() && r.isMemoryThresholdReached();
             }
           };
         }
