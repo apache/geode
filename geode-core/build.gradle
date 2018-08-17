@@ -215,6 +215,14 @@ dependencies {
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
+
+  // Allow this step to be skipped.
+  onlyIf {
+    // Project properties are parsed as strings.
+    // Use boolean comparison, not the value itself, to determine truth.
+    !(propertiesFile.exists() && project.skipVersionFileRegeneration)
+  }
+
   outputs.file propertiesFile
   inputs.dir "../.git/index"
 

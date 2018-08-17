@@ -112,3 +112,8 @@ task devBuild(dependsOn: [":assemble"]) {
     }
   }
 }
+gradle.taskGraph.whenReady { graph ->
+  if (graph.hasTask(devBuild)) {
+    project.skipVersionFileRegeneration = true
+  }
+}
