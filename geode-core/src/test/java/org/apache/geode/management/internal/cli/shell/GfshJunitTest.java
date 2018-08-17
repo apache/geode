@@ -137,5 +137,13 @@ public class GfshJunitTest {
     verify(gfsh, times(1)).expandProperties("echo --string=SYS_USER:${SYS_USER}");
     assertThat(((LegacyCommandResult) commandResult.getResult()).getMessageFromContent())
         .isEqualTo("SYS_USER:" + System.getProperty("user.name"));
+
+    // '$' character present but not variable referenced, should try to expand, find nothing (no
+    // replacement) and delegate to default implementation.
+    commandResult = gfsh.executeCommand("echo --string=MyNameIs:$USER_NAME");
+    assertThat(commandResult.isSuccess()).isTrue();
+    verify(gfsh, times(1)).expandProperties("echo --string=MyNameIs:$USER_NAME");
+    assertThat(((LegacyCommandResult) commandResult.getResult()).getMessageFromContent())
+        .isEqualTo("MyNameIs:$USER_NAME");
   }
 }
