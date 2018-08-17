@@ -161,7 +161,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
 
     vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPutsIntoRegion(REGION_NAME, num));
 
-    vm0.invoke(() -> Awaitility.waitAtMost(45, TimeUnit.SECONDS).until(() -> {
+    vm0.invoke(() -> Awaitility.waitAtMost(45, TimeUnit.SECONDS).untilAsserted(() -> {
       CacheClientProxy ccp = DurableClientQueueSizeDUnitTest.getCacheClientProxy(MY_DURABLE_CLIENT);
       assertEquals(0, ccp.getQueueSize());
       assertEquals(0, ccp.getQueueSizeStat());

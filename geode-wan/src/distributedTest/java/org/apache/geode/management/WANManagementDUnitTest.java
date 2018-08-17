@@ -252,7 +252,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     managing.invoke(() -> {
       ManagementService service = WANTestBase.getManagementService();
       Awaitility.await().atMost(5, TimeUnit.SECONDS)
-          .until(() -> assertNotNull(service.getDistributedRegionMXBean(regionPath)));
+          .untilAsserted(() -> assertNotNull(service.getDistributedRegionMXBean(regionPath)));
 
       DistributedRegionMXBean bean = service.getDistributedRegionMXBean(regionPath);
       assertThat(bean.listRegionAttributes().getGatewaySenderIds()).containsExactly("pn");

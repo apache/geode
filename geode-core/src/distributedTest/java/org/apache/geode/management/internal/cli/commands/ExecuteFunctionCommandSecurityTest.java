@@ -150,7 +150,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   }
 
   private static void waitUntilRegionMBeansAreRegistered() {
-    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
       Set<DistributedMember> regionMembers = CliUtil.getRegionAssociatedMembers(REPLICATED_REGION,
           (InternalCache) CacheFactory.getAnyInstance(), true);
       assertThat(regionMembers).hasSize(2);

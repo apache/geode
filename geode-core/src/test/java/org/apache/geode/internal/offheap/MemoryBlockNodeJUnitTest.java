@@ -15,8 +15,8 @@
 package org.apache.geode.internal.offheap;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -338,7 +338,9 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsSerializedStoredObject(obj);
     OffHeapStoredObject spyStoredObject = spy((OffHeapStoredObject) storedObject);
     doReturn("java.lang.Long").when(spyStoredObject).getDataType();
-    doThrow(new CacheClosedException("Unit test forced exception")).when(spyStoredObject)
+    doAnswer((m) -> {
+      throw new CacheClosedException("Unit test forced exception");
+    }).when(spyStoredObject)
         .getRawBytes();
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
@@ -354,7 +356,9 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsSerializedStoredObject(obj);
     OffHeapStoredObject spyStoredObject = spy((OffHeapStoredObject) storedObject);
     doReturn("java.lang.Long").when(spyStoredObject).getDataType();
-    doThrow(ClassNotFoundException.class).when(spyStoredObject).getRawBytes();
+    doAnswer((m) -> {
+      throw new ClassNotFoundException();
+    }).when(spyStoredObject).getRawBytes();
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);

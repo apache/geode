@@ -73,7 +73,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put(1, 2);
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(3));
   }
 
   @Test
@@ -91,7 +91,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put(1, 2);
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(3));
   }
 
   @Test
@@ -124,7 +124,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put(1, 2);
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(3));
   }
 
   @Test
@@ -144,7 +144,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put(1, 2);
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(3));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(3));
   }
 
   @Test
@@ -167,7 +167,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
@@ -190,7 +190,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
@@ -214,7 +214,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
@@ -255,7 +255,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test
@@ -279,7 +279,7 @@ public class RegisterInterestDistributedTest {
       regionOnServer.put("should not be interested", "in this key/value");
     });
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.size()).isEqualTo(2));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.size()).isEqualTo(2));
   }
 
   @Test

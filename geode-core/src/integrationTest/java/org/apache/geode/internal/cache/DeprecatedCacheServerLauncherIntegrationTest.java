@@ -190,7 +190,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     execAndValidate(".*The CacheServer has stopped\\.", "stop",
         "-dir=" + this.directory.getAbsolutePath());
 
-    await().atMost(2, MINUTES).until(() -> assertThat(cacheServerDotSerFile).doesNotExist());
+    await().atMost(2, MINUTES)
+        .untilAsserted(() -> assertThat(cacheServerDotSerFile).doesNotExist());
   }
 
   @Ignore("This test needs to be reworked")
@@ -225,9 +226,9 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     invokeFailSafe();
 
     await().atMost(2, MINUTES)
-        .until(() -> assertThat(this.processWrapper.getProcess().isAlive()).isFalse());
+        .untilAsserted(() -> assertThat(this.processWrapper.getProcess().isAlive()).isFalse());
 
-    await().atMost(2, MINUTES).until(() -> assertThat(isProcessAlive(pid)).isFalse());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(isProcessAlive(pid)).isFalse());
 
     File dotCacheServerDotSerFile = new File(this.directory, ".cacheserver.ser");
 
@@ -264,8 +265,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
         "-classpath=" + getManifestJarFromClasspath(), "-rebalance");
 
-    await().atMost(2, MINUTES).until(() -> assertThat(this.status.isStarted()).isTrue());
-    await().atMost(2, MINUTES).until(() -> assertThat(this.status.isFinished()).isTrue());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status", "-dir=" + this.directory);
 
@@ -289,8 +290,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         "cache-xml-file=" + this.cacheXmlFileName, "-dir=" + this.directoryPath,
         "-classpath=" + getManifestJarFromClasspath(), "-rebalance");
 
-    await().atMost(2, MINUTES).until(() -> assertThat(this.status.isStarted()).isTrue());
-    await().atMost(2, MINUTES).until(() -> assertThat(this.status.isFinished()).isTrue());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
 
     execAndValidate("CacheServer pid: \\d+ status: running", "status", "-dir=" + this.directory);
 

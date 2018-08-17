@@ -1402,7 +1402,8 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   private void waitForInVMToBe(final DiskRegion dr, final int expected) {
     // values are recovered async from disk
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(30, TimeUnit.SECONDS).until(() -> assertEquals(expected, dr.getNumEntriesInVM()));
+        .atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(expected, dr.getNumEntriesInVM()));
   }
 
   @Test

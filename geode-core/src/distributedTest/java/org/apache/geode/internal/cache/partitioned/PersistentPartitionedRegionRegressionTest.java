@@ -499,7 +499,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
 
     // vm1 should satisfy redundancy for the bucket as well
-    await().atMost(2, MINUTES).until(() -> {
+    await().atMost(2, MINUTES).untilAsserted(() -> {
       assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).containsOnly(0);
     });
   }

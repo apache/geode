@@ -57,7 +57,9 @@ subprojects {
 
     testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
-    testRuntime 'cglib:cglib:' + project.'cglib.version'
+    testRuntime('cglib:cglib:' + project.'cglib.version') {
+      exclude module: 'org.apache.ant'
+    }
   }
 
   configurations {

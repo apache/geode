@@ -154,12 +154,12 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
     londonServerVM.invoke(() -> {
       GatewaySender sender = cacheRule.getCache().getGatewaySender(newYorkName);
-      await().atMost(1, MINUTES).until(() -> assertThat(isRunning(sender)).isTrue());
+      await().atMost(1, MINUTES).untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
     });
 
     newYorkServerVM.invoke(() -> {
       GatewaySender sender = cacheRule.getCache().getGatewaySender(londonName);
-      await().atMost(1, MINUTES).until(() -> assertThat(isRunning(sender)).isTrue());
+      await().atMost(1, MINUTES).untilAsserted(() -> assertThat(isRunning(sender)).isTrue());
     });
 
     newYorkServerVM.invoke(() -> {
@@ -176,7 +176,7 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
     newYorkServerVM.invoke(() -> {
       Region<Integer, Integer> region = cacheRule.getCache().getRegion(REGION_NAME);
       assertThat(region).isNotNull();
-      waitAtMost(1, MINUTES).until(() -> assertThat(region.isEmpty()).isFalse());
+      waitAtMost(1, MINUTES).untilAsserted(() -> assertThat(region.isEmpty()).isFalse());
     });
 
     newYorkLocatorVM.invoke(() -> {

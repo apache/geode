@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
+import org.awaitility.core.ThrowingRunnable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -207,8 +208,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(resultSet.next()).isFalse();
   }
 
-  private void awaitUntil(final Runnable supplier) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(supplier);
+  private void awaitUntil(final ThrowingRunnable supplier) {
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(supplier);
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

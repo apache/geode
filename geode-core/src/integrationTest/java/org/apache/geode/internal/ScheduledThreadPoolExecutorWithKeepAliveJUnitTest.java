@@ -187,11 +187,13 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     };
     ScheduledFuture f = ex.scheduleAtFixedRate(run, 0, 1, TimeUnit.SECONDS);
     Awaitility.await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> assertEquals("Task was not executed repeatedly", true, counter.get() > 1));
+        .untilAsserted(
+            () -> assertEquals("Task was not executed repeatedly", true, counter.get() > 1));
     Awaitility.await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> assertEquals("The task could not be cancelled", true, f.cancel(true)));
+        .untilAsserted(() -> assertEquals("The task could not be cancelled", true, f.cancel(true)));
     Awaitility.await().atMost(30, TimeUnit.SECONDS)
-        .until(() -> assertEquals("Task was not cancelled within 30 sec", true, f.isCancelled()));
+        .untilAsserted(
+            () -> assertEquals("Task was not cancelled within 30 sec", true, f.isCancelled()));
     int oldValue = counter.get();
     Thread.sleep(5000);
     assertEquals("Task was not cancelled", oldValue, counter.get());

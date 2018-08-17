@@ -755,18 +755,18 @@ public class ReferenceCountHelperImplTest {
 
     rchi.refCountChanged(address, decRefCount, rc); // this line should fail. no inc after getInfo
                                                     // allowed
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(MemoryAllocatorImpl.class);
     MemoryAllocatorImpl.debugLog("refCount inced after orphan detected for @1000", true);
 
     decRefCount = true;
 
     rchi.refCountChanged(address, decRefCount, rc); // this line should fail. no inc after getInfo
                                                     // allowed
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(MemoryAllocatorImpl.class);
     MemoryAllocatorImpl.debugLog("refCount deced after orphan detected for @1000", true);
 
     rchi.freeRefCountInfo(address); // this line should fail. no free after getInfo allowed
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(MemoryAllocatorImpl.class);
     MemoryAllocatorImpl.debugLog("freed after orphan detected for @1000", true);
 
   }

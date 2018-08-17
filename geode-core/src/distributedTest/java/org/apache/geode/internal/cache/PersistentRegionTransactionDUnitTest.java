@@ -147,7 +147,7 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
     server.invoke(() -> {
       LocalRegion region = (LocalRegion) getCache().getRegion(REGIONNAME);
       Awaitility.await().atMost(10, SECONDS)
-          .until(() -> assertThat(region.getValueInVM(KEY)).isNull());
+          .untilAsserted(() -> assertThat(region.getValueInVM(KEY)).isNull());
       getCache().getCacheTransactionManager().begin();
       try {
         assertEquals(VALUE, region.get(KEY));

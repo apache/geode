@@ -118,7 +118,7 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
       String... expectedPoolStatKeys) {
     final int serverPort = server.getPort();
     server.invoke(() -> {
-      Awaitility.waitAtMost(1, TimeUnit.MINUTES).until(() -> {
+      Awaitility.waitAtMost(1, TimeUnit.MINUTES).untilAsserted(() -> {
         Cache cache = ClusterStartupRule.getCache();
         SystemManagementService service =
             (SystemManagementService) ManagementService.getExistingManagementService(cache);

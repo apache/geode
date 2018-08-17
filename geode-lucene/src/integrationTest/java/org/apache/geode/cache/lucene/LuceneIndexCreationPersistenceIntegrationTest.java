@@ -228,7 +228,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
       String defaultField, int size) throws Exception {
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName,
         queryString, defaultField);
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       try {
         assertEquals(size, query.findPages().size());
       } catch (LuceneQueryException e) {

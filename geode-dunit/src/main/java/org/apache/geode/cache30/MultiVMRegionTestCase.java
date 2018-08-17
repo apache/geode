@@ -7328,7 +7328,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     if (!region.getAttributes().getScope().isAck()) {
       Awaitility.await().atMost(5, TimeUnit.MINUTES)
-          .until(() -> validateTXRmtMirror(rgnName, vm0, vm1));
+          .untilAsserted(() -> validateTXRmtMirror(rgnName, vm0, vm1));
     } else {
       validateTXRmtMirror(rgnName, vm0, vm1);
     }

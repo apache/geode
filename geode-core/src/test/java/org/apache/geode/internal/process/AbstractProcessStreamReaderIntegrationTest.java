@@ -122,8 +122,8 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
 
     assertThat(process.isAlive()).isTrue();
 
-    await().until(() -> assertThat(stdout.isRunning()).isTrue());
-    await().until(() -> assertThat(stderr.isRunning()).isTrue());
+    await().untilAsserted(() -> assertThat(stdout.isRunning()).isTrue());
+    await().untilAsserted(() -> assertThat(stderr.isRunning()).isTrue());
   }
 
   private void givenStartedProcess(final Class<?> mainClass) {
@@ -164,12 +164,12 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   }
 
   protected void waitUntilProcessStops() {
-    await().until(() -> assertThat(isProcessAlive(process)).isFalse());
+    await().untilAsserted(() -> assertThat(isProcessAlive(process)).isFalse());
   }
 
   protected void waitUntilProcessStops(final long timeout, final TimeUnit unit) {
     Awaitility.await().atMost(timeout, unit)
-        .until(() -> assertThat(isProcessAlive(process)).isFalse());
+        .untilAsserted(() -> assertThat(isProcessAlive(process)).isFalse());
   }
 
   private ProcessStreamReader buildProcessStreamReader(final InputStream stream,

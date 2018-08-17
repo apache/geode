@@ -451,8 +451,9 @@ public class QueryDataDUnitTest implements Serializable {
 
       String alias = "Waiting for all entries to get reflected at managing node";
       int expectedEntryCount = values1.length + values2.length;
-      await(alias).until(() -> assertThat(distributedRegionMXBean.getSystemRegionEntryCount())
-          .isEqualTo(expectedEntryCount));
+      await(alias)
+          .untilAsserted(() -> assertThat(distributedRegionMXBean.getSystemRegionEntryCount())
+              .isEqualTo(expectedEntryCount));
 
       String query = "Select * from /" + partitionedRegionName;
 
@@ -691,7 +692,8 @@ public class QueryDataDUnitTest implements Serializable {
     String alias = "awaiting MemberMXBean proxy for " + member;
 
     await(alias)
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
@@ -699,7 +701,7 @@ public class QueryDataDUnitTest implements Serializable {
   private DistributedSystemMXBean awaitDistributedSystemMXBean() {
     SystemManagementService service = managementTestRule.getSystemManagementService();
 
-    await().until(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
+    await().untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
 
     return service.getDistributedSystemMXBean();
   }
@@ -707,7 +709,7 @@ public class QueryDataDUnitTest implements Serializable {
   private DistributedRegionMXBean awaitDistributedRegionMXBean(final String name) {
     SystemManagementService service = managementTestRule.getSystemManagementService();
 
-    await().until(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
+    await().untilAsserted(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
 
     return service.getDistributedRegionMXBean(name);
   }
@@ -716,9 +718,10 @@ public class QueryDataDUnitTest implements Serializable {
       final int memberCount) {
     SystemManagementService service = managementTestRule.getSystemManagementService();
 
-    await().until(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
-    await().until(() -> assertThat(service.getDistributedRegionMXBean(name).getMemberCount())
-        .isEqualTo(memberCount));
+    await().untilAsserted(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
+    await()
+        .untilAsserted(() -> assertThat(service.getDistributedRegionMXBean(name).getMemberCount())
+            .isEqualTo(memberCount));
 
     return service.getDistributedRegionMXBean(name);
   }

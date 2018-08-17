@@ -143,7 +143,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   private void verifySecondaryEventQueuesDrained(final String senderId) {
-    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
       int vm4SecondarySize = vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"));
       int vm5SecondarySize = vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"));
       int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));

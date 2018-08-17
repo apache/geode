@@ -257,7 +257,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
           () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
@@ -276,7 +276,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
           () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
@@ -317,7 +317,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
           () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
@@ -335,7 +335,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
           () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
@@ -377,7 +377,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
           () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
@@ -395,7 +395,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
           () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
@@ -1203,7 +1203,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
   String getHARegionName() {
     InternalCache internalCache = (InternalCache) cache;
-    Awaitility.await().atMost(15, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
       assertEquals(1, internalCache.getCacheServers().size());
       CacheServerImpl bs = (CacheServerImpl) (internalCache.getCacheServers().iterator().next());
       assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());

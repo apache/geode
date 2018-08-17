@@ -435,7 +435,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   private void putAndWaitForSuccess(VM vm, final String regionName, final Serializable key,
       final Serializable value) {
-    Awaitility.await().atMost(MAX_WAIT, MILLISECONDS).until(() -> {
+    Awaitility.await().atMost(MAX_WAIT, MILLISECONDS).untilAsserted(() -> {
       putInVM(vm, regionName, key, value);
     });
   }
@@ -463,7 +463,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       for (int i = 0; i < expectedPorts.length; i++) {
         expectedEndpointPorts.add(new Integer(expectedPorts[i]));
       }
-      Awaitility.await().atMost(5, SECONDS).until(() -> {
+      Awaitility.await().atMost(5, SECONDS).untilAsserted(() -> {
         List<ServerLocation> endpoints;
         HashSet actualEndpointPorts;
         endpoints = pool.getCurrentServers();

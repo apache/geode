@@ -231,7 +231,7 @@ public abstract class OffHeapRegionBase {
       final MemoryAllocator ma = gfc.getOffHeapStore();
       assertNotNull(ma);
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertEquals(0, ma.getUsedMemory()));
+          .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
       Compressor compressor = null;
       if (compressed) {
         compressor = SnappyCompressor.getDefaultInstance();
@@ -445,7 +445,7 @@ public abstract class OffHeapRegionBase {
       try {
         r.clear();
         Awaitility.await().atMost(60, TimeUnit.SECONDS)
-            .until(() -> assertEquals(0, ma.getUsedMemory()));
+            .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
       } catch (UnsupportedOperationException ok) {
       }
 
@@ -458,7 +458,7 @@ public abstract class OffHeapRegionBase {
         assertEquals(4, r.size());
         r.close();
         Awaitility.await().atMost(60, TimeUnit.SECONDS)
-            .until(() -> assertEquals(0, ma.getUsedMemory()));
+            .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
         // simple test of recovery
         r = gfc.createRegionFactory(rs).setOffHeap(true).create(rName);
         assertEquals(4, r.size());
@@ -483,7 +483,7 @@ public abstract class OffHeapRegionBase {
 
       r.destroyRegion();
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertEquals(0, ma.getUsedMemory()));
+          .untilAsserted(() -> assertEquals(0, ma.getUsedMemory()));
     } finally {
       if (r != null && !r.isDestroyed()) {
         r.destroyRegion();

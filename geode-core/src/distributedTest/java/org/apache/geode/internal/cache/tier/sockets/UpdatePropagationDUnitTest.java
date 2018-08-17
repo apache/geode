@@ -289,7 +289,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void verifyUpdates() {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       Region r = getCache().getRegion(Region.SEPARATOR + REGION_NAME);
       // verify updates
       if (r.getAttributes().getPartitionAttributes() == null) {

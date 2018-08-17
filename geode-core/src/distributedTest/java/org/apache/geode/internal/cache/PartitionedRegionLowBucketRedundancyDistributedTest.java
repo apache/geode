@@ -197,12 +197,12 @@ public class PartitionedRegionLowBucketRedundancyDistributedTest implements Seri
   private void waitForLowBucketRedundancyCount(int count) {
     PartitionedRegion region =
         (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(
         () -> assertThat(region.getPrStats().getLowRedundancyBucketCount()).isEqualTo(count));
   }
 
   private void waitForMembers(int count) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(
         () -> assertThat(ClusterStartupRule.getCache().getMembers().size()).isEqualTo(count));
   }
 }

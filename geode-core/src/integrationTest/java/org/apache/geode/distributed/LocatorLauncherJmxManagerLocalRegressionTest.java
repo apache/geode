@@ -94,7 +94,7 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
   }
 
   private void assertThatThreadsStopped() {
-    Awaitility.await().atMost(30, SECONDS).until(
+    Awaitility.await().atMost(30, SECONDS).untilAsserted(
         () -> assertThat(currentThreadCount()).isEqualTo(initialThreadCountPlusAwaitility()));
   }
 

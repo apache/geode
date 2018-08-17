@@ -158,7 +158,8 @@ public class ClearDuringNetSearchOplogRegressionTest extends CacheTestCase {
     // start getThread
     getter.start();
 
-    await().atMost(1, MINUTES).until(() -> verify(observer, times(1)).afterSettingDiskRef());
+    await().atMost(1, MINUTES)
+        .untilAsserted(() -> verify(observer, times(1)).afterSettingDiskRef());
 
     // This test appears to be testing a problem with the non-RVV
     // based clear. So we'll use that functionality here.

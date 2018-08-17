@@ -3506,7 +3506,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
     HARegionQueue harq = ccp.getHARegionQueue();
     HARegionQueueStats harqStats = harq.getStatistics();
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(
+        .untilAsserted(
             () -> assertEquals(
                 "Expected queue removal messages: " + numEvents + " but actual messages: "
                     + harqStats.getEventsRemovedByQrm(),
