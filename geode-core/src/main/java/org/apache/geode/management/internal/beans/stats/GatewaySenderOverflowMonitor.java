@@ -81,17 +81,17 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
 
   void increaseStats(String name, Number value) {
     if (name.equals(StatsKey.GATEWAYSENDER_LRU_EVICTIONS)) {
-      lruEvictions.set(lruEvictions.get() + value.longValue());
+      lruEvictions.getAndAdd(value.longValue());
       return;
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)) {
-      entriesOverflowedToDisk.set(entriesOverflowedToDisk.get() + value.longValue());
+      entriesOverflowedToDisk.getAndAdd(value.longValue());
       return;
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK)) {
-      bytesOverflowedToDisk.set(bytesOverflowedToDisk.get() + value.longValue());
+      bytesOverflowedToDisk.getAndAdd(value.longValue());
     }
   }
 

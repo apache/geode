@@ -38,18 +38,17 @@ public class GCStatsMonitor extends MBeanStatsMonitor {
   }
 
   void decreasePrevValues(DefaultHashMap statsMap) {
-    collections.set(collections.get() - statsMap.get(StatsKey.VM_GC_STATS_COLLECTIONS).intValue());
-    collectionTime
-        .set(collectionTime.get() - statsMap.get(StatsKey.VM_GC_STATS_COLLECTION_TIME).intValue());
+    collections.getAndAdd(-statsMap.get(StatsKey.VM_GC_STATS_COLLECTIONS).intValue());
+    collectionTime.getAndAdd(-statsMap.get(StatsKey.VM_GC_STATS_COLLECTION_TIME).intValue());
   }
 
   void increaseStats(String name, Number value) {
     if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-      collections.set(collections.get() + value.longValue());
+      collections.getAndAdd(value.longValue());
     }
 
     if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-      collectionTime.set(collectionTime.get() + value.longValue());
+      collectionTime.getAndAdd(value.longValue());
     }
   }
 

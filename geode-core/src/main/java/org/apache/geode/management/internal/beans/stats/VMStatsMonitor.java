@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import java.lang.management.ManagementFactory;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.StatisticDescriptor;
@@ -33,7 +34,7 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
   private long lastSystemTime = 0;
   private long lastProcessCpuTime = 0;
   private final boolean processCPUTimeAvailable;
-  private AtomicInteger cpuUsageBits = new AtomicInteger(Float.floatToIntBits(0f));
+  private final AtomicInteger cpuUsageBits = new AtomicInteger(Float.floatToIntBits(0f));
 
   public float getCpuUsage() {
     return Float.intBitsToFloat(cpuUsageBits.get());
@@ -49,7 +50,7 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
   }
 
   long currentTimeMillis() {
-    return System.currentTimeMillis();
+    return Instant.now().toEpochMilli();
   }
 
   /**
@@ -70,7 +71,7 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
    * Right now it only refreshes CPU usage in terms of percentage. This method can be used for any
    * other computation based on Stats in future.
    */
-  void refreshStats() {
+  synchronized void refreshStats() {
     if (processCPUTimeAvailable) {
       Number processCpuTime = statsMap.get(StatsKey.VM_PROCESS_CPU_TIME);
 
