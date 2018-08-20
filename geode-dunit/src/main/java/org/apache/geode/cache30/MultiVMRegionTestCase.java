@@ -1795,7 +1795,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         createRegion(name);
       }
     };
-    final VM vm0 = VM.getVM(1);
+    final VM vm0 = VM.getVM(0);
     final VM vm1 = VM.getVM(1);
 
     vm0.invoke(create);
@@ -8724,6 +8724,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         e.printStackTrace();
         throw (e);
       }
+      return true;
     });
 
   }
