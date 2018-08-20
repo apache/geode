@@ -34,7 +34,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  * <p/>
  *
  * @see org.springframework.context.ApplicationContext
- * @see org.springframework.data.gemfire.GemfireTemplate
  * @since GemFire 8.0
  */
 public class RestTestUtils {
