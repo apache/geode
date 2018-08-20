@@ -51,7 +51,8 @@ dependencies {
   }
 
 
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(':geode-dunit')
+  integrationTestCompile project(':geode-junit')
 
   integrationTestRuntime files(war.destinationDir)
   integrationTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
@@ -60,6 +61,7 @@ dependencies {
   }
 
 
+  distributedTestCompile project(':geode-junit')
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
   distributedTestRuntime files(war.destinationDir)

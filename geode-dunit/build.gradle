@@ -16,15 +16,16 @@
  */
 
 dependencies {
-  compile project(':geode-core')
+  implementation project(':geode-core')
   //compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
 
-  compile project(':geode-junit')
-  compile project(':geode-json')
+  implementation project(':geode-junit')
+  implementation project(':geode-json')
 
   compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  implementation 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   compile 'commons-io:commons-io:' + project.'commons-io.version'
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {

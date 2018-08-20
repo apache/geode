@@ -73,9 +73,11 @@ subprojects {
     }
     // Because EnsureCorrectRunsWithProcessor needs access to
     // CategoryWithParameterizedRunnerFactory. The specific version of geode-junit is not important.
-    apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
-      transitive = false
-    }
+    apt project(':geode-junit')
+//        {
+////    (group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
+//      //transitive = false
+//    }
   }
 
   compileTestJava {
@@ -117,17 +119,27 @@ subprojects {
     }
   }
 
+  configurations {
+    testAnnotationProcessor.extendsFrom annotationProcessor
+    integrationTestAnnotationProcessor.extendsFrom annotationProcessor
+    distributedTestAnnotationProcessor.extendsFrom annotationProcessor
+    performanceTestAnnotationProcessor.extendsFrom annotationProcessor
+    acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
+    uiTestAnnotationProcessor.extendsFrom annotationProcessor
+    upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
+  }
+
   dependencies {
-    integrationTestCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
-    integrationTestCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
+    integrationTestImplementation 'org.jmock:jmock-junit4:' + project.'jmock.version'
+    integrationTestImplementation 'org.jmock:jmock-legacy:' + project.'jmock.version'
 
-    integrationTestCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+    integrationTestImplementation 'org.mockito:mockito-core:' + project.'mockito-core.version'
 
-    integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
+    integrationTestImplementation 'org.powermock:powermock-core:' + project.'powermock.version'
+    integrationTestImplementation 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+    integrationTestImplementation 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
 
-    distributedTestCompile project(":geode-dunit")
+    distributedTestImplementation project(":geode-dunit")
   }
 
   configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
@@ -164,13 +176,13 @@ subprojects {
 
     outputs.upToDateWhen { false }
 
-    classpath += project.sourceSets.distributedTest.runtimeClasspath
+//    classpath += project.sourceSets.distributedTest.runtimeClasspath
     testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
-    classpath += project.sourceSets.integrationTest.runtimeClasspath
+//    classpath += project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
-    classpath += project.sourceSets.upgradeTest.runtimeClasspath
+//    classpath += project.sourceSets.upgradeTest.runtimeClasspath
     testClassesDirs += project.sourceSets.upgradeTest.output.classesDirs
-    classpath += project.sourceSets.acceptanceTest.runtimeClasspath
+//    classpath += project.sourceSets.acceptanceTest.runtimeClasspath
     testClassesDirs += project.sourceSets.acceptanceTest.output.classesDirs
 
     if (project.hasProperty("failOnNoMatchingTests")) {

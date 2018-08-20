@@ -85,20 +85,21 @@ dependencies {
   compile ('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  implementation 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
   runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
-  runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+  runtimeOnly ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
-  runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  runtimeOnly ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
     ext.optional = true
   }
-  runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+  runtimeOnly ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
     ext.optional = true
   }
   compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
@@ -136,8 +137,8 @@ dependencies {
 
   compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
-  compile project(':geode-common')
-  compile project(':geode-json')
+  implementation project(':geode-common')
+  implementation project(':geode-json')
 
 
   jcaCompile sourceSets.main.output
@@ -158,9 +159,8 @@ dependencies {
   testRuntime 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
-  integrationTestCompile (project(":geode-dunit")) {
-    exclude module: 'geode-core'
-  }
+  integrationTestCompile (project(":geode-junit"))
+  integrationTestCompile (project(":geode-dunit"))
   integrationTestCompile project(':geode-concurrency-test')
   integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
@@ -172,7 +172,8 @@ dependencies {
   integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 
 
-  distributedTestCompile project(":geode-dunit")
+  distributedTestCompile project(":geode-junit")
+  distributedTestCompile project(':geode-dunit')
   distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
   distributedTestCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
@@ -180,9 +181,8 @@ dependencies {
   distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
 
 
-  upgradeTestCompile (project(":geode-dunit")) {
-    exclude module: 'geode-core'
-  }
+  upgradeTestCompile (project(":geode-junit"))
+  upgradeTestCompile (project(":geode-dunit"))
 
 
   performanceTestCompile project(":geode-junit")
@@ -215,8 +215,10 @@ dependencies {
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
-  outputs.file propertiesFile
-  inputs.dir "../.git/index"
+  outputs.files propertiesFile
+  inputs.files {
+    "../.git/index"
+  }
 
   doLast {
     def props = [

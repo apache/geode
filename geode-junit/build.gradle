@@ -17,6 +17,8 @@
 
 dependencies {
   compileOnly project(':geode-core')
+  compileOnly project(':geode-json')
+  compileOnly project(':geode-common')
 
   compile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'
@@ -29,7 +31,8 @@ dependencies {
   compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
   compile 'org.awaitility:awaitility:' + project.'awaitility.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  compileOnly 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }

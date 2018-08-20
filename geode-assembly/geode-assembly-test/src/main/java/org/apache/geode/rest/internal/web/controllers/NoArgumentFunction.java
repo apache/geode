@@ -18,8 +18,13 @@ package org.apache.geode.rest.internal.web.controllers;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.execute.ResultCollector;
 
 public class NoArgumentFunction implements Function {
   /**

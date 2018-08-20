@@ -16,14 +16,19 @@
  */
 
 dependencies {
+  annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   compileOnly project(':geode-core')
 
   testCompile project(':geode-core')
   testCompile project(':geode-junit')
 
+  integrationTestCompile (project(":geode-junit"))
   integrationTestCompile project(":geode-dunit")
 
-  upgradeTestCompile (project(":geode-dunit")) {
+  distributedTestCompile project(":geode-junit")
+
+  upgradeTestCompile (project(":geode-junit"))
+    upgradeTestCompile (project(":geode-dunit")) {
     exclude module: 'geode-core'
   }
 }
