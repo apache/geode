@@ -86,19 +86,19 @@ dependencies {
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  runtime('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+  runtimeOnly ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
-  runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  runtimeOnly 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
-  runtime('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+  runtimeOnly ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
-  runtime('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  runtimeOnly ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
     ext.optional = true
   }
-  runtime('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+  runtimeOnly ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
     ext.optional = true
   }
   compile('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
