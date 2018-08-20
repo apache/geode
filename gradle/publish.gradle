@@ -137,6 +137,24 @@ subprojects {
         if (! getTasksByName('javadocJar', false).isEmpty()) {
           artifact javadocJar
         }
+        pom{
+          name = 'Apache Geode'
+          description = 'Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+          url = 'http://geode.apache.org'
+
+          scm {
+            url = 'https://github.com/apache/geode'
+            connection = 'scm:git:https://github.com:apache/geode.git'
+            developerConnection = 'scm:git:https://github.com:apache/geode.git'
+          }
+
+          licenses {
+            license {
+              name = 'The Apache Software License, Version 2.0'
+              url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+          }
+        }
       }
     }
     repositories {
