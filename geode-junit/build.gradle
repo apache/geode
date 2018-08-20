@@ -35,7 +35,7 @@ dependencies {
   }
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
 
-  runtime project(":geode-old-versions")
+  runtimeOnly project(":geode-old-versions")
 }
 
 test {
