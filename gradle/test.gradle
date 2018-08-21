@@ -121,6 +121,14 @@ subprojects {
     }
   }
 
+  // Facets does not extend the new runtimeOnly configurations
+  configurations.integrationTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.distributedTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.performanceTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.acceptanceTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.uiTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.upgradeTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+
   dependencies {
     integrationTestCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
     integrationTestCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
