@@ -562,6 +562,19 @@ public class Gfsh extends JLineShell {
   }
 
   /**
+   * Executes a single command string.
+   * It substitutes the variables defined within the command, if any, and then delegates to the
+   * default execution.
+   *
+   * @param line command string to be executed
+   * @return command execution result.
+   */
+  @Override
+  public org.springframework.shell.core.CommandResult executeCommand(String line) {
+    return super.executeCommand(!line.contains("$") ? line : expandProperties(line));
+  }
+
+  /**
    * Executes the given command string. We have over-ridden the behavior to extend the original
    * implementation to store the 'last command execution status'.
    *
@@ -1125,7 +1138,7 @@ public class Gfsh extends JLineShell {
     return gfshHistory;
   }
 
-  private String expandProperties(final String input) {
+  protected String expandProperties(final String input) {
     String output = input;
     Scanner s = new Scanner(output);
     String foundInLine;

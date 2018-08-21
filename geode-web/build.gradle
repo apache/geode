@@ -52,8 +52,6 @@ dependencies {
 
 
   integrationTestCompile project(":geode-dunit")
-  // TODO remove dependency on sources from other test modules
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 
   integrationTestRuntime files(war.destinationDir)
   integrationTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
@@ -63,8 +61,6 @@ dependencies {
 
 
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-  // TODO remove dependency on sources from other test modules
-  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
 
   distributedTestRuntime files(war.destinationDir)
   distributedTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {

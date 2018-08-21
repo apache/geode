@@ -25,16 +25,6 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 GEODEBUILDDIR="${SCRIPTDIR}/../geode-build"
 
-if ! [ -x "$(command -v spruce)" ]; then
-    echo "Spruce must be installed for pipeline deployment to work."
-    echo "For macos: 'brew tap starkandwayne/cf; brew install spruce'"
-    echo "For Ubuntu: follow the instructions at https://github.com/geofffranks/spruce"
-    echo ""
-    exit 1
-else
-    SPRUCE=$(which spruce || true)
-fi
-
 set -e
 
 if [ -z "${GEODE_BRANCH}" ]; then

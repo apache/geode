@@ -685,13 +685,13 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         };
 
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
 
     // In case of blocking HARegionQueue do some extra puts so that the
     // blocking threads

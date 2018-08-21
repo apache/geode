@@ -246,7 +246,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
       httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
-      properties.putIfAbsent(HTTP_SERVICE_PORT, httpPort + "");
+      properties.put(HTTP_SERVICE_PORT, httpPort + "");
     } else {
       // indicate start http service but with default port
       // (different from Gemfire properties, 0 means do not start http service)
@@ -441,7 +441,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    *        directly tests the value provided by {@code supplier}.
    * @param assertionConsumer assertThat styled condition on the output of {@code examiner} against
    *        which
-   *        the {@code await().until(...)} will be called. E.g.,
+   *        the {@code await().untilAsserted(...)} will be called. E.g.,
    *        {@code beanCount -> assertThat(beanCount, is(5))}
    * @param assertionConsumerDescription A description of the {@code assertionConsumer} method,
    *        for additional failure information should this call time out.
@@ -458,7 +458,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     try {
       await(assertionConsumerDescription)
           .atMost(timeout, unit)
-          .until(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
+          .untilAsserted(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
     } catch (ConditionTimeoutException e) {
       // There is a very slight race condition here, where the above could conceivably time out,
       // and become satisfied before the next supplier.get()

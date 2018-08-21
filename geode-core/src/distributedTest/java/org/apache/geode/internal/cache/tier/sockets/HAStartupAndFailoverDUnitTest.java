@@ -328,7 +328,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
   public static void verifyDeadAndLiveServers(final int expectedDeadServers,
       final int expectedLiveServers) {
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(expectedLiveServers, pool.getConnectedServerCount()));
+        .untilAsserted(() -> assertEquals(expectedLiveServers, pool.getConnectedServerCount()));
   }
 
   public static void setClientServerObserver() {

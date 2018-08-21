@@ -4021,7 +4021,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       createSubscriptionRegion(offheap, regionName, copies, totalBuckets);
       Region r = getCache().getRegion(regionName);
 
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         List<Integer> ids = ((PartitionedRegion) r).getLocalBucketsListTestOnly();
         assertFalse(ids.isEmpty());
       });
@@ -4070,12 +4070,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     client1.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
+          .untilAsserted(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
 
     client2.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
+          .untilAsserted(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
   }
 
@@ -4174,7 +4174,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     // Add the wait before checking the TXState.
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
         .atMost(30, TimeUnit.SECONDS)
-        .until(() -> Assertions
+        .untilAsserted(() -> Assertions
             .assertThat(txmgr.getTransactionsForClient((InternalDistributedMember) clientId).size())
             .isEqualTo(0));
   }

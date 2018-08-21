@@ -298,7 +298,7 @@ public class SerialEventListenerDistributedTest implements Serializable {
   private void validateThrowingAsyncEventListenerEventsMap(int expectedSize) {
     Map<?, AsyncEvent<?, ?>> eventsMap = getThrowingAsyncEventListener().getEventsMap();
 
-    await().atMost(TWO_MINUTES).until(() -> assertThat(eventsMap).hasSize(expectedSize));
+    await().atMost(TWO_MINUTES).untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
 
     for (AsyncEvent<?, ?> event : eventsMap.values()) {
       assertThat(event.getPossibleDuplicate()).isTrue();
@@ -307,7 +307,7 @@ public class SerialEventListenerDistributedTest implements Serializable {
 
   private void validateThrowingAsyncEventListenerExceptionThrown() {
     await().atMost(TWO_MINUTES)
-        .until(() -> assertThat(isThrowingAsyncEventListenerExceptionThrown()).isTrue());
+        .untilAsserted(() -> assertThat(isThrowingAsyncEventListenerExceptionThrown()).isTrue());
   }
 
   private void waitForDispatcherToPause() {

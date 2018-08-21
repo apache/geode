@@ -356,7 +356,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     }
     int numOfEntries = numOfOperations * numOfTransactions;
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertThat(region.size()).isEqualTo(numOfEntries));
+        .untilAsserted(() -> assertThat(region.size()).isEqualTo(numOfEntries));
     for (int i = 1; i <= numOfEntries; i++) {
       LogService.getLogger().info("region get key {} value {} ", i, region.get(i));
     }
@@ -412,14 +412,15 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   private void verifyTransactionAreStarted(int numOfTransactions) {
     TXManagerImpl txManager = cacheRule.getCache().getTxManager();
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertThat(txManager.hostedTransactionsInProgressForTest())
+        .untilAsserted(() -> assertThat(txManager.hostedTransactionsInProgressForTest())
             .isEqualTo(numOfTransactions));
   }
 
   private void verifyTransactionAreExpired(int numOfTransactions) {
     TXManagerImpl txManager = cacheRule.getCache().getTxManager();
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertThat(txManager.hostedTransactionsInProgressForTest()).isEqualTo(0));
+        .untilAsserted(
+            () -> assertThat(txManager.hostedTransactionsInProgressForTest()).isEqualTo(0));
   }
 
 }

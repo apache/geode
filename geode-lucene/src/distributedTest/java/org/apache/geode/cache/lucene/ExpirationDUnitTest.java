@@ -70,7 +70,8 @@ public class ExpirationDUnitTest extends LuceneQueriesAccessorBase {
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
 
     accessor.invoke(() -> Awaitility.await()
-        .atMost(EXPIRATION_TIMEOUT_SEC + EXTRA_WAIT_TIME_SEC, TimeUnit.SECONDS).until(() -> {
+        .atMost(EXPIRATION_TIMEOUT_SEC + EXTRA_WAIT_TIME_SEC, TimeUnit.SECONDS)
+        .untilAsserted(() -> {
           LuceneService luceneService = LuceneServiceProvider.get(getCache());
           LuceneQuery<Integer, TestObject> luceneQuery = luceneService.createLuceneQueryFactory()
               .setLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");

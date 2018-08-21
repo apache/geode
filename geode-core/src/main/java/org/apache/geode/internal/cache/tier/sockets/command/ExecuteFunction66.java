@@ -330,7 +330,8 @@ public class ExecuteFunction66 extends BaseCommand {
 
     if (fn.hasResult()) {
       fn.execute(cx);
-      if (!((ServerToClientFunctionResultSender65) sender).isLastResultReceived()
+      if (sender.isOkayToSendResult()
+          && !((ServerToClientFunctionResultSender65) sender).isLastResultReceived()
           && fn.hasResult()) {
         throw new FunctionException(
             LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT

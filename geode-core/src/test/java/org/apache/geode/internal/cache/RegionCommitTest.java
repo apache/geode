@@ -31,8 +31,6 @@ public class RegionCommitTest {
   private String path;
   private LocalRegion region;
   private TXCommitMessage txCommitMessage;
-  private RegionCommit regionCommit;
-  private final Object key = new Object();
 
   @Before
   public void setUp() {
@@ -43,7 +41,6 @@ public class RegionCommitTest {
     dm = mock(ClusterDistributionManager.class);
     region = mock(LocalRegion.class);
     txCommitMessage = mock(TXCommitMessage.class);
-    regionCommit = new RegionCommit(txCommitMessage);
 
     when(dm.getCache()).thenReturn(cache);
     when(cache.getRegionByPath(path)).thenReturn(region);
@@ -52,6 +49,7 @@ public class RegionCommitTest {
 
   @Test
   public void getsRegionFromCacheFromDM() {
+    RegionCommit regionCommit = new RegionCommit(txCommitMessage);
     assertThat(regionCommit.getRegionByPath(dm, path)).isEqualTo(region);
   }
 }

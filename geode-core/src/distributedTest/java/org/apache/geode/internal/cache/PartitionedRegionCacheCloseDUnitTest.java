@@ -53,7 +53,7 @@ public class PartitionedRegionCacheCloseDUnitTest extends CacheTestCase {
     vm1.invoke(() -> {
       Region prRootRegion = PartitionedRegionHelper.getPRRoot(getCache());
 
-      await().atMost(2, MINUTES).until(() -> {
+      await().atMost(2, MINUTES).untilAsserted(() -> {
         PartitionRegionConfig partitionRegionConfig =
             (PartitionRegionConfig) prRootRegion.get("#" + REGION_NAME);
         assertThat(partitionRegionConfig.getNodes()).hasSize(1);

@@ -165,7 +165,7 @@ public class RegionExpirationDistributedTest implements Serializable {
         // verify region was invalidated
         Region<String, String> region = cache.getRegion(regionName);
         await().atMost(1, MINUTES)
-            .until(() -> assertThat(region.containsValueForKey(KEY)).isFalse());
+            .untilAsserted(() -> assertThat(region.containsValueForKey(KEY)).isFalse());
 
       } else {
         // verify region was destroyed (or is in process of being destroyed)
@@ -177,7 +177,7 @@ public class RegionExpirationDistributedTest implements Serializable {
       if (expirationAction().isInvalidate()) {
         // distributed invalidate region
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES).until(() -> {
+        await().atMost(1, MINUTES).untilAsserted(() -> {
           assertThat(region.containsKey(KEY)).isTrue();
           assertThat(region.containsValueForKey(KEY)).isFalse();
         });
@@ -189,7 +189,7 @@ public class RegionExpirationDistributedTest implements Serializable {
       } else {
         // for LOCAL_DESTROY or LOCAL_INVALIDATE, the value should be present
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES).until(() -> {
+        await().atMost(1, MINUTES).untilAsserted(() -> {
           assertThat(region.containsValueForKey(KEY)).isTrue();
           assertThat(region.get(KEY)).isEqualTo(VALUE);
         });

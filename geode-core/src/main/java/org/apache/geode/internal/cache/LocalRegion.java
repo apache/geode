@@ -46,7 +46,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.transaction.RollbackException;
@@ -936,7 +935,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           }
           throw new RegionDestroyedException(toString(), getFullPath());
         }
-        validateRegionName(subregionName, internalRegionArgs);
+        RegionNameValidation.validate(subregionName, internalRegionArgs);
 
         validateSubregionAttributes(regionAttributes);
 
@@ -6896,10 +6895,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       final boolean inTokenMode = needTokensForGII || needRIDestroyToken;
-      if (!needsPendingCallbacksForDestroy(key, txEntryState)) {
-        pendingCallbacks = new ArrayList<>();
-      }
-      getRegionMap().txApplyDestroy(key, rmtOrigin, event, inTokenMode, needRIDestroyToken, op,
+      this.entries.txApplyDestroy(key, rmtOrigin, event, inTokenMode, needRIDestroyToken, op,
           eventId, aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext,
           isOriginRemote, txEntryState, versionTag, tailKey);
     } finally {
@@ -6907,24 +6903,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         unlockRIReadLock();
       }
     }
-  }
-
-  boolean needsPendingCallbacksForDestroy(Object key, TXEntryState txEntryState) {
-    if (isProxy()) {
-      return true;
-    }
-    if (txEntryState != null) {
-      // nearside on tx host
-      // a destroy on destroyed or removed token, to local committed state, becomes a noop
-      // since nothing needed to be done locally.
-      // We don't want to actually do the destroy since we told the
-      // transaction listener that no destroy was done.
-      Object originalValue = txEntryState.getOriginalValue();
-      return originalValue != null && !Token.isRemoved(originalValue);
-    }
-    // farside without TXEntryState
-    RegionEntry regionEntry = basicGetEntry(key);
-    return regionEntry != null && !regionEntry.isDestroyedOrRemoved();
   }
 
   /**
@@ -7406,49 +7384,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               e);
         }
       }
-    }
-  }
-
-  public static void validateRegionName(String name, InternalRegionArguments internalRegionArgs) {
-    if (name == null) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
-    }
-    if (name.isEmpty()) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
-    }
-    if (name.contains(SEPARATOR)) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0
-              .toLocalizedString(SEPARATOR));
-    }
-
-    // Validate the name of the region only if it isn't an internal region
-    if (internalRegionArgs.isInternalRegion()) {
-      return;
-    }
-    if (internalRegionArgs.isUsedForMetaRegion()) {
-      return;
-    }
-    if (internalRegionArgs.isUsedForPartitionedRegionAdmin()) {
-      return;
-    }
-    if (internalRegionArgs.isUsedForPartitionedRegionBucket()) {
-      return;
-    }
-
-    if (name.startsWith("__")) {
-      throw new IllegalArgumentException(
-          "Region names may not begin with a double-underscore: " + name);
-    }
-
-    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
-    // Ensure the region only contains valid characters
-    Matcher matcher = NAME_PATTERN.matcher(name);
-    if (!matcher.matches()) {
-      throw new IllegalArgumentException(
-          "Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
     }
   }
 

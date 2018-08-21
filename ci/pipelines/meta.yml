@@ -40,6 +40,7 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/geode-build/*
+    - ci/pipelines/shared/*
 - name: geode-examples-pipeline
   type: git
   source:
@@ -47,14 +48,15 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/examples/*
+    - ci/pipelines/shared/*
 - name: geode-pr-pipeline
   type: git
   source:
     uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
-    - ci/pipelines/geode-build/test-stubs/*
     - ci/pipelines/pull-request/*
+    - ci/pipelines/shared/*
 - name: geode-images-pipeline
   type: git
   source:

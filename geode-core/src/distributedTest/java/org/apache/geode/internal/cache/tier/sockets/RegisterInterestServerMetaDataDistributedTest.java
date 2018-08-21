@@ -243,7 +243,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
 
   private void awaitServerMetaDataToContainClient() {
     await().atMost(30, SECONDS)
-        .until(() -> assertThat(
+        .untilAsserted(() -> assertThat(
             getCacheServer().getAcceptor().getCacheClientNotifier().getClientProxies().size())
                 .isEqualTo(1));
 

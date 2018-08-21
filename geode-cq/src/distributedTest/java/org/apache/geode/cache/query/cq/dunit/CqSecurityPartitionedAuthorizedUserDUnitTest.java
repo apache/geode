@@ -58,7 +58,7 @@ public class CqSecurityPartitionedAuthorizedUserDUnitTest
 
     specificUserClient.invoke(() -> {
       Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> assertEquals(1, cqListener.getNumErrors()));
+          .untilAsserted(() -> assertEquals(1, cqListener.getNumErrors()));
     });
   }
 }

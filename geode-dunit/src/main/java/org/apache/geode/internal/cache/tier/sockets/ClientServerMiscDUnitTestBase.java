@@ -186,8 +186,6 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
    * When a client's subscription thread connects to a server it should receive the server's
    * pingInterval setting. This is used by the client to set a read-timeout in order to avoid
    * hanging should the server's machine crash.
-   *
-   * @see MessageJUnitTest#messageWillTimeoutDuringRecvOnInactiveSocket
    */
   @Test
   public void testClientReceivesPingIntervalSetting() {

@@ -65,6 +65,7 @@ import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
@@ -1670,7 +1671,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       processRemoveRequest(msg);
       if (!this.isCoordinator) {
         msg.resetRecipients();
-        msg.setRecipients(v.getPreferredCoordinators(Collections.emptySet(), localAddress, 10));
+        msg.setRecipients(v.getPreferredCoordinators(Collections.emptySet(), localAddress,
+            ServiceConfig.SMALL_CLUSTER_SIZE + 1));
         services.getMessenger().send(msg);
       }
     } else {

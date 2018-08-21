@@ -177,7 +177,7 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
     InternalCache cache = getCache();
     Region rootRegion = PartitionedRegionHelper.getPRRoot(cache);
 
-    await().atMost(1, MINUTES).until(() -> assertThat(cache.rootRegions()).isEmpty());
+    await().atMost(1, MINUTES).untilAsserted(() -> assertThat(cache.rootRegions()).isEmpty());
 
     assertEquals(
         "ThePrIdToPR Map size is:" + PartitionedRegion.getPrIdToPR().size() + " instead of 0",

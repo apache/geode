@@ -563,7 +563,8 @@ public class RegionManagementDUnitTest implements Serializable {
   private void verifyMemberNotifications(final VM managerVM, final String regionName,
       final int expectedMembers) {
     managerVM.invoke("verifyMemberNotifications", () -> {
-      await().until(() -> assertThat(MEMBER_NOTIFICATIONS.get()).hasSize(expectedMembers * 2));
+      await()
+          .untilAsserted(() -> assertThat(MEMBER_NOTIFICATIONS.get()).hasSize(expectedMembers * 2));
 
       int regionCreatedCount = 0;
       int regionDestroyedCount = 0;
@@ -641,7 +642,7 @@ public class RegionManagementDUnitTest implements Serializable {
       Set<DistributedMember> otherMemberSet = getOtherNormalMembers_tmp();
       for (final DistributedMember member : otherMemberSet) {
         String alias = "Waiting for the proxy to get deleted at managing node";
-        await(alias).until(
+        await(alias).untilAsserted(
             () -> assertThat(service.getMBeanProxy(service.getRegionMBeanName(member, REGION_PATH),
                 RegionMXBean.class)).isNull());
       }
@@ -680,7 +681,8 @@ public class RegionManagementDUnitTest implements Serializable {
         ManagementService service = getManagementService();
         String alias = "Waiting for the proxy to get deleted at managing node";
         await(alias)
-            .until(() -> assertThat(service.getDistributedRegionMXBean(REGION_PATH)).isNull());
+            .untilAsserted(
+                () -> assertThat(service.getDistributedRegionMXBean(REGION_PATH)).isNull());
         return;
       }
 
@@ -1040,13 +1042,14 @@ public class RegionManagementDUnitTest implements Serializable {
   private void awaitMemberCount(final int expectedCount) {
     DistributedSystemMXBean distributedSystemMXBean = awaitDistributedSystemMXBean();
     await()
-        .until(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(expectedCount));
+        .untilAsserted(
+            () -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(expectedCount));
   }
 
   private DistributedRegionMXBean awaitDistributedRegionMXBean(final String name) {
     SystemManagementService service = getSystemManagementService_tmp();
 
-    await().until(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
+    await().untilAsserted(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
 
     return service.getDistributedRegionMXBean(name);
   }
@@ -1055,9 +1058,10 @@ public class RegionManagementDUnitTest implements Serializable {
       final int memberCount) {
     SystemManagementService service = getSystemManagementService_tmp();
 
-    await().until(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
-    await().until(() -> assertThat(service.getDistributedRegionMXBean(name).getMemberCount())
-        .isEqualTo(memberCount));
+    await().untilAsserted(() -> assertThat(service.getDistributedRegionMXBean(name)).isNotNull());
+    await()
+        .untilAsserted(() -> assertThat(service.getDistributedRegionMXBean(name).getMemberCount())
+            .isEqualTo(memberCount));
 
     return service.getDistributedRegionMXBean(name);
   }
@@ -1068,7 +1072,8 @@ public class RegionManagementDUnitTest implements Serializable {
     String alias = "awaiting RegionMXBean proxy for " + member;
 
     await(alias)
-        .until(() -> assertThat(service.getMBeanProxy(objectName, RegionMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, RegionMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, RegionMXBean.class);
   }
@@ -1077,7 +1082,8 @@ public class RegionManagementDUnitTest implements Serializable {
     SystemManagementService service = getSystemManagementService_tmp();
 
     await()
-        .until(() -> assertThat(service.getMBeanProxy(objectName, RegionMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, RegionMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, RegionMXBean.class);
   }
@@ -1088,7 +1094,8 @@ public class RegionManagementDUnitTest implements Serializable {
     String alias = "awaiting MemberMXBean proxy for " + member;
 
     await(alias)
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
@@ -1096,14 +1103,15 @@ public class RegionManagementDUnitTest implements Serializable {
   private MemberMXBean awaitMemberMXBeanProxy(final ObjectName objectName) {
     SystemManagementService service = getSystemManagementService_tmp();
     await()
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
 
   private DistributedSystemMXBean awaitDistributedSystemMXBean() {
     ManagementService service = getSystemManagementService_tmp();
 
-    await().until(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
+    await().untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
 
     return service.getDistributedSystemMXBean();
   }

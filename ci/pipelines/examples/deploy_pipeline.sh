@@ -24,15 +24,14 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-if ! [ -x "$(command -v spruce)" ]; then
-    echo "Spruce must be installed for pipeline deployment to work."
-    echo "For macos: 'brew tap starkandwayne/cf; brew install spruce'"
-    echo "For Ubuntu: follow the instructions at https://github.com/geofffranks/spruce"
+for cmd in Jinja2 PyYAML; do
+  if ! [[ $(pip3 list |grep ${cmd}) ]]; then
+    echo "${cmd} must be installed for pipeline deployment to work."
+    echo " 'pip3 install ${cmd}'"
     echo ""
     exit 1
-else
-    SPRUCE=$(which spruce || true)
-fi
+  fi
+done
 
 set -e
 
@@ -55,15 +54,6 @@ chmod +x ${BIN_DIR}/fly
 
 PATH=${PATH}:${BIN_DIR}
 
-echo "Spruce branch-name into resources"
-${SPRUCE} merge --prune metadata \
-  ${SCRIPTDIR}/examples.yml \
-  <(echo "metadata:"; \
-    echo "  geode-build-branch: ${GEODE_BRANCH}"; \
-    echo "  geode-fork: ${GEODE_FORK}"; \
-    echo "  ") > ${TMP_DIR}/final.yml
-
-
 TARGET="geode"
 
 TEAM="staging"
@@ -80,9 +70,20 @@ else
 fi
 PIPELINE_NAME="${PIPELINE_NAME}-examples"
 
-fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
-fly -t ${TARGET} set-pipeline --non-interactive \
-  --pipeline ${PIPELINE_NAME} \
-  --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-  --config ${TMP_DIR}/final.yml
+pushd ${SCRIPTDIR} 2>&1 > /dev/null
+  # Template and output share a directory with this script, but variables are shared in the parent directory.
+  python3 ../render.py jinja.template.yml ../shared/jinja.variables.yml generated-pipeline.yml || exit 1
 
+  fly login -t ${TARGET} \
+            -n ${TEAM} \
+            -c https://concourse.apachegeode-ci.info \
+            -u ${CONCOURSE_USERNAME} \
+            -p ${CONCOURSE_PASSWORD}
+
+  fly -t ${TARGET} set-pipeline \
+      --non-interactive \
+      --pipeline ${PIPELINE_NAME} \
+      --config generated-pipeline.yml \
+      --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
+
+popd 2>&1 > /dev/null

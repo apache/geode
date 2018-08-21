@@ -21,7 +21,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class})
-public class ShutdownCommandOverHttpDUnitTest extends ShutdownCommandDUnitTest {
+public class ShutdownCommandOverHttpDUnitTest extends ShutdownCommandDUnitTestBase {
 
   @Override
   void connect(MemberVM server) throws Exception {

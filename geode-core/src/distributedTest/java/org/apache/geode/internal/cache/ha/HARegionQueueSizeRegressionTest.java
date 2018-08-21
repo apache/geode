@@ -194,7 +194,7 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
   }
 
   private void awaitProxyIsPaused() {
-    Awaitility.await().atMost(60, SECONDS).until(() -> {
+    Awaitility.await().atMost(60, SECONDS).untilAsserted(() -> {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
       Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
 
@@ -222,13 +222,13 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
   }
 
   private void awaitCreates(int expectedCreates) {
-    Awaitility.await().atMost(60, SECONDS).until(() -> {
+    Awaitility.await().atMost(60, SECONDS).untilAsserted(() -> {
       verify(spyCacheListener, times(expectedCreates)).afterCreate(any());
     });
   }
 
   private void verifyStats() {
-    Awaitility.await().atMost(60, SECONDS).until(() -> {
+    Awaitility.await().atMost(60, SECONDS).untilAsserted(() -> {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
       CacheClientProxy ccp = ccn.getClientProxies().iterator().next();
       // TODO: consider verifying ccp.getQueueSize()

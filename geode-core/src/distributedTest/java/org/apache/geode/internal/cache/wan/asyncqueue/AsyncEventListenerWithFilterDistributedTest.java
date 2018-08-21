@@ -366,7 +366,7 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
 
   private void waitForAsyncQueueToEmpty() {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
-    await().atMost(TWO_MINUTES).until(() -> assertRegionQueuesAreEmpty(gatewaySender));
+    await().atMost(TWO_MINUTES).untilAsserted(() -> assertRegionQueuesAreEmpty(gatewaySender));
   }
 
   private StringGatewayEventSubstitutionFilter getMyGatewayEventSubstitutionFilter() {

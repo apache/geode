@@ -98,7 +98,7 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
 
     if (config.getEnableClusterConfiguration()) {
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
+          .untilAsserted(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }
   }
 

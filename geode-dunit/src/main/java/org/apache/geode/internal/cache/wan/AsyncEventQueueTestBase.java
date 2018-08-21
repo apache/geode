@@ -503,7 +503,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   public static void waitForAsyncEventQueueSize(String senderId, int numQueueEntries,
       boolean localSize) {
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> checkAsyncEventQueueSize(senderId, numQueueEntries, localSize));
+        .untilAsserted(() -> checkAsyncEventQueueSize(senderId, numQueueEntries, localSize));
   }
 
   public static void checkAsyncEventQueueSize(String asyncQueueId, int numQueueEntries) {
@@ -730,10 +730,11 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     }
     final AsyncEventQueueStats statistics = ((AsyncEventQueueImpl) queue).getStatistics();
     Awaitility.await().atMost(120, TimeUnit.SECONDS)
-        .until(() -> assertEquals("Expected queue entries: " + queueSize + " but actual entries: "
-            + statistics.getEventQueueSize(), queueSize, statistics.getEventQueueSize()));
+        .untilAsserted(
+            () -> assertEquals("Expected queue entries: " + queueSize + " but actual entries: "
+                + statistics.getEventQueueSize(), queueSize, statistics.getEventQueueSize()));
     if (isParallel) {
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
         assertEquals(
             "Expected events in the secondary queue is " + secondaryQueueSize + ", but actual is "
                 + statistics.getSecondaryEventQueueSize(),

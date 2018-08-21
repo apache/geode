@@ -65,7 +65,6 @@ public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {
     assertEquals(1, getCurrentClients());
     assertEquals(1, getConnectionThreads());
     assertEquals(1, getThreadQueueSize());
-    assertEquals(1, getClientConnectionCount());
     assertEquals(1, getTotalFailedConnectionAttempts());
     assertEquals(1, getTotalConnectionsTimedOut());
     assertEquals(20, getTotalSentBytes());
@@ -189,10 +188,6 @@ public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {
 
   private long getTotalReceivedBytes() {
     return bridge.getTotalReceivedBytes();
-  }
-
-  private int getClientConnectionCount() {
-    return bridge.getClientConnectionCount();
   }
 
   private int getCurrentClients() {

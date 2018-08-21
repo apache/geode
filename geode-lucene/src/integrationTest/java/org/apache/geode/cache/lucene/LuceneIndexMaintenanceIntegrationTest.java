@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.document.Document;
 import org.awaitility.Awaitility;
+import org.awaitility.core.ThrowingRunnable;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -219,7 +220,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     populateRegion(region);
     // Wait for expiration to destroy region entries. The region should be
     // left with zero entries.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       assertEquals(0, region.size());
     });
 
@@ -341,8 +342,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     }
   }
 
-  private void await(Runnable runnable) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(runnable);
+  private void await(ThrowingRunnable runnable) {
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(runnable);
   }
 
   private static final class TestCacheLoader implements CacheLoader<String, TestObject> {

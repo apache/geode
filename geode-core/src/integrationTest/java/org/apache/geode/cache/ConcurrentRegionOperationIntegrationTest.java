@@ -86,7 +86,7 @@ public class ConcurrentRegionOperationIntegrationTest {
 
     Awaitility.await().pollDelay(0, TimeUnit.MICROSECONDS)
         .pollInterval(1, TimeUnit.MILLISECONDS)
-        .atMost(10, TimeUnit.SECONDS).until(() -> {
+        .atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
           assertEquals(0, offHeapStore.getStats().getObjects());
         });
   }

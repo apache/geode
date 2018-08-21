@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.awaitility.Awaitility.matches;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -66,7 +64,7 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
   public Connection getConnection() throws SQLException {
     String connectionUrl = getConnectionUrl();
     Awaitility.await().ignoreExceptions().atMost(10, TimeUnit.SECONDS)
-        .until(matches(() -> DriverManager.getConnection(connectionUrl)));
+        .untilAsserted(() -> DriverManager.getConnection(connectionUrl));
     Connection connection = DriverManager.getConnection(connectionUrl);
     return connection;
   }

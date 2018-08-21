@@ -1,0 +1,263 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{% from 'shared/shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared/shared_jinja.yml' import pipeline_prefix with context %}
+
+groups:
+- name: main
+  jobs:
+  - Build
+{%- for test in tests %}
+  - {{test.name}}Test
+{%- endfor %}
+resources:
+- name: docker-geode-build-image
+  type: docker-image
+  source:
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
+    tag: latest
+    username: ((!docker-username))
+- name: geode
+  type: pull-request
+  source:
+    access_token: ((!github-pr-access-token))
+    base: develop
+    ignore_paths:
+    - geode-docs/*
+    - geode-book/*
+    repo: {{repository.fork}}/geode
+- name: geode-ci
+  type: git
+  source:
+    branch: develop
+    depth: 1
+    paths:
+    - ci/pipelines/geode-build/*
+    - ci/scripts/*
+    uri: https://github.com/apache/geode.git
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
+  source: {}
+resource_types:
+- name: gcs-resource
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+- name: pull-request
+  type: docker-image
+  source:
+    repository: jtarchie/pr
+- name: concourse-metadata-resource
+  type: docker-image
+  source:
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}concourse-metadata-resource
+    tag: latest
+    username: ((!docker-username))
+jobs:
+- name: Build
+  public: true
+  plan:
+  - aggregate:
+    - get: geode
+      trigger: true
+      params:
+        fetch_merge: true
+        git:
+          depth: 100
+      version: every
+    - get: geode-ci
+    - get: docker-geode-build-image
+      params:
+        rootfs: true
+  - get: geode-unmerged-request
+    resource: geode
+    params:
+      fetch_merge: false
+    version: every
+  - aggregate:
+    - put: geode
+      params:
+        context: $BUILD_JOB_NAME
+        path: geode-unmerged-request
+        status: pending
+    - task: build
+      config:
+        platform: linux
+        params:
+          MAINTENANCE_VERSION: {{repository.branch}}
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        run:
+          path: geode-ci/ci/scripts/build.sh
+        inputs:
+        - name: geode
+        - name: geode-ci
+        outputs:
+        - name: built-geode
+        - name: results
+      image: docker-geode-build-image
+      on_failure:
+        aggregate:
+        - put: geode
+          params:
+            context: $BUILD_JOB_NAME
+            path: geode-unmerged-request
+            status: failure
+      on_success:
+        aggregate:
+        - put: geode
+          params:
+            context: $BUILD_JOB_NAME
+            path: geode-unmerged-request
+            status: success
+{% for test in tests %}
+- name: {{test.name}}Test
+  public: true
+  plan:
+  - do:
+    - aggregate:
+      - get: geode
+        trigger: true
+        params:
+          fetch_merge: true
+          git:
+            depth: 100
+        version: every
+      - get: geode-ci
+    - aggregate:
+      - do:
+        - get: geode-unmerged-request
+          resource: geode
+          params:
+            fetch_merge: false
+          version: every
+        - put: pull-request-job-pending
+          resource: geode
+          params:
+            context: $BUILD_JOB_NAME
+            path: geode-unmerged-request
+            status: pending
+      - do:
+        - put: concourse-metadata-resource
+        - task: start_instance
+          {{- alpine_tools_config()|indent(10) }}
+            params:
+              CPUS: {{test.CPUS}}
+              GEODE_BRANCH: {{repository.branch}}
+              GEODE_FORK: {{repository.fork}}
+              RAM: {{test.RAM}}
+            run:
+              path: geode-ci/ci/scripts/start_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            outputs:
+            - name: instance-data
+          timeout: 15m
+          attempts: 100
+    - task: rsync_code_up
+      {{- alpine_tools_config()|indent(6) }}
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode
+        - name: geode-ci
+        - name: instance-data
+      timeout: 5m
+    - task: execute_tests
+      {{- alpine_tools_config()|indent(6) }}
+        params:
+          ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+          CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
+          DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
+          GRADLE_TASK: {{test.GRADLE_TASK}}
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: {{repository.branch}}
+          PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
+          PUBLIC_BUCKET: ((!public-bucket))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        run:
+          {%- if test.name=="StressNew" %}
+          path: geode/ci/scripts/repeat-new-tests.sh
+          {%- else %}
+          path: geode-ci/ci/scripts/execute_tests.sh
+          {%- endif %}
+        inputs:
+        - name: geode
+        - name: geode-ci
+        - name: instance-data
+      timeout: {{test.execute_test_timeout}}
+    on_failure:
+      do:
+      - put: pull-request-job-failure
+        resource: geode
+        params:
+          context: $BUILD_JOB_NAME
+          path: geode-unmerged-request
+          status: failure
+    ensure:
+      do:
+      - task: rsync_code_down
+        {{- alpine_tools_config()|indent(8) }}
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
+      ensure:
+        aggregate:
+        - task: archive-results
+          {{- alpine_tools_config()|indent(10) }}
+            params:
+              ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+              GRADLE_TASK: {{test.GRADLE_TASK}}
+              MAINTENANCE_VERSION: {{repository.branch}}
+              PUBLIC_BUCKET: ((!public-bucket))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+            run:
+              path: geode-ci/ci/scripts/archive_results.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            - name: geode-results
+        - task: stop_instance
+          {{- alpine_tools_config()|indent(10) }}
+            run:
+              path: geode-ci/ci/scripts/stop_instance.sh
+            inputs:
+            - name: geode
+            - name: geode-ci
+            - name: instance-data
+          timeout: 1h
+    on_success:
+      do:
+      - put: pull-request-job-success
+        resource: geode
+        params:
+          context: $BUILD_JOB_NAME
+          path: geode-unmerged-request
+          status: success
+{% endfor %}

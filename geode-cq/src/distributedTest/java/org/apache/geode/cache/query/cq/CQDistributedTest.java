@@ -88,7 +88,7 @@ public class CQDistributedTest implements Serializable {
     });
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, testListener.onEventCalls));
+        .untilAsserted(() -> assertEquals(2, testListener.onEventCalls));
   }
 
   @Test
@@ -104,7 +104,7 @@ public class CQDistributedTest implements Serializable {
     });
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(3, testListener.onEventCalls));
+        .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
   }
 
   @Test
@@ -120,7 +120,7 @@ public class CQDistributedTest implements Serializable {
     });
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(3, testListener.onEventCalls));
+        .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
   }
 
   @Test
@@ -136,7 +136,7 @@ public class CQDistributedTest implements Serializable {
     });
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, testListener.onEventCalls));
+        .untilAsserted(() -> assertEquals(2, testListener.onEventCalls));
   }
 
   @Test
@@ -152,7 +152,7 @@ public class CQDistributedTest implements Serializable {
     });
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(3, testListener.onEventCalls));
+        .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
   }
 
 

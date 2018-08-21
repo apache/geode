@@ -91,7 +91,7 @@ public class QueryMonitorTest {
   private Thread createQueryExecutionThread(int i) {
     Thread thread = new Thread(() -> {
       // make sure the threadlocal variable is updated
-      Awaitility.await().until(() -> QueryMonitor.isQueryExecutionCanceled());
+      Awaitility.await().untilAsserted(() -> QueryMonitor.isQueryExecutionCanceled());
     });
     thread.setName("query" + i);
     return thread;
