@@ -5,7 +5,6 @@ byte-buddy
 classgraph
 classmate
 commons-beanutils
-commons-codec
 commons-collections
 commons-digester
 commons-fileupload
@@ -47,7 +46,6 @@ log4j-jcl
 log4j-jul
 log4j-slf4j-impl
 lucene-analyzers-common
-lucene-analyzers-phonetic
 lucene-core
 lucene-queries
 lucene-queryparser
