@@ -161,14 +161,14 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
       public void run2() throws CacheException {
         Region region = createRegion(name);
-        loader = new TestCacheLoader() {
-          public Object load2(LoaderHelper helper) throws CacheLoaderException {
+        setLoader(new TestCacheLoader<Object, Object>() {
+          public Object load2(LoaderHelper<Object, Object> helper) throws CacheLoaderException {
 
             fail("Should not be invoked");
             return null;
           }
-        };
-        region.getAttributesMutator().setCacheLoader(loader);
+        });
+        region.getAttributesMutator().setCacheLoader(loader());
       }
     };
 
@@ -177,7 +177,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         region.put(key, value);
-        assertFalse(loader.wasInvoked());
+        assertFalse(loader().wasInvoked());
       }
     });
 
@@ -187,7 +187,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         assertEquals(value, region.get(key));
-        assertFalse(loader.wasInvoked());
+        assertFalse(loader().wasInvoked());
       }
     });
   }

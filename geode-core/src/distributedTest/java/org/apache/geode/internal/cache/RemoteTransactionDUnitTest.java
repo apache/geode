@@ -1772,7 +1772,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     protected Exception ex = null;
 
     protected void verify(TransactionEvent txEvent) {
-      for (CacheEvent e : txEvent.getEvents()) {
+      for (CacheEvent<OrderId, CustId> e : ((TransactionEvent<OrderId, CustId>) txEvent)
+          .getEvents()) {
         verifyOrigin(e);
         verifyPutAll(e);
       }
@@ -1786,11 +1787,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
-    private void verifyPutAll(CacheEvent p_event) {
+    private void verifyPutAll(CacheEvent<OrderId, CustId> p_event) {
       if (!(p_event instanceof EntryEvent)) {
         return;
       }
-      EntryEvent event = (EntryEvent) p_event;
+      EntryEvent<OrderId, CustId> event = (EntryEvent<OrderId, CustId>) p_event;
       CustId knownCustId = new CustId(1);
       OrderId knownOrderId = new OrderId(2, knownCustId);
       if (event.getKey().equals(knownOrderId)) {
@@ -3144,7 +3145,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         getGemfireCache().getTxManager().addListener(new TestTxListener(true));
-        Region custRegion = getCache().getRegion(CUSTOMER);
+        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         Context ctx = getCache().getJNDIContext();
         UserTransaction tx = (UserTransaction) ctx.lookup("java:/UserTransaction");
         assertEquals(Status.STATUS_NO_TRANSACTION, tx.getStatus());

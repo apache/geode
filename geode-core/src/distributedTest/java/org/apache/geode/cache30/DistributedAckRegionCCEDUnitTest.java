@@ -17,11 +17,9 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.net.UnknownHostException;
 import java.util.Properties;
@@ -57,6 +55,7 @@ import org.apache.geode.internal.cache.UpdateOperation;
 import org.apache.geode.internal.cache.VersionTagHolder;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VMVersionTag;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.vmotion.VMotionObserver;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
@@ -157,9 +156,10 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     // do conflicting update() and destroy() on the region. We want the update() to
     // be sent with a message and the destroy() to be transferred in the initial image
     // and be the value that we want to keep
+    vm1.invoke(create);
 
     AsyncInvocation partialCreate =
-        vm2.invokeAsync(new SerializableCallable("create region with stall") {
+        vm2.invokeAsync(new SerializableCallable<Object>("create region with stall") {
           public Object call() {
             final GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
             RegionFactory f = cache.createRegionFactory(getRegionAttributes());
@@ -198,8 +198,9 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
               // at this point we should have received the update op and then the GII, which should
               // overwrite
               // the conflicting update op
-              assertFalse("expected initial image transfer to destroy entry",
-                  CCRegion.containsKey(key));
+              assertThat(CCRegion.containsKey(key))
+                  .describedAs("entry was destroyed by initial image transfer")
+                  .isFalse();
             } finally {
               InitialImageOperation.VMOTION_DURING_GII = false;
             }
@@ -218,9 +219,10 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
             return;
           }
         }
-        if (adv.adviseGeneric().isEmpty()) {
-          fail("other member never came on line");
-        }
+        assertThat(adv.adviseGeneric())
+            .withFailMessage("other member never came on line")
+            .isNotEmpty();
+
         DistributedCacheOperation.LOSS_SIMULATION_RATIO = 200.0; // inhibit all messaging
         try {
           CCRegion.put("mykey", "initialValue");
@@ -230,7 +232,9 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         }
 
         // generate a fake version tag for the message
-        VersionTag tag = CCRegion.getRegionEntry(key).getVersionStamp().asVersionTag();
+        final VersionStamp versionStamp = CCRegion.getRegionEntry(key).getVersionStamp();
+        VersionTag<InternalDistributedMember> tag =
+            (VersionTag<InternalDistributedMember>) versionStamp.asVersionTag();
         // create a fake member ID that will be < mine and lose a concurrency check
         NetMember nm = CCRegion.getDistributionManager().getDistributionManagerId().getNetMember();
         InternalDistributedMember mbr = null;
@@ -240,8 +244,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
               ClusterDistributionManager.NORMAL_DM_TYPE, null, null);
           tag.setMemberID(mbr);
         } catch (UnknownHostException e) {
-          e.printStackTrace();
-          fail("could not create member id: " + e.getMessage());
+          fail("could not create member id: ", e);
         }
 
         // generate an event to distribute that contains the fake version tag
@@ -260,8 +263,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     try {
       partialCreate.get();
     } catch (Throwable e) {
-      e.printStackTrace();
-      fail("async invocation in vm2 failed " + e.getMessage());
+      fail("async invocation in vm2 failed ", e);
     }
   }
 
@@ -276,7 +278,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 
   @Test
   public void testClearWithConcurrentEvents() {
-    z_versionTestClearWithConcurrentEvents(true);
+    versionTestClearWithConcurrentEvents();
   }
 
   @Test
@@ -303,7 +305,6 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
   public void testTombstoneExpirationRace() {
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
-    // VM vm2 = VM.getVM(2);
 
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
@@ -315,13 +316,13 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
           CCRegion.put("cckey0", "ccvalue"); // version number will end up at 4
         } catch (CacheException ex) {
           ex.printStackTrace();
-          fail("While creating region " + ex.getMessage());
+          fail("While creating region ", ex);
         }
       }
     };
+
     vm0.invoke(createRegion);
     vm1.invoke(createRegion);
-    // vm2.invoke(createRegion);
     vm1.invoke(new SerializableRunnable("Create local tombstone and adjust time") {
       public void run() {
         // make the entry for cckey0 a tombstone in this VM and set its modification time to be
@@ -330,15 +331,15 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         // distributed-GC
         RegionEntry entry = CCRegion.getRegionEntry("cckey0");
         VersionTag tag = entry.getVersionStamp().asVersionTag();
-        assertTrue(tag.getEntryVersion() > 1);
+        assertThat(tag.getEntryVersion()).isGreaterThan(1);
         tag.setVersionTimeStamp(
             System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 1000);
         entry.getVersionStamp().setVersionTimeStamp(tag.getVersionTimeStamp());
         try {
           entry.makeTombstone(CCRegion, tag);
         } catch (RegionClearedException e) {
-          e.printStackTrace();
-          fail("region was mysteriously cleared during unit testing " + e.getMessage());
+
+          fail("region was mysteriously cleared during unit testing ", e);
         }
       }
     });
@@ -357,7 +358,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     vm1.invoke(new SerializableRunnable("Check that the create() was applied") {
       public void run() {
         RegionEntry entry = CCRegion.getRegionEntry("cckey0");
-        assertEquals(1, entry.getVersionStamp().getEntryVersion());
+        assertThat(entry.getVersionStamp().getEntryVersion()).isEqualTo(1);
       }
     });
     disconnectAllFromDS();
@@ -369,7 +370,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
    */
   @Test
   public void testAggressiveTombstoneReaping() throws InterruptedException {
-    assumeTrue(getClass() == DistributedAckRegionCCEDUnitTest.class);
+    assumeThat(getClass() == DistributedAckRegionCCEDUnitTest.class).isTrue();
 
     final String name = this.getUniqueName() + "-CC";
 
@@ -393,11 +394,11 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 
       Thread.sleep(5000);
       long gcCount = CCRegion.getCachePerfStats().getTombstoneGCCount();
-      assertTrue("expected a few GCs, but not " + (gcCount - initialCount),
-          gcCount < (initialCount + 20));
+      assertThat(gcCount)
+          .withFailMessage("expected a few GCs, but not " + (gcCount - initialCount))
+          .isLessThan(initialCount + 20);
     } catch (CacheException ex) {
-      ex.printStackTrace();
-      fail("While creating region " + ex.getMessage());
+      fail("Exception while creating region ", ex);
     } finally {
       TombstoneService.EXPIRED_TOMBSTONE_LIMIT = saveExpiredTombstoneLimit;
       TombstoneService.FORCE_GC_MEMORY_EVENTS = false;
@@ -430,7 +431,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 
   @Test
   public void testEntryVersionRollover() throws Exception {
-    assumeTrue(getClass() == DistributedAckRegionCCEDUnitTest.class);
+    assumeThat(getClass() == DistributedAckRegionCCEDUnitTest.class).isTrue();
 
     final String name = this.getUniqueName() + "-CC";
     final int numEntries = 1;
@@ -442,11 +443,11 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
           for (int i = 0; i < numEntries; i++) {
             CCRegion.put("cckey" + i, "ccvalue");
           }
-          assertEquals("expected no conflated events", 0,
-              CCRegion.getCachePerfStats().getConflatedEventsCount());
+          assertThat(CCRegion.getCachePerfStats().getConflatedEventsCount())
+              .describedAs("conflated event count")
+              .isEqualTo(0);
         } catch (CacheException ex) {
-          ex.printStackTrace();
-          fail("While creating region " + ex);
+          fail("Exception while creating region ", ex);
         }
       }
     };
@@ -469,8 +470,9 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         public void run() {
           // after changed the 3rd try of AUO.doPutOrCreate to be ifOld=false ifNew=false
           // ARM.updateEntry will be called one more time, so there will be 2 conflicted events
-          assertEquals("expected two conflated event", 2,
-              CCRegion.getCachePerfStats().getConflatedEventsCount());
+          assertThat(CCRegion.getCachePerfStats().getConflatedEventsCount())
+              .describedAs("conflated event count")
+              .isEqualTo(2);
         }
       });
     } finally {
