@@ -85,21 +85,20 @@ dependencies {
   compile ('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  implementation 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
   runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
   runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
-  runtimeOnly ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+  runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
-  runtimeOnly ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
     ext.optional = true
   }
-  runtimeOnly ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+  runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
     ext.optional = true
   }
   compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
@@ -137,8 +136,11 @@ dependencies {
 
   compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
-  implementation project(':geode-common')
-  implementation project(':geode-json')
+  compile project(':geode-common')
+  compile project(':geode-json')
+
+
+  jcaAnnotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
 
 
   jcaCompile sourceSets.main.output
@@ -160,7 +162,9 @@ dependencies {
 
 
   integrationTestCompile (project(":geode-junit"))
-  integrationTestCompile (project(":geode-dunit"))
+  integrationTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile project(':geode-concurrency-test')
   integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
@@ -182,7 +186,9 @@ dependencies {
 
 
   upgradeTestCompile (project(":geode-junit"))
-  upgradeTestCompile (project(":geode-dunit"))
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
 
 
   performanceTestCompile project(":geode-junit")

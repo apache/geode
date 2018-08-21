@@ -17,7 +17,7 @@
 
 dependencies {
   compileOnly project(':geode-core')
-  implementation project(':geode-common')
+  compile project(':geode-common')
   compile project(':geode-protobuf-messages')
   compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
 

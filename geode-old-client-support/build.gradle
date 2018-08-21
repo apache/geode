@@ -18,6 +18,6 @@
 dependencies {
   compile project(':geode-core')
 
-  distributedTestImplementation project(':geode-junit')
+  distributedTestCompile project(':geode-junit')
   distributedTestCompile project(':geode-dunit')
 }

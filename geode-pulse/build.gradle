@@ -24,8 +24,7 @@ dependencies {
   // Needed to fully use log4j instead of commons-logging.
   compile 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  implementation 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
 
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
   compile 'commons-collections:commons-collections:' + project.'commons-collections.version'

@@ -44,7 +44,7 @@ dependencies {
 
 
   upgradeTestCompile (project(":geode-junit"))
-    upgradeTestCompile (project(":geode-dunit")) {
+  upgradeTestCompile (project(":geode-dunit")) {
     exclude module: 'geode-core'
   }
 
