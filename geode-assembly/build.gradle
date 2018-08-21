@@ -385,38 +385,17 @@ distributions {
       }
 
       into ('lib') {
-        from project(":geode-common").configurations.runtime
-        from project(":geode-common").configurations.archives.allArtifacts.files
-
-        from project(":geode-json").configurations.runtime
-        from project(":geode-json").configurations.archives.allArtifacts.files
-
-        from project(":geode-wan").configurations.runtime
-        from project(":geode-wan").configurations.archives.allArtifacts.files
-
-        from project(":geode-cq").configurations.runtime
-        from project(":geode-cq").configurations.archives.allArtifacts.files
-
-        from project(":geode-core").configurations.runtime
-        from project(":geode-core").configurations.archives.allArtifacts.files
-
-        from project(":geode-lucene").configurations.runtime
-        from project(":geode-lucene").configurations.archives.allArtifacts.files
-
-        from project(":geode-connectors").configurations.runtime
-        from project(":geode-connectors").configurations.archives.allArtifacts.files
-
-        from project(":geode-old-client-support").configurations.runtime
-        from project(":geode-old-client-support").configurations.archives.allArtifacts.files
-
-        from project(":geode-protobuf").configurations.runtime
-        from project(":geode-protobuf").configurations.archives.allArtifacts.files
-
-        from project(":geode-protobuf-messages").configurations.runtime
-        from project(":geode-protobuf-messages").configurations.archives.allArtifacts.files
-
-        from project(":geode-rebalancer").configurations.runtime
-        from project(":geode-rebalancer").configurations.archives.allArtifacts.files
+        from project(":geode-common").configurations.runtimeClasspath
+        from project(":geode-json").configurations.runtimeClasspath
+        from project(":geode-wan").configurations.runtimeClasspath
+        from project(":geode-cq").configurations.runtimeClasspath
+        from project(":geode-core").configurations.runtimeClasspath
+        from project(":geode-lucene").configurations.runtimeClasspath
+        from project(":geode-connectors").configurations.runtimeClasspath
+        from project(":geode-old-client-support").configurations.runtimeClasspath
+        from project(":geode-protobuf").configurations.runtimeClasspath
+        from project(":geode-protobuf-messages").configurations.runtimeClasspath
+        from project(":geode-rebalancer").configurations.runtimeClasspath
 
         from configurations.bundled
         from configurations.gfshDependencies
