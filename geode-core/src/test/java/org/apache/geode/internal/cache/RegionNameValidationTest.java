@@ -1,12 +1,12 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ import java.util.regex.Matcher;
 import org.junit.Test;
 
 public class RegionNameValidationTest {
-  
+
   @Test
   public void nullThrows() {
     assertThatThrownBy(() -> validate(null)).isInstanceOf(IllegalArgumentException.class)
@@ -46,21 +46,24 @@ public class RegionNameValidationTest {
 
   @Test
   public void endingWithSeparatorThrows() {
-    assertThatThrownBy(() -> validate("foo" + SEPARATOR)).isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(() -> validate("foo" + SEPARATOR))
+        .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(
             SEPARATOR));
   }
 
   @Test
   public void startingWithSeparatorThrows() {
-    assertThatThrownBy(() -> validate(SEPARATOR + "foo")).isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(() -> validate(SEPARATOR + "foo"))
+        .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(
             SEPARATOR));
   }
 
   @Test
   public void containingSeparatorThrows() {
-    assertThatThrownBy(() -> validate("foo" + SEPARATOR + "bar")).isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(() -> validate("foo" + SEPARATOR + "bar"))
+        .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(
             SEPARATOR));
   }
