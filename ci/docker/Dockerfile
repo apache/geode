@@ -57,6 +57,7 @@ RUN chmod +x /usr/local/bin/tini \
     python3-setuptools \
     unzip \
     vim \
+    make \
   && pip3 install Jinja2 PyYAML \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
@@ -71,6 +72,9 @@ RUN chmod +x /usr/local/bin/tini \
   && mv /opt/selenium/chromedriver /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
   && chmod 755 /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
   && ln -fs /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION /usr/bin/chromedriver \
+  && git clone https://github.com/masterzen/winrm-cli \
+  && (cd winrm-cli; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
+  && cp winrm-cli/bin/winrm /usr/local/bin/ \
   && ./cache_dependencies.sh \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
