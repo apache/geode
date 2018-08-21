@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.versions;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.BitSet;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 import org.apache.geode.internal.InternalDataSerializer;
@@ -126,22 +127,20 @@ public class RVVExceptionB extends RVVException {
   }
 
   protected void writeReceived(DataOutput out) throws IOException {
-    final int size = received == null ? 1 : received.length() + 1;
-
-    int deltaIndex = size - 1;
-    long[] deltas = new long[size];
+    LinkedList<Long> deltas = new LinkedList<>();
     long last = this.nextVersion;
 
     // TODO - it would be better just to serialize the longs[] in the BitSet
     // as is, rather than go through this delta encoding.
     for (ReceivedVersionsReverseIterator it = receivedVersionsReverseIterator(); it.hasNext();) {
       Long version = it.next();
-      long delta = last - version.longValue();
-      deltas[--deltaIndex] = delta;
-      last = version.longValue();
+      deltas.addFirst(last - version);
+      last = version;
     }
-    deltas[0] = last - this.previousVersion;
-    InternalDataSerializer.writeUnsignedVL(size - 1, out);
+    InternalDataSerializer.writeUnsignedVL(deltas.size(), out); // Number of received versions
+
+    // Last version is the oldest received version, still need the delta from there to previous
+    deltas.addFirst(last - previousVersion);
 
     for (long value : deltas) {
       InternalDataSerializer.writeUnsignedVL(value, out);
