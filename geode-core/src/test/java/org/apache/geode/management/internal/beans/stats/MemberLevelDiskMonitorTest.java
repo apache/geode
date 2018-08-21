@@ -85,7 +85,7 @@ public class MemberLevelDiskMonitorTest {
   @Test
   public void computeDeltaShouldReturnZeroForUnknownStatistics() {
     assertThat(memberLevelDiskMonitor.computeDelta(new MBeanStatsMonitor.DefaultHashMap(),
-        "UnknownStatistic", 6)).isEqualTo(0);
+        "unknownStatistic", 6)).isEqualTo(0);
   }
 
   @Test
@@ -104,7 +104,7 @@ public class MemberLevelDiskMonitorTest {
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.NUM_FLUSHES, 16))
         .isEqualTo(6L);
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.DISK_QUEUE_SIZE, 150))
-        .isEqualTo(2L);
+        .isEqualTo(2);
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.TOTAL_FLUSH_TIME, 10000))
         .isEqualTo(0L);
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.FLUSHED_BYTES, 3000))
@@ -114,11 +114,11 @@ public class MemberLevelDiskMonitorTest {
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.DISK_RECOVERED_BYTES, 1024))
         .isEqualTo(512L);
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.BACKUPS_COMPLETED, 6))
-        .isEqualTo(1L);
+        .isEqualTo(1);
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.DISK_WRITEN_BYTES, 8193))
         .isEqualTo(1L);
     assertThat(memberLevelDiskMonitor.computeDelta(statsMap, StatsKey.BACKUPS_IN_PROGRESS, 1))
-        .isEqualTo(-1L);
+        .isEqualTo(-1);
   }
 
   @Test

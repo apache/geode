@@ -16,8 +16,6 @@ package org.apache.geode.management.internal.beans.stats;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -27,48 +25,60 @@ import org.apache.geode.internal.statistics.StatisticsListener;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 import org.apache.geode.internal.statistics.ValueMonitor;
 
+/**
+ * This class acts as a monitor and listen for Disk statistics updates on behalf of MemberMBean.
+ * <p>
+ * There's only one dedicated sampler thread that mutates the fields and writes the statistics to a
+ * file. The mutable fields are declared as {@code volatile} to make sure readers of the statistics
+ * get the latest value recorded.
+ * <p>
+ * The class is not thread-safe. If multiple threads access an instance concurrently, it must be
+ * synchronized externally.
+ *
+ * @see org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor
+ */
 public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
-  private Map<Statistics, ValueMonitor> monitors;
-  private Map<Statistics, MemberLevelDiskStatisticsListener> listeners;
-  private AtomicLong flushes = new AtomicLong(0);
-  private AtomicInteger queueSize = new AtomicInteger(0);
-  private AtomicLong flushTime = new AtomicLong(0);
-  private AtomicLong flushedBytes = new AtomicLong(0);
-  private AtomicLong diskReadBytes = new AtomicLong(0);
-  private AtomicInteger backupsCompleted = new AtomicInteger(0);
-  private AtomicLong diskWrittenBytes = new AtomicLong(0);
-  private AtomicInteger backupsInProgress = new AtomicInteger(0);
+  private volatile long flushes = 0;
+  private volatile int queueSize = 0;
+  private volatile long flushTime = 0;
+  private volatile long flushedBytes = 0;
+  private volatile long diskReadBytes = 0;
+  private volatile int backupsCompleted = 0;
+  private volatile long diskWrittenBytes = 0;
+  private volatile int backupsInProgress = 0;
+  private final Map<Statistics, ValueMonitor> monitors;
+  private final Map<Statistics, MemberLevelDiskStatisticsListener> listeners;
 
   public long getFlushes() {
-    return flushes.get();
+    return flushes;
   }
 
   public int getQueueSize() {
-    return queueSize.get();
+    return queueSize;
   }
 
   public long getFlushTime() {
-    return flushTime.get();
+    return flushTime;
   }
 
   public long getFlushedBytes() {
-    return flushedBytes.get();
+    return flushedBytes;
   }
 
   public long getDiskReadBytes() {
-    return diskReadBytes.get();
+    return diskReadBytes;
   }
 
   public int getBackupsCompleted() {
-    return backupsCompleted.get();
+    return backupsCompleted;
   }
 
   public long getDiskWrittenBytes() {
-    return diskWrittenBytes.get();
+    return diskWrittenBytes;
   }
 
   public int getBackupsInProgress() {
-    return backupsInProgress.get();
+    return backupsInProgress;
   }
 
   Map<Statistics, ValueMonitor> getMonitors() {
@@ -87,50 +97,50 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
 
   Number computeDelta(DefaultHashMap statsMap, String name, Number currentValue) {
     if (name.equals(StatsKey.DISK_READ_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_READ_BYTES).longValue();
+      Number prevValue = statsMap.get(StatsKey.DISK_READ_BYTES);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_RECOVERED_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_RECOVERED_BYTES).longValue();
+      Number prevValue = statsMap.get(StatsKey.DISK_RECOVERED_BYTES);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_WRITEN_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_WRITEN_BYTES).longValue();
+      Number prevValue = statsMap.get(StatsKey.DISK_WRITEN_BYTES);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.BACKUPS_IN_PROGRESS)) {
       // A negative value is also OK. previous backup_in_progress = 5 curr_backup_in_progress = 2
       // delta = -3 delta should be added to aggregate backup in progress
-      Number prevValue = statsMap.get(StatsKey.BACKUPS_IN_PROGRESS).longValue();
-      return currentValue.longValue() - prevValue.longValue();
+      Number prevValue = statsMap.get(StatsKey.BACKUPS_IN_PROGRESS);
+      return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.BACKUPS_COMPLETED)) {
-      Number prevValue = statsMap.get(StatsKey.BACKUPS_COMPLETED).longValue();
-      return currentValue.longValue() - prevValue.longValue();
+      Number prevValue = statsMap.get(StatsKey.BACKUPS_COMPLETED);
+      return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.FLUSHED_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.FLUSHED_BYTES).longValue();
+      Number prevValue = statsMap.get(StatsKey.FLUSHED_BYTES);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.NUM_FLUSHES)) {
-      Number prevValue = statsMap.get(StatsKey.NUM_FLUSHES).longValue();
+      Number prevValue = statsMap.get(StatsKey.NUM_FLUSHES);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.TOTAL_FLUSH_TIME)) {
-      Number prevValue = statsMap.get(StatsKey.TOTAL_FLUSH_TIME).longValue();
+      Number prevValue = statsMap.get(StatsKey.TOTAL_FLUSH_TIME);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_QUEUE_SIZE)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_QUEUE_SIZE).longValue();
-      return currentValue.longValue() - prevValue.longValue();
+      Number prevValue = statsMap.get(StatsKey.DISK_QUEUE_SIZE);
+      return currentValue.intValue() - prevValue.intValue();
     }
 
     return 0;
@@ -138,42 +148,43 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
 
   void increaseStats(String name, Number value) {
     if ((name.equals(StatsKey.DISK_READ_BYTES) || name.equals(StatsKey.DISK_RECOVERED_BYTES))) {
-      diskReadBytes.set(diskReadBytes.get() + value.longValue());
+      diskReadBytes = diskReadBytes + value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.DISK_WRITEN_BYTES)) {
-      diskWrittenBytes.set(diskWrittenBytes.get() + value.longValue());
+      diskWrittenBytes = diskWrittenBytes + value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.BACKUPS_IN_PROGRESS)) {
-      backupsInProgress.set(backupsInProgress.get() + value.intValue());
+      backupsInProgress = backupsInProgress + value.intValue();
       return;
     }
 
     if (name.equals(StatsKey.BACKUPS_COMPLETED)) {
-      backupsCompleted.set(backupsCompleted.get() + value.intValue());
+      backupsCompleted = backupsCompleted + value.intValue();
       return;
     }
 
     if (name.equals(StatsKey.FLUSHED_BYTES)) {
-      flushedBytes.set(flushedBytes.get() + value.longValue());
+      flushedBytes = flushedBytes + value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.NUM_FLUSHES)) {
-      flushes.set(flushes.get() + value.longValue());
+      flushes = flushes + value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.TOTAL_FLUSH_TIME)) {
-      flushTime.set(flushTime.get() + value.longValue());
+      flushTime = flushTime + value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.DISK_QUEUE_SIZE)) {
-      queueSize.set(queueSize.get() + value.intValue());
+      queueSize = queueSize + value.intValue();
+      return;
     }
   }
 
@@ -294,9 +305,8 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
      */
     void decreaseDiskStoreStats() {
       synchronized (statsMap) {
-        queueSize.set(queueSize.get() - statsMap.get(StatsKey.DISK_QUEUE_SIZE).intValue());
-        backupsInProgress
-            .set(backupsInProgress.get() - statsMap.get(StatsKey.BACKUPS_IN_PROGRESS).intValue());
+        queueSize -= statsMap.get(StatsKey.DISK_QUEUE_SIZE).intValue();
+        backupsInProgress -= statsMap.get(StatsKey.BACKUPS_IN_PROGRESS).intValue();;
         removed = true;
       }
     }

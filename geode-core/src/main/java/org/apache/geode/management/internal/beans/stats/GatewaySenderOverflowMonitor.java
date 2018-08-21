@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.beans.stats;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -26,23 +25,36 @@ import org.apache.geode.internal.statistics.StatisticsListener;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 import org.apache.geode.internal.statistics.ValueMonitor;
 
+/**
+ * This class acts as a monitor and listen for Gateway Sender Overflow statistics updates on
+ * behalf of MemberMBean.
+ * <p>
+ * There's only one dedicated sampler thread that mutates the fields and writes the statistics to a
+ * file. The mutable fields are declared as {@code volatile} to make sure readers of the statistics
+ * get the latest value recorded.
+ * <p>
+ * The class is not thread-safe. If multiple threads access an instance concurrently, it must be
+ * synchronized externally.
+ *
+ * @see org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor
+ */
 public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
-  private Map<Statistics, ValueMonitor> monitors;
-  private Map<Statistics, StatisticsListener> listeners;
-  private AtomicLong lruEvictions = new AtomicLong(0);
-  private AtomicLong bytesOverflowedToDisk = new AtomicLong(0);
-  private AtomicLong entriesOverflowedToDisk = new AtomicLong(0);
+  private volatile long lruEvictions = 0;
+  private volatile long bytesOverflowedToDisk = 0;
+  private volatile long entriesOverflowedToDisk = 0;
+  private final Map<Statistics, ValueMonitor> monitors;
+  private final Map<Statistics, StatisticsListener> listeners;
 
   public long getLruEvictions() {
-    return lruEvictions.get();
+    return lruEvictions;
   }
 
   public long getBytesOverflowedToDisk() {
-    return bytesOverflowedToDisk.get();
+    return bytesOverflowedToDisk;
   }
 
   public long getEntriesOverflowedToDisk() {
-    return entriesOverflowedToDisk.get();
+    return entriesOverflowedToDisk;
   }
 
   Map<Statistics, ValueMonitor> getMonitors() {
@@ -61,18 +73,17 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
 
   Number computeDelta(DefaultHashMap statsMap, String name, Number currentValue) {
     if (name.equals(StatsKey.GATEWAYSENDER_LRU_EVICTIONS)) {
-      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_LRU_EVICTIONS).longValue();
+      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_LRU_EVICTIONS);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)) {
-      Number prevValue =
-          statsMap.get(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK).longValue();
+      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK)) {
-      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK).longValue();
+      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK);
       return currentValue.longValue() - prevValue.longValue();
     }
 
@@ -81,17 +92,18 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
 
   void increaseStats(String name, Number value) {
     if (name.equals(StatsKey.GATEWAYSENDER_LRU_EVICTIONS)) {
-      lruEvictions.getAndAdd(value.longValue());
+      lruEvictions += value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)) {
-      entriesOverflowedToDisk.getAndAdd(value.longValue());
+      entriesOverflowedToDisk += value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK)) {
-      bytesOverflowedToDisk.getAndAdd(value.longValue());
+      bytesOverflowedToDisk += value.longValue();
+      return;
     }
   }
 

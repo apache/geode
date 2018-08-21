@@ -42,7 +42,7 @@ public class GCStatsMonitorTest {
 
   @Test
   public void getStatisticShouldReturnZeroForUnknownStatistics() {
-    assertThat(gcStatsMonitor.getStatistic("unhandledStatistic")).isEqualTo(0);
+    assertThat(gcStatsMonitor.getStatistic("unknownStatistic")).isEqualTo(0);
   }
 
   @Test

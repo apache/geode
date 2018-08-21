@@ -79,19 +79,19 @@ public class VMStatsMonitorTest {
     Number processCpuTime = spy(Number.class);
     vmStatsMonitor.statsMap.put(StatsKey.VM_PROCESS_CPU_TIME, processCpuTime);
 
-    // First Run: updates lastSystemTime.
+    // First Run: updates lastSystemTime
     when(vmStatsMonitor.currentTimeMillis()).thenReturn(now.toInstant().toEpochMilli());
     vmStatsMonitor.refreshStats();
     assertThat(vmStatsMonitor.getCpuUsage()).isEqualTo(0);
     verify(processCpuTime, times(0)).longValue();
 
-    // Second Run: updates lastProcessCpuTime.
+    // Second Run: updates lastProcessCpuTime
     when(processCpuTime.longValue()).thenReturn(500L);
     vmStatsMonitor.refreshStats();
     assertThat(vmStatsMonitor.getCpuUsage()).isEqualTo(0);
     verify(processCpuTime, times(1)).longValue();
 
-    // Next runs will update the actual cpuUsage.
+    // Next runs will update the actual cpuUsage
     for (int i = 2; i < 6; i++) {
       long mockProcessCpuTime = i * 500;
       long mockSystemTime = now.plus(i, ChronoUnit.SECONDS).toInstant().toEpochMilli();

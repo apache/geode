@@ -84,7 +84,7 @@ public class AggregateRegionStatsMonitorTest {
   @Test
   public void computeDeltaShouldReturnZeroForUnknownStatistics() {
     assertThat(aggregateRegionStatsMonitor.computeDelta(new MBeanStatsMonitor.DefaultHashMap(),
-        "UnknownStatistic", 6)).isEqualTo(0);
+        "unknownStatistic", 6)).isEqualTo(0);
   }
 
   @Test

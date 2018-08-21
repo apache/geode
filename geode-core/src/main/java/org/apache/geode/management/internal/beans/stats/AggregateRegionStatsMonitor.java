@@ -16,8 +16,6 @@ package org.apache.geode.management.internal.beans.stats;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -27,38 +25,50 @@ import org.apache.geode.internal.statistics.StatisticsListener;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 import org.apache.geode.internal.statistics.ValueMonitor;
 
+/**
+ * This class acts as a monitor and listen for Region statistics updates on behalf of MemberMBean.
+ * <p>
+ * There's only one dedicated sampler thread that mutates the fields and writes the statistics to a
+ * file. The mutable fields are declared as {@code volatile} to make sure readers of the statistics
+ * get the latest value recorded.
+ * <p>
+ * The class is not thread-safe. If multiple threads access an instance concurrently, it must be
+ * synchronized externally.
+ *
+ * @see org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor
+ */
 public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
-  private Map<Statistics, ValueMonitor> monitors;
-  private Map<Statistics, MemberLevelRegionStatisticsListener> listeners;
-  private AtomicLong diskSpace = new AtomicLong(0);
-  private AtomicInteger bucketCount = new AtomicInteger(0);
-  private AtomicLong lruDestroys = new AtomicLong(0);
-  private AtomicLong lruEvictions = new AtomicLong(0);
-  private AtomicInteger totalBucketSize = new AtomicInteger(0);
-  private AtomicInteger primaryBucketCount = new AtomicInteger(0);
+  private volatile long diskSpace = 0;
+  private volatile int bucketCount = 0;
+  private volatile long lruDestroys = 0;
+  private volatile long lruEvictions = 0;
+  private volatile int totalBucketSize = 0;
+  private volatile int primaryBucketCount = 0;
+  private final Map<Statistics, ValueMonitor> monitors;
+  private final Map<Statistics, MemberLevelRegionStatisticsListener> listeners;
 
   public long getDiskSpace() {
-    return diskSpace.get();
+    return diskSpace;
   }
 
   public int getTotalBucketCount() {
-    return bucketCount.get();
+    return bucketCount;
   }
 
   public long getLruDestroys() {
-    return lruDestroys.get();
+    return lruDestroys;
   }
 
   public long getLruEvictions() {
-    return lruEvictions.get();
+    return lruEvictions;
   }
 
   public int getTotalBucketSize() {
-    return totalBucketSize.get();
+    return totalBucketSize;
   }
 
   public int getTotalPrimaryBucketCount() {
-    return primaryBucketCount.get();
+    return primaryBucketCount;
   }
 
   Map<Statistics, ValueMonitor> getMonitors() {
@@ -77,32 +87,32 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
 
   Number computeDelta(DefaultHashMap statsMap, String name, Number currentValue) {
     if (name.equals(StatsKey.PRIMARY_BUCKET_COUNT)) {
-      Number prevValue = statsMap.get(StatsKey.PRIMARY_BUCKET_COUNT).intValue();
+      Number prevValue = statsMap.get(StatsKey.PRIMARY_BUCKET_COUNT);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.BUCKET_COUNT)) {
-      Number prevValue = statsMap.get(StatsKey.BUCKET_COUNT).intValue();
+      Number prevValue = statsMap.get(StatsKey.BUCKET_COUNT);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.TOTAL_BUCKET_SIZE)) {
-      Number prevValue = statsMap.get(StatsKey.TOTAL_BUCKET_SIZE).intValue();
+      Number prevValue = statsMap.get(StatsKey.TOTAL_BUCKET_SIZE);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.LRU_EVICTIONS)) {
-      Number prevValue = statsMap.get(StatsKey.LRU_EVICTIONS).longValue();
+      Number prevValue = statsMap.get(StatsKey.LRU_EVICTIONS);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.LRU_DESTROYS)) {
-      Number prevValue = statsMap.get(StatsKey.LRU_DESTROYS).longValue();
+      Number prevValue = statsMap.get(StatsKey.LRU_DESTROYS);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_SPACE)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_SPACE).longValue();
+      Number prevValue = statsMap.get(StatsKey.DISK_SPACE);
       return currentValue.longValue() - prevValue.longValue();
     }
 
@@ -111,32 +121,33 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
 
   void increaseStats(String name, Number value) {
     if (name.equals(StatsKey.PRIMARY_BUCKET_COUNT)) {
-      primaryBucketCount.set(primaryBucketCount.get() + value.intValue());
+      primaryBucketCount += value.intValue();
       return;
     }
 
     if (name.equals(StatsKey.BUCKET_COUNT)) {
-      bucketCount.set(bucketCount.get() + value.intValue());
+      bucketCount += value.intValue();
       return;
     }
 
     if (name.equals(StatsKey.TOTAL_BUCKET_SIZE)) {
-      totalBucketSize.set(totalBucketSize.get() + value.intValue());
+      totalBucketSize += value.intValue();
       return;
     }
 
     if (name.equals(StatsKey.LRU_EVICTIONS)) {
-      lruEvictions.set(lruEvictions.get() + value.intValue());
+      lruEvictions += value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.LRU_DESTROYS)) {
-      lruDestroys.set(lruDestroys.get() + value.intValue());
+      lruDestroys += value.longValue();
       return;
     }
 
     if (name.equals(StatsKey.DISK_SPACE)) {
-      diskSpace.set(diskSpace.get() + value.intValue());
+      diskSpace += value.longValue();
+      return;
     }
   }
 
@@ -226,7 +237,7 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
   public void removeStatisticsFromMonitor(Statistics stats) {}
 
   class MemberLevelRegionStatisticsListener implements StatisticsListener {
-    DefaultHashMap statsMap = new DefaultHashMap();
+    final DefaultHashMap statsMap = new DefaultHashMap();
     private boolean removed = false;
 
     @Override
@@ -265,11 +276,9 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
      */
     void decreaseParStats() {
       synchronized (statsMap) {
-        primaryBucketCount
-            .set(primaryBucketCount.get() - statsMap.get(StatsKey.PRIMARY_BUCKET_COUNT).intValue());
-        bucketCount.set(bucketCount.get() - statsMap.get(StatsKey.BUCKET_COUNT).intValue());
-        totalBucketSize
-            .set(totalBucketSize.get() - statsMap.get(StatsKey.TOTAL_BUCKET_SIZE).intValue());
+        bucketCount -= statsMap.get(StatsKey.BUCKET_COUNT).intValue();
+        totalBucketSize -= statsMap.get(StatsKey.TOTAL_BUCKET_SIZE).intValue();
+        primaryBucketCount -= statsMap.get(StatsKey.PRIMARY_BUCKET_COUNT).intValue();
         removed = true;
       }
     }

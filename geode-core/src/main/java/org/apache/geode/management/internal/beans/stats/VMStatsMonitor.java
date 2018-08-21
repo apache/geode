@@ -15,8 +15,7 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import java.lang.management.ManagementFactory;
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.internal.statistics.StatisticId;
@@ -26,18 +25,26 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 
 /**
  * This class acts as a monitor and listen for VM stats update on behalf of MemberMBean.
+ * <p>
+ * There's only one dedicated sampler thread that mutates the fields and writes the statistics to a
+ * file. The mutable fields are declared as {@code volatile} to make sure readers of the statistics
+ * get the latest value recorded.
+ * <p>
+ * The class is not thread-safe. If multiple threads access an instance concurrently, it must be
+ * synchronized externally.
  *
+ * @see org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor
  */
 public class VMStatsMonitor extends MBeanStatsMonitor {
-  static final float VALUE_NOT_AVAILABLE = -1;
+  static final int VALUE_NOT_AVAILABLE = -1;
   private static final String PROCESS_CPU_TIME_ATTRIBUTE = "ProcessCpuTime";
   private long lastSystemTime = 0;
   private long lastProcessCpuTime = 0;
+  private volatile float cpuUsage = 0;
   private final boolean processCPUTimeAvailable;
-  private final AtomicInteger cpuUsageBits = new AtomicInteger(Float.floatToIntBits(0f));
 
   public float getCpuUsage() {
-    return Float.intBitsToFloat(cpuUsageBits.get());
+    return cpuUsage;
   }
 
   public VMStatsMonitor(String name) {
@@ -45,12 +52,12 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
     processCPUTimeAvailable = MBeanJMXAdapter.isAttributeAvailable(PROCESS_CPU_TIME_ATTRIBUTE,
         ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
     if (!processCPUTimeAvailable) {
-      cpuUsageBits.set(Float.floatToIntBits(VALUE_NOT_AVAILABLE));
+      cpuUsage = VALUE_NOT_AVAILABLE;
     }
   }
 
   long currentTimeMillis() {
-    return Instant.now().toEpochMilli();
+    return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
   }
 
   /**
@@ -78,7 +85,7 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
       // Some JVM like IBM is not handled by Stats layer properly. Ignoring the attribute for such
       // cases
       if (processCpuTime == null) {
-        cpuUsageBits.set(Float.floatToIntBits(VALUE_NOT_AVAILABLE));
+        cpuUsage = VALUE_NOT_AVAILABLE;
         return;
       }
 
@@ -96,7 +103,7 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
       long systemTime = currentTimeMillis();
       lastSystemTime = systemTime;
       lastProcessCpuTime = cpuTime;
-      cpuUsageBits.set(Float.floatToIntBits(calculateCpuUsage(systemTime, cpuTime)));
+      cpuUsage = calculateCpuUsage(systemTime, cpuTime);
     }
   }
 

@@ -14,23 +14,33 @@
  */
 package org.apache.geode.management.internal.beans.stats;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 
+/**
+ * This class acts as a monitor and listen for GC statistics updates on behalf of MemberMBean.
+ * <p>
+ * There's only one dedicated sampler thread that mutates the fields and writes the statistics to a
+ * file. The mutable fields are declared as {@code volatile} to make sure readers of the statistics
+ * get the latest value recorded.
+ * <p>
+ * The class is not thread-safe. If multiple threads access an instance concurrently, it must be
+ * synchronized externally.
+ *
+ * @see org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor
+ */
 public class GCStatsMonitor extends MBeanStatsMonitor {
-  private AtomicLong collections = new AtomicLong(0);
-  private AtomicLong collectionTime = new AtomicLong(0);
+  private volatile long collections = 0;
+  private volatile long collectionTime = 0;
 
   long getCollections() {
-    return collections.get();
+    return collections;
   }
 
   long getCollectionTime() {
-    return collectionTime.get();
+    return collectionTime;
   }
 
   public GCStatsMonitor(String name) {
@@ -38,17 +48,19 @@ public class GCStatsMonitor extends MBeanStatsMonitor {
   }
 
   void decreasePrevValues(DefaultHashMap statsMap) {
-    collections.getAndAdd(-statsMap.get(StatsKey.VM_GC_STATS_COLLECTIONS).intValue());
-    collectionTime.getAndAdd(-statsMap.get(StatsKey.VM_GC_STATS_COLLECTION_TIME).intValue());
+    collections -= statsMap.get(StatsKey.VM_GC_STATS_COLLECTIONS).longValue();
+    collectionTime -= statsMap.get(StatsKey.VM_GC_STATS_COLLECTION_TIME).longValue();
   }
 
   void increaseStats(String name, Number value) {
     if (name.equals(StatsKey.VM_GC_STATS_COLLECTIONS)) {
-      collections.getAndAdd(value.longValue());
+      collections += value.longValue();
+      return;
     }
 
     if (name.equals(StatsKey.VM_GC_STATS_COLLECTION_TIME)) {
-      collectionTime.getAndAdd(value.longValue());
+      collectionTime += value.longValue();
+      return;
     }
   }
 
