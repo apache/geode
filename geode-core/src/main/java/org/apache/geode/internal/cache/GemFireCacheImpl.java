@@ -3000,7 +3000,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
     this.stopper.checkCancelInProgress(null);
-    LocalRegion.validateRegionName(name, internalRegionArgs);
+    RegionNameValidation.validate(name, internalRegionArgs);
     RegionAttributes<K, V> attrs = p_attrs;
     attrs = invokeRegionBefore(null, name, attrs, internalRegionArgs);
     if (attrs == null) {
