@@ -58,6 +58,7 @@ RUN chmod +x /usr/local/bin/tini \
     python3-setuptools \
     unzip \
     vim \
+    make \
   && pip3 install Jinja2 PyYAML \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
