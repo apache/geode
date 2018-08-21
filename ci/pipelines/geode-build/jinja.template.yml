@@ -142,6 +142,7 @@ jobs:
           username: ((!docker-username))
       params:
         MAINTENANCE_VERSION: {{repository.branch}}
+        SOURCE_REPOSITORY: {{repository.branch}}
         PUBLIC_BUCKET: ((!public-bucket))
         SERVICE_ACCOUNT: ((!concourse-gcp-account))
       run:
@@ -232,6 +233,7 @@ jobs:
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
+          SOURCE_REPOSITORY: {{repository.branch}}
           GRADLE_TASK_OPTIONS: ""
           {{ common_test_params(test) | indent(10) }}
         run:
@@ -305,6 +307,7 @@ jobs:
       platform: windows
       params:
         JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
+        SOURCE_REPOSITORY: {{repository.branch}}
         {{ common_test_params(test) | indent(8) }}
       run:
         path: bash
