@@ -91,7 +91,8 @@ ln -s ${ROOT_DIR}/geode ${GEODE_BUILD_DIR}
 pushd ${GEODE_BUILD_DIR}
 set +e
 set -x
-./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" build install
+./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" \
+  -PsourceRevision="$(git rev-parse HEAD)" -Psourcebuild install
 GRADLE_EXIT_STATUS=$?
 set +x
 set -e
