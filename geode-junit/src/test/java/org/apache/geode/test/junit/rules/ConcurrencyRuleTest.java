@@ -435,12 +435,11 @@ public class ConcurrencyRuleTest {
 
     concurrencyRule.add(c1).expectValue(3);
     concurrencyRule.add(c2).expectValue("some string");
-    try {
-      concurrencyRule.after();
-      fail("exception should have been thrown");
-    } catch (IllegalStateException e) {
-      assertThat(e).isNotNull();
-    }
+
+    assertThatThrownBy(() -> concurrencyRule.after())
+      .isInstanceOf(IllegalStateException.class)
+      .withFailMessage("exception should have been thrown");
+
     concurrencyRule.clear(); // so that this test's after succeeds
   }
 
