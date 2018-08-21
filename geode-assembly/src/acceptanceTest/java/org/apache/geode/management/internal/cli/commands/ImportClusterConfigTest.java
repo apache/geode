@@ -46,8 +46,8 @@ public class ImportClusterConfigTest extends ClusterConfigTestBase {
         .of("connect", "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
         .withName("importConfiguration").execute(gfsh);
     assertThat(importConfiguration.getOutputText())
-        .contains("Cluster configuration successfully imported").contains(
-            "Successfully applied the imported cluster configuration on " + serverNotShutDownName);
+        .contains("Cluster configuration successfully imported")
+        .contains("Configure the servers in 'cluster' group: ");
 
     GfshExecution listMembers =
         GfshScript.of("connect", "list members").withName("listMembers").execute(gfsh);
