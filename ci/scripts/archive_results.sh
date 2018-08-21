@@ -101,6 +101,7 @@ pushd ${GEODE_BUILD}
   find . -type d -name "test-results" >> ${directories_file}
   (find . -type d -name "*Test" | grep "build/[^/]*Test$") >> ${directories_file}
   find . -name "*-progress*txt" >> ${directories_file}
+  find . -name '*.hprof" >> ${directories_file}
   find . -type d -name "callstacks" >> ${directories_file}
   echo "Collecting the following artifacts..."
   cat ${directories_file}
