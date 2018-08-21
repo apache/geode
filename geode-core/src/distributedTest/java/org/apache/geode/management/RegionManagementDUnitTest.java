@@ -353,11 +353,11 @@ public class RegionManagementDUnitTest implements Serializable {
   }
 
   private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
+    return await(null);
   }
 
   private ConditionFactory await(final String alias) {
-    return Awaitility.await(alias).atMost(2, MINUTES);
+    return Awaitility.await(alias).atMost(5, MINUTES);
   }
 
   private InternalCache getCache() {
