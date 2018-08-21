@@ -220,11 +220,10 @@ task createVersionPropertiesFile {
   onlyIf {
     // Project properties are parsed as strings.
     // Use boolean comparison, not the value itself, to determine truth.
-    !(propertiesFile.exists() && project.skipVersionFileRegeneration)
+    !propertiesFile.exists() || project.sourceRevision != "0"
   }
 
   outputs.file propertiesFile
-  inputs.dir "../.git/index"
 
   doLast {
     def props = [
