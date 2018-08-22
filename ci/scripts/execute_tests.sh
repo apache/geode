@@ -68,7 +68,7 @@ if [ -v CALL_STACK_TIMEOUT ]; then
   ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
 fi
 
-SCM_PROPS="-PsourceRevision=\"$(git rev-parse HEAD)\" -PsourceRepository=\"${SOURCE_REPOSITORY}\""
+SCM_PROPS="-PsourceRevision=\"$(cd geode; git rev-parse HEAD)\" -PsourceRepository=\"${SOURCE_REPOSITORY}\""
 GRADLE_COMMAND="./gradlew \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
