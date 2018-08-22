@@ -46,7 +46,7 @@ fi
 
 
 
-. ${SCRIPTDIR}/../shared/utilities.sh
+. ${SCRIPTDIR}/../pipelines/shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
 SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
