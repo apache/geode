@@ -205,7 +205,7 @@ public class WANHostNameVerificationDistributedTest {
     await()
         .atMost(Duration.FIVE_SECONDS)
         .pollInterval(Duration.ONE_SECOND)
-        .until(() -> assertThat("servervalue").isEqualTo(region.get("serverkey")));
+        .untilAsserted(() -> assertThat("servervalue").isEqualTo(region.get("serverkey")));
   }
 
   @Test
