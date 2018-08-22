@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsListener;
@@ -28,13 +29,17 @@ import org.apache.geode.internal.statistics.ValueMonitor;
 /**
  * This class acts as a monitor and listen for Region statistics updates on behalf of MemberMBean.
  * <p>
- * There's only one dedicated sampler thread that mutates the fields and writes the statistics to a
- * file. The mutable fields are declared as {@code volatile} to make sure readers of the statistics
- * get the latest value recorded.
+ * There's only one dedicated thread that wakes up at the
+ * {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE} configured, samples all the statistics,
+ * writes them to the {@link ConfigurationProperties#STATISTIC_ARCHIVE_FILE} configured (if any) and
+ * notifies listeners of changes. The mutable fields are declared as {@code volatile} to make sure
+ * readers of the statistics get the latest recorded value.
  * <p>
- * The class is not thread-safe. If multiple threads access an instance concurrently, it must be
- * synchronized externally.
+ * This class is conditionally thread-safe, there can be multiple concurrent readers accessing a
+ * instance, but concurrent writers need to be synchronized externally.
  *
+ * @see org.apache.geode.internal.statistics.HostStatSampler
+ * @see org.apache.geode.distributed.ConfigurationProperties
  * @see org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor
  */
 public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
