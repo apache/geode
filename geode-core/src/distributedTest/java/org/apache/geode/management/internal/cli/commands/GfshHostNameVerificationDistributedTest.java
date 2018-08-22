@@ -102,9 +102,19 @@ public class GfshHostNameVerificationDistributedTest {
   @Test
   public void gfshConnectsToLocatorOnJMX() throws Exception {
     Properties locatorSSLProps = locatorStore.propertiesWith(JMX);
-
     Properties gfshSSLProps = gfshStore.propertiesWith(JMX);
+    validateGfshConnectOnJMX(locatorSSLProps, gfshSSLProps);
+  }
 
+  @Test
+  public void gfshConnectsToLocatorOnJMXWhenALL() throws Exception {
+    Properties locatorSSLProps = locatorStore.propertiesWith(ALL);
+    Properties gfshSSLProps = gfshStore.propertiesWith(ALL);
+    validateGfshConnectOnJMX(locatorSSLProps, gfshSSLProps);
+  }
+
+  private void validateGfshConnectOnJMX(Properties locatorSSLProps, Properties gfshSSLProps)
+      throws IOException {
     // create a cluster
     locator = cluster.startLocatorVM(0, locatorSSLProps);
 
@@ -122,22 +132,5 @@ public class GfshHostNameVerificationDistributedTest {
       rule.executeAndAssertThat("list members").statusIsSuccess();
       rule.close();
     });
-  }
-
-  @Test
-  public void gfshConnectsToLocatorOnJMXWhenALL() throws Exception {
-    Properties locatorSSLProps = locatorStore.propertiesWith(ALL);
-
-    Properties gfshSSLProps = gfshStore.propertiesWith(ALL);
-
-    // create a cluster
-    locator = cluster.startLocatorVM(0, locatorSSLProps);
-
-    // connect gfsh on jmx
-    File sslConfigFile = gfshSecurityProperties(gfshSSLProps);
-    gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "security-properties-file", sslConfigFile.getAbsolutePath());
-
-    gfsh.executeAndAssertThat("list members").statusIsSuccess();
   }
 }
