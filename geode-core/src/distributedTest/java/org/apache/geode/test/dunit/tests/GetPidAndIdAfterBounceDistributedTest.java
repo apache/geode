@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 public class GetPidAndIdAfterBounceDistributedTest {
@@ -31,7 +31,7 @@ public class GetPidAndIdAfterBounceDistributedTest {
   private int[] pidsBefore;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedTestRule = new DistributedRule();
 
   @Before
   public void setUp() throws Exception {

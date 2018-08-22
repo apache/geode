@@ -29,7 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 public class DistributedRestoreSystemPropertiesDistributedTest {
@@ -39,7 +39,7 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
   private static final String PREEXISTING_VALUE = "PREEXISTING_VALUE";
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @BeforeClass
   public static void assertPreconditions() {

@@ -52,7 +52,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 public class ClientServerJTAFailoverDistributedTest implements Serializable {
@@ -71,7 +71,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
   private final String newValue = "value2";
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

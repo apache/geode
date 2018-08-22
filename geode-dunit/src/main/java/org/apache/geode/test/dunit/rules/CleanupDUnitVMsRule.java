@@ -19,7 +19,7 @@ import static org.apache.geode.test.dunit.VM.getAllVMs;
 
 import org.apache.geode.test.dunit.VM;
 
-public class CleanupDUnitVMsRule extends AbstractDistributedTestRule {
+public class CleanupDUnitVMsRule extends AbstractDistributedRule {
 
   @Override
   public void before() {

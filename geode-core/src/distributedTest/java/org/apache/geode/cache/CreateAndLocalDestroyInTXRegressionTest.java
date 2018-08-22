@@ -42,7 +42,7 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 /**
  * Create and LocalDestroy/LocalInvalidate should create event with NewValue
@@ -67,7 +67,7 @@ public class CreateAndLocalDestroyInTXRegressionTest implements Serializable {
   private VM otherVM;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

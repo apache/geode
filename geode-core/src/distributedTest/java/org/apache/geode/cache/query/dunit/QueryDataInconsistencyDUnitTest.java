@@ -53,7 +53,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
@@ -72,7 +72,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
   private Logger logger = LogService.getLogger(QueryDataInconsistencyDUnitTest.class.getName());
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule(1);
+  public static DistributedRule distributedTestRule = new DistributedRule(1);
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().disconnectAfter().build();

@@ -24,14 +24,14 @@ import org.junit.Test;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 @SuppressWarnings("serial")
 public class AsyncInvokeCallableExampleTest {
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Test
   public void invokeAsyncAsFuture() throws Exception {

@@ -45,7 +45,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 public class ClientServerTransactionFailoverDistributedTest implements Serializable {
@@ -66,7 +66,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   private final String originalValue = "originalValue";
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

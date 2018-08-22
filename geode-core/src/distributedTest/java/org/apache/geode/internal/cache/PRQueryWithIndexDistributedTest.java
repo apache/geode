@@ -45,7 +45,7 @@ import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -63,7 +63,7 @@ public class PRQueryWithIndexDistributedTest implements Serializable {
   private VM vm1;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

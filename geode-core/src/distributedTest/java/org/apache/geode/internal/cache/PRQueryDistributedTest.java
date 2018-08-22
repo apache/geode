@@ -46,7 +46,7 @@ import org.apache.geode.cache.query.internal.DefaultQuery.TestHook;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -63,7 +63,7 @@ public class PRQueryDistributedTest implements Serializable {
   private VM vm2;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

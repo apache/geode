@@ -40,13 +40,13 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 public class ReplicateEntryIdleExpirationDistributedTest implements Serializable {
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   private static final AtomicBoolean KEEP_READING = new AtomicBoolean(true);
 
