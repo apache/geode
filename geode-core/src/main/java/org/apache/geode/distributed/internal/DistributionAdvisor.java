@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -264,14 +263,8 @@ public class DistributionAdvisor {
     // interval. This allows client caches to retry an operation that might otherwise be recovered
     // through the sync operation. Without associated event information this could cause the
     // retried operation to be mishandled. See GEODE-5505
-    long delay;
-    try {
-      delay = dr.getGemFireCache().getCacheServers().stream().max(
-          (o1, o2) -> o1.getMaximumTimeBetweenPings() - o2.getMaximumTimeBetweenPings()).get()
-          .getMaximumTimeBetweenPings();
-    } catch (NoSuchElementException e) {
-      delay = 0;
-    }
+    final long delay = dr.getGemFireCache().getCacheServers().stream()
+        .mapToLong(o -> o.getMaximumTimeBetweenPings()).max().orElse(0L);
     dr.getGemFireCache().getCCPTimer().schedule(new SystemTimer.SystemTimerTask() {
       @Override
       public void run2() {
