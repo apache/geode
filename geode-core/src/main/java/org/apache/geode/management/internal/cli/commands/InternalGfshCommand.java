@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
@@ -66,4 +67,10 @@ public abstract class InternalGfshCommand extends GfshCommand {
   public ManagementService getManagementService() {
     return ManagementService.getExistingManagementService(getCache());
   }
+
+  @Override
+  public InternalConfigurationPersistenceService getConfigurationPersistenceService() {
+    return (InternalConfigurationPersistenceService) super.getConfigurationPersistenceService();
+  }
+
 }

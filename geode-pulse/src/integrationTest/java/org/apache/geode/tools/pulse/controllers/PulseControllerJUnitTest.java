@@ -19,10 +19,14 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -807,11 +811,105 @@ public class PulseControllerJUnitTest {
     doReturn(mapper.createObjectNode().put("foo", "bar")).when(cluster).executeQuery(anyString(),
         anyString(), anyInt());
 
+    String query = "SELECT * FROM " + REGION_PATH;
     this.mockMvc
-        .perform(get("/dataBrowserQuery").param("query", "SELECT * FROM " + REGION_PATH)
+        .perform(get("/dataBrowserQuery").param("query", query)
             .param("members", MEMBER_NAME).principal(principal)
             .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
         .andExpect(status().isOk()).andExpect(jsonPath("$.foo").value("bar"));
+
+    // Verify cluster addQueryInHistory is invoked
+    verify(this.cluster).addQueryInHistory(query, principal.getName());
+  }
+
+  @Test
+  public void dataBrowserQueryWithMessageResult() throws Exception {
+    String message = "Query is invalid due to error : Region mentioned in query probably missing /";
+    doReturn(mapper.createObjectNode().put("message", message)).when(cluster).executeQuery(
+        anyString(),
+        anyString(), anyInt());
+
+    String query = "SELECT * FROM " + REGION_PATH;
+    this.mockMvc
+        .perform(get("/dataBrowserQuery").param("query", query)
+            .param("members", MEMBER_NAME).principal(principal)
+            .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.message").value(message));
+
+    // Verify cluster addQueryInHistory is invoked
+    verify(this.cluster).addQueryInHistory(query, principal.getName());
+  }
+
+  @Test
+  public void dataBrowserQueryWithExceptionResult() throws Exception {
+    doThrow(new IllegalStateException()).when(cluster).executeQuery(anyString(),
+        anyString(), anyInt());
+
+    String query = "SELECT * FROM " + REGION_PATH;
+    this.mockMvc
+        .perform(get("/dataBrowserQuery").param("query", query)
+            .param("members", MEMBER_NAME).principal(principal)
+            .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
+        .andExpect(status().isOk()).andExpect(content().string("{}"));
+
+    // Verify cluster addQueryInHistory is invoked
+    verify(this.cluster).addQueryInHistory(query, principal.getName());
+  }
+
+  @Test
+  public void dataBrowserExport() throws Exception {
+    doReturn(mapper.createObjectNode().put("foo", "bar")).when(cluster).executeQuery(anyString(),
+        anyString(), anyInt());
+
+    String query = "SELECT * FROM " + REGION_PATH;
+    this.mockMvc
+        .perform(get("/dataBrowserExport").param("query", query)
+            .param("members", MEMBER_NAME).principal(principal)
+            .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Disposition", "attachment; filename=results.json"))
+        .andExpect(jsonPath("$.foo").value("bar"));
+
+    // Verify cluster addQueryInHistory is invoked
+    verify(this.cluster).addQueryInHistory(query, principal.getName());
+  }
+
+  @Test
+  public void dataBrowserExportWithMessageResult() throws Exception {
+    String message = "Query is invalid due to error : Region mentioned in query probably missing /";
+    doReturn(mapper.createObjectNode().put("message", message)).when(cluster).executeQuery(
+        anyString(),
+        anyString(), anyInt());
+
+    String query = "SELECT * FROM " + REGION_PATH;
+    this.mockMvc
+        .perform(get("/dataBrowserExport").param("query", query)
+            .param("members", MEMBER_NAME).principal(principal)
+            .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Disposition", "attachment; filename=results.json"))
+        .andExpect(jsonPath("$.message").value(message));
+
+    // Verify cluster addQueryInHistory is invoked
+    verify(this.cluster).addQueryInHistory(query, principal.getName());
+  }
+
+  @Test
+  public void dataBrowserExportWithExceptionResult() throws Exception {
+    doThrow(new IllegalStateException()).when(cluster).executeQuery(anyString(),
+        anyString(), anyInt());
+
+    String query = "SELECT * FROM " + REGION_PATH;
+    this.mockMvc
+        .perform(get("/dataBrowserExport").param("query", query)
+            .param("members", MEMBER_NAME).principal(principal)
+            .accept(MediaType.parseMediaType(MediaType.APPLICATION_JSON_UTF8_VALUE)))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Disposition", "attachment; filename=results.json"))
+        .andExpect(content().string("{}"));
+
+    // Verify cluster addQueryInHistory is invoked
+    verify(this.cluster).addQueryInHistory(query, principal.getName());
   }
 
   @Test
