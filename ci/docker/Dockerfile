@@ -52,7 +52,6 @@ RUN chmod +x /usr/local/bin/tini \
     google-cloud-sdk \
     htop \
     jq \
-    make \
     python3 \
     python3-pip \
     python3-setuptools \
@@ -72,9 +71,6 @@ RUN chmod +x /usr/local/bin/tini \
   && mv /opt/selenium/chromedriver /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
   && chmod 755 /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION \
   && ln -fs /opt/selenium/chromedriver-$CHROME_DRIVER_VERSION /usr/bin/chromedriver \
-  && git clone https://github.com/masterzen/winrm-cli \
-  && (cd winrm-cli; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
-  && cp winrm-cli/bin/winrm /usr/local/bin/ \
   && ./cache_dependencies.sh \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
