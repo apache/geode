@@ -31,14 +31,14 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 @SuppressWarnings("serial")
 public class RegionListenerDistributedTest implements Serializable {
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().disconnectAfter().build();

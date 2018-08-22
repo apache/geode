@@ -62,7 +62,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -85,7 +85,7 @@ public class PrepareAndFinishBackupDistributedTest {
   }
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

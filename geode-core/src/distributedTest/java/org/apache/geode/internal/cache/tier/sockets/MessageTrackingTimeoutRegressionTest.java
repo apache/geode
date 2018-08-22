@@ -34,7 +34,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -59,7 +59,7 @@ public class MessageTrackingTimeoutRegressionTest implements Serializable {
   private VM server3;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

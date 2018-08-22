@@ -34,7 +34,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 /**
  * verifies the count of clear operation
@@ -54,7 +54,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
   private VM client1;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

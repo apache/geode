@@ -24,13 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 public class GetCurrentVmNumDistributedTest {
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedTestRule = new DistributedRule();
 
   @Test
   public void returnsNegativeOneInController() {

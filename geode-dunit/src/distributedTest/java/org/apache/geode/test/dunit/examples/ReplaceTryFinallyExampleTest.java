@@ -19,14 +19,14 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 @SuppressWarnings("serial")
 public class ReplaceTryFinallyExampleTest {
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Test
   public void doNotUseTryFinallyInTest() {

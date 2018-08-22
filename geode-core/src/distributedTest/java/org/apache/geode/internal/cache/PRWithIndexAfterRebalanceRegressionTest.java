@@ -43,7 +43,7 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -67,7 +67,7 @@ public class PRWithIndexAfterRebalanceRegressionTest implements Serializable {
   private VM vm3;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

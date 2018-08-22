@@ -25,22 +25,22 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableStatement;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 
-class AbstractDistributedTestRule implements SerializableTestRule {
+class AbstractDistributedRule implements SerializableTestRule {
 
   private final int vmCount;
   private final RemoteInvoker invoker;
 
   private volatile int beforeVmCount;
 
-  protected AbstractDistributedTestRule() {
+  protected AbstractDistributedRule() {
     this(DEFAULT_VM_COUNT);
   }
 
-  protected AbstractDistributedTestRule(final int vmCount) {
+  protected AbstractDistributedRule(final int vmCount) {
     this(vmCount, new RemoteInvoker());
   }
 
-  protected AbstractDistributedTestRule(final int vmCount, final RemoteInvoker invoker) {
+  protected AbstractDistributedRule(final int vmCount, final RemoteInvoker invoker) {
     this.vmCount = vmCount;
     this.invoker = invoker;
   }

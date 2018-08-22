@@ -59,7 +59,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.Authenticator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -96,7 +96,7 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
   private int newYorkReceiverPort;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

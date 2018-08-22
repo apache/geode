@@ -38,7 +38,7 @@ import org.mockito.Mockito;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -68,7 +68,7 @@ public class RegionExpirationDistributedTest implements Serializable {
   private VM withoutExpirationVM1;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();

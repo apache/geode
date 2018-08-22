@@ -36,7 +36,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 @RunWith(JUnitParamsRunner.class)
@@ -53,7 +53,7 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
   private VM[] datastores;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();

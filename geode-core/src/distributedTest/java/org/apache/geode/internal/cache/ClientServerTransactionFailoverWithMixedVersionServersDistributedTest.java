@@ -56,7 +56,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -78,7 +78,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   private final int transactionTimeoutSecond = 2;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule(6);
+  public static DistributedRule distributedTestRule = new DistributedRule(6);
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

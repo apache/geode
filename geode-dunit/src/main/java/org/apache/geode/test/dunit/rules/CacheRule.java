@@ -39,7 +39,7 @@ import org.apache.geode.test.dunit.VM;
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedTestRule distributedTestRule = new DistributedTestRule();
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
  * public CacheRule cacheRule = new CacheRule();
@@ -53,35 +53,37 @@ import org.apache.geode.test.dunit.VM;
  * public void createRegionWithRegionFactory() {
  *   getVM(0).invoke(() -> {
  *     RegionFactory regionFactory = cacheRule.getCache().createRegionFactory();
- *     ...
+ *     Region region = regionFactory.create("RegionName");
+ *     assertThat(region).isNotNull();
  *   });
  * }
  * </pre>
  *
  * <p>
- * {@link CacheRule.Builder} can be used to construct an instance with more options:
+ * {@link CacheRule.Builder} can also be used to construct an instance with more options:
  *
  * <pre>
- * {@literal @}ClassRule
- * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
- *
  * {@literal @}Rule
- * public DistributedTestRule.TearDown tearDown = new DistributedTestRule.TearDown();
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
  * public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
  *
  * {@literal @}Test
- * public void everyVMShouldHaveACache() {
+ * public void controllerVmCreatedCache() {
  *   assertThat(cacheRule.getCache()).isNotNull();
+ * }
+ *
+ * {@literal @}Test
+ * public void remoteVmsCreatedCache() {
  *   for (VM vm : Host.getHost(0).getAllVMs()) {
  *     vm.invoke(() -> assertThat(cacheRule.getCache()).isNotNull());
  *   }
  * }
  * </pre>
  */
-@SuppressWarnings({"serial", "unused"})
-public class CacheRule extends AbstractDistributedTestRule {
+@SuppressWarnings("serial,unused")
+public class CacheRule extends AbstractDistributedRule {
 
   private static volatile InternalCache cache;
 

@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 
 @SuppressWarnings("serial")
@@ -45,7 +45,7 @@ public class PRCreationTotalNumBucketsDistributedTest implements Serializable {
   private int totalNumBuckets;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
