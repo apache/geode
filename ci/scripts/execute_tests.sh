@@ -84,4 +84,4 @@ GRADLE_COMMAND="./gradlew \
     ${SCM_PROPS}"
 
 echo "${GRADLE_COMMAND}"
-ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${GRADLE_COMMAND}"
+ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "bash -c 'mkdir -p tmp; cd geode; ${GRADLE_COMMAND}'"
