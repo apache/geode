@@ -132,5 +132,6 @@ public class GfshHostNameVerificationDistributedTest {
       rule.executeAndAssertThat("list members").statusIsSuccess();
       rule.close();
     });
+    vm.bounce(); // to clear the system properties set by JmxOperationInvoker
   }
 }
