@@ -33,7 +33,8 @@ public class MXBeanAwaitility {
   public static LocatorMXBean awaitLocalLocatorMXBean() {
     SystemManagementService service = getSystemManagementService();
 
-    await().atMost(2, MINUTES).until(() -> assertThat(service.getLocalLocatorMXBean()).isNotNull());
+    await().atMost(2, MINUTES)
+        .untilAsserted(() -> assertThat(service.getLocalLocatorMXBean()).isNotNull());
 
     return service.getLocalLocatorMXBean();
   }
@@ -43,7 +44,7 @@ public class MXBeanAwaitility {
     ObjectName objectName = service.getLocatorMBeanName(member);
 
     String alias = "Awaiting LocatorMXBean proxy for " + member;
-    await(alias).until(
+    await(alias).untilAsserted(
         () -> assertThat(service.getMBeanProxy(objectName, LocatorMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, LocatorMXBean.class);
@@ -55,7 +56,7 @@ public class MXBeanAwaitility {
     ObjectName objectName = service.getGatewaySenderMBeanName(member, senderId);
 
     String alias = "Awaiting GatewaySenderMXBean proxy for " + member;
-    await(alias).until(
+    await(alias).untilAsserted(
         () -> assertThat(service.getMBeanProxy(objectName, GatewaySenderMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, GatewaySenderMXBean.class);
@@ -68,8 +69,9 @@ public class MXBeanAwaitility {
 
     String alias = "Awaiting GatewayReceiverMXBean proxy for " + member;
     await(alias)
-        .until(() -> assertThat(service.getMBeanProxy(objectName, GatewayReceiverMXBean.class))
-            .isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, GatewayReceiverMXBean.class))
+                .isNotNull());
 
     return service.getMBeanProxy(objectName, GatewayReceiverMXBean.class);
   }
@@ -97,8 +99,9 @@ public class MXBeanAwaitility {
 
     String alias = "Awaiting MemberMXBean proxy for " + member;
     await(alias)
-        .until(() -> assertThat(managementService.getMBeanProxy(objectName, MemberMXBean.class))
-            .isNotNull());
+        .untilAsserted(
+            () -> assertThat(managementService.getMBeanProxy(objectName, MemberMXBean.class))
+                .isNotNull());
 
     return managementService.getMBeanProxy(objectName, MemberMXBean.class);
   }

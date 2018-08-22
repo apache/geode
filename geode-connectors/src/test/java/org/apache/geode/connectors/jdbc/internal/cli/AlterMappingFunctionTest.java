@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -103,7 +103,9 @@ public class AlterMappingFunctionTest {
   @Test
   public void alterMissingRegionMappingThrowsRegionMappingNotFound() {
     AlterMappingFunction alterFunction = mock(AlterMappingFunction.class);
-    doThrow(RegionMappingNotFoundException.class).when(alterFunction).alterRegionMapping(any(),
+    doAnswer((m) -> {
+      throw new RegionMappingNotFoundException();
+    }).when(alterFunction).alterRegionMapping(any(),
         any());
 
     assertThatThrownBy(() -> alterFunction.alterRegionMapping(regionMapping, existingMapping))
@@ -122,7 +124,9 @@ public class AlterMappingFunctionTest {
 
   @Test
   public void executeReportsErrorIfRegionMappingNotFound() throws Exception {
-    doThrow(ConnectionConfigNotFoundException.class).when(service)
+    doAnswer((m) -> {
+      throw new ConnectionConfigNotFoundException();
+    }).when(service)
         .replaceRegionMapping(eq(regionMapping));
 
     function.execute(context);

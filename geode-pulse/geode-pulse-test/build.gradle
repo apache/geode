@@ -21,6 +21,10 @@ dependencies {
   compileOnly project(':geode-core')
   compileOnly project(':geode-junit')
   compileOnly project(':geode-pulse')
+
+  compile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
+  compile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
+  compile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
 }
 
 disableMavenPublishing()

@@ -255,9 +255,9 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
     vm0.invoke(() -> doPuts(partitionedRegionName, 1000));
 
     vm0.invoke(() -> await().atMost(TWO_MINUTES)
-        .until(() -> assertThat(getAsyncEventQueue().size()).isEqualTo(1000)));
+        .untilAsserted(() -> assertThat(getAsyncEventQueue().size()).isEqualTo(1000)));
     vm1.invoke(() -> await().atMost(TWO_MINUTES)
-        .until(() -> assertThat(getAsyncEventQueue().size()).isEqualTo(1000)));
+        .untilAsserted(() -> assertThat(getAsyncEventQueue().size()).isEqualTo(1000)));
   }
 
   private InternalCache getCache() {

@@ -177,7 +177,7 @@ public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
       assertThat(memberMXBean.getClassPath()).isEqualTo(getClassPath());
       assertThat(memberMXBean.getCurrentTime()).isGreaterThan(0);
 
-      await().until(() -> assertThat(memberMXBean.getMemberUpTime()).isGreaterThan(0));
+      await().untilAsserted(() -> assertThat(memberMXBean.getMemberUpTime()).isGreaterThan(0));
 
       assertThat(memberMXBean.getUsedMemory()).isGreaterThan(10);
       assertThat(memberMXBean.getCurrentHeapSize()).isGreaterThan(10);

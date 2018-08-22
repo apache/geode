@@ -208,7 +208,7 @@ public class PrepareAndFinishBackupDistributedTest {
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     Future<Void> future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
-        .until(() -> assertThat(backupLock.getQueueLength()).isGreaterThanOrEqualTo(0));
+        .untilAsserted(() -> assertThat(backupLock.getQueueLength()).isGreaterThanOrEqualTo(0));
 
     new FinishBackupStep(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())
         .send();

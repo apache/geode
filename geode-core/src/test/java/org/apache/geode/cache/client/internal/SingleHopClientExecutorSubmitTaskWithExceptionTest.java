@@ -53,7 +53,7 @@ public class SingleHopClientExecutorSubmitTaskWithExceptionTest {
     /**
      * Sometimes need to wait for more than sec as thread execution takes time.
      */
-    Awaitility.await("Waiting for exception").atMost(60l, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await("Waiting for exception").atMost(60l, TimeUnit.SECONDS).untilAsserted(() -> {
       systemErrRule.getLog().contains(erroMsg);
     });
   }

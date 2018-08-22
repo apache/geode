@@ -267,7 +267,8 @@ public class AsyncEventListenerWithCacheLoaderDistributedTest implements Seriali
   private void validateAsyncEventForOperationDetail(int expectedSize, OperationType operationType) {
     Map<?, AsyncEvent> eventsMap = (Map<?, AsyncEvent>) getSpyAsyncEventListener().getEventsMap();
 
-    await().atMost(TWO_MINUTES).until(() -> assertThat(eventsMap.size()).isEqualTo(expectedSize));
+    await().atMost(TWO_MINUTES)
+        .untilAsserted(() -> assertThat(eventsMap.size()).isEqualTo(expectedSize));
 
     for (AsyncEvent<?, ?> asyncEvent : eventsMap.values()) {
       switch (operationType) {

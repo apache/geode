@@ -379,7 +379,7 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.processMessage(sm);
 
     Awaitility.await("waiting for remove(member) to be invoked")
-        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).until(() -> {
+        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).untilAsserted(() -> {
           verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
               any(String.class));
         });

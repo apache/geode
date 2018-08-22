@@ -539,7 +539,8 @@ public class EntryEventImplTest {
     });
     doRelease.start(); // release thread will be stuck until releaseCountDown changes
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
-        .timeout(15, TimeUnit.SECONDS).until(() -> assertEquals(true, e.isWaitingOnRelease()));
+        .timeout(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(true, e.isWaitingOnRelease()));
     assertEquals(true, e.offHeapOk);
     assertEquals(true, doRelease.isAlive());
 
@@ -576,7 +577,7 @@ public class EntryEventImplTest {
 
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
         .timeout(15, TimeUnit.SECONDS)
-        .until(() -> assertEquals(true,
+        .untilAsserted(() -> assertEquals(true,
             e.isAboutToCallGetNewValue() && e.isAboutToCallGetOldValue()
                 && e.isAboutToCallSerializedNew() && e.isAboutToCallDeserializedNew()
                 && e.isAboutToCallSerializedOld() && e.isAboutToCallDeserializedOld()));
@@ -612,7 +613,7 @@ public class EntryEventImplTest {
     // which should allow getNewValue to complete
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
         .timeout(15, TimeUnit.SECONDS)
-        .until(() -> assertEquals(true, e.hasFinishedCallOfGetNewValue()));
+        .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfGetNewValue()));
     doGetNewValue.join();
     if (!(e.getCachedNewValue() instanceof IllegalStateException)) {
       // since the release happened before getNewValue we expect it to get an exception
@@ -621,7 +622,7 @@ public class EntryEventImplTest {
     // which should allow getOldValue to complete
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
         .timeout(15, TimeUnit.SECONDS)
-        .until(() -> assertEquals(true, e.hasFinishedCallOfGetOldValue()));
+        .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfGetOldValue()));
     doGetOldValue.join();
     if (!(e.getCachedOldValue() instanceof IllegalStateException)) {
       fail("unexpected success of getOldValue. It returned " + e.getCachedOldValue());
@@ -629,7 +630,7 @@ public class EntryEventImplTest {
     // which should allow doSNVgetSerializedValue to complete
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
         .timeout(15, TimeUnit.SECONDS)
-        .until(() -> assertEquals(true, e.hasFinishedCallOfSerializedNew()));
+        .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfSerializedNew()));
     doSNVgetSerializedValue.join();
     if (!(e.getTestCachedSerializedNew() instanceof IllegalStateException)) {
       fail("unexpected success of new getSerializedValue. It returned "
@@ -638,7 +639,7 @@ public class EntryEventImplTest {
     // which should allow doSNVgetDeserializedValue to complete
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
         .timeout(15, TimeUnit.SECONDS)
-        .until(() -> assertEquals(true, e.hasFinishedCallOfDeserializedNew()));
+        .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfDeserializedNew()));
     doSNVgetDeserializedValue.join();
     if (!(e.getCachedDeserializedNew() instanceof IllegalStateException)) {
       fail("unexpected success of new getDeserializedValue. It returned "
@@ -647,7 +648,7 @@ public class EntryEventImplTest {
     // which should allow doSOVgetSerializedValue to complete
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
         .timeout(15, TimeUnit.SECONDS)
-        .until(() -> assertEquals(true, e.hasFinishedCallOfSerializedOld()));
+        .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfSerializedOld()));
     doSOVgetSerializedValue.join();
     if (!(e.getCachedSerializedOld() instanceof IllegalStateException)) {
       fail("unexpected success of old getSerializedValue. It returned "
@@ -656,7 +657,7 @@ public class EntryEventImplTest {
     // which should allow doSOVgetDeserializedValue to complete
     Awaitility.await().pollInterval(1, TimeUnit.MILLISECONDS).pollDelay(1, TimeUnit.MILLISECONDS)
         .timeout(15, TimeUnit.SECONDS)
-        .until(() -> assertEquals(true, e.hasFinishedCallOfDeserializedOld()));
+        .untilAsserted(() -> assertEquals(true, e.hasFinishedCallOfDeserializedOld()));
     doSOVgetDeserializedValue.join();
     if (!(e.getCachedDeserializedOld() instanceof IllegalStateException)) {
       fail("unexpected success of old getDeserializedValue. It returned "

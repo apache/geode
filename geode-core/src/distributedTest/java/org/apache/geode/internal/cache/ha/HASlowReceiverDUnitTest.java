@@ -228,7 +228,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void checkRedundancyLevel(final Integer redundantServers) {
-    Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
       // check for slow client queue is removed or not.
       assertTrue(
           "Expected redundant count (" + pool.getRedundantNames().size() + ") to become "
@@ -254,7 +254,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
     putEntries();
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       // check for slow client queue is removed or not.
       assertTrue("isUnresponsiveClientRemoved is false, but should be true " + "after 60 seconds",
           isUnresponsiveClientRemoved);

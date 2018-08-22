@@ -102,7 +102,7 @@ public class CacheServerBridgeClientMembershipRegressionTest {
     await().atMost(10, SECONDS).until(() -> before.get());
 
     // if deadlocked, then this line will throw ConditionTimeoutException
-    await().atMost(10, SECONDS).until(() -> assertThat(after.get()).isTrue());
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(after.get()).isTrue());
   }
 
   private void givenCacheFactoryIsSynchronized() {

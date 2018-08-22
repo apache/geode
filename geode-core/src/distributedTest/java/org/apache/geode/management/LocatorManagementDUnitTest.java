@@ -222,7 +222,8 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     locatorVM.invoke("validateManagers", () -> {
       LocatorMXBean locatorMXBean = awaitLocalLocatorMXBean();
 
-      await().atMost(2, MINUTES).until(() -> assertThat(locatorMXBean.listManagers()).hasSize(1));
+      await().atMost(2, MINUTES)
+          .untilAsserted(() -> assertThat(locatorMXBean.listManagers()).hasSize(1));
     });
   }
 
@@ -231,8 +232,9 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     locatorVM.invoke("List Willing Managers", () -> {
       LocatorMXBean locatorMXBean = awaitLocalLocatorMXBean();
 
-      await().atMost(2, MINUTES).until(() -> assertThat(locatorMXBean.listPotentialManagers())
-          .hasSize(expectedNumberPotentialManagers));
+      await().atMost(2, MINUTES)
+          .untilAsserted(() -> assertThat(locatorMXBean.listPotentialManagers())
+              .hasSize(expectedNumberPotentialManagers));
     });
   }
 }

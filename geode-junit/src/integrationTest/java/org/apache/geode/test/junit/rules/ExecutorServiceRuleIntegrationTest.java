@@ -69,7 +69,8 @@ public class ExecutorServiceRuleIntegrationTest {
     assertThat(result.wasSuccessful()).isTrue();
 
     assertThat(isTestHung()).isTrue();
-    await().atMost(10, SECONDS).until(() -> assertThat(executorService.isTerminated()).isTrue());
+    await().atMost(10, SECONDS)
+        .untilAsserted(() -> assertThat(executorService.isTerminated()).isTrue());
     invocations.afterRule();
 
     InOrder invocationOrder = inOrder(invocations);

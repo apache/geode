@@ -194,7 +194,7 @@ public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
     PDXPostProcessor pp =
         (PDXPostProcessor) this.server.getCache().getSecurityService().getPostProcessor();
     Awaitility.await().atMost(2, TimeUnit.MINUTES)
-        .until(() -> assertThat(pp.getCount()).isEqualTo(2));
+        .untilAsserted(() -> assertThat(pp.getCount()).isEqualTo(2));
   }
 
   @Test

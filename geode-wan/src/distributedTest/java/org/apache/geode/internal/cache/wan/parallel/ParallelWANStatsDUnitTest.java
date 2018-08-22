@@ -92,7 +92,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     System.out.println("Current secondary queue sizes:" + v4List.get(10) + ":" + v5List.get(10)
         + ":" + v6List.get(10) + ":" + v7List.get(10));
     vm7.invoke(() -> WANTestBase.closeCache());
-    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(120, TimeUnit.SECONDS).untilAsserted(() -> {
       int v4secondarySize = vm4.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
       int v5secondarySize = vm5.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
       int v6secondarySize = vm6.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
@@ -411,7 +411,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts(testName, 1000));
     vm2.invoke(() -> Awaitility.await().atMost(30000, TimeUnit.MILLISECONDS)
-        .until(() -> assertEquals("Waiting for first batch to be received", true,
+        .untilAsserted(() -> assertEquals("Waiting for first batch to be received", true,
             getRegionSize(testName) > 10)));
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
     inv1.join();

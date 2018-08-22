@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.awaitility.Awaitility.matches;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -39,7 +37,7 @@ public class MySqlConnectionRule extends SqlDatabaseConnectionRule {
   @Override
   public Connection getConnection() throws SQLException {
     Awaitility.await().ignoreExceptions().atMost(10, TimeUnit.SECONDS)
-        .until(matches(() -> DriverManager.getConnection(getCreateDbConnectionUrl())));
+        .untilAsserted(() -> DriverManager.getConnection(getCreateDbConnectionUrl()));
     String dbName = getDbName();
     if (dbName != null) {
       Connection connection = DriverManager.getConnection(getCreateDbConnectionUrl());

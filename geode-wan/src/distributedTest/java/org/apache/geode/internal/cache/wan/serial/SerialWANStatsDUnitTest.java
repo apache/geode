@@ -376,7 +376,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     // like a latch to guarantee at least one exception returned
     vm4.invoke(() -> Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> WANTestBase.verifyQueueSize("ln", 0)));
+        .untilAsserted(() -> WANTestBase.verifyQueueSize("ln", 0)));
 
     vm4.invoke(() -> WANTestBase.checkBatchStats("ln", true, true));
 

@@ -159,7 +159,7 @@ public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends Async
     waitForSamplerToSample(5);
 
     // Verify the bean attributes match the stat values
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       assertThat(bean.getEntriesOverflowedToDisk()).isEqualTo(drs.getNumOverflowOnDisk());
       assertThat(bean.getBytesOverflowedToDisk()).isEqualTo(drs.getNumOverflowBytesOnDisk());
     });
@@ -184,7 +184,7 @@ public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends Async
     waitForSamplerToSample(5);
 
     // Verify the bean attributes match the stat values
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       // Calculate the total entries and bytes overflowed to disk
       int entriesOverflowedToDisk = 0;
       long bytesOverflowedToDisk = 0l;

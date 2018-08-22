@@ -96,7 +96,7 @@ public class GatewayReceiverMBeanDUnitTest extends ManagementTestBase {
         cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertNotNull(getMBeanProxy(member)));
+          .untilAsserted(() -> assertNotNull(getMBeanProxy(member)));
     }
   }
 

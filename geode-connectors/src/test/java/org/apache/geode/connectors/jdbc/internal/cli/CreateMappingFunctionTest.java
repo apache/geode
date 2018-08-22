@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -102,7 +103,9 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void createRegionMappingThrowsIfMappingExists() throws Exception {
-    doThrow(ConnectionConfigExistsException.class).when(service)
+    doAnswer((m) -> {
+      throw new ConnectionConfigExistsException();
+    }).when(service)
         .createRegionMapping(eq(regionMapping));
 
     assertThatThrownBy(() -> function.createRegionMapping(service, regionMapping))

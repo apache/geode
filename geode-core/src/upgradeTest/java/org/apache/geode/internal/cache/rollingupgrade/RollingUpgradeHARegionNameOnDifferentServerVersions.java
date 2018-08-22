@@ -58,7 +58,7 @@ public class RollingUpgradeHARegionNameOnDifferentServerVersions
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       locator.invoke(
           () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-              .until(() -> assertTrue(
+              .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
 

@@ -240,7 +240,8 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(() -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
+      await().untilAsserted(
+          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
         NotificationHubTestListener listener = new NotificationHubTestListener();
@@ -283,7 +284,7 @@ public class DistributedSystemDUnitTest implements Serializable {
     }
 
     this.managerVM.invoke("checkNotificationsAndRemoveListeners", () -> {
-      await().until(() -> assertThat(notifications).hasSize(3));
+      await().untilAsserted(() -> assertThat(notifications).hasSize(3));
 
       notifications.clear();
 
@@ -318,7 +319,8 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(() -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
+      await().untilAsserted(
+          () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
         NotificationHubTestListener listener = new NotificationHubTestListener();
@@ -404,7 +406,7 @@ public class DistributedSystemDUnitTest implements Serializable {
   private void verifyAlertAppender(final VM memberVM, final DistributedMember member,
       final int alertLevel) {
     memberVM.invoke("verifyAlertAppender",
-        () -> await().until(
+        () -> await().untilAsserted(
             () -> assertThat(AlertAppender.getInstance().hasAlertListener(member, alertLevel))
                 .isTrue()));
   }
@@ -414,9 +416,9 @@ public class DistributedSystemDUnitTest implements Serializable {
     managerVM.invoke("verifyAlertCount", () -> {
       AlertNotificationListener listener = AlertNotificationListener.getInstance();
 
-      await().until(
+      await().untilAsserted(
           () -> assertThat(listener.getSevereAlertCount()).isEqualTo(expectedSevereAlertCount));
-      await().until(
+      await().untilAsserted(
           () -> assertThat(listener.getWarningAlertCount()).isEqualTo(expectedWarningAlertCount));
     });
   }
@@ -473,7 +475,8 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5));
+      await()
+          .untilAsserted(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5));
 
       Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
       for (DistributedMember member : otherMemberSet) {
@@ -500,7 +503,8 @@ public class DistributedSystemDUnitTest implements Serializable {
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       distributedSystemMXBean.shutDownAllMembers();
 
-      await().until(() -> assertThat(this.managementTestRule.getOtherNormalMembers()).hasSize(0));
+      await().untilAsserted(
+          () -> assertThat(this.managementTestRule.getOtherNormalMembers()).hasSize(0));
     });
   }
 
@@ -509,7 +513,7 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().until(
+      await().untilAsserted(
           () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(memberCount));
 
       String memberId = this.managementTestRule.getDistributedMember().getId();

@@ -154,6 +154,6 @@ public class CleanupFailedInitWithDiskFilesRegressionTest extends CacheTestCase 
   }
 
   private void validateCleanupOfDiskFiles() {
-    await().atMost(1, MINUTES).until(() -> assertThat(server2Disk2.listFiles()).hasSize(0));
+    await().atMost(1, MINUTES).untilAsserted(() -> assertThat(server2Disk2.listFiles()).hasSize(0));
   }
 }

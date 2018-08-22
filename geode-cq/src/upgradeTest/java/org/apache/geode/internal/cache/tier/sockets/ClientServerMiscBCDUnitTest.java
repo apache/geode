@@ -179,7 +179,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server2.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         proxy.getHARegionQueue().isEmpty();
       });
     });
@@ -204,7 +204,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server3.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         proxy.getHARegionQueue().isEmpty();
       });
     });
@@ -266,7 +266,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
 
     // Make sure server 2 copies the queue
     server2.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         final Collection<CacheClientProxy> clientProxies =
             CacheClientNotifier.getInstance().getClientProxies();
         assertFalse(clientProxies.isEmpty());
@@ -290,7 +290,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server2.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
         proxy.getHARegionQueue().isEmpty();
       });
     });

@@ -71,7 +71,7 @@ public class AfterRegionCreateNotBeforeRegionInitRegressionTest {
     region.createSubregion("testSubRegion", factory.create());
 
     await().atMost(1, MINUTES)
-        .until(() -> assertThat(cacheListener.afterRegionCreateCount.get()).isEqualTo(2));
+        .untilAsserted(() -> assertThat(cacheListener.afterRegionCreateCount.get()).isEqualTo(2));
   }
 
   private class TestCacheListener extends CacheListenerAdapter {
