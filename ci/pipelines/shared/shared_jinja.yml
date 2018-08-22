@@ -22,7 +22,7 @@
 
 {%- macro pipeline_prefix() %}
 {%- if repository.fork=="apache" %}
-{%- else %}
+{%- else -%}
 {{repository.fork}}-{{repository.branch}}-
 {%- endif %}
 {%- endmacro %}
