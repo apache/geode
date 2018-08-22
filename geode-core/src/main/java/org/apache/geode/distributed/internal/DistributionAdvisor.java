@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -256,11 +257,17 @@ public class DistributionAdvisor {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("da.syncForCrashedMember will sync region in waiting thread pool: {}", dr);
+      logger.debug("da.syncForCrashedMember will sync region in cache's timer for region: {}", dr);
     }
-    dr.getDistributionManager().getWaitingThreadPool().execute(new Runnable() {
-      // bug #49601 - don't synchronize until GII has been performed
-      public void run() {
+    // schedule the synchronization for execution in the future based on the client health monitor
+    // interval. This allows client caches to retry an operation that might otherwise be recovered
+    // through the sync operation. Without associated event information this could cause the
+    // retried operation to be mishandled. See GEODE-5505
+    final long delay = dr.getGemFireCache().getCacheServers().stream()
+        .mapToLong(o -> o.getMaximumTimeBetweenPings()).max().orElse(0L);
+    dr.getGemFireCache().getCCPTimer().schedule(new SystemTimer.SystemTimerTask() {
+      @Override
+      public void run2() {
         while (!dr.isInitialized()) {
           if (dr.isDestroyed()) {
             return;
@@ -300,7 +307,7 @@ public class DistributionAdvisor {
         }
         dr.synchronizeForLostMember(id, lostVersionID);
       }
-    });
+    }, delay);
   }
 
   /** find the region for a delta-gii operation (synch) */

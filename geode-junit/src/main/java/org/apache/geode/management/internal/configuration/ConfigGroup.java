@@ -93,13 +93,13 @@ public class ConfigGroup implements Serializable {
     return Collections.unmodifiableSet(this.jars);
   }
 
-  public Set<String> getConfigFiles() {
-    return Collections.unmodifiableSet(this.configFiles);
-  }
-
   public Set<String> getAllFiles() {
     return Collections.unmodifiableSet(
         Stream.concat(this.jars.stream(), this.configFiles.stream()).collect(Collectors.toSet()));
+  }
+
+  public Set<String> getAllJarFiles() {
+    return this.jars.stream().collect(Collectors.toSet());
   }
 
   public Set<String> getRegions() {

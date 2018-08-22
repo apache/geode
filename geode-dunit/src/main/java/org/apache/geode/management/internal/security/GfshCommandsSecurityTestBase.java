@@ -30,6 +30,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -147,6 +148,10 @@ public class GfshCommandsSecurityTestBase {
     for (TestCommand other : others) {
       System.out.println("Processing unauthorized command: " + other.getCommand());
       CommandResult result = gfshConnection.executeCommand(other.getCommand());
+      if (result instanceof ModelCommandResult) {
+        // ModelCommandResult don't send the error code anymore
+        break;
+      }
       int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
 
       // for some commands there are pre execution checks to check for user input error, will skip

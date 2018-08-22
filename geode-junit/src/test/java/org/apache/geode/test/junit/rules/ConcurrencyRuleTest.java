@@ -418,6 +418,30 @@ public class ConcurrencyRuleTest {
     });
   }
 
+  @Test
+  public void afterFailsIfThreadsWereNotRun() {
+    Callable<Integer> c1 = () -> {
+      return 2;
+    };
+
+    Callable<String> c2 = () -> {
+      return "some string";
+    };
+
+    concurrencyRule.add(c1).expectValue(2);
+    concurrencyRule.add(c1).expectValue(2).repeatForIterations(5);
+    concurrencyRule.executeInParallel();
+
+    concurrencyRule.add(c1).expectValue(3);
+    concurrencyRule.add(c2).expectValue("some string");
+
+    assertThatThrownBy(() -> concurrencyRule.after())
+        .isInstanceOf(IllegalStateException.class)
+        .withFailMessage("exception should have been thrown");
+
+    concurrencyRule.clear(); // so that this test's after succeeds
+  }
+
   @SuppressWarnings("unused")
   private enum Execution {
     EXECUTE_IN_SERIES(concurrencyRule -> {

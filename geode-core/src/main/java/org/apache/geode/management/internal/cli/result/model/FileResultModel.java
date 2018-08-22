@@ -22,11 +22,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.MessageFormat;
 
+import org.apache.commons.io.FileUtils;
+
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class FileResultModel {
+  public static int FILE_TYPE_BINARY = 0;
+  public static int FILE_TYPE_TEXT = 1;
 
   private String filename;
   private int type;
@@ -36,12 +40,27 @@ public class FileResultModel {
 
   public FileResultModel() {}
 
-  public FileResultModel(String fileName, byte[] data, int fileType, String message) {
+  public FileResultModel(String fileName, String content, String message) {
     this.filename = fileName;
-    this.data = data;
+    this.data = content.getBytes();
+    this.length = data.length;
+    this.type = FILE_TYPE_TEXT;
+    this.message = message;
+  }
+
+  public FileResultModel(File file, int fileType) {
+    if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
+      throw new IllegalArgumentException("Unsupported file type is specified.");
+    }
+
+    this.filename = file.getName();
+    try {
+      this.data = FileUtils.readFileToByteArray(file);
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to read file: " + file.getAbsolutePath(), e);
+    }
     this.length = data.length;
     this.type = fileType;
-    this.message = message;
   }
 
   public String getFilename() {
