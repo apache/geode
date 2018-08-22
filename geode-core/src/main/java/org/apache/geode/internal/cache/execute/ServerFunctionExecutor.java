@@ -228,10 +228,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
     return this.pool;
   }
 
-  public boolean getAllServers() {
-    return this.allServers;
-  }
-
+  @Override
   public Execution withFilter(Set filter) {
     throw new FunctionException(
         LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_DATA_INDEPENDENT_FUNCTIONS
@@ -255,10 +252,12 @@ public class ServerFunctionExecutor extends AbstractExecution {
     return new ServerFunctionExecutor(this, args);
   }
 
+  @Override
   public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
+  @Override
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
@@ -268,6 +267,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
     return new ServerFunctionExecutor(this, rs);
   }
 
+  @Override
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
@@ -277,13 +277,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
     return new ServerFunctionExecutor(this, argument);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.
-   * cache.execute.Function, java.util.Set)
-   */
   @Override
   public void validateExecution(Function function, Set targetMembers) {
     if (TXManagerImpl.getCurrentTXUniqueId() != TXManagerImpl.NOTX) {
@@ -291,6 +284,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
     }
   }
 
+  @Override
   public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
@@ -301,18 +295,31 @@ public class ServerFunctionExecutor extends AbstractExecution {
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
+
       if (functionAttributes == null) {
-        Object obj = GetFunctionAttributeOp.execute(this.pool, functionName);
-        functionAttributes = (byte[]) obj;
-        addFunctionAttributes(functionName, functionAttributes);
+        // GEODE-5618: Set authentication properties before executing the internal function.
+        try {
+          if (proxyCache != null) {
+            if (this.proxyCache.isClosed()) {
+              throw proxyCache.getCacheClosedException("Cache is closed for this user.");
+            }
+            UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+          }
+
+          Object obj = GetFunctionAttributeOp.execute(this.pool, functionName);
+          functionAttributes = (byte[]) obj;
+          addFunctionAttributes(functionName, functionAttributes);
+        } finally {
+          UserAttributes.userAttributes.set(null);
+        }
       }
-      boolean hasResult = ((functionAttributes[0] == 1) ? true : false);
-      boolean isHA = ((functionAttributes[1] == 1) ? true : false);
-      boolean optimizeForWrite = ((functionAttributes[2] == 1) ? true : false);
+
+      boolean isHA = functionAttributes[1] == 1;
+      boolean hasResult = functionAttributes[0] == 1;
+      boolean optimizeForWrite = functionAttributes[2] == 1;
       return executeFunction(functionName, hasResult, isHA, optimizeForWrite);
     } else {
       return executeFunction(functionObject);
     }
   }
-
 }

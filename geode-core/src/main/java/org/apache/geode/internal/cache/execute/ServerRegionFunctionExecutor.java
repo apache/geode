@@ -57,15 +57,6 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     this.proxyCache = proxyCache;
   }
 
-  // private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor sre) {
-  // super(sre);
-  // this.region = sre.region;
-  // if (sre.filter != null) {
-  // this.filter.clear();
-  // this.filter.addAll(sre.filter);
-  // }
-  // }
-
   private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
       Object args) {
     super(serverRegionFunctionExecutor);
@@ -122,6 +113,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     this.executeOnBucketSet = executeOnBucketSet;
   }
 
+  @Override
   public Execution withFilter(Set fltr) {
     if (fltr == null) {
       throw new FunctionException(
@@ -132,6 +124,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     return new ServerRegionFunctionExecutor(this, fltr);
   }
 
+  @Override
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
@@ -316,10 +309,12 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     return new ServerRegionFunctionExecutor(this, args);
   }
 
+  @Override
   public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
+  @Override
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
@@ -329,6 +324,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     return new ServerRegionFunctionExecutor(this, rs);
   }
 
+  @Override
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
@@ -359,15 +355,29 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
+
       if (functionAttributes == null) {
-        ServerRegionProxy srp = getServerRegionProxy();
-        Object obj = srp.getFunctionAttributes(functionName);
-        functionAttributes = (byte[]) obj;
-        addFunctionAttributes(functionName, functionAttributes);
+        // GEODE-5618: Set authentication properties before executing the internal function.
+        try {
+          if (proxyCache != null) {
+            if (this.proxyCache.isClosed()) {
+              throw proxyCache.getCacheClosedException("Cache is closed for this user.");
+            }
+            UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+          }
+
+          ServerRegionProxy srp = getServerRegionProxy();
+          Object obj = srp.getFunctionAttributes(functionName);
+          functionAttributes = (byte[]) obj;
+          addFunctionAttributes(functionName, functionAttributes);
+        } finally {
+          UserAttributes.userAttributes.set(null);
+        }
       }
-      boolean hasResult = ((functionAttributes[0] == 1) ? true : false);
-      boolean isHA = ((functionAttributes[1] == 1) ? true : false);
-      boolean optimizeForWrite = ((functionAttributes[2] == 1) ? true : false);
+
+      boolean isHA = functionAttributes[1] == 1;
+      boolean hasResult = functionAttributes[0] == 1;
+      boolean optimizeForWrite = functionAttributes[2] == 1;
       return executeFunction(functionName, hasResult, isHA, optimizeForWrite);
     } else {
       return executeFunction(functionObject);
