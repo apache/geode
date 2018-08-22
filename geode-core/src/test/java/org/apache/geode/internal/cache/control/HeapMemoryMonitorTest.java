@@ -66,6 +66,9 @@ public class HeapMemoryMonitorTest {
     heapMonitor = new HeapMemoryMonitor(null, internalCache, null);
     memberSet = new HashSet<>();
     memberSet.add(member);
+    heapMonitor.mostRecentEvent = new MemoryEvent(InternalResourceManager.ResourceType.HEAP_MEMORY,
+        MemoryThresholds.MemoryState.DISABLED, MemoryThresholds.MemoryState.DISABLED, null, 0L,
+        true, null); // myself is not critical
   }
 
   // ========== tests for getHeapCriticalMembersFrom ==========
@@ -122,20 +125,24 @@ public class HeapMemoryMonitorTest {
   @Test
   public void getHeapCriticalMembersFrom_DoesNotReturnMyselfWhenNotCritical() {
     Set expectedResult = new HashSet(memberSet);
+    Set advisorSet = new HashSet(memberSet);
     memberSet.add(myself);
 
-    getHeapCriticalMembersFrom_returnsNonEmptySet(memberSet, Collections.unmodifiableSet(memberSet),
+    getHeapCriticalMembersFrom_returnsNonEmptySet(advisorSet,
+        Collections.unmodifiableSet(memberSet),
         expectedResult);
   }
 
   @Test
   public void getHeapCriticalMembersFrom_IncludesMyselfWhenCritical() throws Exception {
+    Set advisorSet = new HashSet(memberSet);
     heapMonitor.mostRecentEvent = new MemoryEvent(InternalResourceManager.ResourceType.HEAP_MEMORY,
         MemoryThresholds.MemoryState.DISABLED, MemoryThresholds.MemoryState.CRITICAL, null, 0L,
         true, null);
     memberSet.add(myself);
 
-    getHeapCriticalMembersFrom_returnsNonEmptySet(memberSet, Collections.unmodifiableSet(memberSet),
+    getHeapCriticalMembersFrom_returnsNonEmptySet(advisorSet,
+        Collections.unmodifiableSet(memberSet),
         new HashSet(memberSet));
   }
 
@@ -262,7 +269,7 @@ public class HeapMemoryMonitorTest {
 
     Set<DistributedMember> criticalMembers = heapMonitor.getHeapCriticalMembersFrom(argSet);
 
-    assertThat(criticalMembers).containsExactlyElementsOf(expectedResult);
+    assertThat(criticalMembers).containsAll(expectedResult);
   }
 
   private void createLowMemoryIfNeededWithSetArg_returnsNull(boolean optimizeForWrite,

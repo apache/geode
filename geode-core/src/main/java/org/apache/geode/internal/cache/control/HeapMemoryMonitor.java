@@ -738,12 +738,17 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   }
 
   protected Set<DistributedMember> getHeapCriticalMembersFrom(Set<DistributedMember> members) {
-    Set<DistributedMember> result = new HashSet(members);
-    if (!this.mostRecentEvent.getState().isCritical()) {
-      result.remove(cache.getMyId());
-    }
-    result.retainAll(resourceAdvisor.adviseCriticalMembers());
+    Set<DistributedMember> result = new HashSet<>(members);
+    result.retainAll(getCriticalMembers());
     return result;
+  }
+
+  private Set<DistributedMember> getCriticalMembers() {
+    Set<DistributedMember> criticalMembers = new HashSet<>(resourceAdvisor.adviseCriticalMembers());
+    if (this.mostRecentEvent.getState().isCritical()) {
+      criticalMembers.add(cache.getMyId());
+    }
+    return criticalMembers;
   }
 
   public void checkForLowMemory(Function function, DistributedMember targetMember) {
