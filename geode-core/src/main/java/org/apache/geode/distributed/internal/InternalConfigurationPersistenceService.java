@@ -195,7 +195,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     if (sysProperty != null) {
       packages = Arrays.stream(sysProperty.split(",")).collect(Collectors.toSet());
     } else {
-      packages.add("org.apache.geode");
+      packages.add("*");
     }
     return packages;
   }
