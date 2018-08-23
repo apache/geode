@@ -89,6 +89,6 @@ integrationTest.dependsOn(war)
 war {
   dependsOn ':geode-core:webJar'
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtime
+  classpath configurations.runtimeClasspath
   classpath project(':geode-core').webJar.archivePath
 }

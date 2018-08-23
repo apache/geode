@@ -21,8 +21,8 @@ apply plugin: 'me.champeau.gradle.jmh'
 
 sourceSets {
   jca {
-    compileClasspath += configurations.compile
-    runtimeClasspath += configurations.runtime
+    compileClasspath += configurations.compileClasspath
+    runtimeClasspath += configurations.runtimeClasspath
   }
 }
 
