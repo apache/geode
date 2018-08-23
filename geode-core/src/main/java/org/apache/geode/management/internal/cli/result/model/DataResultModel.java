@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.result.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class DataResultModel extends AbstractResultModel {
 
@@ -37,4 +38,8 @@ public class DataResultModel extends AbstractResultModel {
     data.put(key, value != null ? value.toString() : "");
   }
 
+  public void addData(Properties gemfireProperties) {
+    gemfireProperties.stringPropertyNames().stream()
+        .forEach(k -> addData(k, gemfireProperties.get(k)));
+  }
 }
