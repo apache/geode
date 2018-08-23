@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -66,7 +65,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #48571: CacheClientProxy.getQueueSizeStat() gives negative numbers when client goes down.
  */
-@Category({ClientSubscriptionTest.class})
+@Category(ClientSubscriptionTest.class)
 public class HARegionQueueSizeRegressionTest implements Serializable {
 
   private static final AtomicInteger numOfPuts = new AtomicInteger();
@@ -79,8 +78,8 @@ public class HARegionQueueSizeRegressionTest implements Serializable {
   private VM server;
   private VM client;
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

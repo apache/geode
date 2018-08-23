@@ -49,7 +49,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 3.2
  */
-
 public class DiskRegionDistributedTest implements Serializable {
 
   private String uniqueName;
@@ -61,16 +60,16 @@ public class DiskRegionDistributedTest implements Serializable {
   private VM vm3;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
 
-  /** DistributedDiskDirRule invokes before and after for SerializableTestName */
-  private SerializableTestName testName = new SerializableTestName();
+  @Rule
+  public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule();
 
   @Rule
-  public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule(testName);
+  public SerializableTestName testName = new SerializableTestName();
 
   @Before
   public void setUp() {

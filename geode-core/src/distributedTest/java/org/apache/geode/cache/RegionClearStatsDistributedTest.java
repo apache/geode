@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -39,7 +38,6 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 /**
  * verifies the count of clear operation
  */
-
 @SuppressWarnings("serial")
 public class RegionClearStatsDistributedTest implements Serializable {
 
@@ -53,8 +51,8 @@ public class RegionClearStatsDistributedTest implements Serializable {
   private VM server1;
   private VM client1;
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -36,7 +37,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -72,7 +72,7 @@ public class RegisterInterestOnServerWithoutRegionRegressionTest implements Seri
   private VM client;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -112,7 +112,6 @@ public class RegisterInterestOnServerWithoutRegionRegressionTest implements Seri
 
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
-    cacheServer.setNotifyBySubscription(true);
     cacheServer.start();
     return cacheServer.getPort();
   }
@@ -124,18 +123,18 @@ public class RegisterInterestOnServerWithoutRegionRegressionTest implements Seri
         .setSubscriptionEnabled(true).setMinConnections(4).create(uniqueName);
 
     ClientRegionFactory crf =
-        clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
+        clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
     crf.setPoolName(pool.getName());
 
     crf.create(regionName);
   }
 
-  private void registerInterest() throws Exception {
+  private void registerInterest() {
     try (IgnoredException ie = addIgnoredException(RegionDestroyedException.class)) {
-      Region region = clientCacheRule.getClientCache().getRegion(regionName);
+      Region<Object, ?> region = clientCacheRule.getClientCache().getRegion(regionName);
       assertNotNull(region);
 
-      List listOfKeys = new ArrayList<>();
+      List<String> listOfKeys = new ArrayList<>();
       listOfKeys.add("key-1");
       listOfKeys.add("key-2");
       listOfKeys.add("key-3");

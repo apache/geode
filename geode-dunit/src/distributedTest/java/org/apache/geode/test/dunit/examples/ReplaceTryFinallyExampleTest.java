@@ -16,17 +16,15 @@ package org.apache.geode.test.dunit.examples;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
-@SuppressWarnings("serial")
 public class ReplaceTryFinallyExampleTest {
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
   public void doNotUseTryFinallyInTest() {
@@ -49,11 +47,11 @@ public class ReplaceTryFinallyExampleTest {
   }
 
   @Test
-  public void useBeforeAndAfterInstead() throws Exception {
+  public void useBeforeAndAfterInstead() {
     // perform testing that needs behaveSlowly
   }
 
   public static class Bar {
-    static boolean behaveSlowly = false;
+    static boolean behaveSlowly;
   }
 }

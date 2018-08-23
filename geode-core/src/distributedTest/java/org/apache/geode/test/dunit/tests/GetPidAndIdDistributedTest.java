@@ -25,14 +25,13 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
 public class GetPidAndIdDistributedTest {
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
-  public void getId_returnsVMSequentialId() throws Exception {
+  public void getId_returnsVMSequentialId() {
     for (int i = 0; i < getVMCount(); i++) {
       VM vm = getVM(i);
       assertThat(vm.getId()).isEqualTo(i);
@@ -40,7 +39,7 @@ public class GetPidAndIdDistributedTest {
   }
 
   @Test
-  public void getPid_returnsVMProcessId() throws Exception {
+  public void getPid_returnsVMProcessId() {
     for (int i = 0; i < getVMCount(); i++) {
       VM vm = getVM(i);
       int remotePid = vm.invoke(() -> ProcessUtils.identifyPid());

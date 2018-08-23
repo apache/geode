@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -52,7 +51,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 /**
  * Distributed tests for querying a PartitionedRegion.
  */
-
 @SuppressWarnings("serial")
 public class PRQueryDistributedTest implements Serializable {
 
@@ -62,8 +60,8 @@ public class PRQueryDistributedTest implements Serializable {
   private VM vm1;
   private VM vm2;
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

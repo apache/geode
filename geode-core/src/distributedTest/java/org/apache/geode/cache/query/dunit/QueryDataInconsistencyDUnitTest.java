@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,7 +29,6 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,7 +49,6 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -62,6 +61,8 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 @Category({OQLIndexTest.class})
 public class QueryDataInconsistencyDUnitTest implements Serializable {
 
+  private static final Logger logger = LogService.getLogger();
+
   private static final int cnt = 0;
   private static final int cntDest = 10;
   private static VM server = null;
@@ -69,28 +70,27 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
   private static String repRegionName = "TestRepRegion"; // default name
   private static volatile boolean hooked = false;
 
-  private Logger logger = LogService.getLogger(QueryDataInconsistencyDUnitTest.class.getName());
-
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule(1);
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule(1);
 
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().createCacheInAll().disconnectAfter().build();
+  public CacheRule cacheRule = new CacheRule(1);
+
+  @BeforeClass
+  public static void setUpClass() {
+    Awaitility.setDefaultPollInterval(200, TimeUnit.MILLISECONDS);
+    Awaitility.waitAtMost(30, TimeUnit.SECONDS);
+  }
 
   @Before
-  public void initialize() {
-    server = Host.getHost(0).getVM(0);
+  public void setUp() {
+    server = getVM(0);
+    server.invoke(() -> cacheRule.createCache());
   }
 
   @After
-  public final void postTearDownCacheTestCase() {
+  public void tearDown() {
     Invoke.invokeInEveryVM(QueryObserverHolder::reset);
-  }
-
-  @BeforeClass
-  public static final void postSetUp() {
-    Awaitility.setDefaultPollInterval(200, TimeUnit.MILLISECONDS);
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS);
   }
 
   @Test

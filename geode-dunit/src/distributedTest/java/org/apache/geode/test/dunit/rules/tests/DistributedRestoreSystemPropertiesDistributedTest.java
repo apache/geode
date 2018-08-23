@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
+@SuppressWarnings("serial")
 public class DistributedRestoreSystemPropertiesDistributedTest {
 
   private static final String NULL_PROPERTY = "NULL_PROPERTY";
@@ -39,7 +39,7 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
   private static final String PREEXISTING_VALUE = "PREEXISTING_VALUE";
 
   @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  public static DistributedRule distributedRule = new DistributedRule();
 
   @BeforeClass
   public static void assertPreconditions() {
@@ -74,7 +74,7 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
   }
 
   @Test
-  public void nullPropertyWithDifferentValues() throws Exception {
+  public void nullPropertyWithDifferentValues() {
     runTestWithValidation(NullPropertyWithDifferentValues.class);
 
     assertThat(System.getProperty(NULL_PROPERTY)).isNull();
@@ -86,7 +86,7 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
   }
 
   @Test
-  public void preexistingPropertyWithDifferentValues() throws Exception {
+  public void preexistingPropertyWithDifferentValues() {
     runTestWithValidation(NullPropertyWithDifferentValues.class);
 
     assertThat(System.getProperty(PREEXISTING_PROPERTY)).isEqualTo(PREEXISTING_VALUE);
@@ -107,7 +107,7 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
         new DistributedRestoreSystemProperties();
 
     @Test
-    public void nullPropertyWithDifferentValues() throws Exception {
+    public void nullPropertyWithDifferentValues() {
       System.setProperty(NULL_PROPERTY, "controller");
       getVM(0).invoke(() -> System.setProperty(NULL_PROPERTY, "vm0"));
       getVM(1).invoke(() -> System.setProperty(NULL_PROPERTY, "vm1"));
@@ -126,7 +126,7 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
         new DistributedRestoreSystemProperties();
 
     @Test
-    public void preexistingPropertyWithDifferentValues() throws Exception {
+    public void preexistingPropertyWithDifferentValues() {
       System.setProperty(PREEXISTING_PROPERTY, "controller");
       getVM(0).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm0"));
       getVM(1).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm1"));

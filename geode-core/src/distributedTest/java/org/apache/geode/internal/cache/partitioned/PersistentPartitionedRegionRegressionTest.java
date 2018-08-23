@@ -67,7 +67,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 /**
  * RegressionTests extracted from {@link PersistentPartitionedRegionDistributedTest}.
  */
-
 @SuppressWarnings("serial,unused")
 public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
@@ -81,7 +80,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
   private VM vm2;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -342,7 +341,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
    * Controller VM sees unexpected PartitionOffLineException while doing ops)
    */
   @Test
-  public void doesNotWaitForPreviousInstanceOfOnlineServer() throws Exception {
+  public void doesNotWaitForPreviousInstanceOfOnlineServer() {
     // Add a hook to disconnect from the distributed system when the initial image message shows up.
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {

@@ -105,7 +105,6 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
 
   private static final int NUM_BUCKETS = 15;
 
-  private String uniqueName;
   private String regionName1;
   private String regionName2;
   private String regionName3;
@@ -121,7 +120,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
   private transient ProcessStreamReader processReader;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -142,7 +141,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     vm2 = getVM(2);
     vm3 = getVM(3);
 
-    uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
+    String uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     regionName1 = uniqueName + "_region1";
     regionName2 = uniqueName + "_region2";
     regionName3 = uniqueName + "_region3";
@@ -902,10 +901,6 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
   private InternalCache getCache() {
     return cacheRule.getOrCreateCache();
   }
-
-  // private String getUniqueName() {
-  // return uniqueName;
-  // }
 
   private File getDiskStoreFor(final VM vm) {
     return new File(getDiskDirFor(vm), getUniqueName());

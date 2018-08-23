@@ -66,7 +66,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 public class SerialEventListenerDistributedTest implements Serializable {
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

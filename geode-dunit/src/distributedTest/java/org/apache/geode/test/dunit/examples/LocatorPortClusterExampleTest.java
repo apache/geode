@@ -34,12 +34,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
 @SuppressWarnings("serial")
 public class LocatorPortClusterExampleTest implements Serializable {
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   private static InternalCache cache;
 
@@ -68,7 +67,7 @@ public class LocatorPortClusterExampleTest implements Serializable {
   }
 
   @Test
-  public void clusterHasDUnitVMCountPlusTwoByDefault() throws Exception {
+  public void clusterHasDUnitVMCountPlusTwoByDefault() {
     int dunitVMCount = getVMCount();
     assertThat(cache.getDistributionManager().getViewMembers()).hasSize(dunitVMCount + 2);
   }

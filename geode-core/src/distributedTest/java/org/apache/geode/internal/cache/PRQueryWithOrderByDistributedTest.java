@@ -29,7 +29,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -52,7 +51,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 /**
  * Extracted from {@link PRQueryDistributedTest}.
  */
-@Category({OQLQueryTest.class})
+@Category(OQLQueryTest.class)
 @SuppressWarnings("serial")
 public class PRQueryWithOrderByDistributedTest implements Serializable {
 
@@ -63,8 +62,8 @@ public class PRQueryWithOrderByDistributedTest implements Serializable {
   private VM server2;
   private VM client;
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

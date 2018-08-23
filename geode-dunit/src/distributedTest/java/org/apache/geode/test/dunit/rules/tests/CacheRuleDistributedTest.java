@@ -36,7 +36,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 public class CacheRuleDistributedTest {
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
   public void defaultDoesNothing() {
