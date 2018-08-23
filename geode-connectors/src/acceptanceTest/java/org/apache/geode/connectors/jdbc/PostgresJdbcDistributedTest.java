@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
+import org.apache.geode.test.junit.categories.DockerComposedTest;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
@@ -30,7 +31,7 @@ import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 /**
  * End-to-end dunits for jdbc connector
  */
-@Category(org.apache.geode.test.junit.categories.DockerComposedTest.class)
+@Category(DockerComposedTest.class)
 public class PostgresJdbcDistributedTest extends JdbcDistributedTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =

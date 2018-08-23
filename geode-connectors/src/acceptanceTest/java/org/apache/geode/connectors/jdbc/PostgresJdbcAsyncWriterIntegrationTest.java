@@ -18,13 +18,14 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.geode.test.junit.categories.DockerComposedTest;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
-@Category(org.apache.geode.test.junit.categories.DockerComposedTest.class)
+@Category(DockerComposedTest.class)
 public class PostgresJdbcAsyncWriterIntegrationTest extends JdbcAsyncWriterIntegrationTest {
 
   private static final URL COMPOSE_RESOURCE_PATH =
