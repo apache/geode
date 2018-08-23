@@ -31,7 +31,7 @@ tests:
   ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: "1800"
   DUNIT_PARALLEL_FORKS: "7"
-  GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+  GRADLE_TASK: acceptanceTest
   execute_test_timeout: 45m
   PARALLEL_DUNIT: "true"
 - name: "Distributed"

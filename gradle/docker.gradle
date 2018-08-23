@@ -118,8 +118,7 @@ subprojects {
     upgradeTest.configure(dockerConfig)
     repeatTest.configure(dockerConfig)
     integrationTest.configure(dockerConfig)
-//    ACCEPTANCE TEST NEEDS DOCKER-COMPOSE TO WORK WITHIN DOCKER FIRST
-//    acceptanceTest.configure(dockerConfig)
+    acceptanceTest.configure(dockerConfig)
     uiTest.configure(dockerConfig)
   }
 }

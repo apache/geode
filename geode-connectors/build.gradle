@@ -24,6 +24,30 @@ repositories {
   }
 }
 
+// Run docker compose based tests here so that they don't get
+// containerized by the acceptanceTest. These tests must run
+// serially with respect to each other to avoid conflicts.
+task acceptanceTestWithDockerCompose(type: Test) {
+  testClassesDirs = sourceSets.acceptanceTest.output.classesDirs
+  classpath = sourceSets.acceptanceTest.runtimeClasspath
+  outputs.upToDateWhen { false }
+
+  useJUnit {
+    includeCategories = ['org.apache.geode.test.junit.categories.DockerComposedTest']
+  }
+
+  forkEvery 1
+  maxParallelForks 1
+}
+
+acceptanceTest.dependsOn(acceptanceTestWithDockerCompose)
+
+acceptanceTest {
+  useJUnit {
+    excludeCategories += 'org.apache.geode.test.junit.categories.DockerComposedTest'
+  }
+}
+
 dependencies {
   compile project(':geode-core')
   compile project(':geode-common')
