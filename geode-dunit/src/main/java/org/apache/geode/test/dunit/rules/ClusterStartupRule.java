@@ -42,6 +42,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
@@ -111,6 +112,13 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   public ClusterStartupRule(final int vmCount) {
     this.vmCount = vmCount;
+  }
+
+  /**
+   * Returns the port that the standard dunit locator is listening on.
+   */
+  public static int getDUnitLocatorPort() {
+    return DUnitEnv.get().getLocatorPort();
   }
 
   public static ClientCache getClientCache() {
