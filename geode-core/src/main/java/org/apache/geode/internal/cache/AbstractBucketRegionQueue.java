@@ -501,6 +501,18 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     failedBatchRemovalMessageKeys.add(key);
   }
 
+  public boolean isFailedBatchRemovalMessageKeysClearedFlag() {
+    return failedBatchRemovalMessageKeysClearedFlag;
+  }
+
+  public void setFailedBatchRemovalMessageKeysClearedFlag(
+      boolean failedBatchRemovalMessageKeysClearedFlag) {
+    this.failedBatchRemovalMessageKeysClearedFlag = failedBatchRemovalMessageKeysClearedFlag;
+  }
+
+  private boolean failedBatchRemovalMessageKeysClearedFlag = false;
+
+
   public ConcurrentHashSet<Object> getFailedBatchRemovalMessageKeys() {
     return this.failedBatchRemovalMessageKeys;
   }

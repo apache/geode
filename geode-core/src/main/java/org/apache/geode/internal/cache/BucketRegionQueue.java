@@ -188,6 +188,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         }
       }
     }
+    setFailedBatchRemovalMessageKeysClearedFlag(true);
   }
 
   @Override
