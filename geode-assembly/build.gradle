@@ -187,7 +187,7 @@ def cp = {
   // then add all the dependencies of the dependent jars
   jars += ' ' + configurations.archives.dependencies.collect {
     it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
-      .collect { it.configurations.runtime.collect { it.getName() }.findAll {
+      .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
         // depedencies from geode-core
         it.contains('antlr') ||
         it.contains('commons-io') ||
