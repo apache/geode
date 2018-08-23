@@ -22,11 +22,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
-import org.apache.geode.test.junit.categories.DockerComposedTest;
 import org.junit.ClassRule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DockerComposedTest;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
 
