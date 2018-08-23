@@ -16,12 +16,6 @@ package org.apache.geode;
 
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,6 +28,13 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.util.test.TestUtil;
+
 @Category({RestAPITest.class})
 public class GeodeDependencyJarIntegrationTest {
 
@@ -43,7 +44,8 @@ public class GeodeDependencyJarIntegrationTest {
   @Before
   public void loadExpectedClassPath() throws IOException {
     String assemblyContent =
-        TestUtil.getResourcePath(AssemblyContentsIntegrationTest.class, "/dependency_classpath.txt");
+        TestUtil.getResourcePath(AssemblyContentsIntegrationTest.class,
+            "/dependency_classpath.txt");
 
     expectedClassPath = Files.lines(Paths.get(assemblyContent)).collect(Collectors.toSet());
   }
@@ -81,7 +83,8 @@ public class GeodeDependencyJarIntegrationTest {
         "Please set the GEODE_HOME environment variable to the product installation directory.",
         geodeHomeDirectory.isDirectory());
 
-    JarFile geodeDependencies = new JarFile(new File(geodeHomeDirectory, "lib/geode-dependencies.jar"));
+    JarFile geodeDependencies =
+        new JarFile(new File(geodeHomeDirectory, "lib/geode-dependencies.jar"));
 
     Manifest geodeDependenciesManifest = geodeDependencies.getManifest();
 
@@ -91,4 +94,3 @@ public class GeodeDependencyJarIntegrationTest {
   }
 
 }
-
