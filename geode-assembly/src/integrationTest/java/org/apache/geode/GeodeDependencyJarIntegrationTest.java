@@ -16,10 +16,15 @@ package org.apache.geode;
 
 import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.util.test.TestUtil;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
@@ -28,48 +33,42 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
-
 @Category({RestAPITest.class})
 public class GeodeDependencyJarIntegrationTest {
 
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
-  private Set<String> expectedClassPath;
+  private Set<String> expectedClasspathElements;
 
   @Before
   public void loadExpectedClassPath() throws IOException {
-    String assemblyContent =
+    String dependencyClasspath =
         TestUtil.getResourcePath(AssemblyContentsIntegrationTest.class,
             "/dependency_classpath.txt");
 
-    expectedClassPath = Files.lines(Paths.get(assemblyContent)).collect(Collectors.toSet());
+    expectedClasspathElements =
+        Files.lines(Paths.get(dependencyClasspath)).collect(Collectors.toSet());
   }
 
   @Test
   public void verifyManifestClassPath() throws IOException {
-    Set<String> currentAssemblyContent = getManifestClassPath();
+    Set<String> currentClasspathElements = getManifestClassPath();
 
-    Files.write(Paths.get("assembly_content.txt"), currentAssemblyContent);
+    Files.write(Paths.get("dependency_classpath.txt"), currentClasspathElements);
 
-    Set<String> newAssemblyContent = new TreeSet<>(currentAssemblyContent);
-    newAssemblyContent.removeAll(expectedClassPath);
-    Set<String> missingAssemblyContent = new TreeSet<>(expectedClassPath);
-    missingAssemblyContent.removeAll(currentAssemblyContent);
+    Set<String> newClasspathElements = new TreeSet<>(currentClasspathElements);
+    newClasspathElements.removeAll(expectedClasspathElements);
+    Set<String> missingClasspathElements = new TreeSet<>(expectedClasspathElements);
+    missingClasspathElements.removeAll(currentClasspathElements);
 
     String message =
-        "The assembly contents have changed. Verify dependencies."
-            + "\nWhen fixed, copy geode-assembly/build/integrationTest/assembly_content.txt"
-            + "\nto src/integrationTest/resources/assembly_content.txt"
-            + "\nRemoved Content\n--------------\n"
-            + String.join("\n", missingAssemblyContent) + "\n\nAdded Content\n--------------\n"
-            + String.join("\n", newAssemblyContent) + "\n\n";
+        "The geode-dependency jar's manifest classpath has changed. Verify dependencies."
+            + "\nWhen fixed, copy geode-assembly/build/integrationTest/dependency_classpath.txt"
+            + "\nto src/integrationTest/resources/dependency_classpath.txt"
+            + "\nRemoved Elements\n--------------\n"
+            + String.join("\n", missingClasspathElements) + "\n\nAdded Elements\n--------------\n"
+            + String.join("\n", newClasspathElements) + "\n\n";
 
-    assertTrue(message, expectedClassPath.equals(currentAssemblyContent));
+    assertTrue(message, expectedClasspathElements.equals(currentClasspathElements));
   }
 
   /**
@@ -77,7 +76,6 @@ public class GeodeDependencyJarIntegrationTest {
    */
   private Set<String> getManifestClassPath() throws IOException {
     File geodeHomeDirectory = new File(GEODE_HOME);
-    Path geodeHomePath = Paths.get(GEODE_HOME);
 
     assertTrue(
         "Please set the GEODE_HOME environment variable to the product installation directory.",
@@ -88,9 +86,8 @@ public class GeodeDependencyJarIntegrationTest {
 
     Manifest geodeDependenciesManifest = geodeDependencies.getManifest();
 
-    String classPath = geodeDependenciesManifest.getMainAttributes().getValue("Class-Path");
+    String classpath = geodeDependenciesManifest.getMainAttributes().getValue("Class-Path");
 
-    return Arrays.stream(classPath.split(" ")).collect(Collectors.toSet());
+    return Arrays.stream(classpath.split(" ")).collect(Collectors.toSet());
   }
-
 }
