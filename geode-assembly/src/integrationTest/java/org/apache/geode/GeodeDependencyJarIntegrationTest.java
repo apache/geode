@@ -16,12 +16,6 @@ package org.apache.geode;
 
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +26,13 @@ import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category({RestAPITest.class})
 public class GeodeDependencyJarIntegrationTest {
