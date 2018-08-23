@@ -21,7 +21,6 @@ dependencies {
   compile project(':extensions:geode-modules-session-internal')
   compile project(':geode-core')
 
-  integrationTestCompile project(":geode-junit")
   integrationTestCompile project(":geode-dunit")
   integrationTestCompile ('org.httpunit:httpunit:' + project.'httpunit.version') {
     exclude group: 'javax.servlet'

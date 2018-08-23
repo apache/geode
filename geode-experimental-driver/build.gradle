@@ -28,6 +28,5 @@ dependencies {
 
     integrationTestCompile project(':geode-core')
     integrationTestCompile project(":geode-dunit")
-    integrationTestCompile project(":geode-junit")
     integrationTestCompile project(':geode-protobuf')
 }

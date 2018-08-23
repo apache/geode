@@ -17,7 +17,6 @@
 
 dependencies {
   compileOnly project(':geode-core')
-  compile project(':geode-common')
   compile project(':geode-protobuf-messages')
   compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
 
@@ -28,9 +27,8 @@ dependencies {
 
 
   integrationTestCompile project(":geode-dunit")
-  integrationTestCompile project(":geode-junit")
   integrationTestCompile project(":geode-protobuf:geode-protobuf-test")
 
-  distributedTestCompile project(":geode-junit")
+
   distributedTestCompile project(":geode-protobuf:geode-protobuf-test")
 }

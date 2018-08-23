@@ -17,8 +17,6 @@
 
 dependencies {
   compileOnly project(':geode-core')
-  compileOnly project(':geode-json')
-  compileOnly project(':geode-common')
 
   compile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
     exclude module: 'junit-dep'

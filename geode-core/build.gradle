@@ -161,7 +161,6 @@ dependencies {
   testRuntime 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
-  integrationTestCompile (project(":geode-junit"))
   integrationTestCompile (project(":geode-dunit")) {
     exclude module: 'geode-core'
   }
@@ -176,8 +175,7 @@ dependencies {
   integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 
 
-  distributedTestCompile project(":geode-junit")
-  distributedTestCompile project(':geode-dunit')
+  distributedTestCompile project(":geode-dunit")
   distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
   distributedTestCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
@@ -185,7 +183,6 @@ dependencies {
   distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
 
 
-  upgradeTestCompile (project(":geode-junit"))
   upgradeTestCompile (project(":geode-dunit")) {
     exclude module: 'geode-core'
   }

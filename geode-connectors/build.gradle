@@ -34,12 +34,9 @@ dependencies {
 
 
   integrationTestCompile project(":geode-dunit")
-  integrationTestCompile project(":geode-junit")
 
-  distributedTestCompile project(":geode-junit")
 
   acceptanceTestCompile project(":geode-dunit")
-  acceptanceTestCompile project(":geode-junit")
   acceptanceTestCompile group: 'mysql', name: 'mysql-connector-java', version: '5.1.46'
   acceptanceTestCompile group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1'
 

@@ -82,7 +82,6 @@ dependencies {
   uiTestCompile project(':geode-junit')
   uiTestCompile project(':geode-json')
   uiTestCompile project(':geode-pulse:geode-pulse-test')
-  uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
   uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
 
   uiTestRuntime project(':geode-core')

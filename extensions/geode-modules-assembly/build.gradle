@@ -170,7 +170,7 @@ task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar', ':extens
   }
 }
 
-task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar', ':extensions:geode-modules-tomcat7:jar', ':extensions:geode-modules-tomcat8:jar']) {
+task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar', ':extensions:geode-modules-session-internal:jar', ':extensions:geode-modules-tomcat7:jar', ':extensions:geode-modules-tomcat8:jar']) {
   baseName = moduleBaseName
   classifier = "AppServer"
 

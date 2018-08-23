@@ -21,12 +21,9 @@ dependencies {
   testCompile project(':geode-core')
   testCompile project(':geode-junit')
 
-  integrationTestCompile (project(":geode-junit"))
   integrationTestCompile project(":geode-dunit")
 
-  distributedTestCompile project(":geode-junit")
 
-  upgradeTestCompile (project(":geode-junit"))
   upgradeTestCompile (project(":geode-dunit")) {
     exclude module: 'geode-core'
   }

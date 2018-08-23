@@ -93,10 +93,8 @@ dependencies {
 
 
   distributedTestCompile project(':geode-core')
-  distributedTestCompile project(':geode-junit')
   distributedTestCompile project(':extensions:session-testing-war')
   distributedTestCompile project(':geode-assembly:geode-assembly-test')
-  distributedTestCompile group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
   distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
 
   distributedTestRuntime (project(':extensions:geode-modules-session-internal')) {
@@ -107,12 +105,10 @@ dependencies {
 
   acceptanceTestCompile project(':geode-core')
   acceptanceTestCompile project(":geode-dunit")
-  acceptanceTestCompile project(":geode-junit")
 
 
   uiTestCompile project(':geode-core')
   uiTestCompile project(":geode-dunit")
-  uiTestCompile project(":geode-junit")
   uiTestCompile project(":geode-pulse")
   uiTestCompile project(":geode-pulse:geode-pulse-test")
   uiTestCompile project(':geode-assembly:geode-assembly-test')
@@ -126,7 +122,6 @@ dependencies {
 
   upgradeTestCompile project(':geode-core')
   upgradeTestCompile project(":geode-dunit")
-  upgradeTestCompile project(":geode-junit")
   upgradeTestCompile project(':geode-assembly:geode-assembly-test')
 
   upgradeTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
