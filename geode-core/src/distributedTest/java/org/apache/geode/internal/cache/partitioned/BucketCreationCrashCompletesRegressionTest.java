@@ -170,9 +170,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
         .getTotalNumBuckets(); i++) {
       int bucketId = i;
 
-      await().atMost(2, MINUTES).untilAsserted(() -> {
-        hasBucketOwners(partitionedRegion, bucketId);
-      });
+      await().atMost(2, MINUTES).until(() -> hasBucketOwners(partitionedRegion, bucketId));
 
       List owners = partitionedRegion.getBucketOwnersForValidation(bucketId);
       assertThat(owners).isNotNull();
