@@ -21,6 +21,7 @@ import static org.apache.geode.admin.AdminDistributedSystemFactory.getDistribute
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.RegionShortcut.PARTITION_OVERFLOW;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PROXY;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
@@ -63,7 +64,6 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -100,9 +100,8 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 /**
  * Tests the basic use cases for PR persistence.
  */
-
 @RunWith(JUnitParamsRunner.class)
-@SuppressWarnings("deprecation,serial,unused")
+@SuppressWarnings("serial,unused")
 public class PersistentPartitionedRegionDistributedTest implements Serializable {
 
   private static final int NUM_BUCKETS = 15;
@@ -117,7 +116,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   private VM vm3;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule =
@@ -206,11 +205,10 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   @Test
   public void missingDiskStoreCanBeRevoked() throws Exception {
-    int numBuckets = 50;
-
     vm0.invoke(() -> createPartitionedRegion(1, -1, 113, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
 
+    int numBuckets = 50;
     vm0.invoke(() -> createData(0, numBuckets, "a"));
 
     Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList());
@@ -854,7 +852,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
    */
   @Test
   public void doesNotLogSuspectStringDuringCacheClosure() {
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION_OVERFLOW);
+    RegionFactory<?, ?> regionFactory = getCache().createRegionFactory(PARTITION_OVERFLOW);
     regionFactory.setEvictionAttributes(createLRUEntryAttributes(50, OVERFLOW_TO_DISK));
 
     regionFactory.create(partitionedRegionName);
@@ -864,12 +862,11 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   @Test
   public void partitionedRegionsCanBeNested() throws Exception {
-    int numBuckets = 50;
-
     vm0.invoke(() -> createNestedPartitionedRegion());
     vm1.invoke(() -> createNestedPartitionedRegion());
     vm2.invoke(() -> createNestedPartitionedRegion());
 
+    int numBuckets = 50;
     vm0.invoke(() -> {
       createDataFor(0, numBuckets, "a", parentRegion1Name + SEPARATOR + partitionedRegionName);
       createDataFor(0, numBuckets, "b", parentRegion2Name + SEPARATOR + partitionedRegionName);
@@ -1357,7 +1354,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     partitionAttributesFactory.setRedundantCopies(1);
 
     RegionFactory<?, ?> regionFactoryPR =
-        getCache().createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+        getCache().createRegionFactory(PARTITION_PERSISTENT);
     regionFactoryPR.setPartitionAttributes(partitionAttributesFactory.create());
 
     regionFactoryPR.createSubregion(parentRegion1, partitionedRegionName);
@@ -1495,7 +1492,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     partitionAttributesFactory.setLocalMaxMemory(500);
 
     RegionFactory<?, ?> regionFactory =
-        getCache().createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+        getCache().createRegionFactory(PARTITION_PERSISTENT);
     regionFactory.setDiskSynchronous(synchronous);
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 

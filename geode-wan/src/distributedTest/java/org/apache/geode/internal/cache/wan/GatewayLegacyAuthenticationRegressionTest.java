@@ -38,7 +38,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -95,8 +94,8 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
   private int londonReceiverPort;
   private int newYorkReceiverPort;
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -327,11 +326,6 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
       }
       return new TestPrincipal(userName);
     }
-
-    @Override
-    public void close() {
-      // nothing
-    }
   }
 
   public static class TestPeerAuthInitialize implements AuthInitialize {
@@ -371,11 +365,6 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
       return newProps;
     }
-
-    @Override
-    public void close() {
-      // nothing
-    }
   }
 
   public static class TestClientOrReceiverAuthenticator implements Authenticator {
@@ -409,11 +398,6 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
         throw new AuthenticationFailedException(msg);
       }
       return new TestPrincipal(userName);
-    }
-
-    @Override
-    public void close() {
-      // nothing
     }
   }
 }

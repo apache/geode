@@ -26,11 +26,10 @@ import org.junit.Test;
 
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
 public class GetCurrentVmNumDistributedTest {
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
   public void returnsNegativeOneInController() {

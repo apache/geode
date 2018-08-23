@@ -15,11 +15,9 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -32,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -61,7 +59,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category({ClientSubscriptionTest.class})
+@Category(ClientSubscriptionTest.class)
 @SuppressWarnings("serial")
 public class ClientProxyWithDeltaDistributedTest implements Serializable {
 
@@ -78,8 +76,8 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
   private VM client1;
   private VM client2;
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Before
   public void setUp() throws Exception {
@@ -87,7 +85,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
     client1 = getVM(1);
     client2 = getVM(3);
 
-    hostName = getServerHostName(server.getHost());
+    hostName = getHostName();
 
     serverPort = server.invoke(() -> createServerCache());
 
@@ -113,7 +111,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
    * Verifies that delta put arrives as delta object to client with CACHING_PROXY region
    */
   @Test
-  public void cachingClientReceivesDeltaUpdates() throws Exception {
+  public void cachingClientReceivesDeltaUpdates() {
     client1.invoke(() -> {
       clientCache.close();
       clientCache = null;
@@ -151,7 +149,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
    * Verifies that delta put arrives as complete object to client with PROXY region
    */
   @Test
-  public void emptyClientReceivesFullUpdatesInsteadOfDeltaUpdates() throws Exception {
+  public void emptyClientReceivesFullUpdatesInsteadOfDeltaUpdates() {
     client2.invoke(() -> {
       CacheClientUpdater.isUsedByTest = true;
       clientCache.<Integer, DeltaEnabledObject>getRegion(PROXY_NAME).getAttributesMutator()
@@ -179,7 +177,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
    * Verifies that reusing delta object as value does not use delta when putting with new key
    */
   @Test
-  public void reusingValueForCreatesDoesNotUseDelta() throws Exception {
+  public void reusingValueForCreatesDoesNotUseDelta() {
     client1.invoke(() -> {
       Region<Integer, DeltaEnabledObject> region = clientCache.getRegion(PROXY_NAME);
       DeltaEnabledObject objectWithDelta = new DeltaEnabledObject();
@@ -203,13 +201,13 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
     regionFactory.setDataPolicy(DataPolicy.REPLICATE);
     regionFactory.setScope(Scope.DISTRIBUTED_ACK);
 
-    regionFactory.<Integer, DeltaEnabledObject>create(PROXY_NAME);
-    regionFactory.<Integer, DeltaEnabledObject>create(CACHING_PROXY_NAME);
+    regionFactory.create(PROXY_NAME);
+    regionFactory.create(CACHING_PROXY_NAME);
 
-    CacheServer server = cache.addCacheServer();
-    server.setPort(getRandomAvailablePort(SOCKET));
-    server.start();
-    return server.getPort();
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
   }
 
   private void createClientCacheWithProxyRegion(final String hostName, final int port) {

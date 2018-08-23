@@ -56,7 +56,7 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
   private VM server3;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -109,9 +109,9 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
         .setSubscriptionRedundancy(-1).setSubscriptionMessageTrackingTimeout(54321)
         .setIdleTimeout(-1).setPingInterval(200).create(uniqueName);
 
-    ClientRegionFactory crf =
+    ClientRegionFactory clientRegionFactory =
         clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
+    clientRegionFactory.setPoolName(pool.getName());
   }
 
   private void stopServer() {

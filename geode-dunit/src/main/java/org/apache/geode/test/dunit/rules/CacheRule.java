@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -107,7 +108,12 @@ public class CacheRule extends AbstractDistributedRule {
     this(new Builder());
   }
 
+  public CacheRule(final int vmCount) {
+    this(new Builder().vmCount(vmCount));
+  }
+
   CacheRule(final Builder builder) {
+    super(builder.vmCount);
     createCacheInAll = builder.createCacheInAll;
     createCache = builder.createCache;
     disconnectAfter = builder.disconnectAfter;
@@ -262,14 +268,16 @@ public class CacheRule extends AbstractDistributedRule {
    */
   public static class Builder {
 
+    private final List<VM> createCacheInVMs = new ArrayList<>();
+    private final Properties systemProperties = new Properties();
+
     private boolean createCacheInAll;
     private boolean createCache;
     private boolean disconnectAfter;
     private boolean destroyRegions;
     private boolean replaceConfig;
-    private List<VM> createCacheInVMs = new ArrayList<>();
     private Properties config = new Properties();
-    private Properties systemProperties = new Properties();
+    private int vmCount = DEFAULT_VM_COUNT;
 
     public Builder() {
       // nothing
@@ -343,6 +351,11 @@ public class CacheRule extends AbstractDistributedRule {
 
     public Builder addSystemProperties(final Properties config) {
       systemProperties.putAll(config);
+      return this;
+    }
+
+    public Builder vmCount(final int vmCount) {
+      this.vmCount = vmCount;
       return this;
     }
 

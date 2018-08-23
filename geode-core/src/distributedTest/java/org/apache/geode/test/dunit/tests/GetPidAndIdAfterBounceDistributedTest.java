@@ -24,17 +24,16 @@ import org.junit.Test;
 
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
 public class GetPidAndIdAfterBounceDistributedTest {
 
   private int[] idsBefore;
   private int[] pidsBefore;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     idsBefore = new int[getVMCount()];
     pidsBefore = new int[getVMCount()];
 
@@ -46,14 +45,14 @@ public class GetPidAndIdAfterBounceDistributedTest {
   }
 
   @Test
-  public void getIdShouldReturnSameValueAfterBounce() throws Exception {
+  public void getIdShouldReturnSameValueAfterBounce() {
     for (int i = 0; i < getVMCount(); i++) {
       assertThat(getVM(i).getId()).isEqualTo(idsBefore[i]);
     }
   }
 
   @Test
-  public void getPidShouldReturnDifferentValueAfterBounce() throws Exception {
+  public void getPidShouldReturnDifferentValueAfterBounce() {
     for (int i = 0; i < getVMCount(); i++) {
       assertThat(getVM(i).getPid()).isNotEqualTo(pidsBefore[i]);
     }

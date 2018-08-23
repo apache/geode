@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.jta;
 
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.junit.Assert.assertEquals;
@@ -29,13 +31,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.InternalClientCache;
@@ -55,7 +55,13 @@ import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@SuppressWarnings("serial")
 public class ClientServerJTAFailoverDistributedTest implements Serializable {
+
+  private final int key = 1;
+  private final String value = "value1";
+  private final String newValue = "value2";
+
   private String hostName;
   private String uniqueName;
   private String regionName;
@@ -66,12 +72,8 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
   private int port1;
   private int port2;
 
-  private final int key = 1;
-  private final String value = "value1";
-  private final String newValue = "value2";
-
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -118,14 +120,15 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
   }
 
   private int createServerRegion(int totalNumBuckets, boolean isAccessor) throws Exception {
-    PartitionAttributesFactory factory = new PartitionAttributesFactory();
-    factory.setTotalNumBuckets(totalNumBuckets);
+    PartitionAttributesFactory<?, ?> partitionAttributesFactory = new PartitionAttributesFactory();
+    partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
     if (isAccessor) {
-      factory.setLocalMaxMemory(0);
+      partitionAttributesFactory.setLocalMaxMemory(0);
     }
-    PartitionAttributes partitionAttributes = factory.create();
-    cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(partitionAttributes).create(regionName);
+
+    RegionFactory regionFactory = cacheRule.getOrCreateCache().createRegionFactory(PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+    regionFactory.create(regionName);
 
     CacheServer server = cacheRule.getCache().addCacheServer();
     server.setPort(0);
@@ -144,10 +147,10 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
-    ClientRegionFactory crf =
-        clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
-    crf.create(regionName);
+    ClientRegionFactory<?, ?> clientRegionFactory =
+        clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
+    clientRegionFactory.setPoolName(pool.getName());
+    clientRegionFactory.create(regionName);
 
     if (ports.length > 1) {
       pool.acquireConnection(new ServerLocation(hostName, port1));

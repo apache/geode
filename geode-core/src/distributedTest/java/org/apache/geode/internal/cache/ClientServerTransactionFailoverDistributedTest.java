@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 import org.junit.Before;
@@ -48,7 +49,13 @@ import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@SuppressWarnings("serial")
 public class ClientServerTransactionFailoverDistributedTest implements Serializable {
+
+  private final int numOfOperationsInTransaction = 10;
+  private final int key1 = 1;
+  private final String originalValue = "originalValue";
+
   private String hostName;
   private String uniqueName;
   private String regionName;
@@ -58,15 +65,9 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   private VM server4;
   private int port1;
   private int port2;
-  private int port3;
-  private int port4;
-
-  private final int numOfOperationsInTransaction = 10;
-  private final int key1 = 1;
-  private final String originalValue = "originalValue";
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -136,7 +137,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     CacheServerTestUtil.disableShufflingOfEndpoints();
     PoolImpl pool;
     try {
-      pool = getPool(connectToFirstPort, ports);
+      pool = getPool(ports);
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
@@ -152,7 +153,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     }
   }
 
-  private PoolImpl getPool(boolean connectToFirstPort, int... ports) {
+  private PoolImpl getPool(int... ports) {
     PoolFactory factory = PoolManager.createFactory();
     for (int port : ports) {
       factory.addServer(hostName, port);
@@ -177,7 +178,8 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     return txManager.suspend();
   }
 
-  private void resumeTransaction(TransactionId txId, int numOfOperations) throws Exception {
+  private void resumeTransaction(TransactionId txId, int numOfOperations)
+      throws InterruptedException {
     Region region = clientCacheRule.getClientCache().getRegion(regionName);
     TXManagerImpl txManager =
         (TXManagerImpl) clientCacheRule.getClientCache().getCacheTransactionManager();
@@ -288,7 +290,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   private void beginAndSuspendTransactions(int numOfTransactions, int numOfOperations,
       Thread[] threads,
       FutureTask<TransactionId>[] futureTasks, TransactionId[] txIds)
-      throws InterruptedException, java.util.concurrent.ExecutionException {
+      throws InterruptedException, ExecutionException {
     for (int i = 0; i < numOfTransactions; i++) {
       FutureTask<TransactionId> futureTask =
           new FutureTask<>(() -> beginAndSuspendTransaction(numOfOperations));
@@ -304,17 +306,16 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   }
 
   private void setupClientAndServerForMultipleTransactions() {
-    port4 = server4.invoke(() -> createServerRegion(1, false));
+    int port4 = server4.invoke(() -> createServerRegion(1, false));
     server4.invoke(() -> doPut(key1, originalValue));
     port1 = server1.invoke(() -> createServerRegion(1, true));
     port2 = server2.invoke(() -> createServerRegion(1, true));
-    port3 = server3.invoke(() -> createServerRegion(1, true));
+    int port3 = server3.invoke(() -> createServerRegion(1, true));
     createClientRegion(false, port1, port2, port3, port4);
   }
 
   private void resumeTransactions(int numOfTransactions, int numOfOperations, Thread[] threads,
-      TransactionId[] txIds)
-      throws InterruptedException {
+      TransactionId[] txIds) {
     for (int i = 0; i < numOfTransactions; i++) {
       TransactionId txId = txIds[i];
       Thread thread = new Thread(() -> {
@@ -330,7 +331,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   }
 
   private void unregisterClientMultipleTimes(ClientProxyMembershipID clientProxyMembershipID)
-      throws Exception {
+      throws InterruptedException {
     int numOfUnregisterClients = 4;
     for (int i = 0; i < numOfUnregisterClients; i++) {
       getVM(i).invoke(() -> unregisterClient(clientProxyMembershipID));

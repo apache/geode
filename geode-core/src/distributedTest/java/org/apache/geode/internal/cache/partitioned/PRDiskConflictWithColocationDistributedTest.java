@@ -51,7 +51,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 /**
  * Extracted from {@link PersistentPartitionedRegionDistributedTest}.
  */
-
 @SuppressWarnings("serial")
 public class PRDiskConflictWithColocationDistributedTest implements Serializable {
 
@@ -61,7 +60,7 @@ public class PRDiskConflictWithColocationDistributedTest implements Serializable
   private VM vm0;
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

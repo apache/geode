@@ -95,11 +95,11 @@ public class AsyncEventListenerWithFilterDistributedTest implements Serializable
 
   @Parameters(name = "dispatcherThreadCount={0}")
   public static Iterable<Integer> dispatcherThreadCounts() {
-    return Arrays.asList(1, 3); // used to include 3, 5 as well
+    return Arrays.asList(1, 3);
   }
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

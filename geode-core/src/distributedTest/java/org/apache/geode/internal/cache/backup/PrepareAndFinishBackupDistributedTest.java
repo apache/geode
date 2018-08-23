@@ -69,7 +69,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings("serial,unused")
 public class PrepareAndFinishBackupDistributedTest {
 
   private String uniqueName;
@@ -85,7 +85,7 @@ public class PrepareAndFinishBackupDistributedTest {
   }
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

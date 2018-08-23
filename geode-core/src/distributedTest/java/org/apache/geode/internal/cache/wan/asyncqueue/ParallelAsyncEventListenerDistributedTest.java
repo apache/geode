@@ -117,7 +117,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   }
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

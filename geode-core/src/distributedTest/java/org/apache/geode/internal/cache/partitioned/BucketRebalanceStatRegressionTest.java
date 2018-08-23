@@ -73,7 +73,7 @@ public class BucketRebalanceStatRegressionTest implements Serializable {
   private VM vm1;
 
   @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  public static DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

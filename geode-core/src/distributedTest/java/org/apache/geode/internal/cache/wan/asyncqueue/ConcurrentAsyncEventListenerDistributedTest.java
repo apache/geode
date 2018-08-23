@@ -71,7 +71,7 @@ public class ConcurrentAsyncEventListenerDistributedTest implements Serializable
   private static final String SUBSTITUTION_PREFIX = "substituted_";
 
   @Rule
-  public DistributedRule distributedTestRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

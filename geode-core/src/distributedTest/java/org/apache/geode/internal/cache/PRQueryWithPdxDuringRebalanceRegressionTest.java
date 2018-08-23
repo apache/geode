@@ -25,7 +25,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,7 +56,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #43102: hang while executing query with pdx objects
  */
-@Category({OQLQueryTest.class})
+@Category(OQLQueryTest.class)
 @SuppressWarnings("serial")
 public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable {
 
@@ -70,8 +69,8 @@ public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable
   private VM vm1;
   private VM vm2;
 
-  @ClassRule
-  public static DistributedRule distributedTestRule = new DistributedRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

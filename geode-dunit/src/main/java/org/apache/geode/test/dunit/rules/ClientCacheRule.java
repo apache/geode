@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -78,6 +79,10 @@ public class ClientCacheRule extends AbstractDistributedRule {
   }
 
   public ClientCacheRule() {
+    this(new Builder());
+  }
+
+  public ClientCacheRule(final int vmCount) {
     this(new Builder());
   }
 
@@ -166,11 +171,13 @@ public class ClientCacheRule extends AbstractDistributedRule {
    */
   public static class Builder {
 
+    private final List<VM> createClientCacheInVMs = new ArrayList<>();
+    private final Properties systemProperties = new Properties();
+
     private boolean createClientCache;
     private boolean disconnectAfter;
-    private List<VM> createClientCacheInVMs = new ArrayList<>();
     private Properties config = new Properties();
-    private Properties systemProperties = new Properties();
+    private int vmCount = DEFAULT_VM_COUNT;
 
     public Builder() {
       // nothing
@@ -225,6 +232,11 @@ public class ClientCacheRule extends AbstractDistributedRule {
 
     public Builder addSystemProperties(final Properties config) {
       systemProperties.putAll(config);
+      return this;
+    }
+
+    public Builder vmCount(final int vmCount) {
+      this.vmCount = vmCount;
       return this;
     }
 
