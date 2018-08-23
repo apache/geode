@@ -144,7 +144,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   }
 
   private volatile MemoryThresholds thresholds = new MemoryThresholds(tenuredPoolMaxMemory);
-  protected volatile MemoryEvent mostRecentEvent = new MemoryEvent(ResourceType.HEAP_MEMORY,
+  private volatile MemoryEvent mostRecentEvent = new MemoryEvent(ResourceType.HEAP_MEMORY,
       MemoryState.DISABLED, MemoryState.DISABLED, null, 0L, true, this.thresholds);
   private volatile MemoryState currentState = MemoryState.DISABLED;
 
@@ -738,9 +738,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   }
 
   protected Set<DistributedMember> getHeapCriticalMembersFrom(Set<DistributedMember> members) {
-    Set<DistributedMember> result = new HashSet<>(members);
-    result.retainAll(getCriticalMembers());
-    return result;
+    Set<DistributedMember> criticalMembers = getCriticalMembers();
+    criticalMembers.retainAll(members);
+    return criticalMembers;
   }
 
   private Set<DistributedMember> getCriticalMembers() {

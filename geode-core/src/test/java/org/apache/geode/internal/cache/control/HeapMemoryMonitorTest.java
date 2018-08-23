@@ -66,9 +66,9 @@ public class HeapMemoryMonitorTest {
     heapMonitor = new HeapMemoryMonitor(null, internalCache, null);
     memberSet = new HashSet<>();
     memberSet.add(member);
-    heapMonitor.mostRecentEvent = new MemoryEvent(InternalResourceManager.ResourceType.HEAP_MEMORY,
+    heapMonitor.setMostRecentEvent(new MemoryEvent(InternalResourceManager.ResourceType.HEAP_MEMORY,
         MemoryThresholds.MemoryState.DISABLED, MemoryThresholds.MemoryState.DISABLED, null, 0L,
-        true, null); // myself is not critical
+        true, null)); // myself is not critical
   }
 
   // ========== tests for getHeapCriticalMembersFrom ==========
@@ -136,9 +136,9 @@ public class HeapMemoryMonitorTest {
   @Test
   public void getHeapCriticalMembersFrom_IncludesMyselfWhenCritical() throws Exception {
     Set advisorSet = new HashSet(memberSet);
-    heapMonitor.mostRecentEvent = new MemoryEvent(InternalResourceManager.ResourceType.HEAP_MEMORY,
+    heapMonitor.setMostRecentEvent(new MemoryEvent(InternalResourceManager.ResourceType.HEAP_MEMORY,
         MemoryThresholds.MemoryState.DISABLED, MemoryThresholds.MemoryState.CRITICAL, null, 0L,
-        true, null);
+        true, null));
     memberSet.add(myself);
 
     getHeapCriticalMembersFrom_returnsNonEmptySet(advisorSet,

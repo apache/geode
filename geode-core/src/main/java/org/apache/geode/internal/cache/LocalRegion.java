@@ -5756,7 +5756,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       return MemoryThresholdInfo.getNotReached();
     }
     return new MemoryThresholdInfo(isMemoryThresholdReached(),
-        getMemoryThresholdReachedMembers());
+        Collections.singleton(this.cache.getMyId()));
   }
 
   /**
@@ -10758,13 +10758,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return resultCollector;
   }
 
-  /**
-   * @return the set of members which are known to be critical
-   */
-  public Set<DistributedMember> getMemoryThresholdReachedMembers() {
-    return Collections.singleton(this.cache.getMyId());
-  }
-
   @Override
   public void onEvent(MemoryEvent event) {
     if (logger.isDebugEnabled()) {
@@ -10847,7 +10840,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * This method is meant to be overridden by DistributedRegion and PartitionedRegions to cleanup
    * CRITICAL state
    */
-  public void removeMemberFromCriticalList(DistributedMember member) {
+  public void removeCriticalMember(DistributedMember member) {
     // should not be called for LocalRegion
     Assert.assertTrue(false);
   }

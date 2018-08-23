@@ -9274,7 +9274,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void removeMemberFromCriticalList(DistributedMember member) {
+  public void removeCriticalMember(DistributedMember member) {
     if (logger.isDebugEnabled()) {
       logger.debug("PR: removing member {} from critical member list", member);
     }

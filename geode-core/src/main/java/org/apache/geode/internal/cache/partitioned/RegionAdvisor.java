@@ -1822,7 +1822,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       logger.debug("RA: removing profile {}", profile);
     }
     if (getAdvisee() instanceof PartitionedRegion) {
-      ((PartitionedRegion) getAdvisee()).removeMemberFromCriticalList(profile.peerMemberId);
+      ((PartitionedRegion) getAdvisee()).removeCriticalMember(profile.peerMemberId);
     }
 
     if (this.buckets != null) {

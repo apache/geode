@@ -160,12 +160,13 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
   public void testThatMemoryThresholdInfoRelectsStateOfRegion() {
     InternalDistributedMember internalDM = mock(InternalDistributedMember.class);
     DistributedRegion distRegion = prepare(true, false);
-    distRegion.setMemoryThresholdReachedCounterTrue(internalDM);
+    distRegion.addCriticalMember(internalDM);
 
     MemoryThresholdInfo info = distRegion.getAtomicThresholdInfo();
 
     assertThat(distRegion.isMemoryThresholdReached()).isTrue();
-    assertThat(distRegion.getMemoryThresholdReachedMembers()).containsExactly(internalDM);
+    assertThat(distRegion.getAtomicThresholdInfo().getMembersThatReachedThreshold())
+        .containsExactly(internalDM);
     assertThat(info.isMemoryThresholdReached()).isTrue();
     assertThat(info.getMembersThatReachedThreshold()).containsExactly(internalDM);
   }
@@ -176,10 +177,11 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
     DistributedRegion distRegion = prepare(true, false);
 
     MemoryThresholdInfo info = distRegion.getAtomicThresholdInfo();
-    distRegion.setMemoryThresholdReachedCounterTrue(internalDM);
+    distRegion.addCriticalMember(internalDM);
 
     assertThat(distRegion.isMemoryThresholdReached()).isTrue();
-    assertThat(distRegion.getMemoryThresholdReachedMembers()).containsExactly(internalDM);
+    assertThat(distRegion.getAtomicThresholdInfo().getMembersThatReachedThreshold())
+        .containsExactly(internalDM);
     assertThat(info.isMemoryThresholdReached()).isFalse();
     assertThat(info.getMembersThatReachedThreshold()).isEmpty();
   }
