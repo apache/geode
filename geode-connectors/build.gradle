@@ -48,6 +48,13 @@ acceptanceTest {
   }
 }
 
+// The connector tests using docker-compose can't run in containers
+repeatTest{
+  useJUnit {
+    excludeCategories += 'org.apache.geode.test.junit.categories.DockerComposedTest'
+  }
+}
+
 dependencies {
   compile project(':geode-core')
   compile project(':geode-common')
