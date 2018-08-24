@@ -86,15 +86,6 @@ public class ClientServerHostNameVerificationDistributedTest {
     CertificateBuilder clientCertificate = new CertificateBuilder()
         .commonName("client");
 
-    CertStores locatorStore = CertStores.locatorStore();
-    locatorStore.withCertificate(locatorCertificate);
-
-    CertStores serverStore = CertStores.serverStore();
-    serverStore.withCertificate(serverCertificate);
-
-    CertStores clientStore = CertStores.clientStore();
-    clientStore.withCertificate(clientCertificate);
-
     validateClientConnection(locatorCertificate, serverCertificate, clientCertificate, true, true,
         true,
         null);
