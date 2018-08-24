@@ -27,7 +27,7 @@ platforms:
 tests:
 - name: "Acceptance"
   CPUS: "8"
-  RAM: "12"
+  RAM: "48"
   ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: "1800"
   DUNIT_PARALLEL_FORKS: "7"
