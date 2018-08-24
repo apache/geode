@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.apache.geode.cache.ssl.TestSSLUtils.CertificateBuilder;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
@@ -28,15 +29,14 @@ import java.security.GeneralSecurityException;
 import java.util.Properties;
 
 import org.awaitility.Duration;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.ssl.CertStores;
-import org.apache.geode.cache.ssl.TestSSLUtils;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -52,41 +52,21 @@ public class WANHostNameVerificationDistributedTest {
   private static MemberVM locator_ny;
   private static MemberVM server_ny;
 
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @BeforeClass
-  public static void setupCluster() throws Exception {
+  @Before
+  public void setupCluster() throws Exception {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Broken pipe");
     IgnoredException.addIgnoredException("Connection refused");
     IgnoredException.addIgnoredException("could not get remote locator information");
     IgnoredException.addIgnoredException("Unexpected IOException");
+  }
 
-    TestSSLUtils.CertificateBuilder locator_ln_cert = new TestSSLUtils.CertificateBuilder()
-        .commonName("locator_ln")
-        // ClusterStartupRule uses 'localhost' as locator host
-        .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanIpAddress(InetAddress.getLocalHost());
-
-    TestSSLUtils.CertificateBuilder server_ln_cert = new TestSSLUtils.CertificateBuilder()
-        .commonName("server_ln")
-        .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanIpAddress(InetAddress.getLocalHost());
-
-    TestSSLUtils.CertificateBuilder locator_ny_cert = new TestSSLUtils.CertificateBuilder()
-        .commonName("locator_ny")
-        // ClusterStartupRule uses 'localhost' as locator host
-        .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanIpAddress(InetAddress.getLocalHost());
-
-    TestSSLUtils.CertificateBuilder server_ny_cert = new TestSSLUtils.CertificateBuilder()
-        .commonName("server_ny")
-        .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanIpAddress(InetAddress.getLocalHost());
-
+  private void setupWanSites(CertificateBuilder locator_ln_cert, CertificateBuilder server_ln_cert,
+      CertificateBuilder locator_ny_cert, CertificateBuilder server_ny_cert)
+      throws GeneralSecurityException, IOException {
     CertStores locator_ln_store = new CertStores("ln_locator", "ln_locator");
     locator_ln_store.withCertificate(locator_ln_cert);
 
@@ -104,7 +84,7 @@ public class WANHostNameVerificationDistributedTest {
     setupWanSite2(site1Port, locator_ny_store, server_ny_store, locator_ln_store, server_ln_store);
   }
 
-  private static int setupWanSite1(CertStores locator_ln_store, CertStores server_ln_store,
+  private int setupWanSite1(CertStores locator_ln_store, CertStores server_ln_store,
       CertStores locator_ny_store, CertStores server_ny_store)
       throws GeneralSecurityException, IOException {
 
@@ -113,14 +93,14 @@ public class WANHostNameVerificationDistributedTest {
         .trust(server_ln_store.alias(), server_ln_store.certificate())
         .trust(locator_ny_store.alias(), locator_ny_store.certificate())
         .trust(server_ny_store.alias(), server_ny_store.certificate())
-        .propertiesWith(ALL);
+        .propertiesWith(ALL, true, true);
 
     Properties serverSSLProps = server_ln_store
         .trustSelf()
         .trust(locator_ln_store.alias(), locator_ln_store.certificate())
         .trust(locator_ny_store.alias(), locator_ny_store.certificate())
         .trust(server_ny_store.alias(), server_ny_store.certificate())
-        .propertiesWith(ALL);
+        .propertiesWith(ALL, true, true);
 
     // create a cluster
     locatorSSLProps.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
@@ -137,7 +117,7 @@ public class WANHostNameVerificationDistributedTest {
     return locator_ln.getPort();
   }
 
-  private static void setupWanSite2(int site1Port, CertStores locator_ny_store,
+  private void setupWanSite2(int site1Port, CertStores locator_ny_store,
       CertStores server_ny_store,
       CertStores locator_ln_store, CertStores server_ln_store)
       throws GeneralSecurityException, IOException {
@@ -147,7 +127,7 @@ public class WANHostNameVerificationDistributedTest {
         .trust(server_ln_store.alias(), server_ln_store.certificate())
         .trust(server_ny_store.alias(), server_ny_store.certificate())
         .trust(locator_ln_store.alias(), locator_ln_store.certificate())
-        .propertiesWith(ALL);
+        .propertiesWith(ALL, true, true);
 
     locator_ny_props.setProperty(MCAST_PORT, "0");
     locator_ny_props.setProperty(DISTRIBUTED_SYSTEM_ID, "2");
@@ -158,7 +138,7 @@ public class WANHostNameVerificationDistributedTest {
         .trust(locator_ln_store.alias(), locator_ln_store.certificate())
         .trust(locator_ny_store.alias(), locator_ny_store.certificate())
         .trust(server_ln_store.alias(), server_ln_store.certificate())
-        .propertiesWith(ALL);
+        .propertiesWith(ALL, true, true);
 
     // create a cluster
     locator_ny_props.setProperty(DISTRIBUTED_SYSTEM_ID, "2");
@@ -209,7 +189,40 @@ public class WANHostNameVerificationDistributedTest {
   }
 
   @Test
-  public void testWANSSL() {
+  public void enableHostNameValidationAcrossAllComponents() throws Exception {
+    // this test enables hostname validation across all components in both sites
+    // to test tcp clients validating hostname in servers identity across
+    // locator-ln -> locator-ny
+    // server-ln -> locator-ln
+    // server-ln -> locator-ny
+    // server-ln -> server-ny
+
+    CertificateBuilder locator_ln_cert = new CertificateBuilder()
+        .commonName("locator_ln")
+        // ClusterStartupRule uses 'localhost' as locator host
+        .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanIpAddress(InetAddress.getLocalHost());
+
+    CertificateBuilder server_ln_cert = new CertificateBuilder()
+        .commonName("server_ln")
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanIpAddress(InetAddress.getLocalHost());
+
+    CertificateBuilder locator_ny_cert = new CertificateBuilder()
+        .commonName("locator_ny")
+        // ClusterStartupRule uses 'localhost' as locator host
+        .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanIpAddress(InetAddress.getLocalHost());
+
+    CertificateBuilder server_ny_cert = new CertificateBuilder()
+        .commonName("server_ny")
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanIpAddress(InetAddress.getLocalHost());
+
+    setupWanSites(locator_ln_cert, server_ln_cert, locator_ny_cert, server_ny_cert);
+
     server_ln.invoke(WANHostNameVerificationDistributedTest::doPutOnSite1);
     server_ny.invoke(WANHostNameVerificationDistributedTest::verifySite2Received);
   }
