@@ -105,8 +105,21 @@ public class GfshHostNameVerificationDistributedTest {
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator");
 
-    CertificateBuilder gfshCertificate = new CertificateBuilder()
-        .commonName("gfsh");
+    validateGfshConnection(locatorCertificate);
+  }
+
+  @Test
+  public void expectConnectionFailureWhenWrongHostNameInLocatorKey() throws Exception {
+    CertificateBuilder locatorCertificate = new CertificateBuilder()
+        .commonName("locator")
+        .sanDnsName("example.com");
+
+    validateGfshConnection(locatorCertificate);
+  }
+
+  private void validateGfshConnection(CertificateBuilder locatorCertificate)
+      throws Exception {
+    CertificateBuilder gfshCertificate = new CertificateBuilder().commonName("gfsh");
 
     CertStores lstore = CertStores.locatorStore();
     CertStores gstore = CertStores.clientStore();
@@ -114,12 +127,9 @@ public class GfshHostNameVerificationDistributedTest {
     lstore.withCertificate(locatorCertificate);
     gstore.withCertificate(gfshCertificate);
 
-    lstore
-        .trustSelf()
-        .trust(gstore.alias(), gstore.certificate());
+    lstore.trustSelf().trust(gstore.alias(), gstore.certificate());
 
-    gstore
-        .trust(lstore.alias(), lstore.certificate());
+    gstore.trust(lstore.alias(), lstore.certificate());
 
     Properties locatorSSLProps = lstore.propertiesWith(ALL, false, false);
 
@@ -132,9 +142,9 @@ public class GfshHostNameVerificationDistributedTest {
     File sslConfigFile = gfshSecurityProperties(gfshSSLProps);
 
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
-    String connectCommand = "connect --locator=" + locator.getVM().getHost().getHostName()
-        + "[" + locator.getPort() + "] --security-properties-file="
-        + sslConfigFile.getAbsolutePath();
+    String connectCommand =
+        "connect --locator=" + locator.getVM().getHost().getHostName() + "[" + locator.getPort()
+            + "] --security-properties-file=" + sslConfigFile.getAbsolutePath();
     gfsh.executeAndAssertThat(connectCommand).statusIsError()
         .containsOutput("Unable to form SSL connection");
     IgnoredException.removeAllExpectedExceptions();
