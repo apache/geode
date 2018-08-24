@@ -29,6 +29,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.MemoryThresholdInfo;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -318,15 +320,15 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       }
     }
     if (!MemoryThresholds.isLowMemoryExceptionDisabled() && function.optimizeForWrite()) {
-      try {
-        region.checkIfAboveThreshold(null);
-      } catch (LowMemoryException ignore) {
-        Set<DistributedMember> htrm = region.getMemoryThresholdReachedMembers();
+      MemoryThresholdInfo info = region.getAtomicThresholdInfo();
+      if (info.isMemoryThresholdReached()) {
+        InternalResourceManager.getInternalResourceManager(region.getCache()).getHeapMonitor()
+            .updateStateAndSendEvent();
+        Set<DistributedMember> criticalMembers = info.getMembersThatReachedThreshold();
         throw new LowMemoryException(
             LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                .toLocalizedString(function.getId(), htrm),
-            htrm);
-
+                .toLocalizedString(function.getId(), criticalMembers),
+            criticalMembers);
       }
     }
   }
