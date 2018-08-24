@@ -45,6 +45,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
@@ -124,6 +125,7 @@ public class ExecuteFunction66Test {
     when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     when(this.cache.getDistributedSystem()).thenReturn(mock(InternalDistributedSystem.class));
     when(this.cache.getResourceManager()).thenReturn(this.internalResourceManager);
+    when(this.cache.getInternalResourceManager()).thenReturn(this.internalResourceManager);
 
     when(this.callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
@@ -148,6 +150,8 @@ public class ExecuteFunction66Test {
     when(this.serverConnection.getReplyMessage()).thenReturn(this.replyMessage);
     when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
     when(this.serverConnection.getHandshake()).thenReturn(mock(ServerSideHandshake.class));
+
+    when(this.internalResourceManager.getHeapMonitor()).thenReturn(mock(HeapMemoryMonitor.class));
 
     PowerMockito.mockStatic(FunctionService.class);
     PowerMockito.when(FunctionService.getFunction(eq(FUNCTION))).thenReturn(this.functionObject);

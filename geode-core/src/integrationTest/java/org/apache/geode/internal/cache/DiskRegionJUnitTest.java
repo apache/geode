@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,8 +23,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -2316,64 +2320,44 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   @Test
-  public void testAssertionErrorIfMissingOplog() throws Exception {
-    try {
-      // Create a region with rolling enabled.
-      DiskRegionProperties props = new DiskRegionProperties();
-      // System.getProperties().setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "true");
-      props.setRegionName(
-          "IGNORE_EXCEPTION_testAssertionErrorIfDanglingModificationsAreNotBalancedByDanglingDeletes");
-      props.setRolling(false);
-      props.setDiskDirs(dirs);
-      props.setMaxOplogSize(100);
-      props.setPersistBackup(true);
-      region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
+  public void throwsIllegalStateExceptionIfMissingOplogDrf() throws Exception {
+    validatingMissingOplogFile(false);
+  }
 
-      LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
+  @Test
+  public void throwsIllegalStateExceptionIfMissingOplogCrf() throws Exception {
+    validatingMissingOplogFile(true);
+  }
 
-      final Oplog[] switchedOplog = new Oplog[1];
-      CacheObserver old = CacheObserverHolder.setInstance(new CacheObserverAdapter() {
-        public void beforeSwitchingOplog() {
-          DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-          if (switchedOplog[0] == null) {
-            switchedOplog[0] = dr.testHook_getChild();
-          }
-        }
-      });
-      // create some string entries
-      int i = 0;
-      for (; i < 100; ++i) {
-        if (switchedOplog[0] == null) {
-          region.put("" + i, new byte[10]);
-        } else {
-          break;
-        }
-      }
-      assertTrue(i > 1);
-      assertTrue(switchedOplog[0].getOplogFileForTest().delete());
-      region.close();
-      // We don't validate the oplogs until we recreate the disk store.
-      DiskStoreImpl store = ((LocalRegion) region).getDiskStore();
-      store.close();
-      ((GemFireCacheImpl) cache).removeDiskStore(store);
-      logWriter
-          .info("<ExpectedException action=add>" + "DiskAccessException" + "</ExpectedException>");
-      try {
-        region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
-        // Missing crf and drfs are now detected.
-        fail("expected DiskAccessException LocalizedStrings.DiskRegion_MISSING_OR_CORRUPT_OPLOG");
-      } catch (IllegalStateException expected) {
-        // Expected in recovery
-      } finally {
-        logWriter.info(
-            "<ExpectedException action=remove>" + "DiskAccessException" + "</ExpectedException>");
-      }
+  private void validatingMissingOplogFile(boolean crf) throws IOException {
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setRegionName("throwsIllegalStateExceptionIfMissingOplog" + (crf ? "Crf" : "Drf"));
+    props.setDiskDirs(dirs);
+    props.setPersistBackup(true);
+    region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL);
 
-    } finally {
-      LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-      CacheObserverHolder.setInstance(new CacheObserverAdapter());
-      // System.getProperties().setProperty(DiskRegion.CHECK_ENTRY_BALANCE_PROPERTY_NAME, "");
-    }
+    region.close();
+    // We don't validate the oplogs until we recreate the disk store.
+    DiskStoreImpl store = ((LocalRegion) region).getDiskStore();
+    store.close();
+    ((GemFireCacheImpl) cache).removeDiskStore(store);
+
+    Path oplogFile = Files.list(dirs[0].toPath())
+        // Path.endsWith is not like String.endsWith
+        .filter(path -> path.toString().endsWith("." + (crf ? "crf" : "drf")))
+        .findFirst()
+        .get();
+
+    Files.delete(oplogFile);
+
+    String errorMessage =
+        "The following required files could not be found: *." + (crf ? "crf" : "drf")
+            + " files with these ids:";
+    assertThatExceptionOfType(IllegalStateException.class)
+        .isThrownBy(
+            () -> DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, props, Scope.LOCAL))
+        .withMessageContaining(errorMessage)
+        .withNoCause();
   }
 
   @Test

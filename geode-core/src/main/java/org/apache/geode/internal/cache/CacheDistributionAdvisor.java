@@ -1103,7 +1103,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       logger.debug("CDA: removing profile {}", profile);
     }
     if (getAdvisee() instanceof LocalRegion && profile != null) {
-      ((LocalRegion) getAdvisee()).removeMemberFromCriticalList(profile.getDistributedMember());
+      ((LocalRegion) getAdvisee()).removeCriticalMember(profile.getDistributedMember());
     }
   }
 

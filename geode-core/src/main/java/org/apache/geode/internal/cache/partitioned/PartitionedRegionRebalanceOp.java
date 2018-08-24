@@ -454,7 +454,7 @@ public class PartitionedRegionRebalanceOp {
     int redundantCopies = leaderRegion.getRedundantCopies();
     int totalNumberOfBuckets = leaderRegion.getTotalNumberOfBuckets();
     Set<InternalDistributedMember> criticalMembers =
-        resourceManager.getResourceAdvisor().adviseCritialMembers();;
+        resourceManager.getResourceAdvisor().adviseCriticalMembers();;
     boolean removeOverRedundancy = true;
 
     debug("Building Model for rebalancing " + leaderRegion + ". redundantCopies=" + redundantCopies
