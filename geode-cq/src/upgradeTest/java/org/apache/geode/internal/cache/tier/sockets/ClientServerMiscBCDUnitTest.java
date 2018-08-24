@@ -179,9 +179,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server2.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
-        proxy.getHARegionQueue().isEmpty();
-      });
+      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+          .until(() -> proxy.getHARegionQueue().isEmpty());
     });
 
     // the client should now get duplicate events from the current-version server
@@ -204,9 +203,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server3.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
-        proxy.getHARegionQueue().isEmpty();
-      });
+      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+          .until(() -> proxy.getHARegionQueue().isEmpty());
     });
 
     // the client should now get duplicate events from the current-version server
@@ -290,9 +288,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     server2.invoke("wait for failover queue to drain", () -> {
       CacheClientProxy proxy =
           CacheClientNotifier.getInstance().getClientProxies().iterator().next();
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
-        proxy.getHARegionQueue().isEmpty();
-      });
+      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+          .until(() -> proxy.getHARegionQueue().isEmpty());
     });
   }
 

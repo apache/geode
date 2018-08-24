@@ -1235,7 +1235,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForPrimaryToMove() {
-    await().atMost(TWO_MINUTES).untilAsserted(() -> getPrimaryMovingAsyncEventListener().isMoved());
+    await().atMost(TWO_MINUTES).until(() -> getPrimaryMovingAsyncEventListener().isMoved());
   }
 
   private InternalGatewaySender getInternalGatewaySender() {
