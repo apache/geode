@@ -129,16 +129,16 @@ public interface DistributionManager extends ReplySender {
   Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l);
 
   /**
-   * Returns the identity of this <code>DistributionManager</code>
+   * @return the identity of this <code>DistributionManager</code>
    */
   InternalDistributedMember getId();
 
   /**
-   * Return true if no other distribution manager was in this group when he joined.
+   * @return true if this member has been in the cluster members were eligible for elder status.
    *
    * @since GemFire 4.0
    */
-  boolean isAdam();
+  boolean thisVMIsTheOnlyElderCandidate();
 
   /**
    * Returns the identity of the oldest DM in this group.
