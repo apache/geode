@@ -46,7 +46,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class TCPClientSSLJUnitTest {
+public class TCPClientSSLIntegrationTest {
 
   private InetAddress localhost;
   private int port;
