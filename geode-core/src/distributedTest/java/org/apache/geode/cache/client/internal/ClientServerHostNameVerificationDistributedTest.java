@@ -56,27 +56,6 @@ public class ClientServerHostNameVerificationDistributedTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private void setupCluster(Properties locatorSSLProps, Properties serverSSLProps) {
-    // create a cluster
-    setupLocators(locatorSSLProps);
-    setupServers(serverSSLProps);
-
-    // create region
-    server.invoke(ClientServerHostNameVerificationDistributedTest::createServerRegion);
-    server2.invoke(ClientServerHostNameVerificationDistributedTest::createServerRegion);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 2);
-  }
-
-  private void setupServers(Properties serverSSLProps) {
-    server = cluster.startServerVM(2, serverSSLProps, locator.getPort());
-    server2 = cluster.startServerVM(3, serverSSLProps, locator.getPort());
-  }
-
-  private void setupLocators(Properties locatorSSLProps) {
-    locator = cluster.startLocatorVM(0, locatorSSLProps);
-    locator2 = cluster.startLocatorVM(1, locatorSSLProps, locator.getPort());
-  }
-
   private static void createServerRegion() {
     RegionFactory factory =
         ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
@@ -187,8 +166,18 @@ public class ClientServerHostNameVerificationDistributedTest {
         .trust(serverStore.alias(), serverStore.certificate())
         .propertiesWith(ALL, true, enableHostNameVerificationForClient);
 
-    setupCluster(locatorSSLProps, serverSSLProps);
+    // create a cluster
+    locator = cluster.startLocatorVM(0, locatorSSLProps);
+    locator2 = cluster.startLocatorVM(1, locatorSSLProps, locator.getPort());
+    server = cluster.startServerVM(2, serverSSLProps, locator.getPort());
+    server2 = cluster.startServerVM(3, serverSSLProps, locator.getPort());
 
+    // create region
+    server.invoke(ClientServerHostNameVerificationDistributedTest::createServerRegion);
+    server2.invoke(ClientServerHostNameVerificationDistributedTest::createServerRegion);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 2);
+
+    // create client and connect
     final int locatorPort = locator.getPort();
     final String locatorHost = locator.getVM().getHost().getHostName();
 
