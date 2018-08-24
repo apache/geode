@@ -113,7 +113,7 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
     doRegionOps.await();
 
-    await().untilAsserted(() -> region.values().isEmpty());
+    await().until(() -> region.values().isEmpty());
 
     assertThat(region.values()).hasSize(0);
     assertThat(region.keySet()).hasSize(ENTRY_COUNT);
