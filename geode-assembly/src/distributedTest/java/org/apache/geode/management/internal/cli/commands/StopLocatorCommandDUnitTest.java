@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.management.MXBeanAwaitility.await;
 import static org.apache.geode.management.cli.Result.Status.ERROR;
 import static org.apache.geode.management.cli.Result.Status.OK;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
@@ -34,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -154,25 +156,37 @@ public class StopLocatorCommandDUnitTest {
         .addOption(STOP_LOCATOR__MEMBER, memberName)
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
 
-    assertThat(result.getStatus()).isEqualTo(OK);
+    // The new locator is not immediately available to be stopped because it's mbean
+    // has to be propagated to the existing locator that gfsh is connected to. Wait
+    // For the stop to work
+    waitForCommandToSucceed(command);
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
   }
 
   @Test
   public void testWithMemberID() {
     int port = jmxPort; // this assignment is needed to pass a local var into the invocation below
+
     final String memberID = locator.invoke(() -> getMemberId(port));
 
     final String command = new CommandStringBuilder(STOP_LOCATOR)
         .addOption(STOP_LOCATOR__MEMBER, memberID)
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
+    // The new locator is not immediately available to be stopped because it's mbean
+    // has to be propagated to the existing locator that gfsh is connected to. Wait
+    // For the stop to work
+    waitForCommandToSucceed(command);
 
-    assertThat(result.getStatus()).isEqualTo(OK);
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
+  }
+
+  private void waitForCommandToSucceed(String command) {
+    await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+      CommandResult result = gfsh.executeCommand(command);
+      assertThat(result.getStatus()).isEqualTo(OK);
+    });
   }
 
   @Test
@@ -246,9 +260,12 @@ public class StopLocatorCommandDUnitTest {
       final MBeanServerConnection connection = conn.getMBeanServerConnection();
       assertThat(connection).isInstanceOf(MBeanServerConnection.class);
 
-      final Set<ObjectName> objectNames = connection.queryNames(objectNamePattern, query);
-      assertThat(objectNames).isNotNull().isNotEmpty().hasSize(1);
+      await().untilAsserted(() -> {
+        final Set<ObjectName> objectNames = connection.queryNames(objectNamePattern, query);
+        assertThat(objectNames).isNotNull().isNotEmpty().hasSize(1);
+      });
 
+      final Set<ObjectName> objectNames = connection.queryNames(objectNamePattern, query);
       final ObjectName objectName = objectNames.iterator().next();
       final Object memberId = connection.getAttribute(objectName, "Id");
 
