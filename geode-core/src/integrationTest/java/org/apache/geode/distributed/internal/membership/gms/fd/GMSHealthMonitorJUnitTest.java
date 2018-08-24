@@ -49,6 +49,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -145,6 +146,7 @@ public class GMSHealthMonitorJUnitTest {
     when(services.getCancelCriterion()).thenReturn(stopper);
     when(services.getManager()).thenReturn(manager);
     when(services.getStatistics()).thenReturn(new DistributionStats(system, statsId));
+    when(services.getTimer()).thenReturn(new Timer("Geode Membership Timer", true));
     when(stopper.isCancelInProgress()).thenReturn(false);
 
     if (mockMembers == null) {
@@ -620,6 +622,20 @@ public class GMSHealthMonitorJUnitTest {
     assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
     gmsHealthMonitor.processMessage(new FinalCheckPassedMessage(mockMembers.get(0), memberToCheck));
     assertFalse(gmsHealthMonitor.isSuspectMember(memberToCheck));
+  }
+
+
+  @Test
+  public void testFinalCheckFailureLeavesMemberAsSuspect() {
+    NetView v = installAView();
+
+    setFailureDetectionPorts(v);
+
+    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+    assertFalse(available);
+    verify(joinLeave).remove(isA(InternalDistributedMember.class), isA(String.class));
+    assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
   }
 
 
