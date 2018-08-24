@@ -88,11 +88,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
    * A default constructor that sets the timeout to a default of 30 seconds
    */
   public ConcurrencyRule() {
-    toInvoke = new ArrayList<>();
-    futures = new ArrayList<>();
-    timeout = Duration.ofSeconds(300);
-    errorCollector = new ProtectedErrorCollector();
-    allThreadsExecuted.set(false);
+    this(Duration.ofSeconds(300));
   }
 
   /**
@@ -106,7 +102,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
     futures = new ArrayList<>();
     this.timeout = timeout;
     errorCollector = new ProtectedErrorCollector();
-    allThreadsExecuted.set(false);
+    allThreadsExecuted.set(true);
   }
 
   @Override
