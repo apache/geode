@@ -1933,8 +1933,8 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"ssl-endpoint-identification-enabled"</i> property <a
    * name="ssl-endpoint-identification-enabled"/a>
    * </p>
-   * <U>Description</U>: If true, the endpoint identification will be enabled during SSL/TLS
-   * handshake.
+   * <U>Description</U>: If true, clients validate server hostname using server certificate during
+   * SSL handshake.
    * </p>
    * <U>Default</U>: code>"false"</code>
    * <U>Since</U>: Geode 1.8

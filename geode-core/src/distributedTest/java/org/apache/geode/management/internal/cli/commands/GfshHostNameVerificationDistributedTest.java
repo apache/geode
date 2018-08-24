@@ -31,6 +31,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.TestSSLUtils.CertificateBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -97,6 +98,46 @@ public class GfshHostNameVerificationDistributedTest {
         "security-properties-file", sslConfigFile.getAbsolutePath());
 
     gfsh.executeAndAssertThat("list members").statusIsSuccess();
+  }
+
+  @Test
+  public void expectConnectionFailureWhenNoHostNameInLocatorKey() throws Exception {
+    CertificateBuilder locatorCertificate = new CertificateBuilder()
+        .commonName("locator");
+
+    CertificateBuilder gfshCertificate = new CertificateBuilder()
+        .commonName("gfsh");
+
+    CertStores lstore = CertStores.locatorStore();
+    CertStores gstore = CertStores.clientStore();
+
+    lstore.withCertificate(locatorCertificate);
+    gstore.withCertificate(gfshCertificate);
+
+    lstore
+        .trustSelf()
+        .trust(gstore.alias(), gstore.certificate());
+
+    gstore
+        .trust(lstore.alias(), lstore.certificate());
+
+    Properties locatorSSLProps = lstore.propertiesWith(ALL, false, false);
+
+    Properties gfshSSLProps = gstore.propertiesWith(ALL, false, true);
+
+    // create a cluster
+    locator = cluster.startLocatorVM(0, locatorSSLProps);
+
+    // connect gfsh
+    File sslConfigFile = gfshSecurityProperties(gfshSSLProps);
+
+    IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
+    String connectCommand = "connect --locator=" + locator.getVM().getHost().getHostName()
+        + "[" + locator.getPort() + "] --security-properties-file="
+        + sslConfigFile.getAbsolutePath();
+    gfsh.executeAndAssertThat(connectCommand).statusIsError()
+        .containsOutput("Unable to form SSL connection");
+    IgnoredException.removeAllExpectedExceptions();
   }
 
   @Test

@@ -70,7 +70,7 @@ public class ClientServerHostNameVerificationDistributedTest {
   }
 
   @Test
-  public void clientValidatesHostNameOfLocatorAndServerDuringSSLConnection() throws Exception {
+  public void connectionSuccessfulWhenHostNameOfLocatorAndServer() throws Exception {
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator")
         // ClusterStartupRule uses 'localhost' as locator host
