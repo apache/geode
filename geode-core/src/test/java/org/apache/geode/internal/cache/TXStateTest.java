@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -26,16 +27,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.Executor;
+
 import javax.transaction.Status;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
-import org.apache.geode.cache.TransactionException;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class TXStateTest {
   private TXStateProxyImpl txStateProxy;
@@ -44,58 +46,52 @@ public class TXStateTest {
 
   @Before
   public void setup() {
-    txStateProxy = mock(TXStateProxyImpl.class);
+    txStateProxy = mock(TXStateProxyImpl.class, RETURNS_DEEP_STUBS);
     exception = new CommitConflictException("");
     transactionDataNodeHasDepartedException = new TransactionDataNodeHasDepartedException("");
 
     when(txStateProxy.getTxMgr()).thenReturn(mock(TXManagerImpl.class));
   }
 
-
   @Test
-  public void beforeCompletionThrowsIfReserveAndCheckFails() {
+  public void doBeforeCompletionThrowsIfReserveAndCheckFails() {
     TXState txState = spy(new TXState(txStateProxy, true));
+    doReturn(mock(Executor.class)).when(txState).getExecutor();
     doThrow(exception).when(txState).reserveAndCheck();
 
-    assertThatThrownBy(() -> txState.beforeCompletion())
+    assertThatThrownBy(() -> txState.doBeforeCompletion())
         .isInstanceOf(SynchronizationCommitConflictException.class);
   }
 
-
   @Test
-  public void afterCompletionThrowsIfCommitFails() {
+  public void doAfterCompletionThrowsIfCommitFails() {
     TXState txState = spy(new TXState(txStateProxy, true));
     doReturn(mock(InternalCache.class)).when(txState).getCache();
     doReturn(true).when(txState).wasBeforeCompletionCalled();
     txState.reserveAndCheck();
     doThrow(transactionDataNodeHasDepartedException).when(txState).commit();
 
-    assertThatThrownBy(() -> txState.afterCompletion(Status.STATUS_COMMITTED))
+    assertThatThrownBy(() -> txState.doAfterCompletion(Status.STATUS_COMMITTED))
         .isSameAs(transactionDataNodeHasDepartedException);
   }
 
   @Test
-  public void afterCompletionThrowsTransactionExceptionIfCommitFailedCommitConflictException() {
-    TXState txState = spy(new TXState(txStateProxy, true));
-    doReturn(mock(InternalCache.class)).when(txState).getCache();
-    doReturn(true).when(txState).wasBeforeCompletionCalled();
-    doThrow(exception).when(txState).commit();
-
-    assertThatThrownBy(() -> txState.afterCompletion(Status.STATUS_COMMITTED))
-        .isInstanceOf(TransactionException.class);
-  }
-
-  @Test
-  public void afterCompletionCanCommitJTA() {
+  public void doAfterCompletionCanCommitJTA() {
     TXState txState = spy(new TXState(txStateProxy, false));
     doReturn(mock(InternalCache.class)).when(txState).getCache();
     txState.reserveAndCheck();
     txState.closed = true;
     doReturn(true).when(txState).wasBeforeCompletionCalled();
-    txState.afterCompletion(Status.STATUS_COMMITTED);
+    txState.doAfterCompletion(Status.STATUS_COMMITTED);
 
     assertThat(txState.locks).isNull();
     verify(txState, times(1)).saveTXCommitMessageForClientFailover();
+  }
+
+  @Test(expected = FailedSynchronizationException.class)
+  public void afterCompletionThrowsExceptionIfBeforeCompletionNotCalled() {
+    TXState txState = new TXState(txStateProxy, true);
+    txState.afterCompletion(Status.STATUS_COMMITTED);
   }
 
   @Test
@@ -153,16 +149,7 @@ public class TXStateTest {
   public void getOriginatingMemberReturnsNullIfNotOriginatedFromClient() {
     TXState txState = spy(new TXState(txStateProxy, false));
 
-    assertThat(txState.getOriginatingMember()).isNull();
+    assertThat(txState.getOriginatingMember()).isSameAs(txStateProxy.getOnBehalfOfClientMember());
   }
 
-  @Test
-  public void getOriginatingMemberReturnsClientMemberIfOriginatedFromClient() {
-    InternalDistributedMember client = mock(InternalDistributedMember.class);
-    TXStateProxyImpl proxy = new TXStateProxyImpl(mock(InternalCache.class),
-        mock(TXManagerImpl.class), mock(TXId.class), client);
-    TXState txState = spy(new TXState(proxy, false));
-
-    assertThat(txState.getOriginatingMember()).isEqualTo(client);
-  }
 }

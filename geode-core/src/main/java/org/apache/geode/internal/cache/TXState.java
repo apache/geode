@@ -32,7 +32,6 @@ import javax.transaction.Status;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.DiskAccessException;
@@ -44,7 +43,6 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
-import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
@@ -52,7 +50,6 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.TXManagerCancelledException;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
@@ -108,9 +105,7 @@ public class TXState implements TXStateInterface {
    * and afterCompletion so that beforeCompletion can obtain locks for the afterCompletion step.
    * This is that thread
    */
-  protected volatile TXStateSynchronizationRunnable syncRunnable;
-  private volatile SynchronizationCommitConflictException beforeCompletionException;
-  private volatile RuntimeException afterCompletionException;
+  private final SingleThreadJTAExecutor singleThreadJTAExecutor;
 
   // Internal testing hooks
   private Runnable internalAfterReservation;
@@ -153,6 +148,11 @@ public class TXState implements TXStateInterface {
   private volatile DistributedMember proxyServer;
 
   public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
+    this(proxy, onBehalfOfRemoteStub, new SingleThreadJTAExecutor());
+  }
+
+  public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      SingleThreadJTAExecutor singleThreadJTAExecutor) {
     this.beginTime = CachePerfStats.getStatTime();
     this.regions = new IdentityHashMap<>();
 
@@ -165,7 +165,7 @@ public class TXState implements TXStateInterface {
     this.internalAfterSend = null;
     this.proxy = proxy;
     this.onBehalfOfRemoteStub = onBehalfOfRemoteStub;
-
+    this.singleThreadJTAExecutor = singleThreadJTAExecutor;
   }
 
   private boolean hasSeenEvent(EntryEventImpl event) {
@@ -428,7 +428,7 @@ public class TXState implements TXStateInterface {
       }
 
       /*
-       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort
+       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
       TransactionWriter writer = this.proxy.getTxMgr().getWriter();
@@ -868,6 +868,14 @@ public class TXState implements TXStateInterface {
   }
 
   protected void cleanup() {
+    if (singleThreadJTAExecutor.shouldDoCleanup()) {
+      singleThreadJTAExecutor.cleanup(this);
+    } else {
+      doCleanup();
+    }
+  }
+
+  protected void doCleanup() {
     IllegalArgumentException iae = null;
     try {
       this.closed = true;
@@ -921,9 +929,7 @@ public class TXState implements TXStateInterface {
       synchronized (this.completionGuard) {
         this.completionGuard.notifyAll();
       }
-      if (this.syncRunnable != null) {
-        this.syncRunnable.abort();
-      }
+
       if (iae != null && !this.proxy.getCache().isClosed()) {
         throw iae;
       }
@@ -1010,75 +1016,6 @@ public class TXState implements TXStateInterface {
     }
   }
 
-//  //////////////////////////////////////////////////////////////////
-//  // JTA Synchronization implementation //
-//  //////////////////////////////////////////////////////////////////
-//  /*
-//   * (non-Javadoc)
-//   *
-//   * @see org.apache.geode.internal.cache.TXStateInterface#beforeCompletion()
-//   */
-//  @Override
-//  public synchronized void beforeCompletion() throws SynchronizationCommitConflictException {
-//    if (this.closed) {
-//      throw new TXManagerCancelledException();
-//    }
-//    if (beforeCompletionCalled) {
-//      // do not re-execute beforeCompletion again
-//      return;
-//    }
-//    beforeCompletionCalled = true;
-//    doBeforeCompletion();
-//  }
-//
-//  private void doBeforeCompletion() {
-//    final long opStart = CachePerfStats.getStatTime();
-//    this.jtaLifeTime = opStart - getBeginTime();
-//    try {
-//      reserveAndCheck();
-//      /*
-//       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort
-//       * the transaction.
-//       */
-//      TransactionWriter writer = this.proxy.getTxMgr().getWriter();
-//      if (writer != null) {
-//        try {
-//          // need to mark this so we don't fire again in commit
-//          firedWriter = true;
-//          TXEvent event = getEvent();
-//          if (!event.hasOnlyInternalEvents()) {
-//            writer.beforeCommit(event);
-//          }
-//        } catch (TransactionWriterException twe) {
-//          throw new CommitConflictException(twe);
-//        } catch (VirtualMachineError err) {
-//          // cleanup(); this allocates objects so I don't think we can do it - that leaves the TX
-//          // open, but we are poison pilling so we should be ok??
-//
-//          SystemFailure.initiateFailure(err);
-//          // If this ever returns, rethrow the error. We're poisoned
-//          // now, so don't let this thread continue.
-//          throw err;
-//        } catch (Throwable t) {
-//          // Whenever you catch Error or Throwable, you must also
-//          // catch VirtualMachineError (see above). However, there is
-//          // _still_ a possibility that you are dealing with a cascading
-//          // error condition, so you also need to check to see if the JVM
-//          // is still usable:
-//          SystemFailure.checkFailure();
-//          throw new CommitConflictException(t);
-//        }
-//      }
-//    } catch (CommitConflictException commitConflict) {
-//      cleanup();
-//      proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
-//      throw new SynchronizationCommitConflictException(
-//          LocalizedStrings.TXState_CONFLICT_DETECTED_IN_GEMFIRE_TRANSACTION_0
-//              .toLocalizedString(getTransactionId()),
-//          commitConflict);
-//    }
-//  }
-
   //////////////////////////////////////////////////////////////////
   // JTA Synchronization implementation //
   //////////////////////////////////////////////////////////////////
@@ -1098,55 +1035,23 @@ public class TXState implements TXStateInterface {
       return;
     }
     beforeCompletionCalled = true;
-
-    TXStateSynchronizationRunnable sync = createTxStateSynchronizationRunnable();
-    setSynchronizationRunnable(sync);
-
-    Executor exec = getExecutor();
-    exec.execute(sync);
-    sync.waitForFirstExecution();
-    if (getBeforeCompletionException() != null) {
-      throw getBeforeCompletionException();
-    }
-    //doBeforeCompletion();
-  }
-
-  TXStateSynchronizationRunnable createTxStateSynchronizationRunnable() {
-    Runnable beforeCompletion = new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      public void run() {
-        doBeforeCompletion();
-      }
-    };
-
-    return new TXStateSynchronizationRunnable(getCache().getCancelCriterion(),
-        beforeCompletion);
+    singleThreadJTAExecutor.executeBeforeCompletion(this,
+        getExecutor());
   }
 
   Executor getExecutor() {
-    return InternalDistributedSystem.getConnectedInstance().getDistributionManager()
-        .getWaitingThreadPool();
+    return getCache().getDistributionManager().getWaitingThreadPool();
   }
 
-  SynchronizationCommitConflictException getBeforeCompletionException() {
-    return beforeCompletionException;
-  }
-
-  private void setSynchronizationRunnable(TXStateSynchronizationRunnable synchronizationRunnable) {
-    syncRunnable = synchronizationRunnable;
-  }
-
-
-  private void doBeforeCompletion() {
+  void doBeforeCompletion() {
     proxy.getTxMgr().setTXState(null);
     final long opStart = CachePerfStats.getStatTime();
     this.jtaLifeTime = opStart - getBeginTime();
 
-
     try {
       reserveAndCheck();
       /*
-       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort
+       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
       TransactionWriter writer = this.proxy.getTxMgr().getWriter();
@@ -1189,28 +1094,18 @@ public class TXState implements TXStateInterface {
   }
 
   /*
- * (non-Javadoc)
- *
- * @see org.apache.geode.internal.cache.TXStateInterface#afterCompletion(int)
- */
+   * (non-Javadoc)
+   *
+   * @see org.apache.geode.internal.cache.TXStateInterface#afterCompletion(int)
+   */
   @Override
   public synchronized void afterCompletion(int status) {
     proxy.getTxMgr().setTXState(null);
-    Runnable afterCompletion = new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      public void run() {
-        doAfterCompletion(status);
-      }
-    };
     // if there was a beforeCompletion call then there will be a thread
     // sitting in the waiting pool to execute afterCompletion. Otherwise
     // throw FailedSynchronizationException().
-    TXStateSynchronizationRunnable sync = getSynchronizationRunnable();
-    if (sync != null) {
-      sync.runSecondRunnable(afterCompletion);
-      if (getAfterCompletionException() != null) {
-        throw getAfterCompletionException();
-      }
+    if (beforeCompletionCalled) {
+      singleThreadJTAExecutor.executeAfterCompletion(this, status);
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {
@@ -1221,15 +1116,7 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  TXStateSynchronizationRunnable getSynchronizationRunnable() {
-    return this.syncRunnable;
-  }
-
-  RuntimeException getAfterCompletionException() {
-    return afterCompletionException;
-  }
-
-  private void doAfterCompletion(int status) {
+  void doAfterCompletion(int status) {
     final long opStart = CachePerfStats.getStatTime();
     switch (status) {
       case Status.STATUS_COMMITTED:
@@ -1258,60 +1145,6 @@ public class TXState implements TXStateInterface {
         Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
     }
   }
-
-//  /*
-//   * (non-Javadoc)
-//   *
-//   * @see org.apache.geode.internal.cache.TXStateInterface#afterCompletion(int)
-//   */
-//  @Override
-//  public synchronized void afterCompletion(int status) {
-//    this.proxy.getTxMgr().setTXState(null);
-//    // For commit, beforeCompletion should be called. Otherwise
-//    // throw FailedSynchronizationException().
-//    if (wasBeforeCompletionCalled()) {
-//      doAfterCompletion(status);
-//    } else {
-//      // rollback does not run beforeCompletion.
-//      if (status != Status.STATUS_ROLLEDBACK) {
-//        throw new FailedSynchronizationException(
-//            "Could not execute afterCompletion when beforeCompletion was not executed");
-//      }
-//      doAfterCompletion(status);
-//    }
-//  }
-//
-//  private void doAfterCompletion(int status) {
-//    final long opStart = CachePerfStats.getStatTime();
-//    try {
-//      switch (status) {
-//        case Status.STATUS_COMMITTED:
-//          Assert.assertTrue(this.locks != null,
-//              "Gemfire Transaction afterCompletion called with illegal state.");
-//          try {
-//            commit();
-//            saveTXCommitMessageForClientFailover();
-//          } catch (CommitConflictException error) {
-//            Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
-//                + " afterCompletion failed.due to CommitConflictException: " + error);
-//          }
-//
-//          this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
-//          this.locks = null;
-//          break;
-//        case Status.STATUS_ROLLEDBACK:
-//          this.jtaLifeTime = opStart - getBeginTime();
-//          rollback();
-//          saveTXCommitMessageForClientFailover();
-//          this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
-//          break;
-//        default:
-//          Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
-//      }
-//    } catch (InternalGemFireError error) {
-//      throw new TransactionException(error);
-//    }
-//  }
 
   boolean wasBeforeCompletionCalled() {
     return beforeCompletionCalled;

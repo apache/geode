@@ -130,7 +130,8 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.PARTITION)
         .setPartitionAttributes(partitionAttributes).create(regionName);
     if (hasReplicateRegion) {
-      cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.REPLICATE).create(replicateRegionName);
+      cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.REPLICATE)
+          .create(replicateRegionName);
     }
 
     CacheServer server = cacheRule.getCache().addCacheServer();
@@ -154,7 +155,8 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
         clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
     crf.setPoolName(pool.getName());
     crf.create(regionName);
-    if (hasReplicateRegion) crf.create(replicateRegionName);
+    if (hasReplicateRegion)
+      crf.create(replicateRegionName);
 
     if (ports.length > 1) {
       pool.acquireConnection(new ServerLocation(hostName, port1));
@@ -178,11 +180,12 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     Object[] results = new Object[2];
     InternalClientCache cache = clientCacheRule.getClientCache();
     Region region = cache.getRegion(regionName);
-    Region replicateRegion = hasReplicateRegion? cache.getRegion(replicateRegionName) : null;
+    Region replicateRegion = hasReplicateRegion ? cache.getRegion(replicateRegionName) : null;
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
     txManager.begin();
     region.put(key, newValue);
-    if (hasReplicateRegion) replicateRegion.put(key, newValue);
+    if (hasReplicateRegion)
+      replicateRegion.put(key, newValue);
 
     TXStateProxyImpl txStateProxy = (TXStateProxyImpl) txManager.getTXState();
     ClientTXStateStub clientTXStateStub = (ClientTXStateStub) txStateProxy.getRealDeal(null, null);
@@ -212,7 +215,8 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     }
     if (isCommit) {
       assertEquals(newValue, region.get(key));
-      if (hasReplicateRegion) assertEquals(newValue, replicateRegion.get(key));
+      if (hasReplicateRegion)
+        assertEquals(newValue, replicateRegion.get(key));
     } else {
       assertEquals(value, region.get(key));
     }
