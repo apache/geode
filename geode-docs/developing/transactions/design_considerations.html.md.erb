@@ -28,6 +28,7 @@ This section discusses how transactions interact with other
 
 -  **[Colocate Partitioned Regions](#colocate-PRs)**
 -  **[Region Operations Return References](#copy-on-read-transactions)**
+-  **[First Operation with Mixed Region Types](#first-op-with-mixed-types)**
 -  **[Allowing Transactions to Work on Persistent Regions](#transactions-persistence)**
 -  **[Mixing Transactions with Indexes](#transactions-indexes)**
 -  **[Mixing Transactions with Queries](#transactions-queries)**
@@ -60,6 +61,16 @@ There are two ways to work with a reference: make a copy,
 or configure the system to return copies instead of references.
 There is a performance penalty to having the system return copies.
 Both ways are detailed in [Safe Entry Modification](../../basic_config/data_entries_custom_classes/managing_data_entries.html#managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809).
+
+## <a id="first-op-with-mixed-types" class="no-quick-link"></a>First Operation with Mixed Region Types
+
+When more than one region participates in a transaction,
+and there is at least one partitioned and at least one
+replicated region,
+the code must do its first operation on the partitioned
+region to avoid a `TransactionDataNotColocatedException`.
+Write the transaction to do its first operation on a partitioned
+region, even if the operation will be spurious.
 
 ## <a id="transactions-persistence" class="no-quick-link"></a> Allowing Transactions to Work on Persistent Regions
 

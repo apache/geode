@@ -87,7 +87,8 @@ Region<String, Integer> trades =
 
 // transaction code
 CacheTransactionManager txmgr = cache.getCacheTransactionManager();
-boolean commitConflict = false;
+boolean retryTransaction = false;
+boolean transactionSucceeded = false;
 do {
   try {
     txmgr.begin();
@@ -104,14 +105,29 @@ do {
        Integer.valueOf((tradeBalance != null ? tradeBalance : 0) + purchase);
     trades.put(customer, newBalance);
 
+  } catch (Exception exception) {
+    // Let the caller handle any exceptions caused when doing these region
+    // operations. Clean up the transactional state by doing a rollback.
+    // Examples of some exceptions: the data is not colocated, a rebalance
+    // interfered with the transaction, or the server is gone.
+    txmgr.rollback();
+    throw exception;
+  }
+
+  try {
     txmgr.commit();
-    commitConflict = false;
+    retryTransaction = false;
+    transactionSucceeded = true;
   } 
   catch (CommitConflictException conflict) {
     // entry value changed causing a conflict for this customer, so try again
-        commitConflict = true;
+    retryTransaction = true;
   }
-} while (commitConflict);
+  // All other exceptions that happend upon commit() are not handled, so
+  // the caller will have to handle those other exceptions. This code does
+  // not need a rollback(), since the exception happened on commit().
+
+} while (retryTransaction);
 ```
 
 Design transactions such that any get operations are within the transaction.
@@ -155,7 +171,7 @@ public class TransactionalFunction extends Function {
 
   /**
    * Returns true if the function had the requested quantity of
-   * inventory, and successfully completed the transaction to 
+   * inventory and successfully completed the transaction to 
    * record the reduced inventory that fulfills the order.
    */
   @Override
@@ -172,9 +188,9 @@ public class TransactionalFunction extends Function {
     Integer qtyRequested = request.getQuantity();
  
     Boolean success = false;
-    Boolean commitConflict = false;
 
     do {
+      Boolean commitConflict = false;
       try {
         mgr.begin();
 
@@ -188,11 +204,17 @@ public class TransactionalFunction extends Function {
         } 
 
         mgr.commit();
-
       } catch (CommitConflictException conflict) {
         // retry transaction, as another request on this same key succeeded,
         // so this transaction attempt failed
         commitConflict = true;
+      } finally {
+        // All other exceptions will be handled by the caller; however,
+        // any exception thrown by a method other than commit() needs
+        // to do a rollback to avoid leaking the transaction state.
+        if(mgr.exists()) {
+          mgr.rollback();
+        }       
       }
     
     } while (commitConflict);
