@@ -50,23 +50,22 @@ public class Helper {
   static final String OPTIONS_NAME = "PARAMETERS";
   static final String IS_AVAILABLE_NAME = "IS AVAILABLE";
 
-  static final String REQUIRED_SUB_NAME = "Required: ";
-  static final String SYNONYMS_SUB_NAME = "Synonyms: ";
-  static final String SPECIFIEDDEFAULTVALUE_SUB_NAME =
+  private static final String REQUIRED_SUB_NAME = "Required: ";
+  private static final String SYNONYMS_SUB_NAME = "Synonyms: ";
+  private static final String SPECIFIEDDEFAULTVALUE_SUB_NAME =
       "Default (if the parameter is specified without value): ";
-  static final String UNSPECIFIEDDEFAULTVALUE_VALUE_SUB_NAME =
+  private static final String UNSPECIFIEDDEFAULTVALUE_VALUE_SUB_NAME =
       "Default (if the parameter is not specified): ";
 
-  static final String VALUE_FIELD = "value";
-  static final String TRUE_TOKEN = "true";
-  static final String FALSE_TOKEN = "false";
-  static final String AVAILABLE = "Available";
-  static final String NOT_AVAILABLE = "Not Available";
+  private static final String VALUE_FIELD = "value";
+  private static final String TRUE_TOKEN = "true";
+  private static final String FALSE_TOKEN = "false";
+  private static final String AVAILABLE = "Available";
+  private static final String NOT_AVAILABLE = "Not Available";
 
-  private final Map<String, Topic> topics = new HashMap<>();
-  private final Map<String, Method> commands = new TreeMap<String, Method>();
-  private final Map<String, MethodTarget> availabilityIndicators =
-      new HashMap<String, MethodTarget>();
+  private final Map<String, Topic> topics = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  private final Map<String, Method> commands = new TreeMap<>();
+  private final Map<String, MethodTarget> availabilityIndicators = new HashMap<>();
 
   public Helper() {
     initTopic(CliStrings.DEFAULT_TOPIC_GEODE, CliStrings.DEFAULT_TOPIC_GEODE__DESC);
@@ -96,9 +95,7 @@ public class Helper {
 
   public void addCommand(CliCommand command, Method commandMethod) {
     // put all the command synonyms in the command map
-    Arrays.stream(command.value()).forEach(cmd -> {
-      commands.put(cmd, commandMethod);
-    });
+    Arrays.stream(command.value()).forEach(cmd -> commands.put(cmd, commandMethod));
 
     // resolve the hint message for each method
     CliMetaData cliMetaData = commandMethod.getDeclaredAnnotation(CliMetaData.class);
@@ -121,9 +118,8 @@ public class Helper {
   }
 
   public void addAvailabilityIndicator(CliAvailabilityIndicator availability, MethodTarget target) {
-    Arrays.stream(availability.value()).forEach(command -> {
-      availabilityIndicators.put(command, target);
-    });
+    Arrays.stream(availability.value())
+        .forEach(command -> availabilityIndicators.put(command, target));
   }
 
   /**
@@ -175,7 +171,7 @@ public class Helper {
     return topics.keySet();
   }
 
-  boolean isAvailable(String command) {
+  private boolean isAvailable(String command) {
     MethodTarget target = availabilityIndicators.get(command);
     if (target == null) {
       return true;
@@ -193,9 +189,9 @@ public class Helper {
 
   HelpBlock getHelp() {
     HelpBlock root = new HelpBlock();
-    commands.keySet().stream().sorted().map(commands::get).forEach(method -> {
-      root.addChild(getHelp(method.getDeclaredAnnotation(CliCommand.class), null, null));
-    });
+    commands.keySet().stream().sorted().map(commands::get).forEach(method -> root
+        .addChild(getHelp(method.getDeclaredAnnotation(CliCommand.class), null, null)));
+
     return root;
   }
 
@@ -251,11 +247,12 @@ public class Helper {
     // Detailed description of all the Options
     if (annotations.length > 0) {
       HelpBlock options = new HelpBlock(OPTIONS_NAME);
-      for (int i = 0; i < annotations.length; i++) {
-        CliOption cliOption = getAnnotation(annotations[i], CliOption.class);
+      for (Annotation[] annotation : annotations) {
+        CliOption cliOption = getAnnotation(annotation, CliOption.class);
         HelpBlock optionNode = getOptionDetail(cliOption);
         options.addChild(optionNode);
       }
+
       root.addChild(options);
     }
     return root;
@@ -298,7 +295,7 @@ public class Helper {
   }
 
   String getSyntaxString(String commandName, Annotation[][] annotations, Class[] parameterTypes) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append(commandName);
     for (int i = 0; i < annotations.length; i++) {
       CliOption cliOption = getAnnotation(annotations[i], CliOption.class);
@@ -324,7 +321,7 @@ public class Helper {
       return (cliOption.key()[1]);
     }
 
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append(GfshParser.LONG_OPTION_SPECIFIER).append(key0);
 
     boolean hasSpecifiedDefault = !isNullOrBlank(cliOption.specifiedDefaultValue());
