@@ -89,6 +89,9 @@ public class MultiGfshDUnitTest {
 
         CommandResult result = gfsh.executeCommand(command.getCommand());
 
+        if (!(result.getResultData() instanceof ErrorResultData)) {
+          break;
+        }
         int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
 
         // for some commands there are pre execution checks to check for user input error, will skip

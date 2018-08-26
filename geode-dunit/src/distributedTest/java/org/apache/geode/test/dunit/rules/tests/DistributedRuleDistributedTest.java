@@ -12,24 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.examples;
+package org.apache.geode.test.dunit.rules.tests;
 
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
+public class DistributedRuleDistributedTest {
 
-public class DistributedTestRuleExampleTest {
-
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
-  public void shouldHaveFourDUnitVMsByDefault() throws Exception {
-    assertThat(getVMCount()).isEqualTo(4);
+  public void hasFourVMsByDefault() {
+    assertThat(getVMCount()).isEqualTo(DEFAULT_VM_COUNT);
   }
 }

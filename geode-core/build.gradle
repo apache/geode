@@ -56,68 +56,68 @@ dependencies {
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
 
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile ('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
+  compile('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
     exclude module: 'commons-digester'
     exclude module: 'commons-logging-api'
     exclude module: 'mx4j-jmx'
     exclude module: 'xml-apis'
     ext.optional = true
   }
-  compile ('io.netty:netty-all:' + project.'netty-all.version') {
+  compile('io.netty:netty-all:' + project.'netty-all.version') {
     ext.optional = true
   }
   compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
-  compile ('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
+  compile('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
     ext.optional = true;
   }
   compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
-  compile ('mx4j:mx4j:' + project.'mx4j.version') {
+  compile('mx4j:mx4j:' + project.'mx4j.version') {
     ext.optional = true;
   }
-  compile ('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
+  compile('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
     ext.optional = true;
   }
-  compile ('mx4j:mx4j-tools:' + project.'mx4j-tools.version') {
+  compile('mx4j:mx4j-tools:' + project.'mx4j-tools.version') {
     ext.optional = true;
   }
-  compile ('net.java.dev.jna:jna:' + project.'jna.version')
+  compile('net.java.dev.jna:jna:' + project.'jna.version')
 
-  compile ('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
+  compile('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+  runtime('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
   runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
-  runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+  runtime('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
-  runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  runtime('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
     ext.optional = true
   }
-  runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+  runtime('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
     ext.optional = true
   }
-  compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
+  compile('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
     ext.optional = true
   }
-  compileOnly ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  compileOnly('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
   }
-  testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  testCompile('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
   }
-  compile ('org.springframework:spring-core:' + project.'springframework.version') {
+  compile('org.springframework:spring-core:' + project.'springframework.version') {
     ext.optional = true
   }
-  compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+  compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
@@ -126,7 +126,7 @@ dependencies {
     exclude module: 'spring-context-support'
     ext.optional = true
   }
-  compile ('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
+  compile('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
     ext.optional = true
   }
 
@@ -161,7 +161,7 @@ dependencies {
   testRuntime 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
-  integrationTestCompile (project(":geode-dunit")) {
+  integrationTestCompile(project(":geode-dunit")) {
     exclude module: 'geode-core'
   }
   integrationTestCompile project(':geode-concurrency-test')
@@ -183,7 +183,7 @@ dependencies {
   distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
 
 
-  upgradeTestCompile (project(":geode-dunit")) {
+  upgradeTestCompile(project(":geode-dunit")) {
     exclude module: 'geode-core'
   }
 
@@ -217,24 +217,33 @@ dependencies {
 
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
+
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
-  outputs.files propertiesFile
-  inputs.files {
-    "../.git/index"
+  // Allow this step to be skipped.
+  onlyIf {
+    // Project properties are parsed as strings.
+    // Use boolean comparison, not the value itself, to determine truth.
+    !propertiesFile.exists() || sourceRevision != "unknown"
+  }
+  // onlyIf takes precedence, but we should generate the file whenever the revision is specified.
+  outputs.upToDateWhen { false }
+  outputs.files {
+    propertiesFile
   }
 
   doLast {
     def props = [
-      "Product-Name"      : productName,
-      "Product-Version"   : version,
-      "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
-      "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
-      "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
-      "Build-Java-Version": System.properties['java.version']
+        "Product-Name"      : productName,
+        "Product-Version"   : version,
+        "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
+        "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
+        "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+        "Build-Java-Version": System.properties['java.version'],
+        'Source-Repository' : sourceRepository,
+        'Source-Revision'   : sourceRevision,
+        'Source-Date'       : new Date().format('yyyy-MM-dd HH:mm:ss Z')
     ] as Properties
-    props.putAll(readScmInfo())
-
-    propertiesFile.getParentFile().mkdirs();
+    propertiesFile.getParentFile().mkdirs()
     new FileOutputStream(propertiesFile).withStream { fos ->
       props.store(fos, '')
     }
@@ -253,21 +262,21 @@ jar {
 
 jar.dependsOn(createVersionPropertiesFile)
 
-task webJar (type: Jar, dependsOn: classes) {
+task webJar(type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive containing the gemfire management web classes.'
   from sourceSets.main.output
   baseName 'geode-web'
   include 'org/apache/geode/management/internal/web/**'
 }
 
-task raJar (type: Jar, dependsOn: classes) {
+task raJar(type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output
   exclude 'org/apache/geode/ra/**'
   archiveName 'ra.jar'
 }
 
-task jcaJar (type: Jar, dependsOn: raJar) {
+task jcaJar(type: Jar, dependsOn: raJar) {
   description 'Assembles the jar archive that contains the JCA bundle'
   baseName 'geode-jca'
   extension 'rar'
@@ -278,7 +287,7 @@ task jcaJar (type: Jar, dependsOn: raJar) {
 configurations {
   classesOutput {
     extendsFrom compile
-    description  'a dependency that exposes the compiled classes'
+    description 'a dependency that exposes the compiled classes'
   }
 }
 

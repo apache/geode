@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
@@ -26,12 +25,9 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class PartitionedRegionFunctionExecutor extends AbstractExecution {
@@ -329,7 +325,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   @Override
   public void validateExecution(Function function, Set targetMembers) {
     InternalCache cache = pr.getGemFireCache();
-    if (cache != null && cache.getTxManager().getTXState() != null) {
+    if (cache.getTxManager().getTXState() != null) {
       if (targetMembers.size() > 1) {
         throw new TransactionException(
             LocalizedStrings.PartitionedRegion_TX_FUNCTION_ON_MORE_THAN_ONE_NODE
@@ -347,15 +343,6 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
         }
       }
     }
-    if (function.optimizeForWrite() && cache.getInternalResourceManager().getHeapMonitor()
-        .containsHeapCriticalMembers(targetMembers)
-        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
-      Set<DistributedMember> sm = SetUtils.intersection(hcm, targetMembers);
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-              .toLocalizedString(new Object[] {function.getId(), sm}),
-          sm);
-    }
+    cache.getInternalResourceManager().getHeapMonitor().checkForLowMemory(function, targetMembers);
   }
 }

@@ -19,10 +19,12 @@ import static java.util.stream.Collectors.toSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
+import io.github.classgraph.utils.WhiteBlackList;
 
 /**
  * Utility class to scan class-path & load classes.
@@ -45,7 +47,8 @@ public class ClasspathScanLoadHelper {
         .filter(ci -> !ci.isAbstract() && !ci.isInterface() && ci.isPublic());
 
     classInfoList = classInfoList
-        .filter(ci -> Arrays.stream(onlyFromPackages).anyMatch(p -> ci.getName().startsWith(p)));
+        .filter(ci -> Arrays.stream(onlyFromPackages)
+            .anyMatch(p -> classMatchesPackage(ci.getName(), p)));
 
     return classInfoList.loadClasses().stream().collect(toSet());
   }
@@ -54,9 +57,19 @@ public class ClasspathScanLoadHelper {
     ClassInfoList classInfoList = scanResult.getClassesWithAnnotation(annotation.getName());
 
     classInfoList = classInfoList
-        .filter(ci -> Arrays.stream(onlyFromPackages).anyMatch(p -> ci.getName().startsWith(p)));
+        .filter(ci -> Arrays.stream(onlyFromPackages)
+            .anyMatch(p -> classMatchesPackage(ci.getName(), p)));
 
     return classInfoList.loadClasses().stream().collect(toSet());
+  }
+
+  private boolean classMatchesPackage(String className, String packageSpec) {
+    if (!packageSpec.contains("*")) {
+      return className.startsWith(packageSpec);
+    }
+
+    Pattern globPattern = WhiteBlackList.globToPattern(packageSpec);
+    return globPattern.matcher(className).matches();
   }
 
 }

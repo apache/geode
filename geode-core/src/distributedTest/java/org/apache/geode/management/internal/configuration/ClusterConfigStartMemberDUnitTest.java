@@ -96,7 +96,6 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
     properties.setProperty(CLUSTER_CONFIGURATION_DIR, locatorDir.getCanonicalPath());
 
     MemberVM locator = lsRule.startLocatorVM(0, properties);
-    CONFIG_FROM_ZIP.verify(locator);
 
     return locator;
   }

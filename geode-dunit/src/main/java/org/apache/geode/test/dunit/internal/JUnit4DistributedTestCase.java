@@ -56,7 +56,7 @@ import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -564,7 +564,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private static final void tearDownVM() {
     closeCache();
-    DistributedTestRule.TearDown.tearDownInVM();
+    DistributedRule.TearDown.tearDownInVM();
     cleanDiskDirs();
   }
 

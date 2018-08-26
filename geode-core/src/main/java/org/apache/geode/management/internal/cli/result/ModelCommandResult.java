@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.result;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -234,7 +236,10 @@ public class ModelCommandResult implements CommandResult {
 
     addSpacedRowInTable(resultTable, result.getHeader());
 
+    int index = 0;
+    int sectionSize = result.getContent().size();
     for (AbstractResultModel section : result.getContent().values()) {
+      index++;
       if (section instanceof DataResultModel) {
         buildData(resultTable, (DataResultModel) section);
       } else if (section instanceof TabularResultModel) {
@@ -244,6 +249,10 @@ public class ModelCommandResult implements CommandResult {
       } else {
         throw new IllegalArgumentException(
             "Unable to process output for " + section.getClass().getName());
+      }
+      // only add the spacer in between the sections.
+      if (index < sectionSize) {
+        addSpacedRowInTable(resultTable, LINE_SEPARATOR);
       }
     }
 
@@ -340,6 +349,10 @@ public class ModelCommandResult implements CommandResult {
       InfoResultModel model) {
     TableBuilder.RowGroup rowGroup = resultTable.newRowGroup();
 
+    addRowInRowGroup(rowGroup, model.getHeader());
+
     model.getContent().forEach(c -> rowGroup.newRow().newLeftCol(c));
+
+    addRowInRowGroup(rowGroup, model.getFooter());
   }
 }

@@ -46,7 +46,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.transaction.RollbackException;
@@ -489,7 +488,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * This boolean is true when a member who has this region is running low on memory. It is used to
    * reject region operations.
    */
-  public final AtomicBoolean memoryThresholdReached = new AtomicBoolean(false);
+  private final AtomicBoolean memoryThresholdReached = new AtomicBoolean(false);
 
   /**
    * Lock for updating PR MetaData on client side
@@ -936,7 +935,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           }
           throw new RegionDestroyedException(toString(), getFullPath());
         }
-        validateRegionName(subregionName, internalRegionArgs);
+        RegionNameValidation.validate(subregionName, internalRegionArgs);
 
         validateSubregionAttributes(regionAttributes);
 
@@ -1024,13 +1023,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             if (!newRegion.getOffHeap()) {
               newRegion.initialCriticalMembers(
                   this.cache.getInternalResourceManager().getHeapMonitor().getState().isCritical(),
-                  this.cache.getResourceAdvisor().adviseCritialMembers());
+                  this.cache.getResourceAdvisor().adviseCriticalMembers());
             } else {
               newRegion.initialCriticalMembers(
                   this.cache.getInternalResourceManager().getHeapMonitor().getState().isCritical()
                       || this.cache.getInternalResourceManager().getOffHeapMonitor().getState()
                           .isCritical(),
-                  this.cache.getResourceAdvisor().adviseCritialMembers());
+                  this.cache.getResourceAdvisor().adviseCriticalMembers());
             }
 
             // synchronization would be done on ManagementAdapter.regionOpLock
@@ -2913,7 +2912,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected boolean isMemoryThresholdReachedForLoad() {
-    return this.memoryThresholdReached.get();
+    return isMemoryThresholdReached();
   }
 
   /**
@@ -5737,19 +5736,27 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @throws LowMemoryException if the target member for this operation is sick
    */
   private void checkIfAboveThreshold(final Object key) throws LowMemoryException {
-    if (this.memoryThresholdReached.get()) {
-      Set<DistributedMember> membersThatReachedThreshold = getMemoryThresholdReachedMembers();
-
+    MemoryThresholdInfo info = getAtomicThresholdInfo();
+    if (info.isMemoryThresholdReached()) {
+      Set<DistributedMember> membersThatReachedThreshold = info.getMembersThatReachedThreshold();
       // #45603: trigger a background eviction since we're above the the critical
       // threshold
       InternalResourceManager.getInternalResourceManager(this.cache).getHeapMonitor()
           .updateStateAndSendEvent();
-
       throw new LowMemoryException(
           LocalizedStrings.ResourceManager_LOW_MEMORY_IN_0_FOR_PUT_1_MEMBER_2.toLocalizedString(
               getFullPath(), key, membersThatReachedThreshold),
           membersThatReachedThreshold);
     }
+  }
+
+  @Override
+  public MemoryThresholdInfo getAtomicThresholdInfo() {
+    if (!isMemoryThresholdReached()) {
+      return MemoryThresholdInfo.getNotReached();
+    }
+    return new MemoryThresholdInfo(isMemoryThresholdReached(),
+        Collections.singleton(this.cache.getMyId()));
   }
 
   /**
@@ -7385,49 +7392,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               e);
         }
       }
-    }
-  }
-
-  public static void validateRegionName(String name, InternalRegionArguments internalRegionArgs) {
-    if (name == null) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
-    }
-    if (name.isEmpty()) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
-    }
-    if (name.contains(SEPARATOR)) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0
-              .toLocalizedString(SEPARATOR));
-    }
-
-    // Validate the name of the region only if it isn't an internal region
-    if (internalRegionArgs.isInternalRegion()) {
-      return;
-    }
-    if (internalRegionArgs.isUsedForMetaRegion()) {
-      return;
-    }
-    if (internalRegionArgs.isUsedForPartitionedRegionAdmin()) {
-      return;
-    }
-    if (internalRegionArgs.isUsedForPartitionedRegionBucket()) {
-      return;
-    }
-
-    if (name.startsWith("__")) {
-      throw new IllegalArgumentException(
-          "Region names may not begin with a double-underscore: " + name);
-    }
-
-    final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
-    // Ensure the region only contains valid characters
-    Matcher matcher = NAME_PATTERN.matcher(name);
-    if (!matcher.matches()) {
-      throw new IllegalArgumentException(
-          "Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
     }
   }
 
@@ -10770,13 +10734,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       final Function function, final Object args, final ResultCollector rc, final Set filter,
       final ServerToClientFunctionResultSender sender) {
 
-    if (function.optimizeForWrite() && this.memoryThresholdReached.get()
+    if (function.optimizeForWrite()
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      Set<DistributedMember> members = getMemoryThresholdReachedMembers();
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-              .toLocalizedString(function.getId(), members),
-          members);
+      MemoryThresholdInfo info = getAtomicThresholdInfo();
+      if (info.isMemoryThresholdReached()) {
+        Set<DistributedMember> members = info.getMembersThatReachedThreshold();
+        throw new LowMemoryException(
+            LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
+                .toLocalizedString(function.getId(), members),
+            members);
+      }
     }
     final LocalResultCollector<?, ?> resultCollector =
         execution.getLocalResultCollector(function, rc);
@@ -10789,13 +10756,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         LocalRegion.this, args, filter, null, null, resultSender, execution.isReExecute());
     execution.executeFunctionOnLocalNode(function, context, resultSender, dm, isTX());
     return resultCollector;
-  }
-
-  /**
-   * @return the set of members which are known to be critical
-   */
-  public Set<DistributedMember> getMemoryThresholdReachedMembers() {
-    return Collections.singleton(this.cache.getMyId());
   }
 
   @Override
@@ -10813,11 +10773,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           && (event.getType() == ResourceType.HEAP_MEMORY
               || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
         // start rejecting operations
-        this.memoryThresholdReached.set(true);
+        setMemoryThresholdReached(true);
       } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()
           && (event.getType() == ResourceType.HEAP_MEMORY
               || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
-        this.memoryThresholdReached.set(false);
+        setMemoryThresholdReached(false);
       }
     }
   }
@@ -10880,7 +10840,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * This method is meant to be overridden by DistributedRegion and PartitionedRegions to cleanup
    * CRITICAL state
    */
-  public void removeMemberFromCriticalList(DistributedMember member) {
+  public void removeCriticalMember(DistributedMember member) {
     // should not be called for LocalRegion
     Assert.assertTrue(false);
   }
@@ -10901,7 +10861,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Set<InternalDistributedMember> criticalMembers) {
     assert getScope().isLocal();
     if (localMemoryIsCritical) {
-      this.memoryThresholdReached.set(true);
+      setMemoryThresholdReached(true);
     }
   }
 
@@ -12296,4 +12256,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Lock getClientMetaDataLock() {
     return clientMetaDataLock;
   }
+
+  public boolean isMemoryThresholdReached() {
+    return memoryThresholdReached.get();
+  }
+
+  protected void setMemoryThresholdReached(boolean reached) {
+    this.memoryThresholdReached.set(reached);
+  }
+
 }

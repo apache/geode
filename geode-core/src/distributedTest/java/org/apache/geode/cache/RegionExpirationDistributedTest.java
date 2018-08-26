@@ -30,7 +30,6 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +37,7 @@ import org.mockito.Mockito;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -52,7 +51,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 3.0
  */
-
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class RegionExpirationDistributedTest implements Serializable {
@@ -67,8 +65,8 @@ public class RegionExpirationDistributedTest implements Serializable {
   private VM withExpirationVM0;
   private VM withoutExpirationVM1;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();

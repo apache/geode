@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -38,8 +37,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketVisitor;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @SuppressWarnings("serial")
 public class PRCustomPartitioningDistributedTest implements Serializable {
@@ -58,8 +56,8 @@ public class PRCustomPartitioningDistributedTest implements Serializable {
   private VM datastoreVM2;
   private VM accessorVM3;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -80,7 +78,7 @@ public class PRCustomPartitioningDistributedTest implements Serializable {
   }
 
   @Test
-  public void testPartitionedRegionOperationsCustomPartitioning() throws Exception {
+  public void testPartitionedRegionOperationsCustomPartitioning() {
     datastoreVM0.invoke(() -> createPartitionedRegionWithPartitionResolver());
     datastoreVM1.invoke(() -> createPartitionedRegionWithPartitionResolver());
     datastoreVM2.invoke(() -> createPartitionedRegionWithPartitionResolver());

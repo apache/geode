@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Stopwatch;
 import org.junit.rules.ErrorCollector;
@@ -81,14 +82,13 @@ public class ConcurrencyRule extends SerializableExternalResource {
   private ProtectedErrorCollector errorCollector;
   private Duration timeout;
 
+  private final AtomicBoolean allThreadsExecuted = new AtomicBoolean(false);
+
   /**
    * A default constructor that sets the timeout to a default of 30 seconds
    */
   public ConcurrencyRule() {
-    toInvoke = new ArrayList<>();
-    futures = new ArrayList<>();
-    timeout = Duration.ofSeconds(300);
-    errorCollector = new ProtectedErrorCollector();
+    this(Duration.ofSeconds(300));
   }
 
   /**
@@ -102,10 +102,14 @@ public class ConcurrencyRule extends SerializableExternalResource {
     futures = new ArrayList<>();
     this.timeout = timeout;
     errorCollector = new ProtectedErrorCollector();
+    allThreadsExecuted.set(true);
   }
 
   @Override
-  protected void after() {
+  protected void after() throws IllegalStateException {
+    if (allThreadsExecuted.get() == Boolean.FALSE) {
+      throw new IllegalStateException("Threads have been added that have not been executed.");
+    }
     clear();
     stopThreadPool();
   }
@@ -122,6 +126,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
   public <T> ConcurrentOperation<T> add(Callable<T> callable) {
     ConcurrentOperation<T> concurrentOperation = new ConcurrentOperation(callable);
     toInvoke.add(concurrentOperation);
+    allThreadsExecuted.set(false);
 
     return concurrentOperation;
   }
@@ -143,6 +148,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
     for (ConcurrentOperation op : toInvoke) {
       futures.add(threadPool.submit(op));
     }
+    allThreadsExecuted.set(true);
 
     awaitFutures();
     errorCollector.verify();
@@ -164,6 +170,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
     for (ConcurrentOperation op : toInvoke) {
       awaitFuture(threadPool.submit(op));
     }
+    allThreadsExecuted.set(true);
 
     errorCollector.verify();
   }
@@ -176,6 +183,7 @@ public class ConcurrencyRule extends SerializableExternalResource {
     toInvoke.clear();
     futures.clear();
     errorCollector = new ProtectedErrorCollector();
+    allThreadsExecuted.set(true);
   }
 
   /**

@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector;
 
 /**
@@ -53,7 +52,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector
  *
  * @since GemFire 5.0
  */
-
 @SuppressWarnings("serial")
 public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
@@ -65,8 +63,8 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
   private VM otherVM;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -162,12 +160,12 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
   private class SlowGiiCacheListener extends CacheListenerAdapter<String, String> {
 
     @Override
-    public void afterRegionCreate(final RegionEvent<java.lang.String, java.lang.String> event) {
+    public void afterRegionCreate(final RegionEvent<String, String> event) {
       afterRegionCreateInvoked.set(true);
     }
 
     @Override
-    public void afterInvalidate(final EntryEvent<java.lang.String, java.lang.String> event) {
+    public void afterInvalidate(final EntryEvent<String, String> event) {
       errorCollector.checkThat("afterRegionCreate should have been seen",
           afterRegionCreateInvoked.get(), is(true));
       errorCollector.checkThat("Region should have been initialized",

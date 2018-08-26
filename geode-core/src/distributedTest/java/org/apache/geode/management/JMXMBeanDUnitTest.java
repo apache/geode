@@ -33,22 +33,23 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.management.MalformedObjectNameException;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import com.google.common.collect.Maps;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,20 +59,29 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.util.test.TestUtil;
-
 
 /**
  * All the non-ssl enabled locators need to be in a different VM than the ssl enabled locators in
  * these tests, otherwise, some tests would fail. Seems like dunit vm tear down did not clean up the
  * ssl settings cleanly.
  */
-@Category({JMXTest.class})
+@Category(JMXTest.class)
 @SuppressWarnings("serial")
 public class JMXMBeanDUnitTest implements Serializable {
+
+  private final ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+  private final transient MBeanServerConnectionRule mBeanServerConnectionRule =
+      new MBeanServerConnectionRule();
+
+  @Rule
+  public transient RuleChain ruleChain =
+      RuleChain.outerRule(new DistributedRule()).around(new CleanupDUnitVMsRule())
+          .around(clusterStartupRule).around(
+              mBeanServerConnectionRule);
 
   private static Properties legacySSLProperties;
   private static Properties sslProperties;
@@ -82,17 +92,6 @@ public class JMXMBeanDUnitTest implements Serializable {
 
   private int jmxPort;
   private Properties locatorProperties;
-
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
-
-  private transient CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
-  private ClusterStartupRule lsRule = new ClusterStartupRule();
-  private transient MBeanServerConnectionRule jmxConnector = new MBeanServerConnectionRule();
-
-  @Rule
-  public transient RuleChain ruleChain =
-      RuleChain.outerRule(cleanupDUnitVMsRule).around(lsRule).around(jmxConnector);
 
   @BeforeClass
   public static void beforeClass() {
@@ -141,46 +140,46 @@ public class JMXMBeanDUnitTest implements Serializable {
 
   @Test
   public void testJMXOverNonSSL() throws Exception {
-    lsRule.startLocatorVM(0, locatorProperties);
-    jmxConnector.connect(jmxPort);
-    validateJmxConnection(jmxConnector);
+    clusterStartupRule.startLocatorVM(0, locatorProperties);
+    mBeanServerConnectionRule.connect(jmxPort);
+    validateJmxConnection(mBeanServerConnectionRule);
   }
 
   @Test
-  public void testJMXOverNonSSLWithClientUsingIncorrectPort() throws Exception {
+  public void testJMXOverNonSSLWithClientUsingIncorrectPort() {
     assertThat(jmxPort).isNotEqualTo(9999);
-    lsRule.startLocatorVM(0, locatorProperties);
+    clusterStartupRule.startLocatorVM(0, locatorProperties);
 
-    assertThatThrownBy(() -> jmxConnector.connect(9999))
+    assertThatThrownBy(() -> mBeanServerConnectionRule.connect(9999))
         .hasRootCauseExactlyInstanceOf(java.net.ConnectException.class);
   }
 
   @Test
-  public void testJMXOverSSL() throws Exception {
+  public void testJMXOverSSL() {
     locatorProperties.putAll(Maps.fromProperties(sslProperties));
 
-    lsRule.startLocatorVM(0, locatorProperties);
+    clusterStartupRule.startLocatorVM(0, locatorProperties);
     remotelyValidateJmxConnection(false);
   }
 
   @Test
-  public void testJMXOverSSLWithMultiKey() throws Exception {
+  public void testJMXOverSSLWithMultiKey() {
     locatorProperties.putAll(Maps.fromProperties(sslPropertiesWithMultiKey));
-    lsRule.startLocatorVM(0, locatorProperties);
+    clusterStartupRule.startLocatorVM(0, locatorProperties);
 
     remotelyValidateJmxConnection(true);
   }
 
   @Test
-  public void testJMXOverLegacySSL() throws Exception {
+  public void testJMXOverLegacySSL() {
     locatorProperties.putAll(Maps.fromProperties(legacySSLProperties));
-    lsRule.startLocatorVM(0, locatorProperties);
+    clusterStartupRule.startLocatorVM(0, locatorProperties);
 
     remotelyValidateJmxConnection(false);
   }
 
   private void remotelyValidateJmxConnection(boolean withAlias) {
-    getHost(0).getVM(2).invoke(() -> {
+    getVM(2).invoke(() -> {
       beforeClass();
       MBeanServerConnectionRule jmx = new MBeanServerConnectionRule();
       Map<String, Object> env = getClientEnvironment(withAlias);
@@ -202,7 +201,7 @@ public class JMXMBeanDUnitTest implements Serializable {
   }
 
   private void validateJmxConnection(MBeanServerConnectionRule mBeanServerConnectionRule)
-      throws Exception {
+      throws IOException, MalformedObjectNameException {
     // Get MBean proxy instance that will be used to make calls to registered MBean
     DistributedSystemMXBean distributedSystemMXBean =
         mBeanServerConnectionRule.getProxyMXBean(DistributedSystemMXBean.class);

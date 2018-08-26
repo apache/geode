@@ -20,7 +20,7 @@ import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemPrope
  * Distributed version of RestoreSystemProperties which affects all DUnit JVMs including the Locator
  * JVM.
  */
-public class DistributedRestoreSystemProperties extends AbstractDistributedTestRule {
+public class DistributedRestoreSystemProperties extends AbstractDistributedRule {
 
   private static final AccessibleRestoreSystemProperties restoreSystemProperties =
       new AccessibleRestoreSystemProperties();

@@ -61,13 +61,12 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * RegressionTests extracted from {@link PersistentPartitionedRegionDistributedTest}.
  */
-
 @SuppressWarnings("serial,unused")
 public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
@@ -81,7 +80,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
   private VM vm2;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -342,7 +341,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
    * Controller VM sees unexpected PartitionOffLineException while doing ops)
    */
   @Test
-  public void doesNotWaitForPreviousInstanceOfOnlineServer() throws Exception {
+  public void doesNotWaitForPreviousInstanceOfOnlineServer() {
     // Add a hook to disconnect from the distributed system when the initial image message shows up.
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {

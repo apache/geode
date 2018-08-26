@@ -84,7 +84,11 @@ subprojects {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
-    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    if (project.hasProperty('testMaxParallelForks')) {
+      maxParallelForks = project.testMaxParallelForks
+    } else {
+      maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    }
   }
 
   apply plugin: 'nebula.facet'

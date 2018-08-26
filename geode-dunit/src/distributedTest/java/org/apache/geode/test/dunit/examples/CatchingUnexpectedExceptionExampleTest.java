@@ -30,20 +30,19 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @SuppressWarnings("serial")
 public class CatchingUnexpectedExceptionExampleTest implements Serializable {
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   /**
    * Don't do this! Catch Exception and invoke fail => anti-pattern
    */
   @Test
-  public void createRegion_withTryCatch_DO_NOT_DO_THIS() throws Exception {
+  public void createRegion_withTryCatch_DO_NOT_DO_THIS() {
     getVM(0).invoke(new SerializableRunnable("Create Region") {
       @Override
       public void run() {
@@ -63,10 +62,10 @@ public class CatchingUnexpectedExceptionExampleTest implements Serializable {
    * Use "throws Exception" is better!
    */
   @Test
-  public void createRegion_withThrowsException_THIS_IS_BETTER() throws Exception {
+  public void createRegion_withThrowsException_THIS_IS_BETTER() {
     getVM(0).invoke(new SerializableRunnable("Create Region") {
       @Override
-      public void run() throws Exception {
+      public void run() {
         Cache cache = new CacheFactory().create();
         RegionFactory regionFactory = cache.createRegionFactory(new AttributesFactory().create());
         LocalRegion region = (LocalRegion) regionFactory.create("region1");
@@ -79,7 +78,7 @@ public class CatchingUnexpectedExceptionExampleTest implements Serializable {
    * Use lambda without having to specify run() with throws Exception -- best!
    */
   @Test
-  public void createRegion_withLambda_THIS_IS_BEST() throws Exception {
+  public void createRegion_withLambda_THIS_IS_BEST() {
     getVM(0).invoke("Create Region", () -> {
       Cache cache = new CacheFactory().create();
       RegionFactory regionFactory = cache.createRegionFactory(new AttributesFactory().create());

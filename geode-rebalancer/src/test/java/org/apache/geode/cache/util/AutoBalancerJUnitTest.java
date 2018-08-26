@@ -541,7 +541,7 @@ public class AutoBalancerJUnitTest {
     mockContext.checking(new Expectations() {
       {
         oneOf(mockAuditor).init(with(any(Properties.class)));
-        exactly(2).of(mockAuditor).execute();
+        atLeast(2).of(mockAuditor).execute();
         allowing(mockClock).currentTimeMillis();
         will(new CustomAction("returnTime") {
           @Override
@@ -558,7 +558,7 @@ public class AutoBalancerJUnitTest {
     assertEquals(3, latch.getCount());
     AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
     autoR.initialize(null, props);
-    assertTrue(latch.await(1, TimeUnit.SECONDS));
+    assertTrue(latch.await(1, TimeUnit.MINUTES));
   }
 
   @Test
@@ -592,7 +592,7 @@ public class AutoBalancerJUnitTest {
     assertEquals(2, latch.getCount());
     AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
     autoR.initialize(null, props);
-    assertTrue(latch.await(1, TimeUnit.SECONDS));
+    assertTrue(latch.await(1, TimeUnit.MINUTES));
 
     // after destroy no more execute will be called.
     autoR.destroy();

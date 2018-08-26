@@ -14,46 +14,38 @@
  */
 package org.apache.geode.test.dunit.examples;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.TimeUnit;
-
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
-@SuppressWarnings("serial")
 public class AsyncInvokeCallableExampleTest {
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
   public void invokeAsyncAsFuture() throws Exception {
-    VM workerVM = getVM(0);
-    boolean success = workerVM.invokeAsync(() -> longRunningWorkWithResult()).get();
+    boolean success = getVM(0).invokeAsync(() -> longRunningWorkWithResult()).get();
     assertThat(success).isTrue();
   }
 
   @Test
   public void invokeAsyncAsFutureWithTimeout() throws Exception {
-    VM workerVM = getVM(0);
-    boolean success =
-        workerVM.invokeAsync(() -> longRunningWorkWithResult()).get(1, TimeUnit.MINUTES);
+    boolean success = getVM(0).invokeAsync(() -> longRunningWorkWithResult()).get(1, MINUTES);
     assertThat(success).isTrue();
   }
 
   @Test
   public void invokeAsyncWithExceptionOccurred() throws Exception {
-    VM workerVM = getVM(0);
-
     AsyncInvocation<Boolean> asyncInvocation =
-        workerVM.invokeAsync(() -> longRunningWorkThatThrowsException());
+        getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException());
     asyncInvocation.join();
 
     assertThat(asyncInvocation.exceptionOccurred()).isTrue();
@@ -75,7 +67,7 @@ public class AsyncInvokeCallableExampleTest {
    */
   @Test(expected = AssertionError.class)
   public void invokeAsyncWithAwaitWithTimeout() throws Exception {
-    getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await(1, TimeUnit.MINUTES);
+    getVM(0).invokeAsync(() -> longRunningWorkThatThrowsException()).await(1, MINUTES);
   }
 
   private static boolean longRunningWorkWithResult() {

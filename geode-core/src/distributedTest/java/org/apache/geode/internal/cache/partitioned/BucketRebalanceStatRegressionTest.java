@@ -47,7 +47,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -73,7 +73,7 @@ public class BucketRebalanceStatRegressionTest implements Serializable {
   private VM vm1;
 
   @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public static DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1113,7 +1112,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /**
    * A reference counter to protected the memoryThresholdReached boolean
    */
-  private final Set<DistributedMember> memoryThresholdReachedMembers = new CopyOnWriteArraySet<>();
+  private final Set<DistributedMember> memoryThresholdReachedMembers = new HashSet<>();
 
   // TODO: cleanup getInitialImageAndRecovery
   private void getInitialImageAndRecovery(InputStream snapshotInputStream,
@@ -3751,32 +3750,25 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (event.getState().isCritical() && !event.getPreviousState().isCritical()
           && (event.getType() == ResourceType.HEAP_MEMORY
               || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
-        setMemoryThresholdReachedCounterTrue(event.getMember());
+        addCriticalMember(event.getMember());
       } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()
           && (event.getType() == ResourceType.HEAP_MEMORY
               || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
-        removeMemberFromCriticalList(event.getMember());
+        removeCriticalMember(event.getMember());
       }
     }
   }
 
   @Override
-  public void removeMemberFromCriticalList(DistributedMember member) {
+  public void removeCriticalMember(DistributedMember member) {
     if (logger.isDebugEnabled()) {
       logger.debug("DR: removing member {} from critical member list", member);
     }
     synchronized (this.memoryThresholdReachedMembers) {
       this.memoryThresholdReachedMembers.remove(member);
-      if (this.memoryThresholdReachedMembers.size() == 0) {
-        memoryThresholdReached.set(false);
+      if (this.memoryThresholdReachedMembers.isEmpty()) {
+        setMemoryThresholdReached(false);
       }
-    }
-  }
-
-  @Override
-  public Set<DistributedMember> getMemoryThresholdReachedMembers() {
-    synchronized (this.memoryThresholdReachedMembers) {
-      return Collections.unmodifiableSet(this.memoryThresholdReachedMembers);
     }
   }
 
@@ -3786,7 +3778,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     Set<InternalDistributedMember> others = getCacheDistributionAdvisor().adviseGeneric();
     for (InternalDistributedMember idm : criticalMembers) {
       if (others.contains(idm)) {
-        setMemoryThresholdReachedCounterTrue(idm);
+        addCriticalMember(idm);
       }
     }
   }
@@ -3794,12 +3786,23 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /**
    * @param idm member whose threshold has been exceeded
    */
-  private void setMemoryThresholdReachedCounterTrue(final DistributedMember idm) {
+  protected void addCriticalMember(final DistributedMember idm) {
     synchronized (this.memoryThresholdReachedMembers) {
-      this.memoryThresholdReachedMembers.add(idm);
-      if (this.memoryThresholdReachedMembers.size() > 0) {
-        memoryThresholdReached.set(true);
+      if (this.memoryThresholdReachedMembers.isEmpty()) {
+        setMemoryThresholdReached(true);
       }
+      this.memoryThresholdReachedMembers.add(idm);
+    }
+  }
+
+  @Override
+  public MemoryThresholdInfo getAtomicThresholdInfo() {
+    if (!isMemoryThresholdReached()) {
+      return MemoryThresholdInfo.getNotReached();
+    }
+    synchronized (memoryThresholdReachedMembers) {
+      return new MemoryThresholdInfo(isMemoryThresholdReached(),
+          new HashSet<DistributedMember>(memoryThresholdReachedMembers));
     }
   }
 
