@@ -14,9 +14,8 @@
  */
 package org.apache.geode.security;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
@@ -35,7 +34,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 /**
  * Unit tests for {@link GemFireSecurityException}.
  */
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class GemFireSecurityExceptionTest {
 
   private String message;
@@ -50,105 +49,102 @@ public class GemFireSecurityExceptionTest {
 
   @Before
   public void setUp() throws Exception {
-    this.message = testName.getMethodName() + " message";
-    this.causeMessage = testName.getMethodName() + " cause message";
+    message = testName.getMethodName() + " message";
+    causeMessage = testName.getMethodName() + " cause message";
 
-    this.nonSerializableResolvedObj = new Object();
-    this.nonSerializableNamingException = new NamingException(this.causeMessage);
-    this.nonSerializableNamingException.setResolvedObj(this.nonSerializableResolvedObj);
+    nonSerializableResolvedObj = new Object();
+    nonSerializableNamingException = new NamingException(causeMessage);
+    nonSerializableNamingException.setResolvedObj(nonSerializableResolvedObj);
 
-    this.serializableResolvedObj = new SerializableObject(this.testName.getMethodName());
-    this.serializableNamingException = new NamingException(this.causeMessage);
-    this.serializableNamingException.setResolvedObj(this.serializableResolvedObj);
+    serializableResolvedObj = new SerializableObject(testName.getMethodName());
+    serializableNamingException = new NamingException(causeMessage);
+    serializableNamingException.setResolvedObj(serializableResolvedObj);
 
     assertPreConditions();
   }
 
   private void assertPreConditions() {
-    catchException(this).clone(this.nonSerializableNamingException);
-    assertThat((Throwable) caughtException()).isNotNull();
-    assertThat((Throwable) caughtException().getCause())
+    Throwable thrown =
+        catchThrowable(() -> SerializationUtils.clone(nonSerializableNamingException));
+    assertThat(thrown).isNotNull();
+    assertThat(thrown.getCause())
         .isInstanceOf(NotSerializableException.class);
 
-    catchException(this).clone(this.serializableNamingException);
-    assertThat((Throwable) caughtException()).isNull();
+    thrown = catchThrowable(() -> SerializationUtils.clone(serializableNamingException));
+    assertThat(thrown).isNull();
 
-    assertThat(this.nonSerializableResolvedObj).isNotInstanceOf(Serializable.class);
+    assertThat(nonSerializableResolvedObj).isNotInstanceOf(Serializable.class);
 
-    catchException(this).clone(this.serializableResolvedObj);
-    assertThat((Throwable) caughtException()).isNull();
+    thrown = catchThrowable(() -> SerializationUtils.clone(serializableResolvedObj));
+    assertThat(thrown).isNull();
   }
 
   @Test
-  public void isSerializable() throws Exception {
+  public void isSerializable() {
     assertThat(GemFireSecurityException.class).isInstanceOf(Serializable.class);
   }
 
   @Test
-  public void serializes() throws Exception {
-    GemFireSecurityException instance = new GemFireSecurityException(this.message);
+  public void serializes() {
+    GemFireSecurityException instance = new GemFireSecurityException(message);
 
     GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message);
+    assertThat(cloned).hasMessage(message);
   }
 
   @Test
-  public void serializesWithThrowable() throws Exception {
-    Throwable cause = new Exception(this.causeMessage);
-    GemFireSecurityException instance = new GemFireSecurityException(this.message, cause);
+  public void serializesWithThrowable() {
+    Throwable cause = new Exception(causeMessage);
+    GemFireSecurityException instance = new GemFireSecurityException(message, cause);
 
     GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message).hasCause(cause);
-    assertThat(cloned.getCause()).hasMessage(this.causeMessage);
+    assertThat(cloned).hasMessage(message).hasCause(cause);
+    assertThat(cloned.getCause()).hasMessage(causeMessage);
   }
 
   @Test
-  public void serializesWithNonSerializableNamingException() throws Exception {
+  public void serializesWithNonSerializableNamingException() {
     GemFireSecurityException instance =
-        new GemFireSecurityException(this.message, this.nonSerializableNamingException);
+        new GemFireSecurityException(message, nonSerializableNamingException);
 
     GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message).hasCause(this.nonSerializableNamingException);
+    assertThat(cloned).hasMessage(message).hasCause(nonSerializableNamingException);
     NamingException cause = (NamingException) cloned.getCause();
-    assertThat(cause).hasMessage(this.causeMessage);
+    assertThat(cause).hasMessage(causeMessage);
     assertThat(cause.getResolvedObj()).isNull();
   }
 
   @Test
-  public void serializesWithSerializableNamingException() throws Exception {
+  public void serializesWithSerializableNamingException() {
     GemFireSecurityException instance =
-        new GemFireSecurityException(this.message, this.serializableNamingException);
+        new GemFireSecurityException(message, serializableNamingException);
 
     GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message).hasCause(this.serializableNamingException);
+    assertThat(cloned).hasMessage(message).hasCause(serializableNamingException);
     NamingException cause = (NamingException) cloned.getCause();
-    assertThat(cause).hasMessage(this.causeMessage);
-    assertThat(cause.getResolvedObj()).isNotNull().isEqualTo(this.serializableResolvedObj);
+    assertThat(cause).hasMessage(causeMessage);
+    assertThat(cause.getResolvedObj()).isNotNull().isEqualTo(serializableResolvedObj);
   }
 
   @Test
-  public void isSerializableReturnsTrueForSerializableClass() throws Exception {
-    assertThat(new GemFireSecurityException("").isSerializable(this.serializableResolvedObj))
+  public void isSerializableReturnsTrueForSerializableClass() {
+    assertThat(new GemFireSecurityException("").isSerializable(serializableResolvedObj))
         .isTrue();
   }
 
   @Test
-  public void isSerializableReturnsFalseForNonSerializableClass() throws Exception {
-    assertThat(new GemFireSecurityException("").isSerializable(this.nonSerializableResolvedObj))
+  public void isSerializableReturnsFalseForNonSerializableClass() {
+    assertThat(new GemFireSecurityException("").isSerializable(nonSerializableResolvedObj))
         .isFalse();
   }
 
-  public Object clone(final Serializable object) {
-    return SerializationUtils.clone(object);
-  }
+  private static class SerializableObject implements Serializable {
 
-  public static class SerializableObject implements Serializable {
-
-    private String name;
+    private final String name;
 
     SerializableObject(String name) {
       this.name = name;
@@ -164,7 +160,6 @@ public class GemFireSecurityExceptionTest {
       SerializableObject that = (SerializableObject) o;
 
       return name != null ? name.equals(that.name) : that.name == null;
-
     }
 
     @Override

@@ -1,30 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.geode.pdx;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -41,7 +40,6 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -57,8 +55,8 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({SerializationTest.class})
-public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
+@Category(SerializationTest.class)
+public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
 
   private File diskDir;
 
@@ -81,12 +79,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
       cache.close();
     }
     FileUtils.deleteDirectory(diskDir);
-    File[] defaultStoreFiles = new File(".").listFiles(new FilenameFilter() {
-
-      public boolean accept(File dir, String name) {
-        return name.startsWith("BACKUPPDXAttributes");
-      }
-    });
+    File[] defaultStoreFiles = new File(".").listFiles(
+        (dir, name) -> name.startsWith("BACKUPPDXAttributes"));
 
     for (File file : defaultStoreFiles) {
       FileUtils.forceDelete(file);
@@ -296,9 +290,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
       initCache(true, false, null);
       Region region = createRegion(true, false);
 
-      catchException(this).defineATypeNoEnum();
-      assertThat((Exception) caughtException())
-          .isExactlyInstanceOf(PdxInitializationException.class);
+      Throwable thrown = catchThrowable(() -> defineATypeNoEnum());
+      assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
 
       // Drop partitioned region.
       region.destroyRegion();
@@ -310,9 +303,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     {
       initCache(true, false, null);
       defineATypeNoEnum();
-      catchException(this).createRegion(true, false);
-      assertThat((Exception) caughtException())
-          .isExactlyInstanceOf(PdxInitializationException.class);
+      Throwable thrown = catchThrowable(() -> createRegion(true, false));
+      assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
     }
   }
 
@@ -321,9 +313,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     {
       initCache(true, false, null);
       Region region = createRegion(true, true);
-      catchException(this).defineATypeNoEnum();
-      assertThat((Exception) caughtException())
-          .isExactlyInstanceOf(PdxInitializationException.class);
+      Throwable thrown = catchThrowable(() -> defineATypeNoEnum());
+      assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
 
       // Drop partitioned region.
       region.destroyRegion();
@@ -336,9 +327,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     {
       initCache(true, false, null);
       defineATypeNoEnum();
-      catchException(this).createRegion(true, true);
-      assertThat((Exception) caughtException())
-          .isExactlyInstanceOf(PdxInitializationException.class);
+      Throwable thrown = catchThrowable(() -> createRegion(true, true));
+      assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
     }
   }
 
@@ -364,9 +354,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     {
       initCache(true, false, null);
       definePersistentAEQ(cache, "aeq", true);
-      catchException(this).defineATypeNoEnum();
-      assertThat((Exception) caughtException())
-          .isExactlyInstanceOf(PdxInitializationException.class);
+      Throwable thrown = catchThrowable(() -> defineATypeNoEnum());
+      assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
     }
     tearDown();
     setUp();
@@ -374,9 +363,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     {
       initCache(true, false, null);
       defineATypeNoEnum();
-      catchException(this).definePersistentAEQ(cache, "aeq", true);
-      assertThat((Exception) caughtException())
-          .isExactlyInstanceOf(PdxInitializationException.class);
+      Throwable thrown = catchThrowable(() -> definePersistentAEQ(cache, "aeq", true));
+      assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
     }
   }
 
@@ -401,18 +389,18 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
       PoolManager.createFactory().addServer("localhost", port).create("pool");
 
-      catchException(this).defineAType();
-      assertThat((Exception) caughtException()).isExactlyInstanceOf(ToDataException.class);
+      Throwable thrown = catchThrowable(() -> defineAType());
+      assertThat(thrown).isExactlyInstanceOf(ToDataException.class);
     }
   }
 
-  public void defineAType() throws IOException {
+  private void defineAType() throws IOException {
     SimpleClass sc = new SimpleClass(1, (byte) 2);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(sc, out);
   }
 
-  public void defineATypeNoEnum() throws /* IO */ Exception {
+  private void defineATypeNoEnum() throws /* IO */ Exception {
     SimpleClass sc = new SimpleClass(1, (byte) 2, null);
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(sc, out);
@@ -441,7 +429,7 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  public Region createRegion(boolean persistent, boolean pr) {
+  private Region createRegion(boolean persistent, boolean pr) {
     Region region;
     RegionShortcut rs;
 
@@ -458,14 +446,8 @@ public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
     return region;
   }
 
-  public void definePersistentAEQ(Cache cache, String id, boolean persistent) {
-    AsyncEventListener al = new AsyncEventListener() {
-      public void close() {}
-
-      public boolean processEvents(List<AsyncEvent> events) {
-        return true;
-      }
-    };
+  private void definePersistentAEQ(Cache cache, String id, boolean persistent) {
+    AsyncEventListener al = events -> true;
 
     cache.createAsyncEventQueueFactory().setPersistent(persistent).create(id, al);
   }

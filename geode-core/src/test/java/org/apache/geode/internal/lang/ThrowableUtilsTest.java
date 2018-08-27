@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.lang;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.apache.geode.internal.lang.ThrowableUtils.getRootCause;
+import static org.apache.geode.internal.lang.ThrowableUtils.hasCauseMessage;
+import static org.apache.geode.internal.lang.ThrowableUtils.hasCauseType;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import org.junit.Test;
-
 
 /**
  * Unit tests for {@link ThrowableUtils}
@@ -28,9 +29,9 @@ public class ThrowableUtilsTest {
 
   @Test
   public void getRootCauseOfNullShouldThrowNullPointerException() {
-    catchException(this).getRootCause(null);
+    Throwable thrown = catchThrowable(() -> getRootCause(null));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(NullPointerException.class);
+    assertThat(thrown).isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -67,16 +68,16 @@ public class ThrowableUtilsTest {
 
   @Test
   public void hasCauseTypeOfNullClassShouldThrowNullPointerException() {
-    catchException(this).hasCauseType(new Exception(), null);
+    Throwable thrown = catchThrowable(() -> hasCauseType(new Exception(), null));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(NullPointerException.class);
+    assertThat(thrown).isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void hasCauseTypeOfNullThrowableShouldThrowNullPointerException() {
-    catchException(this).hasCauseType(null, Exception.class);
+    Throwable thrown = catchThrowable(() -> hasCauseType(null, Exception.class));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(NullPointerException.class);
+    assertThat(thrown).isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -117,30 +118,30 @@ public class ThrowableUtilsTest {
 
   @Test
   public void hasCauseMessageForNullShouldThrowNullPointerException() {
-    catchException(this).hasCauseMessage(null, "message");
+    Throwable thrown = catchThrowable(() -> hasCauseMessage(null, "message"));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(NullPointerException.class);
+    assertThat(thrown).isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void hasCauseMessageOfNullShouldThrowNullPointerException() {
-    catchException(this).hasCauseMessage(new OneException(), null);
+    Throwable thrown = catchThrowable(() -> hasCauseMessage(new OneException(), null));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(NullPointerException.class);
+    assertThat(thrown).isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void hasCauseMessageForNullMessageShouldThrowNullPointerException() {
-    catchException(this).hasCauseMessage(new OneException((String) null), null);
+    Throwable thrown = catchThrowable(() -> hasCauseMessage(new OneException((String) null), null));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(NullPointerException.class);
+    assertThat(thrown).isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void hasCauseMessageOfNonMatchingNullMessageShouldThrowNullPointerException() {
-    catchException(this).hasCauseMessage(new OneException("message"), null);
+    Throwable thrown = catchThrowable(() -> hasCauseMessage(new OneException("message"), null));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(NullPointerException.class);
+    assertThat(thrown).isExactlyInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -168,21 +169,10 @@ public class ThrowableUtilsTest {
     assertThat(hasCauseMessage(new OneException("message"), "this is the message")).isFalse();
   }
 
-  public Throwable getRootCause(final Throwable throwable) {
-    return ThrowableUtils.getRootCause(throwable);
-  }
-
-  public boolean hasCauseType(final Throwable throwable,
-      final Class<? extends Throwable> causeClass) {
-    return ThrowableUtils.hasCauseType(throwable, causeClass);
-  }
-
-  public boolean hasCauseMessage(final Throwable throwable, final String message) {
-    return ThrowableUtils.hasCauseMessage(throwable, message);
-  }
-
   private static class OneException extends Exception {
-    public OneException() {}
+    public OneException() {
+      // nothing
+    }
 
     public OneException(String message) {
       super(message);
@@ -198,7 +188,9 @@ public class ThrowableUtilsTest {
   }
 
   private static class SubException extends OneException {
-    public SubException() {}
+    public SubException() {
+      // nothing
+    }
 
     public SubException(String message) {
       super(message);
@@ -214,7 +206,9 @@ public class ThrowableUtilsTest {
   }
 
   private static class TwoException extends Exception {
-    public TwoException() {}
+    public TwoException() {
+      // nothing
+    }
 
     public TwoException(String message) {
       super(message);
@@ -230,7 +224,9 @@ public class ThrowableUtilsTest {
   }
 
   private static class OtherException extends Exception {
-    public OtherException() {}
+    public OtherException() {
+      // nothing
+    }
 
     public OtherException(String message) {
       super(message);

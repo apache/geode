@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EARLY_ENTRY_EVENT_SERIALIZATION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -175,9 +174,8 @@ public class EntryEventSerializationTest {
     Object newValue = new Object();
     when(event.basicGetNewValue()).thenReturn(newValue);
 
-    catchException(instance).serializeNewValueIfNeeded(region, event);
+    Throwable thrown = catchThrowable(() -> instance.serializeNewValueIfNeeded(region, event));
 
-    Exception thrown = caughtException();
     assertThat(thrown).isInstanceOf(SerializationException.class);
     assertThat(thrown.getCause()).isInstanceOf(NotSerializableException.class);
   }
