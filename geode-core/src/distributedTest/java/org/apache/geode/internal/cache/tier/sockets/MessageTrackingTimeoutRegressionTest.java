@@ -26,15 +26,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -59,7 +57,7 @@ public class MessageTrackingTimeoutRegressionTest implements Serializable {
   private VM server3;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -114,25 +112,17 @@ public class MessageTrackingTimeoutRegressionTest implements Serializable {
   private void createClientCache() {
     clientCacheRule.createClientCache();
 
-    PoolImpl pool = (PoolImpl) PoolManager.createFactory().addServer(hostName, port1)
+    PoolManager.createFactory().addServer(hostName, port1)
         .addServer(hostName, port2).addServer(hostName, port3).setSubscriptionEnabled(true)
         .setSubscriptionRedundancy(-1).setSubscriptionMessageTrackingTimeout(54321)
         .setIdleTimeout(-1).setPingInterval(200).create(uniqueName);
-
-    ClientRegionFactory crf =
-        clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
   }
 
   private void createClientCacheWithDefaultMessageTrackingTimeout() {
     clientCacheRule.createClientCache();
 
-    PoolImpl pool = (PoolImpl) PoolManager.createFactory().addServer(hostName, port1)
+    PoolManager.createFactory().addServer(hostName, port1)
         .addServer(hostName, port2).addServer(hostName, port3).create(uniqueName);
-
-    ClientRegionFactory crf =
-        clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
-    crf.setPoolName(pool.getName());
   }
 
   private PoolImpl findPool(String name) {

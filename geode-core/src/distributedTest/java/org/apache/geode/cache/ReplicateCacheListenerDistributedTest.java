@@ -26,13 +26,12 @@ import static org.hamcrest.Matchers.nullValue;
 import java.io.Serializable;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedCountersRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -45,7 +44,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 2.0
  */
-
 @SuppressWarnings("serial")
 public class ReplicateCacheListenerDistributedTest implements Serializable {
 
@@ -61,8 +59,8 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
   private String regionName;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
@@ -77,7 +75,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     regionName = getClass().getSimpleName();
 
     sharedCountersRule.initialize(CREATES);
@@ -87,7 +85,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   }
 
   @Test
-  public void afterCreateIsInvokedInEveryMember() throws Exception {
+  public void afterCreateIsInvokedInEveryMember() {
     CacheListener<String, Integer> listener = new CreateCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
     for (int i = 0; i < getVMCount(); i++) {
@@ -102,7 +100,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   }
 
   @Test
-  public void afterUpdateIsInvokedInEveryMember() throws Exception {
+  public void afterUpdateIsInvokedInEveryMember() {
     CacheListener<String, Integer> listener = new UpdateCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
     for (int i = 0; i < getVMCount(); i++) {
@@ -118,7 +116,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   }
 
   @Test
-  public void afterInvalidateIsInvokedInEveryMember() throws Exception {
+  public void afterInvalidateIsInvokedInEveryMember() {
     CacheListener<String, Integer> listener = new InvalidateCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
     for (int i = 0; i < getVMCount(); i++) {
@@ -135,7 +133,7 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   }
 
   @Test
-  public void afterDestroyIsInvokedInEveryMember() throws Exception {
+  public void afterDestroyIsInvokedInEveryMember() {
     CacheListener<String, Integer> listener = new DestroyCountingCacheListener();
     Region<String, Integer> region = createRegion(regionName, listener);
     for (int i = 0; i < getVMCount(); i++) {

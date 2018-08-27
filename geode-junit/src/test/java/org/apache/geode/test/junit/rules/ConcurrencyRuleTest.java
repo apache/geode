@@ -442,6 +442,13 @@ public class ConcurrencyRuleTest {
     concurrencyRule.clear(); // so that this test's after succeeds
   }
 
+  /**
+   * There was an issue where the rule would fail a test if it had never been used. This is an issue
+   * for test classes like this one, where the rule is used for some tests and not for others.
+   */
+  @Test
+  public void afterSucceedsIfRuleWasNotUsed() {}
+
   @SuppressWarnings("unused")
   private enum Execution {
     EXECUTE_IN_SERIES(concurrencyRule -> {

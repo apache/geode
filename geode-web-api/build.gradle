@@ -73,5 +73,5 @@ war {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   // this shouldn't be necessary but if it's not specified we're missing some of the jars
   // from the runtime classpath
-  classpath configurations.runtime
+  classpath configurations.runtimeClasspath
 }

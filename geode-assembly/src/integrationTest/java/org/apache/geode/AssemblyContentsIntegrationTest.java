@@ -37,7 +37,6 @@ import org.apache.geode.util.test.TestUtil;
 @Category({RestAPITest.class})
 public class AssemblyContentsIntegrationTest {
 
-  private static final String VERSION_PATTERN = "[0-9-_.v]{3,}.*\\.jar$";
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
   private Set<String> expectedAssemblyContent;
 
@@ -86,7 +85,8 @@ public class AssemblyContentsIntegrationTest {
     Set<String> sortedContent = new TreeSet<>();
     contents.forEach(content -> {
       Path path = Paths.get(content.getPath());
-      sortedContent.add(geodeHomePath.relativize(path).toString());
+      // replacing '\' with '/' to test on windows properly
+      sortedContent.add(geodeHomePath.relativize(path).toString().replace('\\', '/'));
     });
 
     return sortedContent;

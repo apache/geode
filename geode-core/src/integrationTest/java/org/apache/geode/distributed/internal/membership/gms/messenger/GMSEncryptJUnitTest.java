@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Callable;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -37,7 +37,7 @@ import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
 @Category({MembershipTest.class})
 public class GMSEncryptJUnitTest {
@@ -52,8 +52,7 @@ public class GMSEncryptJUnitTest {
   NetView netView;
 
   @Rule
-  public ExecutorServiceRule executorServiceRule =
-      ExecutorServiceRule.builder().threadCount(THREAD_COUNT).build();
+  public ConcurrencyRule concurrencyRule = new ConcurrencyRule();
 
   private void initMocks() throws Exception {
     initMocks(DEFAULT_ALGO);
@@ -143,52 +142,39 @@ public class GMSEncryptJUnitTest {
 
     sender.overrideInstallViewForTest(netView);
     receiver.overrideInstallViewForTest(netView);
-    final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
 
-    for (int j = 0; j < THREAD_COUNT; j++)
-      executorServiceRule.execute(new Runnable() {
-        public void run() {
-          // sender encrypts a message, so use receiver's public key
-          try {
-            int count = 0;
-            for (int i = 0; i < runs; i++) {
-              // System.out.println("another run " + i + " threadid " +
-              // Thread.currentThread().getId());
-              String ch = "Hello world";
-              byte[] challenge = ch.getBytes();
-              byte[] encryptedChallenge = sender.encryptData(challenge, mockMembers[2]);
+    for (int j = 0; j < THREAD_COUNT; j++) {
+      Callable<Object> callable = () -> {
+        String ch = "Hello world";
+        byte[] challenge = ch.getBytes();
+        byte[] encryptedChallenge = sender.encryptData(challenge, mockMembers[2]);
 
-              // receiver decrypts the message using the sender's public key
-              byte[] decryptBytes = receiver.decryptData(encryptedChallenge, mockMembers[1]);
+        // receiver decrypts the message using the sender's public key
+        byte[] decryptBytes = receiver.decryptData(encryptedChallenge, mockMembers[1]);
 
-              // now send a response
-              String response = "Hello yourself!";
-              byte[] responseBytes = response.getBytes();
-              byte[] encryptedResponse = receiver.encryptData(responseBytes, mockMembers[1]);
+        // now send a response
+        String response = "Hello yourself!";
+        byte[] responseBytes = response.getBytes();
+        byte[] encryptedResponse = receiver.encryptData(responseBytes, mockMembers[1]);
 
-              // receiver decodes the response
-              byte[] decryptedResponse = sender.decryptData(encryptedResponse, mockMembers[2]);
+        // receiver decodes the response
+        byte[] decryptedResponse = sender.decryptData(encryptedResponse, mockMembers[2]);
 
-              Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
+        Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
 
-              Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
+        Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
 
-              Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
+        Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
 
-              Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
-              count++;
-            }
-            Assert.assertEquals(runs, count);
-            countDownLatch.countDown();
-          } catch (Exception e) {
-            e.printStackTrace();
+        Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
 
-          }
+        return null;
+      };
 
-        }
-      });
+      concurrencyRule.add(callable).repeatForIterations(runs);
+    }
 
-    countDownLatch.await();
+    concurrencyRule.executeInParallel();
   }
 
   @Test
@@ -322,51 +308,39 @@ public class GMSEncryptJUnitTest {
     receiver.overrideInstallViewForTest(netView);
 
     final int runs = 100000;
-    final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
 
-    for (int j = 0; j < THREAD_COUNT; j++)
-      executorServiceRule.execute(new Runnable() {
-        public void run() {
-          // sender encrypts a message, so use receiver's public key
-          try {
-            int count = 0;
-            for (int i = 0; i < runs; i++) {
-              String ch = "Hello world";
-              byte[] challenge = ch.getBytes();
-              byte[] encryptedChallenge = sender.encryptData(challenge);
+    for (int j = 0; j < THREAD_COUNT; j++) {
+      Callable<Void> callable = () -> {
+        // sender encrypts a message, so use receiver's public key
 
-              // receiver decrypts the message using the sender's public key
-              byte[] decryptBytes = receiver.decryptData(encryptedChallenge);
+        String ch = "Hello world";
+        byte[] challenge = ch.getBytes();
+        byte[] encryptedChallenge = sender.encryptData(challenge);
 
-              // now send a response
-              String response = "Hello yourself!";
-              byte[] responseBytes = response.getBytes();
-              byte[] encryptedResponse = receiver.encryptData(responseBytes);
+        // receiver decrypts the message using the sender's public key
+        byte[] decryptBytes = receiver.decryptData(encryptedChallenge);
 
-              // receiver decodes the response
-              byte[] decryptedResponse = sender.decryptData(encryptedResponse);
+        // now send a response
+        String response = "Hello yourself!";
+        byte[] responseBytes = response.getBytes();
+        byte[] encryptedResponse = receiver.encryptData(responseBytes);
 
-              Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
+        // receiver decodes the response
+        byte[] decryptedResponse = sender.decryptData(encryptedResponse);
 
-              Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
+        Assert.assertFalse(Arrays.equals(challenge, encryptedChallenge));
 
-              Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
+        Assert.assertTrue(Arrays.equals(challenge, decryptBytes));
 
-              Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
+        Assert.assertFalse(Arrays.equals(responseBytes, encryptedResponse));
 
-              count++;
-            }
+        Assert.assertTrue(Arrays.equals(responseBytes, decryptedResponse));
 
-            Assert.assertEquals(runs, count);
+        return null;
+      };
+      concurrencyRule.add(callable).repeatForIterations(runs);
 
-            countDownLatch.countDown();
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-
-        }
-      });
-
-    countDownLatch.await();
+    }
+    concurrencyRule.executeInParallel();
   }
 }

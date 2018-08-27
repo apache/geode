@@ -30,13 +30,13 @@ import org.junit.Test;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @SuppressWarnings("serial")
 public class CacheRuleBuilderDistributedTest {
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
   public void defaultDoesNothing() {
@@ -85,11 +85,14 @@ public class CacheRuleBuilderDistributedTest {
 
   /**
    * Used by test {@link #defaultDoesNothing()}.
+   *
+   * <p>
+   * NOTE: please keep the use of deprecated GemFireCacheImpl.getInstance().
    */
   public static class DefaultDoesNothing implements Serializable {
 
     @Rule
-    public CacheRule cacheRule = CacheRule.builder().build();
+    public CacheRule cacheRule = new CacheRule();
 
     @Test
     public void getCache_returnsNullInAllVMs() {

@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,7 +44,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -55,7 +54,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * TRAC #48879: Leaking ThreadIdentifiers and DispatchedAndCurrentEvents objects when client uses
  * many short lived threads
  */
-@Category({ClientSubscriptionTest.class})
+@Category(ClientSubscriptionTest.class)
 @SuppressWarnings("serial")
 public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
 
@@ -68,8 +67,8 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
   private String regionName;
   private String hostName;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -99,7 +98,7 @@ public class HARegionQueueThreadIdExpiryRegressionTest implements Serializable {
   }
 
   @Test
-  public void testThreadIdentifiersExpiry() throws Exception {
+  public void testThreadIdentifiersExpiry() {
     int puts = 10;
 
     server1.invoke(() -> doPuts(puts));

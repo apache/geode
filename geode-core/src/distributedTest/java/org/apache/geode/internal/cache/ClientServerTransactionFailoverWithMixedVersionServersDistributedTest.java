@@ -28,12 +28,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -56,13 +56,18 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@SuppressWarnings("serial")
 public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTest
     implements Serializable {
+
+  private static final int TRANSACTION_TIMEOUT_SECOND = 2;
+  private static final int VM_COUNT = 6;
+
   private String hostName;
   private String uniqueName;
   private String regionName;
@@ -75,16 +80,15 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   private int locatorPort;
   private File locatorLog;
   private Host host;
-  private final int transactionTimeoutSecond = 2;
-
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule(6);
 
   @Rule
-  public CacheRule cacheRule = new CacheRule();
+  public DistributedRule distributedRule = new DistributedRule(VM_COUNT);
 
   @Rule
-  public ClientCacheRule clientCacheRule = new ClientCacheRule();
+  public CacheRule cacheRule = new CacheRule(VM_COUNT);
+
+  @Rule
+  public ClientCacheRule clientCacheRule = new ClientCacheRule(VM_COUNT);
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
@@ -136,7 +140,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   }
 
   private void doTransactions(int numOfTransactions, int numOfOperations)
-      throws InterruptedException, java.util.concurrent.ExecutionException {
+      throws InterruptedException, ExecutionException {
     Thread[] threads = new Thread[numOfTransactions];
     FutureTask<TransactionId>[] futureTasks = new FutureTask[numOfTransactions];
     TransactionId[] txIds = new TransactionId[numOfTransactions];
@@ -195,7 +199,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     clientCacheRule.createClientCache();
   }
 
-  private VM rollLocatorToCurrent(VM oldLocator) throws Exception {
+  private VM rollLocatorToCurrent(VM oldLocator) {
     // Roll the locator
     oldLocator.invoke(() -> stopLocator());
     VM rollLocator = host.getVM(VersionManager.CURRENT_VERSION, oldLocator.getId());
@@ -207,7 +211,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     Locator.getLocator().stop();
   }
 
-  private VM rollServerToCurrent(VM oldServer) throws Exception {
+  private VM rollServerToCurrent(VM oldServer) {
     // Roll the server
     oldServer.invoke(() -> cacheRule.getCache().close());
     VM rollServer = host.getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
@@ -215,7 +219,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     return rollServer;
   }
 
-  private void createServerRegion(int totalNumBuckets, boolean isAccessor) throws Exception {
+  private void createServerRegion(int totalNumBuckets, boolean isAccessor) {
     PartitionAttributesFactory factory = new PartitionAttributesFactory();
     factory.setTotalNumBuckets(totalNumBuckets);
     if (isAccessor) {
@@ -226,10 +230,10 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
         .setPartitionAttributes(partitionAttributes).create(regionName);
 
     TXManagerImpl txManager = cacheRule.getCache().getTxManager();
-    txManager.setTransactionTimeToLiveForTest(transactionTimeoutSecond);
+    txManager.setTransactionTimeToLiveForTest(TRANSACTION_TIMEOUT_SECOND);
   }
 
-  private void createClientRegion() throws Exception {
+  private void createClientRegion() {
     Pool pool = PoolManager.createFactory().addLocator(hostName, locatorPort).create(uniqueName);
 
     ClientRegionFactory crf =
@@ -241,7 +245,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   private void beginAndSuspendTransactions(int numOfTransactions, int numOfOperations,
       Thread[] threads,
       FutureTask<TransactionId>[] futureTasks, TransactionId[] txIds)
-      throws InterruptedException, java.util.concurrent.ExecutionException {
+      throws InterruptedException, ExecutionException {
     for (int i = 0; i < numOfTransactions; i++) {
       FutureTask<TransactionId> futureTask =
           new FutureTask<>(() -> beginAndSuspendTransaction(numOfOperations));
@@ -289,8 +293,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   }
 
   private void resumeTransactions(int numOfTransactions, int numOfOperations, Thread[] threads,
-      TransactionId[] txIds)
-      throws InterruptedException {
+      TransactionId[] txIds) {
     for (int i = 0; i < numOfTransactions; i++) {
       TransactionId txId = txIds[i];
       Thread thread = new Thread(() -> {
@@ -333,7 +336,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     }
   }
 
-  private void unregisterClient(ClientProxyMembershipID clientProxyMembershipID) throws Exception {
+  private void unregisterClient(ClientProxyMembershipID clientProxyMembershipID) {
     ClientHealthMonitor clientHealthMonitor = ClientHealthMonitor.getInstance();
     clientHealthMonitor.removeAllConnectionsAndUnregisterClient(clientProxyMembershipID,
         new Exception());
@@ -385,11 +388,11 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
 
     unregisterClientMultipleTimes(clientProxyMembershipID);
 
-    server1.invoke(() -> verifyTransactionAreExpired(numOfTransactions));
+    server1.invoke(() -> verifyTransactionAreExpired());
   }
 
   private void doUnfinishedTransactions(int numOfTransactions, int numOfOperations)
-      throws InterruptedException, java.util.concurrent.ExecutionException {
+      throws InterruptedException {
     Thread[] threads = new Thread[numOfTransactions];
     for (int i = 0; i < numOfTransactions; i++) {
       Thread thread = new Thread(() -> startTransaction(numOfOperations));
@@ -416,11 +419,10 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
             .isEqualTo(numOfTransactions));
   }
 
-  private void verifyTransactionAreExpired(int numOfTransactions) {
+  private void verifyTransactionAreExpired() {
     TXManagerImpl txManager = cacheRule.getCache().getTxManager();
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
         .untilAsserted(
             () -> assertThat(txManager.hostedTransactionsInProgressForTest()).isEqualTo(0));
   }
-
 }

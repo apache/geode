@@ -43,6 +43,9 @@ allprojects {
       afterEvaluate {
         install.enabled = false
         uploadArchives.enabled = false
+        tasks.withType(PublishToMavenRepository) {
+          it.enabled = false
+        }
       }
     }
     disableSigning = {

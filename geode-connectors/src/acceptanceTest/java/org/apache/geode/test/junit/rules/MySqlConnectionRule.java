@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -37,7 +39,8 @@ public class MySqlConnectionRule extends SqlDatabaseConnectionRule {
   @Override
   public Connection getConnection() throws SQLException {
     Awaitility.await().ignoreExceptions().atMost(10, TimeUnit.SECONDS)
-        .untilAsserted(() -> DriverManager.getConnection(getCreateDbConnectionUrl()));
+        .untilAsserted(
+            () -> assertThat(DriverManager.getConnection(getCreateDbConnectionUrl())).isNotNull());
     String dbName = getDbName();
     if (dbName != null) {
       Connection connection = DriverManager.getConnection(getCreateDbConnectionUrl());

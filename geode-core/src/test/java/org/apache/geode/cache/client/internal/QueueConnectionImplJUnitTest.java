@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
@@ -23,11 +23,11 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class QueueConnectionImplJUnitTest {
 
   @Test
-  public void testInternalDestroyFollowedByInternalClose() throws Exception {
+  public void testInternalDestroyFollowedByInternalClose() {
     // Mock ClientUpdater and Connection
     ClientUpdater updater = mock(ClientUpdater.class);
     Connection connection = mock(Connection.class);

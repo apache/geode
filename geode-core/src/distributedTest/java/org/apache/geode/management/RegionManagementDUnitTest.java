@@ -85,7 +85,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -99,7 +99,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * Goal of the Test : RegionMBean gets created once region is created. Data like Region Attributes
  * data and stats are of proper value
  */
-@SuppressWarnings("serial,unused")
+@SuppressWarnings("serial")
 public class RegionManagementDUnitTest implements Serializable {
 
   private static final AtomicReference<List<Notification>> MEMBER_NOTIFICATIONS =
@@ -116,7 +116,7 @@ public class RegionManagementDUnitTest implements Serializable {
   private VM[] memberVMs;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -692,6 +692,11 @@ public class RegionManagementDUnitTest implements Serializable {
     // Destroyed/Closed With Name /MANAGEMENT_TEST_REGION]]>
   }
 
+  /**
+   * Please don't delete verifySystemNotifications. We need to improve verification in this test
+   * class and fix whatever flakiness is in this method.
+   */
+  @SuppressWarnings("unused")
   private void verifySystemNotifications(final String regionName, final int expectedMembers) {
     assertThat(SYSTEM_NOTIFICATIONS.get()).isNotNull();
     assertThat(SYSTEM_NOTIFICATIONS.get()).hasSize(expectedMembers + 2); // 2 for the manager

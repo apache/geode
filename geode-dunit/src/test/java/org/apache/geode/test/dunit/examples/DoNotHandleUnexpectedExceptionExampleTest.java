@@ -19,8 +19,6 @@ import static org.assertj.core.api.Fail.fail;
 
 import org.junit.Test;
 
-
-
 public class DoNotHandleUnexpectedExceptionExampleTest {
 
   @Test

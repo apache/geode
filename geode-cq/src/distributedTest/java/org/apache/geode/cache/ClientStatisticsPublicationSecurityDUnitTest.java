@@ -123,16 +123,12 @@ public class ClientStatisticsPublicationSecurityDUnitTest {
         SystemManagementService service =
             (SystemManagementService) ManagementService.getExistingManagementService(cache);
         CacheServerMXBean serviceMBean = service.getJMXAdapter().getClientServiceMXBean(serverPort);
-        try {
-          String clientId = serviceMBean.getClientIds()[0];
-          ClientHealthStatus status = serviceMBean.showClientStats(clientId);
-          assertThat(status.getNumOfPuts()).isEqualTo(expectedNumPuts);
-          assertThat(status.getPoolStats().keySet())
-              .containsExactlyInAnyOrder(expectedPoolStatKeys);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
+        String clientId = serviceMBean.getClientIds()[0];
+        ClientHealthStatus status = serviceMBean.showClientStats(clientId);
 
+        assertThat(status.getNumOfPuts()).isEqualTo(expectedNumPuts);
+        assertThat(status.getPoolStats().keySet())
+            .containsExactlyInAnyOrder(expectedPoolStatKeys);
       });
     });
   }

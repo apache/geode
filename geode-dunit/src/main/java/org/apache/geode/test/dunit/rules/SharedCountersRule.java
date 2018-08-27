@@ -29,34 +29,59 @@ import org.apache.geode.test.dunit.VM;
  * JUnit Rule that provides SharedCounters in DistributedTest VMs.
  *
  * <p>
- * {@code SharedCountersRule} follows the standard convention of using a {@code Builder} for
- * configuration as introduced in the JUnit {@code Timeout} rule.
- *
- * <p>
  * {@code SharedCountersRule} can be used in DistributedTests as a {@code Rule}:
  *
  * <pre>
- * {@literal @}ClassRule
- * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+ * {@literal @}Rule
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
- * public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
+ * public SharedCountersRule sharedCountersRule = new SharedCountersRule();
  *
- * {@literal @}Rule
- * public SharedCountersRule sharedCountersRule = SharedCountersRule.builder().withId(ID1).build();
+ * {@literal @}Before
+ * public void setUp() {
+ *   sharedCountersRule.initialize("counter");
+ * }
  *
  * {@literal @}Test
- * public void everyVMShouldHaveACache() {
- *   sharedCountersRule.increment(ID1);
- *   for (VM vm : Host.getHost(0).getAllVMs()) {
- *     vm.invoke(() -> sharedCountersRule.increment(ID1));
+ * public void incrementCounterInEveryVm() {
+ *   sharedCountersRule.initialize("counter");
+ *   for (VM vm : getAllVMs()) {
+ *     vm.invoke(() -> {
+ *       sharedCountersRule.increment("counter");
+ *     });
  *   }
- *   assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(5);
+ *   assertThat(sharedCountersRule.getTotal("counter")).isEqualTo(getVMCount());
  * }
  * </pre>
+ *
+ * <p>
+ * {@link SharedCountersRule.Builder} can also be used to construct an instance with more options:
+ *
+ * <pre>
+ * {@literal @}Rule
+ * public DistributedRule distributedRule = new DistributedRule();
+ *
+ * {@literal @}Rule
+ * public SharedCountersRule sharedCountersRule = SharedCountersRule.builder().withId("counter").build();
+ *
+ * {@literal @}Test
+ * public void incrementCounterInEveryVm() {
+ *   for (VM vm : getAllVMs()) {
+ *     vm.invoke(() -> {
+ *       sharedCountersRule.increment("counter");
+ *     });
+ *   }
+ *   assertThat(sharedCountersRule.getTotal("counter")).isEqualTo(getVMCount());
+ * }
+ * </pre>
+ *
+ * <p>
+ * For a more thorough example, please see
+ * {@code org.apache.geode.cache.ReplicateCacheListenerDistributedTest} in the tests of geode-core.
  */
-@SuppressWarnings({"serial", "unused"})
-public class SharedCountersRule extends AbstractDistributedTestRule {
+@SuppressWarnings("serial,unused")
+public class SharedCountersRule extends AbstractDistributedRule {
 
   private static volatile Map<Serializable, AtomicInteger> counters;
 
@@ -75,7 +100,7 @@ public class SharedCountersRule extends AbstractDistributedTestRule {
   }
 
   @Override
-  protected void before() throws Exception {
+  protected void before() {
     invoker().invokeInEveryVMAndController(() -> counters = new ConcurrentHashMap<>());
     for (Serializable id : idsToInitInBefore) {
       invoker().invokeInEveryVMAndController(() -> initialize(id));

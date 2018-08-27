@@ -87,7 +87,7 @@ subprojects {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
     if (project.hasProperty('testMaxParallelForks')) {
-      maxParallelForks = project.testMaxParallelForks
+      maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
     } else {
       maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     }
@@ -120,6 +120,14 @@ subprojects {
       includeInCheckLifecycle = false
     }
   }
+
+  // Facets does not extend the new runtimeOnly configurations
+  configurations.integrationTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.distributedTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.performanceTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.acceptanceTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.uiTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations.upgradeTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
 
   dependencies {
     integrationTestCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'

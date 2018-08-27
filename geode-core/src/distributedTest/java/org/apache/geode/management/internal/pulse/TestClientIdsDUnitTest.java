@@ -128,13 +128,7 @@ public class TestClientIdsDUnitTest implements Serializable {
   private void verifyClientIds(final DistributedMember serverMember, final int serverPort)
       throws Exception {
     CacheServerMXBean cacheServerMXBean = awaitCacheServerMXBean(serverMember, serverPort);
-    await().untilAsserted(() -> {
-      try {
-        assertThat(cacheServerMXBean.getClientIds()).hasSize(2);
-      } catch (Exception e) {
-        throw new Error(e);
-      }
-    });
+    await().untilAsserted(() -> assertThat(cacheServerMXBean.getClientIds()).hasSize(2));
     assertThat(cacheServerMXBean.getClientIds()).hasSize(2); // TODO: write better assertions
   }
 
