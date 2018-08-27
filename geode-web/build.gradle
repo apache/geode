@@ -21,22 +21,22 @@ dependencies {
   compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   compileOnly project(path: ':geode-core', configuration: 'classesOutput')
 
-  runtime ('org.springframework:spring-aspects:' + project.'springframework.version') {
+  runtimeOnly ('org.springframework:spring-aspects:' + project.'springframework.version') {
     exclude module: 'aspectjweaver'
     exclude module: 'aopalliance'
     exclude module: 'spring-core'
   }
-  runtime('org.springframework:spring-oxm:' + project.'springframework.version') {
+  runtimeOnly('org.springframework:spring-oxm:' + project.'springframework.version') {
     exclude module: 'commons-logging'
     exclude module: 'spring-beans'
     exclude module: 'spring-core'
   }
-  runtime('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  runtimeOnly('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
     exclude module: 'spring-core'
   }
-  runtime('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
+  runtimeOnly('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }
 
@@ -89,6 +89,6 @@ integrationTest.dependsOn(war)
 war {
   dependsOn ':geode-core:webJar'
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtime
+  classpath configurations.runtimeClasspath
   classpath project(':geode-core').webJar.archivePath
 }
