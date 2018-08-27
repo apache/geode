@@ -91,6 +91,7 @@ dependencies {
   integrationTestCompile project(':geode-assembly/geode-assembly-test')
   integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
 
+  integrationTestRuntime project(':geode-core').sourceSets.main.output
 
   distributedTestCompile project(':geode-core')
   distributedTestCompile project(':extensions/session-testing-war')
