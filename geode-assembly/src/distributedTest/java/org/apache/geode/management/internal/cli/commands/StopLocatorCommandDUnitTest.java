@@ -157,9 +157,9 @@ public class StopLocatorCommandDUnitTest {
         .getCommandString();
 
 
-    // The new locator is not immediately available to be stopped because it's mbean
+    // The new locator is not immediately available to be stopped because its mbean
     // has to be propagated to the existing locator that gfsh is connected to. Wait
-    // For the stop to work
+    // for the stop to work
     waitForCommandToSucceed(command);
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
   }
@@ -174,9 +174,9 @@ public class StopLocatorCommandDUnitTest {
         .addOption(STOP_LOCATOR__MEMBER, memberID)
         .getCommandString();
 
-    // The new locator is not immediately available to be stopped because it's mbean
+    // The new locator is not immediately available to be stopped because its mbean
     // has to be propagated to the existing locator that gfsh is connected to. Wait
-    // For the stop to work
+    // for the stop to work
     waitForCommandToSucceed(command);
 
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
