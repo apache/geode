@@ -67,14 +67,13 @@ import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Distributed tests for incremental backup.
  */
-
 @SuppressWarnings("serial")
 public class IncrementalBackupDistributedTest implements Serializable {
   private static final Logger logger = LogService.getLogger();
@@ -85,7 +84,6 @@ public class IncrementalBackupDistributedTest implements Serializable {
   private int dataStart;
   private int dataEnd = dataStart + DATA_INCREMENT;
 
-  private String uniqueName;
   private String diskStoreName1;
   private String diskStoreName2;
   private String regionName1;
@@ -98,7 +96,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
   private transient ProcessStreamReader processReader;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -117,7 +115,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
     vm0 = getVM(0);
     vm1 = getVM(1);
 
-    uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
+    String uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
 
     diskStoreName1 = uniqueName + "_diskStore-1";
     diskStoreName2 = uniqueName + "_diskStore-2";
@@ -260,7 +258,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
    * because its oplogs were missing in the performBackupBaseline.
    */
   @Test
-  public void testMissingMemberInBaseline() throws Exception {
+  public void testMissingMemberInBaseline() {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
     vm0.invoke(() -> cacheRule.getCache().close());
@@ -323,7 +321,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
    * performBackupBaseline.
    */
   @Test
-  public void testIncompleteInBaseline() throws Exception {
+  public void testIncompleteInBaseline() {
     // Get the member ID for VM 1 and perform a performBackupBaseline.
     String memberId = vm1.invoke(() -> getModifiedMemberId());
     validateBackupStatus(vm1.invoke(() -> performBackup(getBaselinePath())));

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,7 +23,7 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.ClassRule;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -31,17 +32,21 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @SuppressWarnings("serial")
 public class RegionListenerDistributedTest implements Serializable {
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().createCacheInAll().disconnectAfter().build();
+  public CacheRule cacheRule = new CacheRule();
+
+  @Before
+  public void setUp() {
+    invokeInEveryVM(() -> cacheRule.createCache());
+  }
 
   @Test
   public void testCleanupFailedInitializationInvoked() {

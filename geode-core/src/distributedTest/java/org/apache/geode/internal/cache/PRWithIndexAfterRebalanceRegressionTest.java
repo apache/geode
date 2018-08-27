@@ -27,7 +27,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,7 +42,7 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -53,7 +52,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #50749: RegionDestroyedException when running a OQL inside function for a colocated region
  */
-@Category({OQLIndexTest.class})
+@Category(OQLIndexTest.class)
 @SuppressWarnings("serial")
 public class PRWithIndexAfterRebalanceRegressionTest implements Serializable {
 
@@ -66,8 +65,8 @@ public class PRWithIndexAfterRebalanceRegressionTest implements Serializable {
   private VM vm2;
   private VM vm3;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

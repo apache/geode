@@ -68,7 +68,9 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.MemoryThresholdInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -226,12 +228,15 @@ public class DefaultQueryService implements InternalQueryService {
     // UnsupportedOperationException(LocalizedStrings.DefaultQueryService_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_REGIONS_WHICH_OVERFLOW_TO_DISK_THE_REGION_INVOLVED_IS_0.toLocalizedString(regionPath));
     // }
     // if its a pr the create index on all of the local buckets.
-    if (((LocalRegion) region).memoryThresholdReached.get()
-        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      LocalRegion lr = (LocalRegion) region;
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_INDEX.toLocalizedString(region.getName()),
-          lr.getMemoryThresholdReachedMembers());
+    if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      InternalRegion internalRegion = (InternalRegion) region;
+      MemoryThresholdInfo info = internalRegion.getAtomicThresholdInfo();
+      if (info.isMemoryThresholdReached()) {
+        throw new LowMemoryException(
+            LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_INDEX
+                .toLocalizedString(region.getName()),
+            info.getMembersThatReachedThreshold());
+      }
     }
     if (region instanceof PartitionedRegion) {
       try {

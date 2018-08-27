@@ -19,22 +19,20 @@ import static org.apache.geode.test.dunit.VM.getAllVMs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
-
-@SuppressWarnings("serial")
 public class AsyncInvokeRunnableExampleTest {
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Test
-  public void invokeAsyncHelloWorldInEachVM() throws Exception {
+  public void invokeAsyncHelloWorldInEachVM() {
     for (VM vm : getAllVMs()) {
       vm.invokeAsync(() -> System.out.println(vm + " says Hello World!"));
     }

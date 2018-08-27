@@ -45,13 +45,12 @@ import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * Extracted from {@link PersistentPartitionedRegionDistributedTest}.
  */
-
 @SuppressWarnings("serial")
 public class PRDiskConflictWithColocationDistributedTest implements Serializable {
 
@@ -61,7 +60,7 @@ public class PRDiskConflictWithColocationDistributedTest implements Serializable
   private VM vm0;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

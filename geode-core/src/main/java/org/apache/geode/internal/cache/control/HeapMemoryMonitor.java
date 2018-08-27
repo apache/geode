@@ -18,6 +18,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -36,9 +38,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
@@ -733,19 +737,53 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     });
   }
 
-  /**
-   * Given a set of members, determine if any member in the set is above critical threshold.
-   *
-   * @param members The set of members to check.
-   * @return True if the set contains a member above critical threshold, false otherwise
-   */
-  public boolean containsHeapCriticalMembers(final Set<InternalDistributedMember> members) {
-    if (members.contains(this.cache.getMyId()) && this.mostRecentEvent.getState().isCritical()) {
-      return true;
-    }
-
-    return SetUtils.intersectsWith(members, this.resourceAdvisor.adviseCritialMembers());
+  protected Set<DistributedMember> getHeapCriticalMembersFrom(Set<DistributedMember> members) {
+    Set<DistributedMember> criticalMembers = getCriticalMembers();
+    criticalMembers.retainAll(members);
+    return criticalMembers;
   }
+
+  private Set<DistributedMember> getCriticalMembers() {
+    Set<DistributedMember> criticalMembers = new HashSet<>(resourceAdvisor.adviseCriticalMembers());
+    if (this.mostRecentEvent.getState().isCritical()) {
+      criticalMembers.add(cache.getMyId());
+    }
+    return criticalMembers;
+  }
+
+  public void checkForLowMemory(Function function, DistributedMember targetMember) {
+    Set<DistributedMember> targetMembers = Collections.singleton(targetMember);
+    checkForLowMemory(function, targetMembers);
+  }
+
+  public void checkForLowMemory(Function function, Set<DistributedMember> dest) {
+    LowMemoryException exception = createLowMemoryIfNeeded(function, dest);
+    if (exception != null) {
+      throw exception;
+    }
+  }
+
+  public LowMemoryException createLowMemoryIfNeeded(Function function,
+      DistributedMember targetMember) {
+    Set<DistributedMember> targetMembers = Collections.singleton(targetMember);
+    return createLowMemoryIfNeeded(function, targetMembers);
+  }
+
+  public LowMemoryException createLowMemoryIfNeeded(Function function,
+      Set<DistributedMember> memberSet) {
+    if (function.optimizeForWrite()
+        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      Set<DistributedMember> criticalMembersFrom = getHeapCriticalMembersFrom(memberSet);
+      if (!criticalMembersFrom.isEmpty()) {
+        return new LowMemoryException(
+            LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
+                .toLocalizedString(function.getId(), criticalMembersFrom),
+            criticalMembersFrom);
+      }
+    }
+    return null;
+  }
+
 
   /**
    * Determines if the given member is in a heap critical state.
@@ -759,6 +797,16 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       return this.mostRecentEvent.getState().isCritical();
     }
     return this.resourceAdvisor.isHeapCritical(member);
+  }
+
+  protected MemoryEvent getMostRecentEvent() {
+    return mostRecentEvent;
+  }
+
+  protected HeapMemoryMonitor setMostRecentEvent(
+      MemoryEvent mostRecentEvent) {
+    this.mostRecentEvent = mostRecentEvent;
+    return this;
   }
 
   class LocalHeapStatListener implements LocalStatListener {

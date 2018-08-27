@@ -27,7 +27,6 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,13 +47,13 @@ import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 /**
  * Extracted from {@link PRQueryDistributedTest}.
  */
-@Category({OQLIndexTest.class})
+@Category(OQLIndexTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class PRQueryWithIndexAndPdxDistributedTest implements Serializable {
@@ -65,8 +64,8 @@ public class PRQueryWithIndexAndPdxDistributedTest implements Serializable {
   private VM vm0;
   private VM vm1;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

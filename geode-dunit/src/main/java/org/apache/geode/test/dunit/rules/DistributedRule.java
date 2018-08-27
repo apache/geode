@@ -48,39 +48,66 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
- * JUnit Rule that launches DistributedTest VMs without {@code DistributedTestCase}. Test class may
- * need to implement {@code Serializable}.
+ * JUnit Rule that launches DistributedTest VMs and scans all log output for suspect strings without
+ * {@code DistributedTestCase}. The test class may need to implement {@code Serializable} if it
+ * uses lambdas to perform {@code RMI} invocations on {@code VM}s.
  *
  * <p>
- * {@code DistributedTestRule} can be used in DistributedTests as a {@code ClassRule}. This ensures
- * that DUnit VMs will be available to non-Class {@code Rule}s. Unfortunately, you will need to
- * declare {@code DistributedTestRule.TearDown} as a non-Class {@code Rule}. Without
- * {@code DistributedTestRule.TearDown} grep for suspect strings will not be invoked after each
- * test.
+ * {@code DistributedRule} can be used in DistributedTests as a {@code Rule}. This will ensure
+ * that checking for suspect strings is performed after each test method.
  *
  * <pre>
- * {@literal @}ClassRule
- * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
- *
  * {@literal @}Rule
- * public DistributedTestRule.TearDown tearDownRule = new DistributedTestRule.TearDown();
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Test
- * public void shouldHaveFourDUnitVMsByDefault() {
+ * public void shouldHaveFourVMsByDefault() {
  *   assertThat(getVMCount()).isEqualTo(4);
  * }
  * </pre>
  *
  * <p>
- * Or as a non-Class {@code Rule}. This usage does <bold>not</bold> require separate declaration of
- * {@code DistributedTestRule.TearDown}:
+ * You may specify a non-default number of {@code VM}s for the test when constructing
+ * {@code DistributedRule}.
+ *
+ * <p>
+ * Example of specifying fewer that the default number of {@code VM}s (which is 4):
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedTestRule distributedTestRule = new DistributedTestRule();
+ * public DistributedRule distributedRule = new DistributedRule(1);
+ *
+ * {@literal @}Test
+ * public void hasOneVM() {
+ *   assertThat(getVMCount()).isEqualTo(1);
+ * }
+ * </pre>
+ *
+ * <p>
+ * Example of specifying greater that the default number of {@code VM}s (which is 4):
+ *
+ * <pre>
+ * {@literal @}Rule
+ * public DistributedRule distributedRule = new DistributedRule(8);
+ *
+ * {@literal @}Test
+ * public void hasEightVMs() {
+ *   assertThat(getVMCount()).isEqualTo(8);
+ * }
+ * </pre>
+ *
+ * <p>
+ * {@code DistributedRule} can also be used in DistributedTests as a {@code ClassRule}. This ensures
+ * that DUnit VMs will be available to non-Class {@code Rule}s. However, you may want to declare
+ * {@code DistributedRule.TearDown} as a non-Class {@code Rule} so that check for suspect strings is
+ * performed after each test method.
+ *
+ * <pre>
+ * {@literal @}ClassRule
+ * public static DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
- * public DistributedTestRule.TearDown tearDownRule = new DistributedTestRule.TearDown();
+ * public DistributedRule.TearDown distributedRuleTearDown = new DistributedRule.TearDown();
  *
  * {@literal @}Test
  * public void shouldHaveFourDUnitVMsByDefault() {
@@ -89,32 +116,40 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * </pre>
  */
 @SuppressWarnings("unused")
-public class DistributedTestRule extends AbstractDistributedTestRule {
+public class DistributedRule extends AbstractDistributedRule {
 
   private final int vmCount;
 
   /**
-   * Use {@code Builder} for more options in constructing {@code DistributedTestRule}.
+   * Use {@code Builder} for more options in constructing {@code DistributedRule}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
-  public DistributedTestRule() {
+  /**
+   * Constructs DistributedRule and launches the default number of {@code VM}s (which is 4).
+   */
+  public DistributedRule() {
     this(new Builder());
   }
 
-  public DistributedTestRule(final int vmCount) {
+  /**
+   * Constructs DistributedRule and launches the specified number of {@code VM}s.
+   *
+   * @param vmCount specified number of VMs
+   */
+  public DistributedRule(final int vmCount) {
     this(new Builder().withVMCount(vmCount));
   }
 
-  DistributedTestRule(final Builder builder) {
+  DistributedRule(final Builder builder) {
     super(builder.vmCount);
     vmCount = builder.vmCount;
   }
 
   @Override
-  protected void before() throws Exception {
+  protected void before() {
     DUnitLauncher.launchIfNeeded(vmCount);
     for (int i = 0; i < vmCount; i++) {
       assertThat(getVM(i)).isNotNull();
@@ -127,7 +162,7 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
   }
 
   /**
-   * Builds an instance of CacheRule.
+   * Builds an instance of DistributedRule.
    */
   public static class Builder {
 
@@ -141,8 +176,8 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
       return this;
     }
 
-    public DistributedTestRule build() {
-      return new DistributedTestRule(this);
+    public DistributedRule build() {
+      return new DistributedRule(this);
     }
   }
 
@@ -150,16 +185,16 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
    * Cleans up horrendous things like static state and non-default instances in Geode.
    *
    * <p>
-   * {@link DistributedTestRule#after()} invokes the same cleanup that this Rule does, but if you
-   * defined {@code DistributedTestRule} as a {@code ClassRule} then you should declare TearDown
+   * {@link DistributedRule#after()} invokes the same cleanup that this Rule does, but if you
+   * defined {@code DistributedRule} as a {@code ClassRule} then you should declare TearDown
    * as a non-class {@code Rule} in your test:
    *
    * <pre>
    * {@literal @}ClassRule
-   * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+   * public static DistributedRule distributedRule = new DistributedRule();
    *
    * {@literal @}Rule
-   * public DistributedTestRule.TearDown tearDownRule = new DistributedTestRule.TearDown();
+   * public DistributedRule.TearDown tearDownRule = new DistributedRule.TearDown();
    *
    * {@literal @}Test
    * public void shouldHaveFourDUnitVMsByDefault() {
@@ -173,7 +208,7 @@ public class DistributedTestRule extends AbstractDistributedTestRule {
   public static class TearDown extends SerializableExternalResource {
 
     @Override
-    protected void before() throws Exception {
+    protected void before() {
       // nothing
     }
 

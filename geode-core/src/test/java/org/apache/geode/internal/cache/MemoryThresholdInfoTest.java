@@ -12,25 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.rules.tests;
+package org.apache.geode.internal.cache;
 
-import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
-import static org.apache.geode.test.dunit.VM.getVMCount;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-
-
-public class DistributedTestRuleDistributedTest {
-
-  @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+public class MemoryThresholdInfoTest {
 
   @Test
-  public void shouldHaveFourOrMoreDUnitVMsByDefault() throws Exception {
-    assertThat(getVMCount()).isGreaterThanOrEqualTo(DEFAULT_VM_COUNT);
+  public void getNotReachedReturnsIdenticalResults() {
+    MemoryThresholdInfo info1 = MemoryThresholdInfo.getNotReached();
+    MemoryThresholdInfo info2 = MemoryThresholdInfo.getNotReached();
+
+    assertThat(info1).isSameAs(info2);
+    assertThat(info1.getMembersThatReachedThreshold())
+        .isSameAs(info2.getMembersThatReachedThreshold());
   }
+
+  @Test
+  public void getNotReachedReturnsEmptyMembersReached() {
+    MemoryThresholdInfo info1 = MemoryThresholdInfo.getNotReached();
+
+    assertThat(info1.getMembersThatReachedThreshold()).isEmpty();
+  }
+
 }

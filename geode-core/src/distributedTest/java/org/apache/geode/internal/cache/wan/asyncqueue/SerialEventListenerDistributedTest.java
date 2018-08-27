@@ -54,7 +54,7 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -66,7 +66,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 public class SerialEventListenerDistributedTest implements Serializable {
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

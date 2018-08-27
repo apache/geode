@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -69,7 +69,7 @@ public class RootRegionsExcludesHARegionsRegressionTest implements Serializable 
   private VM client;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -101,13 +101,12 @@ public class RootRegionsExcludesHARegionsRegressionTest implements Serializable 
   private int createServer() throws IOException {
     cacheRule.createCache();
 
-    RegionFactory rf = cacheRule.getCache().createRegionFactory(REPLICATE);
-    rf.setEnableSubscriptionConflation(true);
-    rf.create(regionName);
+    RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+    regionFactory.setEnableSubscriptionConflation(true);
+    regionFactory.create(regionName);
 
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(port);
-    cacheServer.setNotifyBySubscription(true);
     cacheServer.start();
     return cacheServer.getPort();
   }
@@ -119,13 +118,14 @@ public class RootRegionsExcludesHARegionsRegressionTest implements Serializable 
 
     clientCacheRule.createClientCache(config);
 
-    PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
-    pf.addServer(hostName, port).setSubscriptionEnabled(true).setSubscriptionRedundancy(0);
+    PoolFactoryImpl poolFactory = (PoolFactoryImpl) PoolManager.createFactory();
+    poolFactory.addServer(hostName, port).setSubscriptionEnabled(true).setSubscriptionRedundancy(0);
 
-    ClientRegionFactory crf = clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
-    crf.setPoolName(pf.create(uniqueName).getName());
+    ClientRegionFactory<?, ?> clientRegionFactory =
+        clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
+    clientRegionFactory.setPoolName(poolFactory.create(uniqueName).getName());
 
-    crf.create(regionName);
+    clientRegionFactory.create(regionName);
 
     clientCacheRule.getClientCache().readyForEvents();
   }
@@ -133,7 +133,7 @@ public class RootRegionsExcludesHARegionsRegressionTest implements Serializable 
   private void validateRootRegions() {
     Set<Region<?, ?>> regions = cacheRule.getCache().rootRegions();
     if (regions != null) {
-      for (Region region : regions) {
+      for (Region<?, ?> region : regions) {
         assertThat(region).isNotInstanceOf(HARegion.class);
       }
     }

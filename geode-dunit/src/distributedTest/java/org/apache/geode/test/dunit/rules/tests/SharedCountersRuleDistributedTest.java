@@ -33,104 +33,103 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedCountersRule;
-
 
 @SuppressWarnings("serial")
 public class SharedCountersRuleDistributedTest implements Serializable {
 
   private static final int TWO_MINUTES_MILLIS = 2 * 60 * 1000;
-  private static final String ID1 = "ID1";
+  private static final String ID = "ID";
 
   private static ExecutorService executor;
   private static CompletableFuture<Void> combined;
   private static List<CompletableFuture<Boolean>> futures;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public SharedCountersRule sharedCountersRule = SharedCountersRule.builder().build();
+  public SharedCountersRule sharedCountersRule = new SharedCountersRule();
 
   @Test
-  public void inc_withoutInit_throwsNullPointerException() throws Exception {
-    assertThatThrownBy(() -> sharedCountersRule.increment(ID1))
+  public void inc_withoutInit_throwsNullPointerException() {
+    assertThatThrownBy(() -> sharedCountersRule.increment(ID))
         .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void ref_withoutInit_returnsNull() throws Exception {
-    assertThat(sharedCountersRule.reference(ID1)).isNull();
+  public void ref_withoutInit_returnsNull() {
+    assertThat(sharedCountersRule.reference(ID)).isNull();
   }
 
   @Test
-  public void init_get_returnsZero() throws Exception {
-    assertThat(sharedCountersRule.initialize(ID1).reference(ID1).get()).isEqualTo(0);
+  public void init_get_returnsZero() {
+    assertThat(sharedCountersRule.initialize(ID).reference(ID).get()).isEqualTo(0);
   }
 
   @Test
-  public void initTwice_noop() throws Exception {
-    assertThat(sharedCountersRule.initialize(ID1).reference(ID1).get()).isEqualTo(0);
+  public void initTwice_noop() {
+    assertThat(sharedCountersRule.initialize(ID).reference(ID).get()).isEqualTo(0);
   }
 
   @Test
-  public void inc_get_returnsOne() throws Exception {
-    assertThat(sharedCountersRule.initialize(ID1).increment(ID1).reference(ID1).get()).isEqualTo(1);
+  public void inc_get_returnsOne() {
+    assertThat(sharedCountersRule.initialize(ID).increment(ID).reference(ID).get()).isEqualTo(1);
   }
 
   @Test
-  public void incDeltaTwo_get_returnsTwo() throws Exception {
-    assertThat(sharedCountersRule.initialize(ID1).increment(ID1, 2).reference(ID1).get())
+  public void incDeltaTwo_get_returnsTwo() {
+    assertThat(sharedCountersRule.initialize(ID).increment(ID, 2).reference(ID).get())
         .isEqualTo(2);
   }
 
   @Test
-  public void incTwice_returnsTwo() throws Exception {
+  public void incTwice_returnsTwo() {
     assertThat(
-        sharedCountersRule.initialize(ID1).increment(ID1).increment(ID1).reference(ID1).get())
+        sharedCountersRule.initialize(ID).increment(ID).increment(ID).reference(ID).get())
             .isEqualTo(2);
   }
 
   @Test
-  public void inc_getTotal_returnsOne() throws Exception {
-    sharedCountersRule.initialize(ID1).increment(ID1);
-    int total = sharedCountersRule.getTotal(ID1);
+  public void inc_getTotal_returnsOne() {
+    sharedCountersRule.initialize(ID).increment(ID);
+    int total = sharedCountersRule.getTotal(ID);
     assertThat(total).isEqualTo(1);
   }
 
   @Test
-  public void inc_fromDUnitVMs_getTotal_returnsFour() throws Exception {
-    sharedCountersRule.initialize(ID1);
+  public void inc_fromDUnitVMs_getTotal_returnsFour() {
+    sharedCountersRule.initialize(ID);
     for (VM vm : getAllVMs()) {
       vm.invoke(() -> {
-        sharedCountersRule.increment(ID1);
+        sharedCountersRule.increment(ID);
       });
     }
-    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(getVMCount());
+    assertThat(sharedCountersRule.getTotal(ID)).isEqualTo(getVMCount());
   }
 
   @Test
-  public void inc_fromEveryVM_getTotal_returnsFive() throws Exception {
-    sharedCountersRule.initialize(ID1).increment(ID1);
+  public void inc_fromEveryVM_getTotal_returnsFive() {
+    sharedCountersRule.initialize(ID).increment(ID);
     for (VM vm : getAllVMs()) {
       vm.invoke(() -> {
-        sharedCountersRule.increment(ID1);
+        sharedCountersRule.increment(ID);
       });
     }
-    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(getVMCount() + 1);
+    assertThat(sharedCountersRule.getTotal(ID)).isEqualTo(getVMCount() + 1);
   }
 
   @Test
   public void inc_multipleThreads_fromEveryVM_getTotal_returnsExpectedTotal() throws Exception {
     int numThreads = 10;
     givenExecutorInEveryVM(numThreads);
-    givenSharedCounterFor(ID1);
+    givenSharedCounterFor(ID);
 
-    // inc ID1 in numThreads in every VM (4 DUnit VMs + Controller VM)
-    submitIncrementTasks(numThreads, ID1);
+    // inc ID in numThreads in every VM (4 DUnit VMs + Controller VM)
+    submitIncrementTasks(numThreads, ID);
     for (VM vm : getAllVMs()) {
-      vm.invoke(() -> submitIncrementTasks(numThreads, ID1));
+      vm.invoke(() -> submitIncrementTasks(numThreads, ID));
     }
 
     // await CompletableFuture in every VM
@@ -145,7 +144,7 @@ public class SharedCountersRuleDistributedTest implements Serializable {
     int controllerPlusDUnitVMCount = dunitVMCount + 1;
     int expectedIncrements = controllerPlusDUnitVMCount * numThreads;
 
-    assertThat(sharedCountersRule.getTotal(ID1)).isEqualTo(expectedIncrements);
+    assertThat(sharedCountersRule.getTotal(ID)).isEqualTo(expectedIncrements);
   }
 
   private void givenSharedCounterFor(final Serializable id) {
