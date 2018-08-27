@@ -878,7 +878,7 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  protected void doCleanup() {
+  void doCleanup() {
     IllegalArgumentException iae = null;
     try {
       this.closed = true;
@@ -1029,6 +1029,7 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public synchronized void beforeCompletion() throws SynchronizationCommitConflictException {
+    proxy.getTxMgr().setTXState(null);
     if (this.closed) {
       throw new TXManagerCancelledException();
     }
@@ -1051,7 +1052,6 @@ public class TXState implements TXStateInterface {
   }
 
   void doBeforeCompletion() {
-    proxy.getTxMgr().setTXState(null);
     final long opStart = CachePerfStats.getStatTime();
     this.jtaLifeTime = opStart - getBeginTime();
 
@@ -1131,7 +1131,6 @@ public class TXState implements TXStateInterface {
           Assert.assertTrue(this.locks != null,
               "Gemfire Transaction afterCompletion called with illegal state.");
           try {
-            proxy.getTxMgr().setTXState(null);
             commit();
             saveTXCommitMessageForClientFailover();
           } catch (CommitConflictException error) {
@@ -1144,7 +1143,6 @@ public class TXState implements TXStateInterface {
           break;
         case Status.STATUS_ROLLEDBACK:
           this.jtaLifeTime = opStart - getBeginTime();
-          this.proxy.getTxMgr().setTXState(null);
           rollback();
           saveTXCommitMessageForClientFailover();
           this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
