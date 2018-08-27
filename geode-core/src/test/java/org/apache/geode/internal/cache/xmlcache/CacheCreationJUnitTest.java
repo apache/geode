@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
@@ -60,10 +59,8 @@ public class CacheCreationJUnitTest {
     ServerLauncherParameters.INSTANCE.clear();
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void verifyRunInitializerWithInitializerAndNullPropsCallsInitAndInitialize() {
-    @SuppressWarnings("resource")
     CacheCreation cacheCreation = new CacheCreation();
     Declarable initializer = mock(Declarable.class);
     Properties props = null;
@@ -75,10 +72,8 @@ public class CacheCreationJUnitTest {
     verify(initializer, times(1)).initialize(eq(this.cache), eq(props));
   }
 
-  @SuppressWarnings("deprecation")
   @Test
   public void verifyRunInitializerWithInitializerAndPropsCallsInitAndInitialize() {
-    @SuppressWarnings("resource")
     CacheCreation cacheCreation = new CacheCreation();
     Declarable initializer = mock(Declarable.class);
     Properties props = new Properties();
@@ -93,7 +88,6 @@ public class CacheCreationJUnitTest {
 
   @Test
   public void verifyInitializeDeclarablesMapWithNoDeclarablesPassesEmptyMap() {
-    @SuppressWarnings("resource")
     CacheCreation cacheCreation = new CacheCreation();
     Map<Declarable, Properties> expected = Collections.emptyMap();
 
@@ -104,7 +98,6 @@ public class CacheCreationJUnitTest {
 
   @Test
   public void verifyInitializeDeclarablesMapWithDeclarablesPassesExpectedMap() {
-    @SuppressWarnings("resource")
     CacheCreation cacheCreation = new CacheCreation();
     Map<Declarable, Properties> expected = new HashMap<>();
     Declarable d1 = mock(Declarable.class);
@@ -123,7 +116,6 @@ public class CacheCreationJUnitTest {
 
   @Test
   public void verifyInitializeDeclarablesMapWithDeclarableCallInitAndInitialize() {
-    @SuppressWarnings("resource")
     CacheCreation cacheCreation = new CacheCreation();
     Declarable d2 = mock(Declarable.class);
     Properties p2 = new Properties();
@@ -138,7 +130,6 @@ public class CacheCreationJUnitTest {
 
   @Test
   public void verifyInitializeDeclarablesMapWithDeclarableThatThrowsWillThrowCacheXmlException() {
-    @SuppressWarnings("resource")
     CacheCreation cacheCreation = new CacheCreation();
     Declarable d2 = mock(Declarable.class);
     Properties p2 = null;
@@ -146,9 +137,9 @@ public class CacheCreationJUnitTest {
     Throwable cause = new RuntimeException("expected");
     doThrow(cause).when(d2).initialize(this.cache, null);
 
-    catchException(cacheCreation).initializeDeclarablesMap(this.cache);
+    Throwable thrown = catchThrowable(() -> cacheCreation.initializeDeclarablesMap(this.cache));
 
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(CacheXmlException.class)
+    assertThat(thrown).isExactlyInstanceOf(CacheXmlException.class)
         .hasMessageStartingWith("Exception while initializing an instance of").hasCause(cause);
   }
 

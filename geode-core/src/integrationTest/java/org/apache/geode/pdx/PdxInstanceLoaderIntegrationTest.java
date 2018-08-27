@@ -14,13 +14,11 @@
  */
 package org.apache.geode.pdx;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -35,27 +33,14 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
-@Category({SerializationTest.class})
+@Category(SerializationTest.class)
 public class PdxInstanceLoaderIntegrationTest {
 
   private Cache cache;
 
-  @Before
-  public void setUp() {}
-
   @After
   public void tearDown() {
     cache.close();
-  }
-
-  private class PdxInstanceLoader implements CacheLoader {
-    @Override
-    public void close() {}
-
-    @Override
-    public Object load(LoaderHelper helper) throws CacheLoaderException {
-      return cache.createPdxInstanceFactory("no class name").create();
-    }
   }
 
   @Test
@@ -63,8 +48,8 @@ public class PdxInstanceLoaderIntegrationTest {
     cache = new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(false).create();
     Region region = cache.createRegionFactory(RegionShortcut.LOCAL)
         .setCacheLoader(new PdxInstanceLoader()).create("region");
-    catchException(region).get("key");
-    assertThat((Exception) caughtException()).isInstanceOf(PdxSerializationException.class);
+    Throwable thrown = catchThrowable(() -> region.get("key"));
+    assertThat(thrown).isInstanceOf(PdxSerializationException.class);
   }
 
   @Test
@@ -85,5 +70,12 @@ public class PdxInstanceLoaderIntegrationTest {
     Object obj = region.get("key", null, true, true, true, null, null, false);
 
     assertThat(obj).isInstanceOf(CachedDeserializable.class);
+  }
+
+  private class PdxInstanceLoader implements CacheLoader {
+    @Override
+    public Object load(LoaderHelper helper) throws CacheLoaderException {
+      return cache.createPdxInstanceFactory("no class name").create();
+    }
   }
 }
