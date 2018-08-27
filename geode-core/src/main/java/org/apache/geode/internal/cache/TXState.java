@@ -1042,11 +1042,11 @@ public class TXState implements TXStateInterface {
         getExecutor(), getCancelCriterion());
   }
 
-  Executor getExecutor() {
+  private Executor getExecutor() {
     return getCache().getDistributionManager().getWaitingThreadPool();
   }
 
-  CancelCriterion getCancelCriterion() {
+  private CancelCriterion getCancelCriterion() {
     return getCache().getCancelCriterion();
   }
 

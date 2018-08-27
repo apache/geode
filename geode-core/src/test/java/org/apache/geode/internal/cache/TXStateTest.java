@@ -27,8 +27,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.Executor;
-
 import javax.transaction.Status;
 
 import org.junit.Before;
@@ -56,7 +54,6 @@ public class TXStateTest {
   @Test
   public void doBeforeCompletionThrowsIfReserveAndCheckFails() {
     TXState txState = spy(new TXState(txStateProxy, true));
-    doReturn(mock(Executor.class)).when(txState).getExecutor();
     doThrow(exception).when(txState).reserveAndCheck();
 
     assertThatThrownBy(() -> txState.doBeforeCompletion())
@@ -66,7 +63,6 @@ public class TXStateTest {
   @Test
   public void doAfterCompletionThrowsIfCommitFails() {
     TXState txState = spy(new TXState(txStateProxy, true));
-    doReturn(mock(InternalCache.class)).when(txState).getCache();
     doReturn(true).when(txState).wasBeforeCompletionCalled();
     txState.reserveAndCheck();
     doThrow(transactionDataNodeHasDepartedException).when(txState).commit();
@@ -78,7 +74,6 @@ public class TXStateTest {
   @Test
   public void doAfterCompletionCanCommitJTA() {
     TXState txState = spy(new TXState(txStateProxy, false));
-    doReturn(mock(InternalCache.class)).when(txState).getCache();
     txState.reserveAndCheck();
     txState.closed = true;
     doReturn(true).when(txState).wasBeforeCompletionCalled();
