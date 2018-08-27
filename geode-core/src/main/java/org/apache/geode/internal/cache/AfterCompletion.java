@@ -56,14 +56,12 @@ public class AfterCompletion {
   }
 
   private void waitForExecuteOrCancel(CancelCriterion cancelCriterion) {
-    waitForCondition(cancelCriterion, () -> {
-      return (status == -1 && !cancelled);
-    });
+    waitForCondition(cancelCriterion, () -> status != -1 || cancelled);
   }
 
   private synchronized void waitForCondition(CancelCriterion cancelCriterion,
       BooleanSupplier condition) {
-    while (condition.getAsBoolean()) {
+    while (!condition.getAsBoolean()) {
       cancelCriterion.checkCancelInProgress(null);
       try {
         logger.debug("waiting for notification");
@@ -88,10 +86,7 @@ public class AfterCompletion {
   }
 
   private void waitUntilFinished(CancelCriterion cancelCriterion) {
-    waitForCondition(cancelCriterion, () -> {
-      return !finished;
-    });
-
+    waitForCondition(cancelCriterion, () -> finished);
   }
 
   public synchronized void cancel(CancelCriterion cancelCriterion) {
