@@ -61,4 +61,8 @@ public class BeforeCompletion {
   public synchronized boolean isStarted() {
     return started;
   }
+
+  public synchronized boolean isFinished() {
+    return finished;
+  }
 }

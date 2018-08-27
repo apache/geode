@@ -66,6 +66,6 @@ public class SingleThreadJTAExecutor {
   }
 
   public boolean shouldDoCleanup() {
-    return beforeCompletion.isStarted() && !afterCompletion.isStarted();
+    return beforeCompletion.isFinished() && !afterCompletion.isStarted();
   }
 }
