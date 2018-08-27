@@ -109,13 +109,19 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   }
 
   public DistributedDiskDirRule(Builder builder) {
-    this(builder.fillIn(), new RemoteInvoker());
+    this(builder, new RemoteInvoker());
   }
 
   protected DistributedDiskDirRule(Builder builder, RemoteInvoker invoker) {
-    super(builder.initializeHelperRules, null, null);
-    temporaryFolder = builder.temporaryFolder;
-    testName = builder.testName;
+    this(builder.initializeHelperRules, builder.temporaryFolder, builder.testName, invoker);
+  }
+
+  protected DistributedDiskDirRule(boolean initializeHelperRules,
+      SerializableTemporaryFolder temporaryFolder, SerializableTestName testName,
+      RemoteInvoker invoker) {
+    super(initializeHelperRules, null, null);
+    this.temporaryFolder = temporaryFolder;
+    this.testName = testName;
     this.invoker = invoker;
   }
 
@@ -236,8 +242,8 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
    */
   public static class Builder {
     private boolean initializeHelperRules = true;
-    private SerializableTemporaryFolder temporaryFolder;
-    private SerializableTestName testName;
+    private SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+    private SerializableTestName testName = new SerializableTestName();
 
     public Builder() {
       // nothing
@@ -264,18 +270,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
     }
 
     public DistributedDiskDirRule build() {
-      fillIn();
       return new DistributedDiskDirRule(this);
-    }
-
-    private Builder fillIn() {
-      if (temporaryFolder == null) {
-        temporaryFolder = new SerializableTemporaryFolder();
-      }
-      if (testName == null) {
-        testName = new SerializableTestName();
-      }
-      return this;
     }
   }
 }
