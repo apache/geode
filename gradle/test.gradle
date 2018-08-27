@@ -87,7 +87,7 @@ subprojects {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
     if (project.hasProperty('testMaxParallelForks')) {
-      maxParallelForks = project.testMaxParallelForks
+      maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
     } else {
       maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     }
