@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.DiskAccessException;
@@ -44,6 +45,7 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
@@ -1123,31 +1125,35 @@ public class TXState implements TXStateInterface {
 
   void doAfterCompletion(int status) {
     final long opStart = CachePerfStats.getStatTime();
-    switch (status) {
-      case Status.STATUS_COMMITTED:
-        Assert.assertTrue(this.locks != null,
-            "Gemfire Transaction afterCompletion called with illegal state.");
-        try {
-          proxy.getTxMgr().setTXState(null);
-          commit();
-          saveTXCommitMessageForClientFailover();
-        } catch (CommitConflictException error) {
-          Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
-              + " afterCompletion failed.due to CommitConflictException: " + error);
-        }
+    try {
+      switch (status) {
+        case Status.STATUS_COMMITTED:
+          Assert.assertTrue(this.locks != null,
+              "Gemfire Transaction afterCompletion called with illegal state.");
+          try {
+            proxy.getTxMgr().setTXState(null);
+            commit();
+            saveTXCommitMessageForClientFailover();
+          } catch (CommitConflictException error) {
+            Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
+                + " afterCompletion failed.due to CommitConflictException: " + error);
+          }
 
-        this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
-        this.locks = null;
-        break;
-      case Status.STATUS_ROLLEDBACK:
-        this.jtaLifeTime = opStart - getBeginTime();
-        this.proxy.getTxMgr().setTXState(null);
-        rollback();
-        saveTXCommitMessageForClientFailover();
-        this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
-        break;
-      default:
-        Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+          this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
+          this.locks = null;
+          break;
+        case Status.STATUS_ROLLEDBACK:
+          this.jtaLifeTime = opStart - getBeginTime();
+          this.proxy.getTxMgr().setTXState(null);
+          rollback();
+          saveTXCommitMessageForClientFailover();
+          this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
+          break;
+        default:
+          Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+      }
+    } catch (InternalGemFireError error) {
+      throw new TransactionException(error);
     }
   }
 
