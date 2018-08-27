@@ -1331,6 +1331,7 @@ public abstract class AbstractRegionMap
       Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
 
     }
+    logger.debug("ARM.invalidate invoked for key {}", event.getKey());
     boolean didInvalidate = false;
     RegionEntry invalidatedRe = null;
     boolean clearOccured = false;
@@ -1577,12 +1578,6 @@ public abstract class AbstractRegionMap
                       } else if (tombstone != null) {
                         processVersionTag(tombstone, event);
                         try {
-                          if (!tombstone.isTombstone()) {
-                            if (isDebugEnabled) {
-                              logger.debug("tombstone is no longer a tombstone. {}:event={}",
-                                  tombstone, event);
-                            }
-                          }
                           tombstone.setValue(owner, Token.TOMBSTONE);
                         } catch (RegionClearedException e) {
                           // that's okay - when writing a tombstone into a disk, the

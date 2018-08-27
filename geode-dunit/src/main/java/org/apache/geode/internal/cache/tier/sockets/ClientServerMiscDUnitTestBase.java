@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,6 +46,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -554,27 +556,16 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     Region region = static_cache.getRegion(REGION_NAME1);
     populateCache();
     region.put("invalidationKey", "invalidationValue");
+
     region.localDestroy("invalidationKey");
-    if (region.containsKey("invalidationKey")) {
-      fail("region still contains invalidationKey");
-    }
+    assertThat(region.containsKey("invalidationKey")).isFalse();
+
     region.invalidate("invalidationKey");
-    if (region.containsKey("invalidationKey")) {
-      fail(
-          "this test expects the entry is not created on invalidate() if not there before the operation");
-    }
+    assertThat(region.containsKey("invalidationKey")).isTrue();
+
     Object value = region.get("invalidationKey");
-    if (value != null) {
-      fail("this test expected a null response to get('invalidationKey')");
-    }
-    if (!region.containsKeyOnServer("invalidationKey")) {
-      fail("expected an entry on the server after invalidation");
-    }
-    // bug 43407 asserts that there should be an entry, but the product does not
-    // do this. This verifies that the product does not behave as asserted in that bug
-    if (region.containsKey("invalidationKey")) {
-      fail("expected no entry after invalidation when entry was not in client but was on server");
-    }
+    assertThat(value).isNull();
+    assertThat(region.containsKeyOnServer("invalidationKey")).isTrue();
   }
 
   /**
@@ -986,8 +977,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       assertNotNull(r1);
       Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       assertNotNull(r2);
-      r1.registerInterest("ALL_KEYS", false, false);
-      r2.registerInterest("ALL_KEYS", false, false);
+      r1.registerInterestForAllKeys(InterestResultPolicy.KEYS, false, false);
+      r2.registerInterestForAllKeys(InterestResultPolicy.KEYS, false, false);
     } catch (CacheWriterException e) {
       e.printStackTrace();
       fail("Test failed due to CacheWriterException during registerInterestnBothRegions" + e);
