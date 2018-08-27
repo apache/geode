@@ -193,7 +193,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * others will only read. <br>
  * {@link #setConcurrencyLevel} {@link RegionAttributes#getConcurrencyLevel}</dd>
  *
- * <dt>ConcurrencyChecksEnabled [<em>default:</em> {@code false}]</dt>
+ * <dt>ConcurrencyChecksEnabled [<em>default:</em> {@code true}]</dt>
  * <dd>Enables a distributed versioning algorithm that detects concurrency conflicts in regions and
  * ensures that changes to an entry are not applied in a different order in other members. This can
  * cause operations to be conflated, so that some cache listeners may see an event while others do
