@@ -192,9 +192,9 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
     txManager.begin();
     region.put(key, newValue);
-    if (hasReplicateRegion)
+    if (hasReplicateRegion) {
       replicateRegion.put(key, newValue);
-
+    }
     TXStateProxyImpl txStateProxy = (TXStateProxyImpl) txManager.getTXState();
     ClientTXStateStub clientTXStateStub = (ClientTXStateStub) txStateProxy.getRealDeal(null, null);
     clientTXStateStub.beforeCompletion();
@@ -223,8 +223,9 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     }
     if (isCommit) {
       assertEquals(newValue, region.get(key));
-      if (hasReplicateRegion)
+      if (hasReplicateRegion) {
         assertEquals(newValue, replicateRegion.get(key));
+      }
     } else {
       assertEquals(value, region.get(key));
     }
