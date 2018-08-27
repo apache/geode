@@ -16,7 +16,9 @@
  */
 
 allprojects {
-  apply plugin: 'java-library'
+  // There exist peculiarities surrounding our handling of ClassLoaders and cross-module resources,
+  // causing test failures if we apply the newer 'java-library' plugin.
+  apply plugin: 'java'
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
   compileJava.options.encoding = 'UTF-8'
