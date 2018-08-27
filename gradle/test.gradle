@@ -42,8 +42,6 @@ subprojects {
     testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
     testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
-    testCompile 'eu.codearte.catch-exception:catch-exception:' + project.'catch-exception.version'
-    testCompile 'eu.codearte.catch-exception:catch-throwable:' + project.'catch-throwable.version'
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
