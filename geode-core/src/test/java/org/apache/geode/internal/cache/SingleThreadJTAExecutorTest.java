@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,85 +24,38 @@ import static org.mockito.Mockito.verify;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.transaction.Status;
-
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
-import org.apache.geode.cache.SynchronizationCommitConflictException;
-import org.apache.geode.cache.TransactionException;
+import org.apache.geode.CancelCriterion;
 
 public class SingleThreadJTAExecutorTest {
-  private TXState txState;
   private SingleThreadJTAExecutor singleThreadJTAExecutor;
+  private TXState txState;
   private ExecutorService executor;
+  private BeforeCompletion beforeCompletion;
+  private AfterCompletion afterCompletion;
+  private CancelCriterion cancelCriterion;
 
   @Before
   public void setup() {
     txState = mock(TXState.class, RETURNS_DEEP_STUBS);
     executor = Executors.newSingleThreadExecutor();
+    beforeCompletion = mock(BeforeCompletion.class);
+    afterCompletion = mock(AfterCompletion.class);
+    cancelCriterion = mock(CancelCriterion.class);
+    singleThreadJTAExecutor = new SingleThreadJTAExecutor(beforeCompletion, afterCompletion);
   }
 
   @Test
-  public void executeBeforeCompletionCallsDoBeforeCompletion() {
-    singleThreadJTAExecutor = new SingleThreadJTAExecutor();
+  public void executeBeforeCompletionCallsDoOps() {
+    singleThreadJTAExecutor.executeBeforeCompletion(txState, executor, cancelCriterion);
 
-    singleThreadJTAExecutor.executeBeforeCompletion(txState, executor);
-
-    verify(txState, times(1)).doBeforeCompletion();
-
-    assertThat(singleThreadJTAExecutor.isBeforeCompletionFinished()).isTrue();
-  }
-
-  @Test(expected = SynchronizationCommitConflictException.class)
-  public void executeBeforeCompletionThrowsExceptionIfBeforeCompletionFailed() {
-    singleThreadJTAExecutor = new SingleThreadJTAExecutor();
-    doThrow(new SynchronizationCommitConflictException("")).when(txState).doBeforeCompletion();
-
-    singleThreadJTAExecutor.executeBeforeCompletion(txState, executor);
-
-    verify(txState, times(1)).doBeforeCompletion();
-    assertThat(singleThreadJTAExecutor.isBeforeCompletionFinished()).isTrue();
-  }
-
-  @Test
-  public void executeAfterCompletionCallsDoAfterCompletion() {
-    singleThreadJTAExecutor = new SingleThreadJTAExecutor();
-    int status = Status.STATUS_COMMITTED;
-
-    singleThreadJTAExecutor.executeBeforeCompletion(txState, executor);
-    singleThreadJTAExecutor.executeAfterCompletion(txState, status);
-
-    verify(txState, times(1)).doBeforeCompletion();
-    verify(txState, times(1)).doAfterCompletion(status);
-    assertThat(singleThreadJTAExecutor.isBeforeCompletionFinished()).isTrue();
-  }
-
-  @Test
-  public void executeAfterCompletionThrowsExceptionIfAfterCompletionFailed() {
-    singleThreadJTAExecutor = new SingleThreadJTAExecutor();
-    int status = Status.STATUS_COMMITTED;
-    TransactionException exception = new TransactionException("");
-    doThrow(exception).when(txState).doAfterCompletion(status);
-
-    singleThreadJTAExecutor.executeBeforeCompletion(txState, executor);
-
-    assertThatThrownBy(() -> singleThreadJTAExecutor.executeAfterCompletion(txState, status))
-        .isSameAs(exception);
-    verify(txState, times(1)).doBeforeCompletion();
-    verify(txState, times(1)).doAfterCompletion(status);
-  }
-
-  @Test
-  public void executorThreadNoLongerWaitForAfterCompletionIfTXStateIsCleanedUp() {
-    singleThreadJTAExecutor = new SingleThreadJTAExecutor();
-
-    singleThreadJTAExecutor.executeBeforeCompletion(txState, executor);
-    singleThreadJTAExecutor.cleanup(txState);
-
-    verify(txState, times(1)).doBeforeCompletion();
-    assertThat(singleThreadJTAExecutor.isBeforeCompletionFinished()).isTrue();
-    assertThat(singleThreadJTAExecutor.isAfterCompletionFinished()).isTrue();
+    InOrder inOrder = inOrder(beforeCompletion, afterCompletion);
+    inOrder.verify(beforeCompletion, times(1)).doOp(eq(txState));
+    inOrder.verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion));
+    verify(beforeCompletion, times(1)).execute(eq(cancelCriterion));
   }
 
 }

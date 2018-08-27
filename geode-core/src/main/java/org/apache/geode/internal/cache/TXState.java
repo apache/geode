@@ -31,6 +31,7 @@ import javax.transaction.Status;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CommitConflictException;
@@ -869,7 +870,7 @@ public class TXState implements TXStateInterface {
 
   protected void cleanup() {
     if (singleThreadJTAExecutor.shouldDoCleanup()) {
-      singleThreadJTAExecutor.cleanup(this);
+      singleThreadJTAExecutor.cleanup(getCancelCriterion());
     } else {
       doCleanup();
     }
@@ -1036,11 +1037,15 @@ public class TXState implements TXStateInterface {
     }
     beforeCompletionCalled = true;
     singleThreadJTAExecutor.executeBeforeCompletion(this,
-        getExecutor());
+        getExecutor(), getCancelCriterion());
   }
 
   Executor getExecutor() {
     return getCache().getDistributionManager().getWaitingThreadPool();
+  }
+
+  CancelCriterion getCancelCriterion() {
+    return getCache().getCancelCriterion();
   }
 
   void doBeforeCompletion() {
@@ -1105,7 +1110,7 @@ public class TXState implements TXStateInterface {
     // sitting in the waiting pool to execute afterCompletion. Otherwise
     // throw FailedSynchronizationException().
     if (beforeCompletionCalled) {
-      singleThreadJTAExecutor.executeAfterCompletion(this, status);
+      singleThreadJTAExecutor.executeAfterCompletion(getCancelCriterion(), status);
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {

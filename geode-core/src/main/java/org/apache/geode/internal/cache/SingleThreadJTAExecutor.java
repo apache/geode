@@ -18,180 +18,54 @@ import java.util.concurrent.Executor;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * TXStateSynchronizationThread manages beforeCompletion and afterCompletion calls.
- * The thread should be instantiated with a Runnable that invokes beforeCompletion behavior.
- * Then you must invoke executeAfterCompletion() with another Runnable that invokes afterCompletion
- * behavior.
+ * This class ensures that beforeCompletion and afterCompletion are executed in the same thread.
  *
- * @since Geode 1.6.0
+ * @since Geode 1.7.0
  */
 public class SingleThreadJTAExecutor {
   private static final Logger logger = LogService.getLogger();
 
-  private final Object beforeCompletionSync = new Object();
-  private boolean beforeCompletionStarted;
-  private boolean beforeCompletionFinished;
-  private SynchronizationCommitConflictException beforeCompletionException;
+  private final BeforeCompletion beforeCompletion;
+  private final AfterCompletion afterCompletion;
 
-  private final Object afterCompletionSync = new Object();
-  private boolean afterCompletionStarted;
-  private boolean afterCompletionFinished;
-  private int afterCompletionStatus = -1;
-  private boolean afterCompletionCancelled;
-  private RuntimeException afterCompletionException;
-
-  public SingleThreadJTAExecutor() {}
-
-  void doOps(TXState txState) {
-    doBeforeCompletionOp(txState);
-    doAfterCompletionOp(txState);
+  public SingleThreadJTAExecutor() {
+    this(new BeforeCompletion(), new AfterCompletion());
   }
 
-  void doBeforeCompletionOp(TXState txState) {
-    synchronized (beforeCompletionSync) {
-      try {
-        txState.doBeforeCompletion();
-      } catch (SynchronizationCommitConflictException exception) {
-        beforeCompletionException = exception;
-      } finally {
-        if (logger.isDebugEnabled()) {
-          logger.debug("beforeCompletion notification completed");
-        }
-        beforeCompletionFinished = true;
-        beforeCompletionSync.notifyAll();
-      }
-    }
+  public SingleThreadJTAExecutor(BeforeCompletion beforeCompletion,
+      AfterCompletion afterCompletion) {
+    this.beforeCompletion = beforeCompletion;
+    this.afterCompletion = afterCompletion;
   }
 
-  boolean isBeforeCompletionStarted() {
-    synchronized (beforeCompletionSync) {
-      return beforeCompletionStarted;
-    }
+  private void doOps(TXState txState, CancelCriterion cancelCriterion) {
+    beforeCompletion.doOp(txState);
+    afterCompletion.doOp(txState, cancelCriterion);
   }
 
-  boolean isAfterCompletionStarted() {
-    synchronized (afterCompletionSync) {
-      return afterCompletionStarted;
-    }
+  public void executeBeforeCompletion(TXState txState, Executor executor,
+      CancelCriterion cancelCriterion) {
+    executor.execute(() -> doOps(txState, cancelCriterion));
+
+    beforeCompletion.execute(cancelCriterion);
   }
 
-  boolean isBeforeCompletionFinished() {
-    synchronized (beforeCompletionSync) {
-      return beforeCompletionFinished;
-    }
-  }
-
-  boolean isAfterCompletionFinished() {
-    synchronized (afterCompletionSync) {
-      return afterCompletionFinished;
-    }
-  }
-
-  public void executeBeforeCompletion(TXState txState, Executor executor) {
-    executor.execute(() -> doOps(txState));
-
-    synchronized (beforeCompletionSync) {
-      beforeCompletionStarted = true;
-      while (!beforeCompletionFinished) {
-        try {
-          beforeCompletionSync.wait(1000);
-        } catch (InterruptedException ignore) {
-          // eat the interrupt and check for exit conditions
-        }
-        txState.getCache().getCancelCriterion().checkCancelInProgress(null);
-      }
-      if (getBeforeCompletionException() != null) {
-        throw getBeforeCompletionException();
-      }
-    }
-  }
-
-  SynchronizationCommitConflictException getBeforeCompletionException() {
-    return beforeCompletionException;
-  }
-
-  private void doAfterCompletionOp(TXState txState) {
-    synchronized (afterCompletionSync) {
-      // there should be a transaction timeout that keeps this thread
-      // from sitting around forever if the client goes away
-      // The above was done by setting afterCompletionCancelled in txState
-      // during cleanup. When client departed, the transaction/JTA
-      // will be timed out and cleanup code will be executed.
-      final boolean isDebugEnabled = logger.isDebugEnabled();
-      while (afterCompletionStatus == -1 && !afterCompletionCancelled) {
-        try {
-          if (isDebugEnabled) {
-            logger.debug("waiting for afterCompletion notification");
-          }
-          afterCompletionSync.wait(1000);
-        } catch (InterruptedException ignore) {
-          // eat the interrupt and check for exit conditions
-        }
-      }
-      afterCompletionStarted = true;
-      if (isDebugEnabled) {
-        logger.debug("executing afterCompletion notification");
-      }
-      try {
-        if (!afterCompletionCancelled) {
-          txState.doAfterCompletion(afterCompletionStatus);
-        } else {
-          txState.doCleanup();
-        }
-      } catch (RuntimeException exception) {
-        afterCompletionException = exception;
-      } finally {
-        if (isDebugEnabled) {
-          logger.debug("afterCompletion notification completed");
-        }
-        afterCompletionFinished = true;
-        afterCompletionSync.notifyAll();
-      }
-    }
-  }
-
-  public void executeAfterCompletion(TXState txState, int status) {
-    synchronized (afterCompletionSync) {
-      afterCompletionStatus = status;
-      afterCompletionSync.notifyAll();
-      waitForAfterCompletionToFinish(txState);
-      if (getAfterCompletionException() != null) {
-        throw getAfterCompletionException();
-      }
-    }
-  }
-
-  private void waitForAfterCompletionToFinish(TXState txState) {
-    while (!afterCompletionFinished) {
-      try {
-        afterCompletionSync.wait(1000);
-      } catch (InterruptedException ignore) {
-        // eat the interrupt and check for exit conditions
-      }
-      txState.getCache().getCancelCriterion().checkCancelInProgress(null);
-    }
-  }
-
-  RuntimeException getAfterCompletionException() {
-    return afterCompletionException;
+  public void executeAfterCompletion(CancelCriterion cancelCriterion, int status) {
+    afterCompletion.execute(cancelCriterion, status);
   }
 
   /**
    * stop waiting for an afterCompletion to arrive and just exit
    */
-  public void cleanup(TXState txState) {
-    synchronized (afterCompletionSync) {
-      afterCompletionCancelled = true;
-      afterCompletionSync.notifyAll();
-      waitForAfterCompletionToFinish(txState);
-    }
+  public void cleanup(CancelCriterion cancelCriterion) {
+    afterCompletion.cancel(cancelCriterion);
   }
 
   public boolean shouldDoCleanup() {
-    return isBeforeCompletionStarted() && !isAfterCompletionStarted();
+    return beforeCompletion.isStarted() && !afterCompletion.isStarted();
   }
 }
