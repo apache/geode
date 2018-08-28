@@ -47,6 +47,7 @@ groups:
   - {{test.name}}Test
   {% endfor -%}
   - UpdatePassingRef
+  - PublishArtifacts
 
 resources:
 - name: geode-build-artifact
@@ -168,6 +169,7 @@ jobs:
       - put: geode-build-version
         params:
           file: results/number
+
 - name: UpdatePassingRef
   public: true
   serial: true
@@ -181,6 +183,7 @@ jobs:
   - get: geode-ci
   - get: docker-geode-build-image
   - task: updatepassingref
+    image: docker-geode-build-image
     config:
       platform: linux
       params:
@@ -194,7 +197,41 @@ jobs:
       - name: geode-ci
       outputs:
       - name: results
-    image: docker-geode-build-image
+
+- name: PublishArtifacts
+  public: true
+  plan:
+  - get: geode
+    passed:
+    {% for test in tests if not test.name=="StressNew" -%}
+    - {{test.name}}Test
+    {% endfor %}
+    trigger: true
+  - get: geode-ci
+  - get: geode-build-version
+    params:
+      pre: build
+  - task: publish
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          password: ((!docker-password))
+          repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
+          tag: latest
+          username: ((!docker-username))
+      params:
+        MAINTENANCE_VERSION: {{repository.branch}}
+        PUBLIC_BUCKET: ((!public-bucket))
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+      run:
+        path: geode-ci/ci/scripts/publish.sh
+      inputs:
+      - name: geode
+      - name: geode-ci
+      - name: geode-build-version
+
 {% for test in tests if not test.name=="StressNew" %}
 - name: {{test.name}}Test
   public: true

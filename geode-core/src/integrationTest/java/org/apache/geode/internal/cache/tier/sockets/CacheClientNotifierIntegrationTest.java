@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -36,11 +38,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.shiro.subject.Subject;
-import org.awaitility.Awaitility;
-import org.awaitility.Duration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -152,21 +151,12 @@ public class CacheClientNotifierIntegrationTest {
     }
 
     // Verify that we do not hang in peek() for the second proxy due to the wrapper
-    Awaitility.waitAtMost(new Duration(30, TimeUnit.SECONDS)).untilAsserted(() -> {
-      try {
-        Object eventPeeked = null;
-        while (eventPeeked == null) {
-          // Simulating message dispatching. We peek() and remove() but aren't testing
-          // the actual message delivery for this test.
-          eventPeeked = cacheClientProxyTwo.getHARegionQueue().peek();
-          if (eventPeeked != null) {
-            cacheClientProxyTwo.getHARegionQueue().remove();
-          }
-        }
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-        throw (new RuntimeException(e));
+    await().atMost(30, SECONDS).until(() -> {
+      if (cacheClientProxyTwo.getHARegionQueue().peek() != null) {
+        cacheClientProxyTwo.getHARegionQueue().remove();
+        return true;
       }
+      return false;
     });
 
     Assert.assertEquals("Expected the HAContainer to be empty", 0,

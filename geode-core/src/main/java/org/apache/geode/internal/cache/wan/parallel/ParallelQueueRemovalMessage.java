@@ -187,7 +187,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     }
   }
 
-  private void destroyKeyFromBucketQueue(AbstractBucketRegionQueue brq, Object key,
+  void destroyKeyFromBucketQueue(AbstractBucketRegionQueue brq, Object key,
       PartitionedRegion prQ) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
@@ -207,8 +207,12 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       }
       // add the key to failedBatchRemovalMessageQueue.
       // This is to handle the last scenario in #49196
-      brq.addToFailedBatchRemovalMessageKeys(key);
-
+      // But if GII is already completed and FailedBatchRemovalMessageKeys
+      // are already cleared then no keys should be added to it as they will
+      // never be cleared and increase the memory footprint.
+      if (!brq.isFailedBatchRemovalMessageKeysClearedFlag()) {
+        brq.addToFailedBatchRemovalMessageKeys(key);
+      }
     } catch (ForceReattemptException fe) {
       if (isDebugEnabled) {
         logger.debug(

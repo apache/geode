@@ -68,19 +68,12 @@ allprojects {
   }
 }
 
-task cleanAll(type: Delete) {
-  delete rootProject.buildDir
-  if (!buildRoot.isEmpty()) {
-    delete buildRoot
-  }
-}
-
 // allow external projects to override include location
 if (name == 'geode') {
   ext.scriptDir = 'gradle'
 }
 
-
+// utilities.gradle MUST be read before publish.gradle for reasons
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"
@@ -93,23 +86,6 @@ apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/rat.gradle"
 apply from: "${scriptDir}/docker.gradle"
 apply from: "${scriptDir}/spotless.gradle"
-
-// Make sure clean task for rootProject runs last
-clean.dependsOn(cleanAll)
-subprojects.each{ subproj ->
-  def deleteTasks = subproj.tasks.withType(Delete) + subproj.tasks.findByPath('clean')
-  rootProject.cleanAll.mustRunAfter(deleteTasks)
-}
-
-allprojects {
-  plugins.withType(BasePlugin) {
-    project.afterEvaluate {
-      def deleteTasks = tasks.withType(Delete) + project.tasks.findByPath('clean')
-      def otherTasks = tasks - deleteTasks
-      otherTasks*.mustRunAfter deleteTasks
-    }
-  }
-}
 
 subprojects {
   apply plugin: 'com.github.ben-manes.versions'

@@ -27,6 +27,19 @@ extraArchive {
   tests = false
 }
 
+publishing {
+  publications {
+    maven {
+      artifactId = 'apache-geode'
+
+      artifacts = []
+
+      artifact distTar
+      artifact distZip
+    }
+  }
+}
+
 logger.info("Gradle doesn't automatically remove the jar artifact even though we disabled it")
 logger.info("this causes publishing to fail.  So we nuke all the disabled artifacts from all configurations.")
 configurations.all {
@@ -174,7 +187,7 @@ def cp = {
   // then add all the dependencies of the dependent jars
   jars += ' ' + configurations.archives.dependencies.collect {
     it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
-      .collect { it.configurations.runtime.collect { it.getName() }.findAll {
+      .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
         // depedencies from geode-core
         it.contains('antlr') ||
         it.contains('commons-io') ||
@@ -372,37 +385,27 @@ distributions {
       }
 
       into ('lib') {
-        from project(":geode-common").configurations.runtime
+        from project(":geode-common").configurations.runtimeClasspath
         from project(":geode-common").configurations.archives.allArtifacts.files
-
-        from project(":geode-json").configurations.runtime
+        from project(":geode-json").configurations.runtimeClasspath
         from project(":geode-json").configurations.archives.allArtifacts.files
-
-        from project(":geode-wan").configurations.runtime
+        from project(":geode-wan").configurations.runtimeClasspath
         from project(":geode-wan").configurations.archives.allArtifacts.files
-
-        from project(":geode-cq").configurations.runtime
+        from project(":geode-cq").configurations.runtimeClasspath
         from project(":geode-cq").configurations.archives.allArtifacts.files
-
-        from project(":geode-core").configurations.runtime
+        from project(":geode-core").configurations.runtimeClasspath
         from project(":geode-core").configurations.archives.allArtifacts.files
-
-        from project(":geode-lucene").configurations.runtime
+        from project(":geode-lucene").configurations.runtimeClasspath
         from project(":geode-lucene").configurations.archives.allArtifacts.files
-
-        from project(":geode-connectors").configurations.runtime
+        from project(":geode-connectors").configurations.runtimeClasspath
         from project(":geode-connectors").configurations.archives.allArtifacts.files
-
-        from project(":geode-old-client-support").configurations.runtime
+        from project(":geode-old-client-support").configurations.runtimeClasspath
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
-
-        from project(":geode-protobuf").configurations.runtime
+        from project(":geode-protobuf").configurations.runtimeClasspath
         from project(":geode-protobuf").configurations.archives.allArtifacts.files
-
-        from project(":geode-protobuf-messages").configurations.runtime
+        from project(":geode-protobuf-messages").configurations.runtimeClasspath
         from project(":geode-protobuf-messages").configurations.archives.allArtifacts.files
-
-        from project(":geode-rebalancer").configurations.runtime
+        from project(":geode-rebalancer").configurations.runtimeClasspath
         from project(":geode-rebalancer").configurations.archives.allArtifacts.files
 
         from configurations.bundled

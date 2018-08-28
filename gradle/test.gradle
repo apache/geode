@@ -90,7 +90,7 @@ subprojects {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
     if (project.hasProperty('testMaxParallelForks')) {
-      maxParallelForks = project.testMaxParallelForks
+      maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
     } else {
       maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     }
@@ -132,6 +132,13 @@ subprojects {
     acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
     uiTestAnnotationProcessor.extendsFrom annotationProcessor
     upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
+    // Facets does not extend the new runtimeOnly configurations
+    integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
+    distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
+    performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+    acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+    uiTestRuntimeOnly.extendsFrom(runtimeOnly)
+    upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
   }
 
   dependencies {
