@@ -24,12 +24,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Status;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
@@ -101,6 +103,13 @@ public class TXState implements TXStateInterface {
   // Access this variable should be in synchronized block.
   private boolean beforeCompletionCalled;
 
+  /**
+   * for client/server JTA transactions we need to have a single thread handle both beforeCompletion
+   * and afterCompletion so that beforeCompletion can obtain locks for the afterCompletion step.
+   * This is that thread
+   */
+  private final SingleThreadJTAExecutor singleThreadJTAExecutor;
+
   // Internal testing hooks
   private Runnable internalAfterReservation;
   protected Runnable internalAfterConflictCheck;
@@ -142,6 +151,11 @@ public class TXState implements TXStateInterface {
   private volatile DistributedMember proxyServer;
 
   public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
+    this(proxy, onBehalfOfRemoteStub, new SingleThreadJTAExecutor());
+  }
+
+  public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      SingleThreadJTAExecutor singleThreadJTAExecutor) {
     this.beginTime = CachePerfStats.getStatTime();
     this.regions = new IdentityHashMap<>();
 
@@ -154,7 +168,7 @@ public class TXState implements TXStateInterface {
     this.internalAfterSend = null;
     this.proxy = proxy;
     this.onBehalfOfRemoteStub = onBehalfOfRemoteStub;
-
+    this.singleThreadJTAExecutor = singleThreadJTAExecutor;
   }
 
   private boolean hasSeenEvent(EntryEventImpl event) {
@@ -417,7 +431,7 @@ public class TXState implements TXStateInterface {
       }
 
       /*
-       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort
+       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
       TransactionWriter writer = this.proxy.getTxMgr().getWriter();
@@ -857,6 +871,14 @@ public class TXState implements TXStateInterface {
   }
 
   protected void cleanup() {
+    if (singleThreadJTAExecutor.shouldDoCleanup()) {
+      singleThreadJTAExecutor.cleanup(getCancelCriterion());
+    } else {
+      doCleanup();
+    }
+  }
+
+  void doCleanup() {
     IllegalArgumentException iae = null;
     try {
       this.closed = true;
@@ -910,6 +932,7 @@ public class TXState implements TXStateInterface {
       synchronized (this.completionGuard) {
         this.completionGuard.notifyAll();
       }
+
       if (iae != null && !this.proxy.getCache().isClosed()) {
         throw iae;
       }
@@ -1006,24 +1029,36 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public synchronized void beforeCompletion() throws SynchronizationCommitConflictException {
+    proxy.getTxMgr().setTXState(null);
     if (this.closed) {
       throw new TXManagerCancelledException();
     }
+
     if (beforeCompletionCalled) {
       // do not re-execute beforeCompletion again
       return;
     }
     beforeCompletionCalled = true;
-    doBeforeCompletion();
+    singleThreadJTAExecutor.executeBeforeCompletion(this,
+        getExecutor(), getCancelCriterion());
   }
 
-  private void doBeforeCompletion() {
+  private Executor getExecutor() {
+    return getCache().getDistributionManager().getWaitingThreadPool();
+  }
+
+  private CancelCriterion getCancelCriterion() {
+    return getCache().getCancelCriterion();
+  }
+
+  void doBeforeCompletion() {
     final long opStart = CachePerfStats.getStatTime();
     this.jtaLifeTime = opStart - getBeginTime();
+
     try {
       reserveAndCheck();
       /*
-       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort
+       * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
       TransactionWriter writer = this.proxy.getTxMgr().getWriter();
@@ -1072,11 +1107,12 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public synchronized void afterCompletion(int status) {
-    this.proxy.getTxMgr().setTXState(null);
-    // For commit, beforeCompletion should be called. Otherwise
+    proxy.getTxMgr().setTXState(null);
+    // if there was a beforeCompletion call then there will be a thread
+    // sitting in the waiting pool to execute afterCompletion. Otherwise
     // throw FailedSynchronizationException().
-    if (wasBeforeCompletionCalled()) {
-      doAfterCompletion(status);
+    if (beforeCompletionCalled) {
+      singleThreadJTAExecutor.executeAfterCompletion(getCancelCriterion(), status);
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {
@@ -1087,7 +1123,7 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  private void doAfterCompletion(int status) {
+  void doAfterCompletion(int status) {
     final long opStart = CachePerfStats.getStatTime();
     try {
       switch (status) {
