@@ -143,6 +143,8 @@ public class GfshHostNameVerificationDistributedTest {
     File sslConfigFile = gfshSecurityProperties(gfshSSLProps);
 
     IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
+    IgnoredException.addIgnoredException("java.net.SocketException");
+
     String connectCommand =
         "connect --locator=" + locator.getVM().getHost().getHostName() + "[" + locator.getPort()
             + "] --security-properties-file=" + sslConfigFile.getAbsolutePath();
