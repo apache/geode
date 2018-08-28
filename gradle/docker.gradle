@@ -59,6 +59,8 @@ def dockerConfig = {
 
     // Add volumes configured by top-level build script
     volumes << project.dunitDockerVolumes
+    // def tmpDir = System.getProperty('java.io.tmpdir')
+    // volumes << [tmpDir:tmpDir]
 
     // specify the user for starting Gradle test worker within the container.
     user = dunitDockerUser
@@ -118,8 +120,7 @@ subprojects {
     upgradeTest.configure(dockerConfig)
     repeatTest.configure(dockerConfig)
     integrationTest.configure(dockerConfig)
-//    ACCEPTANCE TEST NEEDS DOCKER-COMPOSE TO WORK WITHIN DOCKER FIRST
-//    acceptanceTest.configure(dockerConfig)
+    acceptanceTest.configure(dockerConfig)
     uiTest.configure(dockerConfig)
   }
 }
