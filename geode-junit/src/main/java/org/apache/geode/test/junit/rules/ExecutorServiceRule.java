@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -32,22 +30,15 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * creates an {@code ExecutorService} which is terminated after the scope of the {@code Rule}. This
  * {@code Rule} can be used in tests for hangs, deadlocks, and infinite loops.
  *
- * <p>
- * By default, the {@code ExecutorService} is single-threaded. You can specify the thread count by
- * using {@link Builder#threadCount(int)} or {@link #ExecutorServiceRule(int)}.
- *
- * <p>
- * Example with default configuration (single-threaded and does not assert that tasks are done):
- *
  * <pre>
  * private CountDownLatch hangLatch = new CountDownLatch(1);
  *
  * {@literal @}Rule
- * public AsynchronousRule asynchronousRule = new AsynchronousRule();
+ * public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
- *   Future<Void> result = asynchronousRule.runAsync(() -> {
+ *   Future<Void> result = executorServiceRule.runAsync(() -> {
  *     try {
  *       hangLatch.await();
  *     } catch (InterruptedException e) {
@@ -73,17 +64,13 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * private CountDownLatch hangLatch = new CountDownLatch(1);
  *
  * {@literal @}Rule
- * public ExecutorServiceRule asynchronousRule = ExecutorServiceRule.builder().threadCount(10).awaitTermination(10, MILLISECONDS).build();
+ * public ExecutorServiceRule executorServiceRule = ExecutorServiceRule.builder().awaitTermination(10, SECONDS).build();
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
  *   for (int i = 0; i < 10; i++) {
- *     asynchronousRule.runAsync(() -> {
- *       try {
- *         hangLatch.await();
- *       } catch (InterruptedException e) {
- *         // do nothing
- *       }
+ *     executorServiceRule.runAsync(() -> {
+ *       hangLatch.await();
  *     });
  *   }
  * }
@@ -92,7 +79,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 @SuppressWarnings("unused")
 public class ExecutorServiceRule extends SerializableExternalResource {
 
-  protected final int threadCount;
   protected final boolean enableAwaitTermination;
   protected final long awaitTerminationTimeout;
   protected final TimeUnit awaitTerminationTimeUnit;
@@ -110,7 +96,6 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   }
 
   protected ExecutorServiceRule(Builder builder) {
-    threadCount = builder.threadCount;
     enableAwaitTermination = builder.enableAwaitTermination;
     awaitTerminationTimeout = builder.awaitTerminationTimeout;
     awaitTerminationTimeUnit = builder.awaitTerminationTimeUnit;
@@ -120,25 +105,10 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   }
 
   /**
-   * Constructs a new single-threaded {@code ExecutorServiceRule} which invokes
-   * {@code ExecutorService.shutdownNow()} during {@code tearDown}.
+   * Constructs a {@code ExecutorServiceRule} which invokes {@code ExecutorService.shutdownNow()}
+   * during {@code tearDown}.
    */
   public ExecutorServiceRule() {
-    threadCount = 1;
-    enableAwaitTermination = false;
-    awaitTerminationTimeout = 0;
-    awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
-    awaitTerminationBeforeShutdown = false;
-    useShutdown = false;
-    useShutdownNow = true;
-  }
-
-  /**
-   * Constructs a new multi-threaded {@code ExecutorServiceRule} which invokes
-   * {@code ExecutorService.shutdownNow()} during {@code tearDown}.
-   */
-  public ExecutorServiceRule(int threadCount) {
-    this.threadCount = threadCount;
     enableAwaitTermination = false;
     awaitTerminationTimeout = 0;
     awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
@@ -149,11 +119,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
   @Override
   public void before() {
-    if (threadCount > 1) {
-      executor = Executors.newFixedThreadPool(threadCount);
-    } else {
-      executor = Executors.newSingleThreadExecutor();
-    }
+    executor = Executors.newCachedThreadPool();
   }
 
   @Override
@@ -272,26 +238,15 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
   public static class Builder {
 
-    protected int threadCount = 1;
-    protected boolean enableAwaitTermination = false;
-    protected long awaitTerminationTimeout = 0;
+    protected boolean enableAwaitTermination;
+    protected long awaitTerminationTimeout;
     protected TimeUnit awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
     protected boolean awaitTerminationBeforeShutdown = true;
-    protected boolean useShutdown = false;
+    protected boolean useShutdown;
     protected boolean useShutdownNow = true;
 
     protected Builder() {
       // nothing
-    }
-
-    /**
-     * Configures the number of threads. Default is one thread.
-     *
-     * @param threadCount the number of threads in the pool
-     */
-    public Builder threadCount(int threadCount) {
-      this.threadCount = threadCount;
-      return this;
     }
 
     /**
@@ -348,7 +303,6 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * Builds the instance of {@code ExecutorServiceRule}.
      */
     public ExecutorServiceRule build() {
-      assertThat(threadCount).isGreaterThan(0);
       return new ExecutorServiceRule(this);
     }
   }

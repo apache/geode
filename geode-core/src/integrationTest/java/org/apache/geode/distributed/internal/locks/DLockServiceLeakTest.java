@@ -44,15 +44,14 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category({DLockTest.class})
+@Category(DLockTest.class)
 public class DLockServiceLeakTest {
 
   private Cache cache;
   private DistributedRegion testRegion;
 
   @Rule
-  public ExecutorServiceRule executorServiceRule =
-      ExecutorServiceRule.builder().threadCount(5).build();
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Before
   public void setUp() {
