@@ -23,7 +23,9 @@ import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -53,8 +55,10 @@ public class SingleThreadJTAExecutorTest {
     singleThreadJTAExecutor.executeBeforeCompletion(txState, executor, cancelCriterion);
 
     InOrder inOrder = inOrder(beforeCompletion, afterCompletion);
-    inOrder.verify(beforeCompletion, times(1)).doOp(eq(txState));
-    inOrder.verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion));
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> inOrder.verify(beforeCompletion, times(1)).doOp(eq(txState)));
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(
+        () -> inOrder.verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion)));
     verify(beforeCompletion, times(1)).execute(eq(cancelCriterion));
   }
 
