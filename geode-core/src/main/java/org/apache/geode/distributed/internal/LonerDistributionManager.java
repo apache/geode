@@ -219,7 +219,7 @@ public class LonerDistributionManager implements DistributionManager {
     return getDistributionManagerId();
   }
 
-  public boolean isAdam() {
+  public boolean isPeerless() {
     return true;
   }
 
@@ -235,7 +235,7 @@ public class LonerDistributionManager implements DistributionManager {
     return true;
   }
 
-  public synchronized ElderState getElderState(boolean force, boolean useTryLock) {
+  public synchronized ElderState getElderState(boolean force) {
     // loners are always the elder
     if (this.elderState == null) {
       this.elderState = new ElderState(this);

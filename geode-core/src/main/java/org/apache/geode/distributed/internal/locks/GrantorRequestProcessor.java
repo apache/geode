@@ -207,10 +207,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /**
    * Sets currentElder to the memberId of the current elder if elder is remote; null if elder is in
-   * our vm. TODO: collaboration lock was removed
+   * our vm.
    */
-  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls,
-      boolean usesElderCollaborationLock) {
+  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls) {
     InternalDistributedMember elder;
     ElderState es = null;
 
@@ -221,15 +220,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       elder = dm.getElderId(); // call this before getElderState
       Assert.assertTrue(elder != null, "starting an elder call with no valid elder");
       if (dm.getId().equals(elder)) {
-        if (usesElderCollaborationLock) {
-          try {
-            es = dm.getElderState(false, true);
-          } catch (IllegalStateException e) {
-            // loop back around to reacquire Collaboration and try elder lock again
-            continue;
-          }
-        } else {
-          es = dm.getElderState(false, false);
+        try {
+          es = dm.getElderState(false);
+        } catch (IllegalStateException e) {
+          // loop back around to reacquire Collaboration and try elder lock again
+          continue;
         }
       } else {
         es = null;
@@ -333,12 +328,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     try {
       do {
         tryNewElder = false;
-        final boolean usesElderCollaborationLock = opCode == GET_OP || opCode == BECOME_OP;
-        if (usesElderCollaborationLock) {
-          Assert.assertTrue(service != null,
-              "Attempting GrantorRequest without instance of DistributedLockService");
-        }
-        final ElderState es = startElderCall(system, service, usesElderCollaborationLock);
+        final ElderState es = startElderCall(system, service);
         dm.throwIfDistributionStopped();
         try {
           if (es != null) {
@@ -501,7 +491,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     protected void basicProcess(final DistributionManager dm) {
       // we should be in the elder
-      ElderState es = dm.getElderState(true, false);
+      ElderState es = dm.getElderState(true);
       switch (this.opCode) {
         case GET_OP:
           replyGrantorInfo(dm, es.getGrantor(this.serviceName, getSender(), this.dlsSerialNumber));
