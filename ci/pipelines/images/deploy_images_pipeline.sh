@@ -36,11 +36,7 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
-
-. ${SCRIPTDIR}/../shared/utilities.sh
-
-SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
-SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
@@ -54,11 +50,11 @@ TARGET="geode"
 
 TEAM=${CONCOURSE_TEAM}
 
-if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
+if [[ "${GEODE_FORK}" == "apache" ]]; then
   PIPELINE_PREFIX=""
   DOCKER_IMAGE_PREFIX=""
 else
-  PIPELINE_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+  PIPELINE_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
   DOCKER_IMAGE_PREFIX=${PIPELINE_PREFIX}
 fi
 

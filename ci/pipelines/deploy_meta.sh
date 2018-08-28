@@ -15,22 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-
 GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 TARGET=geode
 GEODE_FORK=${1:-apache}
-
-. ${SCRIPTDIR}/shared/utilities.sh
-SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
-SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
-
+SANITIZED_GEODE_FORK=$(echo ${GEODE_FORK} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 TEAM=$(fly targets | grep ^${TARGET} | awk '{print $3}')
 
 PUBLIC=true

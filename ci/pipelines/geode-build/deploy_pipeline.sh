@@ -44,10 +44,7 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
-. ${SCRIPTDIR}/../shared/utilities.sh
-
-SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
-SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
@@ -64,17 +61,17 @@ if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; 
   TEAM="main"
 fi
 
-if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
+if [[ "${GEODE_FORK}" == "apache" ]]; then
   PIPELINE_NAME=${SANITIZED_GEODE_BRANCH}
   DOCKER_IMAGE_PREFIX=""
 else
-  PIPELINE_NAME="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
+  PIPELINE_NAME="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
   DOCKER_IMAGE_PREFIX="${PIPELINE_NAME}-"
 fi
 
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
   # Template and output share a directory with this script, but variables are shared in the parent directory.
-  python3 ../render.py $(basename ${SCRIPTDIR}) || exit 1
+  python3 ../render.py jinja.template.yml ../shared/jinja.variables.yml generated-pipeline.yml || exit 1
 
   grep -n . generated-pipeline.yml
 
@@ -84,10 +81,9 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
             -u ${CONCOURSE_USERNAME} \
             -p ${CONCOURSE_PASSWORD}
 
-  fly -t ${TARGET} set-pipeline \
-    --non-interactive \
+  fly -t ${TARGET} set-pipeline --non-interactive \
     --pipeline ${PIPELINE_NAME} \
     --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-    --config ${SCRIPTDIR}/generated-pipeline.yml
+    --config generated-pipeline.yml
 
 popd 2>&1 > /dev/null

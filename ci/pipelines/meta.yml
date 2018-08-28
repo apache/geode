@@ -41,7 +41,6 @@ resources:
     paths:
     - ci/pipelines/geode-build/*
     - ci/pipelines/shared/*
-    - ci/pipelines/render.py
 - name: geode-examples-pipeline
   type: git
   source:
@@ -50,7 +49,6 @@ resources:
     paths:
     - ci/pipelines/examples/*
     - ci/pipelines/shared/*
-    - ci/pipelines/render.py
 - name: geode-pr-pipeline
   type: git
   source:
@@ -59,7 +57,6 @@ resources:
     paths:
     - ci/pipelines/pull-request/*
     - ci/pipelines/shared/*
-    - ci/pipelines/render.py
 - name: geode-images-pipeline
   type: git
   source:
