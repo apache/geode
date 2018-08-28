@@ -148,6 +148,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_GATEWAY_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_JMX_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -1359,6 +1360,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "User defined fully qualified class name implementing SecurityManager interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
     m.put(SECURITY_POST_PROCESSOR,
         "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
+
+    m.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED,
+        "If true, clients validate server hostname using server certificate during SSL handshake.");
 
     m.put(SSL_ENABLED_COMPONENTS,
         "A comma delimited list of components that require SSL communications");

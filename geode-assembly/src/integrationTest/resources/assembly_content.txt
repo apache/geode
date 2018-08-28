@@ -601,6 +601,12 @@ javadoc/org/apache/geode/cache/snapshot/SnapshotReader.html
 javadoc/org/apache/geode/cache/snapshot/package-frame.html
 javadoc/org/apache/geode/cache/snapshot/package-summary.html
 javadoc/org/apache/geode/cache/snapshot/package-tree.html
+javadoc/org/apache/geode/cache/ssl/CertStores.html
+javadoc/org/apache/geode/cache/ssl/TestSSLUtils.CertificateBuilder.html
+javadoc/org/apache/geode/cache/ssl/TestSSLUtils.html
+javadoc/org/apache/geode/cache/ssl/package-frame.html
+javadoc/org/apache/geode/cache/ssl/package-summary.html
+javadoc/org/apache/geode/cache/ssl/package-tree.html
 javadoc/org/apache/geode/cache/util/AutoBalancer.html
 javadoc/org/apache/geode/cache/util/CacheListenerAdapter.html
 javadoc/org/apache/geode/cache/util/CacheWriterAdapter.html

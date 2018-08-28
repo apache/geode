@@ -35,6 +35,8 @@ dependencies {
   }
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
 
+  compile 'org.bouncycastle:bcpkix-jdk15on:' + project.'bounty-castle.version'
+
   runtimeOnly project(":geode-old-versions")
 }
 
