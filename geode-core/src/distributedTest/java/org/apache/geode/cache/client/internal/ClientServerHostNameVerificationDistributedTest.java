@@ -76,7 +76,8 @@ public class ClientServerHostNameVerificationDistributedTest {
         // ClusterStartupRule uses 'localhost' as locator host
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanIpAddress(InetAddress.getLocalHost());
+        .sanIpAddress(InetAddress.getLocalHost())
+        .sanIpAddress(InetAddress.getByName("0.0.0.0")); // to pass on windows
 
     CertificateBuilder serverCertificate = new CertificateBuilder()
         .commonName("server")
