@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -84,6 +85,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -97,19 +99,19 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
   protected static Connection conn = null;
 
-  private static Cache static_cache;
+  static Cache static_cache;
 
-  private static int PORT1;
+  static int PORT1;
 
   private static final String k1 = "k1";
 
   private static final String k2 = "k2";
 
-  private static final String server_k1 = "server-k1";
+  static final String server_k1 = "server-k1";
 
-  private static final String server_k2 = "server-k2";
+  static final String server_k2 = "server-k2";
 
-  private static final String REGION_NAME1 = "ClientServerMiscDUnitTest_region1";
+  static final String REGION_NAME1 = "ClientServerMiscDUnitTest_region1";
 
   static final String REGION_NAME2 = "ClientServerMiscDUnitTest_region2";
 
@@ -827,6 +829,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
+    props.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     Cache cache = new ClientServerMiscDUnitTestBase().createCacheV(props);
     ClientServerMiscDUnitTestBase.static_cache = cache;
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",

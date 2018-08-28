@@ -1382,6 +1382,10 @@ public abstract class AbstractRegionMap
                               event.getKey());
                         }
                         processVersionTag(oldRe, event);
+                        if (owner.getConcurrencyChecksEnabled() && event.hasValidVersionTag()) {
+                          // notify clients so they can update their version stamps
+                          event.invokeCallbacks(owner, true, true);
+                        }
                         try {
                           oldRe.setValue(owner, oldRe.getValueInVM(owner)); // OFFHEAP noop setting
                                                                             // an already invalid to
@@ -1625,10 +1629,10 @@ public abstract class AbstractRegionMap
                       if (isDebugEnabled) {
                         logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
                       }
-                      if (event.getVersionTag() != null && owner.getVersionVector() != null) {
-                        owner.getVersionVector().recordVersion(
-                            (InternalDistributedMember) event.getDistributedMember(),
-                            event.getVersionTag());
+                      processVersionTag(re, event);
+                      if (owner.getConcurrencyChecksEnabled() && event.hasValidVersionTag()) {
+                        // notify clients so they can update their version stamps
+                        event.invokeCallbacks(owner, true, true);
                       }
                     } else { // previous value not invalid
                       event.setRegionEntry(re);
