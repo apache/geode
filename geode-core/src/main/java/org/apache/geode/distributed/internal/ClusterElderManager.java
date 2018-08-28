@@ -98,28 +98,29 @@ public class ClusterElderManager {
       waitForElder(clusterDistributionManager.getId());
     }
 
-    if (clusterDistributionManager.getId().equals(getElderCandidate())) {
-      // we are the elder
-      if (this.elderStateInitialized) {
-        return this.elderState;
-      }
-      return initializeElderState();
+    if (!isElder()) {
+      return null; // early return if this clusterDistributionManager is not the elder
+    }
+
+    if (this.elderStateInitialized) {
+      return this.elderState;
     } else {
-      // we are not the elder so return null
-      return null;
+      return initializeElderState();
     }
   }
 
   private ElderState initializeElderState() {
     this.elderLock.lock();
+
     try {
       if (this.elderState == null) {
         this.elderState = elderStateSupplier.get();
       }
+      this.elderStateInitialized = true;
     } finally {
       this.elderLock.unlock();
     }
-    this.elderStateInitialized = true;
+
     return this.elderState;
   }
 

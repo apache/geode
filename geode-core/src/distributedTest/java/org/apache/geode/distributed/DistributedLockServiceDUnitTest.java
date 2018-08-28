@@ -150,6 +150,12 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     forNumVMsInvoke(vmThreads.length, () -> remoteCreateService(serviceName));
     Thread.sleep(100);
 
+    Invoke.invokeInEveryVM(() -> {
+      stop_testFairness = false;
+      count_testFairness = new int[16];
+      done_testFairness = new boolean[16];
+    });
+
     // line up threads for the fairness race...
     for (int vm = 0; vm < vmThreads.length; vm++) {
       logger.info("[testFairness] lining up " + vmThreads[vm] + " threads in vm " + vm);
@@ -181,7 +187,18 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       }
     }
 
-    Thread.sleep(1000); // Wait for all threads to start before starting the race
+    // wait for all threads to be ready to start the race
+    for (int i = 0; i < vmThreads.length; i++) {
+      final int vmId = i;
+
+      VM.getVM(i).invoke(() -> {
+        DLockService localService =
+            (DLockService) DistributedLockService.getServiceNamed(serviceName);
+        Awaitility.await().atMost(1, TimeUnit.MINUTES)
+            .untilAsserted(() -> assertThat(localService.getStats().getLockWaitsInProgress())
+                .isEqualTo(vmThreads[vmId]));
+      });
+    }
 
     // start the race!
     service.unlock(lock);
