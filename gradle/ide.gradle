@@ -30,7 +30,7 @@ subprojects {
             // Remove the gradle output directories from the eclipse classpath.
             // Unfortunately, using minusConfigurations does not work here, because
             // it removes the entire geode-core project.
-            classpath.entries.removeAll { entry -> 
+            classpath.entries.removeAll { entry ->
               (entry.path.contains('geode-core/build') ||
               entry.path.contains('geode-web/build') ||
               entry.path.contains('geode-assembly/build') ||
@@ -41,10 +41,10 @@ subprojects {
 
             //By default, gradle adds the java 1.8 *execution environment*, which has access restrictions on
             //things like Unsafe. Change it to a direct dependency on the workspace JDK
-            classpath.entries = classpath.entries.collect { entry -> 
-              entry.path.contains('org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE')
-                ? new Container('org.eclipse.jdt.launching.JRE_CONTAINER')
-                : entry
+            classpath.entries = classpath.entries.collect { entry ->
+              entry.path.contains('org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE') ?
+                      new Container('org.eclipse.jdt.launching.JRE_CONTAINER') :
+                      entry
             }
         }
       }
@@ -70,13 +70,13 @@ subprojects {
       delete '.settings/org.eclipse.core.resources.prefs'
     }
   }
-  
+
   tasks.eclipse.dependsOn(cleanEclipse)
-  
+
   idea {
     module {
       downloadSources = true
     }
   }
 }
-  
+

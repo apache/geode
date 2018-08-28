@@ -16,5 +16,5 @@
  */
 
 dependencies {
-    compile project(':geode-core')
+  compile project(':geode-core')
 }
