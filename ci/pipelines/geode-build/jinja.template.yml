@@ -42,7 +42,7 @@ SERVICE_ACCOUNT: ((!concourse-gcp-account))
 groups:
 - name: main
   jobs:
-  - Build
+  - {{ build_test.name }}
   {% for test in (tests + windowstests) if not test.name=="StressNew" -%}
   - {{test.name}}Test
   {% endfor -%}
@@ -50,12 +50,6 @@ groups:
   - PublishArtifacts
 
 resources:
-- name: geode-build-artifact
-  type: gcs-resource
-  source:
-    bucket: ((!public-bucket))
-    json_key: ((!concourse-gcp-key))
-    regexp: artifacts/{{repository.branch}}/geodefiles-(.*).tgz
 - name: send-notification-email
   type: email
   source:
@@ -121,36 +115,55 @@ resource_types:
     repository: pcfseceng/email-resource
 
 jobs:
-- name: Build
+- name: {{build_test.name}}
   public: true
   serial: true
   plan:
-  - get: geode
-    trigger: true
   - get: geode-ci
-  - get: geode-build-version
-    params:
-      pre: build
-  - task: build
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          password: ((!docker-password))
-          repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
-          tag: latest
-          username: ((!docker-username))
+  - aggregate:
+    - get: geode
+      trigger: true
+    - get: geode-build-version
       params:
-        MAINTENANCE_VERSION: {{repository.branch}}
-        SOURCE_REPOSITORY: {{repository.branch}}
-        PUBLIC_BUCKET: ((!public-bucket))
-        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        pre: build
+    - do:
+      - put: concourse-metadata-resource
+      - task: start_instance
+        {{ alpine_tools_config()|indent(8) }}
+          params:
+            CPUS: {{build_test.CPUS}}
+            GEODE_BRANCH: {{repository.branch}}
+            GEODE_FORK: {{repository.fork}}
+            RAM: {{build_test.RAM}}
+          run:
+            path: geode-ci/ci/scripts/start_instance.sh
+          inputs:
+          - name: concourse-metadata-resource
+          - name: geode-ci
+          outputs:
+          - name: instance-data
+        timeout: 15m
+        attempts: 100
+  - task: rsync_code_up
+    {{ alpine_tools_config()|indent(4) }}
       run:
-        path: geode-ci/ci/scripts/build.sh
+        path: geode-ci/ci/scripts/rsync_code_up.sh
       inputs:
-      - name: geode
       - name: geode-ci
+      - name: geode
+      - name: instance-data
+    timeout: 5m
+  - task: build
+    {{ alpine_tools_config()|indent(4) }}
+      params:
+        GRADLE_TASK: {{ build_test.GRADLE_TASK }}
+        {{ common_test_params(build_test) | indent(8) }}
+      run:
+        path: geode-ci/ci/scripts/execute_build.sh
+      inputs:
+      - name: geode-ci
+      - name: geode
+      - name: instance-data
       - name: geode-build-version
       outputs:
       - name: built-geode
@@ -162,13 +175,48 @@ jobs:
           body: results/body
           subject: results/subject
     ensure:
-      aggregate:
-      - put: geode-build-artifact
-        params:
-          file: built-geode/geodefiles-*.tgz
+      do:
+      - task: rsync_code_down
+        {{ alpine_tools_config()|indent(8) }}
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
       - put: geode-build-version
         params:
           file: results/number
+      ensure:
+        do:
+        - aggregate:
+          - task: archive_results
+            {{ alpine_tools_config()|indent(12) }}
+              params:
+                ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
+                GRADLE_TASK: {{build_test.GRADLE_TASK}}
+                MAINTENANCE_VERSION: {{repository.branch}}
+                PUBLIC_BUCKET: ((!public-bucket))
+                SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                TAR_GEODE_BUILD_ARTIFACTS: true
+              run:
+                path: geode-ci/ci/scripts/archive_results.sh
+              inputs:
+              - name: concourse-metadata-resource
+              - name: geode-ci
+              - name: geode-build-version
+              - name: geode-results
+            timeout: 1h
+          - task: stop_instance
+            {{ alpine_tools_config()|indent(12) }}
+              run:
+                path: geode-ci/ci/scripts/stop_instance.sh
+              inputs:
+              - name: geode-ci
+              - name: instance-data
+            timeout: 1h
 
 - name: UpdatePassingRef
   public: true
