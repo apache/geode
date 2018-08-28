@@ -1939,7 +1939,7 @@ public interface ConfigurationProperties {
    * <U>Default</U>: code>"false"</code>
    * <U>Since</U>: Geode 1.8
    */
-  String SSL_ENDPOINT_IDENTIFICATION_ENABLED = "ssl-enable-endpoint-identification";
+  String SSL_ENDPOINT_IDENTIFICATION_ENABLED = "ssl-endpoint-identification-enabled";
   /**
    * The static String definition of the <i>"ssl-enabled-components"</i> property <a
    * name="ssl-enabled-components"/a>
