@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -435,8 +436,8 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
   private void putAndWaitForSuccess(VM vm, final String regionName, final Serializable key,
       final Serializable value) {
-    Awaitility.await().atMost(MAX_WAIT, MILLISECONDS).until(() -> {
-      putInVM(vm, regionName, key, value);
+    Awaitility.await().atMost(MAX_WAIT, MILLISECONDS).untilAsserted(() -> {
+      assertThatCode(() -> putInVM(vm, regionName, key, value)).doesNotThrowAnyException();
     });
   }
 
@@ -463,7 +464,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       for (int i = 0; i < expectedPorts.length; i++) {
         expectedEndpointPorts.add(new Integer(expectedPorts[i]));
       }
-      Awaitility.await().atMost(5, SECONDS).until(() -> {
+      Awaitility.await().atMost(5, SECONDS).untilAsserted(() -> {
         List<ServerLocation> endpoints;
         HashSet actualEndpointPorts;
         endpoints = pool.getCurrentServers();

@@ -1,0 +1,106 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+repository:
+  project: geode
+
+platforms:
+- name: "Linux"
+  prefix: ""
+- name: "Windows"
+  prefix: "Windows"
+
+tests:
+- name: "Acceptance"
+  CPUS: "8"
+  RAM: "12"
+  ARTIFACT_SLUG: acceptancetestfiles
+  CALL_STACK_TIMEOUT: "1800"
+  DUNIT_PARALLEL_FORKS: "7"
+  GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+  execute_test_timeout: 45m
+  PARALLEL_DUNIT: "true"
+- name: "Distributed"
+  CPUS: "96"
+  RAM: "180"
+  ARTIFACT_SLUG: distributedtestfiles
+  CALL_STACK_TIMEOUT: "7200"
+  DUNIT_PARALLEL_FORKS: "24"
+  GRADLE_TASK: distributedTest
+  execute_test_timeout: 2h15m
+  PARALLEL_DUNIT: "true"
+- name: "Integration"
+  CPUS: "96"
+  RAM: "90"
+  ARTIFACT_SLUG: integrationtestfiles
+  CALL_STACK_TIMEOUT: "1500"
+  DUNIT_PARALLEL_FORKS: "48"
+  GRADLE_TASK: integrationTest
+  execute_test_timeout: 40m
+  PARALLEL_DUNIT: "true"
+- name: "Upgrade"
+  CPUS: "96"
+  RAM: "160"
+  ARTIFACT_SLUG: upgradetestfiles
+  CALL_STACK_TIMEOUT: "3000"
+  DUNIT_PARALLEL_FORKS: "48"
+  GRADLE_TASK: upgradeTest
+  execute_test_timeout: 1h
+  PARALLEL_DUNIT: "true"
+- name: "StressNew"
+  CPUS: "96"
+  RAM: "210"
+  ARTIFACT_SLUG: stressnewtestfiles
+  CALL_STACK_TIMEOUT: "7200"
+  DUNIT_PARALLEL_FORKS: "24"
+  GRADLE_TASK: repeatTest
+  execute_test_timeout: 2h15m
+  PARALLEL_DUNIT: "true"
+
+windowstests:
+- name: "WindowsAcceptance"
+  tags: "acceptance"
+  CALL_STACK_TIMEOUT: "1800"
+  DUNIT_PARALLEL_FORKS: "0"
+  PARALLEL_DUNIT: "false"
+  target_arg: :geode-assembly:acceptanceTest
+  dir_arg: windows-acceptancetestfiles
+  package_arg: ""
+- name: "WindowsGfshDistributed"
+  tags: "distributed"
+  CALL_STACK_TIMEOUT: "1800"
+  DUNIT_PARALLEL_FORKS: "0"
+  PARALLEL_DUNIT: "false"
+  target_arg: distributedTest
+  dir_arg: windows-gfshdistributedtest
+  package_arg: org.apache.geode.test.junit.categories.GfshTest
+- name: "WindowsIntegration"
+  tags: "integration"
+  CALL_STACK_TIMEOUT: "1800"
+  DUNIT_PARALLEL_FORKS: "0"
+  PARALLEL_DUNIT: "false"
+  target_arg: integrationTest
+  dir_arg: windows-integrationtestfiles
+  package_arg: ""
+- name: "WindowsUnit"
+  tags: "unit"
+  CALL_STACK_TIMEOUT: "1800"
+  DUNIT_PARALLEL_FORKS: "0"
+  PARALLEL_DUNIT: "false"
+  target_arg: test
+  dir_arg: windows-unittestfiles
+  package_arg: ""

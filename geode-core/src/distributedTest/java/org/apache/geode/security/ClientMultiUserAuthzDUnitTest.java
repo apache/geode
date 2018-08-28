@@ -30,7 +30,6 @@ import static org.apache.geode.security.SecurityTestUtils.doMultiUserPuts;
 import static org.apache.geode.security.SecurityTestUtils.doMultiUserQueries;
 import static org.apache.geode.security.SecurityTestUtils.doMultiUserQueryExecute;
 import static org.apache.geode.security.SecurityTestUtils.doMultiUserRegionDestroys;
-import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.Iterator;
@@ -415,7 +414,7 @@ public class ClientMultiUserAuthzDUnitTest extends ClientAuthorizationTestCase {
 
   private int createCacheServerOnVM(final VM server, final Properties javaProps,
       final Properties serverProps) {
-    return server.invoke(() -> ClientAuthorizationTestCase.createCacheServer(getLocatorPort(),
-        serverProps, javaProps));
+    return server
+        .invoke(() -> ClientAuthorizationTestCase.createCacheServer(serverProps, javaProps));
   }
 }

@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 @Category({SecurityTest.class, PulseTest.class})
 public class PulseJmxPasswordFileTest {
   @Rule
-  public LocatorStarterRule locator = new LocatorStarterRule();
+  public LocatorStarterRule locator = new LocatorStarterRule().withHttpService();
 
   @Rule
   public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort);

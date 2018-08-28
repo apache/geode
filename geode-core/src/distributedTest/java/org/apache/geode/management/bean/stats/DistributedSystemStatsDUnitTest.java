@@ -69,7 +69,8 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
         long lastRefreshTime = service.getLastUpdateTime(memberMXBeanName);
 
         await()
-            .until(() -> assertTrue(service.getLastUpdateTime(memberMXBeanName) > lastRefreshTime));
+            .untilAsserted(
+                () -> assertTrue(service.getLastUpdateTime(memberMXBeanName) > lastRefreshTime));
       }
 
       // TODO: add assertions for distributedSystemMXBean stats?
@@ -82,7 +83,8 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
 
     String alias = "Awaiting MemberMXBean proxy for " + member;
     await(alias)
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
@@ -90,7 +92,7 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
   private DistributedSystemMXBean awaitDistributedSystemMXBean() {
     ManagementService service = this.managementTestRule.getManagementService();
 
-    await().until(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
+    await().untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
 
     return service.getDistributedSystemMXBean();
   }

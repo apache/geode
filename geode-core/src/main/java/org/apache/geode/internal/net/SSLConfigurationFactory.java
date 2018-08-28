@@ -168,6 +168,8 @@ public class SSLConfigurationFactory {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setCiphers(distributionConfig.getSSLCiphers());
     sslConfig
+        .setEndpointIdentificationEnabled(distributionConfig.getSSLEndpointIdentificationEnabled());
+    sslConfig
         .setEnabled(determineIfSSLEnabledForSSLComponent(distributionConfig, sslEnabledComponent));
     sslConfig.setKeystore(distributionConfig.getSSLKeyStore());
     sslConfig.setKeystorePassword(distributionConfig.getSSLKeyStorePassword());

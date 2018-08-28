@@ -89,7 +89,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
   }
 
   protected ServerLauncher awaitStart(final ServerLauncher launcher) {
-    await().atMost(2, MINUTES).until(() -> assertThat(isLauncherOnline()).isTrue());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(isLauncherOnline()).isTrue());
     return launcher;
   }
 

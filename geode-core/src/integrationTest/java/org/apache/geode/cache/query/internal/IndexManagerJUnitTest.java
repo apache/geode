@@ -66,7 +66,7 @@ public class IndexManagerJUnitTest {
     IndexManager.resetIndexBufferTime();
     // fake entry update at LMT of 0 and actual time of 10
     // safe query time set in index manager is going to be 20
-    assertTrue(IndexManager.setIndexBufferTime(0, 10));
+    IndexManager.setIndexBufferTime(0, 10);
 
     // fake query start at actual time of 9, 10, 11 and using the fake LMT of 0
     assertTrue(IndexManager.needsRecalculation(9, 0));
@@ -84,13 +84,13 @@ public class IndexManagerJUnitTest {
 
     // Now let's assume a new update has occurred, this update delta and time combo still is not
     // larger
-    assertFalse(IndexManager.setIndexBufferTime(0, 9));
-    assertFalse(IndexManager.setIndexBufferTime(1, 10));
+    IndexManager.setIndexBufferTime(0, 9);
+    IndexManager.setIndexBufferTime(1, 10);
 
     // Now let's assume a new update has occurred where the time is larger (enough to roll off the
     // large delta)
     // but the delta is smaller
-    assertTrue(IndexManager.setIndexBufferTime(30, 30));
+    IndexManager.setIndexBufferTime(30, 30);
 
     // Now that we have a small delta, let's see if a query that was "stuck" would reevaluate
     // appropriately
@@ -103,7 +103,7 @@ public class IndexManagerJUnitTest {
     IndexManager.resetIndexBufferTime();
     // fake entry update at LMT of 0 and actual time of 10
     // safe query time set in index manager is going to be -10
-    assertTrue(IndexManager.setIndexBufferTime(210, 200));
+    IndexManager.setIndexBufferTime(210, 200);
 
     assertFalse(IndexManager.needsRecalculation(200, 190));
     assertFalse(IndexManager.needsRecalculation(200, 200));
@@ -113,7 +113,7 @@ public class IndexManagerJUnitTest {
     assertTrue(IndexManager.needsRecalculation(200, 221));
 
     // now lets say an entry updates with no delta
-    assertTrue(IndexManager.setIndexBufferTime(210, 210));
+    IndexManager.setIndexBufferTime(210, 210);
 
     assertTrue(IndexManager.needsRecalculation(200, 190));
     assertTrue(IndexManager.needsRecalculation(200, 200));

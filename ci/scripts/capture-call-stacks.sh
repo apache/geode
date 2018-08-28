@@ -64,7 +64,7 @@ for (( h=0; h<${COUNT}; h++)); do
 
         for (( i=0; i<${#containers[@]}; i++ )); do
             echo "Container: ${containers[i]}" | tee -a ${logfile};
-            mapfile -t processes < <(docker exec ${containers[i]} jps | grep ChildVM | cut -d ' ' -f 1)
+            mapfile -t processes < <(docker exec ${containers[i]} jps | cut -d ' ' -f 1)
             echo "Got past processes."
             for ((j=0; j<${#processes[@]}; j++ )); do
                   echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
@@ -72,7 +72,7 @@ for (( h=0; h<${COUNT}; h++)); do
             done
         done
     else
-        mapfile -t processes < <(jps | grep ChildVM | cut -d ' ' -f 1)
+        mapfile -t processes < <(jps | cut -d ' ' -f 1)
         echo "Got past processes."
         for ((j=0; j<${#processes[@]}; j++ )); do
               echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}

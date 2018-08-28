@@ -14,39 +14,31 @@
  */
 package org.apache.geode.cache.asyncqueue.internal;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
-import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionQueue;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
-import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 
-public class AsyncEventQueueImpl implements AsyncEventQueue {
-
-  private GatewaySender sender = null;
-
-  private AsyncEventListener asyncEventListener = null;
+public class AsyncEventQueueImpl implements InternalAsyncEventQueue {
 
   public static final String ASYNC_EVENT_QUEUE_PREFIX = "AsyncEventQueue_";
 
-  public AsyncEventQueueImpl(GatewaySender sender, AsyncEventListener eventListener) {
+  private final InternalGatewaySender sender;
+  private final AsyncEventListener asyncEventListener;
+
+  public AsyncEventQueueImpl(InternalGatewaySender sender, AsyncEventListener asyncEventListener) {
     this.sender = sender;
-    this.asyncEventListener = eventListener;
+    this.asyncEventListener = asyncEventListener;
   }
 
   @Override
   public String getId() {
-    return getAsyncEventQueueIdFromSenderId(this.sender.getId());
+    return getAsyncEventQueueIdFromSenderId(sender.getId());
   }
 
   @Override
@@ -111,35 +103,22 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
 
   @Override
   public boolean isPrimary() {
-    return ((AbstractGatewaySender) sender).isPrimary();
+    return sender.isPrimary();
   }
 
   @Override
   public int size() {
-    AbstractGatewaySenderEventProcessor eventProcessor =
-        ((AbstractGatewaySender) sender).getEventProcessor();
-
-    int size = 0;
-    if (eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor) {
-      Set<RegionQueue> queues =
-          ((ConcurrentSerialGatewaySenderEventProcessor) eventProcessor).getQueues();
-      Iterator<RegionQueue> itr = queues.iterator();
-      while (itr.hasNext()) {
-        size = size + itr.next().size();
-      }
-    } else {
-      size = eventProcessor.getQueue().size();
-    }
-    return size;
+    return sender.getEventProcessor().getTotalQueueSize();
   }
 
-  public GatewaySender getSender() {
-    return this.sender;
+  @Override
+  public InternalGatewaySender getSender() {
+    return sender;
   }
 
+  @Override
   public AsyncEventQueueStats getStatistics() {
-    AbstractGatewaySender abstractSender = (AbstractGatewaySender) this.sender;
-    return ((AsyncEventQueueStats) abstractSender.getStatistics());
+    return (AsyncEventQueueStats) sender.getStatistics();
   }
 
   @Override
@@ -153,11 +132,8 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     if (!(obj instanceof AsyncEventQueueImpl)) {
       return false;
     }
-    AsyncEventQueueImpl asyncEventQueue = (AsyncEventQueueImpl) obj;
-    if (asyncEventQueue.getId().equals(this.getId())) {
-      return true;
-    }
-    return false;
+    AsyncEventQueueImpl other = (AsyncEventQueueImpl) obj;
+    return other.getId().equals(getId());
   }
 
   @Override
@@ -184,17 +160,18 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     return senderId.startsWith(ASYNC_EVENT_QUEUE_PREFIX);
   }
 
+  @Override
   public boolean isParallel() {
     return sender.isParallel();
   }
 
   public boolean isMetaQueue() {
-    return ((AbstractGatewaySender) sender).getIsMetaQueue();
+    return sender.getIsMetaQueue();
   }
 
   public void stop() {
-    if (this.sender.isRunning()) {
-      this.sender.stop();
+    if (sender.isRunning()) {
+      sender.stop();
     }
   }
 
@@ -203,27 +180,24 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public void destroy(boolean initiator) {
-    InternalCache cache = ((AbstractGatewaySender) this.sender).getCache();
-    ((AbstractGatewaySender) this.sender).destroy(initiator);
+    InternalCache cache = sender.getCache();
+    sender.destroy(initiator);
     cache.removeAsyncEventQueue(this);
   }
 
-  public boolean isBucketSorted() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
+  @Override
   public boolean isForwardExpirationDestroy() {
-    return ((AbstractGatewaySender) this.sender).isForwardExpirationDestroy();
+    return sender.isForwardExpirationDestroy();
   }
 
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
-    return ((AbstractGatewaySender) this.sender).waitUntilFlushed(timeout, unit);
+    return sender.waitUntilFlushed(timeout, unit);
   }
 
   @Override
   public String toString() {
-    return new StringBuffer().append(getClass().getSimpleName()).append("{").append("id=" + getId())
-        .append(",isRunning=" + this.sender.isRunning()).append("}").toString();
+    return new StringBuilder().append(getClass().getSimpleName()).append("{")
+        .append("id=" + getId())
+        .append(",isRunning=" + sender.isRunning()).append("}").toString();
   }
 }

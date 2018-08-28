@@ -16,35 +16,38 @@
  */
 
 dependencies {
-    compile project(':geode-core')
-    compile project(':geode-common')
+  compile project(':geode-core')
+  compile project(':geode-common')
+  compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
+  compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
+    exclude module: 'lucene-sandbox'
+  }
 
-    compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
-    compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
-    compile 'org.apache.lucene:lucene-queries:' + project.'lucene.version'
-    compile ('org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version')
-    compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
-      exclude module: 'lucene-sandbox'
-    }
+  runtimeOnly 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
 
-    testCompile project(':geode-junit')
+  testCompile project(':geode-junit')
+  testCompile project(':geode-lucene/geode-lucene-test')
+  testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
+  testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
-    //Lucene test framework.
-    testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
-    testCompile 'org.apache.lucene:lucene-codecs:' + project.'lucene.version'
-    testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-    testCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
-    testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-    // TODO build - move shared source to common library.
-    testCompile files(project(':geode-core').sourceSets.test.output)
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
-    // TODO build - move dunit framework to shared module.
-    integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-    distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-    distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-    upgradeTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-    upgradeTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(':geode-lucene/geode-lucene-test')
+  integrationTestCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
+  integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+
+
+  distributedTestCompile project(':geode-lucene/geode-lucene-test')
+  distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
+
+
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
+
+
+  performanceTestCompile project(":geode-junit")
+  performanceTestCompile project(':geode-lucene/geode-lucene-test')
 }
 
 //The lucene integration tests don't have any issues that requiring forking

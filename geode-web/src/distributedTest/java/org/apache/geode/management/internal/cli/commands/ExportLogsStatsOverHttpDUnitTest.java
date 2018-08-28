@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class})
-public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
+public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTestBase {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,11 +46,11 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({FunctionServiceTest.class})
+@Category(FunctionServiceTest.class)
 @SuppressWarnings("serial")
 public class FunctionExecutionWithExceptionDistributedTest implements Serializable {
 
@@ -65,8 +64,8 @@ public class FunctionExecutionWithExceptionDistributedTest implements Serializab
 
   private Set<Integer> intKeys;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = CacheRule.builder()

@@ -902,8 +902,9 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
         Map matchedCqMap = cqService.getMatchingCqMap();
         Awaitility.await().atMost(30, TimeUnit.SECONDS)
-            .until(() -> assertEquals("The number of matched cq is not as expected.", mapSize,
-                matchedCqMap.size()));
+            .untilAsserted(
+                () -> assertEquals("The number of matched cq is not as expected.", mapSize,
+                    matchedCqMap.size()));
 
         if (query != null) {
           if (!matchedCqMap.containsKey(query)) {
@@ -911,7 +912,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
           }
           Collection cqs = (Collection) matchedCqMap.get(query);
           Awaitility.await().atMost(30, TimeUnit.SECONDS)
-              .until(() -> assertEquals(
+              .untilAsserted(() -> assertEquals(
                   "Number of matched cqs are not equal to the expected matched cqs", numCqSize,
                   cqs.size()));
         }

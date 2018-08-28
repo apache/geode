@@ -31,11 +31,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +51,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import joptsimple.internal.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -128,7 +127,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   /**
    * Name of the region which is used to store the configuration information
    */
-  private static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
+  public static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
 
   private final String configDirPath;
   private final String configDiskDirPath;
@@ -165,6 +164,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       }
       clusterConfigRootDir = diskDir.getCanonicalPath();
     }
+    clusterConfigRootDir = new File(clusterConfigRootDir).getAbsolutePath();
 
     // resolve the file paths
     String configDiskDirName =
@@ -180,19 +180,22 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
     // else, scan the classpath to find all the classes annotated with XSDRootElement
     else {
-      String[] packages = getPackagesToScan();
-      Set<Class<?>> scannedClasses =
-          ClasspathScanLoadHelper.scanClasspathForAnnotation(XSDRootElement.class, packages);
+      Set<String> packages = getPackagesToScan();
+      ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages);
+      Set<Class<?>> scannedClasses = scanner.scanClasspathForAnnotation(XSDRootElement.class,
+          packages.toArray(new String[] {}));
       this.jaxbService = new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
     }
     jaxbService.validateWithLocalCacheXSD();
   }
 
-  protected String[] getPackagesToScan() {
+  protected Set<String> getPackagesToScan() {
+    Set<String> packages = new HashSet<>();
     String sysProperty = SystemPropertyHelper.getProperty(SystemPropertyHelper.PACKAGES_TO_SCAN);
-    String[] packages = {""};
     if (sysProperty != null) {
-      packages = sysProperty.split(",");
+      packages = Arrays.stream(sysProperty.split(",")).collect(Collectors.toSet());
+    } else {
+      packages.add("*");
     }
     return packages;
   }
@@ -517,11 +520,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     this.status.set(SharedConfigurationStatus.STARTED);
     Region<String, Configuration> configRegion = this.getConfigurationRegion();
     lockSharedConfiguration();
+    removeInvalidXmlConfigurations(configRegion);
     try {
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
             InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
-        loadSharedConfigurationFromDisk();
+        loadSharedConfigurationFromDir(new File(this.configDirPath));
       } else {
         persistSecuritySettings(configRegion);
         // for those groups that have jar files, need to download the jars from other locators
@@ -541,6 +545,65 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
 
     this.status.set(SharedConfigurationStatus.RUNNING);
+  }
+
+  void removeInvalidXmlConfigurations(Region<String, Configuration> configRegion)
+      throws IOException, SAXException, ParserConfigurationException, TransformerException {
+    for (Map.Entry<String, Configuration> entry : configRegion.entrySet()) {
+      String group = entry.getKey();
+      Configuration configuration = entry.getValue();
+      String configurationXml = configuration.getCacheXmlContent();
+      if (configurationXml != null && !configurationXml.isEmpty()) {
+        Document document = XmlUtils.createDocumentFromXml(configurationXml);
+        boolean removedInvalidReceivers = removeInvalidGatewayReceivers(document);
+        boolean removedDuplicateReceivers = removeDuplicateGatewayReceivers(document);
+        if (removedInvalidReceivers || removedDuplicateReceivers) {
+          configuration.setCacheXmlContent(XmlUtils.prettyXml(document));
+          configRegion.put(group, configuration);
+        }
+      }
+    }
+  }
+
+  boolean removeInvalidGatewayReceivers(Document document) throws TransformerException {
+    boolean modified = false;
+    NodeList receiverNodes = document.getElementsByTagName("gateway-receiver");
+    for (int i = receiverNodes.getLength() - 1; i >= 0; i--) {
+      Element receiverElement = (Element) receiverNodes.item(i);
+
+      // Check hostname-for-senders
+      String hostNameForSenders = receiverElement.getAttribute("hostname-for-senders");
+      if (StringUtils.isNotBlank(hostNameForSenders)) {
+        receiverElement.getParentNode().removeChild(receiverElement);
+        logger.info("Removed invalid cluster configuration gateway-receiver element="
+            + XmlUtils.prettyXml(receiverElement));
+        modified = true;
+      }
+
+      // Check bind-address
+      String bindAddress = receiverElement.getAttribute("bind-address");
+      if (StringUtils.isNotBlank(bindAddress) && !bindAddress.equals("0.0.0.0")) {
+        receiverElement.getParentNode().removeChild(receiverElement);
+        logger.info("Removed invalid cluster configuration gateway-receiver element="
+            + XmlUtils.prettyXml(receiverElement));
+        modified = true;
+      }
+    }
+    return modified;
+  }
+
+  boolean removeDuplicateGatewayReceivers(Document document) throws TransformerException {
+    boolean modified = false;
+    NodeList receiverNodes = document.getElementsByTagName("gateway-receiver");
+    while (receiverNodes.getLength() > 1) {
+      Element receiverElement = (Element) receiverNodes.item(0);
+      receiverElement.getParentNode().removeChild(receiverElement);
+      logger.info("Removed duplicate cluster configuration gateway-receiver element="
+          + XmlUtils.prettyXml(receiverElement));
+      modified = true;
+      receiverNodes = document.getElementsByTagName("gateway-receiver");
+    }
+    return modified;
   }
 
   private void persistSecuritySettings(final Region<String, Configuration> configRegion) {
@@ -639,6 +702,20 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return getConfigurationRegion().get(groupName);
   }
 
+  public void setConfiguration(String groupName, Configuration configuration) {
+    getConfigurationRegion().put(groupName, configuration);
+  }
+
+  public boolean hasXmlConfiguration() {
+    Region<String, Configuration> configRegion = getConfigurationRegion();
+    return configRegion.values().stream().anyMatch(c -> c.getCacheXmlContent() != null);
+  }
+
+  public Map<String, Configuration> getEntireConfiguration() {
+    Set<String> keys = getConfigurationRegion().keySet();
+    return getConfigurationRegion().getAll(keys);
+  }
+
   /**
    * Returns the path of Shared configuration directory
    *
@@ -646,6 +723,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    */
   public String getSharedConfigurationDirPath() {
     return configDirPath;
+  }
+
+  public Path getClusterConfigDirPath() {
+    return Paths.get(configDirPath);
   }
 
   /**
@@ -672,20 +753,34 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return this.status.get();
   }
 
-  /**
-   * Loads the internal region with the configuration in the configDirPath
-   */
-  public void loadSharedConfigurationFromDisk()
+  // configDir is the dir that has all the groups structure underneath it.
+  public void loadSharedConfigurationFromDir(File configDir)
       throws SAXException, ParserConfigurationException, TransformerException, IOException {
     lockSharedConfiguration();
-    File[] groupNames =
-        new File(this.configDirPath).listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
-
     try {
+      File[] groupNames = configDir.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+      boolean needToCopyJars = true;
+      if (configDir.getAbsolutePath().equals(getSharedConfigurationDirPath())) {
+        needToCopyJars = false;
+      }
+
+      logger.info("loading the cluster configuration: ");
       Map<String, Configuration> sharedConfiguration = new HashMap<>();
       for (File groupName : groupNames) {
         Configuration configuration = readConfiguration(groupName);
+        logger.info(configuration.getConfigName() + " xml content: \n"
+            + configuration.getCacheXmlContent());
+        logger.info(configuration.getConfigName() + " properties: "
+            + configuration.getGemfireProperties().size());
+        logger.info(configuration.getConfigName() + " jars: "
+            + Strings.join(configuration.getJarNames(), ", "));
         sharedConfiguration.put(groupName.getName(), configuration);
+        if (needToCopyJars && configuration.getJarNames().size() > 0) {
+          Path groupDirPath = createConfigDirIfNecessary(configuration.getConfigName()).toPath();
+          for (String jarName : configuration.getJarNames()) {
+            Files.copy(groupName.toPath().resolve(jarName), groupDirPath.resolve(jarName));
+          }
+        }
       }
       Region<String, Configuration> clusterRegion = getConfigurationRegion();
       clusterRegion.clear();
@@ -702,24 +797,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
   }
 
-  public void renameExistingSharedConfigDirectory() {
-    File configDirFile = new File(this.configDirPath);
-    if (configDirFile.exists()) {
-      String configDirFileName2 = CLUSTER_CONFIG_ARTIFACTS_DIR_NAME
-          + new SimpleDateFormat("yyyyMMddhhmm").format(new Date()) + '.' + System.nanoTime();
-      try {
-        File configDirFile2 = new File(configDirFile.getParent(), configDirFileName2);
-        FileUtils.moveDirectory(configDirFile, configDirFile2);
-      } catch (IOException e) {
-        logger.info(e);
-      }
-    }
-  }
-
-
   // Write the content of xml and properties into the file system for exporting purpose
-  public void writeConfigToFile(final Configuration configuration) throws IOException {
-    File configDir = createConfigDirIfNecessary(configuration.getConfigName());
+  public void writeConfigToFile(final Configuration configuration, File rootDir)
+      throws IOException {
+    File configDir = createConfigDirIfNecessary(rootDir, configuration.getConfigName());
 
     File propsFile = new File(configDir, configuration.getPropertiesFileName());
     BufferedWriter bw = new BufferedWriter(new FileWriter(propsFile));
@@ -728,6 +809,20 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
     File xmlFile = new File(configDir, configuration.getCacheXmlFileName());
     FileUtils.writeStringToFile(xmlFile, configuration.getCacheXmlContent(), "UTF-8");
+
+    // copy the jars if the rootDir is different than the configDirPath
+    if (rootDir.getAbsolutePath().equals(getSharedConfigurationDirPath())) {
+      return;
+    }
+
+    File locatorConfigDir =
+        new File(getSharedConfigurationDirPath(), configuration.getConfigName());
+    if (locatorConfigDir.exists()) {
+      File[] jarFiles = locatorConfigDir.listFiles(x -> x.getName().endsWith(".jar"));
+      for (File file : jarFiles) {
+        Files.copy(file.toPath(), configDir.toPath().resolve(file.getName()));
+      }
+    }
   }
 
   public boolean lockSharedConfiguration() {
@@ -819,7 +914,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Creates a directory for this configuration if it doesn't already exist.
    */
   private File createConfigDirIfNecessary(final String configName) throws IOException {
-    File clusterConfigDir = new File(getSharedConfigurationDirPath());
+    return createConfigDirIfNecessary(new File(getSharedConfigurationDirPath()), configName);
+  }
+
+  private File createConfigDirIfNecessary(File clusterConfigDir, final String configName)
+      throws IOException {
     if (!clusterConfigDir.exists()) {
       if (!clusterConfigDir.mkdirs()) {
         throw new IOException("Cannot create directory : " + getSharedConfigurationDirPath());

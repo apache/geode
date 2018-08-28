@@ -54,25 +54,25 @@ public class ThreadsMonitoringProcess extends TimerTask {
     boolean isStuck = false;
     int numOfStuck = 0;
     for (Entry<Long, AbstractExecutor> entry1 : this.threadsMonitoring.getMonitorMap().entrySet()) {
-      logger.trace("Checking Thread {}\n", entry1.getKey());
+      logger.trace("Checking thread {}", entry1.getKey());
       long currentTime = System.currentTimeMillis();
       long delta = currentTime - entry1.getValue().getStartTime();
       if (delta >= this.timeLimit) {
         isStuck = true;
         numOfStuck++;
-        logger.warn("Thread <{}> is stuck , initiating handleExpiry\n", entry1.getKey());
+        logger.warn("Thread <{}> is stuck", entry1.getKey());
         entry1.getValue().handleExpiry(delta);
       }
     }
     if (!isStuck) {
       if (this.resourceManagerStats != null)
         this.resourceManagerStats.setNumThreadStuck(0);
-      logger.trace("There are NO stuck threads in the system\n");
+      logger.trace("There are no stuck threads in the system\n");
       return false;
     } else {
       if (this.resourceManagerStats != null)
         this.resourceManagerStats.setNumThreadStuck(numOfStuck);
-      logger.warn("There are <{}> stuck threads in the system\n", numOfStuck);
+      logger.warn("There are <{}> stuck threads in thia node", numOfStuck);
       return true;
     }
   }

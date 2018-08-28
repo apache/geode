@@ -16,12 +16,15 @@ package org.apache.geode.management.internal.cli.util;
 
 import static java.util.stream.Collectors.toSet;
 
-import java.lang.reflect.Modifier;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
+import java.util.regex.Pattern;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
+import io.github.classgraph.utils.WhiteBlackList;
 
 /**
  * Utility class to scan class-path & load classes.
@@ -29,28 +32,44 @@ import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
  * @since GemFire 7.0
  */
 public class ClasspathScanLoadHelper {
-  public static Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
-      String... packagesToScan) {
-    Set<Class<?>> classesImplementing = new HashSet<>();
-    new FastClasspathScanner(packagesToScan)
-        .matchClassesImplementing(implementedInterface, classesImplementing::add).scan();
 
-    return classesImplementing.stream().filter(ClasspathScanLoadHelper::isInstantiable)
-        .collect(toSet());
+  private final ScanResult scanResult;
+
+  public ClasspathScanLoadHelper(Collection<String> packagesToScan) {
+    scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
+        .enableClassInfo()
+        .enableAnnotationInfo().scan();
   }
 
-  public static Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation,
-      String... packagesToScan) {
-    Set<Class<?>> classesWithAnnotation = new HashSet<>();
-    new FastClasspathScanner(packagesToScan)
-        .matchClassesWithAnnotation(annotation, classesWithAnnotation::add).scan();
-    return classesWithAnnotation;
+  public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
+      String... onlyFromPackages) {
+    ClassInfoList classInfoList = scanResult.getClassesImplementing(implementedInterface.getName())
+        .filter(ci -> !ci.isAbstract() && !ci.isInterface() && ci.isPublic());
+
+    classInfoList = classInfoList
+        .filter(ci -> Arrays.stream(onlyFromPackages)
+            .anyMatch(p -> classMatchesPackage(ci.getName(), p)));
+
+    return classInfoList.loadClasses().stream().collect(toSet());
   }
 
-  private static boolean isInstantiable(Class<?> klass) {
-    int modifiers = klass.getModifiers();
+  public Set<Class<?>> scanClasspathForAnnotation(Class<?> annotation, String... onlyFromPackages) {
+    ClassInfoList classInfoList = scanResult.getClassesWithAnnotation(annotation.getName());
 
-    return !Modifier.isAbstract(modifiers) && !Modifier.isInterface(modifiers)
-        && Modifier.isPublic(modifiers);
+    classInfoList = classInfoList
+        .filter(ci -> Arrays.stream(onlyFromPackages)
+            .anyMatch(p -> classMatchesPackage(ci.getName(), p)));
+
+    return classInfoList.loadClasses().stream().collect(toSet());
   }
+
+  private boolean classMatchesPackage(String className, String packageSpec) {
+    if (!packageSpec.contains("*")) {
+      return className.startsWith(packageSpec);
+    }
+
+    Pattern globPattern = WhiteBlackList.globToPattern(packageSpec);
+    return globPattern.matcher(className).matches();
+  }
+
 }

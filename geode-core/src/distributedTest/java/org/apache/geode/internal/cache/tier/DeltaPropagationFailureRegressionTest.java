@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.internal.cache.tier.DeltaPropagationFailureRegressionTest.DeltaFailure.FROM_DELTA;
 import static org.apache.geode.internal.cache.tier.DeltaPropagationFailureRegressionTest.DeltaFailure.TO_DELTA;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -30,16 +31,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DeltaSerializationException;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.tier.sockets.DeltaEOFException;
 import org.apache.geode.internal.cache.tier.sockets.FaultyDelta;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -52,7 +51,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  *
  * @since GemFire 6.1
  */
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 @SuppressWarnings("serial")
 public class DeltaPropagationFailureRegressionTest implements Serializable {
 
@@ -64,7 +63,7 @@ public class DeltaPropagationFailureRegressionTest implements Serializable {
   private VM server2;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -113,23 +112,19 @@ public class DeltaPropagationFailureRegressionTest implements Serializable {
   private int createServerCache() throws Exception {
     cacheRule.createCache();
 
-    AttributesFactory af = new AttributesFactory();
-    af.setCloningEnabled(false);
-    af.setDataPolicy(DataPolicy.REPLICATE);
-    af.setScope(Scope.DISTRIBUTED_ACK);
+    RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+    regionFactory.setCloningEnabled(false);
 
-    cacheRule.getCache().createRegion(regionName, af.create());
+    regionFactory.create(regionName);
 
-    CacheServer server = cacheRule.getCache().addCacheServer();
-    server.setPort(0);
-    // ensures updates to be sent instead of invalidates
-    server.setNotifyBySubscription(true);
-    server.start();
-    return server.getPort();
+    CacheServer cacheServer = cacheRule.getCache().addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
   }
 
   private void putDelta(DeltaFailure deltaFailure) {
-    Region region = cacheRule.getCache().getRegion(regionName);
+    Region<String, FaultyDelta> region = cacheRule.getCache().getRegion(regionName);
     deltaFailure.putInRegion(region);
   }
 
@@ -142,7 +137,7 @@ public class DeltaPropagationFailureRegressionTest implements Serializable {
       this.value = value;
     }
 
-    void putInRegion(Region region) {
+    void putInRegion(Region<String, FaultyDelta> region) {
       for (int i = 0; i < PUT_COUNT; i++) {
         value.setIntVal(i);
         value.setBigObj(new byte[] {(byte) (i + 3), (byte) (i + 3)});

@@ -18,55 +18,59 @@
 apply plugin: 'war'
 
 dependencies {
-  runtime ('org.springframework:spring-aspects:' + project.'springframework.version') {
+  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compileOnly project(path: ':geode-core', configuration: 'classesOutput')
+
+  runtimeOnly ('org.springframework:spring-aspects:' + project.'springframework.version') {
     exclude module: 'aspectjweaver'
     exclude module: 'aopalliance'
     exclude module: 'spring-core'
   }
-  runtime ('org.springframework:spring-oxm:' + project.'springframework.version') {
+  runtimeOnly('org.springframework:spring-oxm:' + project.'springframework.version') {
     exclude module: 'commons-logging'
     exclude module: 'spring-beans'
     exclude module: 'spring-core'
   }
-  runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  runtimeOnly('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
     exclude module: 'spring-core'
   }
-  runtime ('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
+  runtimeOnly('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }
 
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
 
+  testCompile project(':geode-core')
+  // have to use output since we exclude the dependent classes from jar :(
+  testCompile project(path: ':geode-core', configuration: 'classesOutput')
+  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
   testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
   }
 
-  compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
 
-  // have to use output since we exclude the dependent classes from jar :(
-  compileOnly project(path: ':geode-core', configuration: 'classesOutput')
-  testCompile project(path: ':geode-core', configuration: 'classesOutput')
+  integrationTestCompile project(":geode-dunit")
 
-  testCompile project(':geode-junit')
-  testRuntime project(':geode-common')
-  testCompile files(project(':geode-core').sourceSets.test.output)
+  integrationTestRuntime files(war.destinationDir)
+  integrationTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+  }
 
-  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
 
-  testRuntime files(war.destinationDir)
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
+  distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
-  integrationTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.distributedTest.output)
-  distributedTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
+  distributedTestRuntime files(war.destinationDir)
+  distributedTestRuntime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+    exclude module: 'aopalliance'
+    exclude module: 'spring-aop'
+  }
+
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
 }
 
 //Remove the gradle output directories from the eclipse classpath. These
@@ -74,23 +78,17 @@ dependencies {
 //minusConfigurations does not work here, because it removes the entire
 //geode-core project
 eclipse.classpath.file {
-    whenMerged { classpath ->
-        classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
-    }
+  whenMerged { classpath ->
+    classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build') }
+  }
 }
 
-distributedTest {
-  dependsOn war
-}
-
-integrationTest {
-  dependsOn war
-}
+distributedTest.dependsOn(war)
+integrationTest.dependsOn(war)
 
 war {
   dependsOn ':geode-core:webJar'
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtime
+  classpath configurations.runtimeClasspath
   classpath project(':geode-core').webJar.archivePath
 }
-

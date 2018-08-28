@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -37,6 +38,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
@@ -494,5 +496,28 @@ public class TXManagerImplTest {
     spyTxMgr.scheduleToRemoveClientTransaction(txid, 1000);
 
     verify(timer, times(1)).schedule(any(), eq(1000L));
+  }
+
+  @Test
+  public void unmasqueradeReleasesTheLockHeld() {
+    tx1 = mock(TXStateProxyImpl.class);
+    ReentrantLock lock = mock(ReentrantLock.class);
+    when(tx1.getLock()).thenReturn(lock);
+
+    spyTxMgr.unmasquerade(tx1);
+
+    verify(lock, times(1)).unlock();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void unmasqueradeReleasesTheLockHeldWhenCleanupTransactionIfNoLongerHostFailedWithException() {
+    tx1 = mock(TXStateProxyImpl.class);
+    ReentrantLock lock = mock(ReentrantLock.class);
+    when(tx1.getLock()).thenReturn(lock);
+    doThrow(new RuntimeException()).when(spyTxMgr).cleanupTransactionIfNoLongerHost(tx1);
+
+    spyTxMgr.unmasquerade(tx1);
+
+    verify(lock, times(1)).unlock();
   }
 }

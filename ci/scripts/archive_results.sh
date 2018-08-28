@@ -101,6 +101,7 @@ pushd ${GEODE_BUILD}
   find . -type d -name "test-results" >> ${directories_file}
   (find . -type d -name "*Test" | grep "build/[^/]*Test$") >> ${directories_file}
   find . -name "*-progress*txt" >> ${directories_file}
+  find . -name "*.hprof" >> ${directories_file}
   find . -type d -name "callstacks" >> ${directories_file}
   echo "Collecting the following artifacts..."
   cat ${directories_file}
@@ -113,7 +114,7 @@ TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/${SANITIZED_GRAD
 TEST_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-artifacts/${BUILD_TIMESTAMP}/"
 
 
-if [ ! -d "${GEODE_BUILD}/build/reports/combined" ]; then
+if [ ! -f "${GEODE_BUILD}/build/reports/combined/index.html" ]; then
     echo "No tests exist, compile failed."
     mkdir -p ${GEODE_BUILD}/build/reports/combined
     echo "<html><head><title>No Test Results Were Captured</title></head><body><h1>No Test Results Were Captured</h1></body></html>" > ${GEODE_BUILD}/build/reports/combined/index.html

@@ -23,7 +23,6 @@ allprojects {
 }
 
 subprojects {
-  apply plugin: 'java'
 
   String javaVersion = System.properties['java.version']
   if (javaVersion.startsWith("1.8.0") && javaVersion.split("_")[1].toInteger() < 121) {

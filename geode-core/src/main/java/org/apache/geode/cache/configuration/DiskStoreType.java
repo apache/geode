@@ -66,7 +66,7 @@ import org.apache.geode.annotations.Experimental;
 @XmlType(name = "disk-store-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"diskDirs"})
 @Experimental
-public class DiskStoreType {
+public class DiskStoreType implements CacheElement {
 
   @XmlElement(name = "disk-dirs", namespace = "http://geode.apache.org/schema/cache")
   protected DiskDirsType diskDirs;
@@ -90,6 +90,11 @@ public class DiskStoreType {
   protected String diskUsageWarningPercentage;
   @XmlAttribute(name = "disk-usage-critical-percentage")
   protected String diskUsageCriticalPercentage;
+
+  @Override
+  public String getId() {
+    return getName();
+  }
 
   /**
    * Gets the value of the diskDirs property.

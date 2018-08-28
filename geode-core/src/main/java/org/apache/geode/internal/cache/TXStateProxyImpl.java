@@ -979,4 +979,9 @@ public class TXStateProxyImpl implements TXStateProxy {
     this.lastOperationTimeFromClient = lastOperationTimeFromClient;
   }
 
+  @Override
+  public InternalDistributedMember getOnBehalfOfClientMember() {
+    return onBehalfOfClientMember;
+  }
+
 }

@@ -18,7 +18,6 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -70,18 +69,13 @@ public class ExpirationDUnitTest extends LuceneQueriesAccessorBase {
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
 
     accessor.invoke(() -> Awaitility.await()
-        .atMost(EXPIRATION_TIMEOUT_SEC + EXTRA_WAIT_TIME_SEC, TimeUnit.SECONDS).until(() -> {
+        .atMost(EXPIRATION_TIMEOUT_SEC + EXTRA_WAIT_TIME_SEC, TimeUnit.SECONDS)
+        .untilAsserted(() -> {
           LuceneService luceneService = LuceneServiceProvider.get(getCache());
           LuceneQuery<Integer, TestObject> luceneQuery = luceneService.createLuceneQueryFactory()
               .setLimit(100).create(INDEX_NAME, REGION_NAME, "world", "text");
 
-          Collection luceneResultList = null;
-          try {
-            luceneResultList = luceneQuery.findKeys();
-          } catch (LuceneQueryException e) {
-            e.printStackTrace();
-            fail();
-          }
+          Collection luceneResultList = luceneQuery.findKeys();
           assertEquals(0, luceneResultList.size());
         }));
   }

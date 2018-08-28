@@ -2980,7 +2980,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
 
     LogWriterUtils.getLogWriter().info("event counters before wait : " + myListener.sc);
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> assertEquals(numberOfEntries, myListener.sc.num_create_event));
+        .untilAsserted(() -> assertEquals(numberOfEntries, myListener.sc.num_create_event));
     LogWriterUtils.getLogWriter().info("event counters after wait : " + myListener.sc);
     assertEquals(0, myListener.sc.num_update_event);
 

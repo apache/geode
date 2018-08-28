@@ -128,13 +128,7 @@ public class TestClientIdsDUnitTest implements Serializable {
   private void verifyClientIds(final DistributedMember serverMember, final int serverPort)
       throws Exception {
     CacheServerMXBean cacheServerMXBean = awaitCacheServerMXBean(serverMember, serverPort);
-    await().until(() -> {
-      try {
-        assertThat(cacheServerMXBean.getClientIds()).hasSize(2);
-      } catch (Exception e) {
-        throw new Error(e);
-      }
-    });
+    await().untilAsserted(() -> assertThat(cacheServerMXBean.getClientIds()).hasSize(2));
     assertThat(cacheServerMXBean.getClientIds()).hasSize(2); // TODO: write better assertions
   }
 
@@ -143,7 +137,7 @@ public class TestClientIdsDUnitTest implements Serializable {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
     ObjectName objectName = service.getCacheServerMBeanName(port, serverMember);
 
-    await().until(
+    await().untilAsserted(
         () -> assertThat(service.getMBeanProxy(objectName, CacheServerMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, CacheServerMXBean.class);

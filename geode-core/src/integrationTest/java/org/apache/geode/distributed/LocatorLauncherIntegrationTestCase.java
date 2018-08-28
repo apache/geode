@@ -106,7 +106,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
   }
 
   protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
-    await().atMost(2, MINUTES).until(() -> assertThat(isLauncherOnline()).isTrue());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(isLauncherOnline()).isTrue());
     return launcher;
   }
 

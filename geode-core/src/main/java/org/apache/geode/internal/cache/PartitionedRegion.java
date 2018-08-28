@@ -154,17 +154,13 @@ import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DestroyPartitionedRegionMessage.DestroyPartitionedRegionResponse;
 import org.apache.geode.internal.cache.PutAllPartialResultException.PutAllPartialResult;
-import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
-import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
-import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -3364,7 +3360,7 @@ public class PartitionedRegion extends LocalRegion
         }
         allowRetry = false;
       } else {
-        targetNode = getNodeForBucketReadOrLoad(bucketId);
+        targetNode = getBucketNodeForReadOrWrite(bucketId, clientEvent);
         allowRetry = true;
       }
       if (targetNode == null) {
@@ -3380,6 +3376,18 @@ public class PartitionedRegion extends LocalRegion
       this.prStats.endGet(startTime);
     }
     return obj;
+  }
+
+  InternalDistributedMember getBucketNodeForReadOrWrite(int bucketId,
+      EntryEventImpl clientEvent) {
+    InternalDistributedMember targetNode;
+    if (clientEvent != null && clientEvent.getOperation() != null
+        && clientEvent.getOperation().isGetForRegisterInterest()) {
+      targetNode = getNodeForBucketWrite(bucketId, null);
+    } else {
+      targetNode = getNodeForBucketReadOrLoad(bucketId);
+    }
+    return targetNode;
   }
 
   /**
@@ -3605,16 +3613,7 @@ public class PartitionedRegion extends LocalRegion
     InternalDistributedMember targetNode = null;
     if (function.optimizeForWrite()) {
       targetNode = createBucket(bucketId, 0, null /* retryTimeKeeper */);
-      HeapMemoryMonitor hmm =
-          ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
-      if (hmm.isMemberHeapCritical(targetNode)
-          && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-        Set<DistributedMember> sm = Collections.singleton((DistributedMember) targetNode);
-        throw new LowMemoryException(
-            LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                .toLocalizedString(function.getId(), sm),
-            sm);
-      }
+      cache.getInternalResourceManager().getHeapMonitor().checkForLowMemory(function, targetNode);
     } else {
       targetNode = getOrCreateNodeForBucketRead(bucketId);
     }
@@ -3784,16 +3783,8 @@ public class PartitionedRegion extends LocalRegion
     }
 
     Set<InternalDistributedMember> dest = memberToBuckets.keySet();
-    if (function.optimizeForWrite()
-        && cache.getInternalResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
-        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
-      Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-              .toLocalizedString(function.getId(), sm),
-          sm);
-    }
+    cache.getInternalResourceManager().getHeapMonitor().checkForLowMemory(function,
+        Collections.unmodifiableSet(dest));
 
     boolean isSelf = false;
     execution.setExecutionNodes(dest);
@@ -4434,11 +4425,11 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  private void updateNodeToBucketMap(
+  void updateNodeToBucketMap(
       HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets,
       HashMap<Integer, HashSet> bucketKeys) {
     for (int id : bucketKeys.keySet()) {
-      InternalDistributedMember node = getOrCreateNodeForBucketRead(id);
+      InternalDistributedMember node = getOrCreateNodeForBucketWrite(id, null);
       if (nodeToBuckets.containsKey(node)) {
         nodeToBuckets.get(node).put(id, bucketKeys.get(id));
       } else {
@@ -4594,10 +4585,10 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  private void updateNodeToBucketMap(
+  void updateNodeToBucketMap(
       HashMap<InternalDistributedMember, HashSet<Integer>> nodeToBuckets, Set<Integer> buckets) {
     for (int id : buckets) {
-      InternalDistributedMember node = getOrCreateNodeForBucketRead(id);
+      InternalDistributedMember node = getOrCreateNodeForBucketWrite(id, null);
       if (nodeToBuckets.containsKey(node)) {
         nodeToBuckets.get(node).add(id);
       } else {
@@ -9283,7 +9274,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void removeMemberFromCriticalList(DistributedMember member) {
+  public void removeCriticalMember(DistributedMember member) {
     if (logger.isDebugEnabled()) {
       logger.debug("PR: removing member {} from critical member list", member);
     }

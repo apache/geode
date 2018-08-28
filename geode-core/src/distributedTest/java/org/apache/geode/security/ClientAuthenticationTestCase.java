@@ -37,8 +37,6 @@ import static org.apache.geode.security.SecurityTestUtils.doProxyCacheClose;
 import static org.apache.geode.security.SecurityTestUtils.doPuts;
 import static org.apache.geode.security.SecurityTestUtils.doSimpleGet;
 import static org.apache.geode.security.SecurityTestUtils.doSimplePut;
-import static org.apache.geode.security.SecurityTestUtils.getAndClearLocatorString;
-import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 import static org.apache.geode.security.SecurityTestUtils.registerExpectedExceptions;
 import static org.apache.geode.security.SecurityTestUtils.verifyIsEmptyOnServer;
 import static org.apache.geode.security.SecurityTestUtils.verifySizeOnServer;
@@ -165,14 +163,10 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testValidCredentials: Using authinit: " + authInit);
 
     // Start the servers
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
     int port1 = server1
-        .invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
     int port2 = server2
-        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Start the clients with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
@@ -222,13 +216,9 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testNoCredentials: Using authinit: " + authInit);
 
     // Start the servers
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
-    int port1 = createServer1(extraProps, javaProps, authenticator, locPort1, locString);
+    int port1 = createServer1(extraProps, javaProps, authenticator);
     int port2 = server2
-        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Start first client with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
@@ -265,13 +255,9 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     String authInit = gen.getAuthInit();
 
     // Start the servers
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
-    int port1 = createServer1(extraProps, javaProps, authenticator, locPort1, locString);
+    int port1 = createServer1(extraProps, javaProps, authenticator);
     int port2 = server2
-        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Start first client with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
@@ -338,13 +324,9 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testInvalidCredentials: Using authinit: " + authInit);
 
     // Start the servers
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
-    int port1 = createServer1(extraProps, javaProps, authenticator, locPort1, locString);
+    int port1 = createServer1(extraProps, javaProps, authenticator);
     int port2 = server2
-        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Start first client with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
@@ -381,10 +363,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testInvalidAuthInit: Using authenticator: " + authenticator);
 
     // Start the server
-    int locPort1 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
-    int port1 = createServer1(extraProps, javaProps, authenticator, locPort1, locString);
+    int port1 = createServer1(extraProps, javaProps, authenticator);
     Properties credentials = gen.getValidCredentials(1);
     getLogWriter().info(
         "testInvalidAuthInit: For first client credentials: " + credentials + " : " + javaProps);
@@ -403,13 +382,9 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testNoAuthInitWithCredentials: Using authenticator: " + authenticator);
 
     // Start the servers
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
-    int port1 = createServer1(extraProps, javaProps, authenticator, locPort1, locString);
+    int port1 = createServer1(extraProps, javaProps, authenticator);
     int port2 = server2
-        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Start the clients with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
@@ -449,10 +424,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testInvalidAuthenticator: Using authinit: " + authInit);
 
     // Start the server with invalid authenticator
-    int locPort1 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
-    server1.invoke(() -> createCacheServer(locPort1, locString, "org.apache.geode.none", extraProps,
+    server1.invoke(() -> createCacheServer("org.apache.geode.none", extraProps,
         javaProps, AUTHREQ_EXCEPTION));
   }
 
@@ -467,14 +439,10 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testNoAuthenticatorWithCredentials: Using authinit: " + authInit);
 
     // Start the servers with no authenticator
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
     int port1 =
-        server1.invoke(() -> createCacheServer(locPort1, locString, null, extraProps, javaProps));
+        server1.invoke(() -> createCacheServer(null, extraProps, javaProps));
     int port2 =
-        server2.invoke(() -> createCacheServer(locPort2, locString, null, extraProps, javaProps));
+        server2.invoke(() -> createCacheServer(null, extraProps, javaProps));
 
     // Clients should connect successfully and work properly with
     // valid/invalid credentials when none are required on the server side
@@ -510,12 +478,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testCredentialsWithFailover: Using authinit: " + authInit);
 
     // Start the first server
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
     int port1 = server1
-        .invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Get a port for second server but do not start it
     // This forces the clients to connect to the first server
@@ -542,7 +506,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
 
     // start the second one and stop the first server to force a failover
     server2.invoke(
-        () -> createCacheServer(locPort2, locString, port2, authenticator, extraProps, javaProps));
+        () -> createCacheServer(port2, authenticator, extraProps, javaProps));
     server1.invoke(() -> closeCache());
 
     // Perform some create/update operations from client1
@@ -595,12 +559,8 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     getLogWriter().info("testCredentialsForNotifications: Using authinit: " + authInit);
 
     // Start the first server
-    int locPort1 = getLocatorPort();
-    int locPort2 = getLocatorPort();
-    String locString = getAndClearLocatorString();
-
     int port1 = server1
-        .invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Get a port for second server but do not start it
     // This forces the clients to connect to the first server
@@ -635,7 +595,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
 
     // start the second one and stop the first server to force a failover
     server2.invoke(
-        () -> createCacheServer(locPort2, locString, port2, authenticator, extraProps, javaProps));
+        () -> createCacheServer(port2, authenticator, extraProps, javaProps));
     server1.invoke(() -> closeCache());
 
     // Wait for failover to complete
@@ -649,7 +609,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     // Try to connect client1 with no credentials
     // Verify that the creation of region throws security exception
     final int p = server1.invoke(
-        () -> createCacheServer(locPort1, locString, 0, authenticator, extraProps, javaProps));
+        () -> createCacheServer(0, authenticator, extraProps, javaProps));
     if (gen.classCode().equals(CredentialGenerator.ClassCode.SSL)) {
       // For SSL the exception may not come since the server can close socket
       // before handshake message is sent from client. However exception
@@ -683,9 +643,9 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     // first place (e.g. SSL).
     if (authInit != null && authInit.length() > 0) {
       final int p1 = server1.invoke(
-          () -> createCacheServer(locPort1, locString, 0, authenticator, extraProps, javaProps));
+          () -> createCacheServer(0, authenticator, extraProps, javaProps));
       final int p2 = server2.invoke(
-          () -> createCacheServer(locPort2, locString, 0, authenticator, extraProps, javaProps));
+          () -> createCacheServer(0, authenticator, extraProps, javaProps));
       client1.invoke(() -> createCacheClient(null, credentials1, javaProps1, p1, p2, 0, multiUser,
           AUTHREQ_EXCEPTION));
 
@@ -703,9 +663,9 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
     // SSL) then skip it since this test is useless.
     if (authenticator != null && authenticator.length() > 0) {
       final int p1 = server1
-          .invoke(() -> createCacheServer(locPort1, locString, 0, null, extraProps, javaProps));
+          .invoke(() -> createCacheServer(0, null, extraProps, javaProps));
       final int p2 = server2
-          .invoke(() -> createCacheServer(locPort2, locString, 0, null, extraProps, javaProps));
+          .invoke(() -> createCacheServer(0, null, extraProps, javaProps));
 
       createClient1NoException(multiUser, authInit, p1, p2, credentials1, javaProps1);
       createClient2NoException(multiUser, authInit, p1, p2, credentials2, javaProps2, zeroConns);
@@ -739,9 +699,9 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
   }
 
   private int createServer1(final Properties extraProps, final Properties javaProps,
-      final String authenticator, final int locPort1, final String locString) {
+      final String authenticator) {
     return server1
-        .invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
   }
 
   private void createClient1NoException(final boolean multiUser, final String authInit,
@@ -756,13 +716,6 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
       final int zeroConns) {
     client2.invoke(() -> createCacheClient(null, credentials2, javaProps2, port1, port2, zeroConns,
         multiUser, AUTHREQ_EXCEPTION));
-  }
-
-  private void createClient1WithException(final boolean multiUser, final String authInit,
-      final int port1, final int port2, final Properties credentials2, final Properties javaProps2,
-      final int zeroConns) {
-    client1.invoke(() -> createCacheClient(authInit, credentials2, javaProps2, port1, port2,
-        zeroConns, multiUser, AUTHFAIL_EXCEPTION));
   }
 
   private void createClient2WithException(final boolean multiUser, final String authInit,

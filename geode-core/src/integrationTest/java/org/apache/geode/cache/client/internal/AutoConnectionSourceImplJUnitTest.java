@@ -19,6 +19,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -47,6 +52,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.ToDataException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -57,6 +63,7 @@ import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
+import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -74,6 +81,7 @@ import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @SuppressWarnings("deprecation")
@@ -228,6 +236,22 @@ public class AutoConnectionSourceImplJUnitTest {
     try {
       source.findServer(null);
       fail("Should have gotten a NoAvailableLocatorsException");
+    } catch (NoAvailableLocatorsException expected) {
+      // do nothing
+    }
+  }
+
+  @Test
+  public void testSourceHandlesToDataException() throws IOException, ClassNotFoundException {
+    TcpClient mockConnection = mock(TcpClient.class);
+    when(mockConnection.requestToServer(isA(InetSocketAddress.class), any(Object.class),
+        isA(Integer.class), isA(Boolean.class))).thenThrow(new ToDataException("testing"));
+    try {
+      InetSocketAddress address = new InetSocketAddress(NetworkUtils.getServerHostName(), 1234);
+      source.queryOneLocatorUsingConnection(new HostAddress(address, "locator[1234]"), mock(
+          ServerLocationRequest.class), mockConnection);
+      verify(mockConnection).requestToServer(isA(InetSocketAddress.class),
+          isA(ServerLocationRequest.class), isA(Integer.class), isA(Boolean.class));
     } catch (NoAvailableLocatorsException expected) {
       // do nothing
     }

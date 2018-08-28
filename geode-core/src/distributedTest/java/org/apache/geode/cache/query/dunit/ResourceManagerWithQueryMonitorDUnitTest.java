@@ -870,7 +870,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
             ServerOperationException soe = (ServerOperationException) e;
             if (soe.getRootCause() instanceof QueryException) {
               QueryException qe = (QueryException) soe.getRootCause();
-              if (isExceptionDueToTimeout(qe, queryTimeout)) {
+              if (isExceptionDueToTimeout(qe)) {
                 logger.info("Query Execution must be terminated by a timeout. Expected behavior");
                 return 0;
               }
@@ -952,7 +952,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
           // meaning the query should not be canceled due to low memory
           throw new CacheException("Query should not have been canceled due to memory") {};
         }
-      } else if (isExceptionDueToTimeout((QueryException) e, queryTimeout)) {
+      } else if (isExceptionDueToTimeout((QueryException) e)) {
 
         if (queryTimeout == -1) {
           // no time out set, this should not be thrown
@@ -976,7 +976,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
             // meaning the query should not be canceled due to low memory
             throw new CacheException("Query should not have been canceled due to memory") {};
           }
-        } else if (isExceptionDueToTimeout(qe, queryTimeout)) {
+        } else if (isExceptionDueToTimeout(qe)) {
           if (queryTimeout == -1) {
             e.printStackTrace();
             // no time out set, this should not be thrown
@@ -1219,13 +1219,12 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
                 .toLocalizedString()));
   }
 
-  private boolean isExceptionDueToTimeout(QueryException e, long queryTimeout) {
+  private boolean isExceptionDueToTimeout(QueryException e) {
     String message = e.getMessage();
     // -1 needs to be matched due to client/server set up, BaseCommand uses the
     // MAX_QUERY_EXECUTION_TIME and not the testMaxQueryExecutionTime
     return (message.contains("The QueryMonitor thread may be sleeping longer than")
-        || message.contains(LocalizedStrings.QueryMonitor_LONG_RUNNING_QUERY_CANCELED
-            .toLocalizedString(queryTimeout))
+        || message.contains("Query execution cancelled after exceeding max execution time")
         || message.contains(
             LocalizedStrings.QueryMonitor_LONG_RUNNING_QUERY_CANCELED.toLocalizedString(-1)));
   }
@@ -1261,10 +1260,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       }
     }
 
-    public void doTestHook(String description) {
-
-    }
-
     public void countDown() {
       latch.countDown();
     }
@@ -1288,10 +1283,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
         }
       }
     }
-
-    public void doTestHook(String description) {
-
-    }
   }
 
   private class CancelDuringAddResultsHook implements DefaultQuery.TestHook {
@@ -1314,10 +1305,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       } else if (spot == 5) {
         rejectedObjects = true;
       }
-    }
-
-    public void doTestHook(String description) {
-
     }
   }
 }

@@ -187,7 +187,7 @@ public class ControllableProcessIntegrationTest {
 
     // assert
     assertThat(created).isTrue();
-    await().atMost(2, MINUTES).until(() -> assertThat(statusRequestFile).doesNotExist());
+    await().atMost(2, MINUTES).untilAsserted(() -> assertThat(statusRequestFile).doesNotExist());
     assertThat(statusFile).exists();
   }
 }

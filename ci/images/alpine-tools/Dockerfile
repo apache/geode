@@ -22,11 +22,20 @@ RUN apk --no-cache add \
       bash \
       curl \
       git \
+      go \
       jq \
+      make \
+      musl-dev \
       openssh-client \
+      openssl \
       python \
       py2-pip \
       rsync \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
-  && gcloud config set metrics/environment github_docker_image
+  && gcloud config set metrics/environment github_docker_image \
+  && git clone https://github.com/masterzen/winrm-cli \
+  && (cd winrm-cli; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
+  && cp winrm-cli/bin/winrm /usr/local/bin/ \
+  && rm -rf winrm-cli \
+  && gcloud components install -q beta

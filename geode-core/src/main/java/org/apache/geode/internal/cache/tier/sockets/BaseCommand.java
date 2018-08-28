@@ -68,6 +68,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.VersionTagHolder;
+import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
@@ -135,6 +136,21 @@ public abstract class BaseCommand implements Command {
 
   protected static byte[] okBytes() {
     return OK_BYTES;
+  }
+
+  protected boolean setLastResultReceived(
+      ServerToClientFunctionResultSender resultSender) {
+
+    if (resultSender != null) {
+      synchronized (resultSender) {
+        if (resultSender.isLastResultReceived()) {
+          return false;
+        } else {
+          resultSender.setLastResultReceived(true);
+        }
+      }
+    }
+    return true;
   }
 
   @Override

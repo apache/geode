@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -42,8 +41,7 @@ import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @SuppressWarnings("serial")
 public class BrokenSerializationConsistencyRegressionTest implements Serializable {
@@ -60,8 +58,8 @@ public class BrokenSerializationConsistencyRegressionTest implements Serializabl
   private transient PdxValue pdxValue;
   private transient byte[] bytesValue;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();

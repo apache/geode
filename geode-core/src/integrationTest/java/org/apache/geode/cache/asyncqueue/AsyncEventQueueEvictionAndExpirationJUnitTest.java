@@ -109,16 +109,18 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(1, region.size()));
 
     // Validate events that are not queued.
     // This guarantees that eviction/expiration is performed and events are
     // sent all the way to Gateway.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+        .untilAsserted(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
   }
 
@@ -131,17 +133,19 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(1, region.size()));
 
     // Validate events that are not queued.
     // This guarantees that eviction/expiration is performed and events are
     // sent all the way to Gateway.
     // In case of eviction one event is evicted that should not be queued.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+        .untilAsserted(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
   }
 
@@ -154,16 +158,18 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, region.size()));
 
     // Validate events that are not queued.
     // This guarantees that eviction/expiration is performed and events are
     // sent all the way to Gateway.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, getEventsNotQueuedSize(aeqId)));
+        .untilAsserted(() -> assertEquals(2, getEventsNotQueuedSize(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
   }
 
@@ -176,16 +182,18 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, region.size()));
 
     // Validate events that are not queued.
     // This guarantees that eviction/expiration is performed and events are
     // sent all the way to Gateway.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, getEventsNotQueuedSize(aeqId)));
+        .untilAsserted(() -> assertEquals(2, getEventsNotQueuedSize(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
   }
 
@@ -200,9 +208,10 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     LocalRegion lr = (LocalRegion) region;
     // Wait for region to evict/expire events.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
 
   }
@@ -218,9 +227,10 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     LocalRegion lr = (LocalRegion) region;
     // Wait for region to evict/expire events.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
   }
 
   @Test
@@ -232,16 +242,18 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(1, region.size()));
 
     // Validate events that are not queued.
     // This guarantees that eviction/expiration is performed and events are
     // sent all the way to Gateway.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+        .untilAsserted(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
 
   }
@@ -255,16 +267,18 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(1, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(1, region.size()));
 
     // Validate events that are not queued.
     // This guarantees that eviction/expiration is performed and events are
     // sent all the way to Gateway.
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
+        .untilAsserted(() -> assertEquals(1, getEventsNotQueuedSize(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
 
   }
@@ -280,9 +294,10 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     // Wait for region to evict/expire events.
     LocalRegion lr = (LocalRegion) region;
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(1, lr.getDiskRegion().getStats().getNumOverflowOnDisk()));
+        .untilAsserted(() -> assertEquals(1, lr.getDiskRegion().getStats().getNumOverflowOnDisk()));
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
   }
 
   @Test
@@ -296,9 +311,10 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     // Wait for region to evict/expire events.
     PartitionedRegion pr = (PartitionedRegion) region;
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(1, pr.getDiskRegionStats().getNumOverflowOnDisk()));
+        .untilAsserted(() -> assertEquals(1, pr.getDiskRegionStats().getNumOverflowOnDisk()));
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
   }
 
@@ -311,13 +327,15 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, region.size()));
 
     Awaitility.await().atMost(120, TimeUnit.SECONDS)
-        .until(() -> assertEquals(4, getEventsReceived(aeqId)));
+        .untilAsserted(() -> assertEquals(4, getEventsReceived(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> assertEquals(4, events.size()));
+    Awaitility.await().atMost(120, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(4, events.size()));
 
     assertTrue("Expiration event not arrived", checkForOperation(events, false, true));
 
@@ -332,13 +350,15 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
         false /* expirationInvalidate */);
 
     // Wait for region to evict/expire events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, region.size()));
 
     Awaitility.await().atMost(120, TimeUnit.SECONDS)
-        .until(() -> assertEquals(4, getEventsReceived(aeqId)));
+        .untilAsserted(() -> assertEquals(4, getEventsReceived(aeqId)));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(120, TimeUnit.SECONDS).until(() -> assertEquals(4, events.size()));
+    Awaitility.await().atMost(120, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(4, events.size()));
 
     assertTrue("Expiration event not arrived", checkForOperation(events, false, true));
 
@@ -357,10 +377,11 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     // Wait for region to evict/expire events.
     LocalRegion lr = (LocalRegion) region;
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
   }
 
@@ -377,10 +398,11 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     // Wait for region to evict/expire events.
     LocalRegion lr = (LocalRegion) region;
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
 
     // The AQListner should get expected events.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> assertEquals(2, events.size()));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, events.size()));
 
   }
 

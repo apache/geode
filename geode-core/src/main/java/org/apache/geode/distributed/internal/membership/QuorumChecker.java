@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal.membership;
 
+import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
+
 /**
  * A QuorumChecker is created after a forced-disconnect in order to probe the network to see if
  * there is a quorum of members that can be contacted.
@@ -50,7 +52,7 @@ public interface QuorumChecker {
    * Get the membership info from the old system that needs to be passed to the one that is
    * reconnecting.
    */
-  Object getMembershipInfo();
+  MembershipInformation getMembershipInfo();
 
   /**
    * Returns the membership view that is being used to establish a quorum

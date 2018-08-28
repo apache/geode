@@ -55,6 +55,10 @@ public class ServerToClientFunctionResultSender implements ResultSender {
 
   protected AtomicBoolean alreadySendException = new AtomicBoolean(false);
 
+  public synchronized void setLastResultReceived(boolean lastResultReceived) {
+    this.lastResultReceived = lastResultReceived;
+  }
+
   protected boolean lastResultReceived;
 
   protected ByteBuffer commBuffer;
@@ -81,7 +85,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void lastResult(Object oneResult) {
-    this.lastResultReceived = true;
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -90,9 +96,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       }
       return;
     }
-    if (this.lastResultReceived) {
-      return;
-    }
+
     if (logger.isDebugEnabled()) {
       logger.debug("ServerToClientFunctionResultSender sending last result1 {} " + oneResult);
     }
@@ -115,6 +119,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.msg.addObjPart(oneResult);
       this.msg.setLastChunk(true);
       this.msg.sendChunk(this.sc);
+      this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
 
       FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
@@ -129,7 +134,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void lastResult(Object oneResult, DistributedMember memberID) {
-    this.lastResultReceived = true;
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -160,6 +167,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.msg.addObjPart(oneResult);
       this.msg.setLastChunk(true);
       this.msg.sendChunk(this.sc);
+      this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
       FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
@@ -173,6 +181,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void sendResult(Object oneResult) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -213,6 +224,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void sendResult(Object oneResult, DistributedMember memberID) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -294,7 +308,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
   }
 
   public synchronized void setException(Throwable exception) {
-    this.lastResultReceived = true;
+    if (lastResultReceived) {
+      return;
+    }
     if (logger.isDebugEnabled()) {
       logger.debug("ServerToClientFunctionResultSender setting exception {} ", exception);
     }
@@ -314,13 +330,14 @@ public class ServerToClientFunctionResultSender implements ResultSender {
             logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
           }
           writeFunctionExceptionResponse(msg, exceptionMessage, exception);
+          this.lastResultReceived = true;
         } catch (IOException ignoreAsSocketIsClosed) {
         }
       }
     }
   }
 
-  protected boolean isOkayToSendResult() {
+  public boolean isOkayToSendResult() {
     return (sc.getAcceptor().isRunning() && !ids.isDisconnecting()
         && !sc.getCachedRegionHelper().getCache().isClosed() && !alreadySendException.get());
   }

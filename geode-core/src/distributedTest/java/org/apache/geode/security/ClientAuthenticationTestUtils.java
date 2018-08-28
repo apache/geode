@@ -31,29 +31,28 @@ public abstract class ClientAuthenticationTestUtils {
 
   protected ClientAuthenticationTestUtils() {}
 
-  protected static Integer createCacheServer(final int locatorPort, final String locatorString,
-      final String authenticator, final Properties extraProps, final Properties javaProps) {
-    return createCacheServer(locatorPort, locatorString, 0, authenticator, extraProps, javaProps,
+  protected static Integer createCacheServer(final String authenticator,
+      final Properties extraProps, final Properties javaProps) {
+    return createCacheServer(0, authenticator, extraProps, javaProps,
         NO_EXCEPTION);
   }
 
-  protected static Integer createCacheServer(final int locatorPort, final String locatorString,
-      final int serverPort, final String authenticator, final Properties extraProps,
+  protected static Integer createCacheServer(final int serverPort, final String authenticator,
+      final Properties extraProps,
       final Properties javaProps) {
-    return createCacheServer(locatorPort, locatorString, serverPort, authenticator, extraProps,
+    return createCacheServer(serverPort, authenticator, extraProps,
         javaProps, NO_EXCEPTION);
   }
 
-  protected static Integer createCacheServer(final int locatorPort, final String locatorString,
-      final String authenticator, final Properties extraProps, final Properties javaProps,
+  protected static Integer createCacheServer(final String authenticator,
+      final Properties extraProps, final Properties javaProps,
       final int expectedResult) {
-
-    return createCacheServer(locatorPort, locatorString, 0, authenticator, extraProps, javaProps,
+    return createCacheServer(0, authenticator, extraProps, javaProps,
         expectedResult);
   }
 
-  protected static Integer createCacheServer(final int locatorPort, final String locatorString,
-      final int serverPort, final String authenticator, final Properties extraProps,
+  protected static Integer createCacheServer(final int serverPort, final String authenticator,
+      final Properties extraProps,
       final Properties javaProps, int expectedResult) {
     Properties authProps;
     if (extraProps == null) {
@@ -65,8 +64,7 @@ public abstract class ClientAuthenticationTestUtils {
     if (authenticator != null) {
       authProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
-    return SecurityTestUtils.createCacheServer(authProps, javaProps, locatorPort, locatorString,
-        serverPort, expectedResult);
+    return SecurityTestUtils.createCacheServer(authProps, javaProps, serverPort, expectedResult);
   }
 
   protected static void createCacheClient(final String authInit, final Properties authProps,

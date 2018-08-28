@@ -2013,7 +2013,7 @@ public abstract class AbstractIndex implements IndexProtocol {
       return;
     }
     if (!this.isIndexedPdxKeys) {
-      if (key instanceof PdxString) {
+      if (key instanceof PdxString && this.region.getAttributes().getCompressor() == null) {
         this.isIndexedPdxKeys = true;
       }
     }

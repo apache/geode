@@ -17,6 +17,7 @@
 
 package org.apache.geode.distributed.internal;
 
+import static junitparams.JUnitParamsRunner.$;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -27,10 +28,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.util.AbstractMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.runner.RunWith;
+import org.w3c.dom.Document;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -41,8 +51,9 @@ import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
-
+@RunWith(JUnitParamsRunner.class)
 public class InternalConfigurationPersistenceServiceTest {
   private InternalConfigurationPersistenceService service, service2;
   private Configuration configuration;
@@ -180,17 +191,130 @@ public class InternalConfigurationPersistenceServiceTest {
 
   @Test
   public void getPackagesToScanWithoutSystemProperty() {
-    String[] packages = service.getPackagesToScan();
-    assertThat(packages).hasSize(1);
-    assertThat(packages[0]).isEqualTo("");
+    Set<String> packages = service.getPackagesToScan();
+    assertThat(packages).containsExactly("*");
   }
 
   @Test
   public void getPackagesToScanWithSystemProperty() {
     System.setProperty("geode." + SystemPropertyHelper.PACKAGES_TO_SCAN,
         "org.apache.geode,io.pivotal");
-    String[] packages = service.getPackagesToScan();
-    assertThat(packages).hasSize(2);
-    assertThat(packages).contains("org.apache.geode", "io.pivotal");
+    Set<String> packages = service.getPackagesToScan();
+    assertThat(packages).containsExactly("org.apache.geode", "io.pivotal");
+  }
+
+  @Test
+  public void updateGatewayReceiverConfig() {
+    service.updateCacheConfig("cluster", cacheConfig -> {
+      CacheConfig.GatewayReceiver receiver = new CacheConfig.GatewayReceiver();
+      cacheConfig.setGatewayReceiver(receiver);
+      return cacheConfig;
+    });
+
+    System.out.println(configuration.getCacheXmlContent());
+    assertThat(configuration.getCacheXmlContent()).contains("<gateway-receiver/>");
+  }
+
+  @Test
+  public void removeDuplicateGatewayReceiversWithDefaultProperties() throws Exception {
+    Document document =
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDefaultPropertiesXml());
+    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
+    service.removeDuplicateGatewayReceivers(document);
+    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
+  }
+
+  @Test
+  public void removeInvalidGatewayReceiversWithDifferentHostNameForSenders() throws Exception {
+    Document document =
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentHostNameForSendersXml());
+    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
+    service.removeInvalidGatewayReceivers(document);
+    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(0);
+  }
+
+  @Test
+  public void removeInvalidGatewayReceiversWithDifferentBindAddresses() throws Exception {
+    Document document =
+        XmlUtils.createDocumentFromXml(getDuplicateReceiversWithDifferentBindAddressesXml());
+    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(2);
+    service.removeInvalidGatewayReceivers(document);
+    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(0);
+  }
+
+  @Test
+  public void keepValidGatewayReceiversWithDefaultBindAddress() throws Exception {
+    Document document =
+        XmlUtils.createDocumentFromXml(getSingleReceiverWithDefaultBindAddressXml());
+    System.out.println("Initial document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
+    service.removeInvalidGatewayReceivers(document);
+    System.out.println("Processed document:\n" + XmlUtils.prettyXml(document));
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength()).isEqualTo(1);
+  }
+
+  @Test
+  @Parameters(method = "getXmlAndExpectedElements")
+  public void removeInvalidXmlConfiguration(String xml, int expectedInitialElements,
+      int expectFinalElements) throws Exception {
+    Region<String, Configuration> configurationRegion = mock(Region.class);
+    configuration.setCacheXmlContent(xml);
+    System.out.println("Initial xml content:\n" + configuration.getCacheXmlContent());
+    Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength())
+        .isEqualTo(expectedInitialElements);
+    Set<Map.Entry<String, Configuration>> configurationEntries = new HashSet<>();
+    configurationEntries.add(new AbstractMap.SimpleEntry<>("cluster", configuration));
+    doReturn(configurationEntries).when(configurationRegion).entrySet();
+    service.removeInvalidXmlConfigurations(configurationRegion);
+    System.out.println("Processed xml content:\n" + configuration.getCacheXmlContent());
+    document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+    assertThat(document.getElementsByTagName("gateway-receiver").getLength())
+        .isEqualTo(expectFinalElements);
+  }
+
+  private String getDuplicateReceiversWithDefaultPropertiesXml() {
+    return "<cache>\n<gateway-receiver/>\n<gateway-receiver/>\n</cache>";
+  }
+
+  private String getDuplicateReceiversWithDifferentHostNameForSendersXml() {
+    return "<cache>\n<gateway-receiver hostname-for-senders=\"123.12.12.12\"/>\n<gateway-receiver hostname-for-senders=\"123.12.12.11\"/>\n</cache>";
+  }
+
+  private String getDuplicateReceiversWithDifferentBindAddressesXml() {
+    return "<cache>\n<gateway-receiver bind-address=\"123.12.12.12\"/>\n<gateway-receiver bind-address=\"123.12.12.11\"/>\n</cache>";
+  }
+
+  private String getSingleReceiverWithDefaultBindAddressXml() {
+    return "<cache>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n</cache>";
+  }
+
+  private String getDuplicateReceiversWithDefaultBindAddressesXml() {
+    return "<cache>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n<gateway-receiver bind-address=\"0.0.0.0\"/>\n</cache>";
+  }
+
+  private String getValidReceiversXml() {
+    return "<cache>\n<gateway-receiver/>\n</cache>";
+  }
+
+  private String getNoReceiversXml() {
+    return "<cache>\n</cache>";
+  }
+
+  protected Object[] getXmlAndExpectedElements() {
+    return $(
+        new Object[] {getDuplicateReceiversWithDefaultPropertiesXml(), 2, 1},
+        new Object[] {getDuplicateReceiversWithDifferentHostNameForSendersXml(), 2, 0},
+        new Object[] {getDuplicateReceiversWithDifferentBindAddressesXml(), 2, 0},
+        new Object[] {getSingleReceiverWithDefaultBindAddressXml(), 1, 1},
+        new Object[] {getDuplicateReceiversWithDefaultBindAddressesXml(), 2, 1},
+        new Object[] {getValidReceiversXml(), 1, 1},
+        new Object[] {getNoReceiversXml(), 0, 0});
   }
 }

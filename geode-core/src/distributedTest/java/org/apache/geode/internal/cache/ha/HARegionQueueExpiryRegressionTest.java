@@ -18,7 +18,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionPool;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest.setIsSlowStart;
+import static org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper.setIsSlowStart;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -191,6 +191,6 @@ public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
    */
   private void validateEventCountAtClient() {
     await().atMost(1, MINUTES)
-        .until(() -> verify(spyCacheListener, times(PUT_COUNT)).afterCreate(any()));
+        .untilAsserted(() -> verify(spyCacheListener, times(PUT_COUNT)).afterCreate(any()));
   }
 }

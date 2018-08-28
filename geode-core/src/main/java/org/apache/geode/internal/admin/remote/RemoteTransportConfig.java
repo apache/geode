@@ -34,6 +34,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.admin.TransportConfig;
@@ -54,7 +55,7 @@ public class RemoteTransportConfig implements TransportConfig {
   private final String membershipPortRange;
   private int tcpPort;
   private boolean isReconnectingDS;
-  private Object oldDSMembershipInfo;
+  private MembershipInformation oldDSMembershipInfo;
   private int vmKind = -1;
 
   // -------------------------------------------------------------------------
@@ -234,11 +235,11 @@ public class RemoteTransportConfig implements TransportConfig {
     this.isReconnectingDS = isReconnectingDS;
   }
 
-  public Object getOldDSMembershipInfo() {
+  public MembershipInformation getOldDSMembershipInfo() {
     return oldDSMembershipInfo;
   }
 
-  public void setOldDSMembershipInfo(Object oldDSMembershipInfo) {
+  public void setOldDSMembershipInfo(MembershipInformation oldDSMembershipInfo) {
     this.oldDSMembershipInfo = oldDSMembershipInfo;
   }
 

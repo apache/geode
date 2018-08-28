@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 
-public class ChangeLogLevelCommandOverHttpDUnitTest extends ChangeLogLevelCommandDUnitTest {
+public class ChangeLogLevelCommandOverHttpDUnitTest extends ChangeLogLevelCommandDUnitTestBase {
   @Override
   public void before() throws Exception {
     gfsh.connect(locator.getHttpPort(), http);

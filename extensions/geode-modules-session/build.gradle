@@ -21,22 +21,18 @@ dependencies {
   compile project(':extensions/geode-modules-session-internal')
   compile project(':geode-core')
 
-  testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  testCompile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-  testCompile('com.mockrunner:mockrunner-servlet:' + project.'mockrunner.version') {
+  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile ('org.httpunit:httpunit:' + project.'httpunit.version') {
+    exclude group: 'javax.servlet'
+  }
+  integrationTestCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')
+  integrationTestCompile(group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.'jetty.version', classifier: 'tests')
+  integrationTestCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  integrationTestCompile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  integrationTestCompile('com.mockrunner:mockrunner-servlet:' + project.'mockrunner.version') {
     exclude group: 'jboss'
     exclude group: 'xerces'
   }
-  testCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')
-  testCompile(group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.'jetty.version', classifier: 'tests')
-  testCompile ('org.httpunit:httpunit:' + project.'httpunit.version') {
-    exclude group: 'javax.servlet'
-  }
-
-  testCompile project(path: ':geode-junit')
-
-  // TODO build - move dunit framework to shared module.
-  integrationTestCompile files(project(':geode-core').sourceSets.integrationTest.output)
 }
 
 jar {

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 import org.awaitility.Awaitility;
 import org.junit.Rule;
@@ -50,12 +50,11 @@ public class SingleHopClientExecutorSubmitTaskWithExceptionTest {
       }
     });
 
-    /**
+    /*
      * Sometimes need to wait for more than sec as thread execution takes time.
      */
-    Awaitility.await("Waiting for exception").atMost(60l, TimeUnit.SECONDS).until(() -> {
-      systemErrRule.getLog().contains(erroMsg);
-    });
+    Awaitility.await("Waiting for exception").atMost(1, MINUTES)
+        .until(() -> systemErrRule.getLog().contains(erroMsg));
   }
 
 }

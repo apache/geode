@@ -51,7 +51,6 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
     if (this.lastResultReceived) {
       return;
     }
-    this.lastResultReceived = true;
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -96,6 +95,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
         this.msg.addObjPart(result2);
       }
       this.msg.sendChunk(this.sc);
+      this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
       FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
@@ -110,7 +110,9 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
 
   @Override
   public synchronized void lastResult(Object oneResult, DistributedMember memberID) {
-    this.lastResultReceived = true;
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -157,6 +159,7 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
         this.msg.addObjPart(result2);
       }
       this.msg.sendChunk(this.sc);
+      this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
       FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
@@ -171,6 +174,9 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
 
   @Override
   public synchronized void sendResult(Object oneResult) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -214,6 +220,9 @@ public class ServerToClientFunctionResultSender65 extends ServerToClientFunction
 
   @Override
   public synchronized void sendResult(Object oneResult, DistributedMember memberID) {
+    if (lastResultReceived) {
+      return;
+    }
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(

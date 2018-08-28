@@ -107,6 +107,7 @@ public class GMSHealthMonitorJUnitTest {
   final long memberTimeout = 1000l;
   private int[] portRange = new int[] {0, 65535};
   private boolean useGMSHealthMonitorTestClass = false;
+  private boolean simulateHeartbeatInGMSHealthMonitorTestClass = true;
   private final int myAddressIndex = 3;
 
   @Before
@@ -378,7 +379,7 @@ public class GMSHealthMonitorJUnitTest {
     gmsHealthMonitor.processMessage(sm);
 
     Awaitility.await("waiting for remove(member) to be invoked")
-        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).until(() -> {
+        .atMost(3 * memberTimeout, TimeUnit.MILLISECONDS).untilAsserted(() -> {
           verify(joinLeave, atLeastOnce()).remove(any(InternalDistributedMember.class),
               any(String.class));
         });
@@ -535,6 +536,34 @@ public class GMSHealthMonitorJUnitTest {
 
     } finally {
       useGMSHealthMonitorTestClass = false;
+    }
+  }
+
+
+  @Test
+  public void testNeighborChangesAfterFailedFinalCheck() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    try {
+      NetView v = installAView();
+
+      setFailureDetectionPorts(v);
+
+      InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+
+      boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+
+      assertFalse("checkIfAvailable should have return false", retVal);
+      // we should now be watching the same member
+      int failedIndex = v.getMembers().indexOf(memberToCheck);
+      assertEquals("neighbor was " + gmsHealthMonitor.getNextNeighbor() + " but expected "
+          + mockMembers.get(failedIndex + 1), mockMembers.get(failedIndex + 1),
+          gmsHealthMonitor.getNextNeighbor());
+
+    } finally {
+      useGMSHealthMonitorTestClass = false;
+      simulateHeartbeatInGMSHealthMonitorTestClass = true;
     }
   }
 
@@ -817,9 +846,11 @@ public class GMSHealthMonitorJUnitTest {
     @Override
     boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
       if (useGMSHealthMonitorTestClass) {
-        HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
-        fakeHeartbeat.setSender(suspectMember);
-        gmsHealthMonitor.processMessage(fakeHeartbeat);
+        if (simulateHeartbeatInGMSHealthMonitorTestClass) {
+          HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
+          fakeHeartbeat.setSender(suspectMember);
+          gmsHealthMonitor.processMessage(fakeHeartbeat);
+        }
         return false;
       }
       return super.doTCPCheckMember(suspectMember, port);

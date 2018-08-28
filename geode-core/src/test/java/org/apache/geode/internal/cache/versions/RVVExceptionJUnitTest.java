@@ -15,8 +15,14 @@
 package org.apache.geode.internal.cache.versions;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+
+import java.io.DataOutput;
 
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 
 public class RVVExceptionJUnitTest {
@@ -32,10 +38,43 @@ public class RVVExceptionJUnitTest {
   }
 
   @Test
+  public void testRVVExceptionBOutput() throws Exception {
+    testExceptionOutput(new RVVExceptionB(50, 100));
+  }
+
+  @Test
   public void testRVVExceptionT() {
     RVVExceptionT ex = new RVVExceptionT(5, 10);
     ex.add(8);
     ex.add(6);
     assertEquals(8, ex.getHighestReceivedVersion());
+  }
+
+  @Test
+  public void testRVVExceptionTOutput() throws Exception {
+    testExceptionOutput(new RVVExceptionT(50, 100));
+  }
+
+  // Exception is expected to be initialized with (50, 100)
+  private void testExceptionOutput(RVVException ex) throws Exception {
+    ex.add(60);
+    ex.add(85);
+    ex.add(70);
+    ex.add(72);
+    ex.add(74);
+    ex.add(73);
+
+    DataOutput mockOutput = mock(DataOutput.class);
+    InOrder inOrder = Mockito.inOrder(mockOutput);
+    ex.toData(mockOutput);
+
+    inOrder.verify(mockOutput).writeByte(50); // prev = 50
+    inOrder.verify(mockOutput).writeByte(6); // 6 received versions
+    inOrder.verify(mockOutput, times(2)).writeByte(10); // 60, 70
+    inOrder.verify(mockOutput).writeByte(2); // 72
+    inOrder.verify(mockOutput, times(2)).writeByte(1); // 73, 74
+    inOrder.verify(mockOutput).writeByte(11); // 85
+    inOrder.verify(mockOutput).writeByte(15); // 100
+    inOrder.verifyNoMoreInteractions();
   }
 }

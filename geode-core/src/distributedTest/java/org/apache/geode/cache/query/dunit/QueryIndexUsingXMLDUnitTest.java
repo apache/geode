@@ -32,7 +32,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -518,7 +517,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   public void validateIndexSize() {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       boolean indexSizeCheck_NAME = validateIndexSizeForRegion(NAME);
       boolean indexSizeCheck_REP_REG_NAME = validateIndexSizeForRegion(REP_REG_NAME);
       boolean indexSizeCheck_PERSISTENT_REG_NAME = validateIndexSizeForRegion(PERSISTENT_REG_NAME);

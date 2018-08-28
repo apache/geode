@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +25,6 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,8 +36,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
-
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
@@ -52,11 +51,11 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
   private VM accessor;
   private VM[] datastores;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
+  public CacheRule cacheRule = new CacheRule();
 
   @Before
   public void setUp() throws Exception {
@@ -67,13 +66,15 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
     datastores[0] = getVM(1);
     datastores[1] = getVM(2);
     datastores[2] = getVM(3);
+
+    cacheRule.createCache();
+    invokeInEveryVM(() -> cacheRule.createCache());
   }
 
   @Test
   @Parameters({"CLOSE_REGION", "LOCAL_DESTROY_REGION"})
   @TestCaseName("{method}({params})")
-  public void redundantDataIsAvailableAfterRemovingOneDatastore(final RegionRemoval regionRemoval)
-      throws Exception {
+  public void redundantDataIsAvailableAfterRemovingOneDatastore(final RegionRemoval regionRemoval) {
     accessor.invoke("create accessor", () -> createAccessor());
     for (VM vm : datastores) {
       vm.invoke("create datastore", () -> createDataStore());
@@ -124,7 +125,7 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
    * This test case checks that a closed PR (accessor/datastore) can be recreated.
    */
   @Test
-  public void closeAndRecreateInAllHasNoData() throws Exception {
+  public void closeAndRecreateInAllHasNoData() {
     accessor.invoke("create accessor", () -> createAccessor());
     for (VM vm : datastores) {
       vm.invoke("create datastore", () -> createDataStore());

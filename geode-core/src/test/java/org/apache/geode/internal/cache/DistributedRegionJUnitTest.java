@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.event.BulkOperationHolder;
 import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -152,6 +154,36 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
       events[i].setVersionTag(mock(VersionTag.class));
       eventTracker.recordEvent(events[i]);
     }
+  }
+
+  @Test
+  public void testThatMemoryThresholdInfoRelectsStateOfRegion() {
+    InternalDistributedMember internalDM = mock(InternalDistributedMember.class);
+    DistributedRegion distRegion = prepare(true, false);
+    distRegion.addCriticalMember(internalDM);
+
+    MemoryThresholdInfo info = distRegion.getAtomicThresholdInfo();
+
+    assertThat(distRegion.isMemoryThresholdReached()).isTrue();
+    assertThat(distRegion.getAtomicThresholdInfo().getMembersThatReachedThreshold())
+        .containsExactly(internalDM);
+    assertThat(info.isMemoryThresholdReached()).isTrue();
+    assertThat(info.getMembersThatReachedThreshold()).containsExactly(internalDM);
+  }
+
+  @Test
+  public void testThatMemoryThresholdInfoDoesNotChangeWhenRegionChanges() {
+    InternalDistributedMember internalDM = mock(InternalDistributedMember.class);
+    DistributedRegion distRegion = prepare(true, false);
+
+    MemoryThresholdInfo info = distRegion.getAtomicThresholdInfo();
+    distRegion.addCriticalMember(internalDM);
+
+    assertThat(distRegion.isMemoryThresholdReached()).isTrue();
+    assertThat(distRegion.getAtomicThresholdInfo().getMembersThatReachedThreshold())
+        .containsExactly(internalDM);
+    assertThat(info.isMemoryThresholdReached()).isFalse();
+    assertThat(info.getMembersThatReachedThreshold()).isEmpty();
   }
 
 }

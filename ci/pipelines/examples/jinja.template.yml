@@ -1,0 +1,84 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+
+resource_types:
+- name: maven-resource
+  type: docker-image
+  source:
+    repository: nulldriver/maven-resource
+    tag: latest
+
+resources:
+- name: geode-examples
+  type: git
+  source:
+    uri: https://github.com/apache/geode-examples.git
+    branch: develop
+    depth: 10
+- name: geode-ci
+  type: git
+  source:
+    depth: 1
+    uri: https://github.com/{{repository.fork}}/geode.git
+    branch: {{ repository.branch }}
+    paths:
+    - ci/pipelines/geode-build/*
+    - ci/scripts/*
+- name: docker-geode-build-image
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((!docker-image-prefix))((!docker-image-name))
+    tag: latest
+- name: 24h
+  type: time
+  source: {interval: 24h}
+
+jobs:
+- name: TestExamples
+  serial: true
+  public: true
+  plan:
+  - aggregate:
+    - get: geode-ci
+    - get: geode-examples
+      trigger: true
+    - get: 24h
+      trigger: true
+    - get: docker-geode-build-image
+      params:
+        rootfs: true
+  - task: testexamples
+    image: docker-geode-build-image
+    privileged: true
+    timeout: 7h
+    config:
+      inputs:
+      - name: geode-ci
+      - name: geode-examples
+      - name: docker-geode-build-image
+      platform: linux
+      params:
+        MAINTENANCE_VERSION: {{repository.branch}}
+        SERVICE_ACCOUNT: ((!concourse-gcp-account))
+        PUBLIC_BUCKET: ((!public-bucket))
+      run:
+        args:
+        path: geode-ci/ci/scripts/build-examples.sh

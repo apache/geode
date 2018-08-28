@@ -26,18 +26,19 @@ SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 pushd ${SCRIPTDIR}
 
-GEODE_BRANCH=${GEODE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 IMAGE_FAMILY_PREFIX=""
-GEODE_DOCKER_IMAGE=${GEODE_DOCKER_IMAGE:-"gcr.io/apachegeode-ci/apachegeode-build-concourse"}
+GEODE_DOCKER_IMAGE=${GEODE_DOCKER_IMAGE:-"gcr.io/apachegeode-ci/test-container"}
 if [[ -z "${GEODE_FORK}" ]]; then
   echo "GEODE_FORK environment variable must be set for this script to work."
   exit 1
 fi
 
+GEODE_BRANCH=${GEODE_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
+SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-20)
+SANITIZED_GEODE_FORK=$(echo ${GEODE_FORK} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-16)
 
-if [[ "${GEODE_FORK}" != "apache" ]]; then
-  IMAGE_FAMILY_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+if [[ "${SANITIZED_GEODE_FORK}" != "apache" ]]; then
+  IMAGE_FAMILY_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
 
 echo "Running packer"

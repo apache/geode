@@ -103,7 +103,7 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
 
     // considering a memory limit of 40 MB, maximum of 40 events can be in memory. Rest should be on
     // disk.
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
       long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
       long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
       long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));

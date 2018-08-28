@@ -122,7 +122,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1));
     vm3.invoke(() -> {
       Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_RR");
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> assertTrue(r.size() > 0));
+      Awaitility.waitAtMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(r.size() > 0));
     });
     logger.info("Done successfully.");
   }
@@ -163,7 +163,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1));
     vm3.invoke(() -> {
       Region r = cache.getRegion(Region.SEPARATOR + getTestMethodName() + "_RR");
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> assertTrue(r.size() > 0));
+      Awaitility.waitAtMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(r.size() > 0));
 
     });
     logger.info("Done successfully.");
@@ -363,7 +363,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     logger.info("Set the server properties to: " + authProps);
     logger.info("Set the java properties to: " + javaProps);
 
-    SecurityTestUtils tmpInstance = new SecurityTestUtils("temp");
+    SecurityTestUtils tmpInstance = new SecurityTestUtils();
     DistributedSystem ds = tmpInstance.createSystem(authProps, (Properties) javaProps);
     assertNotNull(ds);
     assertTrue(ds.isConnected());

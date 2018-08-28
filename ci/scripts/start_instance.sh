@@ -45,14 +45,21 @@ fi
 
 
 
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+
+. ${SCRIPTDIR}/../pipelines/shared/utilities.sh
+SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
+SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
+
+SANITIZED_BUILD_PIPELINE_NAME=$(echo ${BUILD_PIPELINE_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 IMAGE_FAMILY_PREFIX=""
 
-if [[ "${GEODE_FORK}" != "apache" ]]; then
-  IMAGE_FAMILY_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+if [[ "${SANITIZED_GEODE_FORK}" != "apache" ]]; then
+  IMAGE_FAMILY_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
 
-INSTANCE_NAME="$(echo "build-${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr '[:upper:]' '[:lower:]')"
+INSTANCE_NAME="$(echo "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr '[:upper:]' '[:lower:]')"
 PROJECT=apachegeode-ci
 ZONE=us-central1-f
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
@@ -64,17 +71,20 @@ RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 
 while true; do
     TTL=$(($(date +%s) + 60 * 60 * 6))
+    LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME}"
 
     set +e
     INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
       --zone=${ZONE} \
       --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
       --min-cpu-platform=Intel\ Skylake \
+      --network="heavy-lifters" \
+      --subnet="heavy-lifters" \
       --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
       --image-project=${PROJECT} \
       --boot-disk-size=100GB \
       --boot-disk-type=pd-ssd \
-      --labels=time-to-live=${TTL} \
+      --labels="${LABELS}" \
       --format=json)
     CREATE_EXIT_STATUS=$?
     set -e

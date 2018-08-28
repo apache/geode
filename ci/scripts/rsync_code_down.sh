@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -ex
 
 BASE_DIR=$(pwd)
 
@@ -39,6 +39,8 @@ ZONE="$(cat instance-data/zone)"
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
 OUTPUT_DIR=${BASE_DIR}/geode-results
+
+ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "cd geode && ./gradlew combineReports"
 
 time rsync -e "ssh -i ${SSHKEY_FILE}" -ah geode@${INSTANCE_IP_ADDRESS}:. ${OUTPUT_DIR}/.
 set +x

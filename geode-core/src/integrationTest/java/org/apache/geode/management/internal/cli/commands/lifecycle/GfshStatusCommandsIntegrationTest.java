@@ -22,18 +22,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class GfshStatusCommandsIntegrationTest {
-  private static final String LOCATOR_NAME = "locator1";
 
   @Rule
-  public LocatorStarterRule locator =
-      new LocatorStarterRule().withJMXManager().withName(LOCATOR_NAME).withAutoStart();
+  public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -41,8 +38,6 @@ public class GfshStatusCommandsIntegrationTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  @Rule
-  public TestName testName = new TestName();
 
   @Before
   public void connect() throws Exception {

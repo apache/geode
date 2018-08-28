@@ -685,13 +685,13 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         };
 
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
     Awaitility.waitAtMost(30, TimeUnit.SECONDS)
-        .until(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
+        .untilAsserted(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
 
     // In case of blocking HARegionQueue do some extra puts so that the
     // blocking threads
@@ -955,7 +955,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return hrq.getAvalaibleIds().size() == 0;
+        return hrq.getAvailableIds().size() == 0;
       }
 
       @Override
@@ -964,7 +964,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-    // assertIndexDetailsEquals(0, hrq.getAvalaibleIds().size());
+    // assertIndexDetailsEquals(0, hrq.getAvailableIds().size());
   }
 
   @Test

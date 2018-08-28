@@ -27,7 +27,6 @@ import static org.apache.geode.distributed.internal.DistributionConfig.RESTRICT_
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +45,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -65,7 +63,6 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
@@ -119,16 +116,6 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   @Rule
   public DistributedRestoreSystemProperties distributedRestoreSystemProperties =
       new DistributedRestoreSystemProperties();
-
-  @Before
-  public void setUp() throws Exception {
-    SocketCreator.resolve_dns = false;
-    SocketCreator.use_client_host_name = false;
-    invokeInEveryVM(() -> {
-      SocketCreator.resolve_dns = false;
-      SocketCreator.use_client_host_name = false;
-    });
-  }
 
   @After
   public void tearDown() throws Exception {
@@ -598,17 +585,17 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // should trigger both adapter and bridge listener but not system listener
     synchronized (adapter) {
-      if (!firedAdapter[JOINED]) {
+      while (!firedAdapter[JOINED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[JOINED]) {
+      while (!firedBridge[JOINED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (systemListener) {
-      if (!firedSystem[JOINED]) {
+      while (!firedSystem[JOINED]) {
         systemListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -678,12 +665,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     });
 
     synchronized (adapter) {
-      if (!firedAdapter[LEFT]) {
+      while (!firedAdapter[LEFT]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[LEFT]) {
+      while (!firedBridge[LEFT]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -739,12 +726,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     clientMemberId = clientMember.getId();
 
     synchronized (adapter) {
-      if (!firedAdapter[JOINED]) {
+      while (!firedAdapter[JOINED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[JOINED]) {
+      while (!firedBridge[JOINED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -814,17 +801,17 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     });
 
     synchronized (adapter) {
-      if (!firedAdapter[LEFT]) {
+      while (!firedAdapter[LEFT]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (systemListener) {
-      if (!firedSystem[LEFT]) {
+      while (!firedSystem[LEFT]) {
         systemListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[LEFT]) {
+      while (!firedBridge[LEFT]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -880,17 +867,17 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     clientMemberId = clientMember.getId();
 
     synchronized (adapter) {
-      if (!firedAdapter[JOINED]) {
+      while (!firedAdapter[JOINED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (systemListener) {
-      if (!firedSystem[JOINED]) {
+      while (!firedSystem[JOINED]) {
         systemListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[JOINED]) {
+      while (!firedBridge[JOINED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
@@ -962,12 +949,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     });
 
     synchronized (adapter) {
-      if (!firedAdapter[CRASHED]) {
+      while (!firedAdapter[CRASHED]) {
         adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }
     synchronized (bridgeListener) {
-      if (!firedBridge[CRASHED]) {
+      while (!firedBridge[CRASHED]) {
         bridgeListener.wait(ASYNC_EVENT_WAIT_MILLIS);
       }
     }

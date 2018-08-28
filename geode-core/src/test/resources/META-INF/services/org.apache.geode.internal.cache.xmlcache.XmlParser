@@ -1,5 +1,2 @@
 # org.apache.geode.internal.cache.xmlcache.CacheXmlParserJUnitTest.testGetDelegate XmlParser
 org.apache.geode.internal.cache.xmlcache.CacheXmlParserJUnitTest$MockXmlParser
-
-# Mock Extension XmlParser
-org.apache.geode.internal.cache.extension.mock.MockExtensionXmlParser

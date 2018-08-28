@@ -128,14 +128,14 @@ public class AvailablePidTest {
   public void randomLowerBoundIsInclusive() throws Exception {
     availablePid = new AvailablePid(new AvailablePid.Bounds(1, 3));
 
-    await().atMost(10, SECONDS).until(() -> assertThat(availablePid.random()).isEqualTo(1));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(availablePid.random()).isEqualTo(1));
   }
 
   @Test
   public void randomUpperBoundIsInclusive() throws Exception {
     availablePid = new AvailablePid(new AvailablePid.Bounds(1, 3));
 
-    await().atMost(10, SECONDS).until(() -> assertThat(availablePid.random()).isEqualTo(3));
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(availablePid.random()).isEqualTo(3));
   }
 
   @Test

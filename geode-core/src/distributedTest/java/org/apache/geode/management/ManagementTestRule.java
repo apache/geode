@@ -36,13 +36,14 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
@@ -73,13 +74,13 @@ public class ManagementTestRule implements MethodRule, Serializable {
   private VM[] members;
 
   protected ManagementTestRule(final Builder builder) {
-    this.helper = new JUnit4CacheTestCase() {};
-    this.numberOfManagers = builder.numberOfManagers;
-    this.numberOfMembers = builder.numberOfMembers;
-    this.start = builder.start;
-    this.defineManagersFirst = builder.defineManagersFirst;
-    this.defineManagers = builder.defineManagers;
-    this.defineMembers = builder.defineMembers;
+    helper = new JUnit4CacheTestCase() {};
+    numberOfManagers = builder.numberOfManagers;
+    numberOfMembers = builder.numberOfMembers;
+    start = builder.start;
+    defineManagersFirst = builder.defineManagersFirst;
+    defineManagers = builder.defineManagers;
+    defineMembers = builder.defineMembers;
   }
 
   @Override
@@ -106,13 +107,13 @@ public class ManagementTestRule implements MethodRule, Serializable {
   }
 
   public void createManagers() {
-    for (VM manager : this.managers) {
+    for (VM manager : managers) {
       manager.invoke(() -> createManager(true));
     }
   }
 
   public void createMembers() {
-    for (VM member : this.members) {
+    for (VM member : members) {
       member.invoke(() -> createMember());
     }
   }
@@ -137,7 +138,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
     setPropertyIfNotSet(properties, ENABLE_TIME_STATISTICS, "true");
     setPropertyIfNotSet(properties, STATISTIC_SAMPLING_ENABLED, "true");
 
-    this.helper.getCache(properties);
+    helper.getCache(properties);
 
     if (start) {
       startManager();
@@ -169,7 +170,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
     setPropertyIfNotSet(properties, ENABLE_TIME_STATISTICS, "true");
     setPropertyIfNotSet(properties, STATISTIC_SAMPLING_ENABLED, "true");
 
-    this.helper.getCache(properties);
+    helper.getCache(properties);
   }
 
   public void createMember(final VM memberVM) {
@@ -178,24 +179,24 @@ public class ManagementTestRule implements MethodRule, Serializable {
     memberVM.invoke("createMember", () -> createMember(properties));
   }
 
-  public void createMember(final VM memberVM, final Properties properties) throws Exception {
+  public void createMember(final VM memberVM, final Properties properties) {
     memberVM.invoke("createMember", () -> createMember(properties));
   }
 
-  public Cache getCache() {
-    return this.helper.getCache();
+  public InternalCache getCache() {
+    return helper.getCache();
   }
 
-  public ClientCache getClientCache() {
-    return this.helper.getClientCache(new ClientCacheFactory());
+  public InternalClientCache getClientCache() {
+    return (InternalClientCache) helper.getClientCache(new ClientCacheFactory());
   }
 
   public boolean hasCache() {
-    return this.helper.hasCache();
+    return helper.hasCache();
   }
 
   public Cache basicGetCache() {
-    return this.helper.basicGetCache();
+    return helper.basicGetCache();
   }
 
   public ManagementService getManagementService() {
@@ -270,25 +271,25 @@ public class ManagementTestRule implements MethodRule, Serializable {
     }
   }
 
-  private void setUp(final Object target) throws Exception {
+  private void setUp(final Object target) {
     DUnitLauncher.launchIfNeeded();
     JUnit4DistributedTestCase.disconnectAllFromDS();
 
     int whichVM = 0;
 
-    this.managers = new VM[this.numberOfManagers];
-    for (int i = 0; i < this.numberOfManagers; i++) {
-      this.managers[i] = getHost(0).getVM(whichVM);
+    managers = new VM[numberOfManagers];
+    for (int i = 0; i < numberOfManagers; i++) {
+      managers[i] = getHost(0).getVM(whichVM);
       whichVM++;
     }
 
-    this.members = new VM[this.numberOfMembers];
-    for (int i = 0; i < this.numberOfMembers; i++) {
-      this.members[i] = getHost(0).getVM(whichVM);
+    members = new VM[numberOfMembers];
+    for (int i = 0; i < numberOfMembers; i++) {
+      members[i] = getHost(0).getVM(whichVM);
       whichVM++;
     }
 
-    if (this.start) {
+    if (start) {
       start();
     }
 
@@ -296,18 +297,18 @@ public class ManagementTestRule implements MethodRule, Serializable {
   }
 
   private void start() {
-    if (this.defineManagers && this.defineManagersFirst) {
+    if (defineManagers && defineManagersFirst) {
       createManagers();
     }
-    if (this.defineMembers) {
+    if (defineMembers) {
       createMembers();
     }
-    if (this.defineManagers && !this.defineManagersFirst) {
+    if (defineManagers && !defineManagersFirst) {
       createManagers();
     }
   }
 
-  private void tearDown() throws Exception {
+  private void tearDown() {
     JUnit4DistributedTestCase.disconnectAllFromDS();
   }
 
@@ -351,9 +352,9 @@ public class ManagementTestRule implements MethodRule, Serializable {
 
     field.setAccessible(true);
     if (field.getType().isArray()) {
-      field.set(target, this.managers);
+      field.set(target, managers);
     } else {
-      field.set(target, this.managers[0]);
+      field.set(target, managers[0]);
     }
   }
 
@@ -363,9 +364,9 @@ public class ManagementTestRule implements MethodRule, Serializable {
 
     field.setAccessible(true);
     if (field.getType().isArray()) {
-      field.set(target, this.members);
+      field.set(target, members);
     } else {
-      field.set(target, this.members[0]);
+      field.set(target, members[0]);
     }
   }
 
@@ -400,7 +401,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
      * Define VMs annotated with {@literal @}Manager as Managers. Default is true.
      */
     public Builder defineManagers(final boolean value) {
-      this.defineManagers = value;
+      defineManagers = value;
       return this;
     }
 
@@ -408,7 +409,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
      * Define VMs annotated with {@literal @}Manager as Members. Default is true.
      */
     public Builder defineMembers(final boolean value) {
-      this.defineMembers = value;
+      defineMembers = value;
       return this;
     }
 
@@ -416,7 +417,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
      * Number of Manager(s) to define. Default is 1.
      */
     public Builder numberOfManagers(final int count) {
-      this.numberOfManagers = count;
+      numberOfManagers = count;
       return this;
     }
 
@@ -424,7 +425,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
      * Number of Member(s) to define. Default is 3.
      */
     public Builder numberOfMembers(final int count) {
-      this.numberOfMembers = count;
+      numberOfMembers = count;
       return this;
     }
 
@@ -432,7 +433,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
      * Define Manager(s) to DUnit VMs before Member(s). Default is true.
      */
     public Builder defineManagersFirst(final boolean value) {
-      this.defineManagersFirst = value;
+      defineManagersFirst = value;
       return this;
     }
 
@@ -440,7 +441,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
      * Start Manager(s) and Member(s) before tests. Default is true.
      */
     public Builder start(final boolean value) {
-      this.start = value;
+      start = value;
       return this;
     }
 

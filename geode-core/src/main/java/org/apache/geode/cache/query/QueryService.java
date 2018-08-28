@@ -469,7 +469,8 @@ public interface QueryService {
   /**
    * Get a collection of all the indexes in the Cache.
    *
-   * @return the collection of all indexes in this Cache
+   * @return the collection of all indexes in this Cache, or an empty (unmodifiable) collection if
+   *         no indexes are found.
    */
   Collection<Index> getIndexes();
 
@@ -477,7 +478,8 @@ public interface QueryService {
    * Get a collection of all the indexes on the specified Region
    *
    * @param region the region for the requested indexes
-   * @return the collection of indexes on the specified region
+   * @return the collection of indexes on the specified region, or an empty (unmodifiable)
+   *         collection if no indexes are found.
    */
   Collection<Index> getIndexes(Region<?, ?> region);
 
@@ -490,7 +492,8 @@ public interface QueryService {
    *
    * @param region the region for the requested indexes
    * @param indexType the type of indexes to get. Currently must be Indexable.FUNCTIONAL
-   * @return the collection of indexes for the specified region and type
+   * @return the collection of indexes for the specified region and type, or an empty (unmodifiable)
+   *         collection if no indexes are found.
    */
   @Deprecated
   Collection<Index> getIndexes(Region<?, ?> region, IndexType indexType);

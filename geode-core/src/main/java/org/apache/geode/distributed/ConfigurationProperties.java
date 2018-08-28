@@ -1175,7 +1175,7 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"log-file"</i> property <a name="log-file"/a>
    * </p>
-   * <U>Description</U>: Name of the file to write logging messages to. If the file name if ""
+   * <U>Description</U>: Name of the file to write logging messages to. If the file name is ""
    * (default) then messages are written to standard out.
    * </p>
    * <U>Default</U>: ""
@@ -1942,6 +1942,17 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.8
    */
   String SSL_USE_DEFAULT_SSLCONTEXT = "ssl-use-default-sslcontext";
+  /**
+   * The static String definition of the <i>"ssl-endpoint-identification-enabled"</i> property <a
+   * name="ssl-endpoint-identification-enabled"/a>
+   * </p>
+   * <U>Description</U>: If true, clients validate server hostname using server certificate during
+   * SSL handshake.
+   * </p>
+   * <U>Default</U>: code>"false"</code>
+   * <U>Since</U>: Geode 1.8
+   */
+  String SSL_ENDPOINT_IDENTIFICATION_ENABLED = "ssl-enable-endpoint-identification";
   /**
    * The static String definition of the <i>"ssl-enabled-components"</i> property <a
    * name="ssl-enabled-components"/a>

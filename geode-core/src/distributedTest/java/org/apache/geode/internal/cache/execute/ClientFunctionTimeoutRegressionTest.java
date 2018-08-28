@@ -32,7 +32,6 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,7 +58,7 @@ import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
@@ -70,36 +69,39 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
  * TRAC #51193: The function execution connection on the server is never terminated even if the
  * gemfire.CLIENT_FUNCTION_TIMEOUT property is set
  */
-@Category({FunctionServiceTest.class})
+@Category(FunctionServiceTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class ClientFunctionTimeoutRegressionTest implements Serializable {
 
-  private static final String REGION_NAME = "TheRegion";
   private static final int TOTAL_NUM_BUCKETS = 4;
   private static final int REDUNDANT_COPIES = 1;
 
   private static InternalCache serverCache;
   private static InternalClientCache clientCache;
 
+  private String regionName;
+
   private VM server;
   private VM client;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
 
   @Before
-  public void before() throws Exception {
+  public void setUp() throws Exception {
     server = getVM(0);
     client = getVM(1);
+
+    regionName = getClass().getSimpleName();
   }
 
   @After
-  public void after() throws Exception {
+  public void tearDown() throws Exception {
     invokeInEveryVM(() -> {
       if (clientCache != null) {
         clientCache.close();
@@ -116,7 +118,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
   @Parameters({"SERVER,REPLICATE,0", "SERVER,REPLICATE,6000", "REGION,REPLICATE,0",
       "REGION,REPLICATE,6000", "REGION,PARTITION,0", "REGION,PARTITION,6000"})
   public void executeFunctionUsesClientTimeoutOnServer(final ExecutionTarget executionTarget,
-      final RegionType regionType, final int timeout) throws Exception {
+      final RegionType regionType, final int timeout) {
     int port = server.invoke(() -> createServerCache(regionType));
     client.invoke(() -> createClientCache(client.getHost().getHostName(), port, timeout));
 
@@ -140,7 +142,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
     ClientRegionFactory<String, String> clientRegionFactory =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
 
-    clientRegionFactory.create(REGION_NAME);
+    clientRegionFactory.create(regionName);
   }
 
   private int createServerCache(final RegionType regionType) throws IOException {
@@ -167,7 +169,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
       regionFactory = serverCache.createRegionFactory(RegionShortcut.REPLICATE);
     }
 
-    regionFactory.create(REGION_NAME);
+    regionFactory.create(regionName);
 
     CacheServer server = serverCache.addCacheServer();
     server.setPort(0);
@@ -185,7 +187,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
 
     if (functionServiceTarget == ExecutionTarget.REGION) {
       execution =
-          FunctionService.onRegion(clientCache.getRegion(REGION_NAME)).setArguments(timeout);
+          FunctionService.onRegion(clientCache.getRegion(regionName)).setArguments(timeout);
     } else {
       execution = FunctionService.onServer(clientCache.getDefaultPool()).setArguments(timeout);
     }

@@ -130,8 +130,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
       Object callbackArg, boolean isMetaRegionPutOp) {
     if (this.region == null) {
       return PutOp.execute(this.pool, this.regionName, key, value, deltaBytes, event,
-          Operation.CREATE, false, null, callbackArg, this.pool.getPRSingleHopEnabled(),
-          isMetaRegionPutOp);
+          Operation.CREATE, false, null, callbackArg, this.pool.getPRSingleHopEnabled());
     } else {
       return PutOp.execute(this.pool, this.region, key, value, deltaBytes, event, Operation.CREATE,
           false, null, callbackArg, this.pool.getPRSingleHopEnabled());
@@ -150,7 +149,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
     if (this.region == null) {
       return PutOp.execute(this.pool, this.regionName, key, value, deltaBytes, event, operation,
-          requireOldValue, expectedOldValue, callbackArg, this.pool.getPRSingleHopEnabled(), false);
+          requireOldValue, expectedOldValue, callbackArg, this.pool.getPRSingleHopEnabled());
     } else {
       return PutOp.execute(this.pool, this.region, key, value, deltaBytes, event, operation,
           requireOldValue, expectedOldValue, callbackArg, this.pool.getPRSingleHopEnabled());

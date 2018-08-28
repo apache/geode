@@ -157,14 +157,14 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
   public void waitForCacheClientProxies(final int expectedSize) {
     final CacheServer cs = getCache().getCacheServers().iterator().next();
     Awaitility.await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertEquals(expectedSize, cs.getAllClientSessions().size()));
+        .untilAsserted(() -> assertEquals(expectedSize, cs.getAllClientSessions().size()));
   }
 
   public void waitForHARegionSize(final int expectedSize) {
     final CacheServer cs = getCache().getCacheServers().iterator().next();
     final CacheClientProxy ccp = (CacheClientProxy) cs.getAllClientSessions().iterator().next();
     Awaitility.await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertEquals(expectedSize, getHAEventsCount(ccp)));
+        .untilAsserted(() -> assertEquals(expectedSize, getHAEventsCount(ccp)));
   }
 
   private static int getHAEventsCount(CacheClientProxy ccp) {

@@ -23,11 +23,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -96,6 +98,21 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
         cache.getCacheTransactionManager().rollback();
       }
     });
+  }
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void afterLuceneIndexAndRegionIsCreatedShouldBeAbleToGetIndexingStatus(
+      RegionTestableType regionTestType) throws Exception {
+    createRegionAndIndexForAllDataStores(regionTestType, createIndex);
+    putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
+    accessor.invoke(
+        () -> Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(
+            LuceneServiceProvider.get(getCache()).isIndexingInProgress(INDEX_NAME, REGION_NAME))));
+    executeTextSearch(accessor);
+
   }
 
   @Test

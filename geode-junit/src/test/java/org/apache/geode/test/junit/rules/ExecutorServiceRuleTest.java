@@ -100,7 +100,8 @@ public class ExecutorServiceRuleTest {
     Result result = TestRunner.runTest(Hangs.class);
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(isTestHung()).isTrue();
-    await().atMost(10, SECONDS).until(() -> assertThat(executorService.isTerminated()).isTrue());
+    await().atMost(10, SECONDS)
+        .untilAsserted(() -> assertThat(executorService.isTerminated()).isTrue());
     terminateLatch.await(1, SECONDS);
   }
 

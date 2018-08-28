@@ -107,14 +107,15 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> asyncPuts.isDone());
 
     vm2.invoke(() -> Awaitility.await().atMost(20, TimeUnit.SECONDS)
-        .until(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
+        .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
     vm4.invoke(() -> Awaitility.await().atMost(20, TimeUnit.SECONDS)
-        .until(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
+        .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
 
     vm3.invoke(() -> {
       Awaitility.await().atMost(60, TimeUnit.SECONDS)
-          .until(() -> assertTrue(WANTestBase.getQueueContentSize("ln2", true) + " was the size",
-              WANTestBase.getQueueContentSize("ln2", true) == 0));
+          .untilAsserted(
+              () -> assertTrue(WANTestBase.getQueueContentSize("ln2", true) + " was the size",
+                  WANTestBase.getQueueContentSize("ln2", true) == 0));
     });
   }
 
@@ -156,7 +157,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
       vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> validateRegionSize(regionName, 0)));
+          .untilAsserted(() -> validateRegionSize(regionName, 0)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));
     } finally {
@@ -202,7 +203,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
       vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> validateRegionSize(regionName, 20)));
+          .untilAsserted(() -> validateRegionSize(regionName, 20)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));
 
@@ -244,7 +245,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
       vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> validateRegionSize(regionName, 10)));
+          .untilAsserted(() -> validateRegionSize(regionName, 10)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));
     } finally {
@@ -397,7 +398,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
       vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
-          .until(() -> validateRegionSize(regionName, 0)));
+          .untilAsserted(() -> validateRegionSize(regionName, 0)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));
     } finally {

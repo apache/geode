@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
 
-public class RebalanceCommandOverHttpDistributedTest extends RebalanceCommandDistributedTest {
+public class RebalanceCommandOverHttpDistributedTest extends RebalanceCommandDistributedTestBase {
   @Override
   public void before() throws Exception {
     gfsh.connectAndVerify(locator.getHttpPort(), http);

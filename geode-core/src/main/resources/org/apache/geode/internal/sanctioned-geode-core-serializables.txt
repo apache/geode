@@ -123,6 +123,7 @@ org/apache/geode/cache/client/internal/pooling/ConnectionDestroyedException,true
 org/apache/geode/cache/configuration/CacheConfig$AsyncEventQueue,false,asyncEventListener:org/apache/geode/cache/configuration/DeclarableType,batchSize:java/lang/String,batchTimeInterval:java/lang/String,diskStoreName:java/lang/String,diskSynchronous:java/lang/Boolean,dispatcherThreads:java/lang/String,enableBatchConflation:java/lang/Boolean,forwardExpirationDestroy:java/lang/Boolean,gatewayEventFilters:java/util/List,gatewayEventSubstitutionFilter:org/apache/geode/cache/configuration/DeclarableType,id:java/lang/String,maximumQueueMemory:java/lang/String,orderPolicy:java/lang/String,parallel:java/lang/Boolean,persistent:java/lang/Boolean
 org/apache/geode/cache/configuration/ClassNameType,false,className:java/lang/String
 org/apache/geode/cache/configuration/DeclarableType,false,parameters:java/util/List
+org/apache/geode/cache/configuration/DiskStoreType,false,allowForceCompaction:java/lang/Boolean,autoCompact:java/lang/Boolean,compactionThreshold:java/lang/String,diskDirs:org/apache/geode/cache/configuration/DiskDirsType,diskUsageCriticalPercentage:java/lang/String,diskUsageWarningPercentage:java/lang/String,maxOplogSize:java/lang/String,name:java/lang/String,queueSize:java/lang/String,timeInterval:java/lang/String,writeBufferSize:java/lang/String
 org/apache/geode/cache/configuration/EnumActionDestroyOverflow,false,value:java/lang/String
 org/apache/geode/cache/configuration/EnumReadableWritable,false,value:java/lang/String
 org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding,false,blockingTimeoutSeconds:java/lang/String,configProperties:java/util/List,connPooledDatasourceClass:java/lang/String,connectionUrl:java/lang/String,idleTimeoutSeconds:java/lang/String,initPoolSize:java/lang/String,jdbcDriverClass:java/lang/String,jndiName:java/lang/String,loginTimeoutSeconds:java/lang/String,managedConnFactoryClass:java/lang/String,maxPoolSize:java/lang/String,password:java/lang/String,transactionType:java/lang/String,type:java/lang/String,userName:java/lang/String,xaDatasourceClass:java/lang/String
@@ -493,6 +494,7 @@ org/apache/geode/management/internal/beans/stats/StatType,false
 org/apache/geode/management/internal/cli/AbstractCliAroundInterceptor$Response,false,text:java/lang/String
 org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,true,1104813333595216795,data:byte[],dataLength:int
 org/apache/geode/management/internal/cli/commands/CreateJndiBindingCommand$DATASOURCE_TYPE,false,type:java/lang/String
+org/apache/geode/management/internal/cli/commands/ImportClusterConfigurationCommand$Action,false
 org/apache/geode/management/internal/cli/domain/AsyncEventQueueDetails,true,1,batchSize:int,diskStoreName:java/lang/String,id:java/lang/String,listener:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,persistent:boolean
 org/apache/geode/management/internal/cli/domain/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,port:int
 org/apache/geode/management/internal/cli/domain/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties

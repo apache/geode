@@ -352,7 +352,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     if (listeners.size() == 2) {
       final AsyncEventListener l1 = listeners.get(0);
       final AsyncEventListener l2 = listeners.get(1);
-      Awaitility.await().atMost(60000, TimeUnit.MILLISECONDS).until(() -> {
+      Awaitility.await().atMost(60000, TimeUnit.MILLISECONDS).untilAsserted(() -> {
         Map listenerMap1 = ((MyGatewaySenderEventListener) l1).getEventsMap();
 
         Map listenerMap2 = ((MyGatewaySenderEventListener2) l2).getEventsMap();

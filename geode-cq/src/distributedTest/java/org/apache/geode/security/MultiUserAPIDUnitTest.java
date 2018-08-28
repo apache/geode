@@ -272,14 +272,10 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
     getLogWriter().info("testValidCredentials: Using authinit: " + authInit);
 
     // Start the servers
-    int locPort1 = SecurityTestUtils.getLocatorPort();
-    int locPort2 = SecurityTestUtils.getLocatorPort();
-    String locString = SecurityTestUtils.getAndClearLocatorString();
-
     int port1 = server1
-        .invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
     int port2 = server2
-        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+        .invoke(() -> createCacheServer(authenticator, extraProps, javaProps));
 
     // Start the clients with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
@@ -296,8 +292,8 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
         multiUser, NO_EXCEPTION));
   }
 
-  private int createCacheServer(final int dsPort, final String locatorString,
-      final String authenticator, final Properties extraProps, final Properties javaProps) {
+  private int createCacheServer(final String authenticator, final Properties extraProps,
+      final Properties javaProps) {
     Properties authProps = new Properties();
     if (extraProps != null) {
       authProps.putAll(extraProps);
@@ -307,8 +303,7 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
       authProps.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
 
-    return SecurityTestUtils.createCacheServer(authProps, javaProps, dsPort, locatorString, 0,
-        NO_EXCEPTION);
+    return SecurityTestUtils.createCacheServer(authProps, javaProps, 0, NO_EXCEPTION);
   }
 
   // a

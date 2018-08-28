@@ -256,18 +256,22 @@ public class ExecuteRegionFunction61 extends BaseCommand {
           }
           resultSender.setException(fe);
         } else {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-              function), fe);
-          sendException(hasResult, clientMessage, message, serverConnection, fe);
+          if (setLastResultReceived(resultSender)) {
+            logger.warn(LocalizedMessage.create(
+                LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
+                function), fe);
+            sendException(hasResult, clientMessage, message, serverConnection, fe);
+          }
         }
 
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-            function), e);
-        String message = e.getMessage();
-        sendException(hasResult, clientMessage, message, serverConnection, e);
+        if (setLastResultReceived(resultSender)) {
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
+              function), e);
+          String message = e.getMessage();
+          sendException(hasResult, clientMessage, message, serverConnection, e);
+        }
       }
 
       finally {

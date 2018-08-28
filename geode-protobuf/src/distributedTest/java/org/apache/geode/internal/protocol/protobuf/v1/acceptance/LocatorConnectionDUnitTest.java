@@ -217,7 +217,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   private void validateStats(long messagesReceived, long messagesSent, long bytesReceived,
       long bytesSent, int clientConnectionStarts, int clientConnectionTerminations) {
     Host.getLocator().invoke(() -> {
-      Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> {
+      Awaitility.await().atMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
         Statistics statistics = getStatistics();
         assertEquals(0, statistics.get("currentClientConnections"));
         assertEquals(messagesSent, statistics.get("messagesSent"));
