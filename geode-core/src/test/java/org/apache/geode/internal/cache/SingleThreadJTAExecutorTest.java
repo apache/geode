@@ -52,14 +52,15 @@ public class SingleThreadJTAExecutorTest {
 
   @Test
   public void executeBeforeCompletionCallsDoOps() {
+    InOrder inOrder = inOrder(beforeCompletion, afterCompletion);
+
     singleThreadJTAExecutor.executeBeforeCompletion(txState, executor, cancelCriterion);
 
-    InOrder inOrder = inOrder(beforeCompletion, afterCompletion);
+    verify(beforeCompletion, times(1)).execute(eq(cancelCriterion));
     Awaitility.await().atMost(30, TimeUnit.SECONDS)
         .untilAsserted(() -> inOrder.verify(beforeCompletion, times(1)).doOp(eq(txState)));
     Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(
         () -> inOrder.verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion)));
-    verify(beforeCompletion, times(1)).execute(eq(cancelCriterion));
   }
 
 }
