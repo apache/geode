@@ -23,7 +23,7 @@
 {%- macro pipeline_prefix() %}
 {%- if repository.fork=="apache" %}
 {%- else -%}
-{{repository.fork}}-{{repository.branch}}-
+{{repository.sanitized_fork}}-{{repository.sanitized_branch}}-
 {%- endif %}
 {%- endmacro %}
 
