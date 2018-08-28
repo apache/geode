@@ -197,6 +197,8 @@ jobs:
         run:
           {%- if test.name=="StressNew" %}
           path: geode/ci/scripts/repeat-new-tests.sh
+          {%- elif test.name=="Acceptance" %}
+          path: geode/ci/scripts/execute_acceptance_tests.sh
           {%- else %}
           path: geode-ci/ci/scripts/execute_tests.sh
           {%- endif %}
