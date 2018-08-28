@@ -29,7 +29,7 @@ extraArchive {
 
 publishing {
   publications {
-    maven {
+    maven(MavenPublication) {
       artifactId = 'apache-geode'
 
       artifacts = []
