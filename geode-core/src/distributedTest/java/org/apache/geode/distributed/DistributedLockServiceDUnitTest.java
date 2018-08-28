@@ -180,7 +180,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         });
       }
     }
-    Thread.sleep(500); // 500 ms
+
+    Thread.sleep(1000); // Wait for all threads to start before starting the race
 
     // start the race!
     service.unlock(lock);
