@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_S
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.security.SecurableCommunicationChannels.ALL;
+import static org.apache.geode.security.SecurableCommunicationChannels.GATEWAY;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -40,6 +41,8 @@ import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -188,6 +191,14 @@ public class WANHostNameVerificationDistributedTest {
         .untilAsserted(() -> assertThat("servervalue").isEqualTo(region.get("serverkey")));
   }
 
+  private static void verifySite2DidNotReceived() {
+    Region<String, String> region = ClusterStartupRule.getCache().getRegion("region");
+    await()
+        .atMost(Duration.FIVE_SECONDS)
+        .pollInterval(Duration.ONE_SECOND)
+        .untilAsserted(() -> assertThat(region.keySet().size()).isEqualTo(0));
+  }
+
   @Test
   public void enableHostNameValidationAcrossAllComponents() throws Exception {
     // this test enables hostname validation across all components in both sites
@@ -225,5 +236,76 @@ public class WANHostNameVerificationDistributedTest {
 
     server_ln.invoke(WANHostNameVerificationDistributedTest::doPutOnSite1);
     server_ny.invoke(WANHostNameVerificationDistributedTest::verifySite2Received);
+  }
+
+  @Test
+  public void gwsenderFailsToConnectIfGWReceiverHasNoHostName() throws Exception {
+    CertificateBuilder gwSenderCertificate = new CertificateBuilder()
+        .commonName("gwsender-ln");
+
+    CertificateBuilder gwReceiverCertificate = new CertificateBuilder()
+        .commonName("gwreceiver-ny");
+
+    CertStores gwSender = new CertStores("gwsender", "gwsender");
+    gwSender.withCertificate(gwSenderCertificate);
+
+    CertStores gwReceiver = new CertStores("gwreceiver", "gwreceiver");
+    gwReceiver.withCertificate(gwReceiverCertificate);
+
+    Properties ln_SSLProps = gwSender
+        .trustSelf()
+        .trust(gwReceiver.alias(), gwReceiver.certificate())
+        .propertiesWith(GATEWAY, true, true);
+
+    Properties ny_SSLProps = gwReceiver
+        .trustSelf()
+        .trust(gwSender.alias(), gwSender.certificate())
+        .propertiesWith(GATEWAY, true, true);
+
+    // create a ln cluster
+    ln_SSLProps.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
+    locator_ln = cluster.startLocatorVM(0, ln_SSLProps);
+    server_ln = cluster.startServerVM(1, ln_SSLProps, locator_ln.getPort());
+
+    // create a region in ln
+    server_ln.invoke(WANHostNameVerificationDistributedTest::createServerRegion);
+    locator_ln.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+
+    // create a gateway sender ln
+    server_ln.invoke(WANHostNameVerificationDistributedTest::createGatewaySender);
+
+    // create a ny cluster
+    ny_SSLProps.setProperty(MCAST_PORT, "0");
+    ny_SSLProps.setProperty(DISTRIBUTED_SYSTEM_ID, "2");
+    ny_SSLProps.setProperty(REMOTE_LOCATORS, "localhost[" + locator_ln.getPort() + "]");
+    locator_ny = cluster.startLocatorVM(2, ny_SSLProps);
+    server_ny = cluster.startServerVM(3, ny_SSLProps, locator_ny.getPort());
+
+    // create a region in ny
+    server_ny.invoke(WANHostNameVerificationDistributedTest::createServerRegion);
+    locator_ny.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
+
+    // create a gateway sender in ny
+    server_ny.invoke(WANHostNameVerificationDistributedTest::createGatewayReceiver);
+
+    IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
+    server_ln.invoke(WANHostNameVerificationDistributedTest::doPutOnSite1);
+    server_ny.invoke(WANHostNameVerificationDistributedTest::verifySite2DidNotReceived);
+
+    server_ln.invoke(() -> {
+      AbstractGatewaySender gatewaySender =
+          (AbstractGatewaySender) getCache().getGatewaySender("ln");
+      GatewaySenderEventRemoteDispatcher dispatcher =
+          (GatewaySenderEventRemoteDispatcher) gatewaySender.getEventProcessor().getDispatcher();
+      assertThat(dispatcher.isConnectedToRemote()).isFalse();
+
+      // Close the processor so its does not retry, CSRule tearDown
+      // closes cache which eventually close processor. But processor
+      // can keep retrying between closing suspect log buffer and cache
+      // can continue to log connection exceptions which will pollute
+      // next test
+      gatewaySender.getEventProcessor().closeProcessor();
+    });
+    IgnoredException.removeAllExpectedExceptions();
   }
 }
