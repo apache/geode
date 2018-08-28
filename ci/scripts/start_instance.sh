@@ -55,7 +55,7 @@ SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr '[:upper:]' 
 SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
 IMAGE_FAMILY_PREFIX=""
 
-if [[ "${SAINTIZED_GEODE_FORK}" != "apache" ]]; then
+if [[ "${SANITIZED_GEODE_FORK}" != "apache" ]]; then
   IMAGE_FAMILY_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
 
