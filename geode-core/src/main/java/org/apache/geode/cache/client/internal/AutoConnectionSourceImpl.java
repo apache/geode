@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.ToDataException;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -188,10 +189,17 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   private ServerLocationResponse queryOneLocator(HostAddress locator,
       ServerLocationRequest request) {
+    return queryOneLocatorUsingConnection(locator, request, tcpClient);
+  }
+
+
+  ServerLocationResponse queryOneLocatorUsingConnection(HostAddress locator,
+      ServerLocationRequest request,
+      TcpClient locatorConnection) {
     Object returnObj = null;
     try {
       pool.getStats().incLocatorRequests();
-      returnObj = tcpClient.requestToServer(locator.getSocketInetAddressNoLookup(), request,
+      returnObj = locatorConnection.requestToServer(locator.getSocketInetAddressNoLookup(), request,
           connectionTimeout, true);
       ServerLocationResponse response = (ServerLocationResponse) returnObj;
       pool.getStats().incLocatorResponses();
@@ -199,7 +207,11 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         reportLiveLocator(locator.getSocketInetAddressNoLookup());
       }
       return response;
-    } catch (IOException ioe) {
+    } catch (IOException | ToDataException ioe) {
+      if (ioe instanceof ToDataException) {
+        logger.warn("Encountered ToDataException when communicating with a locator.  "
+            + "This is expected if the locator is shutting down.", ioe);
+      }
       reportDeadLocator(locator.getSocketInetAddressNoLookup(), ioe);
       updateLocatorInLocatorList(locator);
       return null;

@@ -37,7 +37,7 @@ dependencies {
 
   compile 'org.bouncycastle:bcpkix-jdk15on:' + project.'bounty-castle.version'
 
-  runtime project(":geode-old-versions")
+  runtimeOnly project(":geode-old-versions")
 }
 
 test {

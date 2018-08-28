@@ -1,5 +1,3 @@
-import org.apache.geode.gradle.TestPropertiesWriter
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -31,10 +29,10 @@ dependencies {
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile 'org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version'
-  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
+  runtimeOnly 'org.springframework:spring-expression:' + project.'springframework.version'
 
   // added only to ensure common version with other geode modules
-  runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+  runtimeOnly 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
   compile ('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
     exclude module: 'aopalliance'
@@ -54,7 +52,7 @@ dependencies {
   }
   compile ('org.springframework:spring-context:' + project.'springframework.version');
   compile ('org.springframework:spring-web:' + project.'springframework.version');
-  runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  runtimeOnly ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
@@ -123,7 +121,7 @@ artifacts {
 
 war {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtime
+  classpath configurations.runtimeClasspath
   classpath project(':geode-core').webJar.archivePath
 }
 war.dependsOn(':geode-core:webJar')
