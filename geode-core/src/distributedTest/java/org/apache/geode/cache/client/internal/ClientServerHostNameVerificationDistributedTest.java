@@ -208,6 +208,11 @@ public class ClientServerHostNameVerificationDistributedTest {
       assertThatExceptionOfType(expectedExceptionOnClient)
           .isThrownBy(() -> clientRegion.put("1", "1"));
 
+      // Close the client cache so the pool does not retry, CSRule tearDown
+      // closes cache which eventually close pool. But pool can keep
+      // retrying and fill logs between closing suspect log buffer
+      // and closing cache
+      clientCache.close();
       IgnoredException.removeAllExpectedExceptions();
     } else {
       // test client can read and write to server
