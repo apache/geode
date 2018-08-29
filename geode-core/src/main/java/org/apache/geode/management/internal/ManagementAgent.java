@@ -53,6 +53,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -331,33 +332,36 @@ public class ManagementAgent {
 
   private Properties createSslProps() {
     Properties sslProps = new Properties();
-    if (StringUtils.isNotEmpty(config.getSSLKeyStore())) {
-      sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE, config.getSSLKeyStore());
+    SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(config, SecurableCommunicationChannel.WEB);
+
+    if (StringUtils.isNotEmpty(sslConfig.getKeystore())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE, sslConfig.getKeystore());
     }
-    if (StringUtils.isNotEmpty(config.getSSLKeyStorePassword())) {
+    if (StringUtils.isNotEmpty(sslConfig.getKeystorePassword())) {
       sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD,
-          config.getSSLKeyStorePassword());
+          sslConfig.getKeystorePassword());
     }
-    if (StringUtils.isNotEmpty(config.getSSLKeyStoreType())) {
-      sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE, config.getSSLKeyStoreType());
+    if (StringUtils.isNotEmpty(sslConfig.getKeystoreType())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE, sslConfig.getKeystoreType());
     }
-    if (StringUtils.isNotEmpty(config.getSSLTrustStore())) {
-      sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE, config.getSSLTrustStore());
+    if (StringUtils.isNotEmpty(sslConfig.getTruststore())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE, sslConfig.getTruststore());
     }
-    if (StringUtils.isNotEmpty(config.getSSLTrustStorePassword())) {
+    if (StringUtils.isNotEmpty(sslConfig.getTruststorePassword())) {
       sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD,
-          config.getSSLTrustStorePassword());
+          sslConfig.getTruststorePassword());
     }
-    if (StringUtils.isNotEmpty(config.getSSLTrustStoreType())) {
-      sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, config.getSSLTrustStoreType());
+    if (StringUtils.isNotEmpty(sslConfig.getTruststoreType())) {
+      sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, sslConfig.getTruststoreType());
     }
-    if (StringUtils.isNotEmpty(config.getSSLCiphers())
-        && !config.getSSLCiphers().equalsIgnoreCase("any")) {
-      sslProps.put("javax.rmi.ssl.client.enabledCipherSuites", config.getSSLCiphers());
+    if (StringUtils.isNotEmpty(sslConfig.getCiphers())
+        && !sslConfig.getCiphers().equalsIgnoreCase("any")) {
+      sslProps.put("javax.rmi.ssl.client.enabledCipherSuites", sslConfig.getCiphers());
     }
-    if (StringUtils.isNotEmpty(config.getSSLProtocols())
-        && !config.getSSLProtocols().equalsIgnoreCase("any")) {
-      sslProps.put("javax.rmi.ssl.client.enabledProtocols", config.getSSLProtocols());
+    if (StringUtils.isNotEmpty(sslConfig.getProtocols())
+        && !sslConfig.getProtocols().equalsIgnoreCase("any")) {
+      sslProps.put("javax.rmi.ssl.client.enabledProtocols", sslConfig.getProtocols());
     }
 
     return sslProps;
