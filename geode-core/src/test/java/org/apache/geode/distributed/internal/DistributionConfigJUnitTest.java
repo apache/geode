@@ -423,11 +423,11 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void testSSLEnabledEndpointValidationIsSetDefaultToFalse() {
+  public void testSSLEnabledEndpointValidationIsSetDefaultToTrue() {
     Properties props = new Properties();
 
     DistributionConfig config = new DistributionConfigImpl(props);
-    assertThat(config.getSSLEndpointIdentificationEnabled()).isEqualTo(false);
+    assertThat(config.getSSLEndpointIdentificationEnabled()).isEqualTo(true);
   }
 
   @Test

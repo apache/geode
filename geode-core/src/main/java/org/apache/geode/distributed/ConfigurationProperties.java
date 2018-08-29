@@ -1932,14 +1932,19 @@ public interface ConfigurationProperties {
 
   /**
    * The static String definition of the <i>"ssl-use-default-sslcontext"</i> property
-   *
-   * <U>Description</U>If true allows users to use the default SSLContext. When using
-   * default SSLContext, users do not need to configure other ssl properties except
-   * ssl-enabled-components and ssl-require-authentication.
    * </p>
+   *
+   * <U>Description</U> When true, either uses the default context as returned by
+   * SSLContext.getInstance('Default') or uses the context as set by using
+   * SSLContext.setDefault(). If false, then specify the keystore and the truststore by setting
+   * ssl-keystore-* and ssl-truststore-* properties. This property does not enable SSL.
+   * </p>
+   *
    * <U>Default</U>: "false"
    * </p>
-   * <U>Since</U>: Geode 1.8
+   *
+   * <U>Since</U>: Geode 1.7
+   * </p>
    */
   String SSL_USE_DEFAULT_SSLCONTEXT = "ssl-use-default-sslcontext";
   /**
@@ -1950,7 +1955,8 @@ public interface ConfigurationProperties {
    * SSL handshake.
    * </p>
    * <U>Default</U>: code>"false"</code>
-   * <U>Since</U>: Geode 1.8
+   * </p>
+   * <U>Since</U>: Geode 1.7
    */
   String SSL_ENDPOINT_IDENTIFICATION_ENABLED = "ssl-enable-endpoint-identification";
   /**

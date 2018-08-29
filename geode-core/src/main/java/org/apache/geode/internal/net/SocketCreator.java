@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.net;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -1038,14 +1037,12 @@ public class SocketCreator {
       sslSocket.setEnableSessionCreation(true);
 
       if (sslConfig.doEndpointIdentification()) {
-        if (!sslConfig.useDefaultSSLContext()) {
-          logger.warn("Since GEODE 1.7.0, hostname is validated in the Server's certificate "
-              + "during SSL handshake. You can disable using setting '"
-              + SSL_ENDPOINT_IDENTIFICATION_ENABLED + "' to false.");
-        }
         SSLParameters sslParameters = sslSocket.getSSLParameters();
         sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
         sslSocket.setSSLParameters(sslParameters);
+      } else {
+        logger.warn("Your SSL configuration disables hostname validation. "
+            + "Future releases will mandate hostname validation.");
       }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
