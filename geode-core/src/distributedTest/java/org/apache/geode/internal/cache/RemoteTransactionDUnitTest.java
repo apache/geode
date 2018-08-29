@@ -2039,10 +2039,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void doTestIterator(final OP iteratorType, final int redundancy, final OP op) {
-    Host host = Host.getHost(0);
-    VM accessor = host.getVM(0);
-    VM datastore1 = host.getVM(1);
-    VM datastore2 = host.getVM(2);
+    VM accessor = VM.getVM(0);
+    VM datastore1 = VM.getVM(1);
+    VM datastore2 = VM.getVM(2);
     initAccessorAndDataStore(accessor, datastore1, datastore2, redundancy);
 
     accessor.invoke(new SerializableCallable() {

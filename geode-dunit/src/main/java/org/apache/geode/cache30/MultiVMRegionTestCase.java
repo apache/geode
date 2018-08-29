@@ -27,9 +27,6 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -3600,7 +3597,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           final Region<Object, Object> region = getRootRegion().getSubregion(name);
           await("never saw create of " + key)
               .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
-              .until(() -> region.getEntry(key), notNullValue());
+              .until(() -> region.getEntry(key) != null);
         }
       });
 
@@ -3620,7 +3617,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         final Region<Object, Object> region = getRootRegion().getSubregion(name);
         await("never saw expire of " + key)
             .atMost(4, SECONDS).pollInterval(10, MILLISECONDS)
-            .until(() -> region.getEntry(key), nullValue());
+            .until(() -> region.getEntry(key) == null);
       }
     });
 
@@ -3630,7 +3627,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         final Region<Object, Object> region = getRootRegion().getSubregion(name);
         await("never saw expire of " + key)
             .atMost(4, SECONDS).pollInterval(10, MILLISECONDS)
-            .until(() -> region.getEntry(key), nullValue());
+            .until(() -> region.getEntry(key) == null);
 
         assertThat(destroyListener.waitForInvocation(555)).isTrue();
         assertThat(((DestroyListener) destroyListener).eventIsExpiration).isTrue();
@@ -3872,9 +3869,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         final LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
 
         // wait for update to reach us from vm1 (needed if no-ack)
-        await("never saw update of " + key)
+        await("never saw key " + key + "equal to value " + value)
             .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
-            .until(() -> region.get(key), equalTo(value));
+            .until(() -> value.equals(region.get(key)));
 
         EntryExpiryTask eet = region.getEntryExpiryTask(key);
         long createExpiryTime = (Long) region.get("createExpiryTime");
@@ -4885,7 +4882,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             final int expectedProfiles = 1;
             await("profile count never became exactly " + expectedProfiles)
                 .atMost(1, MINUTES).pollInterval(200, MILLISECONDS)
-                .until(() -> adv.adviseReplicates(), hasSize(expectedProfiles));
+                .until(() -> adv.adviseReplicates().size(), equalTo(expectedProfiles));
 
             // since we want to force a GII while updates are flying, make sure
             // the other VM gets its CreateRegionResponse and starts its GII
@@ -5110,7 +5107,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           try {
             await("DataSerializer with id 120 was never registered")
                 .atMost(30, SECONDS).pollInterval(10, MILLISECONDS)
-                .until(() -> InternalDataSerializer.getSerializer((byte) 120), notNullValue());
+                .until(() -> InternalDataSerializer.getSerializer((byte) 120) != null);
           } finally {
             InternalDataSerializer.GetMarker.WAIT_MS = savVal;
           }
@@ -5623,9 +5620,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final CountingDistCacheListener<Object, Object> cdcl =
         (CountingDistCacheListener<Object, Object>) re.getAttributes().getCacheListeners()[0];
 
-    await("retry event")
+    await("retry event = null where it should not be")
         .atMost(1, MINUTES).pollInterval(200, MILLISECONDS)
-        .until(() -> cdcl.getEntryEvent(), notNullValue());
+        .until(() -> cdcl.getEntryEvent() != null);
 
     EntryEvent<Object, Object> listenEvent = cdcl.getEntryEvent();
     assertThat(listenEvent).describedAs(
