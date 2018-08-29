@@ -314,6 +314,7 @@ subprojects {
   }
 }
 
+classes.dependsOn subprojects.compileTestJava
 classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava
 classes.dependsOn subprojects.compileAcceptanceTestJava
