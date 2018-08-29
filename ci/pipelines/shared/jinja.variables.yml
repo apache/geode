@@ -30,10 +30,11 @@ tests:
   RAM: "12"
   ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: "1800"
-  DUNIT_PARALLEL_FORKS: "7"
-  GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+  DUNIT_PARALLEL_FORKS: "0"
+  GRADLE_TASK: acceptanceTest
   execute_test_timeout: 45m
-  PARALLEL_DUNIT: "true"
+  PARALLEL_DUNIT: "false"
+  PARALLEL_GRADLE: "false"
 - name: "Distributed"
   CPUS: "96"
   RAM: "180"
