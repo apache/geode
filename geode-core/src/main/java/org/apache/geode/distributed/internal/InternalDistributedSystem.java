@@ -72,6 +72,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
@@ -2472,7 +2473,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * isReconnectingDS returns true. This is used to connect the new DM to the distributed system
    * through RemoteTransportConfig.
    */
-  public Object oldDSMembershipInfo() {
+  public MembershipInformation oldDSMembershipInfo() {
     if (this.quorumChecker != null) {
       return this.quorumChecker.getMembershipInfo();
     }

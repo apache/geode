@@ -106,20 +106,6 @@ public class NonBlockingProcessStreamReaderIntegrationTest
     assertThatStdErrContainsExactly(ProcessPrintsToBoth.STDERR);
   }
 
-  @Test
-  public void capturesStderrWhenProcessFailsDuringStart() throws Exception {
-    // arrange
-    givenStartedProcessWithStreamListeners(ProcessThrowsError.class);
-
-    // act
-    waitUntilProcessStops();
-
-    // assert
-    assertThatProcessAndReadersStoppedWithExitValue(1);
-    assertThatStdOutContainsExactly(ProcessThrowsError.STDOUT);
-    assertThatStdErrContains(ProcessThrowsError.ERROR_MSG);
-  }
-
   @Override
   protected ReadingMode getReadingMode() {
     return NON_BLOCKING;

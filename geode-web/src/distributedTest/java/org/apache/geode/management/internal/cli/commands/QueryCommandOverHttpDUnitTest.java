@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class QueryCommandOverHttpDUnitTest extends QueryCommandDUnitTest {
+public class QueryCommandOverHttpDUnitTest extends QueryCommandDUnitTestBase {
   @Override
   public void connectToLocator() throws Exception {
     gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);

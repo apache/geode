@@ -98,7 +98,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   protected void assertStopOf(final Process process) {
-    await().until(() -> assertThat(process.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   protected void assertThatPidIsAlive(final int pid) {
@@ -195,7 +195,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   @Override
   protected ServerLauncher awaitStart(final ServerLauncher launcher) {
-    await().until(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
+    await().untilAsserted(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
     assertThat(process.isAlive()).isTrue();
     return launcher;
   }

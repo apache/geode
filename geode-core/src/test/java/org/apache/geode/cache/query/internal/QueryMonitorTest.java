@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -91,7 +92,9 @@ public class QueryMonitorTest {
   private Thread createQueryExecutionThread(int i) {
     Thread thread = new Thread(() -> {
       // make sure the threadlocal variable is updated
-      Awaitility.await().until(() -> QueryMonitor.isQueryExecutionCanceled());
+      Awaitility.await()
+          .untilAsserted(() -> assertThatCode(() -> QueryMonitor.isQueryExecutionCanceled())
+              .doesNotThrowAnyException());
     });
     thread.setName("query" + i);
     return thread;

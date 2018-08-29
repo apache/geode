@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_SIZE_PROPERTY;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +41,7 @@ import org.apache.geode.test.junit.categories.WanTest;
 /**
  * DUnit test for operations on ParallelGatewaySender
  */
-@Category({WanTest.class})
+@Category(WanTest.class)
 @SuppressWarnings("serial")
 public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
@@ -569,15 +568,13 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm4.invoke(() -> doPuts(getTestMethodName() + "_PR", 1000));
 
     // try destroying on couple of nodes
-    catchException(vm4).invoke(() -> destroySender("ln"));
+    Throwable caughtException = catchThrowable(() -> vm4.invoke(() -> destroySender("ln")));
 
-    Exception caughtException = caughtException();
     assertThat(caughtException).isInstanceOf(RMIException.class);
     assertThat(caughtException.getCause()).isInstanceOf(GatewaySenderException.class);
 
-    catchException(vm5).invoke(() -> destroySender("ln"));
+    caughtException = catchThrowable(() -> vm5.invoke(() -> destroySender("ln")));
 
-    caughtException = caughtException();
     assertThat(caughtException).isInstanceOf(RMIException.class);
     assertThat(caughtException.getCause()).isInstanceOf(GatewaySenderException.class);
 

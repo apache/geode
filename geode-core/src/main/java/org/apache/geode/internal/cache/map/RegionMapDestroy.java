@@ -473,9 +473,9 @@ public class RegionMapDestroy {
         }
         throwException = false;
         setRedestroyedEntry();
-        doDestroyPart2(entryForDistribution, false);
         // Distribution of this op happens on regionEntry in part 3 so ensure it is not null
         setRegionEntry(entryForDistribution);
+        doPart3 = true;
       }
     }
     if (throwException) {

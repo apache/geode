@@ -16,20 +16,19 @@
  */
 
 dependencies {
-    compileOnly project(':geode-core')
-    testCompile project(':geode-core')
-    compile project(':geode-protobuf-messages')
+  compileOnly project(':geode-core')
+  compile project(':geode-protobuf-messages')
+  compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
 
-    testCompile project(':geode-junit')
 
-    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+  testCompile project(':geode-core')
+  testCompile project(':geode-junit')
+  testCompile project(":geode-protobuf:geode-protobuf-test")
 
-    compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
 
-    integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile project(":geode-protobuf:geode-protobuf-test")
 
-    distributedTestCompile project(":geode-dunit")
+
+  distributedTestCompile project(":geode-protobuf:geode-protobuf-test")
 }

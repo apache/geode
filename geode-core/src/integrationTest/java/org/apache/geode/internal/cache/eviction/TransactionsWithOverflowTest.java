@@ -12,15 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.eviction;
 
-
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.File;
 import java.util.Properties;
@@ -44,6 +41,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.VMLRURegionMap;
+import org.apache.geode.test.junit.rules.DiskDirRule;
 
 /**
  * Test for transactional operations on overflowed data
@@ -51,24 +49,15 @@ import org.apache.geode.internal.cache.VMLRURegionMap;
 public class TransactionsWithOverflowTest {
 
   @Rule
+  public DiskDirRule diskDirRule = new DiskDirRule();
+
+  @Rule
   public TestName name = new TestName();
 
   private Cache cache;
 
-  private String createDiskStoreAndGetName() {
-    Cache cache = getCache();
-    File[] diskDirs = new File[1];
-    diskDirs[0] = new File("diskRegionDirs/" + getClass().getCanonicalName());
-    diskDirs[0].mkdirs();
-    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskStoreFactory.setDiskDirs(diskDirs);
-    String diskStoreName = getClass().getName();
-    diskStoreFactory.create(diskStoreName);
-    return diskStoreName;
-  }
-
   @Test
-  public void testpartitionedRegionWithOverflow() {
+  public void testPartitionedRegionWithOverflow() {
     Cache cache = getCache();
     String diskStoreName = createDiskStoreAndGetName();
     Region pr = createOverflowPR(cache, diskStoreName);
@@ -82,7 +71,7 @@ public class TransactionsWithOverflowTest {
   }
 
   @Test
-  public void verifyThatTransactionalDestroysRemoveFromTheEvictionList() throws Exception {
+  public void verifyThatTransactionalDestroysRemoveFromTheEvictionList() {
     Cache cache = getCache();
     RegionFactory<?, ?> rf = cache.createRegionFactory();
     rf.setDataPolicy(DataPolicy.REPLICATE);
@@ -103,7 +92,7 @@ public class TransactionsWithOverflowTest {
   }
 
   @Test
-  public void verifyThatTransactionalDestroysRemoveFromExpiration() throws Exception {
+  public void verifyThatTransactionalDestroysRemoveFromExpiration() {
     Cache cache = getCache();
     RegionFactory<?, ?> rf = cache.createRegionFactory();
     rf.setDataPolicy(DataPolicy.REPLICATE);
@@ -118,8 +107,20 @@ public class TransactionsWithOverflowTest {
       mgr.commit();
     }
 
-    catchException(r).getEntryExpiryTask(0);
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(EntryNotFoundException.class);
+    Throwable thrown = catchThrowable(() -> r.getEntryExpiryTask(0));
+    assertThat(thrown).isExactlyInstanceOf(EntryNotFoundException.class);
+  }
+
+  private String createDiskStoreAndGetName() {
+    Cache cache = getCache();
+    File[] diskDirs = new File[1];
+    diskDirs[0] = new File("diskRegionDirs/" + getClass().getCanonicalName());
+    diskDirs[0].mkdirs();
+    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(diskDirs);
+    String diskStoreName = getClass().getName();
+    diskStoreFactory.create(diskStoreName);
+    return diskStoreName;
   }
 
   private Cache getCache() {

@@ -18,7 +18,7 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
-  compile(project(':extensions/geode-modules')) {
+  compile(project(':extensions:geode-modules')) {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'
   }
@@ -32,18 +32,13 @@ dependencies {
   }
   compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version'
 
-  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-
-  testRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
-  testRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
-  testRuntime 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-  testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
-
-  testCompile project(path: ':geode-junit')
-  testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
-
   integrationTestCompile project(":geode-dunit")
-  integrationTestCompile files(project(':extensions/geode-modules').sourceSets.integrationTest.output)
+  integrationTestCompile project(":extensions:geode-modules-test")
+
+  integrationTestRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
+  integrationTestRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
+  integrationTestRuntime 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  integrationTestRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
 
   eclipse.classpath.file {
     whenMerged { classpath ->

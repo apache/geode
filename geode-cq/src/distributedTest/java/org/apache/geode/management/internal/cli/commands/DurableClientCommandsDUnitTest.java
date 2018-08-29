@@ -127,7 +127,7 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, CLIENT_NAME);
     String commandString = csb.toString();
 
-    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+    Awaitility.waitAtMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
       gfsh.executeAndAssertThat(commandString).statusIsSuccess();
     });
 
@@ -204,7 +204,7 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, CLIENT_NAME);
     String commandString1 = csb.toString();
 
-    Awaitility.waitAtMost(20, TimeUnit.SECONDS).until(() -> {
+    Awaitility.waitAtMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
       gfsh.executeAndAssertThat(commandString1).statusIsSuccess();
     });
 

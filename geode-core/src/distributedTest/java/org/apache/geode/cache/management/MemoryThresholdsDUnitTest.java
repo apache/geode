@@ -303,7 +303,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
           public boolean done() {
             DistributedRegion dr = (DistributedRegion) getRootRegion().getSubregion(regionName);
-            return dr.getMemoryThresholdReachedMembers().size() == 0;
+            return dr.getAtomicThresholdInfo().getMembersThatReachedThreshold().size() == 0;
           }
         };
         Wait.waitForCriterion(wc, 30000, 10, true);

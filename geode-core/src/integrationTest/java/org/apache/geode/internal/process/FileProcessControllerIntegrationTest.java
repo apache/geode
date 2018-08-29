@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.process;
 
-import static com.googlecode.catchexception.CatchException.caughtException;
-import static com.googlecode.catchexception.CatchException.verifyException;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,10 +100,10 @@ public class FileProcessControllerIntegrationTest {
     FileProcessController controller = new FileProcessController(params, pid, 10, MILLISECONDS);
 
     // when:
-    verifyException(controller).status();
+    Throwable thrown = catchThrowable(() -> controller.status());
 
     // then: we expect TimeoutException to be thrown
-    assertThat((Exception) caughtException()).isInstanceOf(TimeoutException.class)
+    assertThat(thrown).isInstanceOf(TimeoutException.class)
         .hasMessageContaining("Timed out waiting for process to create").hasNoCause();
   }
 
@@ -127,7 +126,7 @@ public class FileProcessControllerIntegrationTest {
     new StringFileWriter(statusFile).writeToFile(STATUS_JSON);
 
     // then: returned status should be the json in the file
-    await().until(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
+    await().untilAsserted(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
   }
 
   /**
@@ -155,7 +154,7 @@ public class FileProcessControllerIntegrationTest {
     new EmptyFileWriter(statusFile).createNewFile();
 
     // then: returned status should be the json in the file
-    await().until(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
+    await().untilAsserted(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
   }
 
   @Test
@@ -202,7 +201,7 @@ public class FileProcessControllerIntegrationTest {
     new StringFileWriter(statusFile).writeToFile(STATUS_JSON);
 
     // assert
-    await().until(() -> assertThat(statusRequestFile).exists());
+    await().untilAsserted(() -> assertThat(statusRequestFile).exists());
   }
 
   @Test
@@ -222,7 +221,7 @@ public class FileProcessControllerIntegrationTest {
     });
 
     // assert
-    await().until(() -> assertThat(statusRequestFile).exists());
+    await().untilAsserted(() -> assertThat(statusRequestFile).exists());
   }
 
   private ConditionFactory await() {

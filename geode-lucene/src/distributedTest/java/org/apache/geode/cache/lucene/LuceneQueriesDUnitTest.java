@@ -108,8 +108,9 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
     putDataInRegion(accessor);
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
-    accessor.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> assertFalse(
-        LuceneServiceProvider.get(getCache()).isIndexingInProgress(INDEX_NAME, REGION_NAME))));
+    accessor.invoke(
+        () -> Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(
+            LuceneServiceProvider.get(getCache()).isIndexingInProgress(INDEX_NAME, REGION_NAME))));
     executeTextSearch(accessor);
 
   }

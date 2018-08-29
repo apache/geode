@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.awaitility.Awaitility;
+import org.awaitility.core.ThrowingRunnable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -1381,7 +1382,7 @@ public class HARegionQueueJUnitTest {
     cache.setMessageSyncInterval(updatedMessageSyncInterval);
 
     Awaitility.await().atMost(1, TimeUnit.MINUTES)
-        .until(() -> assertThat("messageSyncInterval not updated.",
+        .untilAsserted(() -> assertThat("messageSyncInterval not updated.",
             HARegionQueue.getMessageSyncInterval(), is(updatedMessageSyncInterval)));
   }
 
@@ -1783,8 +1784,8 @@ public class HARegionQueueJUnitTest {
    * passed
    */
   private void waitAtLeast(final int minimumElapsedTime, final long start,
-      final Runnable runnable) {
-    Awaitility.await().atMost(1, TimeUnit.MINUTES).until(runnable);
+      final ThrowingRunnable runnable) {
+    Awaitility.await().atMost(1, TimeUnit.MINUTES).untilAsserted(runnable);
     long elapsed = System.currentTimeMillis() - start;
     assertThat(elapsed >= minimumElapsedTime, is(true));
   }

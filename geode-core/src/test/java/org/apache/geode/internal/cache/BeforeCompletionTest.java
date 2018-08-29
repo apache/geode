@@ -1,0 +1,98 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.apache.geode.internal.cache;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Before;
+import org.junit.Test;
+
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.SynchronizationCommitConflictException;
+
+public class BeforeCompletionTest {
+
+  private BeforeCompletion beforeCompletion;
+  private CancelCriterion cancelCriterion;
+  private TXState txState;
+
+  @Before
+  public void setup() {
+    beforeCompletion = new BeforeCompletion();
+    cancelCriterion = mock(CancelCriterion.class);
+    txState = mock(TXState.class);
+  }
+
+  @Test
+  public void executeThrowsExceptionIfDoOpFailedWithException() {
+    doThrow(new SynchronizationCommitConflictException("")).when(txState).doBeforeCompletion();
+
+    beforeCompletion.doOp(txState);
+
+    assertThatThrownBy(() -> beforeCompletion.execute(cancelCriterion))
+        .isInstanceOf(SynchronizationCommitConflictException.class);
+  }
+
+  @Test
+  public void doOpCallsDoBeforeCompletion() {
+    beforeCompletion.doOp(txState);
+
+    verify(txState, times(1)).doBeforeCompletion();
+  }
+
+  @Test
+  public void isStartedReturnsFalseIfNotExecuted() {
+    assertThat(beforeCompletion.isStarted()).isFalse();
+  }
+
+  @Test
+  public void isStartedReturnsTrueIfExecuted() {
+    beforeCompletion.doOp(txState);
+    beforeCompletion.execute(cancelCriterion);
+
+    assertThat(beforeCompletion.isStarted()).isTrue();
+  }
+
+  @Test
+  public void executeThrowsIfCancelCriterionThrows() {
+    doThrow(new RuntimeException()).when(cancelCriterion).checkCancelInProgress(null);
+
+    assertThatThrownBy(() -> beforeCompletion.execute(cancelCriterion))
+        .isInstanceOf(RuntimeException.class);
+  }
+
+  @Test
+  public void executeWaitsUntilDoOpFinish() throws Exception {
+    Thread thread = new Thread(() -> beforeCompletion.execute(cancelCriterion));
+    thread.start();
+    // give the thread a chance to get past the "finished" check by waiting until
+    // checkCancelInProgress is called
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .untilAsserted(() -> verify(cancelCriterion, times(1)).checkCancelInProgress(null));
+
+    beforeCompletion.doOp(txState);
+
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> !(thread.isAlive()));
+  }
+
+}

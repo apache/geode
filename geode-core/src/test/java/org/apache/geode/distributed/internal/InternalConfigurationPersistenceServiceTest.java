@@ -191,18 +191,16 @@ public class InternalConfigurationPersistenceServiceTest {
 
   @Test
   public void getPackagesToScanWithoutSystemProperty() {
-    String[] packages = service.getPackagesToScan();
-    assertThat(packages).hasSize(1);
-    assertThat(packages[0]).isEqualTo("");
+    Set<String> packages = service.getPackagesToScan();
+    assertThat(packages).containsExactly("*");
   }
 
   @Test
   public void getPackagesToScanWithSystemProperty() {
     System.setProperty("geode." + SystemPropertyHelper.PACKAGES_TO_SCAN,
         "org.apache.geode,io.pivotal");
-    String[] packages = service.getPackagesToScan();
-    assertThat(packages).hasSize(2);
-    assertThat(packages).contains("org.apache.geode", "io.pivotal");
+    Set<String> packages = service.getPackagesToScan();
+    assertThat(packages).containsExactly("org.apache.geode", "io.pivotal");
   }
 
   @Test

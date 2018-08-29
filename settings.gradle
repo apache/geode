@@ -14,6 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import org.gradle.util.GradleVersion
+
 rootProject.name = 'geode'
 
 include 'geode-old-versions'
@@ -25,29 +28,36 @@ include 'geode-core'
 include 'geode-web'
 include 'geode-web-api'
 include 'geode-pulse'
+include 'geode-pulse:geode-pulse-test'
 include 'geode-assembly'
+include 'geode-assembly:geode-assembly-test'
 include 'geode-rebalancer'
 include 'geode-lucene'
+include 'geode-lucene:geode-lucene-test'
 include 'geode-old-client-support'
 include 'geode-wan'
 include 'geode-cq'
 include 'geode-connectors'
-include 'extensions/geode-modules'
-include 'extensions/geode-modules-tomcat7'
-include 'extensions/geode-modules-tomcat8'
-include 'extensions/geode-modules-session-internal'
-include 'extensions/geode-modules-session'
-include 'extensions/geode-modules-assembly'
+include 'extensions:geode-modules'
+include 'extensions:geode-modules-test'
+include 'extensions:geode-modules-tomcat7'
+include 'extensions:geode-modules-tomcat8'
+include 'extensions:geode-modules-session-internal'
+include 'extensions:geode-modules-session'
+include 'extensions:geode-modules-assembly'
 include 'geode-protobuf'
+include 'geode-protobuf:geode-protobuf-test'
 include 'geode-experimental-driver'
 include 'geode-protobuf-messages'
-include 'extensions/session-testing-war'
+include 'extensions:session-testing-war'
 include 'geode-concurrency-test'
 
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
   throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
 }
+
+enableFeaturePreview('STABLE_PUBLISHING')
 
 buildCache {
   local {

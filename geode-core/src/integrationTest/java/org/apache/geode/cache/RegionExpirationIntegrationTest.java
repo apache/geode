@@ -89,7 +89,7 @@ public class RegionExpirationIntegrationTest {
     region.getAttributesMutator()
         .setRegionTimeToLive(new ExpirationAttributes(secondTtlSeconds, DESTROY));
 
-    await().atMost(10, SECONDS).until(() -> assertThat(region.isDestroyed()).isTrue());
+    await().atMost(10, SECONDS).untilAsserted(() -> assertThat(region.isDestroyed()).isTrue());
     assertThat(NANOSECONDS.toSeconds(nanoTime() - startNanos)).isLessThan(firstTtlSeconds);
   }
 

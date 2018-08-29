@@ -16,12 +16,5 @@
  */
 
 dependencies {
-    compile project(':geode-core')
-    compile project(':geode-common')
-
-    testCompile project(':geode-junit')
-
-    testCompile files(project(':geode-old-versions').sourceSets.main.output)
-
-    distributedTestCompile project(":geode-dunit")
+  compile project(':geode-core')
 }

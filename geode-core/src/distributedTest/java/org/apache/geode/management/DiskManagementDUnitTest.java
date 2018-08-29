@@ -389,7 +389,8 @@ public class DiskManagementDUnitTest implements Serializable {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
     ObjectName objectName = service.getMemberMBeanName(member);
     await()
-        .until(() -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
+        .untilAsserted(
+            () -> assertThat(service.getMBeanProxy(objectName, MemberMXBean.class)).isNotNull());
     return service.getMBeanProxy(objectName, MemberMXBean.class);
   }
 

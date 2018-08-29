@@ -63,7 +63,7 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -83,7 +83,7 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -676,12 +676,12 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForAsyncEventListenerWithEventsMapSize(int expectedSize) {
-    await().atMost(TWO_MINUTES).until(
+    await().atMost(TWO_MINUTES).untilAsserted(
         () -> assertThat(getSpyAsyncEventListener().getEventsMap()).hasSize(expectedSize));
   }
 
   private void waitForAsyncEventQueueSize(int expectedRegionQueueSize) {
-    await().atMost(TWO_MINUTES).until(
+    await().atMost(TWO_MINUTES).untilAsserted(
         () -> assertThat(getTotalRegionQueueSize()).isEqualTo(expectedRegionQueueSize));
   }
 
@@ -690,12 +690,13 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   private void waitForRegionQueuesToEmpty() {
-    await().atMost(TWO_MINUTES).until(() -> assertRegionQueuesAreEmpty(getInternalGatewaySender()));
+    await().atMost(TWO_MINUTES)
+        .untilAsserted(() -> assertRegionQueuesAreEmpty(getInternalGatewaySender()));
   }
 
   private void waitForSenderToBecomePrimary() {
     InternalGatewaySender gatewaySender = getInternalGatewaySender();
-    await().atMost(TWO_MINUTES).until(
+    await().atMost(TWO_MINUTES).untilAsserted(
         () -> assertThat(gatewaySender.isPrimary()).as("gatewaySender: " + gatewaySender).isTrue());
   }
 

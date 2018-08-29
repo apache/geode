@@ -518,7 +518,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     verify(re, times(1)).setAddress(oldValue.getAddress(), newValue.getAddress());
 
     // verify oldAddress is released
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(OffHeapStoredObject.class);
     OffHeapStoredObject.release(oldValue.getAddress());
   }
 
@@ -552,7 +552,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     verify(re, times(1)).setAddress(oldAddress, newAddress.getAddress());
 
     // verify that release is never called as the old address is not on offheap
-    PowerMockito.verifyStatic(never());
+    PowerMockito.verifyStatic(OffHeapStoredObject.class, never());
     OffHeapStoredObject.release(oldAddress);
   }
 
@@ -582,7 +582,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     verify(re, times(1)).setAddress(oldAddress, newAddress);
 
     // verify that release is never called as the old address is not on offheap
-    PowerMockito.verifyStatic(never());
+    PowerMockito.verifyStatic(OffHeapStoredObject.class, never());
     OffHeapStoredObject.release(oldAddress);
   }
 
@@ -899,7 +899,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     OffHeapRegionEntryHelper.releaseEntry(re);
 
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(OffHeapRegionEntryHelper.class);
     OffHeapRegionEntryHelper.setValue(re, Token.REMOVED_PHASE2);
   }
 
@@ -924,7 +924,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     verify(spy, times(1)).setPendingAsync(Boolean.FALSE);
 
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(OffHeapRegionEntryHelper.class);
     OffHeapRegionEntryHelper.setValue(re, Token.REMOVED_PHASE2);
   }
 

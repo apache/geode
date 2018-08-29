@@ -28,20 +28,20 @@ task combineReports(type: TestReport) {
 }
 
 gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect{ it.tasks.withType(Test) }.flatten()
+  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
+    it.tasks.withType(Test)
+  }.flatten()
 })
 
 
 subprojects {
   dependencies {
-    testCompile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+    testCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
       exclude module: 'junit-dep'
     }
     testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
     testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
-    testCompile 'eu.codearte.catch-exception:catch-exception:' + project.'catch-exception.version'
-    testCompile 'eu.codearte.catch-exception:catch-throwable:' + project.'catch-throwable.version'
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
@@ -55,9 +55,13 @@ subprojects {
 
     testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
-    testRuntime 'cglib:cglib:' + project.'cglib.version'
+    testRuntime('cglib:cglib:' + project.'cglib.version') {
+      exclude module: 'org.apache.ant'
+    }
   }
 
+  // This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
+  // and associated classes are themselves removed, per GEODE-5606
   configurations {
     apt
   }
@@ -68,7 +72,8 @@ subprojects {
       transitive = false
     }
     // Because EnsureCorrectRunsWithProcessor needs access to
-    // CategoryWithParameterizedRunnerFactory. The specific version of geode-junit is not important.
+    // CategoryWithParameterizedRunnerFactory.
+    // buildSrc uses version 1.3.0, so we use it here instead of the local geode-junit project
     apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
       transitive = false
     }
@@ -82,135 +87,124 @@ subprojects {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
-    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    if (project.hasProperty('testMaxParallelForks')) {
+      maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
+    } else {
+      maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    }
   }
 
   apply plugin: 'nebula.facet'
   facets {
     integrationTest {
-      parentSourceSet = 'test'
       testTaskName = 'integrationTest'
       includeInCheckLifecycle = false
     }
     distributedTest {
-      parentSourceSet = 'test'
       testTaskName = 'distributedTest'
       includeInCheckLifecycle = false
     }
     performanceTest {
-      parentSourceSet = 'test'
       testTaskName = 'performanceTest'
       includeInCheckLifecycle = false
     }
     acceptanceTest {
-      parentSourceSet = 'test'
       testTaskName = 'acceptanceTest'
       includeInCheckLifecycle = false
     }
     uiTest {
-      parentSourceSet = 'test'
       testTaskName = 'uiTest'
       includeInCheckLifecycle = false
     }
     upgradeTest {
-      parentSourceSet = 'test'
       testTaskName = 'upgradeTest'
       includeInCheckLifecycle = false
     }
   }
 
-  integrationTest {
-    useJUnit {
-      if(project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
+  configurations {
+    testAnnotationProcessor.extendsFrom annotationProcessor
+    integrationTestAnnotationProcessor.extendsFrom annotationProcessor
+    distributedTestAnnotationProcessor.extendsFrom annotationProcessor
+    performanceTestAnnotationProcessor.extendsFrom annotationProcessor
+    acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
+    uiTestAnnotationProcessor.extendsFrom annotationProcessor
+    upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
+    // Facets does not extend the new runtimeOnly configurations
+    integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
+    distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
+    performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+    acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+    uiTestRuntimeOnly.extendsFrom(runtimeOnly)
+    upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
+  }
 
+  dependencies {
+    integrationTestCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
+    integrationTestCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
+
+    integrationTestCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
+
+    integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
+    integrationTestCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
+    integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
+
+    distributedTestCompile project(":geode-dunit")
+  }
+
+  configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
+             upgradeTest]) {
     forkEvery 1
 
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
-  distributedTest {
+  // Until the category can be removed, we exclude FlakyTest from some targets.
+  configure([integrationTest, distributedTest, performanceTest]) {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
-
-    forkEvery 1
-    outputs.upToDateWhen{false}
   }
 
-  performanceTest {
-    useJUnit {
-      if(project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+  if (project.hasProperty("forceTest")) {
+    // All test facets already force rerun.  Only :test can be upToDate.
+    test {
+      outputs.upToDateWhen { false }
     }
-
-    forkEvery 1
   }
 
-  acceptanceTest {
-    useJUnit {
-      if(project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-    }
-    forkEvery 1
-    outputs.upToDateWhen{false}
-  }
-
-  uiTest {
-    useJUnit {
-      if(project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-    }
-    forkEvery 1
-    outputs.upToDateWhen{false}
-  }
-
-  upgradeTest {
-    useJUnit {
-      if(project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-    }
-    forkEvery 1
-    outputs.upToDateWhen{false}
-  }
-
-
-  task repeatTest(type:RepeatTest) {
-    times= Integer.parseInt(repeat)
+  task repeatTest(type: RepeatTest) {
+    times = Integer.parseInt(repeat)
 
     useJUnit {}
 
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
 
     classpath += project.sourceSets.distributedTest.runtimeClasspath
     testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
     classpath += project.sourceSets.integrationTest.runtimeClasspath
     testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
+    classpath += project.sourceSets.upgradeTest.runtimeClasspath
+    testClassesDirs += project.sourceSets.upgradeTest.output.classesDirs
+    classpath += project.sourceSets.acceptanceTest.runtimeClasspath
+    testClassesDirs += project.sourceSets.acceptanceTest.output.classesDirs
 
-    if(project.hasProperty("failOnNoMatchingTests")) {
+    if (project.hasProperty("failOnNoMatchingTests")) {
       filter {
         setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
       }
     }
   }
 
-  task flakyTest(type:Test) {
+  task flakyTest(type: Test) {
     useJUnit {
-      if(project.hasProperty("testCategory")) {
+      if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
       includeCategories += 'org.apache.geode.test.junit.categories.FlakyTest'
@@ -222,7 +216,7 @@ subprojects {
     }
 
     reports.junitXml.destination = file "$buildDir/test-reports-flaky"
-    outputs.upToDateWhen{false}
+    outputs.upToDateWhen { false }
   }
 
   /*
@@ -234,7 +228,6 @@ subprojects {
    *
   */
 
-
   // By proving a file with an arbitrary list of test classes, we can select only those
   // tests to run. Activated using -Dcustom.tests=<file> customTest
   def customTestList = []
@@ -243,20 +236,20 @@ subprojects {
     new File(customTestFile).eachLine { customTestList << it }
   }
 
-  task customTest(type:Test) {
+  task customTest(type: Test) {
     include { x ->
-      (x.isDirectory() || customTestList.any { y -> x.getName().contains(y) } ) ? true : false
+      (x.isDirectory() || customTestList.any { y -> x.getName().contains(y) }) ? true : false
     }
 
     forkEvery 30
   }
 
   // apply common test configuration
-  gradle.taskGraph.whenReady( { graph ->
+  gradle.taskGraph.whenReady({ graph ->
     tasks.withType(Test).each { test ->
       check.dependsOn test
       test.configure {
-        onlyIf { ! Boolean.getBoolean('skip.tests') }
+        onlyIf { !Boolean.getBoolean('skip.tests') }
 
         def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
         test.workingDir = resultsDir
@@ -269,8 +262,8 @@ subprojects {
         maxHeapSize '768m'
 //        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea',"-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps"]
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
-        if(!testJVM.trim().isEmpty()) {
-          executable="${testJVM}/bin/java"
+        if (!testJVM.trim().isEmpty()) {
+          executable = "${testJVM}/bin/java"
         }
 
         systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
@@ -287,7 +280,7 @@ subprojects {
 
         // The distributed tests seem to need to use /tmp directly,
         // so exclude them from using the supplied temp directory.
-        if (! test.name.contains("distributed")) {
+        if (!test.name.contains("distributed")) {
           systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir')
         }
 
@@ -311,14 +304,17 @@ subprojects {
   })
 
   // Make precheckin task run all validation tests for checking in code.
-  task precheckin (dependsOn: [ build, ":geode-assembly:acceptanceTest", integrationTest, distributedTest, flakyTest ]) {
-    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
+  task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {
+    description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
   }
 
   combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {it.finalizedBy combineReports}
+  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {
+    it.finalizedBy combineReports
+  }
 }
 
+classes.dependsOn subprojects.compileTestJava
 classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava
 classes.dependsOn subprojects.compileAcceptanceTestJava

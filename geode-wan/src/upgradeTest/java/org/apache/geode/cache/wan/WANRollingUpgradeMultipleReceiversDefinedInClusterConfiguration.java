@@ -155,7 +155,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     // Wait for configuration configuration to be ready.
     locator.invoke(
         () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
-            .until(() -> assertThat(
+            .untilAsserted(() -> assertThat(
                 InternalLocator.getLocator().isSharedConfigurationRunning()).isTrue()));
 
     // Add cluster configuration elements containing multiple receivers

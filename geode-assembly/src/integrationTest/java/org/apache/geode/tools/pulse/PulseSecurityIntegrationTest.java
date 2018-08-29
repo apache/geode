@@ -48,7 +48,8 @@ public class PulseSecurityIntegrationTest {
     ManagementService service =
         ManagementService.getExistingManagementService(locator.getLocator().getCache());
 
-    await().atMost(2, MINUTES).until(() -> assertThat(service.getMemberMXBean()).isNotNull());
+    await().atMost(2, MINUTES)
+        .untilAsserted(() -> assertThat(service.getMemberMXBean()).isNotNull());
 
     Cluster cluster = pulse.getRepository().getCluster("cluster", "cluster");
     Cluster.Member[] members = cluster.getMembers();

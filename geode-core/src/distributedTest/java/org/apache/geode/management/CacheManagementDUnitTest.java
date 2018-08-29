@@ -358,13 +358,13 @@ public class CacheManagementDUnitTest implements Serializable {
 
       ObjectName memberMBeanName = service.getMemberMBeanName(otherMember);
 
-      await().until(
+      await().untilAsserted(
           () -> assertThat(service.getMBeanProxy(memberMBeanName, MemberMXBean.class)).isNotNull());
       MemberMXBean memberMXBean = service.getMBeanProxy(memberMBeanName, MemberMXBean.class);
 
       // Ensure Data getting federated from Managing node
       long start = memberMXBean.getMemberUpTime();
-      await().until(() -> assertThat(memberMXBean.getMemberUpTime()).isGreaterThan(start));
+      await().untilAsserted(() -> assertThat(memberMXBean.getMemberUpTime()).isGreaterThan(start));
     });
   }
 
@@ -574,7 +574,7 @@ public class CacheManagementDUnitTest implements Serializable {
   private void verifyExpectedMembers(final int otherMembersCount) {
     String alias = "awaiting " + this.managementTestRule.getOtherNormalMembers() + " to have size "
         + otherMembersCount;
-    await(alias).until(() -> assertThat(this.managementTestRule.getOtherNormalMembers())
+    await(alias).untilAsserted(() -> assertThat(this.managementTestRule.getOtherNormalMembers())
         .hasSize(otherMembersCount));
   }
 
@@ -629,7 +629,7 @@ public class CacheManagementDUnitTest implements Serializable {
     memberVM3.invoke("createNotificationRegion", () -> createNotificationRegion(memberId3));
 
     managerVM.invoke("verify notifications size", () -> {
-      await().until(() -> assertThat(notifications.size()).isEqualTo(45));
+      await().untilAsserted(() -> assertThat(notifications.size()).isEqualTo(45));
 
       Cache cache = this.managementTestRule.getCache();
 
@@ -640,9 +640,9 @@ public class CacheManagementDUnitTest implements Serializable {
       // Even though we got 15 notification only 10 should be there due to
       // eviction attributes set in notification region
 
-      await().until(() -> assertThat(region1).hasSize(10));
-      await().until(() -> assertThat(region2).hasSize(10));
-      await().until(() -> assertThat(region3).hasSize(10));
+      await().untilAsserted(() -> assertThat(region1).hasSize(10));
+      await().untilAsserted(() -> assertThat(region2).hasSize(10));
+      await().untilAsserted(() -> assertThat(region3).hasSize(10));
     });
   }
 
@@ -651,7 +651,7 @@ public class CacheManagementDUnitTest implements Serializable {
     Map<ObjectName, NotificationHubListener> notificationHubListenerMap =
         service.getNotificationHub().getListenerObjectMap();
 
-    await().until(() -> assertThat(notificationHubListenerMap.size()).isEqualTo(1));
+    await().untilAsserted(() -> assertThat(notificationHubListenerMap.size()).isEqualTo(1));
 
     RegionFactory regionFactory =
         this.managementTestRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);

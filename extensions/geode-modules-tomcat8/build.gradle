@@ -18,7 +18,7 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
-  compile(project(':extensions/geode-modules')) {
+  compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
 
@@ -30,21 +30,9 @@ dependencies {
     exclude module: 'tomcat-servlet-api'
   }
   compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat8.version'
-
-  testCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
-
-  testRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
-  testRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
   compile 'javax.servlet:javax.servlet-api:' + '3.1.0'
-  testRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
-  testCompile 'javax.security.auth.message:javax.security.auth.message-api:' + '1.1'
 
-  testCompile project(path: ':geode-junit')
-  testCompile files(project(':geode-core').sourceSets.test.output)
-  testCompile files(project(':extensions/geode-modules').sourceSets.test.output)
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
-
-  distributedTestCompile project(":geode-dunit")
+  distributedTestCompile project(":extensions:geode-modules-test")
 
   eclipse.classpath.file {
     whenMerged { classpath ->

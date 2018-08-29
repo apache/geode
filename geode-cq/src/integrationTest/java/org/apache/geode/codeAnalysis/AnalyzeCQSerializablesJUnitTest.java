@@ -19,7 +19,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
-public class AnalyzeCQSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest {
+public class AnalyzeCQSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {

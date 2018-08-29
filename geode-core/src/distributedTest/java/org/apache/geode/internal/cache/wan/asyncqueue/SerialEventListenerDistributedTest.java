@@ -54,7 +54,7 @@ import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -66,7 +66,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 public class SerialEventListenerDistributedTest implements Serializable {
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -298,7 +298,7 @@ public class SerialEventListenerDistributedTest implements Serializable {
   private void validateThrowingAsyncEventListenerEventsMap(int expectedSize) {
     Map<?, AsyncEvent<?, ?>> eventsMap = getThrowingAsyncEventListener().getEventsMap();
 
-    await().atMost(TWO_MINUTES).until(() -> assertThat(eventsMap).hasSize(expectedSize));
+    await().atMost(TWO_MINUTES).untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
 
     for (AsyncEvent<?, ?> event : eventsMap.values()) {
       assertThat(event.getPossibleDuplicate()).isTrue();
@@ -307,7 +307,7 @@ public class SerialEventListenerDistributedTest implements Serializable {
 
   private void validateThrowingAsyncEventListenerExceptionThrown() {
     await().atMost(TWO_MINUTES)
-        .until(() -> assertThat(isThrowingAsyncEventListenerExceptionThrown()).isTrue());
+        .untilAsserted(() -> assertThat(isThrowingAsyncEventListenerExceptionThrown()).isTrue());
   }
 
   private void waitForDispatcherToPause() {

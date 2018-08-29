@@ -44,7 +44,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
@@ -55,7 +55,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * TRAC #39079: Regions with persistence remain in use after IOException have occurred
  */
-
 @SuppressWarnings("serial")
 public class InitializedDiskRegionWithIoExceptionRegressionTest implements Serializable {
 
@@ -66,7 +65,7 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest implements Seria
   private VM client;
 
   @Rule
-  public DistributedTestRule distributedTestRule = new DistributedTestRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public CacheRule cacheRule = new CacheRule();
@@ -74,15 +73,14 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest implements Seria
   @Rule
   public ClientCacheRule clientCacheRule = new ClientCacheRule();
 
-  /** DistributedDiskDirRule invokes before and after for SerializableTemporaryFolder */
-  private SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-
-  /** DistributedDiskDirRule invokes before and after for SerializableTestName */
-  private SerializableTestName testName = new SerializableTestName();
+  @Rule
+  public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule();
 
   @Rule
-  public DistributedDiskDirRule diskDirsRule =
-      new DistributedDiskDirRule(temporaryFolder, testName);
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
   @Before
   public void setUp() throws Exception {
@@ -111,7 +109,7 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest implements Seria
   }
 
   @Test
-  public void cacheServerPersistWithIOExceptionShouldShutdown() throws Exception {
+  public void cacheServerPersistWithIOExceptionShouldShutdown() {
     // create server cache
     int port = server.invoke(() -> createServerCache());
 

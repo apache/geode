@@ -15,7 +15,7 @@
 package org.apache.geode.connectors.jdbc;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -46,7 +46,7 @@ public class JdbcAsyncWriterTest {
   private InternalCache cache;
 
   @Before
-  public void setup() {
+  public void setUp() {
     sqlHandler = mock(SqlHandler.class);
     region = mock(InternalRegion.class);
     cache = Fakes.cache();

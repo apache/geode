@@ -87,7 +87,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   }
 
   protected void assertStopOf(final Process process) {
-    await().until(() -> assertThat(process.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   /**
@@ -193,7 +193,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
 
   @Override
   protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
-    await().until(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
+    await().untilAsserted(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
     assertThat(process.isAlive()).isTrue();
     return launcher;
   }

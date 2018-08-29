@@ -139,6 +139,13 @@ public class VM implements Serializable {
   }
 
   /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(VM... vms) {
+    return vms;
+  }
+
+  /**
    * Creates a new {@code VM} that runs on a given host with a given process id.
    */
   public VM(final Host host, final int id, final RemoteDUnitVMIF client) {

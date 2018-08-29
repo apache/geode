@@ -108,12 +108,13 @@ public class ShowDeadlockDUnitTest {
     // This thread locks the lock server2 first, then server1.
     lockTheLocks(server2, server1, countDownLatch);
 
-    Awaitility.await().atMost(5, TimeUnit.MINUTES).pollDelay(5, TimeUnit.SECONDS).until(() -> {
-      gfsh.executeAndAssertThat(showDeadlockCommand).statusIsSuccess();
-      String commandOutput = gfsh.getGfshOutput();
-      assertThat(commandOutput).startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
-      assertThat(outputFile).exists();
-    });
+    Awaitility.await().atMost(5, TimeUnit.MINUTES).pollDelay(5, TimeUnit.SECONDS)
+        .untilAsserted(() -> {
+          gfsh.executeAndAssertThat(showDeadlockCommand).statusIsSuccess();
+          String commandOutput = gfsh.getGfshOutput();
+          assertThat(commandOutput).startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
+          assertThat(outputFile).exists();
+        });
   }
 
   private void lockTheLocks(MemberVM thisVM, final MemberVM thatVM,

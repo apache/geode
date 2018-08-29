@@ -827,7 +827,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.put("expireMe", "expireMe");
 
     waitForEntryDestroy(region, "expireMe");
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, region.size()));
   }
 
   /**
@@ -984,7 +985,8 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     mutator.setEntryTimeToLive(new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
 
     waitForEntryDestroy(region, "expireMe");
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> assertEquals(0, region.size()));
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, region.size()));
   }
 
   public static void waitForRegionDestroy(final Region region) {

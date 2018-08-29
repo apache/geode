@@ -25,16 +25,6 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 GEODEBUILDDIR="${SCRIPTDIR}/../geode-build"
 
-if ! [ -x "$(command -v spruce)" ]; then
-    echo "Spruce must be installed for pipeline deployment to work."
-    echo "For macos: 'brew tap starkandwayne/cf; brew install spruce'"
-    echo "For Ubuntu: follow the instructions at https://github.com/geofffranks/spruce"
-    echo ""
-    exit 1
-else
-    SPRUCE=$(which spruce || true)
-fi
-
 set -e
 
 if [ -z "${GEODE_BRANCH}" ]; then
@@ -46,7 +36,11 @@ if [ "${GEODE_BRANCH}" = "HEAD" ]; then
   exit 1
 fi
 
-SANITIZED_GEODE_BRANCH=$(echo ${GEODE_BRANCH} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+
+. ${SCRIPTDIR}/../shared/utilities.sh
+
+SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
+SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
@@ -60,11 +54,11 @@ TARGET="geode"
 
 TEAM=${CONCOURSE_TEAM}
 
-if [[ "${GEODE_FORK}" == "apache" ]]; then
+if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
   PIPELINE_PREFIX=""
   DOCKER_IMAGE_PREFIX=""
 else
-  PIPELINE_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
+  PIPELINE_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
   DOCKER_IMAGE_PREFIX=${PIPELINE_PREFIX}
 fi
 

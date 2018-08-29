@@ -17,9 +17,6 @@ package org.apache.geode.management.internal.deployment;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collection;
 
 import org.junit.Before;
@@ -31,6 +28,7 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category({GfshTest.class})
 public class FunctionScannerTest {
@@ -112,12 +110,11 @@ public class FunctionScannerTest {
         "org.apache.geode.management.internal.deployment.AnnotatedFunction");
   }
 
-  private File loadTestResource(String fileName) throws URISyntaxException {
-    URL resourceFileURL = this.getClass().getResource(fileName);
-    assertThat(resourceFileURL).isNotNull();
+  private File loadTestResource(String fileName) {
+    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    assertThat(filePath).isNotNull();
 
-    URI resourceUri = resourceFileURL.toURI();
-    return new File(resourceUri);
+    return new File(filePath);
   }
 
 }

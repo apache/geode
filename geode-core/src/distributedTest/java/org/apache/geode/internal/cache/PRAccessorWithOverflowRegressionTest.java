@@ -101,7 +101,7 @@ public class PRAccessorWithOverflowRegressionTest extends CacheTestCase {
 
     // datastore should create diskstore
     await().atMost(1, MINUTES)
-        .until(() -> assertThat(datastoreDiskDir.listFiles().length).isGreaterThan(0));
+        .untilAsserted(() -> assertThat(datastoreDiskDir.listFiles().length).isGreaterThan(0));
 
     // accessor should not create a diskstore
     assertThat(accessorDiskDir.listFiles()).hasSize(0);

@@ -88,7 +88,6 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     if (lastResultReceived) {
       return;
     }
-    this.lastResultReceived = true;
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -120,6 +119,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.msg.addObjPart(oneResult);
       this.msg.setLastChunk(true);
       this.msg.sendChunk(this.sc);
+      this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
 
       FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
@@ -137,7 +137,6 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     if (lastResultReceived) {
       return;
     }
-    this.lastResultReceived = true;
     if (!isOkayToSendResult()) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -168,6 +167,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.msg.addObjPart(oneResult);
       this.msg.setLastChunk(true);
       this.msg.sendChunk(this.sc);
+      this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
       FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
@@ -311,7 +311,6 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     if (lastResultReceived) {
       return;
     }
-    this.lastResultReceived = true;
     if (logger.isDebugEnabled()) {
       logger.debug("ServerToClientFunctionResultSender setting exception {} ", exception);
     }
@@ -331,13 +330,14 @@ public class ServerToClientFunctionResultSender implements ResultSender {
             logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
           }
           writeFunctionExceptionResponse(msg, exceptionMessage, exception);
+          this.lastResultReceived = true;
         } catch (IOException ignoreAsSocketIsClosed) {
         }
       }
     }
   }
 
-  protected boolean isOkayToSendResult() {
+  public boolean isOkayToSendResult() {
     return (sc.getAcceptor().isRunning() && !ids.isDisconnecting()
         && !sc.getCachedRegionHelper().getCache().isClosed() && !alreadySendException.get());
   }

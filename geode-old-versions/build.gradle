@@ -83,11 +83,11 @@ def addOldVersion(def source, def geodeVersion, def downloadInstall) {
     project.ext.installs.setProperty(source, "${buildDir}/apache-geode-${geodeVersion}")
 
     task("downloadAndUnzipFile${geodeVersion}") {
-      inputs.file {
+      inputs.files {
         configurations."${source}OldInstall"
       }
 
-      outputs.file("${buildDir}/apache-geode-${geodeVersion}")
+      outputs.dir("${buildDir}/apache-geode-${geodeVersion}")
       doLast {
         copy {
           from zipTree(configurations."${source}OldInstall".singleFile)

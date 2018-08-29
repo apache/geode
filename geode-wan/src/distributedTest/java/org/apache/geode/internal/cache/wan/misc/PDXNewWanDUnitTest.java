@@ -838,12 +838,13 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
 
   public static void verifyFilterInvocation(int invocation) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(
         () -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeEnqueueInvoked, invocation));
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
-        .until(() -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeTransmitInvoked,
-            invocation));
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(
+        .untilAsserted(
+            () -> assertEquals(((PDXGatewayEventFilter) eventFilter).beforeTransmitInvoked,
+                invocation));
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(
         () -> assertEquals(((PDXGatewayEventFilter) eventFilter).afterAckInvoked, invocation));
   }
 

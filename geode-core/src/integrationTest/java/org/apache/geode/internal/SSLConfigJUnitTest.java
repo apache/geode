@@ -51,6 +51,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_PR
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.ALL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -64,6 +67,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -1080,6 +1084,21 @@ public class SSLConfigJUnitTest {
     isEqual(CLUSTER_SSL_PROPS_MAP.get(CLUSTER_SSL_TRUSTSTORE), config.getJmxManagerSSLTrustStore());
     isEqual(CLUSTER_SSL_PROPS_MAP.get(CLUSTER_SSL_TRUSTSTORE_PASSWORD),
         config.getJmxManagerSSLTrustStorePassword());
+  }
+
+  @Test
+  public void testEndpointIdentificationSSLConfig() {
+    Properties props = new Properties();
+
+    props.put("ssl-enabled-components", ALL);
+    props.put("ssl-endpoint-identification-enabled", "true");
+
+    SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(props, ALL);
+    assertThat(sslConfig.doEndpointIdentification()).isTrue();
+
+    props.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "false");
+    sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(props, ALL);
+    assertThat(sslConfig.doEndpointIdentification()).isFalse();
   }
 
   private static Properties getGfSecurityPropertiesSSL() {

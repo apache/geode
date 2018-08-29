@@ -43,6 +43,10 @@ public class DiskDirRule extends DescribedExternalResource {
 
   private String originalValue;
 
+  public DiskDirRule() {
+    this(new Builder());
+  }
+
   public DiskDirRule(TemporaryFolder temporaryFolder) {
     this(new Builder().temporaryFolder(temporaryFolder));
   }
@@ -57,10 +61,6 @@ public class DiskDirRule extends DescribedExternalResource {
 
   public DiskDirRule(Builder builder) {
     this(builder.initializeHelperRules, builder.temporaryFolder, builder.testName);
-  }
-
-  protected DiskDirRule() {
-    this(false, null, null);
   }
 
   protected DiskDirRule(boolean initializeHelperRules, TemporaryFolder temporaryFolder,
@@ -143,8 +143,8 @@ public class DiskDirRule extends DescribedExternalResource {
    */
   public static class Builder {
     private boolean initializeHelperRules = true;
-    private TemporaryFolder temporaryFolder;
-    private TestName testName;
+    private TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private TestName testName = new TestName();
 
     public Builder() {
       // nothing
@@ -171,18 +171,7 @@ public class DiskDirRule extends DescribedExternalResource {
     }
 
     public DiskDirRule build() {
-      fillIn();
       return new DiskDirRule(this);
-    }
-
-    private Builder fillIn() {
-      if (temporaryFolder == null) {
-        temporaryFolder = new TemporaryFolder();
-      }
-      if (testName == null) {
-        testName = new TestName();
-      }
-      return this;
     }
   }
 }

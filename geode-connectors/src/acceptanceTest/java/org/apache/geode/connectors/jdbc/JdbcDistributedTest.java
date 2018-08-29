@@ -210,7 +210,7 @@ public abstract class JdbcDistributedTest implements Serializable {
 
       JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) ClusterStartupRule.getCache()
           .getAsyncEventQueue("JAW").getAsyncEventListener();
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         assertThat(asyncWriter.getFailedEvents()).isEqualTo(1);
       });
 
@@ -456,7 +456,7 @@ public abstract class JdbcDistributedTest implements Serializable {
           .getAsyncEventQueue("JAW").getAsyncEventListener();
 
       region.put(key, pdxEmployee1);
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         assertThat(asyncWriter.getSuccessfulEvents()).isEqualTo(1);
       });
       region.invalidate(key);
@@ -465,7 +465,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       assertThat(result.getField("id")).isEqualTo(pdxEmployee1.getField("id"));
       assertThat(result.getField("name")).isEqualTo(pdxEmployee1.getField("name"));
       assertThat(result.getField("age")).isEqualTo(pdxEmployee1.getField("age"));
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         assertThat(asyncWriter.getIgnoredEvents()).isEqualTo(1);
       });
     });
@@ -657,7 +657,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       throws SQLException {
     Connection connection = DriverManager.getConnection(connectionUrl);
     Statement statement = connection.createStatement();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
       assertThat(getRowCount(statement, TABLE_NAME)).isEqualTo(size);
     });
 

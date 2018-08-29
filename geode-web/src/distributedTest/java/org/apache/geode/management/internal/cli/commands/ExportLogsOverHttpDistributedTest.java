@@ -23,7 +23,7 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class})
-public class ExportLogsOverHttpDistributedTest extends ExportLogsDUnitTest {
+public class ExportLogsOverHttpDistributedTest extends ExportLogsDUnitTestBase {
 
   @Override
   public void connect() throws Exception {

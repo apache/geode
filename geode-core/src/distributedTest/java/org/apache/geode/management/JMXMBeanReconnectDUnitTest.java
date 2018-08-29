@@ -35,7 +35,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -224,13 +223,8 @@ public class JMXMBeanReconnectDUnitTest {
 
   private void waitForMBeanFederationFrom(int numMemberMBeans, MemberVM member) {
     String memberName = "server-" + member.getVM().getId();
-    Awaitility.waitAtMost(10, SECONDS).until(() -> {
-      List<ObjectName> beans = null;
-      try {
-        beans = getFederatedGemfireBeansFrom(locator1);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+    waitAtMost(10, SECONDS).untilAsserted(() -> {
+      List<ObjectName> beans = getFederatedGemfireBeansFrom(locator1);
       List<ObjectName> beanList =
           beans.stream().filter(b -> b.toString().contains(memberName)).sorted().collect(toList());
       assertThat(beanList.size()).isEqualTo(numMemberMBeans);

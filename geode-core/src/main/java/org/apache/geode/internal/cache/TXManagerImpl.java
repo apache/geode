@@ -1018,13 +1018,16 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       if (tx.isOnBehalfOfClient()) {
         updateLastOperationTime(tx);
       }
-      cleanupTransactionIfNoLongerHost(tx);
-      setTXState(null);
-      tx.getLock().unlock();
+      try {
+        cleanupTransactionIfNoLongerHost(tx);
+      } finally {
+        setTXState(null);
+        tx.getLock().unlock();
+      }
     }
   }
 
-  private void cleanupTransactionIfNoLongerHost(TXStateProxy tx) {
+  void cleanupTransactionIfNoLongerHost(TXStateProxy tx) {
     synchronized (hostedTXStates) {
       if (!hostedTXStates.containsKey(tx.getTxId())) {
         // clean up the transaction if no longer the host of the transaction

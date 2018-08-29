@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 public class ClientCacheRule extends SerializableExternalResource {
@@ -62,6 +63,9 @@ public class ClientCacheRule extends SerializableExternalResource {
     if (cache != null) {
       cache.close();
     }
+    // this will clean up the SocketCreators created in this VM so that it won't contaminate
+    // future tests
+    SocketCreatorFactory.close();
   }
 
   public ClientCache getCache() {

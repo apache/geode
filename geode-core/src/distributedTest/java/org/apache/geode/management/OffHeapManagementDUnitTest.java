@@ -854,7 +854,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
    */
   private void waitForNotificationListenerOnVm(final VM vm, final long wait) {
     vm.invoke(() -> await("Awaiting Notification Listener").atMost(wait, TimeUnit.MILLISECONDS)
-        .until(() -> assertThat(notificationListener.getNotificationSize() > 0).isTrue()));
+        .untilAsserted(() -> assertThat(notificationListener.getNotificationSize() > 0).isTrue()));
   }
 
   /**

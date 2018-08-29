@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -170,7 +171,9 @@ public class LuceneEventListenerJUnitTest {
 
   @Test
   public void shouldThrowAndCaptureIOException() throws BucketNotFoundException {
-    Mockito.when(manager.getRepository(any(), any(), any())).thenThrow(IOException.class);
+    doAnswer((m) -> {
+      throw new IOException();
+    }).when(manager).getRepository(any(), any(), any());
     AtomicReference<Throwable> lastException = new AtomicReference<>();
     LuceneEventListener.setExceptionObserver(lastException::set);
     AsyncEvent event = Mockito.mock(AsyncEvent.class);

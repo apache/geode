@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.execute.Execution;
@@ -34,10 +33,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class MemberFunctionExecutor extends AbstractExecution {
@@ -161,7 +158,10 @@ public class MemberFunctionExecutor extends AbstractExecution {
   @Override
   public void validateExecution(final Function function, final Set dest) {
     final InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null && cache.getTxManager().getTXState() != null) {
+    if (cache == null) {
+      return;
+    }
+    if (cache.getTxManager().getTXState() != null) {
       if (dest.size() > 1) {
         throw new TransactionException(
             LocalizedStrings.PartitionedRegion_TX_FUNCTION_ON_MORE_THAN_ONE_NODE
@@ -179,16 +179,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
         }
       }
     }
-    if (function.optimizeForWrite() && cache != null
-        && cache.getInternalResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
-        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
-      Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-              .toLocalizedString(new Object[] {function.getId(), sm}),
-          sm);
-    }
+    cache.getInternalResourceManager().getHeapMonitor().checkForLowMemory(function, dest);
   }
 
   @Override

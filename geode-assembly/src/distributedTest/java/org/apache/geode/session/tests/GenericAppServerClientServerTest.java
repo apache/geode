@@ -95,7 +95,8 @@ public abstract class GenericAppServerClientServerTest extends CargoTestBase {
     serverVM.invoke(() -> {
       Cache cache = getCache();
       Region region = cache.getRegion("gemfire_modules_sessions");
-      Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> assertEquals(0, region.size()));
+      Awaitility.await().atMost(1, TimeUnit.MINUTES)
+          .untilAsserted(() -> assertEquals(0, region.size()));
     });
     super.verifySessionIsRemoved(key);
   }

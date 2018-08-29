@@ -224,7 +224,8 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
 
     Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
         .atMost(30, TimeUnit.SECONDS)
-        .until(() -> assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetLoad()));
+        .untilAsserted(
+            () -> assertEquals(expected, rgn.getCacheDistributionAdvisor().adviseNetLoad()));
   }
 
   /**

@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -74,35 +73,33 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 /**
  * Test for co-located PR transactions. the test creates two data hosts and uses function execution
  * to execute transactions.
- *
  */
-
 public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private static final Logger logger = LogService.getLogger();
 
-  public static final int VERIFY_TX = 0;
+  static final int VERIFY_TX = 0;
 
-  public static final int VERIFY_ROLLBACK = 1;
+  static final int VERIFY_ROLLBACK = 1;
 
-  public static final int VERIFY_NON_COLOCATION = 2;
+  static final int VERIFY_NON_COLOCATION = 2;
 
-  public static final int VERIFY_DESTROY = 4;
+  static final int VERIFY_DESTROY = 4;
 
-  public static final int VERIFY_LISTENER_CALLBACK = 5;
+  static final int VERIFY_LISTENER_CALLBACK = 5;
 
-  public static final int VERIFY_INVALIDATE = 6;
+  static final int VERIFY_INVALIDATE = 6;
 
-  public static final int VERIFY_TXSTATE_CONFLICT = 7;
+  static final int VERIFY_TXSTATE_CONFLICT = 7;
 
-  public static final int VERIFY_REP_READ = 8;
+  static final int VERIFY_REP_READ = 8;
 
-  public static final int UPDATE_NON_COLOCATION = 9;
+  static final int UPDATE_NON_COLOCATION = 9;
 
-  final int totalIterations = 50;
+  private final int totalIterations = 50;
 
-  final int warmupIterations = 10;
+  private final int warmupIterations = 10;
 
-  final int perfOrderShipmentPairs = 1;
+  private final int perfOrderShipmentPairs = 1;
 
   public PRTransactionDUnitTest() {
     super();
@@ -149,7 +146,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    *
    * @param redundantBuckets redundant buckets for colocated PRs
    */
-  protected void basicPRTXInNonColocatedFunction(int redundantBuckets) {
+  private void basicPRTXInNonColocatedFunction(int redundantBuckets) {
     setupColocatedRegions(redundantBuckets);
 
     dataStore1.invoke(() -> registerFunction());
@@ -212,7 +209,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    * @param redundantBuckets redundant buckets for colocated PRs
    * @param populateData if false tests are carried out on empty colocated PRs
    */
-  protected void basicPRTXInFunction(int redundantBuckets, boolean populateData) {
+  private void basicPRTXInFunction(int redundantBuckets, boolean populateData) {
 
     if (populateData) {
       createPopulateAndVerifyCoLocatedPRs(redundantBuckets);
@@ -225,7 +222,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     dataStore3.invoke(() -> registerFunction());
 
     accessor.invoke(new SerializableCallable("run function") {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache()
             .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
         PartitionedRegion orderpr = (PartitionedRegion) basicGetCache()
@@ -293,7 +291,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     });
   }
 
-  protected void createColocatedPRs(int redundantBuckets) {
+  private void createColocatedPRs(int redundantBuckets) {
     createCacheInAllVms();
 
     redundancy = new Integer(redundantBuckets);
@@ -323,13 +321,14 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   private SerializableCallable runGetCache = new SerializableCallable("runGetCache") {
-    public Object call() throws Exception {
+    @Override
+    public Object call() {
       getCache();
       return null;
     }
   };
 
-  protected void populateAndVerifyColocatedPRs(int redundantBuckets) {
+  private void populateAndVerifyColocatedPRs(int redundantBuckets) {
     // Put the customer 1-10 in CustomerPartitionedRegion
     accessor.invoke(
         () -> PRColocationDUnitTest.putCustomerPartitionedRegion(CustomerPartitionedRegionName));
@@ -373,18 +372,18 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   }
 
-  protected void createPopulateAndVerifyCoLocatedPRs(int redundantBuckets) {
+  private void createPopulateAndVerifyCoLocatedPRs(int redundantBuckets) {
 
     createColocatedPRs(redundantBuckets);
     populateAndVerifyColocatedPRs(redundantBuckets);
   }
 
-  protected void createPRWithCoLocation(String prName, String coLocatedWith) {
+  private void createPRWithCoLocation(String prName, String coLocatedWith) {
     setAttributes(prName, coLocatedWith);
     createPartitionedRegion(attributeObjects);
   }
 
-  protected void setAttributes(String prName, String coLocatedWith) {
+  private void setAttributes(String prName, String coLocatedWith) {
     this.regionName = prName;
     this.colocatedWith = coLocatedWith;
     this.isPartitionResolver = new Boolean(true);
@@ -402,7 +401,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    *
    * @param bucketRedundancy redundancy for the colocated PRs
    */
-  protected void basicPRTXWithNonColocatedGet(int bucketRedundancy) {
+  private void basicPRTXWithNonColocatedGet(int bucketRedundancy) {
     setupColocatedRegions(bucketRedundancy);
 
     dataStore1.invoke(verifyNonColocated);
@@ -541,7 +540,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    * @param bucketRedundancy redundancy for the colocated PRs
    */
   @SuppressWarnings("unchecked")
-  protected void basicPRTXWithOpOnMovedBucket(Op op, int bucketRedundancy, DistributedMember dm1,
+  private void basicPRTXWithOpOnMovedBucket(Op op, int bucketRedundancy, DistributedMember dm1,
       DistributedMember dm2) {
     // First transaction.
     TransactionId txId = dataStore1.invoke(() -> beginTx(false));
@@ -592,10 +591,6 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             .isInstanceOf(TransactionDataRebalancedException.class);
       }
     };
-  }
-
-  enum Op {
-    GET, CONTAINSVALUEFORKEY, CONTAINSKEY, CREATE, PUT, INVALIDATE, DESTROY, GETENTRY;
   }
 
   private void _resumeTx(Op op, TransactionId txId, PartitionedRegion pr,
@@ -686,6 +681,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   private void setBucketReadHook(OrderId order1, DistributedMember source,
       DistributedMember destination, PartitionedRegion prOrder) {
     prOrder.getDataStore().setBucketReadHook(new Runnable() {
+      @Override
       @SuppressWarnings("unchecked")
       public void run() {
         LogService.getLogger().info("In bucketReadHook");
@@ -735,7 +731,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    *
    * @param bucketRedundancy redundancy for the colocated PRs
    */
-  protected void basicPRTXWithNonColocatedOp(Op op, int bucketRedundancy) {
+  private void basicPRTXWithNonColocatedOp(Op op, int bucketRedundancy) {
     dataStore1.invoke(verifyNonColocated);
     dataStore2.invoke(verifyNonColocated);
 
@@ -819,7 +815,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     }
   }
 
-  private boolean useBucketReadHook = false;
+  private boolean useBucketReadHook;
 
   @SuppressWarnings("unchecked")
   @Test
@@ -869,7 +865,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    *
    * @param bucketRedundancy redundancy for the colocated PRs
    */
-  protected void basicPRTXInCacheListener(int bucketRedundancy) {
+  private void basicPRTXInCacheListener(int bucketRedundancy) {
     createCacheInAllVms();
     redundancy = new Integer(bucketRedundancy);
     localMaxmemory = new Integer(50);
@@ -879,7 +875,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     createPRWithCoLocation(OrderPartitionedRegionName, CustomerPartitionedRegionName);
     // register Cache Listeners
     SerializableCallable registerListeners = new SerializableCallable() {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         Region custRegion =
             basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
         custRegion.getAttributesMutator().addCacheListener(new TransactionListener());
@@ -905,7 +902,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    * verify that 10 orders are created for each customer
    *
    */
-  public static void validatePRTXInCacheListener() throws ClassNotFoundException {
+  private static void validatePRTXInCacheListener() {
     PartitionedRegion customerPartitionedregion = null;
     PartitionedRegion orderPartitionedregion = null;
     try {
@@ -954,7 +951,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     createPopulateAndVerifyCoLocatedPRs(1);
 
     SerializableCallable registerListeners = new SerializableCallable() {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         Region custRegion =
             basicGetCache().getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
         custRegion.getAttributesMutator().addCacheListener(new TransactionListener2());
@@ -968,7 +966,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     dataStore3.invoke(registerListeners);
 
     accessor.invoke(new SerializableCallable("run function") {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache()
             .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
         PartitionedRegion orderpr = (PartitionedRegion) basicGetCache()
@@ -1002,7 +1001,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   @Test
-  public void testRepeatableRead() throws Exception {
+  public void testRepeatableRead() {
     createColocatedPRs(1);
 
     dataStore1.invoke(() -> registerFunction());
@@ -1010,7 +1009,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     dataStore3.invoke(() -> registerFunction());
 
     accessor.invoke(new SerializableCallable("run function") {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache()
             .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
         PartitionedRegion orderpr = (PartitionedRegion) basicGetCache()
@@ -1042,14 +1042,15 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   @Test
-  public void testPRTXPerformance() throws Exception {
+  public void testPRTXPerformance() {
     PRColocationDUnitTestHelper.defaultStringSize = 1024;
 
     createPopulateAndVerifyCoLocatedPRs(1);
 
     // register functions
     SerializableCallable registerPerfFunctions = new SerializableCallable("register Fn") {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         Function perfFunction = new PerfFunction();
         FunctionService.registerFunction(perfFunction);
         Function perfTxFunction = new PerfTxFunction();
@@ -1064,7 +1065,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     accessor.invoke(registerPerfFunctions);
 
     SerializableCallable runPerfFunction = new SerializableCallable("runPerfFunction") {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         long perfTime = 0;
         Region customerPR = basicGetCache().getRegion(CustomerPartitionedRegionName);
         Execution execution = FunctionService.onRegion(customerPR);
@@ -1102,7 +1104,8 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     Long perfTime = (Long) accessor.invoke(runPerfFunction);
 
     SerializableCallable runPerfTxFunction = new SerializableCallable("runPerfTxFunction") {
-      public Object call() throws Exception {
+      @Override
+      public Object call() {
         long perfTime = 0;
         Region customerPR = basicGetCache().getRegion(CustomerPartitionedRegionName);
         Execution execution = FunctionService.onRegion(customerPR);
@@ -1161,7 +1164,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    *
    * @param redundantBuckets redundant buckets for colocated PRs
    */
-  protected void basicPRTXCommitToFailAfterPrimaryBucketMoved(int redundantBuckets) {
+  private void basicPRTXCommitToFailAfterPrimaryBucketMoved(int redundantBuckets) {
     setupColocatedRegions(redundantBuckets);
 
     InternalDistributedMember dm1 = (InternalDistributedMember) dataStore1.invoke(getDM());
@@ -1200,66 +1203,76 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
     mgr.resume(txId);
 
-    catchException(mgr).commit();
-    assertTrue(caughtException() instanceof TransactionDataRebalancedException);
+    Throwable thrown = catchThrowable(() -> mgr.commit());
+    assertTrue(thrown instanceof TransactionDataRebalancedException);
   }
 
   // Don't want to run the test twice
+  @Override
   @Test
-  public void testColocatedPartitionedRegion() throws Throwable {}
+  public void testColocatedPartitionedRegion() {}
 
+  @Override
   @Test
-  public void testColocationPartitionedRegion() throws Throwable {}
+  public void testColocationPartitionedRegion() {}
 
+  @Override
   @Test
-  public void testColocationPartitionedRegionWithRedundancy() throws Throwable {}
+  public void testColocationPartitionedRegionWithRedundancy() {}
 
+  @Override
   @Test
-  public void testPartitionResolverPartitionedRegion() throws Throwable {}
+  public void testPartitionResolverPartitionedRegion() {}
 
+  @Override
   @Test
   public void testColocationPartitionedRegionWithNullColocationSpecifiedOnOneNode() {}
 
   @Override
   @Test
-  public void testColocatedPRRedundancyRecovery() throws Throwable {}
+  public void testColocatedPRRedundancyRecovery() {}
 
   @Override
   @Test
-  public void testColocatedPRWithAccessorOnDifferentNode1() throws Throwable {}
+  public void testColocatedPRWithAccessorOnDifferentNode1() {}
 
   @Override
   @Test
-  public void testColocatedPRWithAccessorOnDifferentNode2() throws Throwable {}
+  public void testColocatedPRWithAccessorOnDifferentNode2() {}
 
   @Override
   @Test
-  public void testColocatedPRWithDestroy() throws Throwable {}
+  public void testColocatedPRWithDestroy() {}
 
   @Override
   @Test
-  public void testColocatedPRWithLocalDestroy() throws Throwable {}
+  public void testColocatedPRWithLocalDestroy() {}
 
   @Override
   @Test
-  public void testColocatedPRWithPROnDifferentNode1() throws Throwable {}
+  public void testColocatedPRWithPROnDifferentNode1() {}
 
   @Override
-  public final void preTearDownCacheTestCase() throws Exception {
+  public final void preTearDownCacheTestCase() {
     Invoke.invokeInEveryVM(verifyNoTxState);
   }
 
-  SerializableCallable verifyNoTxState = new SerializableCallable() {
+  private SerializableCallable verifyNoTxState = new SerializableCallable() {
     @Override
-    public Object call() throws Exception {
+    public Object call() {
       TXManagerImpl mgr = getGemfireCache().getTxManager();
       assertEquals(0, mgr.hostedTransactionsInProgressForTest());
       return null;
     }
   };
 
-  class TransactionListener extends CacheListenerAdapter {
+  enum Op {
+    GET, CONTAINSVALUEFORKEY, CONTAINSKEY, CREATE, PUT, INVALIDATE, DESTROY, GETENTRY;
+  }
 
+  static class TransactionListener extends CacheListenerAdapter {
+
+    @Override
     public void afterCreate(EntryEvent event) {
       // for each customer, put 10 orders in a tx.
       Region custPR = event.getRegion();
@@ -1285,41 +1298,46 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   static class TransactionListener2 extends CacheListenerAdapter {
-    private int numberOfPutCallbacks = 0;
-    private int numberOfDestroyCallbacks = 0;
-    private int numberOfInvalidateCallbacks = 0;
 
+    private int numberOfPutCallbacks;
+    private int numberOfDestroyCallbacks;
+    private int numberOfInvalidateCallbacks;
+
+    @Override
     public void afterCreate(EntryEvent event) {
       synchronized (this) {
         numberOfPutCallbacks++;
       }
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       afterCreate(event);
     }
 
+    @Override
     public void afterDestroy(EntryEvent event) {
       synchronized (this) {
         numberOfDestroyCallbacks++;
       }
     }
 
+    @Override
     public void afterInvalidate(EntryEvent event) {
       synchronized (this) {
         numberOfInvalidateCallbacks++;
       }
     }
 
-    public synchronized int getNumberOfPutCallbacks() {
+    synchronized int getNumberOfPutCallbacks() {
       return numberOfPutCallbacks;
     }
 
-    public synchronized int getNumberOfDestroyCallbacks() {
+    synchronized int getNumberOfDestroyCallbacks() {
       return numberOfDestroyCallbacks;
     }
 
-    public synchronized int getNumberOfInvalidateCallbacks() {
+    synchronized int getNumberOfInvalidateCallbacks() {
       return numberOfInvalidateCallbacks;
     }
   }

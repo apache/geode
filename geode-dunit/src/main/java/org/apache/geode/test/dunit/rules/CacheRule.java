@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.getDistributedSystemProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,7 +40,7 @@ import org.apache.geode.test.dunit.VM;
  *
  * <pre>
  * {@literal @}Rule
- * public DistributedTestRule distributedTestRule = new DistributedTestRule();
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
  * public CacheRule cacheRule = new CacheRule();
@@ -53,35 +54,37 @@ import org.apache.geode.test.dunit.VM;
  * public void createRegionWithRegionFactory() {
  *   getVM(0).invoke(() -> {
  *     RegionFactory regionFactory = cacheRule.getCache().createRegionFactory();
- *     ...
+ *     Region region = regionFactory.create("RegionName");
+ *     assertThat(region).isNotNull();
  *   });
  * }
  * </pre>
  *
  * <p>
- * {@link CacheRule.Builder} can be used to construct an instance with more options:
+ * {@link CacheRule.Builder} can also be used to construct an instance with more options:
  *
  * <pre>
- * {@literal @}ClassRule
- * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
- *
  * {@literal @}Rule
- * public DistributedTestRule.TearDown tearDown = new DistributedTestRule.TearDown();
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
  * public CacheRule cacheRule = CacheRule.builder().createCacheInAll().build();
  *
  * {@literal @}Test
- * public void everyVMShouldHaveACache() {
+ * public void controllerVmCreatedCache() {
  *   assertThat(cacheRule.getCache()).isNotNull();
+ * }
+ *
+ * {@literal @}Test
+ * public void remoteVmsCreatedCache() {
  *   for (VM vm : Host.getHost(0).getAllVMs()) {
  *     vm.invoke(() -> assertThat(cacheRule.getCache()).isNotNull());
  *   }
  * }
  * </pre>
  */
-@SuppressWarnings({"serial", "unused"})
-public class CacheRule extends AbstractDistributedTestRule {
+@SuppressWarnings("serial,unused")
+public class CacheRule extends AbstractDistributedRule {
 
   private static volatile InternalCache cache;
 
@@ -105,7 +108,12 @@ public class CacheRule extends AbstractDistributedTestRule {
     this(new Builder());
   }
 
+  public CacheRule(final int vmCount) {
+    this(new Builder().vmCount(vmCount));
+  }
+
   CacheRule(final Builder builder) {
+    super(builder.vmCount);
     createCacheInAll = builder.createCacheInAll;
     createCache = builder.createCache;
     disconnectAfter = builder.disconnectAfter;
@@ -260,14 +268,16 @@ public class CacheRule extends AbstractDistributedTestRule {
    */
   public static class Builder {
 
+    private final List<VM> createCacheInVMs = new ArrayList<>();
+    private final Properties systemProperties = new Properties();
+
     private boolean createCacheInAll;
     private boolean createCache;
     private boolean disconnectAfter;
     private boolean destroyRegions;
     private boolean replaceConfig;
-    private List<VM> createCacheInVMs = new ArrayList<>();
     private Properties config = new Properties();
-    private Properties systemProperties = new Properties();
+    private int vmCount = DEFAULT_VM_COUNT;
 
     public Builder() {
       // nothing
@@ -341,6 +351,11 @@ public class CacheRule extends AbstractDistributedTestRule {
 
     public Builder addSystemProperties(final Properties config) {
       systemProperties.putAll(config);
+      return this;
+    }
+
+    public Builder vmCount(final int vmCount) {
+      this.vmCount = vmCount;
       return this;
     }
 

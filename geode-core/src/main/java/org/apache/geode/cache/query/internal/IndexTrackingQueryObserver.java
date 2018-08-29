@@ -183,6 +183,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
       return results.keySet();
     }
 
+    // initial result of index in the observer. 0 means it's not updated yet.
     public void addRegionId(String regionId) {
       this.results.put(regionId, 0);
     }

@@ -235,7 +235,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
 
         // Wait for recovery
         await().atMost(2, MINUTES)
-            .until(() -> assertThat(prs.getLowRedundancyBucketCount()).isEqualTo(0));
+            .untilAsserted(() -> assertThat(prs.getLowRedundancyBucketCount()).isEqualTo(0));
       });
       return true;
     } else {

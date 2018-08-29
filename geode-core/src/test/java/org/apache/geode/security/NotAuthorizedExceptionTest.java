@@ -14,9 +14,8 @@
  */
 package org.apache.geode.security;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 
 import java.io.NotSerializableException;
@@ -37,7 +36,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 /**
  * Unit tests for {@link NotAuthorizedException}.
  */
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class NotAuthorizedExceptionTest {
 
   private String message;
@@ -55,99 +54,95 @@ public class NotAuthorizedExceptionTest {
 
   @Before
   public void setUp() throws Exception {
-    this.message = testName.getMethodName() + " message";
-    this.causeMessage = testName.getMethodName() + " cause message";
+    message = testName.getMethodName() + " message";
+    causeMessage = testName.getMethodName() + " cause message";
 
-    this.nonSerializableResolvedObj = new Object();
-    this.nonSerializableNamingException = new NamingException(this.causeMessage);
-    this.nonSerializableNamingException.setResolvedObj(this.nonSerializableResolvedObj);
+    nonSerializableResolvedObj = new Object();
+    nonSerializableNamingException = new NamingException(causeMessage);
+    nonSerializableNamingException.setResolvedObj(nonSerializableResolvedObj);
 
-    this.serializableResolvedObj = new SerializableObject(this.testName.getMethodName());
-    this.serializableNamingException = new NamingException(this.causeMessage);
-    this.serializableNamingException.setResolvedObj(this.serializableResolvedObj);
+    serializableResolvedObj = new SerializableObject(testName.getMethodName());
+    serializableNamingException = new NamingException(causeMessage);
+    serializableNamingException.setResolvedObj(serializableResolvedObj);
 
-    this.principalName = "jsmith";
-    this.nonSerializablePrincipal = mock(Principal.class);
-    this.serializablePrincipal = new SerializablePrincipal(this.principalName);
+    principalName = "jsmith";
+    nonSerializablePrincipal = mock(Principal.class);
+    serializablePrincipal = new SerializablePrincipal(principalName);
 
     assertPreconditions();
   }
 
   private void assertPreconditions() {
-    catchException(this).clone(this.nonSerializableNamingException);
-    assertThat((Throwable) caughtException()).isNotNull();
-    assertThat((Throwable) caughtException().getCause())
-        .isInstanceOf(NotSerializableException.class);
+    Throwable thrown =
+        catchThrowable(() -> SerializationUtils.clone(nonSerializableNamingException));
+    assertThat(thrown).isNotNull();
+    assertThat(thrown.getCause()).isInstanceOf(NotSerializableException.class);
 
-    catchException(this).clone(this.serializableNamingException);
-    assertThat((Throwable) caughtException()).isNull();
+    thrown = catchThrowable(() -> SerializationUtils.clone(serializableNamingException));
+    assertThat(thrown).isNull();
 
-    assertThat(this.nonSerializableResolvedObj).isNotInstanceOf(Serializable.class);
+    assertThat(nonSerializableResolvedObj).isNotInstanceOf(Serializable.class);
 
-    catchException(this).clone(this.serializableResolvedObj);
-    assertThat((Throwable) caughtException()).isNull();
+    thrown = catchThrowable(() -> SerializationUtils.clone(serializableResolvedObj));
+    assertThat(thrown).isNull();
 
-    assertThat(this.nonSerializablePrincipal).isNotInstanceOf(Serializable.class);
+    assertThat(nonSerializablePrincipal).isNotInstanceOf(Serializable.class);
 
-    catchException(this).clone(this.serializablePrincipal);
-    assertThat((Throwable) caughtException()).isNull();
+    thrown = catchThrowable(() -> SerializationUtils.clone(serializablePrincipal));
+    assertThat(thrown).isNull();
   }
 
   @Test
-  public void isSerializable() throws Exception {
+  public void isSerializable() {
     assertThat(NotAuthorizedException.class).isInstanceOf(Serializable.class);
   }
 
   @Test
-  public void serializes() throws Exception {
-    NotAuthorizedException instance = new NotAuthorizedException(this.message);
+  public void serializes() {
+    NotAuthorizedException instance = new NotAuthorizedException(message);
 
     NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message);
+    assertThat(cloned).hasMessage(message);
   }
 
   @Test
-  public void serializesWithThrowable() throws Exception {
-    Throwable cause = new Exception(this.causeMessage);
-    NotAuthorizedException instance = new NotAuthorizedException(this.message, cause);
+  public void serializesWithThrowable() {
+    Throwable cause = new Exception(causeMessage);
+    NotAuthorizedException instance = new NotAuthorizedException(message, cause);
 
     NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message);
+    assertThat(cloned).hasMessage(message);
     assertThat(cloned).hasCause(cause);
   }
 
   @Test
-  public void serializesWithNonSerializablePrincipal() throws Exception {
+  public void serializesWithNonSerializablePrincipal() {
     NotAuthorizedException instance =
-        new NotAuthorizedException(this.message, this.nonSerializablePrincipal);
+        new NotAuthorizedException(message, nonSerializablePrincipal);
     assertThat(instance.getPrincipal()).isNotNull();
 
     NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message);
+    assertThat(cloned).hasMessage(message);
     assertThat(cloned.getPrincipal()).isNull();
   }
 
   @Test
-  public void serializesWithSerializablePrincipal() throws Exception {
+  public void serializesWithSerializablePrincipal() {
     NotAuthorizedException instance =
-        new NotAuthorizedException(this.message, this.serializablePrincipal);
+        new NotAuthorizedException(message, serializablePrincipal);
 
     NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
 
-    assertThat(cloned).hasMessage(this.message);
-    assertThat(cloned.getPrincipal()).isNotNull().isEqualTo(this.serializablePrincipal);
+    assertThat(cloned).hasMessage(message);
+    assertThat(cloned.getPrincipal()).isNotNull().isEqualTo(serializablePrincipal);
   }
 
-  public Object clone(final Serializable object) {
-    return SerializationUtils.clone(object);
-  }
+  private static class SerializableObject implements Serializable {
 
-  public static class SerializableObject implements Serializable {
-
-    private String name;
+    private final String name;
 
     SerializableObject(String name) {
       this.name = name;
@@ -163,7 +158,6 @@ public class NotAuthorizedExceptionTest {
       SerializableObject that = (SerializableObject) o;
 
       return name != null ? name.equals(that.name) : that.name == null;
-
     }
 
     @Override
@@ -172,9 +166,9 @@ public class NotAuthorizedExceptionTest {
     }
   }
 
-  public static class SerializablePrincipal implements Principal, Serializable {
+  private static class SerializablePrincipal implements Principal, Serializable {
 
-    private String name;
+    private final String name;
 
     SerializablePrincipal(String name) {
       this.name = name;
@@ -182,7 +176,7 @@ public class NotAuthorizedExceptionTest {
 
     @Override
     public String getName() {
-      return this.name;
+      return name;
     }
 
     @Override
@@ -195,7 +189,6 @@ public class NotAuthorizedExceptionTest {
       SerializablePrincipal that = (SerializablePrincipal) o;
 
       return name != null ? name.equals(that.name) : that.name == null;
-
     }
 
     @Override

@@ -46,6 +46,7 @@ sourceSets {
         }
     }
 }
+
 // let IntelliJ know where the generated sources are.
 idea {
     module {

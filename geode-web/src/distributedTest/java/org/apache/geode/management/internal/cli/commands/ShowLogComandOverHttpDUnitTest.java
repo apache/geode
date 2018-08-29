@@ -20,12 +20,12 @@ import org.awaitility.Awaitility;
 
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class ShowLogComandOverHttpDUnitTest extends ShowLogCommandDUnitTest {
+public class ShowLogComandOverHttpDUnitTest extends ShowLogCommandDUnitTestBase {
   @Override
   public void before() throws Exception {
     gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     Awaitility.await().atMost(2, TimeUnit.MINUTES)
-        .until(ShowLogCommandDUnitTest::allMembersAreConnected);
+        .until(ShowLogCommandDUnitTestBase::allMembersAreConnected);
   }
 
 }

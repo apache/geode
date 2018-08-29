@@ -14,12 +14,14 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+
+import java.io.Serializable;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,8 +35,10 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * TRAC #41779: InternalExecution.setWaitOnExceptionFlag(true) does not add the exception from the
@@ -43,57 +47,63 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
  * <p>
  * Extracted from {@link PRFunctionExecutionDUnitTest}.
  */
-@Category({FunctionServiceTest.class})
+@Category(FunctionServiceTest.class)
 @SuppressWarnings("serial")
-public class FunctionExceptionsIncludeLocalMemberRegressionTest extends CacheTestCase {
+public class FunctionExceptionsIncludeLocalMemberRegressionTest implements Serializable {
 
   private Execution execution;
 
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
+
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
+
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
+
   @Before
   public void setUp() {
-    VM datastore1 = getHost(0).getVM(0);
-    VM datastore2 = getHost(0).getVM(1);
-    VM datastore3 = getHost(0).getVM(2);
-    VM datastore4 = getHost(0).getVM(3);
+    VM datastore1 = getVM(0);
+    VM datastore2 = getVM(1);
 
-    String regionName = getUniqueName();
+    String regionName = getClass().getSimpleName() + "_" + testName.getMethodName();
 
     // create stores on all VMs including controller
     datastore1.invoke(() -> createPartitionedRegion(regionName));
     datastore2.invoke(() -> createPartitionedRegion(regionName));
-    datastore3.invoke(() -> createPartitionedRegion(regionName));
-    datastore4.invoke(() -> createPartitionedRegion(regionName));
 
     createPartitionedRegion(regionName);
 
     datastore1.invoke(() -> registerThrowsExceptionFunction());
     datastore2.invoke(() -> registerThrowsExceptionFunction());
-    datastore3.invoke(() -> registerThrowsExceptionFunction());
-    datastore4.invoke(() -> registerThrowsExceptionFunction());
 
     registerThrowsExceptionFunction();
 
-    execution = FunctionService.onRegion(cache.getRegion(regionName));
+    execution = FunctionService.onRegion(cacheRule.getCache().getRegion(regionName));
     ((InternalExecution) execution).setWaitOnExceptionFlag(true);
   }
 
   @Test
-  public void functionExceptionsIncludeLocalMember() throws Exception {
+  public void functionExceptionsIncludeLocalMember() {
     ResultCollector resultCollector = execution.execute(ThrowsExceptionFunction.class.getName());
 
-    catchException(resultCollector).getResult();
-    assertThat((Exception) caughtException()).isInstanceOf(FunctionException.class);
+    Throwable thrown = catchThrowable(() -> resultCollector.getResult());
+    assertThat(thrown).isInstanceOf(FunctionException.class);
 
-    FunctionException functionException = caughtException();
-    assertThat(functionException.getExceptions()).hasSize(5);
+    FunctionException functionException = (FunctionException) thrown;
+    assertThat(functionException.getExceptions()).hasSize(3);
   }
 
   private void createPartitionedRegion(final String regionName) {
+    cacheRule.createCache();
+
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     paf.setLocalMaxMemory(10);
     paf.setRedundantCopies(0);
 
-    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory regionFactory =
+        cacheRule.getCache().createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(paf.create());
 
     regionFactory.create(regionName);

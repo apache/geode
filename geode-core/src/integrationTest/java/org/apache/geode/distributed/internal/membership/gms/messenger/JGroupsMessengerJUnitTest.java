@@ -45,6 +45,7 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -879,7 +880,8 @@ public class JGroupsMessengerJUnitTest {
   public void testUseOldJChannel() throws Exception {
     initMocks(false);
     JChannel channel = messenger.myChannel;
-    services.getConfig().getTransport().setOldDSMembershipInfo(channel);
+    services.getConfig().getTransport().setOldDSMembershipInfo(new MembershipInformation(channel,
+        Collections.singleton(new InternalDistributedMember("localhost", 10000))));
     JGroupsMessenger newMessenger = new JGroupsMessenger();
     newMessenger.init(services);
     newMessenger.start();

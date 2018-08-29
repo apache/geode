@@ -61,7 +61,7 @@ public class ClientHealthMonitorJUnitTest {
     clientHealthMonitor.testUseCustomHeartbeatCheck((a, b, c) -> true); // Fail all heartbeats
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(mockConnection).handleTermination(true));
+        .untilAsserted(() -> verify(mockConnection).handleTermination(true));
   }
 
   class HeartbeatOverride implements ClientHealthMonitor.HeartbeatTimeoutCheck {

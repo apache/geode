@@ -17,14 +17,14 @@
 
 dependencies {
   compileOnly project(':geode-core')
-  testCompile project(':geode-core')
 
-  testCompile files(project(':geode-old-versions').sourceSets.main.output)
+  testCompile project(':geode-core')
   testCompile project(':geode-junit')
 
   integrationTestCompile project(":geode-dunit")
 
-  distributedTestCompile project(":geode-dunit")
 
-  upgradeTestCompile project(":geode-dunit")
+  upgradeTestCompile (project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
 }

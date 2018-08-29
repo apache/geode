@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -23,7 +25,6 @@ import java.util.Properties;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.VM;
 
 /**
@@ -31,27 +32,39 @@ import org.apache.geode.test.dunit.VM;
  * {@code CacheTestCase}.
  *
  * <p>
- * {@code ClientCacheRule} follows the standard convention of using a {@code Builder} for
- * configuration as introduced in the JUnit {@code Timeout} rule.
- *
- * <p>
  * {@code ClientCacheRule} can be used in DistributedTests as a {@code Rule}:
  *
  * <pre>
- * {@literal @}ClassRule
- * public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+ * {@literal @}Rule
+ * public DistributedRule distributedRule = new DistributedRule();
  *
  * {@literal @}Rule
  * public ClientCacheRule clientCacheRule = new ClientCacheRule();
  *
  * {@literal @}Test
- * public void hasClient() {
- *   vm0.invoke(() -> clientCacheRule.createClientCache());
+ * public void createClientCache() {
+ *   vm0.invoke(() -> clientCacheRule.createClientCache(new ClientCacheFactory().setPoolThreadLocalConnections(true));
+ * }
+ * </pre>
+ *
+ * <p>
+ * {@link ClientCacheRule.Builder} can also be used to construct an instance with more options:
+ *
+ * <pre>
+ * {@literal @}Rule
+ * public DistributedRule distributedRule = new DistributedRule();
+ *
+ * {@literal @}Rule
+ * public ClientCacheRule clientCacheRule = ClientCacheRule.builder().createClientCacheInLocal().build();
+ *
+ * {@literal @}Test
+ * public void controllerVmCreatedClientCache() {
+ *   assertThat(clientCacheRule.getClientCache()).isNotNull();
  * }
  * </pre>
  */
-@SuppressWarnings({"serial", "unused"})
-public class ClientCacheRule extends AbstractDistributedTestRule {
+@SuppressWarnings("serial,unused")
+public class ClientCacheRule extends AbstractDistributedRule {
 
   private static volatile InternalClientCache clientCache;
 
@@ -66,6 +79,10 @@ public class ClientCacheRule extends AbstractDistributedTestRule {
   }
 
   public ClientCacheRule() {
+    this(new Builder());
+  }
+
+  public ClientCacheRule(final int vmCount) {
     this(new Builder());
   }
 
@@ -93,7 +110,7 @@ public class ClientCacheRule extends AbstractDistributedTestRule {
     invoker().invokeInEveryVMAndController(() -> closeAndNullClientCache());
 
     if (disconnectAfter) {
-      Disconnect.disconnectAllFromDS();
+      disconnectAllFromDS();
     }
   }
 
@@ -154,11 +171,13 @@ public class ClientCacheRule extends AbstractDistributedTestRule {
    */
   public static class Builder {
 
+    private final List<VM> createClientCacheInVMs = new ArrayList<>();
+    private final Properties systemProperties = new Properties();
+
     private boolean createClientCache;
     private boolean disconnectAfter;
-    private List<VM> createClientCacheInVMs = new ArrayList<>();
     private Properties config = new Properties();
-    private Properties systemProperties = new Properties();
+    private int vmCount = DEFAULT_VM_COUNT;
 
     public Builder() {
       // nothing
@@ -213,6 +232,11 @@ public class ClientCacheRule extends AbstractDistributedTestRule {
 
     public Builder addSystemProperties(final Properties config) {
       systemProperties.putAll(config);
+      return this;
+    }
+
+    public Builder vmCount(final int vmCount) {
+      this.vmCount = vmCount;
       return this;
     }
 

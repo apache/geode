@@ -15,8 +15,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
@@ -31,7 +29,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -52,10 +50,10 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedTestRule;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 @SuppressWarnings("serial")
 public class ClientWithInterestFailoverDistributedTest implements Serializable {
 
@@ -74,8 +72,8 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
   private VM server;
   private VM server2;
 
-  @ClassRule
-  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Before
   public void setUp() throws Exception {
@@ -99,7 +97,7 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
   }
 
   @Test
-  public void clientWithSingleKeyInterestFailsOver() throws Exception {
+  public void clientWithSingleKeyInterestFailsOver() {
     client.invoke(() -> registerKey(PROXY_REGION_NAME, 1));
     client.invoke(() -> registerKey(CACHING_PROXY_REGION_NAME, 1));
 
@@ -107,7 +105,7 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
   }
 
   @Test
-  public void clientWithKeyListInterestFailsOver() throws Exception {
+  public void clientWithKeyListInterestFailsOver() {
     client.invoke(() -> registerKeys(PROXY_REGION_NAME, 1, 2));
     client.invoke(() -> registerKeys(CACHING_PROXY_REGION_NAME, 1, 2));
 
@@ -115,7 +113,7 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
   }
 
   @Test
-  public void clientWithRegexInterestFailsOver() throws Exception {
+  public void clientWithRegexInterestFailsOver() {
     client.invoke(() -> registerRegex(PROXY_REGION_NAME));
     client.invoke(() -> registerRegex(CACHING_PROXY_REGION_NAME));
 
@@ -146,13 +144,13 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
     regionFactory.setDataPolicy(DataPolicy.REPLICATE);
     regionFactory.setScope(Scope.DISTRIBUTED_ACK);
 
-    regionFactory.<Integer, Object>create(PROXY_REGION_NAME);
-    regionFactory.<Integer, Object>create(CACHING_PROXY_REGION_NAME);
+    regionFactory.create(PROXY_REGION_NAME);
+    regionFactory.create(CACHING_PROXY_REGION_NAME);
 
-    CacheServer server = cache.addCacheServer();
-    server.setPort(getRandomAvailablePort(SOCKET));
-    server.start();
-    return server.getPort();
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
   }
 
   /**
@@ -222,7 +220,7 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
   }
 
   private void registerKeys(final String regionName, final int... keys) {
-    Region region = clientCache.getRegion(regionName);
+    Region<Object, ?> region = clientCache.getRegion(regionName);
 
     List<Integer> list = new ArrayList<>();
     for (int key : keys) {
@@ -243,7 +241,7 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
 
   private void awaitServerMetaDataToContainClient() {
     await().atMost(30, SECONDS)
-        .until(() -> assertThat(
+        .untilAsserted(() -> assertThat(
             getCacheServer().getAcceptor().getCacheClientNotifier().getClientProxies().size())
                 .isEqualTo(1));
 

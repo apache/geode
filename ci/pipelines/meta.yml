@@ -21,6 +21,7 @@ resource_types:
   type: docker-image
   source:
     repository: concourse/concourse-pipeline-resource
+    tag: 3
 
 resources:
 - name: apachegeode-concourse
@@ -39,6 +40,8 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/geode-build/*
+    - ci/pipelines/shared/*
+    - ci/pipelines/render.py
 - name: geode-examples-pipeline
   type: git
   source:
@@ -46,14 +49,17 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/examples/*
+    - ci/pipelines/shared/*
+    - ci/pipelines/render.py
 - name: geode-pr-pipeline
   type: git
   source:
     uri: https://github.com/((!geode-fork))/geode.git
     branch: ((!geode-build-branch))
     paths:
-    - ci/pipelines/geode-build/test-stubs/*
     - ci/pipelines/pull-request/*
+    - ci/pipelines/shared/*
+    - ci/pipelines/render.py
 - name: geode-images-pipeline
   type: git
   source:
@@ -75,12 +81,19 @@ resources:
     branch: ((!geode-build-branch))
     paths:
     - ci/pipelines/reaper.yml
-- name: apachegeode-build-concourse-docker-image
+- name: meta-mini-dockerfile
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/meta-mini/*
+- name: meta-mini-image
   type: docker-image
   source:
     username: ((!docker-username))
     password: ((!docker-password))
-    repository: gcr.io/apachegeode-ci/apachegeode-build-concourse
+    repository: gcr.io/apachegeode-ci/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
 
 jobs:
 - name: set-pipeline
@@ -89,15 +102,20 @@ jobs:
   plan:
   - get: geode-pipeline
     trigger: true
-  - get: apachegeode-build-concourse-docker-image
   - task: deploy-build
-    image: apachegeode-build-concourse-docker-image
     config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          username: ((!docker-username))
+          password: ((!docker-password))
+          tag: latest
+          repository: gcr.io/apachegeode-ci/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
       - name: geode-pipeline
       outputs:
       - name: results
-      platform: linux
       params:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
@@ -114,15 +132,20 @@ jobs:
   plan:
   - get: geode-examples-pipeline
     trigger: true
-  - get: apachegeode-build-concourse-docker-image
   - task: deploy-build
-    image: apachegeode-build-concourse-docker-image
     config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          username: ((!docker-username))
+          password: ((!docker-password))
+          tag: latest
+          repository: gcr.io/apachegeode-ci/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
       - name: geode-examples-pipeline
       outputs:
       - name: results
-      platform: linux
       params:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
@@ -139,15 +162,20 @@ jobs:
   plan:
   - get: geode-pr-pipeline
     trigger: true
-  - get: apachegeode-build-concourse-docker-image
   - task: deploy-pr
-    image: apachegeode-build-concourse-docker-image
     config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          username: ((!docker-username))
+          password: ((!docker-password))
+          tag: latest
+          repository: gcr.io/apachegeode-ci/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
       - name: geode-pr-pipeline
       outputs:
       - name: results
-      platform: linux
       params:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
@@ -164,15 +192,20 @@ jobs:
   plan:
   - get: geode-images-pipeline
     trigger: true
-  - get: apachegeode-build-concourse-docker-image
   - task: deploy-images
-    image: apachegeode-build-concourse-docker-image
     config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          username: ((!docker-username))
+          password: ((!docker-password))
+          tag: latest
+          repository: gcr.io/apachegeode-ci/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
       - name: geode-images-pipeline
       outputs:
       - name: results
-      platform: linux
       params:
         OUTPUT_DIRECTORY: results
         GEODE_BRANCH: ((!geode-build-branch))
@@ -229,3 +262,15 @@ jobs:
         config_file: geode-reaper-pipeline/ci/pipelines/reaper.yml
         vars_files:
         - pipeline-vars/vars
+
+- name: build-meta-mini-docker-image
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: meta-mini-dockerfile
+      trigger: true
+  - put: meta-mini-image
+    params:
+      build: meta-mini-dockerfile/ci/images/meta-mini
+      tag_as_latest: true

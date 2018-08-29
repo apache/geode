@@ -86,7 +86,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     this.agent = GfManagerAgentFactory.getManagerAgent(
         new GfManagerAgentConfig(null, transport, getLogWriter(), Alert.SEVERE, this, null));
 
-    await().atMost(1, MINUTES).until(() -> assertThat(agent.isConnected()).isTrue());
+    await().atMost(1, MINUTES).untilAsserted(() -> assertThat(agent.isConnected()).isTrue());
   }
 
   @After
@@ -118,7 +118,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   @Test
   public void testApplications() throws Exception {
     await().atMost(1, MINUTES)
-        .until(() -> assertThat(agent.listApplications().length).isGreaterThanOrEqualTo(4));
+        .untilAsserted(() -> assertThat(agent.listApplications().length).isGreaterThanOrEqualTo(4));
 
     ApplicationVM[] applications = agent.listApplications();
     for (int whichApplication = 0; whichApplication < applications.length; whichApplication++) {
@@ -225,7 +225,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
         subRegion.destroyRegion();
 
         await().atMost(30, SECONDS)
-            .until(() -> assertThat(rootRegion.subregions(false)).hasSize(expectedSize));
+            .untilAsserted(() -> assertThat(rootRegion.subregions(false)).hasSize(expectedSize));
       }
     }
   }
