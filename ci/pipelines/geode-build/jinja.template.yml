@@ -274,11 +274,7 @@ jobs:
           GRADLE_TASK_OPTIONS: ""
           {{ common_test_params(test) | indent(10) }}
         run:
-          {%- if test.name=="Acceptance" %}
-          path: geode/ci/scripts/execute_acceptance_tests.sh
-          {%- else %}
           path: geode-ci/ci/scripts/execute_tests.sh
-          {%- endif %}
         inputs:
         - name: geode-ci
         - name: geode
