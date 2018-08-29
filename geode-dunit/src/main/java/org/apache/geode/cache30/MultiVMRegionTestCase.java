@@ -25,6 +25,11 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.waitAtMost;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
@@ -47,6 +52,7 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.awaitility.core.ConditionTimeoutException;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -2274,14 +2280,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         if (region.getAttributes().getOffHeap() && !(region instanceof PartitionedRegion)) {
           GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
           final MemoryAllocatorImpl ma = (MemoryAllocatorImpl) gfc.getOffHeapStore();
-          try {
             await("waiting for off-heap object count go to zero")
                 .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
-                .until(() -> ma.getStats().getObjects() == 0);
-          } catch (ConditionTimeoutException timeout) {
-            fail("never saw off-heap object count go to zero. Last value was "
-                + ma.getStats().getObjects(), timeout);
-          }
+                .until(() -> ma.getStats().getObjects(), equalTo(0));
+
         }
       }
     });
@@ -3599,7 +3601,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           final Region<Object, Object> region = getRootRegion().getSubregion(name);
           await("never saw create of " + key)
               .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
-              .until(() -> region.getEntry(key) != null);
+              .until(() -> region.getEntry(key), notNullValue());
         }
       });
 
@@ -3617,9 +3619,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run2() throws CacheException {
         final Region<Object, Object> region = getRootRegion().getSubregion(name);
-        await("never saw expire of " + key + " entry=" + region.getEntry(key))
+        await("never saw expire of " + key)
             .atMost(4, SECONDS).pollInterval(10, MILLISECONDS)
-            .until(() -> region.getEntry(key) == null);
+            .until(() -> region.getEntry(key), nullValue());
       }
     });
 
@@ -3627,9 +3629,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run2() throws CacheException {
         final Region<Object, Object> region = getRootRegion().getSubregion(name);
-        await("never saw expire of " + key + " entry=" + region.getEntry(key))
+        await("never saw expire of " + key)
             .atMost(4, SECONDS).pollInterval(10, MILLISECONDS)
-            .until(() -> region.getEntry(key) == null);
+            .until(() -> region.getEntry(key), nullValue());
 
         assertThat(destroyListener.waitForInvocation(555)).isTrue();
         assertThat(((DestroyListener) destroyListener).eventIsExpiration).isTrue();
@@ -3873,7 +3875,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         // wait for update to reach us from vm1 (needed if no-ack)
         await("never saw update of " + key)
             .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
-            .until(() -> value.equals(region.get(key)));
+            .until(() -> region.get(key), equalTo(value));
 
         EntryExpiryTask eet = region.getEntryExpiryTask(key);
         long createExpiryTime = (Long) region.get("createExpiryTime");
@@ -4595,7 +4597,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
             await("profile count never reached " + expectedProfiles)
                 .atMost(30, SECONDS).pollInterval(200, MILLISECONDS)
-                .until(() -> adv.adviseReplicates().size() >= expectedProfiles);
+                .until(() -> adv.adviseReplicates().size(), greaterThanOrEqualTo(expectedProfiles));
 
             // operate on every odd entry with different value, alternating between
             // updates, invalidates, and destroys. These operations are likely
@@ -4884,7 +4886,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             final int expectedProfiles = 1;
             await("profile count never became exactly " + expectedProfiles)
                 .atMost(1, MINUTES).pollInterval(200, MILLISECONDS)
-                .until(() -> expectedProfiles == adv.adviseReplicates().size());
+                .until(() -> adv.adviseReplicates(), hasSize(expectedProfiles));
 
             // since we want to force a GII while updates are flying, make sure
             // the other VM gets its CreateRegionResponse and starts its GII
@@ -5109,7 +5111,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           try {
             await("DataSerializer with id 120 was never registered")
                 .atMost(30, SECONDS).pollInterval(10, MILLISECONDS)
-                .until(() -> InternalDataSerializer.getSerializer((byte) 120) != null);
+                .until(() -> InternalDataSerializer.getSerializer((byte) 120), notNullValue());
           } finally {
             InternalDataSerializer.GetMarker.WAIT_MS = savVal;
           }
@@ -5624,7 +5626,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     await("retry event")
         .atMost(1, MINUTES).pollInterval(200, MILLISECONDS)
-        .until(() -> cdcl.getEntryEvent() != null);
+        .until(() -> cdcl.getEntryEvent(), notNullValue());
 
     EntryEvent<Object, Object> listenEvent = cdcl.getEntryEvent();
     assertThat(listenEvent).describedAs(
