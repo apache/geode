@@ -834,6 +834,28 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWithConcurrentChangeFromNullToValidRetriesAndCallsNotifyTimestampsToGateways()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    givenVersionStampThatDetectsConflict();
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isTimeStampUpdated()).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    doThrow(ConcurrentCacheModificationException.class).when(evictableEntry).destroy(
+        eq(arm._getOwner()), eq(event), eq(false),
+        anyBoolean(), eq(expectedOldValue), anyBoolean(), anyBoolean());
+    isEviction = false;
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+    verifyNoDestroyInvocationsOnRegion();
+    verify(arm._getOwner(), times(1)).notifyTimestampsToGateways(eq(event));
+  }
+
+  @Test
   public void destroyOfExistingTombstoneWithConcurrencyChecksAndNoTagThrowsEntryNotFound() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
