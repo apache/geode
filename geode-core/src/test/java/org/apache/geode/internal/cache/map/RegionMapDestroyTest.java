@@ -15,12 +15,13 @@
 package org.apache.geode.internal.cache.map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -30,11 +31,14 @@ import static org.mockito.Mockito.when;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractRegionMap;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -49,7 +53,10 @@ import org.apache.geode.internal.cache.VMLRURegionMap;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -76,7 +83,7 @@ public class RegionMapDestroyTest {
   private boolean cacheWrite;
   private boolean isEviction;
   private boolean removeRecoveredEntry;
-  private boolean invokeCallbacks;
+  private boolean fromRILocalDestroy;
 
   @Before
   public void setUp() {
@@ -90,7 +97,9 @@ public class RegionMapDestroyTest {
     when(owner.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
-    doThrow(EntryNotFoundException.class).when(owner).checkEntryNotFound(any());
+    // Instead of mocking checkEntryNotFound to throw an exception,
+    // this test now just verifies that checkEntryNotFound was called.
+    // Having the mock throw the exception confuses the code coverage tools.
 
     evictionController = mock(EvictionController.class);
     when(evictionController.getEvictionAlgorithm()).thenReturn(evictionAttributes.getAlgorithm());
@@ -105,7 +114,6 @@ public class RegionMapDestroyTest {
     isEviction = false;
     expectedOldValue = null;
     removeRecoveredEntry = false;
-    invokeCallbacks = false;
   }
 
   @After
@@ -116,6 +124,32 @@ public class RegionMapDestroyTest {
   private void givenConcurrencyChecks(boolean enabled) {
     withConcurrencyChecks = enabled;
     when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
+  }
+
+  private void givenMockedTombstone() {
+    givenEvictionWithMockedEntryMap();
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.isTombstone()).thenReturn(true);
+    when(evictableEntry.isRemoved()).thenReturn(true);
+    // We are not really testing eviction in this test.
+    // But since the framework currently has a mocked evictableEntry
+    // we use some evict stuff from it but tell the RegionMapDestroy
+    // that it is not an eviction.
+    isEviction = false;
+  }
+
+  private void givenVersionStampThatDetectsConflict() {
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    doThrow(ConcurrentCacheModificationException.class).when(versionStamp)
+        .processVersionTag(eq(event));
+  }
+
+  private void givenDestroyEntryDetectsConflict() {
+    // this will cause the destroyEntry method to throw
+    // TODO this needs to be reworked because destroyEntry does not always call this method
+    doThrow(ConcurrentCacheModificationException.class).when(owner)
+        .calculateRegionEntryValueSize(any());
   }
 
   private void givenEmptyRegionMap() {
@@ -153,18 +187,24 @@ public class RegionMapDestroyTest {
         anyBoolean())).thenReturn(true);
   }
 
-  private void givenExistingEvictableEntryWithMockedIsTombstone() throws RegionClearedException {
-    givenExistingEvictableEntry("value");
-    when(evictableEntry.isTombstone()).thenReturn(true).thenReturn(false);
-    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
-        anyBoolean())).thenReturn(true);
-  }
-
   private void givenDestroyThrowsRegionClearedException() throws RegionClearedException {
     when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
         anyBoolean())).thenThrow(RegionClearedException.class);
     when(entryMap.get(KEY)).thenReturn(null);
     when(factory.createEntry(any(), any(), any())).thenReturn(evictableEntry);
+  }
+
+  private void givenExistingEntryWithValueAndVersion(Object value, VersionTag version) {
+    RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, value);
+    ((VersionStamp) entry).setVersions(version);
+    arm.getEntryMap().put(KEY, entry);
+  }
+
+  private void givenExistingEntryWithValueAndSameVersion(Object value, VersionTag version) {
+    givenExistingEntryWithValueAndVersion(value, version);
+    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
+    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
+    event.setVersionTag(version);
   }
 
   private void givenExistingEntry() {
@@ -179,27 +219,20 @@ public class RegionMapDestroyTest {
 
   private void givenExistingEntryWithVersionTag() {
     givenExistingEntry();
-
-    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
-    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    VersionTag<?> versionTag = mock(VersionTag.class);
-    when(versionTag.hasValidVersion()).thenReturn(true);
-    event.setVersionTag(versionTag);
+    givenEventWithVersionTag();
   }
 
   private void givenExistingEntryWithTokenAndVersionTag(Token token) {
     givenExistingEntry(token);
-
-    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
-    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    VersionTag<?> versionTag = mock(VersionTag.class);
-    when(versionTag.hasValidVersion()).thenReturn(true);
-    event.setVersionTag(versionTag);
+    givenEventWithVersionTag();
   }
 
   private void givenRemoteEventWithVersionTag() {
     givenOriginIsRemote();
+    givenEventWithVersionTag();
+  }
 
+  private void givenEventWithVersionTag() {
     RegionVersionVector versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
     VersionTag versionTag = mock(VersionTag.class);
@@ -223,13 +256,44 @@ public class RegionMapDestroyTest {
     event.setOriginRemote(true);
   }
 
+  private void givenEventFromServer() {
+    event.setFromServer(true);
+  }
+
+  private void givenEventWithClientOrigin() {
+    event.setContext(mock(ClientProxyMembershipID.class));
+  }
+
+  private boolean doDestroy() {
+    return arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
+        removeRecoveredEntry);
+  }
+
+  @Test
+  public void destroyWithDuplicateVersionInvokesListener() {
+    givenEmptyRegionMap();
+    givenConcurrencyChecks(true);
+    VersionTag version = VersionTag.create(new InternalDistributedMember("localhost", 123));
+    version.setEntryVersion(1);
+    version.setRegionVersion(1);
+    givenExistingEntryWithValueAndSameVersion(Token.TOMBSTONE, version);
+    // make this a client/server operation
+    event.setContext(new ClientProxyMembershipID());
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.getIsRedestroyedEntry()).isTrue();
+    verifyPart3();
+  }
+
   @Test
   public void destroyWithEmptyRegionThrowsException() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
   }
 
   @Test
@@ -238,11 +302,10 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.DESTROYED);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.DESTROYED);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -251,10 +314,25 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void destroyInvokesTestHook() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenInTokenMode();
+    Runnable testHook = mock(Runnable.class);
+    RegionMapDestroy.testHookRunnableForConcurrentOperation = testHook;
+    try {
+      doDestroy();
+    } finally {
+      RegionMapDestroy.testHookRunnableForConcurrentOperation = null;
+    }
+
+    verify(testHook, times(1)).run();
   }
 
   @Test
@@ -265,10 +343,9 @@ public class RegionMapDestroyTest {
     givenDestroyThrowsRegionClearedException();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateInvokedDestroyMethodsOnRegion(true);
+    verifyInvokedDestroyMethodsOnRegion(true);
   }
 
   @Test
@@ -277,11 +354,10 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateNoDestroyInvocationsOnRegion();
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -291,11 +367,10 @@ public class RegionMapDestroyTest {
     givenExistingEntry(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.DESTROYED);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.DESTROYED);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -305,8 +380,7 @@ public class RegionMapDestroyTest {
     givenExistingEntry(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
@@ -320,11 +394,10 @@ public class RegionMapDestroyTest {
     givenEvictableEntryIsInUseByTransaction();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
-    validateNoDestroyInvocationsOnEvictableEntry();
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnEvictableEntry();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -336,11 +409,10 @@ public class RegionMapDestroyTest {
     givenEvictableEntryIsInUseByTransaction();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
-    validateNoDestroyInvocationsOnEvictableEntry();
-    validateNoDestroyInvocationsOnRegion();
+    verifyNoDestroyInvocationsOnEvictableEntry();
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -349,16 +421,163 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEvictionWithMockedEntryMap();
     givenExistingEvictableEntry("value");
-
     when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateInvokedDestroyMethodOnEvictableEntry();
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyInvokedDestroyMethodOnEvictableEntry();
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
+  @Test
+  public void destroyWithConcurrentChangeFromNullToValidRetriesAndThrowsConcurrentCacheModificationException()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    doThrow(ConcurrentCacheModificationException.class).when(evictableEntry).destroy(
+        eq(arm._getOwner()), eq(event), eq(false),
+        anyBoolean(), eq(expectedOldValue), anyBoolean(), anyBoolean());
+    isEviction = false;
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyWithConcurrentChangeFromNullToValidRetriesCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    isEviction = false;
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(evictableEntry, times(1)).removePhase2();
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyWithInTokenModeAndTombstoneCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    givenInTokenMode();
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), anyBoolean(), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+
+    assertThat(doDestroy()).isTrue(); // TODO since destroy returns false it seems like doDestroy
+                                      // should return true
+
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyWithInTokenModeAndTombstoneCallsDestroyWhichThrowsRegionClearedStillDoesDestroy()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    givenInTokenMode();
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenThrow(RegionClearedException.class);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyInvokedDestroyMethodsOnRegion(true);
+  }
+
+  @Test
+  public void destroyWithInTokenModeCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), anyBoolean(), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    inTokenMode = true;
+
+    assertThat(doDestroy()).isFalse();
+
+    verify(evictableEntry, never()).removePhase2();
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyExistingEntryWithVersionStampCallsDestroyWhichReturnsFalseCausingDestroyToNotHappenAndDoesNotCallRemovePhase2()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    event.setOriginRemote(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(owner, never()).rescheduleTombstone(any(), any());
+    verify(evictableEntry, never()).removePhase2();
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyTombstoneWithRemoveRecoveredEntryAndVersionStampCallsRescheduleTombstone()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(evictableEntry.isTombstone()).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    event.setOriginRemote(true);
+    removeRecoveredEntry = true;
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(owner, times(1)).rescheduleTombstone(eq(evictableEntry), any());
+    verify(evictableEntry, never()).removePhase2();
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyTombstoneWithLocalOriginAndRemoveRecoveredEntryAndVersionStampDoesNotCallRescheduleTombstone()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    givenExistingEvictableEntry(Token.TOMBSTONE);
+    when(evictableEntry.isTombstone()).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean())).thenReturn(false);
+    VersionStamp versionStamp = mock(VersionStamp.class);
+    when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
+    removeRecoveredEntry = true;
+    event.setOriginRemote(false);
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(owner, never()).rescheduleTombstone(eq(evictableEntry), any());
+    verify(evictableEntry, never()).removePhase2();
+    verifyNoDestroyInvocationsOnRegion();
+  }
 
   @Test
   public void destroyWithConcurrentChangeFromNullToValidRetriesAndCallsUpdateSizeOnRemove()
@@ -366,11 +585,10 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEvictionWithMockedEntryMap();
     givenExistingEvictableEntry("value");
-
     when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
@@ -391,17 +609,15 @@ public class RegionMapDestroyTest {
     // isEviction is false despite having eviction enabled
     isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(entryMap).remove(eq(KEY), eq(evictableEntry));
     verify(entryMap, times(2)).putIfAbsent(eq(KEY), any());
     verify(evictableEntry, never()).destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
         eq(expectedOldValue), anyBoolean(), anyBoolean());
 
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
-
 
   @Test
   public void destroyInTokenModeWithConcurrentChangeFromNullToRemovePhase2RetriesAndNeverCallsUpdateSizeOnRemove()
@@ -419,41 +635,9 @@ public class RegionMapDestroyTest {
     // isEviction is false despite having eviction enabled
     isEviction = false;
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
-  }
-
-  @Test
-  public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndDoesDestroy()
-      throws RegionClearedException {
-    givenConcurrencyChecks(true);
-    givenEvictionWithMockedEntryMap();
-    givenExistingEvictableEntryWithMockedIsTombstone();
-
-    isEviction = false;
-
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
-
-    validateInvokedDestroyMethodOnEvictableEntry();
-    validateInvokedDestroyMethodsOnRegion(false);
-  }
-
-  @Test
-  public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndCallsUpdateSizeOnRemove()
-      throws RegionClearedException {
-    givenConcurrencyChecks(true);
-    givenEvictionWithMockedEntryMap();
-    givenExistingEvictableEntryWithMockedIsTombstone();
-
-    isEviction = false;
-
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
-
-    verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
 
   @Test
@@ -463,11 +647,59 @@ public class RegionMapDestroyTest {
     givenExistingEntry();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.DESTROYED);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.DESTROYED);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyOfExistingEntryInTokenModeInhibitsCacheListenerNotification() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    givenInTokenMode();
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.inhibitCacheListenerNotification()).isTrue();
+  }
+
+  @Test
+  public void destroyOfExistingEntryInTokenModeDuringRegisterInterestDoesNotInhibitCacheListenerNotification() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    givenInTokenMode();
+    duringRI = true;
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.inhibitCacheListenerNotification()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingEntryDoesNotInhibitCacheListenerNotification() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+
+    assertThat(doDestroy()).isTrue();
+
+    assertThat(event.inhibitCacheListenerNotification()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingEntryCallsIndexManager() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    IndexManager indexManager = mock(IndexManager.class);
+    when(this.owner.getIndexManager()).thenReturn(indexManager);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyIndexManagerOrder(indexManager);
   }
 
   @Test
@@ -477,8 +709,7 @@ public class RegionMapDestroyTest {
     givenExistingEntry();
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
@@ -490,12 +721,53 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     // why not DESTROY token? since it was already destroyed why do we do the parts?
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyOfExistingFromPutIfAbsentWithRemoteOriginCallsBasicDestroyBeforeRemoval()
+      throws Exception {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    RegionEntry existingEntry = mock(RegionEntry.class);
+    when(existingEntry.getValue()).thenReturn("value");
+    when(entryMap.get(KEY)).thenReturn(null);
+    RegionEntry newUnusedEntry = mock(RegionEntry.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(newUnusedEntry);
+    when(entryMap.putIfAbsent(eq(KEY), any())).thenReturn(existingEntry);
+    when(existingEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    givenOriginIsRemote();
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(arm._getOwner(), times(1)).basicDestroyBeforeRemoval(existingEntry, event);
+  }
+
+  @Test
+  public void destroyOfExistingFromPutIfAbsentWithTokenModeAndLocalOriginDoesNotCallBasicDestroyBeforeRemoval()
+      throws Exception {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    RegionEntry existingEntry = mock(RegionEntry.class);
+    when(existingEntry.getValue()).thenReturn("value");
+    when(entryMap.get(KEY)).thenReturn(null);
+    RegionEntry newUnusedEntry = mock(RegionEntry.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(newUnusedEntry);
+    when(entryMap.putIfAbsent(eq(KEY), any())).thenReturn(existingEntry);
+    when(existingEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    givenInTokenMode();
+
+    assertThat(doDestroy()).isTrue();
+
+    // TODO: this seems like a bug in the product. See the comment in:
+    // RegionMapDestroy.destroyExistingFromPutIfAbsent(RegionEntry)
+    verify(arm._getOwner(), never()).basicDestroyBeforeRemoval(existingEntry, event);
   }
 
   @Test
@@ -505,10 +777,22 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenInTokenMode();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneWillThrowConcurrentCacheModificationException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+    givenInTokenMode();
+    givenDestroyEntryDetectsConflict();
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
   }
 
   @Test
@@ -517,8 +801,57 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneThatThrowsConcurrentCacheModificationExceptionNeverCallsNotify() {
+    givenConcurrencyChecks(true);
+    givenMockedTombstone();
+    givenVersionStampThatDetectsConflict();
+    givenEventWithVersionTag();
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+    verify(arm._getOwner(), never()).notifyTimestampsToGateways(any());
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneThatThrowsConcurrentCacheModificationExceptionWithTimeStampUpdatedCallsNotify() {
+    givenConcurrencyChecks(true);
+    givenMockedTombstone();
+    givenVersionStampThatDetectsConflict();
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isTimeStampUpdated()).thenReturn(true);
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+    verify(arm._getOwner(), times(1)).notifyTimestampsToGateways(eq(event));
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneWithConcurrencyChecksAndNoTagThrowsEntryNotFound() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntry(Token.TOMBSTONE);
+
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void evictDestroyOfExistingTombstoneWithConcurrencyChecksReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+    this.isEviction = true;
+
+    assertThat(doDestroy()).isFalse();
   }
 
   @Test
@@ -528,11 +861,23 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenRemoveRecoveredEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneWithConcurrencyChecksAndFromRILocalDestroyDoesRemove() {
+    givenConcurrencyChecks(true);
+    fromRILocalDestroy = true;
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -542,8 +887,7 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
     givenRemoveRecoveredEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), never()).updateSizeOnRemove(any(), anyInt());
   }
@@ -555,8 +899,81 @@ public class RegionMapDestroyTest {
     givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
     givenRemoveRecoveredEntry();
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksDoesRetryAndThrowsEntryNotFound() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndExpectedValueDoesRetryAndReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    this.expectedOldValue = "OLD_VALUE";
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndInTokenModeDoesRetryAndReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    this.inTokenMode = true;
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndEvictionDoesRetryAndReturnsFalse() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    this.isEviction = true;
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithoutConcurrencyChecksDoesRetryAndThrowsEntryNotFound() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndOriginRemoteDoesRetryAndDoesRemove() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    givenOriginIsRemote();
+
+    assertThat(doDestroy()).isTrue();
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndClientOriginDoesRetryAndDoesRemove() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.REMOVED_PHASE2);
+    givenEventWithClientOrigin();
+
+    assertThat(doDestroy()).isTrue();
   }
 
   @Test
@@ -565,12 +982,94 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
+
+  @Test
+  public void destroyOfExistingEntryWithConflictDoesPart3() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    event.isConcurrencyConflict(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyPart3();
+  }
+
+  @Test
+  public void destroyOfExistingEntryWithConflictAndWANSkipsPart3() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    event.isConcurrencyConflict(true);
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyNoPart3();
+  }
+
+  @Test
+  public void destroyOfExistingEntryWithRegionClearedExceptionDoesDestroyAndPart2AndPart3()
+      throws RegionClearedException {
+    givenConcurrencyChecks(false);
+    givenEvictionWithMockedEntryMap();
+    this.isEviction = false;
+    givenExistingEvictableEntry("value");
+    when(entryMap.get(KEY)).thenReturn(null).thenReturn(evictableEntry);
+    givenEventWithVersionTag();
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenThrow(RegionClearedException.class);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyInvokedDestroyMethodsOnRegion(true);
+  }
+
+  @Test
+  public void expireDestroyOfExistingEntry() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    event.setOperation(Operation.EXPIRE_DESTROY);
+
+    assertThat(doDestroy()).isTrue();
+  }
+
+  @Test
+  public void expireDestroyOfExistingEntryWithOriginRemote() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    givenOriginIsRemote();
+    event.setOperation(Operation.EXPIRE_DESTROY);
+
+    assertThat(doDestroy()).isTrue();
+  }
+
+  @Test
+  public void expireDestroyOfEntryInUseIsCancelled()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEvictionWithMockedEntryMap();
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(evictableEntry.isInUseByTransaction()).thenReturn(true);
+    when(entryMap.get(KEY)).thenReturn(evictableEntry);
+    event.setOperation(Operation.EXPIRE_DESTROY);
+
+    assertThat(doDestroy()).isFalse();
+
+    verify(evictableEntry, never()).destroy(any(), any(), anyBoolean(), anyBoolean(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
 
   @Test
   public void destroyOfExistingEntryCallsUpdateSizeOnRemove() {
@@ -578,8 +1077,7 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
     verify(arm._getOwner(), times(1)).updateSizeOnRemove(any(), anyInt());
   }
@@ -594,11 +1092,10 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntry();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -607,11 +1104,10 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenExistingEntryWithVersionTag();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -620,11 +1116,10 @@ public class RegionMapDestroyTest {
     givenEviction();
     givenExistingEntryWithVersionTag();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
   @Test
@@ -632,8 +1127,122 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
 
-    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteAndRemoveRecoveredEntryDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = true;
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteAndBridgeWriteBeforeDestroyReturningTrueDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    when(this.owner.bridgeWriteBeforeDestroy(eq(event), any())).thenReturn(true);
+
+    assertThat(doDestroy()).isFalse();
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndRemoteEventAndCacheWriteAndBridgeWriteBeforeDestroyThrows_ThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenOriginIsRemote();
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    doThrow(EntryNotFoundException.class).when(arm._getOwner()).bridgeWriteBeforeDestroy(any(),
+        any());
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void localDestroyWithEmptyNonReplicateRegionWithConcurrencyChecksThrowsException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenEventWithClientOrigin();
+    givenEventWithVersionTag();
+    event.setOperation(Operation.LOCAL_DESTROY);
+
+    doDestroy();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndClientTaggedEventAndCacheWriteDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    givenEventWithClientOrigin();
+    givenEventWithVersionTag();
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyPart3();
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndWANTaggedEventAndCacheWriteDoesNotThrowException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    this.cacheWrite = true;
+    this.removeRecoveredEntry = false;
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyPart3();
   }
 
   /**
@@ -645,11 +1254,24 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEviction();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
-    validateMapContainsTokenValue(Token.REMOVED_PHASE1);
-    validateNoDestroyInvocationsOnRegion();
+    // the following verify should be enabled once GEODE-5573 is fixed
+    // verifyMapDoesNotContainKey(KEY);
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void evictDestroyWithEmptyNonReplicateRegionWithConcurrencyChecksDoesNothing() {
+    givenConcurrencyChecks(true);
+    givenEviction();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+
+    assertThat(doDestroy()).isFalse();
+
+    // the following verify should be enabled once GEODE-5573 is fixed
+    // verifyMapDoesNotContainKey(KEY);
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -657,11 +1279,10 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(false);
     givenEviction();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isFalse();
+    assertThat(doDestroy()).isFalse();
 
-    validateMapDoesNotContainKey(event.getKey());
-    validateNoDestroyInvocationsOnRegion();
+    verifyMapDoesNotContainKey(event.getKey());
+    verifyNoDestroyInvocationsOnRegion();
   }
 
   @Test
@@ -670,11 +1291,135 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenRemoteEventWithVersionTag();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapContainsTokenValue(Token.TOMBSTONE);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndClientOriginEventAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenEventWithClientOrigin();
+    givenEventWithVersionTag();
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndWANEventAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void validateNoDestroyWhenExistingTombstoneAndNewEntryDestroyFails()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    RegionEntry existingTombstone = mock(RegionEntry.class);
+    when(existingTombstone.isTombstone()).thenReturn(true);
+    when(existingTombstone.getValue()).thenReturn(Token.TOMBSTONE);
+    when(entryMap.get(KEY)).thenReturn(existingTombstone);
+    when(entryMap.putIfAbsent(eq(KEY), any())).thenReturn(null);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    when(factory.createEntry(any(), any(), any())).thenReturn(evictableEntry);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(true);
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(false);
+    inTokenMode = true;
+
+    assertThat(doDestroy()).isFalse();
+
+    verifyNoDestroyInvocationsOnRegion();
+    verify(entryMap, never()).remove(KEY, evictableEntry); // TODO: this seems like a bug. This
+                                                           // should be called once.
+  }
+
+  @Test
+  public void validateNoDestroyInvocationsOnRegionDoesNotDoDestroyIfEntryDestroyReturnsFalse()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMapWithMockedEntryMap();
+    when(factory.createEntry(any(), any(), any())).thenReturn(evictableEntry);
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+    when(evictableEntry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean())).thenReturn(false);
+
+    assertThat(doDestroy()).isFalse();
+
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyWithEmptyNonReplicateRegionWithConcurrencyChecksAndEventFromServerAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenRemoteEventWithVersionTag();
+    when(this.owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    givenEventFromServer();
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndWANEventWithConflictAddsATombstoneButDoesNotDoPart3() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenEventWithVersionTag();
+    when(event.getVersionTag().isGatewayTag()).thenReturn(true);
+    event.isConcurrencyConflict(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyPart2(false);
+    verifyNoPart3();
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndEventWithConflictAddsATombstone() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenRemoteEventWithVersionTag();
+    event.isConcurrencyConflict(true);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyMapContainsTokenValue(Token.TOMBSTONE);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksCallsIndexManager() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenRemoteEventWithVersionTag();
+    IndexManager indexManager = mock(IndexManager.class);
+    when(this.owner.getIndexManager()).thenReturn(indexManager);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyIndexManagerOrder(indexManager);
   }
 
   /**
@@ -689,56 +1434,79 @@ public class RegionMapDestroyTest {
     givenEmptyRegionMap();
     givenOriginIsRemote();
 
-    assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
-        removeRecoveredEntry)).isTrue();
+    assertThat(doDestroy()).isTrue();
 
-    validateMapContainsKey(event.getKey());
-    validateMapContainsTokenValue(Token.REMOVED_PHASE1);
-    validateInvokedDestroyMethodsOnRegion(false);
+    verifyMapContainsKey(event.getKey());
+    verifyMapContainsTokenValue(Token.REMOVED_PHASE1);
+    verifyInvokedDestroyMethodsOnRegion(false);
   }
 
-  private void validateInvokedDestroyMethodOnEvictableEntry() throws RegionClearedException {
+  private void verifyInvokedDestroyMethodOnEvictableEntry() throws RegionClearedException {
     verify(evictableEntry, times(1)).destroy(eq(arm._getOwner()), eq(event), eq(false),
         anyBoolean(), eq(expectedOldValue), anyBoolean(), anyBoolean());
   }
 
-  private void validateMapContainsKey(Object key) {
+  private void verifyMapContainsKey(Object key) {
     assertThat(arm.getEntryMap()).containsKey(key);
   }
 
-  private void validateMapDoesNotContainKey(Object key) {
+  private void verifyMapDoesNotContainKey(Object key) {
     assertThat(arm.getEntryMap()).doesNotContainKey(key);
   }
 
-  private void validateNoDestroyInvocationsOnEvictableEntry() throws RegionClearedException {
+  private void verifyNoDestroyInvocationsOnEvictableEntry() throws RegionClearedException {
     verify(evictableEntry, never()).destroy(any(), any(), anyBoolean(), anyBoolean(), any(),
         anyBoolean(), anyBoolean());
   }
 
-  private void validateMapContainsTokenValue(Token token) {
+  private void verifyMapContainsTokenValue(Token token) {
     assertThat(arm.getEntryMap()).containsKey(event.getKey());
     RegionEntry re = (RegionEntry) arm.getEntryMap().get(event.getKey());
     assertThat(re.getValueAsToken()).isEqualTo(token);
   }
 
-  private void validateInvokedDestroyMethodsOnRegion(boolean conflictWithClear) {
-    invokeCallbacks = true;
-    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
-        eq(conflictWithClear), eq(duringRI), eq(invokeCallbacks));
-    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
-        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  private void verifyInvokedDestroyMethodsOnRegion(boolean conflictWithClear) {
+    verifyPart2(conflictWithClear);
+    verifyPart3();
   }
 
-  private void validateNoDestroyInvocationsOnRegion() {
+  private void verifyPart3() {
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(true), eq(expectedOldValue));
+  }
+
+  private void verifyPart2(boolean conflictWithClear) {
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(conflictWithClear), eq(duringRI), eq(true));
+  }
+
+  private void verifyNoDestroyInvocationsOnRegion() {
+    verifyNoPart2();
+    verifyNoPart3();
+  }
+
+  private void verifyNoPart2() {
     verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), anyBoolean());
+  }
+
+  private void verifyNoPart3() {
     verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), any());
   }
 
+  private void verifyIndexManagerOrder(IndexManager indexManager) {
+    InOrder inOrder = inOrder(indexManager, arm._getOwner());
+    inOrder.verify(indexManager, times(1)).waitForIndexInit();
+    inOrder.verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), any(), anyBoolean(),
+        anyBoolean(),
+        anyBoolean(), anyBoolean());
+    inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
+  }
+
   private EntryEventImpl createEventForDestroy(LocalRegion lr) {
     when(lr.getKeyInfo(KEY)).thenReturn(new KeyInfo(KEY, null, null));
-    return EntryEventImpl.create(lr, Operation.DESTROY, KEY, false, null, true, false);
+    return EntryEventImpl.create(lr, Operation.DESTROY, KEY, false, null, true, fromRILocalDestroy);
   }
 
   /**
