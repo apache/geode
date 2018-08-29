@@ -89,11 +89,13 @@ public class GeodeHttpClientRule extends ExternalResource {
   }
 
   public HttpResponse get(String uri, String... params) throws Exception {
+    connect();
     HttpClientContext clientContext = HttpClientContext.create();
     return httpClient.execute(host, buildHttpGet(uri, params), clientContext);
   }
 
   public HttpResponse post(String uri, String... params) throws Exception {
+    connect();
     HttpClientContext clientContext = HttpClientContext.create();
     return httpClient.execute(host, buildHttpPost(uri, params), clientContext);
   }
