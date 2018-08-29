@@ -31,8 +31,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -60,6 +63,7 @@ import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
@@ -129,16 +133,15 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     dlstSystem = (new DistributedLockServiceDUnitTest()).getSystem();
   }
 
-  private static DistributedLockService dls_testFairness;
-  private static int count_testFairness[] = new int[16];
   private static volatile boolean stop_testFairness;
-  private static volatile boolean[] done_testFairness = new boolean[16];
-  static {
-    Arrays.fill(done_testFairness, true);
-  }
 
   @Test
-  public void testFairness() throws Exception {
+  public void testFairness() throws InterruptedException, ExecutionException {
+    final int[] vmThreads = new int[] {1, 4, 8, 16};
+    final int numVms = vmThreads.length;
+    final int numThreads = Arrays.stream(vmThreads).sum();
+    final List<VM> vms = new ArrayList<>();
+    final List<Future> futures = new ArrayList<>();
     final String serviceName = "testFairness_" + getUniqueName();
     final Object lock = "lock";
 
@@ -146,14 +149,12 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
     assertTrue(service.lock(lock, -1, -1));
 
-    final int[] vmThreads = new int[] {1, 4, 8, 16};
-    forNumVMsInvoke(vmThreads.length, () -> remoteCreateService(serviceName));
+    // create the lock service in all vms
+    vms.addAll(forNumVMsInvoke(numVms, () -> remoteCreateService(serviceName)));
     Thread.sleep(100);
 
     Invoke.invokeInEveryVM(() -> {
       stop_testFairness = false;
-      count_testFairness = new int[16];
-      done_testFairness = new boolean[16];
     });
 
     // line up threads for the fairness race...
@@ -161,39 +162,42 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       logger.info("[testFairness] lining up " + vmThreads[vm] + " threads in vm " + vm);
 
       for (int j = 0; j < vmThreads[vm]; j++) {
-        final int thread = j;
-
-        VM.getVM(vm).invokeAsync(new SerializableRunnable() {
-          public void run() {
+        SerializableCallable<Integer> fairnessRunnable = new SerializableCallable<Integer>() {
+          public Integer call() {
             // lock, inc count, and unlock until stop_testFairness is set true
+            final AtomicInteger lockCount = new AtomicInteger(0);
             try {
-              done_testFairness[thread] = false;
-              dls_testFairness = DistributedLockService.getServiceNamed(serviceName);
+              DistributedLockService service =
+                  DistributedLockService.getServiceNamed(serviceName);
               while (!stop_testFairness) {
-                assertTrue(dls_testFairness.lock(lock, -1, -1));
-                count_testFairness[thread]++;
-                dls_testFairness.unlock(lock);
+                assertTrue(service.lock(lock, -1, -1));
+                lockCount.incrementAndGet();
+                service.unlock(lock);
               }
-              done_testFairness[thread] = true;
             } catch (VirtualMachineError e) {
               SystemFailure.initiateFailure(e);
               throw e;
             } catch (Throwable t) {
               logger.warn(t);
               fail(t.getMessage());
+            } finally {
+              return lockCount.get();
             }
           }
-        });
+        };
+
+        futures.add(vms.get(vm).invokeAsync(() -> fairnessRunnable.call()));
       }
     }
 
     // wait for all threads to be ready to start the race
-    for (int i = 0; i < vmThreads.length; i++) {
+    for (int i = 0; i < numVms; i++) {
       final int vmId = i;
 
-      VM.getVM(i).invoke(() -> {
+      vms.get(vmId).invoke(() -> {
         DLockService localService =
             (DLockService) DistributedLockService.getServiceNamed(serviceName);
+
         Awaitility.await().atMost(1, TimeUnit.MINUTES)
             .untilAsserted(() -> assertThat(localService.getStats().getLockWaitsInProgress())
                 .isEqualTo(vmThreads[vmId]));
@@ -203,62 +207,37 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // start the race!
     service.unlock(lock);
     Thread.sleep(1000 * 5); // 5 seconds
-    assertTrue(service.lock(lock, -1, -1));
 
     // stop the race...
-    for (int vm = 0; vm < vmThreads.length; vm++) {
-      VM.getVM(vm).invoke(new SerializableRunnable() {
+    assertTrue(service.lock(lock, -1, -1));
+    for (VM vm : vms) {
+      vm.invoke(new SerializableRunnable() {
         public void run() {
           stop_testFairness = true;
         }
       });
     }
+
+    // release the lock and destroy the lock service
     service.unlock(lock);
-    for (int vm = 0; vm < vmThreads.length; vm++) {
-      VM.getVM(vm).invoke(new SerializableRunnable() {
-        public void run() {
-          try {
-            boolean testIsDone = false;
-            while (!stop_testFairness || !testIsDone) {
-              testIsDone = true;
-              for (int i2 = 0; i2 < done_testFairness.length; i2++) {
-                if (!done_testFairness[i2])
-                  testIsDone = false;
-              }
-            }
-            DistributedLockService.destroy(serviceName);
-          } catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          } catch (Throwable t) {
-            fail(t.getMessage());
-          }
-        }
-      });
-    }
 
     // calc total locks granted...
-    int totalLocks = 0;
-    int minLocks = Integer.MAX_VALUE;
-    int maxLocks = 0;
+    Integer totalLocks = 0;
+    Integer maxLocks = 0;
+    Integer minLocks = Integer.MAX_VALUE;
 
-    // add up total locks across all vms and threads...
-    int numThreads = 0;
-    for (int i = 0; i < vmThreads.length; i++) {
-      final int vm = i;
-      for (int j = 0; j < vmThreads[vm]; j++) {
-        final int thread = j;
-        Integer count = VM.getVM(vm).invoke(
-            () -> DistributedLockServiceDUnitTest.get_count_testFairness(thread));
-        int numLocks = count;
-        if (numLocks < minLocks)
-          minLocks = numLocks;
-        if (numLocks > maxLocks)
-          maxLocks = numLocks;
-        totalLocks = totalLocks + numLocks;
-        numThreads++;
+    for (Future future : futures) {
+      Integer numLocks = (Integer) future.get();
+      totalLocks += numLocks;
+      if (minLocks > numLocks) {
+        minLocks = numLocks;
+      }
+      if (maxLocks < numLocks) {
+        maxLocks = numLocks;
       }
     }
+
+    vms.forEach(vm -> vm.invoke(() -> DistributedLockService.destroy(serviceName)));
 
     logger.info("[testFairness] totalLocks=" + totalLocks + " minLocks="
         + minLocks + " maxLocks=" + maxLocks);
@@ -274,10 +253,6 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     assertTrue("minLocks is less than lowThreshold", minLocks >= lowThreshold);
     assertTrue("maxLocks is greater than highThreshold", maxLocks <= highThreshold);
-  }
-
-  private static Integer get_count_testFairness(Integer i) {
-    return count_testFairness[i];
   }
 
   @Test
