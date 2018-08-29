@@ -22,17 +22,15 @@ limitations under the License.
 This section describes <%=vars.product_name%> transactions.
 <%=vars.product_name%> offers an API for client applications that do
 transactional work.
-While the implementation of the API does not provide
-applications a rigid adherence to all the ACID properties of transactions,
-it handles many situations.
-There are the familiar `begin`, `commit`, and `rollback` methods
+<%=vars.product_name%> implements optimistic transactions, 
+with the familiar `begin`, `commit`, and `rollback` methods
 that implement the same operations as in 
 relational database transactions methods.
 
 -   **[Adherence to ACID Promises](transactions_intro.html)**
   
-    This section explains the ways in which <%=vars.product_name%> does
-and does not adhere to ACID semantics.
+    This section explains the ways in which <%=vars.product_name%>'s
+implementation of optimistic transactions provides ACID semantics.
 
 -   **[Code Examples](directed_example.html)**
 

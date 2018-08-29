@@ -50,6 +50,15 @@ try {
     txManager.commit();
 } catch (CommitConflictException conflict) {
     // ... do necessary work for a transaction that failed on commit
+} finally {
+    // All other exceptions will be handled by the caller.
+    // Examples of some exceptions: the data is not colocated, a rebalance
+    // interfered with the transaction, or the server is gone.
+    // Any exception thrown by a method other than commit() needs
+    // to do a rollback to avoid leaking the transaction state.
+    if(mgr.exists()) {
+        mgr.rollback();
+    }       
 }
 ```
 
@@ -69,7 +78,7 @@ an exception is thrown, and this example tries again.
 ```
 // inputs needed for this transaction; shown as variables for simplicity
 final String customer = "Customer1";
-final Integer purchase = Integer.valueOf(1000);
+final Integer purchase = 1000;
 
 // region set up shown to promote understanding
 Cache cache = new CacheFactory().create();
@@ -88,44 +97,34 @@ Region<String, Integer> trades =
 // transaction code
 CacheTransactionManager txmgr = cache.getCacheTransactionManager();
 boolean retryTransaction = false;
-boolean transactionSucceeded = false;
 do {
   try {
     txmgr.begin();
 
     // Subtract out the cost of the trade for this customer's balance
     Integer cashBalance = cash.get(customer);
-    Integer newBalance = 
-       Integer.valueOf((cashBalance != null ? cashBalance : 0) - purchase);
+    Integer newBalance = (cashBalance != null ? cashBalance : 0) - purchase;
     cash.put(customer, newBalance);
 
     // Add in the cost of the trade for this customer
     Integer tradeBalance = trades.get(customer);
-    newBalance = 
-       Integer.valueOf((tradeBalance != null ? tradeBalance : 0) + purchase);
+    newBalance = (tradeBalance != null ? tradeBalance : 0) + purchase;
     trades.put(customer, newBalance);
 
-  } catch (Exception exception) {
-    // Let the caller handle any exceptions caused when doing these region
-    // operations. Clean up the transactional state by doing a rollback.
-    // Examples of some exceptions: the data is not colocated, a rebalance
-    // interfered with the transaction, or the server is gone.
-    txmgr.rollback();
-    throw exception;
-  }
-
-  try {
     txmgr.commit();
     retryTransaction = false;
-    transactionSucceeded = true;
   } 
   catch (CommitConflictException conflict) {
     // entry value changed causing a conflict for this customer, so try again
     retryTransaction = true;
-  }
-  // All other exceptions that happend upon commit() are not handled, so
-  // the caller will have to handle those other exceptions. This code does
-  // not need a rollback(), since the exception happened on commit().
+  } finally {
+    // All other exceptions will be handled by the caller. 
+    // Any exception thrown by a method other than commit() needs
+    // to do a rollback to avoid leaking the transaction state.
+    if(mgr.exists()) {
+      mgr.rollback();
+    }       
+  }       
 
 } while (retryTransaction);
 ```
@@ -134,13 +133,6 @@ Design transactions such that any get operations are within the transaction.
 This causes those entries to be part of the transactional state,
 which is desired such that intersecting transactions can be detected
 and signal commit conficts.
-
-Note that variables `cashBalance` and `tradeBalance` are
-references,
-because the `Region.get` operation returns a reference.
-Read [Region Operations Return References](design_considerations.html#copy-on-read-transactions)
-for details and how to work around the
-implications of a reference as a return value.
 
 ## Transaction within a Function
 
@@ -254,3 +246,11 @@ The `optimizeForWrite` method is defined to cause the system to
 execute the function on the server that holds the primary bucket
 for the given key.
 It can save a network hop from the secondary to the primary.
+
+Note that the variable `qtyAvailable` is a reference,
+because the `Region.get` operation returns a reference
+within this server-side code.
+Read [Region Operations Return References](design_considerations.html#copy-on-read-transactions)
+for details and how to work around the
+implications of a reference as a return value when working with server code.
+

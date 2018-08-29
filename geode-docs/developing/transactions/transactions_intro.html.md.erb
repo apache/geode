@@ -22,30 +22,21 @@ limitations under the License.
 <a id="ACID"></a>
 
 This section introduces <%=vars.product_name%> transactions.
-<%=vars.product_name%> offers an API for client applications that do transactional work.
-While the implementation of the API does not provide
-applications a rigid adherence to all the ACID properties of transactions,
-it handles many situations.
+<%=vars.product_name%> offers an API for client applications
+that do transactional work.
+<%=vars.product_name%> implements optimistic transactions,
+choosing the much higher transaction performance they offer over the slow,
+locking methods of a traditional relational database.
 
-<%=vars.product_name%>'s implementation of transactions chooses speed
-over the slow,
-locking methods of a traditional database.
-
-
-<%=vars.product_name%> transaction semantics do not offer
-the identical Atomicity-Consistency-Isolation-Durability (ACID) semantics
+Optimistic transaction semantics are not
+identical to the Atomicity-Consistency-Isolation-Durability (ACID) semantics
 of a traditional relational database.
-This <%=vars.product_name%> implementation choice results in
-much higher transaction performance without sacrificing ACID promises.
-<%=vars.product_name%> transactions do not adhere to ACID constraints
-by default,
-but they can be configured for ACID support.
 
 ### <a id="transaction_semantics__section_8362ACD06C784B5BBB0B7E986F760169" class="no-quick-link"></a>Atomicity
 
 Atomicity is “all or nothing” behavior: a transaction completes successfully only when all of the operations it contains complete successfully. If problems occur during a transaction, perhaps due to other transactions with overlapping changes, the transaction cannot successfully complete until the problems are resolved.
 
-<%=vars.product_name%> transactions provide atomicity and realize speed by using a reservation system, instead of using the traditional relational database technique of a two-phase locking of rows. The reservation prevents other, intersecting transactions from completing, allowing the commit to check for conflicts and to reserve resources in an all-or-nothing fashion prior to making changes to the data. After all changes have been made, locally and remotely, the reservation is released. With the reservation system, an intersecting transaction is simply discarded. The serialization of obtaining locks is avoided.
+Optimistic transactions provide atomicity and realize speed by using a reservation system, instead of using the traditional relational database technique of a two-phase locking of rows. The reservation prevents other, intersecting transactions from completing, allowing the commit to check for conflicts and to reserve resources in an all-or-nothing fashion prior to making changes to the data. After all changes have been made, locally and remotely, the reservation is released. With the reservation system, an intersecting transaction is simply discarded. The serialization of obtaining locks is avoided.
 
 ### <a id="transaction_semantics__section_7C287DA4A5134780B3199CE074E3F890" class="no-quick-link"></a>Consistency
 
@@ -53,21 +44,24 @@ Consistency requires that data written within a transaction must observe the key
 
 ### <a id="transaction_semantics__section_126A24EC499D4CF39AE766A0B526A9A5" class="no-quick-link"></a>Isolation
 
-Isolation assures that operations will see either the pre-transaction state
-or the post-transaction state,
-but not the transitional state that occurs while a transaction is in progress.
-Write operations in a transaction are always confirmed to ensure that stale
-values are not written.
-<%=vars.product_name%>'s performance focus results in a default configuration
-that does not enforce read isolation.
-Transactions have repeatable read isolation,
-so once the committed value is read for a given key,
+Isolation is the level at which transactional state is
+visible to system components.
+<%=vars.product_name%> transactions have repeatable read isolation.
+Once the committed value is read for a given key,
 it always returns that same value.
-If a transaction write, such as put or invalidate,
+If a write within a transaction
 deletes a value for a key that has already been read,
 subsequent reads return the transactional reference.
 
-See [Mixing Transactions with Multi-threaded Applications](design_considerations.html#transactions-multithreaded) for how multi-threaded applications interact with transactions.
+The default configuration isolates transactions at the process thread level.
+While a transaction is in progress,
+its changes are visible only inside the thread that is running the transaction.
+Other threads within that same process and threads in other processes
+cannot see changes until after the commit operation begins.
+After beginning the commit, the changes are visible in the cache,
+but other threads that access the changing data might see partial results
+of the transaction, leading to a dirty read.
+See [Changing the Handling of Dirty Reads](design_considerations.html#transactions-dirty-reads) for how to change the default behavior.
 
 ### <a id="transaction_semantics__section_F092E368724945BCBF8E5DCB36B97EB4" class="no-quick-link"></a>Durability
 

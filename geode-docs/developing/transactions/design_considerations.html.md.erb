@@ -30,11 +30,10 @@ This section discusses how transactions interact with other
 -  **[Region Operations Return References](#copy-on-read-transactions)**
 -  **[First Operation with Mixed Region Types](#first-op-with-mixed-types)**
 -  **[Allowing Transactions to Work on Persistent Regions](#transactions-persistence)**
--  **[Mixing Transactions with Indexes](#transactions-indexes)**
--  **[Mixing Transactions with Queries](#transactions-queries)**
+-  **[Mixing Transactions with Queries and Indexes](#transactions-queries)**
 -  **[Mixing Transactions with Eviction](#transactions-eviction)**
 -  **[Mixing Transactions with Expiration](#transactions-expiration)**
--  **[Mixing Transactions with Multi-threaded Applications](#transactions-multithreaded)**
+-  **[Changing the Handling of Dirty Reads](#transactions-dirty-reads)**
 
 ## <a id="colocate-PRs" class="no-quick-link"></a>Colocate Partitioned Regions
 
@@ -47,14 +46,14 @@ entries.
 ## <a id="copy-on-read-transactions" class="no-quick-link"></a>Region Operations Return References
 
 For performance,
-region operations return references to region entries.
+server-invoked region operations return references to region entries.
 Any assignment to that reference changes the entry within the region.
 This subverts the system's ability to maintain consistency
 and the callback chain for handlers such as cache writers
 and cache loaders.
 
-Changing an entry using a reference from within a transaction
-has the same consistency issues, but is even worse,
+Changing an entry using a reference from within a transaction executing
+on a server has the same consistency issues, but is even worse,
 as the change will not be seen as part of the transactional state.
 
 There are two ways to work with a reference: make a copy,
@@ -74,7 +73,7 @@ region, even if the operation will be spurious.
 
 ## <a id="transactions-persistence" class="no-quick-link"></a> Allowing Transactions to Work on Persistent Regions
 
-<%=vars.product_name%>'s implementation of the durability promise prohibits
+<%=vars.product_name%>'s implementation of atomic transactions prohibits
 regions with persistence from participating in transactions.
 The invocation of a persistent region operation within a transaction
 throws an `UnsupportedOperationException` with an associated message of
@@ -90,21 +89,18 @@ a transaction can set this system property:
 `-Dgemfire.ALLOW_PERSISTENT_TRANSACTIONS=true`
 
 Setting this system property eliminates the exception.
-It does not provide durability.
+It does not change the fact that atomicity is not enforced
+for disk writes that occur with the commit of a transaction.
+A server crash during the commit may succeed in some,
+but not all of the disk writes.
 
-## <a id="transactions-indexes" class="no-quick-link"></a>Mixing Transactions with Indexes
-
-The contents and updates to an index do not intersect with any
-changes made within a transaction.
-Any operation on an index done within a transaction
-will not reflect any state from within that transaction.
-Therefore, do not mix transactions with operation on an index.
-
-## <a id="transactions-queries" class="no-quick-link"></a>Mixing Transactions with Queries
+## <a id="transactions-queries" class="no-quick-link"></a>Mixing Transactions with Queries and Indexes
 
 Queries and query results reflect region state, and not any state or
 changes that occur within a transaction.
-Therefore, do not mix transactions with queries.
+Likewise, the contents and updates to an index do not intersect with any
+changes made within a transaction.
+Therefore, do not mix transactions with queries or indexed regions.
 
 ## <a id="transactions-eviction" class="no-quick-link"></a>Mixing Transactions with Eviction
 
@@ -121,20 +117,9 @@ immediately after the commit.
 A transaction disables expiration on any region entries affected
 by the transaction.
 
-## <a id="transactions-multithreaded" class="no-quick-link"></a>Mixing Transactions with Multi-threaded Applications
+## <a id="transactions-dirty-reads" class="no-quick-link"></a>Changing the Handling of Dirty Reads
 
-The default configuration isolates transactions at the process thread level.
-While a transaction is in progress,
-its changes are visible only inside the thread that is running the transaction.
-Other threads within that same process
-and threads in other processes cannot see changes
-until after the commit operation begins.
-After beginning the commit,
-the changes are visible in the cache,
-but other threads that access the changing data might see
-partial results of the transaction, leading to a dirty read.
-
-An application requiring the strict,
+An application requiring a strict,
 but slower isolation model,
 such that dirty reads of transitional states are not allowed,
 should set a property and encapsulate read operations within the transaction.
