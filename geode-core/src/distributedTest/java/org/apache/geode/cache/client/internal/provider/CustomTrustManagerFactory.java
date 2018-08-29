@@ -31,34 +31,35 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.TrustManagerFactorySpi;
 import javax.net.ssl.X509ExtendedTrustManager;
 
-import org.apache.geode.util.test.TestUtil;
 
-abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
+public abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
 
   private final Logger logger = Logger.getLogger(this.getClass().getName());
 
   private final String algorithm;
+  private final String trustStorePath;
   private TrustManagerFactory customTrustManagerFactory;
   private X509ExtendedTrustManager customTrustManager;
 
-  private CustomTrustManagerFactory(String algorithm) {
+  private CustomTrustManagerFactory(String algorithm, String trustStorePath) {
     this.algorithm = algorithm;
+    this.trustStorePath = trustStorePath;
   }
 
   @Override
-  protected final TrustManager[] engineGetTrustManagers() {
+  public final TrustManager[] engineGetTrustManagers() {
     X509ExtendedTrustManager systemTrustManager = getCustomTrustManager();
     return new TrustManager[] {systemTrustManager};
   }
 
   @Override
-  protected final void engineInit(ManagerFactoryParameters managerFactoryParameters) {
+  public final void engineInit(ManagerFactoryParameters managerFactoryParameters) {
     // not supported right now
     throw new UnsupportedOperationException("use engineInit with keystore");
   }
 
   @Override
-  protected final void engineInit(KeyStore keyStore) {
+  public final void engineInit(KeyStore keyStore) {
     // ignore the passed in keystore as it will be null
     init();
   }
@@ -77,9 +78,6 @@ abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
   }
 
   private void init() {
-    String trustStoreName = "client.truststore";
-    String trustStorePath =
-        TestUtil.getResourcePath(CustomTrustManagerFactory.class, trustStoreName);
     String trustStoreType = "JKS";
     String trustStorePassword = "password";
 
@@ -96,14 +94,14 @@ abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
   }
 
   public static final class PKIXFactory extends CustomTrustManagerFactory {
-    public PKIXFactory() {
-      super("PKIX");
+    public PKIXFactory(String trustStorePath) {
+      super("PKIX", trustStorePath);
     }
   }
 
   public static final class SimpleFactory extends CustomTrustManagerFactory {
-    public SimpleFactory() {
-      super("SunX509");
+    public SimpleFactory(String trustStorePath) {
+      super("SunX509", trustStorePath);
     }
   }
 }

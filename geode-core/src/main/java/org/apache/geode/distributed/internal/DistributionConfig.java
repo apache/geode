@@ -4883,9 +4883,9 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED} value.
    * <p>
-   * Actual value of this constant is <code>false</code>.
+   * Actual value of this constant is <code>true</code>.
    */
-  boolean DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED = false;
+  boolean DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED = true;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}

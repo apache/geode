@@ -32,22 +32,23 @@ import javax.net.ssl.KeyManagerFactorySpi;
 import javax.net.ssl.ManagerFactoryParameters;
 import javax.net.ssl.X509ExtendedKeyManager;
 
-import org.apache.geode.util.test.TestUtil;
 
-abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
+public abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
 
   private final Logger logger = Logger.getLogger(this.getClass().getName());
 
   private final String algorithm;
+  private final String keyStorePath;
   private KeyManagerFactory customKeyManagerFactory;
   private X509ExtendedKeyManager customKeyManager;
 
-  private CustomKeyManagerFactory(String algorithm) {
+  private CustomKeyManagerFactory(String algorithm, String keyStorePath) {
     this.algorithm = algorithm;
+    this.keyStorePath = keyStorePath;
   }
 
   @Override
-  protected final KeyManager[] engineGetKeyManagers() {
+  public final KeyManager[] engineGetKeyManagers() {
     X509ExtendedKeyManager systemKeyManager = getCustomKeyManager();
     return new KeyManager[] {systemKeyManager};
   }
@@ -59,20 +60,17 @@ abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
   }
 
   @Override
-  protected final void engineInit(KeyStore keyStore, char[] chars) {
+  public final void engineInit(KeyStore keyStore, char[] chars) {
     // ignore the passed in keystore as it will be null
     init();
   }
 
   private void init() {
-    String CLIENT_KEY_STORE = "client.keystore";
     String SSL_KEYSTORE_TYPE = "JKS";
-    String SSL_KEYSTORE =
-        TestUtil.getResourcePath(CustomKeyManagerFactory.class, CLIENT_KEY_STORE);
     String SSL_KEYSTORE_PASSWORD = "password";
 
     try {
-      FileInputStream fileInputStream = new FileInputStream(SSL_KEYSTORE);
+      FileInputStream fileInputStream = new FileInputStream(keyStorePath);
       KeyStore keyStore = KeyStore.getInstance(SSL_KEYSTORE_TYPE);
       keyStore.load(fileInputStream, SSL_KEYSTORE_PASSWORD.toCharArray());
       this.customKeyManagerFactory = KeyManagerFactory.getInstance(this.algorithm, "SunJSSE");
@@ -97,14 +95,14 @@ abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
   }
 
   public static final class PKIXFactory extends CustomKeyManagerFactory {
-    public PKIXFactory() {
-      super("PKIX");
+    public PKIXFactory(String keyStorePath) {
+      super("PKIX", keyStorePath);
     }
   }
 
   public static final class SimpleFactory extends CustomKeyManagerFactory {
-    public SimpleFactory() {
-      super("SunX509");
+    public SimpleFactory(String keyStorePath) {
+      super("SunX509", keyStorePath);
     }
   }
 }

@@ -15,98 +15,66 @@
 
 package org.apache.geode.cache.client.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_SSLCONTEXT;
+import static org.apache.geode.security.SecurableCommunicationChannels.ALL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import java.security.Security;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Properties;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import javax.net.ssl.SSLContext;
+
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.client.internal.provider.CustomProvider;
-import org.apache.geode.security.SecurableCommunicationChannels;
-import org.apache.geode.test.dunit.SerializableConsumerIF;
-import org.apache.geode.test.dunit.rules.ClientVM;
+import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.internal.provider.CustomKeyManagerFactory;
+import org.apache.geode.cache.client.internal.provider.CustomTrustManagerFactory;
+import org.apache.geode.cache.ssl.CertStores;
+import org.apache.geode.cache.ssl.TestSSLUtils.CertificateBuilder;
+import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({ClientServerTest.class})
 public class CustomSSLProviderDistributedTest {
   private static MemberVM locator;
   private static MemberVM server;
-  private static ClientVM client;
 
-  private static final String SERVER_KEY_STORE = "cacheserver.keystore";
-  private static final String SERVER_TRUST_STORE = "cacheserver.truststore";
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  private CustomKeyManagerFactory.PKIXFactory keyManagerFactory;
+  private CustomTrustManagerFactory.PKIXFactory trustManagerFactory;
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
-
-  private static String serverKeystore =
-      TestUtil.getResourcePath(CustomSSLProviderDistributedTest.class, SERVER_KEY_STORE);
-  private static String serverTruststore =
-      TestUtil.getResourcePath(CustomSSLProviderDistributedTest.class, SERVER_TRUST_STORE);
-
-  private static Properties serverSSLProperties = new Properties() {
-    {
-      setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.ALL);
-      setProperty(SSL_KEYSTORE, serverKeystore);
-      setProperty(SSL_KEYSTORE_PASSWORD, "password");
-      setProperty(SSL_KEYSTORE_TYPE, "JKS");
-      setProperty(SSL_TRUSTSTORE, serverTruststore);
-      setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-      setProperty(SSL_TRUSTSTORE_TYPE, "JKS");
-      setProperty(SSL_CIPHERS, "any");
-      setProperty(SSL_PROTOCOLS, "any");
-      setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf("true"));
-    }
-  };
-
-  private static Properties clientSSLProperties = new Properties() {
-    {
-      setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.SERVER);
-      setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf("true"));
-      setProperty(SSL_USE_DEFAULT_SSLCONTEXT, String.valueOf("true"));
-    }
-  };
-
-  @BeforeClass
-  public static void setupCluster() throws Exception {
+  private void setupCluster(Properties locatorSSLProps, Properties serverSSLProps) {
     // create a cluster
-    locator = cluster.startLocatorVM(0, serverSSLProperties);
-    server = cluster.startServerVM(1, serverSSLProperties, locator.getPort());
+    locator = cluster.startLocatorVM(0, locatorSSLProps);
+    server = cluster.startServerVM(1, serverSSLProps, locator.getPort());
 
     // create region
     server.invoke(CustomSSLProviderDistributedTest::createServerRegion);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
-
-    // setup client
-    setupClient(server.getPort(), server.getVM().getHost().getHostName());
   }
 
   private static void createServerRegion() {
@@ -116,38 +84,182 @@ public class CustomSSLProviderDistributedTest {
     r.put("serverkey", "servervalue");
   }
 
-  private static void setupClient(int serverPort, String serverHost) throws Exception {
-    SerializableConsumerIF<ClientCacheFactory> clientSetup = cf -> {
-      // add custom provider
-      Security.insertProviderAt(new CustomProvider(), 2);
-      cf.addPoolServer(serverHost, serverPort);
-    };
+  @Test
+  public void hostNameIsValidatedWhenUsingDefaultContext() throws Exception {
+    CertificateBuilder locatorCertificate = new CertificateBuilder()
+        .commonName("locator")
+        // ClusterStartupRule uses 'localhost' as locator host
+        .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanIpAddress(InetAddress.getLocalHost())
+        .sanIpAddress(InetAddress.getByName("0.0.0.0")); // to pass on windows
 
-    client = cluster.startClientVM(2, clientSSLProperties, clientSetup);
+    CertificateBuilder serverCertificate = new CertificateBuilder()
+        .commonName("server")
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanIpAddress(InetAddress.getLocalHost());
 
-    // create a client region
-    client.invoke(CustomSSLProviderDistributedTest::createClientRegion);
-  }
+    CertificateBuilder clientCertificate = new CertificateBuilder()
+        .commonName("client");
 
-  private static void createClientRegion() {
-    ClientRegionFactory<String, String> regionFactory =
-        ClusterStartupRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.PROXY);
-    Region<String, String> region = regionFactory.create("region");
-    assertThat(region).isNotNull();
+    validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, true,
+        true, false, null);
   }
 
   @Test
-  public void testClientSSLConnection() {
-    client.invoke(CustomSSLProviderDistributedTest::doClientRegionTest);
-    server.invoke(CustomSSLProviderDistributedTest::doServerRegionTest);
+  public void clientCanChooseNotToValidateHostName() throws Exception {
+    CertificateBuilder locatorCertificate = new CertificateBuilder()
+        .commonName("locator");
+
+    CertificateBuilder serverCertificate = new CertificateBuilder()
+        .commonName("server");
+
+    CertificateBuilder clientCertificate = new CertificateBuilder()
+        .commonName("client");
+
+    validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, false,
+        false, true, null);
   }
 
-  private static void doClientRegionTest() {
-    Region<String, String> region = ClusterStartupRule.getClientCache().getRegion("region");
-    assertThat("servervalue").isEqualTo(region.get("serverkey"));
+  @Test
+  public void clientConnectionFailsIfNoHostNameInLocatorKey() throws Exception {
+    CertificateBuilder locatorCertificate = new CertificateBuilder()
+        .commonName("locator");
 
-    region.put("clientkey", "clientvalue");
-    assertThat("clientvalue").isEqualTo(region.get("clientkey"));
+    CertificateBuilder serverCertificate = new CertificateBuilder()
+        .commonName("server");
+
+    CertificateBuilder clientCertificate = new CertificateBuilder()
+        .commonName("client");
+
+    validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, false,
+        false, false, LocatorCancelException.class);
+  }
+
+  @Test
+  public void clientConnectionFailsWhenWrongHostNameInLocatorKey() throws Exception {
+    CertificateBuilder locatorCertificate = new CertificateBuilder()
+        .commonName("locator")
+        .sanDnsName("example.com");;
+
+    CertificateBuilder serverCertificate = new CertificateBuilder()
+        .commonName("server")
+        .sanDnsName("example.com");;
+
+    CertificateBuilder clientCertificate = new CertificateBuilder()
+        .commonName("client");
+
+    validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, false,
+        false,
+        false,
+        LocatorCancelException.class);
+  }
+
+  @Test
+  public void expectConnectionFailureWhenNoHostNameInServerKey() throws Exception {
+    CertificateBuilder locatorCertificateWithSan = new CertificateBuilder()
+        .commonName("locator")
+        .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .sanIpAddress(InetAddress.getLocalHost());
+
+    CertificateBuilder serverCertificateWithNoSan = new CertificateBuilder()
+        .commonName("server");
+
+    CertificateBuilder clientCertificate = new CertificateBuilder()
+        .commonName("client");
+
+    validateClientSSLConnection(locatorCertificateWithSan, serverCertificateWithNoSan,
+        clientCertificate, false, false, false,
+        NoAvailableServersException.class);
+  }
+
+  private void validateClientSSLConnection(CertificateBuilder locatorCertificate,
+      CertificateBuilder serverCertificate, CertificateBuilder clientCertificate,
+      boolean enableHostNameVerficationForLocator, boolean enableHostNameVerificationForServer,
+      boolean disableHostNameVerificationForClient,
+      Class expectedExceptionOnClient)
+      throws GeneralSecurityException, IOException {
+
+    CertStores locatorStore = CertStores.locatorStore();
+    locatorStore.withCertificate(locatorCertificate);
+
+    CertStores serverStore = CertStores.serverStore();
+    serverStore.withCertificate(serverCertificate);
+
+    CertStores clientStore = CertStores.clientStore();
+    clientStore.withCertificate(clientCertificate);
+
+    Properties locatorSSLProps = locatorStore
+        .trustSelf()
+        .trust(serverStore.alias(), serverStore.certificate())
+        .trust(clientStore.alias(), clientStore.certificate())
+        .propertiesWith(ALL, false, enableHostNameVerficationForLocator);
+
+    Properties serverSSLProps = serverStore
+        .trustSelf()
+        .trust(locatorStore.alias(), locatorStore.certificate())
+        .trust(clientStore.alias(), clientStore.certificate())
+        .propertiesWith(ALL, true, enableHostNameVerificationForServer);
+
+    // this props is only to create temp keystore and truststore and get paths
+    Properties clientSSLProps = clientStore
+        .trust(locatorStore.alias(), locatorStore.certificate())
+        .trust(serverStore.alias(), serverStore.certificate())
+        .propertiesWith(ALL, true, true);
+
+    setupCluster(locatorSSLProps, serverSSLProps);
+
+    // setup client
+    keyManagerFactory =
+        new CustomKeyManagerFactory.PKIXFactory(clientSSLProps.getProperty(SSL_KEYSTORE));
+    keyManagerFactory.engineInit(null, null);
+
+    trustManagerFactory =
+        new CustomTrustManagerFactory.PKIXFactory(clientSSLProps.getProperty(SSL_TRUSTSTORE));
+    trustManagerFactory.engineInit((KeyStore) null);
+
+    SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+    sslContext.init(keyManagerFactory.engineGetKeyManagers(),
+        trustManagerFactory.engineGetTrustManagers(), null);
+    // set default context
+    SSLContext.setDefault(sslContext);
+
+    Properties clientSSLProperties = new Properties();
+    clientSSLProperties.setProperty(SSL_ENABLED_COMPONENTS, ALL);
+    clientSSLProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf("true"));
+    clientSSLProperties.setProperty(SSL_USE_DEFAULT_SSLCONTEXT, String.valueOf("true"));
+
+    if (disableHostNameVerificationForClient) {
+      // client chose to override default
+      clientSSLProperties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, String.valueOf("false"));
+    }
+
+    ClientCacheFactory clientCacheFactory = new ClientCacheFactory(clientSSLProperties);
+    clientCacheFactory.addPoolLocator(locator.getVM().getHost().getHostName(), locator.getPort());
+    ClientCache clientCache = clientCacheFactory.create();
+
+    ClientRegionFactory<String, String> regionFactory =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+
+    if (expectedExceptionOnClient != null) {
+      IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
+      IgnoredException.addIgnoredException("java.net.SocketException");
+
+      Region<String, String> clientRegion = regionFactory.create("region");
+      assertThatExceptionOfType(expectedExceptionOnClient)
+          .isThrownBy(() -> clientRegion.put("clientkey", "clientvalue"));
+    } else {
+      // test client can read and write to server
+      Region<String, String> clientRegion = regionFactory.create("region");
+      assertThat("servervalue").isEqualTo(clientRegion.get("serverkey"));
+      clientRegion.put("clientkey", "clientvalue");
+
+      // test server can see data written by client
+      server.invoke(CustomSSLProviderDistributedTest::doServerRegionTest);
+    }
+
+    SocketCreatorFactory.close();
   }
 
   private static void doServerRegionTest() {

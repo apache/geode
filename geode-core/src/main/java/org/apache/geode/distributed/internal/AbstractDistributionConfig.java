@@ -1363,7 +1363,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
     m.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED,
-        "If true, clients validate server hostname using server certificate during SSL handshake.");
+        "If true, clients validate server hostname using server certificate during SSL handshake. Defaults to true since GEODE 1.7.0");
 
     m.put(SSL_USE_DEFAULT_SSLCONTEXT,
         "If true allows users to use the default SSLContext. When using default SSLContext, users do not need to configure other ssl properties except ssl-enabled-components and ssl-require-authentication.");
