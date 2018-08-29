@@ -120,6 +120,12 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+      <version>1.59</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-old-versions</artifactId>
       <version>1.8.0-SNAPSHOT</version>

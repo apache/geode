@@ -153,18 +153,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>eu.codearte.catch-exception</groupId>
-      <artifactId>catch-exception</artifactId>
-      <version>1.4.4</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>eu.codearte.catch-exception</groupId>
-      <artifactId>catch-throwable</artifactId>
-      <version>1.4.4</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
