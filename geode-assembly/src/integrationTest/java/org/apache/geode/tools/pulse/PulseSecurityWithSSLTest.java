@@ -89,7 +89,14 @@ public class PulseSecurityWithSSLTest {
     assertThat(response.getFirstHeader("Location").getValue())
         .contains("/pulse/login.html?error=BAD_CREDS");
 
-    client.loginToPulseAndVerify("data", "data");
+    client.loginToPulseAndVerify("cluster", "cluster");
+
+    // Ensure that the backend JMX connection is working too
+    response = client.post("/pulse/pulseUpdate", "pulseData",
+        "{\"SystemAlerts\": {\"pageNumber\":\"1\"},\"ClusterDetails\":{}}");
+    String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+
+    assertThat(JsonPath.parse(body).read("$.SystemAlerts.connectedFlag", Boolean.class)).isTrue();
   }
 
   @Test
@@ -118,6 +125,7 @@ public class PulseSecurityWithSSLTest {
 
     client.loginToPulseAndVerify("cluster", "cluster");
 
+    // Ensure that the backend JMX connection is working too
     HttpResponse response = client.post("/pulse/pulseUpdate", "pulseData",
         "{\"SystemAlerts\": {\"pageNumber\":\"1\"},\"ClusterDetails\":{}}");
     String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
