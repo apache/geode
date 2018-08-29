@@ -52,7 +52,6 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.awaitility.core.ConditionTimeoutException;
-import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -2280,9 +2279,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         if (region.getAttributes().getOffHeap() && !(region instanceof PartitionedRegion)) {
           GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
           final MemoryAllocatorImpl ma = (MemoryAllocatorImpl) gfc.getOffHeapStore();
-            await("waiting for off-heap object count go to zero")
-                .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
-                .until(() -> ma.getStats().getObjects(), equalTo(0));
+          await("waiting for off-heap object count go to zero")
+              .atMost(3, SECONDS).pollInterval(10, MILLISECONDS)
+              .until(() -> ma.getStats().getObjects(), equalTo(0));
 
         }
       }
