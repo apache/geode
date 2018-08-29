@@ -71,6 +71,14 @@ protocols, and to provide the location and credentials for key and trust stores.
 <dt>**ssl-enabled-components**</dt>
 <dd>List of components for which to enable SSL. Component list can be "all" or a comma-separated list of components.</dd>
 
+<dt>**ssl-endpoint-identification-enabled**</dt>
+<dd> A boolean value that, when set to true, 
+causes clients to validate the server's hostname using
+the server's certificate.
+The default value is false.
+Enabling endpoint identification guards against DNS man-in-the-middle
+attacks.</dd>
+
 <dt>**ssl-require-authentication**</dt>
 <dd>Requires two-way authentication, applies to all components except web. Boolean - if true (the default), two-way authentication is required.</dd>
 
@@ -114,6 +122,7 @@ enable SSL for all components.
  
 ``` pre
 ssl-enabled-components=all
+ssl-endpoint-identification-enabled=true
 ssl-keystore=secure/keystore.dat
 ssl-keystore-password=changeit
 ssl-truststore=secure/truststore.dat
@@ -121,7 +130,6 @@ ssl-truststore-password=changeit
 ```
  
 If the key store has multiple certificates you may want to specify the alias of the one you wish to use for each process.  For instance, `ssl-default-alias=Hiroki`.
-
 
 ### Example: non-secure cluster communications, secure client/server
 
@@ -167,6 +175,7 @@ store.
 
 ``` pre
 ssl-enabled-components=server,locator
+ssl-endpoint-identification-enabled=true
 ssl-keystore=secret/keystore.dat
 ssl-keystore-password=changeit
 ssl-truststore=secret/truststore.dat
@@ -196,6 +205,7 @@ The following table lists the properties you can use to configure SSL on your <%
 | Property                           | Description                                                                  | Value |
 |------------------------------------|------------------------------------------------------------------------------|-------|
 | ssl&#8209;enabled&#8209;components | list of components for which to enable SSL | "all" or comma-separated list of components: cluster, gateway, web, jmx, locator, server |
+| ssl&#8209;endpoint&#8209;identification&#8209;enabled | causes clients to validate server hostname using server certificate | boolean - if true, does validation; defaults to false |
 | ssl-require-authentication         | requires two-way authentication, applies to all components except web | boolean - if true (the default), two-way authentication is required |
 | ssl&#8209;web&#8209;require&#8209;authentication    | requires two-way authentication for web component | boolean - if true, two-way authentication is required. Default is false (one-way authentication only) |
 | ssl-default-alias                  | default certificate name                   | string - if empty, use first certificate in key store |
