@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -143,6 +143,13 @@ public class RegionMapDestroyTest {
     when(evictableEntry.getVersionStamp()).thenReturn(versionStamp);
     doThrow(ConcurrentCacheModificationException.class).when(versionStamp)
         .processVersionTag(eq(event));
+  }
+
+  private void givenDestroyEntryDetectsConflict() {
+    // this will cause the destroyEntry method to throw
+    // TODO this needs to be reworked because destroyEntry does not always call this method
+    doThrow(ConcurrentCacheModificationException.class).when(owner)
+        .calculateRegionEntryValueSize(any());
   }
 
   private void givenEmptyRegionMap() {
@@ -288,7 +295,6 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verify(owner, times(1)).checkEntryNotFound(any());
-    // assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
@@ -437,7 +443,9 @@ public class RegionMapDestroyTest {
         anyBoolean(), eq(expectedOldValue), anyBoolean(), anyBoolean());
     isEviction = false;
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
     verifyNoDestroyInvocationsOnRegion();
   }
 
@@ -683,6 +691,19 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingEntryCallsIndexManager() {
+    givenConcurrencyChecks(false);
+    givenEmptyRegionMap();
+    givenExistingEntry();
+    IndexManager indexManager = mock(IndexManager.class);
+    when(this.owner.getIndexManager()).thenReturn(indexManager);
+
+    assertThat(doDestroy()).isTrue();
+
+    verifyIndexManagerOrder(indexManager);
+  }
+
+  @Test
   public void destroyOfExistingEntryInTokenModeCallsUpdateSizeOnRemove() {
     givenConcurrencyChecks(false);
     givenEmptyRegionMap();
@@ -763,6 +784,19 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingTombstoneWillThrowConcurrentCacheModificationException() {
+    givenConcurrencyChecks(true);
+    givenEmptyRegionMap();
+    givenExistingEntryWithTokenAndVersionTag(Token.TOMBSTONE);
+    givenInTokenMode();
+    givenDestroyEntryDetectsConflict();
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+  }
+
+  @Test
   public void destroyOfExistingTombstoneWithConcurrencyChecksThrowsEntryNotFound() {
     givenConcurrencyChecks(true);
     givenEmptyRegionMap();
@@ -780,7 +814,9 @@ public class RegionMapDestroyTest {
     givenVersionStampThatDetectsConflict();
     givenEventWithVersionTag();
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
     verify(arm._getOwner(), never()).notifyTimestampsToGateways(any());
   }
 
@@ -792,7 +828,9 @@ public class RegionMapDestroyTest {
     givenEventWithVersionTag();
     when(event.getVersionTag().isTimeStampUpdated()).thenReturn(true);
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(ConcurrentCacheModificationException.class);
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
     verify(arm._getOwner(), times(1)).notifyTimestampsToGateways(eq(event));
   }
 
@@ -1157,7 +1195,9 @@ public class RegionMapDestroyTest {
     doThrow(EntryNotFoundException.class).when(arm._getOwner()).bridgeWriteBeforeDestroy(any(),
         any());
 
-    assertThatThrownBy(() -> doDestroy()).isInstanceOf(EntryNotFoundException.class);
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
@@ -1380,12 +1420,7 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
-    InOrder inOrder = inOrder(indexManager, arm._getOwner());
-    inOrder.verify(indexManager, times(1)).waitForIndexInit();
-    inOrder.verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), any(), anyBoolean(),
-        anyBoolean(),
-        anyBoolean(), anyBoolean());
-    inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
+    verifyIndexManagerOrder(indexManager);
   }
 
   /**
@@ -1459,6 +1494,15 @@ public class RegionMapDestroyTest {
   private void verifyNoPart3() {
     verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
         anyBoolean(), any());
+  }
+
+  private void verifyIndexManagerOrder(IndexManager indexManager) {
+    InOrder inOrder = inOrder(indexManager, arm._getOwner());
+    inOrder.verify(indexManager, times(1)).waitForIndexInit();
+    inOrder.verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), any(), anyBoolean(),
+        anyBoolean(),
+        anyBoolean(), anyBoolean());
+    inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
   }
 
   private EntryEventImpl createEventForDestroy(LocalRegion lr) {
