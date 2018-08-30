@@ -14,75 +14,93 @@
  */
 package org.apache.geode.cache.util;
 
+import static java.util.Objects.isNull;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Operation;
 
 /**
- * Utilty class for getting Transaction events for create, invalidate, put, destroy operations.
+ * Utility class for getting Transaction events for create, invalidate, put, destroy operations.
  */
 public class TxEventTestUtil {
 
   /**
-   * Retrieves the cache events with operation create
+   * Selects entry create events from a list of cache events.
    *
-   * @return list of cache events
+   * @return list of entry create events from the given cache events
    */
-  public static List getCreateEvents(List<CacheEvent<?, ?>> events) {
-    if (events != null && !events.isEmpty()) {
-      List<CacheEvent<?, ?>> result =
-          events.stream().filter(ce -> ce.getOperation().isCreate()).collect(Collectors.toList());
-      return result;
-    } else {
-      return Collections.EMPTY_LIST;
-    }
+  public static <K, V> List<EntryEvent<K, V>> getCreateEvents(List<CacheEvent<K, V>> cacheEvents) {
+    return getEntryEventsWithOperation(cacheEvents, Operation::isCreate);
   }
 
   /**
-   * Retrieves the cache events with operation update
+   * Selects the entry update events from a list of cache events.
    *
-   * @return list of cache events
+   * @return list of entry update events from the given cache events
    */
-  public static List getPutEvents(List<CacheEvent<?, ?>> events) {
-    if (events != null && !events.isEmpty()) {
-      List<CacheEvent<?, ?>> result =
-          events.stream().filter(ce -> ce.getOperation().isUpdate()).collect(Collectors.toList());
-      return result;
-    } else {
-      return Collections.EMPTY_LIST;
-    }
+  public static <K, V> List<EntryEvent<K, V>> getPutEvents(List<CacheEvent<K, V>> cacheEvents) {
+    return getEntryEventsWithOperation(cacheEvents, Operation::isUpdate);
   }
 
   /**
-   * Retrieves the cache events with operation invalidate
+   * Selects the entry invalidate events from a list of cache events.
    *
-   * @return list of cache events
+   * @return list of entry invalidate events from the given cache events
    */
-  public static List getInvalidateEvents(List<CacheEvent<?, ?>> events) {
-    if (events != null && !events.isEmpty()) {
-      List<CacheEvent<?, ?>> result = events.stream().filter(ce -> ce.getOperation().isInvalidate())
-          .collect(Collectors.toList());
-      return result;
-    } else {
-      return Collections.EMPTY_LIST;
-    }
+  public static <K, V> List<EntryEvent<K, V>> getInvalidateEvents(
+      List<CacheEvent<K, V>> cacheEvents) {
+    return getEntryEventsWithOperation(cacheEvents, Operation::isInvalidate);
   }
 
   /**
-   * Retrieves the cache events with operation destroy
+   * Selects the entry destroy events from a list of cache events.
    *
-   * @return list of cache events
+   * @return list of entry destroy events from the given cache events
    */
-  public static List getDestroyEvents(List<CacheEvent<?, ?>> events) {
-    if (events != null && !events.isEmpty()) {
-      List<CacheEvent<?, ?>> result =
-          events.stream().filter(ce -> ce.getOperation().isDestroy()).collect(Collectors.toList());
-      return result;
-    } else {
-      return Collections.EMPTY_LIST;
-    }
+  public static <K, V> List<EntryEvent<K, V>> getDestroyEvents(List<CacheEvent<K, V>> cacheEvents) {
+    return getEntryEventsWithOperation(cacheEvents, Operation::isDestroy);
   }
 
+  /**
+   * Selects the entry events whose operation matches the given predicate.
+   *
+   * @param cacheEvents the cache events from which to select entry events
+   * @param operationPredicate tests each event's operation to determine whether to include the
+   *        event
+   * @return list of entry events whose operations match the given predicate
+   * @throws ClassCastException if the predicate matches the operation of an event that is not an
+   *         {@code EntryEvent}
+   */
+  public static <K, V> List<EntryEvent<K, V>> getEntryEventsWithOperation(
+      List<CacheEvent<K, V>> cacheEvents,
+      Predicate<Operation> operationPredicate) {
+    return getEntryEventsMatching(cacheEvents, e -> operationPredicate.test(e.getOperation()));
+  }
+
+  /**
+   * Selects the entry events that match the given predicate.
+   *
+   * @param cacheEvents the cache events from which to select entry events
+   * @param predicate tests whether to include each event
+   * @return list of entry events that match the predicate
+   * @throws ClassCastException if the predicate matches an event that is not an {@code EntryEvent}
+   */
+  public static <K, V> List<EntryEvent<K, V>> getEntryEventsMatching(
+      List<CacheEvent<K, V>> cacheEvents,
+      Predicate<? super EntryEvent<K, V>> predicate) {
+    if (isNull(cacheEvents)) {
+      return Collections.emptyList();
+    }
+    return cacheEvents.stream()
+        .filter(EntryEvent.class::isInstance)
+        .map(cacheEvent -> (EntryEvent<K, V>) cacheEvent)
+        .filter(predicate)
+        .collect(Collectors.toList());
+  }
 }

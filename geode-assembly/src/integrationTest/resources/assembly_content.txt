@@ -648,7 +648,6 @@ javadoc/org/apache/geode/cache30/CacheXmlTestCase.html
 javadoc/org/apache/geode/cache30/CertifiableTestCacheListener.html
 javadoc/org/apache/geode/cache30/ClientServerTestCase.CacheServerCacheLoader.html
 javadoc/org/apache/geode/cache30/ClientServerTestCase.html
-javadoc/org/apache/geode/cache30/MultiVMRegionTestCase.MyTransactionListener.html
 javadoc/org/apache/geode/cache30/MultiVMRegionTestCase.html
 javadoc/org/apache/geode/cache30/MyGatewayEventFilter1.html
 javadoc/org/apache/geode/cache30/MyGatewayEventFilter2.html
