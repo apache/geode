@@ -55,7 +55,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
@@ -89,6 +89,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected Properties properties = new Properties();
 
   protected boolean autoStart = false;
+  private final transient UniquePortSupplier portSupplier;
 
   public static void setWaitUntilTimeout(int waitUntilTimeout) {
     WAIT_UNTIL_TIMEOUT = waitUntilTimeout;
@@ -97,6 +98,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   private static int WAIT_UNTIL_TIMEOUT = 30;
 
   public MemberStarterRule() {
+    this(new UniquePortSupplier());
+  }
+
+  public MemberStarterRule(UniquePortSupplier portSupplier) {
+    this.portSupplier = portSupplier;
     oldUserDir = System.getProperty("user.dir");
 
     // initial values
@@ -229,10 +235,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    */
   public T withJMXManager(boolean useProductDefaultPorts) {
     if (!useProductDefaultPorts) {
+      jmxPort = portSupplier.getAvailablePort();
       // do no override these properties if already exists
-      properties.putIfAbsent(JMX_MANAGER_PORT,
-          AvailablePortHelper.getRandomAvailableTCPPort() + "");
-      this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
+      properties.putIfAbsent(JMX_MANAGER_PORT, jmxPort + "");
     } else {
       // the real port numbers will be set after we started the server/locator.
       this.jmxPort = 0;
@@ -245,7 +250,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withHttpService(boolean useDefaultPort) {
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
-      httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
+      httpPort = portSupplier.getAvailablePort();
       properties.put(HTTP_SERVICE_PORT, httpPort + "");
     } else {
       // indicate start http service but with default port
