@@ -171,20 +171,33 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
+  /**
+   * convenience method to create a region with customized regionFactory
+   *
+   * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
+   */
   public Region createRegion(RegionShortcut type, String name,
       Consumer<RegionFactory> regionFactoryConsumer) {
-    RegionFactory factory = getCache().createRegionFactory(type);
-    regionFactoryConsumer.accept(factory);
-    return factory.create(name);
+    RegionFactory regionFactory = getCache().createRegionFactory(type);
+    regionFactoryConsumer.accept(regionFactory);
+    return regionFactory.create(name);
   }
 
-  public Region createPRRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
-      Consumer<PartitionAttributesFactory> prAttributesFactory) {
+  /**
+   * convenience method to create a partition region with customized regionFactory and a customized
+   * PartitionAttributeFactory
+   *
+   * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
+   * @param attributesFactoryConsumer a lamda that allows you to customize the
+   *        partitionAttributeFactory
+   */
+  public Region createPartitionRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
+      Consumer<PartitionAttributesFactory> attributesFactoryConsumer) {
     return createRegion(RegionShortcut.PARTITION, name, rf -> {
       regionFactoryConsumer.accept(rf);
-      PartitionAttributesFactory factory = new PartitionAttributesFactory();
-      prAttributesFactory.accept(factory);
-      rf.setPartitionAttributes(factory.create());
+      PartitionAttributesFactory attributeFactory = new PartitionAttributesFactory();
+      attributesFactoryConsumer.accept(attributeFactory);
+      rf.setPartitionAttributes(attributeFactory.create());
     });
   }
 
