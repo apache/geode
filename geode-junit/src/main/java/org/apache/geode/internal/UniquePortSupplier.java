@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 public class UniquePortSupplier {
 
   private final IntSupplier supplier;
-  Set<Integer> usedPorts = new HashSet<>();
+  private final Set<Integer> usedPorts = new HashSet<>();
 
   public UniquePortSupplier() {
     supplier = () -> AvailablePortHelper.getRandomAvailableTCPPort();
