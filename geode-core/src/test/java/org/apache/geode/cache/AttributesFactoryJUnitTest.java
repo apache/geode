@@ -265,6 +265,7 @@ public class AttributesFactoryJUnitTest {
     assertNotNull(diskSizes);
     assertEquals(1, diskSizes.length);
     assertEquals(DiskStoreFactory.DEFAULT_DISK_DIR_SIZE, diskSizes[0]);
+    assertTrue(attrs.getConcurrencyChecksEnabled());
   }
 
   @Test
