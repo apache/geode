@@ -35,6 +35,8 @@ import org.mockito.InOrder;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
@@ -61,8 +63,6 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
 public class RegionMapDestroyTest {
 
-  private static final EvictionAttributes evictionAttributes =
-      EvictionAttributes.createLRUEntryAttributes();
   private static final Object KEY = "key";
 
   private AbstractRegionMap arm;
@@ -72,6 +72,7 @@ public class RegionMapDestroyTest {
   private LocalRegion owner;
   private EvictableEntry evictableEntry;
   private EvictionController evictionController;
+  private EvictionAttributes evictionAttributes;
 
   private EntryEventImpl event;
   private Object expectedOldValue;
@@ -97,8 +98,12 @@ public class RegionMapDestroyTest {
     // this test now just verifies that checkEntryNotFound was called.
     // Having the mock throw the exception confuses the code coverage tools.
 
+    evictionAttributes = mock(EvictionAttributes.class);
+    when(evictionAttributes.getAlgorithm()).thenReturn(EvictionAlgorithm.LRU_ENTRY);
+    when(evictionAttributes.getAction()).thenReturn(EvictionAction.DEFAULT_EVICTION_ACTION);
+    when(evictionAttributes.getMaximum()).thenReturn(EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM);
     evictionController = mock(EvictionController.class);
-    when(evictionController.getEvictionAlgorithm()).thenReturn(evictionAttributes.getAlgorithm());
+    when(evictionController.getEvictionAlgorithm()).thenReturn(EvictionAlgorithm.LRU_ENTRY);
     when(evictionController.getCounters()).thenReturn(mock(EvictionCounters.class));
 
     evictableEntry = mock(EvictableEntry.class);
