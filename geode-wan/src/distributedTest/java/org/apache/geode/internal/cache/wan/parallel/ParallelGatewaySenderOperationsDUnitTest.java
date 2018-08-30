@@ -19,6 +19,7 @@ import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_S
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -33,7 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -771,8 +771,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
       userRegion.close();
 
-      Assert.assertEquals("Unexpected orphans found in the cache at end of test", 0,
-          ((MemoryAllocatorImpl) cache.getOffHeapStore()).getOrphans(cache).size());
+      await("Waiting for off-heap to be freed").atMost(10, TimeUnit.SECONDS).until(
+          () -> 0 == ((MemoryAllocatorImpl) cache.getOffHeapStore()).getOrphans(cache).size());
     });
   }
 
