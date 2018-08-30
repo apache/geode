@@ -59,7 +59,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @SuppressWarnings("SpellCheckingInspection")
 @Category({ClientSubscriptionTest.class})
 public class CqPerfDUnitTest extends JUnit4CacheTestCase {
-  private final Logger log = LogService.getLogger();
+  private final Logger logger = LogService.getLogger();
   @SuppressWarnings("CanBeFinal")
   private CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
@@ -99,7 +99,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     final String cqName = "testCQPerf_0";
 
     client.invoke(() -> {
-      log.info("### Create CQ. ###" + cqName);
+      logger.info("### Create CQ. ###" + cqName);
       // Get CQ Service.
       QueryService cqService =
           getCache().getQueryService();
@@ -130,7 +130,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     client.invoke(new CacheSerializableRunnable("Validate CQs") {
       public void run2() throws CacheException {
-        log.info("### Validating CQ. ### " + cqName);
+        logger.info("### Validating CQ. ### " + cqName);
         // Get CQ Service.
         QueryService cqService = getCache().getQueryService();
 
@@ -152,7 +152,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
    * Test for maintaining keys for update optimization.
    */
   @Test
-  public void testKeyMaintenance() throws Exception {
+  public void testKeyMaintenance() {
 
     VM server = VM.getVM(0);
     VM client = VM.getVM(1);
@@ -328,7 +328,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
    * CQs.
    */
   @Test
-  public void testMatchingCqs() throws Exception {
+  public void testMatchingCqs() {
 
     VM server = VM.getVM(0);
     VM client = VM.getVM(1);
@@ -425,7 +425,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
    * CQs.
    */
   @Test
-  public void testMatchingCQWithMultipleClients() throws Exception {
+  public void testMatchingCQWithMultipleClients() {
 
     VM server = VM.getVM(0);
     VM client1 = VM.getVM(1);
@@ -672,9 +672,9 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     VM client1 = VM.getVM(2);
     VM client2 = VM.getVM(3);
 
-    log.info("Ready to create server 1");
+    logger.info("Ready to create server 1");
     cqDUnitTest.createServer(server1);
-    log.info("Ready to create server 1");
+    logger.info("Ready to create server 1");
 
     VM clients[] = new VM[] {client1, client2};
 
@@ -880,7 +880,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
           (CqServiceImpl) ((DefaultQueryService) getCache().getQueryService()).getCqService();
 
       long timeTaken = cqService.getCqServiceVsdStats().getCqQueryExecutionTime();
-      log.info("Total Time taken to Execute CQ Query :" + timeTaken);
+      logger.info("Total Time taken to Execute CQ Query :" + timeTaken);
     });
   }
 
