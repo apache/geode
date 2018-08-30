@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.annotation.PostConstruct;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -39,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -88,7 +87,7 @@ import org.apache.geode.rest.internal.web.util.ValidationUtils;
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
-public abstract class AbstractBaseController {
+public abstract class AbstractBaseController implements InitializingBean {
 
   private static final String NEW_META_DATA_PROPERTY = "@new";
   private static final String OLD_META_DATA_PROPERTY = "@old";
@@ -105,8 +104,8 @@ public abstract class AbstractBaseController {
   @Autowired
   private CacheProvider cacheProvider;
 
-  @PostConstruct
-  private void init() {
+  @Override
+  public void afterPropertiesSet() {
     JSONUtils.setObjectMapper(objectMapper);
   }
 
