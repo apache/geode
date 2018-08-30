@@ -229,7 +229,7 @@ Response: Bring the missing member online, if possible. This restores the bucket
 
 Check these possible causes.
 
--   Transactions—Entries that are old enough for eviction may remain in the cache if they are involved in a transaction. Further, transactions never time out, so if a transaction hangs, the entries involved in the transaction will remain stuck in the cache. If you have a process with a hung transaction, you may need to end the process to remove the transaction. In your application programming, do not leave transactions open ended. Program all transactions to end with a commit or a rollback. See [Using Eviction and Expiration Operations](../../developing/transactions/working_with_transactions.html#concept_vyt_txz_vk).
+-   Transactions—Entries that are due to be expired may remain in the cache if they are involved in a transaction. Further, transactions never time out, so if a transaction hangs, the entries involved in the transaction will remain stuck in the cache. If you have a process with a hung transaction, you may need to end the process to remove the transaction. In your application programming, do not leave transactions open ended. Program all transactions to end with a commit or a rollback.
 -   Partitioned regions—For performance reasons, eviction and expiration behave differently in partitioned regions and can cause entries to be removed before you expect. See [Eviction](../../developing/eviction/chapter_overview.html) and [Expiration](../../developing/expiration/chapter_overview.html).
 
 ## <a id="diagnosing_system_probs__section_346C62F16B19491E83B59B0A51D9E2B6" class="no-quick-link"></a>Cannot find the log file
