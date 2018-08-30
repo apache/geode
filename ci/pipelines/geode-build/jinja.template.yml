@@ -44,11 +44,17 @@ groups:
 - name: main
   jobs:
   - Build
-  {% for test in (tests + windowstests) if not test.name=="StressNew" -%}
+  {% for test in (tests) if not test.name=="StressNew" -%}
   - {{test.name}}Test
   {% endfor -%}
   - UpdatePassingRef
   - PublishArtifacts
+- name: windows
+  jobs:
+  - Build
+  {% for test in (windowstests) if not test.name=="StressNew" -%}
+  - {{test.name}}Test
+  {% endfor %}
 
 resources:
 - name: geode-build-artifact
