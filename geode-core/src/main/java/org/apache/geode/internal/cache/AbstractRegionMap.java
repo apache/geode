@@ -1377,11 +1377,7 @@ public abstract class AbstractRegionMap
                       } else if (oldRe.isInvalid()) {
 
                         // was already invalid, do not invoke listeners or increment stat
-                        if (isDebugEnabled) {
-                          logger.debug("mapInvalidate: Entry already invalid: '{}'",
-                              event.getKey());
-                        }
-                        processVersionTag(oldRe, event);
+                        handleAlreadyInvalidEntry(event, owner, oldRe);
                         try {
                           oldRe.setValue(owner, oldRe.getValueInVM(owner)); // OFFHEAP noop setting
                                                                             // an already invalid to
@@ -1622,14 +1618,7 @@ public abstract class AbstractRegionMap
                     if (re.isInvalid()) {
                       // was already invalid, do not invoke listeners or increment
                       // stat
-                      if (isDebugEnabled) {
-                        logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
-                      }
-                      if (event.getVersionTag() != null && owner.getVersionVector() != null) {
-                        owner.getVersionVector().recordVersion(
-                            (InternalDistributedMember) event.getDistributedMember(),
-                            event.getVersionTag());
-                      }
+                      handleAlreadyInvalidEntry(event, owner, re);
                     } else { // previous value not invalid
                       event.setRegionEntry(re);
                       owner.serverInvalidate(event);
@@ -1728,6 +1717,21 @@ public abstract class AbstractRegionMap
       releaseCacheModificationLock(owner, event);
     }
 
+  }
+
+  /**
+   * If an entry is already invalid we still want to perform a conflict check, update
+   * the entry's version stamp and invoke listeners.
+   */
+  private void handleAlreadyInvalidEntry(EntryEventImpl event, LocalRegion owner, RegionEntry re) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
+    }
+    processVersionTag(re, event);
+    if (owner.getConcurrencyChecksEnabled() && event.hasValidVersionTag()) {
+      // notify clients so they can update their version stamps
+      event.invokeCallbacks(owner, true, true);
+    }
   }
 
   private void invalidateNewEntry(EntryEventImpl event, final LocalRegion owner, RegionEntry newRe)
