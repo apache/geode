@@ -248,12 +248,12 @@ subprojects {
           removedDependencies.removeAll(actualDependencies)
 
           def message =
-              "The geode-connectors pom-default.xml has changed. Verify dependencies."
+              "The ".concat(project.name).concat(" pom-default.xml has changed. Verify dependencies.")
                   .concat("\nWhen fixed, copy ").concat(actualPomFile as String)
                   .concat("\nto ").concat(expectedPomFile as String)
                   .concat("\nRemoved Dependencies\n--------------\n")
                   .concat(String.join("\n", removedDependencies.toString()))
-                  .concat("\n\nAdded Elements\n--------------\n")
+                  .concat("\n\nNew Dependencies\n--------------\n")
                   .concat(String.join("\n", newDependencies.toString()) + "\n\n")
 
           throw new RuntimeException(message)
