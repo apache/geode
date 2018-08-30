@@ -47,7 +47,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
-import org.apache.geode.internal.cache.RegionMap.Attributes;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.VMLRURegionMap;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
@@ -73,7 +72,6 @@ public class RegionMapDestroyTest {
   private LocalRegion owner;
   private EvictableEntry evictableEntry;
   private EvictionController evictionController;
-  private Attributes attributes;
 
   private EntryEventImpl event;
   private Object expectedOldValue;
@@ -90,8 +88,6 @@ public class RegionMapDestroyTest {
     withConcurrencyChecks = true;
     entryMap = null;
     factory = null;
-
-    attributes = new Attributes();
 
     owner = mock(LocalRegion.class);
     when(owner.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
@@ -1538,13 +1534,13 @@ public class RegionMapDestroyTest {
 
     SimpleRegionMap() {
       super(null);
-      initialize(owner, attributes, null, false);
+      initialize(owner, new Attributes(), null, false);
     }
 
     SimpleRegionMap(CustomEntryConcurrentHashMap<Object, Object> entryMap,
         RegionEntryFactory factory) {
       super(null);
-      initialize(owner, attributes, null, false);
+      initialize(owner, new Attributes(), null, false);
       setEntryMap(entryMap);
       setEntryFactory(factory);
     }
@@ -1556,7 +1552,7 @@ public class RegionMapDestroyTest {
   private class EvictableRegionMapWithMockedEntryMap extends VMLRURegionMap {
 
     EvictableRegionMapWithMockedEntryMap() {
-      super(owner, attributes, null, evictionController);
+      super(owner, new Attributes(), null, evictionController);
       setEntryMap(entryMap);
     }
   }
@@ -1567,7 +1563,7 @@ public class RegionMapDestroyTest {
   private class EvictableRegionMap extends VMLRURegionMap {
 
     EvictableRegionMap() {
-      super(owner, attributes, null, evictionController);
+      super(owner, new Attributes(), null, evictionController);
     }
   }
 
