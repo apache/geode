@@ -389,12 +389,6 @@ public class ProcessWrapper {
     argumentList.add("-classpath");
     argumentList.add(manifestJar);
 
-    // -d64 is not a valid option for windows and results in failure
-    final int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
-    if (bits == 64 && !(System.getProperty("os.name").toLowerCase().contains("windows"))) {
-      argumentList.add("-d64");
-    }
-
     argumentList.add("-Djava.library.path=" + System.getProperty("java.library.path"));
 
     if (jvmArguments != null) {

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.modules.session.installer;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -55,7 +55,7 @@ public class InstallerJUnitTest {
         .replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "").replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
     String actual = output.toString().replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "")
         .replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
-    assertEquals(expected, actual);
+    assertThat(actual).isEqualToIgnoringWhitespace(expected);
   }
 
 }
