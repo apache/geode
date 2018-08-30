@@ -371,14 +371,20 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
       regionFactory1.setScope(Scope.LOCAL);
       if (redundancyLevel != null) {
         ClientServerTestCase.configureConnectionPoolWithName(regionFactory0, serverHost,
-            serverPorts1, true, Integer.parseInt(redundancyLevel), -1, null, "testPoolA");
+            serverPorts1, true,
+            Integer.parseInt(redundancyLevel), -1,
+            null, "testPoolA");
         ClientServerTestCase.configureConnectionPoolWithName(regionFactory1, serverHost,
-            serverPorts2, true, Integer.parseInt(redundancyLevel), -1, null, "testPoolB");
+            serverPorts2, true,
+            Integer.parseInt(redundancyLevel), -1,
+            null, "testPoolB");
       } else {
         ClientServerTestCase.configureConnectionPoolWithName(regionFactory0, serverHost,
-            serverPorts1, true, -1, -1, null, "testPoolA");
+            serverPorts1, true, -1, -1, null,
+            "testPoolA");
         ClientServerTestCase.configureConnectionPoolWithName(regionFactory1, serverHost,
-            serverPorts2, true, -1, -1, null, "testPoolB");
+            serverPorts2, true, -1, -1, null,
+            "testPoolB");
       }
       createRegion(regions[0], regionFactory0.createRegionAttributes());
       createRegion(regions[1], regionFactory1.createRegionAttributes());
@@ -1201,7 +1207,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
         System.out.println("found query " + queries[0]);
         assertThat(queries[0].getName().startsWith(
             "testCQResultSet_0")).describedAs("Couldn't find query " + "testCQResultSet_0")
-            .isTrue();
+                .isTrue();
         assertThat(!queries[0].isClosed()).describedAs("expected the CQ to be open: " + queries[0])
             .isTrue();
       }
