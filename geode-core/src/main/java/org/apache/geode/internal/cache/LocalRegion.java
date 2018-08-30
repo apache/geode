@@ -4954,9 +4954,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private void basicInvalidate(final EntryEventImpl event, boolean invokeCallbacks)
       throws EntryNotFoundException {
-    final boolean forceNewEntryInClientCache = this.serverRegionProxy != null
-        && getConcurrencyChecksEnabled();
-    basicInvalidate(event, invokeCallbacks, forceNewEntryInClientCache);
+    basicInvalidate(event, invokeCallbacks, false);
   }
 
   /**
