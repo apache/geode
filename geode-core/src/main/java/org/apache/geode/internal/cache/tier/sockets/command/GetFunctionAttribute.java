@@ -39,10 +39,6 @@ public class GetFunctionAttribute extends BaseCommand {
       final SecurityService securityService, long start) throws IOException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
     String functionId = clientMessage.getPart(0).getString();
     if (functionId == null) {
       String message =
