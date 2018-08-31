@@ -934,7 +934,7 @@ public class DLockService extends DistributedLockService {
   }
 
   /**
-   * @param predecessor non-null if a predecessor asked us to take over for him
+   * @param predecessor non-null if a predecessor asked us to take over for it
    */
   private void becomeLockGrantor(InternalDistributedMember predecessor) {
     Assert.assertTrue(predecessor == null);

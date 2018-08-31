@@ -20,8 +20,10 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,7 +35,6 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
 public class GrantorFailoverDUnitTest {
   private final List<MemberVM> locators = new ArrayList<>();
@@ -41,8 +42,6 @@ public class GrantorFailoverDUnitTest {
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
-  @Rule
-  public ConcurrencyRule concurrencyRule = new ConcurrencyRule();
   public static final String SERVICE_NAME = "serviceName";
 
   @Before
@@ -106,6 +105,7 @@ public class GrantorFailoverDUnitTest {
   public void lockRecoveryAfterGrantorDies() throws Exception {
     final String lock1 = "lock 1";
     final String lock2 = "lock 2";
+    final String lock3 = "lock 3";
 
     locators.get(0).invoke(GrantorFailoverDUnitTest::assertIsElderAndGetId);
 
@@ -118,30 +118,30 @@ public class GrantorFailoverDUnitTest {
     final MemberVM grantorVM = locators.get(1);
     final MemberVM survivor1 = locators.get(0);
     final MemberVM survivor2 = locators.get(2);
-    grantorVM.invoke(() -> DistributedLockService.becomeLockGrantor(SERVICE_NAME));
+    grantorVM.invoke(() -> {
+      DistributedLockService.becomeLockGrantor(SERVICE_NAME);
+      Awaitility.waitAtMost(30, TimeUnit.SECONDS).untilAsserted(
+          () -> assertThat(DistributedLockService.isLockGrantor(SERVICE_NAME)).isTrue());
+    });
 
-    concurrencyRule.add(() -> survivor1
+    assertThat(survivor1
         .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock1, 20_000, -1)))
-        .expectValue(Boolean.TRUE);
-    concurrencyRule.add(() -> survivor2
+            .isTrue();
+    assertThat(survivor2
         .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock2, 20_000, -1)))
-        .expectValue(Boolean.TRUE);
-    concurrencyRule.executeInParallel();
+            .isTrue();
 
     clusterStartupRule.crashVM(1);
 
     locators.remove(grantorVM);
 
     // can't get the locks again
-    concurrencyRule
-        .add(() -> survivor2
-            .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock1, 2, -1)))
-        .expectValue(Boolean.FALSE);
-    concurrencyRule
-        .add(() -> survivor1
-            .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock2, 2, -1)))
-        .expectValue(Boolean.FALSE);
-    concurrencyRule.executeInParallel();
+    assertThat(survivor2
+        .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock1, 2, -1)))
+            .isFalse();
+    assertThat(survivor1
+        .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock2, 2, -1)))
+            .isFalse();
 
     final AsyncInvocation lock1FailsReleaseOnOtherVM =
         survivor2
@@ -156,9 +156,17 @@ public class GrantorFailoverDUnitTest {
     assertThatThrownBy(lock2FailsReleaseOnOtherVM::get)
         .hasRootCauseInstanceOf(LockNotHeldException.class);
 
+    assertThat(survivor1
+        .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock3, 20_000, -1)))
+            .isTrue();
+
     final AsyncInvocation lock1SuccessfulRelease =
         survivor1
             .invokeAsync(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).unlock(lock1));
+
+    final AsyncInvocation lock3SuccessfulRelease =
+        survivor1
+            .invokeAsync(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).unlock(lock3));
 
     final AsyncInvocation lock2SuccessfulRelease =
         survivor2
@@ -166,12 +174,14 @@ public class GrantorFailoverDUnitTest {
 
     lock1SuccessfulRelease.get();
     lock2SuccessfulRelease.get();
+    lock3SuccessfulRelease.get();
   }
 
   private static InternalDistributedMember assertIsElderAndGetId() {
     DistributionManager distributionManager =
         ClusterStartupRule.getCache().getInternalDistributedSystem().getDistributionManager();
-    assertThat(distributionManager.isElder()).isTrue();
+    Awaitility.await("Wait to be elder").atMost(1, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(distributionManager.isElder()).isTrue());
     return distributionManager.getElderId();
   }
 }
