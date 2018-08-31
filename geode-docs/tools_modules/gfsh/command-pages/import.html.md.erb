@@ -33,7 +33,7 @@ You can import an exported cluster configuration to create a new cluster or impo
 
 ## <a id="topic_vnv_grz_ck" class="no-quick-link"></a>import cluster-configuration
 
-Imports a previously exported cluster configuration from a zip file. This command is useful when spinning up a new cluster.
+Imports a previously exported cluster configuration from a ZIP file or an XML file. This command is useful when spinning up a new cluster.
 
 - In a given cluster, only one locator needs to perform the import. 
 That locator shares the imported configuration with all other connected locators in the cluster.
@@ -47,19 +47,24 @@ To import a cluster configuration, start one or more locators and then run the `
 **Syntax:**
 
 ``` pre
-import cluster-configuration --zip-file-name=value
+import cluster-configuration [--action=value] [--group(=value)?]
+ [--xml-file=value] [--zip-file-name=value]
 ```
 
 **Import Cluster-Configuration Parameters:**
 
 | Name                                                  | Description                                                                                     |
 |-------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-zip-file-name</span> | *Required.* Name of the zip file containing the cluster configuration artifacts to be imported. |
+| <span class="keyword parmname">&#8209;&#8209;action</span> | When the value is `APPLY` (the default), the configuration is applied to the running servers that have no configuration. If any servers already have configuration, the command fails. When the value is `STAGE`, the configuration is overwritten and will be used during future server creation; the configuration of currently running servers is not changed. |                   |
+| <span class="keyword parmname">&#8209;&#8209;group</span> | Do the import for the specified server group. When no group is specified, the `cluster` is implied. |                  |
+| <span class="keyword parmname">&#8209;&#8209;xml-file</span> | Filename from which to import the cluster configuration. May also include an absolute or relative path. Only specify one of `--xml-file` or `--zip-file-name`. |                   |
+| <span class="keyword parmname">\\-\\-zip-file-name</span> | Name of the ZIP file containing the cluster configuration artifacts to be imported.  Only specify one of `--xml-file` or `--zip-file-name`. |      |
 
 **Example Commands:**
 
 ``` pre
 gfsh>import cluster-configuration --zip-file-name=/home/username/myClusterConfig.zip
+gfsh>import cluster-configuration --xml-file=configs/Cluster3Config.xml
 ```
 
 **Sample Output:**
