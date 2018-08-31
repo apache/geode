@@ -72,6 +72,32 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
+  public void luceneQueryExecutedWhenAllBucketsAreLostShouldNotCauseAHang(
+      RegionTestableType regionTestType) throws Exception {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+
+
+    putDataInRegion(accessor);
+    dataStore1.invoke(() -> Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> assertTrue(getCache().getRegion(REGION_NAME).size() == 3)));
+
+
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
+    executeTextSearch(accessor);
+
+    dataStore1.invoke(() -> closeCache());
+    dataStore2.invoke(() -> closeCache());
+    executeQueryAndValidateNoHang(regionTestType);
+  }
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
   public void transactionWithLuceneQueriesShouldThrowException(RegionTestableType regionTestType)
       throws Exception {
     createRegionAndIndexForAllDataStores(regionTestType, createIndex);
