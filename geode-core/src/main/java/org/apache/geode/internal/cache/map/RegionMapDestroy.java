@@ -354,8 +354,7 @@ public class RegionMapDestroy {
           doContinue = true;
           return;
         }
-        regionEntry = (RegionEntry) focusedRegionMap.getEntryMap().putIfAbsent(event.getKey(),
-            newRegionEntry);
+        regionEntry = focusedRegionMap.putEntryIfAbsent(event.getKey(), newRegionEntry);
         if (regionEntry != null && regionEntry != tombstone) {
           // concurrent change - try again
           retry = true;
