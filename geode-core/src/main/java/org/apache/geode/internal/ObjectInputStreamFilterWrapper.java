@@ -200,7 +200,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
       throws InvocationTargetException, IllegalAccessException {
 
     /*
-     * create a user filter with the serialization whitelist/blacklist. This will be wrapped
+     * create a user filter with the serialization whitelist/denylist. This will be wrapped
      * by a filter that white-lists sanctioned classes
      */
     Object userFilter = createFilterMethod.invoke(null, serializationFilterSpec);

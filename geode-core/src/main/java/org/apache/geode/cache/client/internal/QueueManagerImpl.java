@@ -45,9 +45,9 @@ import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.RegisterInterestTracker.RegionInterestEntry;
-import org.apache.geode.cache.client.internal.ServerBlackList.BlackListListener;
-import org.apache.geode.cache.client.internal.ServerBlackList.BlackListListenerAdapter;
-import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
+import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListener;
+import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListenerAdapter;
+import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
@@ -95,7 +95,7 @@ public class QueueManagerImpl implements QueueManager {
   private boolean printRedundancyNotSatisfiedError;
   private boolean printRecoveringPrimary;
   private boolean printRecoveringRedundant;
-  protected final ServerBlackList blackList;
+  protected final ServerDenyList denyList;
   // Lock which guards updates to queueConnections.
   // Also threads calling getAllConnections will wait on this
   // lock until there is a primary.
@@ -127,7 +127,7 @@ public class QueueManagerImpl implements QueueManager {
     this.securityLogger = securityLogger;
     this.proxyId = proxyId;
     this.redundancyRetryInterval = redundancyRetryInterval;
-    blackList = new ServerBlackList(redundancyRetryInterval);
+    denyList = new ServerDenyList(redundancyRetryInterval);
 
 
     this.endpointListener = new EndpointManager.EndpointListenerAdapter() {
@@ -271,7 +271,7 @@ public class QueueManagerImpl implements QueueManager {
 
   public void start(ScheduledExecutorService background) {
     try {
-      blackList.start(background);
+      denyList.start(background);
       endpointManager.addListener(endpointListener);
 
       // Use a separate timer for queue management tasks
@@ -297,17 +297,17 @@ public class QueueManagerImpl implements QueueManager {
 
       scheduleRedundancySatisfierIfNeeded(redundancyRetryInterval);
 
-      // When a server is removed from the blacklist, try again
+      // When a server is removed from the denylist, try again
       // to establish redundancy (if we need to)
-      BlackListListener blackListListener = new BlackListListenerAdapter() {
+      DenyListListener denyListListener = new DenyListListenerAdapter() {
         @Override
         public void serverRemoved(ServerLocation location) {
           QueueManagerImpl.this.scheduleRedundancySatisfierIfNeeded(0);
         }
       };
 
-      blackList.addListener(blackListListener);
-      factory.getBlackList().addListener(blackListListener);
+      denyList.addListener(denyListListener);
+      factory.getDenyList().addListener(denyListListener);
     } finally {
       initializedLatch.countDown();
     }
@@ -431,7 +431,7 @@ public class QueueManagerImpl implements QueueManager {
     }
 
     int queuesNeeded = redundancyLevel == -1 ? -1 : redundancyLevel + 1;
-    Set excludedServers = new HashSet(blackList.getBadServers());
+    Set excludedServers = new HashSet(denyList.getBadServers());
     List servers = findQueueServers(excludedServers, queuesNeeded, true, false, null);
 
     if (servers == null || servers.isEmpty()) {
@@ -963,7 +963,7 @@ public class QueueManagerImpl implements QueueManager {
   private QueueConnectionImpl initializeQueueConnection(Connection connection, boolean isPrimary,
       ClientUpdater failedUpdater) {
     QueueConnectionImpl queueConnection = null;
-    FailureTracker failureTracker = blackList.getFailureTracker(connection.getServer());
+    FailureTracker failureTracker = denyList.getFailureTracker(connection.getServer());
     try {
       ClientUpdater updater = factory.createServerToClientConnection(connection.getEndpoint(), this,
           isPrimary, failedUpdater);
@@ -1453,8 +1453,8 @@ public class QueueManagerImpl implements QueueManager {
           }
         }
         Set excludedServers = queueConnections.getAllLocations();
-        excludedServers.addAll(blackList.getBadServers());
-        excludedServers.addAll(factory.getBlackList().getBadServers());
+        excludedServers.addAll(denyList.getBadServers());
+        excludedServers.addAll(factory.getDenyList().getBadServers());
         recoverPrimary(excludedServers);
         recoverRedundancy(excludedServers, true);
       } catch (VirtualMachineError err) {
