@@ -4881,25 +4881,18 @@ public interface DistributionConfig extends Config, LogConfig {
   String SERVER_SSL_ALIAS_NAME = SSL_SERVER_ALIAS;
 
   /**
-   * The default {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED} value.
-   * <p>
-   * Actual value of this constant is <code>true</code>.
-   */
-  boolean DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED = true;
-
-  /**
    * Returns the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}
    * property.
    */
   @ConfigAttributeGetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
-  boolean getSSLEndpointIdentificationEnabled();
+  Boolean getSSLEndPointIdentificationEnabled();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}
    * property.
    */
   @ConfigAttributeSetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
-  void setSSLEndpointIdentificationEnabled(boolean enabled);
+  void setSSLEndPointIdentificationEnabled(Boolean enabled);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED} property
@@ -4948,13 +4941,13 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_SSLCONTEXT} property.
    */
   @ConfigAttributeGetter(name = SSL_USE_DEFAULT_SSLCONTEXT)
-  boolean getSSLUseDefaultProvider();
+  boolean getSSLUseDefaultContext();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_SSLCONTEXT} property.
    */
   @ConfigAttributeSetter(name = SSL_USE_DEFAULT_SSLCONTEXT)
-  void setSSLUseDefaultProvider(boolean useProvider);
+  void setSSLUseDefaultContext(boolean defaultContext);
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS} property.

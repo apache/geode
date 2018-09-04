@@ -168,7 +168,7 @@ public class SSLConfigurationFactory {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setCiphers(distributionConfig.getSSLCiphers());
     sslConfig
-        .setEndpointIdentificationEnabled(distributionConfig.getSSLEndpointIdentificationEnabled());
+        .setEndpointIdentificationEnabled(distributionConfig.getSSLEndPointIdentificationEnabled());
     sslConfig
         .setEnabled(determineIfSSLEnabledForSSLComponent(distributionConfig, sslEnabledComponent));
     sslConfig.setKeystore(distributionConfig.getSSLKeyStore());
@@ -180,7 +180,7 @@ public class SSLConfigurationFactory {
     sslConfig.setProtocols(distributionConfig.getSSLProtocols());
     sslConfig.setRequireAuth(distributionConfig.getSSLRequireAuthentication());
     sslConfig.setAlias(distributionConfig.getSSLDefaultAlias());
-    sslConfig.setUseDefaultSSLContext(distributionConfig.getSSLUseDefaultProvider());
+    sslConfig.setUseDefaultSSLContext(distributionConfig.getSSLUseDefaultContext());
     return sslConfig;
   }
 

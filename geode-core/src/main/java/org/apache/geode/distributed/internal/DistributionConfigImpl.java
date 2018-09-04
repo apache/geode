@@ -603,7 +603,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = DEFAULT_SSL_ALIAS;
 
-  private boolean sslEndpointIdentificationEnabled = DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+  private Boolean sslEndPointIdentificationEnabled = null;
 
   private SecurableCommunicationChannel[] securableCommunicationChannels =
       DEFAULT_SSL_ENABLED_COMPONENTS;
@@ -850,11 +850,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.serverSSLAlias = other.getServerSSLAlias();
     this.locatorSSLAlias = other.getLocatorSSLAlias();
 
-    this.sslEndpointIdentificationEnabled = other.getSSLEndpointIdentificationEnabled();
+    this.sslEndPointIdentificationEnabled = other.getSSLEndPointIdentificationEnabled();
     this.securableCommunicationChannels =
         ((DistributionConfigImpl) other).securableCommunicationChannels;
 
-    this.sslUseDefaultSSLContext = other.getSSLUseDefaultProvider();
+    this.sslUseDefaultSSLContext = other.getSSLUseDefaultContext();
     this.sslCiphers = other.getSSLCiphers();
     this.sslProtocols = other.getSSLProtocols();
     this.sslRequireAuthentication = other.getSSLRequireAuthentication();
@@ -2763,13 +2763,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public boolean getSSLEndpointIdentificationEnabled() {
-    return sslEndpointIdentificationEnabled;
+  public Boolean getSSLEndPointIdentificationEnabled() {
+    if (this.sslEndPointIdentificationEnabled == null) {
+      return Boolean.FALSE;
+    }
+    return sslEndPointIdentificationEnabled;
   }
 
   @Override
-  public void setSSLEndpointIdentificationEnabled(final boolean sslEnabledIdentification) {
-    this.sslEndpointIdentificationEnabled = sslEnabledIdentification;
+  public void setSSLEndPointIdentificationEnabled(final Boolean sslEndPointIdentificationEnabled) {
+    this.sslEndPointIdentificationEnabled = sslEndPointIdentificationEnabled;
   }
 
   @Override
@@ -2784,14 +2787,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public boolean getSSLUseDefaultProvider() {
+  public boolean getSSLUseDefaultContext() {
     return sslUseDefaultSSLContext;
   }
 
   @Override
-  public void setSSLUseDefaultProvider(final boolean useDefaultProvider) {
-    // This conversion is required due to backwards compatibility of the existing protocols code
-    this.sslUseDefaultSSLContext = useDefaultProvider;
+  public void setSSLUseDefaultContext(final boolean sslUseDefaultSSLContext) {
+    if (this.sslEndPointIdentificationEnabled == null) {
+      this.sslEndPointIdentificationEnabled = Boolean.TRUE;
+    }
+    this.sslUseDefaultSSLContext = sslUseDefaultSSLContext;
   }
 
   @Override

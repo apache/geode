@@ -32,6 +32,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_SSLCONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
@@ -423,11 +426,22 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void testSSLEnabledEndpointValidationIsSetDefaultToTrue() {
+  public void testSSLEnabledEndpointValidationIsSetDefaultToTrueWhenSetUseDefaultContextIsUsed() {
     Properties props = new Properties();
+    props.put(SSL_ENABLED_COMPONENTS, "all");
+    props.put(SSL_USE_DEFAULT_SSLCONTEXT, "true");
 
     DistributionConfig config = new DistributionConfigImpl(props);
-    assertThat(config.getSSLEndpointIdentificationEnabled()).isEqualTo(true);
+    assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(true);
+  }
+
+  @Test
+  public void testSSLEnabledEndpointValidationIsSetDefaultToFalseWhenDefaultContextNotUsed() {
+    Properties props = new Properties();
+    props.put(SSL_ENABLED_COMPONENTS, "all");
+
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(false);
   }
 
   @Test
@@ -436,6 +450,6 @@ public class DistributionConfigJUnitTest {
     props.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
 
     DistributionConfig config = new DistributionConfigImpl(props);
-    assertThat(config.getSSLEndpointIdentificationEnabled()).isEqualTo(true);
+    assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(true);
   }
 }
