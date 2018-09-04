@@ -162,7 +162,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_AL
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_SSLCONTEXT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
@@ -4932,21 +4932,21 @@ public interface DistributionConfig extends Config, LogConfig {
   SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
       new SecurableCommunicationChannel[] {};
 
-  boolean DEFAULT_SSL_USE_DEFAULT_SSLCONTEXT = false;
+  boolean DEFAULT_SSL_USE_DEFAULT_CONTEXT = false;
 
   @ConfigAttribute(type = Boolean.class)
-  String SSL_USE_DEFAULT_SSLCONTEXT_NAME = SSL_USE_DEFAULT_SSLCONTEXT;
+  String SSL_USE_DEFAULT_CONTEXT_NAME = SSL_USE_DEFAULT_CONTEXT;
 
   /**
-   * Returns the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_SSLCONTEXT} property.
+   * Returns the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_CONTEXT} property.
    */
-  @ConfigAttributeGetter(name = SSL_USE_DEFAULT_SSLCONTEXT)
+  @ConfigAttributeGetter(name = SSL_USE_DEFAULT_CONTEXT)
   boolean getSSLUseDefaultContext();
 
   /**
-   * Sets the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_SSLCONTEXT} property.
+   * Sets the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_CONTEXT} property.
    */
-  @ConfigAttributeSetter(name = SSL_USE_DEFAULT_SSLCONTEXT)
+  @ConfigAttributeSetter(name = SSL_USE_DEFAULT_CONTEXT)
   void setSSLUseDefaultContext(boolean defaultContext);
 
   /**

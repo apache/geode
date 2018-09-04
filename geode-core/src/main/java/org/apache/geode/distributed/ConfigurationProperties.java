@@ -1931,7 +1931,7 @@ public interface ConfigurationProperties {
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
 
   /**
-   * The static String definition of the <i>"ssl-use-default-sslcontext"</i> property
+   * The static String definition of the <i>"ssl-use-default-context"</i> property
    * </p>
    *
    * <U>Description</U> When true, either uses the default context as returned by
@@ -1946,7 +1946,7 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.7
    * </p>
    */
-  String SSL_USE_DEFAULT_SSLCONTEXT = "ssl-use-default-sslcontext";
+  String SSL_USE_DEFAULT_CONTEXT = "ssl-use-default-context";
   /**
    * The static String definition of the <i>"ssl-endpoint-identification-enabled"</i> property <a
    * name="ssl-endpoint-identification-enabled"/a>

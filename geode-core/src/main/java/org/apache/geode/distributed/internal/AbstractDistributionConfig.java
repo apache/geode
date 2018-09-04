@@ -161,7 +161,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_AL
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_SSLCONTEXT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
@@ -1365,7 +1365,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED,
         "If true, clients validate server hostname using server certificate during SSL handshake. Defaults to true since GEODE 1.7.0");
 
-    m.put(SSL_USE_DEFAULT_SSLCONTEXT,
+    m.put(SSL_USE_DEFAULT_CONTEXT,
         "If true allows users to use the default SSLContext. When using default SSLContext, users do not need to configure other ssl properties except ssl-enabled-components and ssl-require-authentication.");
 
     m.put(SSL_ENABLED_COMPONENTS,

@@ -608,7 +608,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private SecurableCommunicationChannel[] securableCommunicationChannels =
       DEFAULT_SSL_ENABLED_COMPONENTS;
 
-  private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_SSLCONTEXT;
+  private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
   private boolean sslRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;

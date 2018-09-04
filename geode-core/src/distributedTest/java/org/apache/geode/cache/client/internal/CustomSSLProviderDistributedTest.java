@@ -20,7 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_SSLCONTEXT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.security.SecurableCommunicationChannels.ALL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -228,7 +228,7 @@ public class CustomSSLProviderDistributedTest {
     Properties clientSSLProperties = new Properties();
     clientSSLProperties.setProperty(SSL_ENABLED_COMPONENTS, ALL);
     clientSSLProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf("true"));
-    clientSSLProperties.setProperty(SSL_USE_DEFAULT_SSLCONTEXT, String.valueOf("true"));
+    clientSSLProperties.setProperty(SSL_USE_DEFAULT_CONTEXT, String.valueOf("true"));
 
     if (disableHostNameVerificationForClient) {
       // client chose to override default

@@ -33,7 +33,7 @@ import org.apache.geode.management.internal.SSLUtil;
 public class SSLConfig {
 
   private Boolean endpointIdentification;
-  private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_SSLCONTEXT;
+  private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
   private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
   private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
