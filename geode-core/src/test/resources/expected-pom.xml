@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-core</artifactId>
-  <version>1.8.0-SNAPSHOT</version>
+  <version>1.7.0</version>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>
   <url>http://geode.apache.org</url>
@@ -260,13 +260,13 @@
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-common</artifactId>
-      <version>1.8.0-SNAPSHOT</version>
+      <version>1.7.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-json</artifactId>
-      <version>1.8.0-SNAPSHOT</version>
+      <version>1.7.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
