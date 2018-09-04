@@ -42,6 +42,9 @@ fi
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
 SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
+echo "Sanitized Geode Fork = ${SANITIZED_GEODE_FORK}"
+echo "Sanitized Goede Branch = ${SANITIZED_GEODE_BRANCH}"
+
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
 mkdir -p ${BIN_DIR} ${TMP_DIR}
@@ -51,8 +54,6 @@ chmod +x ${BIN_DIR}/fly
 PATH=${PATH}:${BIN_DIR}
 
 TARGET="geode"
-
-TEAM=${CONCOURSE_TEAM}
 
 if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
   PIPELINE_PREFIX=""
@@ -64,17 +65,16 @@ fi
 
 PIPELINE_NAME="${PIPELINE_PREFIX}images"
 
-#if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; then
-#  TEAM="main"
-#fi
+#echo "DEBUG INFO *****************************"
+#echo "Pipeline prefix = ${PIPELINE_PREFIX}"
+#echo "Docker image prefix = ${DOCKER_IMAGE_PREFIX}"
 
-fly login -t ${TARGET} -n ${TEAM} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
+fly login -t ${TARGET} -c https://concourse.apachegeode-ci.info -u ${CONCOURSE_USERNAME} -p ${CONCOURSE_PASSWORD}
 set -x
 fly -t ${TARGET} set-pipeline \
   --non-interactive \
   --pipeline ${PIPELINE_NAME} \
   --config geode-images-pipeline/ci/pipelines/images/images.yml \
-  --var concourse-team=${TEAM} \
   --var geode-fork=${GEODE_FORK} \
   --var geode-build-branch=${GEODE_BRANCH} \
   --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \

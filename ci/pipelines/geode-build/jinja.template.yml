@@ -47,8 +47,10 @@ groups:
   {% for test in (tests) if not test.name=="StressNew" -%}
   - {{test.name}}Test
   {% endfor -%}
+{% if repository.sanitized_fork == "apache" %}
   - UpdatePassingRef
   - PublishArtifacts
+{% endif %}
 - name: windows
   jobs:
   - {{ build_test.name }}
@@ -71,6 +73,7 @@ resources:
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
+{% if repository.sanitized_fork == "apache" %}
 - name: docker-geode-build-image
   type: docker-image
   source:
@@ -78,6 +81,7 @@ resources:
     repository: gcr.io/apachegeode-ci/{{ pipeline_prefix() }}((!docker-image-name))
     tag: latest
     username: ((!docker-username))
+{% endif %}
 - name: geode
   type: git
   source:
@@ -225,6 +229,7 @@ jobs:
               - name: instance-data
             timeout: 1h
 
+{% if repository.sanitized_fork == "apache" %}
 - name: UpdatePassingRef
   public: true
   serial: true
@@ -252,7 +257,6 @@ jobs:
       - name: geode-ci
       outputs:
       - name: results
-
 - name: PublishArtifacts
   public: true
   plan:
@@ -286,6 +290,7 @@ jobs:
       - name: geode
       - name: geode-ci
       - name: geode-build-version
+{% endif %}
 
 {% for test in tests if not test.name=="StressNew" %}
 - name: {{test.name}}Test
