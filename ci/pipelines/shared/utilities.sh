@@ -18,9 +18,9 @@
 
 
 getSanitizedBranch () {
-  echo ${1} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-20
+  echo ${1} | tr "_/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-20
 }
 
 getSanitizedFork () {
-  echo ${1} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-16
+  echo ${1} | tr "_/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-16
 }

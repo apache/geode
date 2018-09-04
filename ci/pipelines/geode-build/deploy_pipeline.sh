@@ -59,11 +59,6 @@ PATH=${PATH}:${BIN_DIR}
 
 TARGET="geode"
 
-TEAM="staging"
-if [[ "${GEODE_BRANCH}" == "develop" ]] || [[ ${GEODE_BRANCH} =~ ^release/* ]]; then
-  TEAM="main"
-fi
-
 if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
   PIPELINE_NAME=${SANITIZED_GEODE_BRANCH}
   DOCKER_IMAGE_PREFIX=""
@@ -79,7 +74,6 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
   grep -n . generated-pipeline.yml
 
   fly login -t ${TARGET} \
-            -n ${TEAM} \
             -c https://concourse.apachegeode-ci.info \
             -u ${CONCOURSE_USERNAME} \
             -p ${CONCOURSE_PASSWORD}

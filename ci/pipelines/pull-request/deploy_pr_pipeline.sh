@@ -64,8 +64,6 @@ PATH=${PATH}:${BIN_DIR}
 
 TARGET="geode"
 
-TEAM=${CONCOURSE_TEAM:-main}
-
 if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
   PIPELINE_NAME="pr-${SANITIZED_GEODE_BRANCH}"
   DOCKER_IMAGE_PREFIX=""
@@ -79,7 +77,6 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
   python3 ../render.py $(basename ${SCRIPTDIR}) || exit 1
 
   fly login -t ${TARGET} \
-            -n ${TEAM} \
             -c https://concourse.apachegeode-ci.info \
             -u ${CONCOURSE_USERNAME} \
             -p ${CONCOURSE_PASSWORD}
@@ -88,8 +85,7 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
     --non-interactive \
     --pipeline ${PIPELINE_NAME} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
-    --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
-    --var concourse-team=${TEAM}
+    --var docker-image-prefix=${DOCKER_IMAGE_PREFIX}
 
 popd 2>&1 > /dev/null
 
