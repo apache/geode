@@ -408,9 +408,10 @@ public class ConcurrencyRule extends SerializableExternalResource {
       } else if (expectedException != null) {
         Throwable thrown = catchThrowable(() -> this.callable.call());
         checkThrown(this.expectedException, thrown);
-      } else if(expectedExceptionType != null && expectedExceptionCauseType != null) {
+      } else if (expectedExceptionType != null && expectedExceptionCauseType != null) {
         Throwable thrown = catchThrowable(() -> this.callable.call());
-        assertThat(thrown).isInstanceOf(expectedExceptionType).hasCauseInstanceOf(expectedExceptionCauseType);
+        assertThat(thrown).isInstanceOf(expectedExceptionType)
+            .hasCauseInstanceOf(expectedExceptionCauseType);
       } else if (expectedExceptionType != null) {
         Throwable thrown = catchThrowable(() -> this.callable.call());
         assertThat(thrown).isInstanceOf(this.expectedExceptionType);
