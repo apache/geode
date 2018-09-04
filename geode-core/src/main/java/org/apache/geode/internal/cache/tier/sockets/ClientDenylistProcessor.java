@@ -34,18 +34,18 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.CacheServerImpl;
 
 /**
- * A processor for sending client black list message to all nodes from primary. This adds client to
- * the blacklist and destroy it's queue if available on node.
+ * A processor for sending client deny list message to all nodes from primary. This adds client to
+ * the denylist and destroy it's queue if available on node.
  *
  * @since GemFire 6.0
  *
  */
-public class ClientBlacklistProcessor extends ReplyProcessor21 {
+public class ClientDenylistProcessor extends ReplyProcessor21 {
 
-  public static void sendBlacklistedClient(ClientProxyMembershipID proxyId, DistributionManager dm,
+  public static void sendDenylistedClient(ClientProxyMembershipID proxyId, DistributionManager dm,
       Set members) {
-    ClientBlacklistProcessor processor = new ClientBlacklistProcessor(dm, members);
-    ClientBlacklistMessage.send(proxyId, dm, processor, members);
+    ClientDenylistProcessor processor = new ClientDenylistProcessor(dm, members);
+    ClientDenylistMessage.send(proxyId, dm, processor, members);
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
@@ -62,23 +62,23 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
   }
 
   /**
-   * Creates a new instance of ClientBlacklistProcessor
+   * Creates a new instance of ClientDenylistProcessor
    */
-  private ClientBlacklistProcessor(DistributionManager dm, Set members) {
+  private ClientDenylistProcessor(DistributionManager dm, Set members) {
     super(dm, members);
   }
 
   /////////////// Inner message classes //////////////////
 
-  public static class ClientBlacklistMessage extends PooledDistributionMessage
+  public static class ClientDenylistMessage extends PooledDistributionMessage
       implements MessageWithReply {
     private int processorId;
 
     private ClientProxyMembershipID proxyId;
 
     protected static void send(ClientProxyMembershipID proxyId, DistributionManager dm,
-        ClientBlacklistProcessor proc, Set members) {
-      ClientBlacklistMessage msg = new ClientBlacklistMessage();
+        ClientDenylistProcessor proc, Set members) {
+      ClientDenylistMessage msg = new ClientDenylistMessage();
       msg.processorId = proc.getProcessorId();
       msg.proxyId = proxyId;
       msg.setRecipients(members);
@@ -105,8 +105,8 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
             while (i.hasNext()) {
               CacheServerImpl bs = (CacheServerImpl) i.next();
               CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-              // add client to the black list.
-              ccn.addToBlacklistedClient(this.proxyId);
+              // add client to the deny list.
+              ccn.addToDenylistedClient(this.proxyId);
               CacheClientProxy proxy = ccn.getClientProxy(this.proxyId);
               if (proxy != null) {
                 // close the proxy and remove from client proxy list.
@@ -117,7 +117,7 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
           }
         }
       } finally {
-        ClientBlacklistReply reply = new ClientBlacklistReply();
+        ClientDenylistReply reply = new ClientDenylistReply();
         reply.setProcessorId(this.getProcessorId());
         reply.setRecipient(getSender());
         if (dm.getId().equals(getSender())) {
@@ -130,7 +130,7 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
     }
 
     public int getDSFID() {
-      return CLIENT_BLACKLIST_MESSAGE;
+      return CLIENT_DENYLIST_MESSAGE;
     }
 
     @Override
@@ -155,13 +155,13 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("ClientBlacklistMessage (proxyId='").append(this.proxyId).append("' processorId=")
+      buff.append("ClientDenylistMessage (proxyId='").append(this.proxyId).append("' processorId=")
           .append(this.processorId).append(")");
       return buff.toString();
     }
   }
 
-  public static class ClientBlacklistReply extends ReplyMessage {
+  public static class ClientDenylistReply extends ReplyMessage {
   }
 
 }
