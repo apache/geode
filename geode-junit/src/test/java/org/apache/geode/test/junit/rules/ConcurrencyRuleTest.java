@@ -72,6 +72,12 @@ public class ConcurrencyRuleTest {
     return Integer.valueOf(72);
   };
 
+  private final Callable<Void> callWithExceptionAndCause = () -> {
+    Exception e = new IllegalStateException("Oh boy, here I go testin' again");
+    e.initCause(new NullPointerException());
+    throw e;
+  };
+
   private final Callable<Void> callWithExceptionAndRepeatCount = () -> {
     iterations.incrementAndGet();
     throw new IllegalStateException("Oh boy, here I go testin' again");
@@ -163,6 +169,22 @@ public class ConcurrencyRuleTest {
     concurrencyRule.add(callable).expectException(new NullPointerException("foo"));
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runAndExpectExceptionCauseType(Execution execution) {
+    concurrencyRule.add(callWithExceptionAndCause)
+        .expectExceptionCauseType(expectedExceptionWithCause.getCause().getClass());
+    execution.execute(concurrencyRule);
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runAndExpectExceptionCauseType_wrongTypeFails(Execution execution) {
+    concurrencyRule.add(callWithExceptionAndCause)
+        .expectExceptionCauseType(expectedExceptionWithCause.getClass());
+    assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
   }
 
   @Test

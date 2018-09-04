@@ -253,17 +253,21 @@ public class ConcurrencyRule extends SerializableExternalResource {
 
     private Callable<T> callable;
     private int iterations;
-    private Throwable expectedException;
-    private T expectedValue;
     private Duration duration;
+    private Boolean outcomeSet;
+    private T expectedValue;
+    private Throwable expectedException;
     private Class expectedExceptionType;
+    private Class expectedExceptionCauseType;
 
     public ConcurrentOperation() {
       callable = null;
       iterations = DEFAULT_ITERATIONS;
       duration = DEFAULT_DURATION;
+      this.outcomeSet = false;
       expectedException = null;
       expectedExceptionType = null;
+      expectedExceptionCauseType = null;
       expectedValue = null;
     }
 
@@ -271,8 +275,10 @@ public class ConcurrencyRule extends SerializableExternalResource {
       this.callable = toAdd;
       iterations = DEFAULT_ITERATIONS;
       duration = DEFAULT_DURATION;
+      this.outcomeSet = false;
       expectedException = null;
       expectedExceptionType = null;
+      expectedExceptionCauseType = null;
       expectedValue = null;
     }
 
@@ -321,11 +327,12 @@ public class ConcurrencyRule extends SerializableExternalResource {
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
     public ConcurrentOperation expectException(Throwable expectedException) {
-      if (expectedExceptionType != null || expectedValue != null) {
+      if (outcomeSet) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
       this.expectedException = expectedException;
+      this.outcomeSet = true;
       return this;
     }
 
@@ -337,11 +344,30 @@ public class ConcurrencyRule extends SerializableExternalResource {
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
     public ConcurrentOperation expectExceptionType(Class expectedExceptionType) {
-      if (expectedException != null || expectedValue != null) {
+      if (outcomeSet) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
       this.expectedExceptionType = expectedExceptionType;
+      this.outcomeSet = true;
+      return this;
+    }
+
+    /**
+     * Sets the expected result of running the thread to be an exception with a cause that is an
+     * instance of the given class
+     *
+     * @param expectedExceptionCauseType the class of the expected exception cause. The exception
+     *        itself will not be checked.
+     * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
+     */
+    public ConcurrentOperation expectExceptionCauseType(Class expectedExceptionCauseType) {
+      if (outcomeSet) {
+        throw new IllegalArgumentException("Specify only one expected outcome.");
+      }
+
+      this.expectedExceptionCauseType = expectedExceptionCauseType;
+      this.outcomeSet = true;
       return this;
     }
 
@@ -353,11 +379,12 @@ public class ConcurrencyRule extends SerializableExternalResource {
      * @return this, the ConcurrentOperation (containing a callable) that has been set to repeat
      */
     public ConcurrentOperation expectValue(T expectedValue) {
-      if (expectedExceptionType != null || expectedException != null) {
+      if (this.outcomeSet) {
         throw new IllegalArgumentException("Specify only one expected outcome.");
       }
 
       this.expectedValue = expectedValue;
+      this.outcomeSet = true;
       return this;
     }
 
@@ -384,6 +411,9 @@ public class ConcurrencyRule extends SerializableExternalResource {
       } else if (expectedExceptionType != null) {
         Throwable thrown = catchThrowable(() -> this.callable.call());
         assertThat(thrown).isInstanceOf(this.expectedExceptionType);
+      } else if (expectedExceptionCauseType != null) {
+        Throwable thrown = catchThrowable(() -> this.callable.call());
+        assertThat(thrown.getCause()).isInstanceOf(this.expectedExceptionCauseType);
       } else {
         this.callable.call();
       }
