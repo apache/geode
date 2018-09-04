@@ -25,7 +25,7 @@ Export configurations, data, logs and stack-traces.
 
 -   **[export cluster-configuration](#topic_mdv_jgz_ck)**
 
-    Export a cluster configuration zip file that contains the `cache.xml` files, `gemfire.properties` files, and application jar files needed to configure and operate a cluster.
+    Export a cluster configuration ZIP file that contains the `cache.xml` files, `gemfire.properties` files, and application JAR files needed to configure and operate a cluster.
 
 -   **[export config](#topic_C7C69306F93743459E65D46537F4A1EE)**
 
@@ -49,7 +49,10 @@ Export configurations, data, logs and stack-traces.
 
 ## <a id="topic_mdv_jgz_ck" class="no-quick-link"></a>export cluster-configuration
 
-Exports a cluster configuration zip file that contains the `cache.xml` files, `gemfire.properties` files, and application jar files needed to configure and operate a cluster.
+Exports a single XML file or a ZIP file with cluster configuration that contains the `cache.xml` files, `gemfire.properties` files, and application JAR files needed to configure and operate a cluster.
+
+When neither a file name nor a ZIP file name is specified,
+the cluster configuration is written to standard output.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -58,14 +61,17 @@ See [Overview of the Cluster Configuration Service](../../../configuring/cluster
 **Syntax:**
 
 ``` pre
-export cluster-configuration --zip-file-name=value
+export cluster-configuration [--group(=value)?] [--xml-file=value]
+ [--zip-file-name=value]
 ```
 
 **Export Cluster-Configuration Parameters:**
 
 | Name                                                  | Description                                                                          | Default Value     |
 |-------------------------------------------------------|--------------------------------------------------------------------------------------|-------------------|
-| <span class="keyword parmname">\\-\\-zip-file-name</span> | *Required.* Filename of the zip file to contain the exported cluster configuration. May also include an absolute or relative path. |                   |
+| <span class="keyword parmname">&#8209;&#8209;group</span> | Export the configuration for the specified server group. When no group is specified, use the default `cluster` group. |                   |
+| <span class="keyword parmname">&#8209;&#8209;xml-file</span> | Filename to contain the exported cluster configuration. May also include an absolute or relative path. Only specify one of `--xml-file` or `--zip-file-name`. |                   |
+| <span class="keyword parmname">&#8209;&#8209;zip-file-name</span> | Filename of the ZIP file to contain the exported cluster configuration. May also include an absolute or relative path. Only specify one of `--xml-file` or `--zip-file-name`.|                   |
 
 **Example Commands:**
 
@@ -73,6 +79,7 @@ export cluster-configuration --zip-file-name=value
 gfsh>export cluster-configuration --zip-file-name=/group/shared-configs/devClusterConfig.zip
 gfsh>export cluster-configuration --zip-file-name=my-configs/myClusterConfig.zip
 gfsh>export cluster-configuration --zip-file-name=myClusterConfig.zip
+gfsh>export cluster-configuration --xml-file=Cluster3Config.xml
 ```
 
 **Sample Output:**

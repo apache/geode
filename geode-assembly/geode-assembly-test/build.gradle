@@ -20,7 +20,7 @@ dependencies {
 
   compileOnly project(':geode-core')
   compileOnly project(':geode-pulse')
-  compileOnly project(':extensions/geode-modules-test')
+  compileOnly project(':extensions:geode-modules-test')
 
   compileOnly group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
   compileOnly 'org.assertj:assertj-core:' + project.'assertj-core.version'

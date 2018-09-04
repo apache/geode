@@ -18,29 +18,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+ 
+This section describes <%=vars.product_name%> transactions.
+<%=vars.product_name%> offers an API for client applications that do
+transactional work.
+<%=vars.product_name%> implements optimistic transactions, 
+with the familiar `begin`, `commit`, and `rollback` methods
+that implement the same operations as in 
+relational database transactions methods.
 
-<%=vars.product_name%> provides a transactions API, with `begin`, `commit`, and `rollback` methods. These methods are much the same as the familiar relational database transactions methods.
+-   **[Adherence to ACID Promises](transactions_intro.html)**
+  
+    This section explains the ways in which <%=vars.product_name%>'s
+implementation of optimistic transactions provides ACID semantics.
 
--   **[Introduction and the Application of ACID Semantics](about_transactions.html)**
+-   **[Code Examples](directed_example.html)**
 
-    This section presents the features of <%=vars.product_name%> transactions and discusses how the implementation adheres to ACID semantics.
-It also details the two kinds of transaction that <%=vars.product_name%> supports:
-**<%=vars.product_name%> transactions** and **JTA global transactions**.
+    An application-based transaction and a transaction embedded in
+    a function provide examples to model.
 
--   **[<%=vars.product_name%> Transactions](cache_transactions.html)**
+-   **[Design Considerations](design_considerations.html)**
 
-    Use <%=vars.product_name%> transactions to group the execution of cache operations and to gain the control offered by transactional commit and rollback. <%=vars.product_name%> transactions control operations within the <%=vars.product_name%> cache while the <%=vars.product_name%> distributed system handles data distribution in the usual way.
-
--   **[JTA Global Transactions with <%=vars.product_name%>](JTA_transactions.html)**
-
-    Use JTA global transactions to coordinate <%=vars.product_name%> transactions and JDBC transactions.
-
--   **[Monitoring and Troubleshooting Transactions](monitor_troubleshoot_transactions.html)**
-
-    This topic covers errors that may occur when running transactions in <%=vars.product_name%>.
-
--   **[Transaction Coding Examples](transaction_coding_examples.html)**
-
-    This section provides several code examples for writing and executing transactions.
-
-
+    Designs that extend beyond the basics introduce other considerations.
+    This section identifies and discusses how transactions interact
+    with other aspects of the system. 

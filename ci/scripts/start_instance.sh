@@ -74,6 +74,8 @@ while true; do
     LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME}"
 
     set +e
+# Try to kill any existing machine before starting
+    gcloud compute --project=${PROJECT} instances delete ${INSTANCE_NAME} --zone=${ZONE} --delete-disks=all -q
     INSTANCE_INFORMATION=$(gcloud compute --project=${PROJECT} instances create ${INSTANCE_NAME} \
       --zone=${ZONE} \
       --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \

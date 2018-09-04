@@ -23,11 +23,12 @@ dependencies {
 
   testCompile project(':geode-core')
   testCompile project(':geode-junit')
-  testCompile project(":geode-protobuf/geode-protobuf-test")
+  testCompile project(":geode-protobuf:geode-protobuf-test")
 
 
   integrationTestCompile project(":geode-dunit")
-  integrationTestCompile project(":geode-protobuf/geode-protobuf-test")
+  integrationTestCompile project(":geode-protobuf:geode-protobuf-test")
 
-  distributedTestCompile project(":geode-protobuf/geode-protobuf-test")
+
+  distributedTestCompile project(":geode-protobuf:geode-protobuf-test")
 }

@@ -36,7 +36,12 @@ fi
 
 REPODIR=$(cd geode; git rev-parse --show-toplevel)
 
-DEFAULT_GRADLE_TASK_OPTIONS="--parallel --console=plain --no-daemon -x javadoc -x spotlessCheck -x rat"
+if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
+  PARALLEL_GRADLE="--parallel"
+else
+  PARALLEL_GRADLE=""
+fi
+DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon -x javadoc -x spotlessCheck -x rat"
 
 
 SSHKEY_FILE="instance-data/sshkey"

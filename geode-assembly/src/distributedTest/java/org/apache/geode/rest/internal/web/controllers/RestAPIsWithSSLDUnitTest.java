@@ -106,7 +106,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementException;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
@@ -238,11 +237,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
   private String startInfraWithSSL(final Properties sslProperties, boolean clusterLevel)
       throws Exception {
 
-    final Host host = Host.getHost(0);
-    VM locator = host.getVM(0);
-    VM manager = host.getVM(1);
-    VM server = host.getVM(2);
-    VM client = host.getVM(3);
+    VM locator = VM.getVM(0);
+    VM manager = VM.getVM(1);
+    VM server = VM.getVM(2);
+    VM client = VM.getVM(3);
 
     // start locator
     final String hostName = NetworkUtils.getServerHostName(locator.getHost());
@@ -285,11 +283,10 @@ public class RestAPIsWithSSLDUnitTest extends LocatorTestBase {
 
   private void closeInfra() throws Exception {
 
-    final Host host = Host.getHost(0);
-    VM locator = host.getVM(0);
-    VM manager = host.getVM(1);
-    VM server = host.getVM(2);
-    VM client = host.getVM(3);
+    VM locator = VM.getVM(0);
+    VM manager = VM.getVM(1);
+    VM server = VM.getVM(2);
+    VM client = VM.getVM(3);
 
     // stop the client and make sure the bridge server notifies
     // stopBridgeMemberVM(client);

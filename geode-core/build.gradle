@@ -140,6 +140,9 @@ dependencies {
   compile project(':geode-json')
 
 
+  jcaAnnotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+
+
   jcaCompile sourceSets.main.output
 
 
@@ -224,7 +227,9 @@ task createVersionPropertiesFile {
   }
   // onlyIf takes precedence, but we should generate the file whenever the revision is specified.
   outputs.upToDateWhen { false }
-  outputs.file propertiesFile
+  outputs.files {
+    propertiesFile
+  }
 
   doLast {
     def props = [

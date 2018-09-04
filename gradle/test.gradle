@@ -42,8 +42,6 @@ subprojects {
     testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
     testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
     testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
-    testCompile 'eu.codearte.catch-exception:catch-exception:' + project.'catch-exception.version'
-    testCompile 'eu.codearte.catch-exception:catch-throwable:' + project.'catch-throwable.version'
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
@@ -62,6 +60,8 @@ subprojects {
     }
   }
 
+  // This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
+  // and associated classes are themselves removed, per GEODE-5606
   configurations {
     apt
   }
@@ -72,7 +72,8 @@ subprojects {
       transitive = false
     }
     // Because EnsureCorrectRunsWithProcessor needs access to
-    // CategoryWithParameterizedRunnerFactory. The specific version of geode-junit is not important.
+    // CategoryWithParameterizedRunnerFactory.
+    // buildSrc uses version 1.3.0, so we use it here instead of the local geode-junit project
     apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
       transitive = false
     }
@@ -121,13 +122,22 @@ subprojects {
     }
   }
 
-  // Facets does not extend the new runtimeOnly configurations
-  configurations.integrationTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
-  configurations.distributedTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
-  configurations.performanceTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
-  configurations.acceptanceTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
-  configurations.uiTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
-  configurations.upgradeTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+  configurations {
+    testAnnotationProcessor.extendsFrom annotationProcessor
+    integrationTestAnnotationProcessor.extendsFrom annotationProcessor
+    distributedTestAnnotationProcessor.extendsFrom annotationProcessor
+    performanceTestAnnotationProcessor.extendsFrom annotationProcessor
+    acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
+    uiTestAnnotationProcessor.extendsFrom annotationProcessor
+    upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
+    // Facets does not extend the new runtimeOnly configurations
+    integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
+    distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
+    performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+    acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+    uiTestRuntimeOnly.extendsFrom(runtimeOnly)
+    upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
+  }
 
   dependencies {
     integrationTestCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
@@ -304,6 +314,7 @@ subprojects {
   }
 }
 
+classes.dependsOn subprojects.compileTestJava
 classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava
 classes.dependsOn subprojects.compileAcceptanceTestJava

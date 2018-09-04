@@ -14,9 +14,8 @@
  */
 package org.apache.geode.distributed;
 
-import static com.googlecode.catchexception.CatchException.caughtException;
-import static com.googlecode.catchexception.CatchException.verifyException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +53,7 @@ public class LocatorStateTest {
   private String workingDirectory;
 
   @Before
-  public void before() throws Exception {
+  public void setUp() {
     classpath = "test_classpath";
     gemFireVersion = "test_gemfireVersion";
     host = "test_host";
@@ -73,47 +72,47 @@ public class LocatorStateTest {
   }
 
   @Test
-  public void fromJsonWithEmptyStringThrowsIllegalArgumentException() throws Exception {
+  public void fromJsonWithEmptyStringThrowsIllegalArgumentException() {
     // given: empty string
     String emptyString = "";
 
     // when: passed to fromJson
-    verifyException(this).fromJson(emptyString);
+    Throwable thrown = catchThrowable(() -> fromJson(emptyString));
 
     // then: throws IllegalArgumentException with cause of GfJsonException
-    assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class)
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(GfJsonException.class);
-    assertThat(caughtException().getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
+    assertThat(thrown.getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
   }
 
   @Test
-  public void fromJsonWithWhiteSpaceStringThrowsIllegalArgumentException() throws Exception {
+  public void fromJsonWithWhiteSpaceStringThrowsIllegalArgumentException() {
     // given: white space string
     String whiteSpaceString = "      ";
 
     // when: passed to fromJson
-    verifyException(this).fromJson(whiteSpaceString);
+    Throwable thrown = catchThrowable(() -> fromJson(whiteSpaceString));
 
     // then: throws IllegalArgumentException with cause of GfJsonException
-    assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class)
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(GfJsonException.class);
-    assertThat(caughtException().getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
+    assertThat(thrown.getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
   }
 
   @Test
-  public void fromJsonWithNullStringThrowsNullPointerException() throws Exception {
+  public void fromJsonWithNullStringThrowsNullPointerException() {
     // given: null string
     String nullString = null;
 
     // when: passed to fromJson
-    verifyException(this).fromJson(nullString);
+    Throwable thrown = catchThrowable(() -> fromJson(nullString));
 
     // then: throws NullPointerException
-    assertThat((Exception) caughtException()).isInstanceOf(NullPointerException.class).hasNoCause();
+    assertThat(thrown).isInstanceOf(NullPointerException.class).hasNoCause();
   }
 
   @Test
-  public void fromJsonWithValidJsonStringReturnsLocatorState() throws Exception {
+  public void fromJsonWithValidJsonStringReturnsLocatorState() {
     // given: valid json string
     String jsonString = createStatusJson();
 
@@ -139,10 +138,7 @@ public class LocatorStateTest {
     assertThat(value.getWorkingDirectory()).isEqualTo(workingDirectory);
   }
 
-  /**
-   * NOTE: Must be protected for CatchException.
-   */
-  protected LocatorState fromJson(final String value) {
+  private LocatorState fromJson(final String value) {
     return LocatorState.fromJson(value);
   }
 

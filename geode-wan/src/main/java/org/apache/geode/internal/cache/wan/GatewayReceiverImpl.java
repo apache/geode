@@ -15,8 +15,6 @@
 package org.apache.geode.internal.cache.wan;
 
 import java.io.IOException;
-import java.net.BindException;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +26,6 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -146,10 +143,9 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_IS_ALREADY_RUNNING));
       return;
     }
-    boolean started = false;
-    this.port = getPortToStart();
-    while (!started && this.port != -1) {
-      receiver.setPort(this.port);
+
+    for (int port = this.startPort; port <= this.endPort; port++) {
+      receiver.setPort(port);
       receiver.setSocketBufferSize(socketBufferSize);
       receiver.setMaximumTimeBetweenPings(timeBetPings);
       if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
@@ -160,32 +156,18 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
       try {
         receiver.start();
-        started = true;
-      } catch (BindException be) {
-        if (be.getCause() != null
-            && be.getCause().getMessage().contains("assign requested address")) {
-          throw new GatewayReceiverException(
-              LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                  .toLocalizedString(new Object[] {bindAdd, this.port}));
-        }
-        // ignore as this port might have been used by other threads.
-        logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use,
-            this.port));
-        this.port = getPortToStart();
-      } catch (SocketException se) {
-        if (se.getMessage().contains("Address already in use")) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use, this.port));
-          this.port = getPortToStart();
-
-        } else {
-          throw se;
+        this.port = port;
+        break;
+      } catch (IOException e) {
+        if (port == this.endPort) {
+          throw new GatewayReceiverException("No available free port found in the given range (" +
+              this.startPort +
+              "-" +
+              this.endPort +
+              ")", e);
         }
       }
 
-    }
-    if (!started) {
-      throw new IllegalStateException("No available free port found in the given range.");
     }
     logger
         .info(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_STARTED_ON_PORT, this.port));
@@ -193,18 +175,6 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
 
-  }
-
-  private int getPortToStart() {
-    // choose a random port from the given port range
-    int rPort;
-    if (this.startPort == this.endPort) {
-      rPort = this.startPort;
-    } else {
-      rPort = AvailablePort.getRandomAvailablePortInRange(this.startPort, this.endPort,
-          AvailablePort.SOCKET);
-    }
-    return rPort;
   }
 
   public void stop() {

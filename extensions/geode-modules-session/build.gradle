@@ -18,7 +18,7 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
-  compile project(':extensions/geode-modules-session-internal')
+  compile project(':extensions:geode-modules-session-internal')
   compile project(':geode-core')
 
   integrationTestCompile project(":geode-dunit")

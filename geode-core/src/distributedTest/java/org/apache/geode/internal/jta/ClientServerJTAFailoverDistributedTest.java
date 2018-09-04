@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.PoolFactory;
@@ -65,12 +66,14 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
   private String hostName;
   private String uniqueName;
   private String regionName;
+  private String replicateRegionName;
   private VM server1;
   private VM server2;
   private VM server3;
   private VM client1;
   private int port1;
   private int port2;
+  private boolean hasReplicateRegion = false;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -94,6 +97,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     hostName = getHostName();
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     regionName = uniqueName + "_region";
+    replicateRegionName = uniqueName + "_replicate_region";
   }
 
   @Test
@@ -130,6 +134,12 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
     regionFactory.create(regionName);
 
+    if (hasReplicateRegion) {
+      cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.REPLICATE)
+          .create(replicateRegionName);
+    }
+
+
     CacheServer server = cacheRule.getCache().addCacheServer();
     server.setPort(0);
     server.start();
@@ -151,6 +161,10 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
         clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
     clientRegionFactory.setPoolName(pool.getName());
     clientRegionFactory.create(regionName);
+
+    if (hasReplicateRegion) {
+      clientRegionFactory.create(replicateRegionName);
+    }
 
     if (ports.length > 1) {
       pool.acquireConnection(new ServerLocation(hostName, port1));
@@ -174,10 +188,13 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     Object[] results = new Object[2];
     InternalClientCache cache = clientCacheRule.getClientCache();
     Region region = cache.getRegion(regionName);
+    Region replicateRegion = hasReplicateRegion ? cache.getRegion(replicateRegionName) : null;
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
     txManager.begin();
     region.put(key, newValue);
-
+    if (hasReplicateRegion) {
+      replicateRegion.put(key, newValue);
+    }
     TXStateProxyImpl txStateProxy = (TXStateProxyImpl) txManager.getTXState();
     ClientTXStateStub clientTXStateStub = (ClientTXStateStub) txStateProxy.getRealDeal(null, null);
     clientTXStateStub.beforeCompletion();
@@ -191,6 +208,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
   private void doAfterCompletion(TransactionId transactionId, boolean isCommit) {
     InternalClientCache cache = clientCacheRule.getClientCache();
     Region region = cache.getRegion(regionName);
+    Region replicateRegion = cache.getRegion(replicateRegionName);
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
     txManager.resume(transactionId);
 
@@ -205,6 +223,9 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     }
     if (isCommit) {
       assertEquals(newValue, region.get(key));
+      if (hasReplicateRegion) {
+        assertEquals(newValue, replicateRegion.get(key));
+      }
     } else {
       assertEquals(value, region.get(key));
     }
@@ -295,4 +316,18 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     txStateStub.beforeCompletion();
   }
 
+  @Test
+  public void jtaCanFailoverToJTAHostForMixedRegionsAfterDoneBeforeCompletion() {
+    hasReplicateRegion = true;
+    port2 = server2.invoke(() -> createServerRegion(1, false));
+    server2.invoke(() -> doPut(key, value));
+    port1 = server1.invoke(() -> createServerRegion(1, true));
+
+    client1.invoke(() -> createClientRegion(port1, port2));
+    Object[] beforeCompletionResults = client1.invoke(() -> doBeforeCompletion());
+
+    server1.invoke(() -> cacheRule.getCache().close());
+
+    client1.invoke(() -> doAfterCompletion((TransactionId) beforeCompletionResults[0], true));
+  }
 }

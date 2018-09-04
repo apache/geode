@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -70,7 +71,6 @@ import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.ExpiryTask.ExpiryTaskListener;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -89,35 +89,8 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
  * @since GemFire 3.0
  */
 public abstract class RegionTestCase extends JUnit4CacheTestCase {
-
-  /** A <code>CacheListener</code> used by a test */
-  static TestCacheListener listener;
-  static TestCacheListener subrgnListener;
-
-  /** A <code>CacheLoader</code> used by a test */
-  static TestCacheLoader loader;
-  static TestCacheLoader subrgnLoader;
-
-  /** A <code>CacheWriter</code> used by a test */
-  static TestCacheWriter writer;
-  static TestCacheWriter subrgnWriter;
-
-  /**
-   * Clears fields used by a test
-   */
-  private static void cleanup() {
-    listener = null;
-    loader = null;
-    writer = null;
-    subrgnListener = null;
-    subrgnLoader = null;
-    subrgnWriter = null;
-  }
-
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    cleanup();
-    Invoke.invokeInEveryVM(getClass(), "cleanup");
     postTearDownRegionTestCase();
   }
 
@@ -128,12 +101,11 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    *
    * @see #getRegionAttributes
    */
-  protected Region createRegion(String name) throws CacheException {
-
+  protected <K, V> Region<K, V> createRegion(String name) throws CacheException {
     return createRegion(name, getRegionAttributes());
   }
 
-  protected Region createRootRegion() throws CacheException {
+  protected <K, V> Region<K, V> createRootRegion() throws CacheException {
     return createRootRegion(getRegionAttributes());
   }
 
@@ -141,7 +113,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    * Returns the attributes of a region to be tested by this test. Note that the decision as to
    * which attributes are used is left up to the concrete subclass.
    */
-  protected abstract RegionAttributes getRegionAttributes();
+  protected abstract <K, V> RegionAttributes<K, V> getRegionAttributes();
 
   /** pauses only if no ack */
   protected void pauseIfNecessary() {}
@@ -3766,7 +3738,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     // create region in other VMs if distributed
     boolean isDistributed = getRegionAttributes().getScope().isDistributed();
     if (isDistributed) {
-      Invoke.invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
+      invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
         public void run2() throws CacheException {
           preSnapshotRegion = createRegion(name);
         }
@@ -3808,7 +3780,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
       // test postSnapshot behavior in other VMs if distributed
       if (isDistributed) {
-        Invoke.invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
+        invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
           public void run2() throws CacheException {
             RegionTestCase.this.remoteTestPostSnapshot(name, false, false);
           }
@@ -3829,7 +3801,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     // create region in other VMs if distributed
     boolean isDistributed = getRegionAttributes().getScope().isDistributed();
     if (isDistributed) {
-      Invoke.invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
+      invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
         public void run2() throws CacheException {
           preSnapshotRegion = createRootRegion(name, getRegionAttributes());
         }
@@ -3877,7 +3849,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       // test postSnapshot behavior in other VMs if distributed
       if (isDistributed) {
         log.info("before distributed remoteTestPostSnapshot");
-        Invoke.invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
+        invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
           public void run2() throws CacheException {
             RegionTestCase.this.remoteTestPostSnapshot(name, false, true);
           }

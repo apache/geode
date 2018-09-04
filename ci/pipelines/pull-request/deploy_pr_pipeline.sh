@@ -67,11 +67,11 @@ TARGET="geode"
 TEAM=${CONCOURSE_TEAM:-main}
 
 if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
-  PIPELINE_PREFIX=""
+  PIPELINE_NAME="pr-${SANITIZED_GEODE_BRANCH}"
   DOCKER_IMAGE_PREFIX=""
 else
-  PIPELINE_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
-  DOCKER_IMAGE_PREFIX=${PIPELINE_PREFIX}
+  PIPELINE_NAME="pr-${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
+  DOCKER_IMAGE_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
 
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
@@ -86,7 +86,7 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
 
   fly -t ${TARGET} set-pipeline \
     --non-interactive \
-    --pipeline pr-${SANITIZED_GEODE_BRANCH} \
+    --pipeline ${PIPELINE_NAME} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
     --var concourse-team=${TEAM}

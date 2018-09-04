@@ -51,7 +51,6 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
  * will verify the functionality under distributed scenario.
  */
 @SuppressWarnings("serial")
-
 public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
 
   private VM vm0;

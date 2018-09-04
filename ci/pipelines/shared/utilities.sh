@@ -16,8 +16,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/usr/bin/env bash
-
 
 getSanitizedBranch () {
   echo ${1} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-20
@@ -26,4 +24,3 @@ getSanitizedBranch () {
 getSanitizedFork () {
   echo ${1} | tr "/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-16
 }
-

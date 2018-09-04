@@ -34,10 +34,10 @@ import org.apache.geode.test.junit.runners.TestRunner;
 
 public class ExecutorServiceRuleIntegrationTest {
 
-  static volatile CountDownLatch hangLatch;
-  static volatile CountDownLatch terminateLatch;
-  static volatile ExecutorService executorService;
-  static Awaits.Invocations invocations;
+  private static volatile CountDownLatch hangLatch;
+  private static volatile CountDownLatch terminateLatch;
+  private static volatile ExecutorService executorService;
+  private static Awaits.Invocations invocations;
 
   @Before
   public void setUp() throws Exception {
@@ -64,7 +64,7 @@ public class ExecutorServiceRuleIntegrationTest {
   }
 
   @Test
-  public void awaitTermination() throws Exception {
+  public void awaitTermination() {
     Result result = TestRunner.runTest(Awaits.class);
     assertThat(result.wasSuccessful()).isTrue();
 

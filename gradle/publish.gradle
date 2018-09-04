@@ -132,57 +132,58 @@ subprojects {
       maven(MavenPublication) {
         from components.java
 
-        // uses the tasks created by nexus for sources and javadoc
-        if (!getTasksByName('sourcesJar', false).isEmpty()) {
-          artifact sourcesJar
-        }
-        if (!getTasksByName('javadocJar', false).isEmpty()) {
-          artifact javadocJar
-        }
-
-        pom {
-          name = 'Apache Geode'
-          description = 'Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
-          url = 'http://geode.apache.org'
-
-          scm {
-            url = 'https://github.com/apache/geode'
-            connection = 'scm:git:https://github.com:apache/geode.git'
-            developerConnection = 'scm:git:https://github.com:apache/geode.git'
+        afterEvaluate {
+          // uses the tasks created by nexus for sources and javadoc
+          if (!getTasksByName('sourcesJar', false).isEmpty()) {
+            artifact sourcesJar
+          }
+          if (!getTasksByName('javadocJar', false).isEmpty()) {
+            artifact javadocJar
           }
 
-          licenses {
-            license {
-              name = 'The Apache Software License, Version 2.0'
-              url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          pom {
+            name = 'Apache Geode'
+            description = 'Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+            url = 'http://geode.apache.org'
+
+            scm {
+              url = 'https://github.com/apache/geode'
+              connection = 'scm:git:https://github.com:apache/geode.git'
+              developerConnection = 'scm:git:https://github.com:apache/geode.git'
             }
-          }
 
-          withXml {
-            //This black magic checks to see if a dependency has the flag ext.optional=true
-            //set on it, and if so marks the dependency as optional in the maven pom
-            def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
-            def runtimeDeps = project.configurations.runtime.dependencies.collectEntries { [it.name, it] }
-            def runtimeOnlyDeps = project.configurations.runtimeOnly.dependencies.collectEntries { [it.name, it] }
-            depMap.putAll(runtimeDeps)
-            depMap.putAll(runtimeOnlyDeps)
-            asNode().dependencies.dependency.findAll {
-              def dep = depMap.get(it.artifactId.text())
-              return dep?.hasProperty('optional') && dep.optional
-            }.each {
-              if (it.optional) {
-                it.optional.value = 'true'
-              } else {
-                it.appendNode('optional', 'true')
+            licenses {
+              license {
+                name = 'The Apache Software License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+              }
+            }
+
+            withXml {
+              //This black magic checks to see if a dependency has the flag ext.optional=true
+              //set on it, and if so marks the dependency as optional in the maven pom
+              def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
+              def runtimeDeps = project.configurations.runtime.dependencies.collectEntries { [it.name, it] }
+              def runtimeOnlyDeps = project.configurations.runtimeOnly.dependencies.collectEntries { [it.name, it] }
+              depMap.putAll(runtimeDeps)
+              depMap.putAll(runtimeOnlyDeps)
+              asNode().dependencies.dependency.findAll {
+                def dep = depMap.get(it.artifactId.text())
+                return dep?.hasProperty('optional') && dep.optional
+              }.each {
+                if (it.optional) {
+                  it.optional.value = 'true'
+                } else {
+                  it.appendNode('optional', 'true')
+                }
               }
             }
           }
-        }
-        pom {
-          withXml {
-            def elem = asElement()
-            def hdr = elem.ownerDocument().createComment(
-                    '''
+          pom {
+            withXml {
+              def elem = asElement()
+              def hdr = elem.ownerDocument().createComment(
+                      '''
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -198,7 +199,8 @@ subprojects {
   See the License for the specific language governing permissions and
   limitations under the License.
   ''')
-            elem.insertBefore(hdr, elem.firstChild)
+              elem.insertBefore(hdr, elem.firstChild)
+            }
           }
         }
       }
@@ -216,6 +218,51 @@ subprojects {
     }
   }
 
+  task('checkPom') {
+    dependsOn('generatePomFileForMavenPublication')
+    description 'Checks the generated POM against an expected POM for dependency changes.'
+
+    doLast {
+      if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
+        def expectedPomFile = sourceSets.test.resources.find() { it.name == "expected-pom.xml" }
+        if (null == expectedPomFile) {
+          throw new RuntimeException("expected-pom.xml not found.")
+        }
+        def expectedPom = new XmlParser().parse(expectedPomFile)
+        def expectedDependencies = new TreeSet()
+        expectedPom.dependencies.dependency.each() {
+          expectedDependencies.add(it as String)
+        }
+
+        def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+        def actualPom = new XmlParser().parse(actualPomFile)
+        def actualDependencies = new TreeSet()
+        actualPom.dependencies.dependency.each() {
+          actualDependencies.add(it as String)
+        }
+
+        if (actualDependencies != expectedDependencies) {
+          def newDependencies = new TreeSet(actualDependencies)
+          newDependencies.removeAll(expectedDependencies)
+          def removedDependencies = new TreeSet(expectedDependencies)
+          removedDependencies.removeAll(actualDependencies)
+
+          def message =
+              "The ".concat(project.name).concat(" pom-default.xml has changed. Verify dependencies.")
+                  .concat("\nWhen fixed, copy ").concat(actualPomFile as String)
+                  .concat("\nto ").concat(expectedPomFile as String)
+                  .concat("\nRemoved Dependencies\n--------------\n")
+                  .concat(String.join("\n", removedDependencies.toString()))
+                  .concat("\n\nNew Dependencies\n--------------\n")
+                  .concat(String.join("\n", newDependencies.toString()) + "\n\n")
+
+          throw new RuntimeException(message)
+        }
+      }
+    }
+
+  }
+  check.dependsOn('checkPom')
 
 } // subprojects
 
