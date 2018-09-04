@@ -130,6 +130,10 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     }
     VM sub = getHost(0).getVM(NUM_PUBS);
 
+    for (VM pub : pubs) {
+      pub.invoke(() -> puts.set(0));
+    }
+
     String subArchive =
         this.directory.getAbsolutePath() + File.separator + getName() + "_sub" + ".gfs";
     String[] pubArchives = new String[NUM_PUBS];
