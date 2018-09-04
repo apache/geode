@@ -49,7 +49,6 @@ import org.apache.geode.cache.query.internal.CompiledIteratorDef;
 import org.apache.geode.cache.query.internal.CompiledPath;
 import org.apache.geode.cache.query.internal.CompiledSortCriterion;
 import org.apache.geode.cache.query.internal.CompiledValue;
-import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.IndexInfo;
@@ -677,11 +676,8 @@ public class HashIndex extends AbstractIndex {
         ok = QueryUtils.applyCondition(iterOps, context);
       }
       if (ok) {
-        if (context != null && context.isCqQueryContext()) {
-          result.add(new CqEntry(re.getKey(), value));
-        } else {
-          applyProjection(projAttrib, context, result, value, intermediateResults, isIntersection);
-        }
+        applyCqOrProjection(projAttrib, context, result, value, intermediateResults,
+            isIntersection, re.getKey());
         if (limit != -1 && result.size() == limit) {
           observer.limitAppliedAtIndexLevel(this, limit, result);
           return;
