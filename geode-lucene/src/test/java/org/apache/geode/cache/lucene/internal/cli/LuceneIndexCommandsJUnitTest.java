@@ -434,7 +434,7 @@ public class LuceneIndexCommandsJUnitTest {
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-        new Object[] {Version.GEODE_180}) + LINE_SEPARATOR;
+        new Object[] {Version.GEODE_170}) + LINE_SEPARATOR;
     cliFunctionResults.add(new CliFunctionResult("member0"));
     doReturn(Collections.emptySet()).when(commands).getNormalMembersWithSameOrNewerVersion(any());
     CommandResult result = (CommandResult) commands.destroyIndex("index", "regionPath");
@@ -484,7 +484,7 @@ public class LuceneIndexCommandsJUnitTest {
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-        new Object[] {Version.GEODE_180}) + LINE_SEPARATOR;
+        new Object[] {Version.GEODE_170}) + LINE_SEPARATOR;
     cliFunctionResults.add(new CliFunctionResult("member0"));
     CommandResult result = (CommandResult) commands.destroyIndex(null, "regionPath");
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
