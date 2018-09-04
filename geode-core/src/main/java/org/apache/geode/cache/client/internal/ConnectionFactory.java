@@ -60,5 +60,5 @@ public interface ConnectionFactory {
   ClientUpdater createServerToClientConnection(Endpoint endpoint, QueueManager qManager,
       boolean isPrimary, ClientUpdater failedUpdater);
 
-  ServerBlackList getBlackList();
+  ServerDenyList getDenyList();
 }

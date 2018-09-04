@@ -2095,7 +2095,8 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"serializable-object-filter"</i> property
    *
-   * <U>Description</U>A user provided whitelist of objects that the system will allow to serialize.
+   * <U>Description</U>A user provided acceptlist of objects that the system will allow to
+   * serialize.
    *
    * <p>
    * See java.io.ObjectInputFilter.Config for details on the syntax for creating filters.

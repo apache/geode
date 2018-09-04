@@ -27,23 +27,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.client.internal.ServerBlackList.BlackListListenerAdapter;
-import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
+import org.apache.geode.cache.client.internal.ServerDenyList.DenyListListenerAdapter;
+import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class ServerBlackListJUnitTest {
+public class ServerDenyListJUnitTest {
 
   private ScheduledExecutorService background;
-  private ServerBlackList blackList;
+  private ServerDenyList denyList;
 
   @Before
   public void setUp() throws Exception {
     background = Executors.newSingleThreadScheduledExecutor();
-    blackList = new ServerBlackList(100);
-    blackList.start(background);
+    denyList = new ServerDenyList(100);
+    denyList.start(background);
   }
 
   @After
@@ -52,30 +52,30 @@ public class ServerBlackListJUnitTest {
   }
 
   @Test
-  public void testBlackListing() throws Exception {
+  public void testDenyListing() throws Exception {
     ServerLocation location1 = new ServerLocation("localhost", 1);
-    FailureTracker tracker1 = blackList.getFailureTracker(location1);
+    FailureTracker tracker1 = denyList.getFailureTracker(location1);
     tracker1.addFailure();
     tracker1.addFailure();
-    assertEquals(Collections.EMPTY_SET, blackList.getBadServers());
+    assertEquals(Collections.EMPTY_SET, denyList.getBadServers());
     tracker1.addFailure();
-    assertEquals(Collections.singleton(location1), blackList.getBadServers());
+    assertEquals(Collections.singleton(location1), denyList.getBadServers());
 
     boolean done = false;
     for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 10000; done =
-        (blackList.getBadServers().size() == 0)) {
+        (denyList.getBadServers().size() == 0)) {
       Thread.sleep(200);
     }
-    assertTrue("blackList still has bad servers", done);
+    assertTrue("denyList still has bad servers", done);
 
-    assertEquals(Collections.EMPTY_SET, blackList.getBadServers());
+    assertEquals(Collections.EMPTY_SET, denyList.getBadServers());
   }
 
   @Test
   public void testListener() throws Exception {
     final AtomicInteger adds = new AtomicInteger();
     final AtomicInteger removes = new AtomicInteger();
-    blackList.addListener(new BlackListListenerAdapter() {
+    denyList.addListener(new DenyListListenerAdapter() {
 
       @Override
       public void serverAdded(ServerLocation location) {
@@ -89,7 +89,7 @@ public class ServerBlackListJUnitTest {
     });
 
     ServerLocation location1 = new ServerLocation("localhost", 1);
-    FailureTracker tracker1 = blackList.getFailureTracker(location1);
+    FailureTracker tracker1 = denyList.getFailureTracker(location1);
     tracker1.addFailure();
     tracker1.addFailure();
 
