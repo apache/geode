@@ -396,7 +396,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
         .until(() -> cms.isRefreshMetadataTestOnly() == true);
 
     // make sure all fetch tasks are completed
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.getRefreshTaskCount() == 0);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+        .until(() -> cms.getRefreshTaskCount_TEST_ONLY() == 0);
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     region.put(new Integer(0), "create0");
@@ -1940,7 +1941,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   private void verifyMetadata() {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     // make sure all fetch tasks are completed
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> cms.getRefreshTaskCount() == 0);
+    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+        .until(() -> cms.getRefreshTaskCount_TEST_ONLY() == 0);
 
     // final Map<String, ClientPartitionAdvisor> regionMetaData = cms
     // .getClientPRMetadata_TEST_ONLY();
