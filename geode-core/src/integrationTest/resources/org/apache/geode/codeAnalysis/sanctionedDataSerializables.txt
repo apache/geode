@@ -1871,7 +1871,7 @@ org/apache/geode/internal/cache/snapshot/SnapshotPacket$SnapshotRecord,2
 fromData,17
 toData,17
 
-org/apache/geode/internal/cache/tier/sockets/ClientBlacklistProcessor$ClientBlacklistMessage,2
+org/apache/geode/internal/cache/tier/sockets/ClientDenylistProcessor$ClientDenylistMessage,2
 fromData,24
 toData,24
 
@@ -1923,7 +1923,7 @@ org/apache/geode/internal/cache/tier/sockets/ObjectPartList651,2
 fromData,145
 toData,202
 
-org/apache/geode/internal/cache/tier/sockets/RemoveClientFromBlacklistMessage,2
+org/apache/geode/internal/cache/tier/sockets/RemoveClientFromDenylistMessage,2
 fromData,14
 toData,14
 
