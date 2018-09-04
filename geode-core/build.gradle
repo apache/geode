@@ -301,3 +301,13 @@ distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
 }
+
+afterEvaluate {
+  rootProject.generate.dependsOn(generateGrammarSource)
+  project.assemble.dependsOn(generateGrammarSource)
+  tasks.each {
+    if (it.name != 'generateGrammarSource') {
+      it.mustRunAfter(generateGrammarSource)
+    }
+  }
+}
