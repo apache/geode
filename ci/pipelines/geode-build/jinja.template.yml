@@ -51,7 +51,7 @@ groups:
   - PublishArtifacts
 - name: windows
   jobs:
-  - Build
+  - {{ build_test.name }}
   {% for test in (windowstests) if not test.name=="StressNew" -%}
   - {{test.name}}Test
   {% endfor %}
