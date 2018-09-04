@@ -119,7 +119,7 @@ public class ManagementResourceRepo {
       // containsKey does this.
       return localMonitoringRegion.containsKey(key);
     } else {
-      return true; // so caller will think he does not need to do a putAll
+      return true; // so caller will think it does not need to do a putAll
     }
   }
 

@@ -134,7 +134,7 @@ public interface DistributionManager extends ReplySender {
   InternalDistributedMember getId();
 
   /**
-   * Return true if no other distribution manager was in this group when he joined.
+   * Return true if no other distribution manager was in this group when the member joined.
    *
    * @since GemFire 4.0
    */

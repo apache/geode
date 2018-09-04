@@ -314,7 +314,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
           }
           break;
         case DLockResponseMessage.DESTROYED:
-          // grantor claims we sent him a NonGrantorDestroyedMessage
+          // grantor claims we sent it a NonGrantorDestroyedMessage
           if (isDebugEnabled_DLS) {
             logger.trace(LogMarker.DLS_VERBOSE,
                 "{} has responded DLockResponseMessage.DESTROYED for {}", reply.getSender(),
@@ -901,7 +901,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
       try {
         if (this.receivingDM.getDistributionManagerIds().contains(this.sender)) {
           // sender must have sent us a NonGrantorDestroyedMessage
-          // still need to send a reply to make his thread stop waiting
+          // still need to send a reply to make the thread stop waiting
           respondWithDestroyed();
         }
       } finally {

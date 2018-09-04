@@ -426,7 +426,7 @@ public class DLockService extends DistributedLockService {
             logger.trace(LogMarker.DLS_VERBOSE, "{} failed to depose {}",
                 this.deposingLockGrantorId, myLockGrantorId);
           }
-          // older grantor couldn't depose us, so null him out...
+          // older grantor couldn't depose us, so null it out...
           this.deposingLockGrantorId = null;
         }
 
@@ -934,7 +934,7 @@ public class DLockService extends DistributedLockService {
   }
 
   /**
-   * @param predecessor non-null if a predecessor asked us to take over for him
+   * @param predecessor non-null if a predecessor asked us to take over for it
    */
   private void becomeLockGrantor(InternalDistributedMember predecessor) {
     Assert.assertTrue(predecessor == null);

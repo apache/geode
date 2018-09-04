@@ -1188,7 +1188,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         try {
           Thread.sleep(5000); // why are we sleeping for 5 seconds here?
           // if it is to give time to avkVm0 to notice us we should have
-          // him signal us that he has seen us and then we can exit.
+          // avkVm0 signal us that it has seen us and then we can exit.
         } catch (InterruptedException ee) {
           fail("interrupted");
         }

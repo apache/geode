@@ -4871,7 +4871,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         vm0.invokeAsync(new CacheSerializableRunnable("Do Nonblocking Operations") {
           @Override
           public void run2() throws CacheException {
-            Wait.pause(200); // give the gii guy a chance to start
+            Wait.pause(200); // give the gii a chance to start
             Region<Object, Object> region = getRootRegion().getSubregion(name);
 
             // wait for profile of getInitialImage cache to show up

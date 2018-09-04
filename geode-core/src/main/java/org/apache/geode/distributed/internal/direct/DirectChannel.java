@@ -327,7 +327,7 @@ public class DirectChannel {
          * Exceptions that happened during one attempt to send
          */
         if (retryInfo != null) {
-          // need to retry to each of the guys in the exception
+          // need to retry to each of the members in the exception
           List retryMembers = retryInfo.getMembers();
           InternalDistributedMember[] retryDest =
               new InternalDistributedMember[retryMembers.size()];
@@ -363,7 +363,7 @@ public class DirectChannel {
         if (sendingToGroup) {
           acquireGroupSendPermission(orderedMsg);
         } else {
-          // sending to just one guy
+          // sending over just one connection
           permissionCon = (Connection) cons.get(0);
           if (permissionCon != null) {
             try {

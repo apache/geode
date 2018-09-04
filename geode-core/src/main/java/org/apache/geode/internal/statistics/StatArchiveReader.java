@@ -736,23 +736,23 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
               LocalizedStrings.StatArchiveReader_CANT_COMBINE_DIFFERENT_STATS.toLocalizedString());
         }
         if (this.values[i].getDescriptor().isCounter()) {
-          // its a counter which is not the default
+          // it is a counter which is not the default
           if (!this.values[i].getDescriptor().isLargerBetter()) {
-            // this guy has non-defaults for both use him
+            // this value has non-defaults for both, use it
             bestTypeIdx = i;
           } else if (this.values[bestTypeIdx].getDescriptor()
               .isCounter() == this.values[bestTypeIdx].getDescriptor().isLargerBetter()) {
-            // as long as we haven't already found a guy with defaults
-            // make this guy the best type
+            // as long as we haven't already found a value with defaults
+            // make this value the best type
             bestTypeIdx = i;
           }
         } else {
           // its a gauge, see if it has a non-default largerBetter
           if (this.values[i].getDescriptor().isLargerBetter()) {
-            // as long as we haven't already found a guy with defaults
+            // as long as we haven't already found a value with defaults
             if (this.values[bestTypeIdx].getDescriptor().isCounter() == this.values[bestTypeIdx]
                 .getDescriptor().isLargerBetter()) {
-              // make this guy the best type
+              // make this value the best type
               bestTypeIdx = i;
             }
           }
@@ -2108,7 +2108,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
     /**
      * Frees up any resources no longer needed after the archive file is closed. Returns true if
-     * this guy is no longer needed.
+     * this resource is no longer needed.
      */
     protected boolean close() {
       if (isLoaded()) {
@@ -2483,7 +2483,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
     /**
      * Frees up any resources no longer needed after the archive file is closed. Returns true if
-     * this guy is no longer needed.
+     * these stats are no longer needed.
      */
     protected boolean close() {
       if (isLoaded()) {

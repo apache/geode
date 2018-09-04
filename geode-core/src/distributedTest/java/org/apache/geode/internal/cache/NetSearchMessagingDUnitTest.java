@@ -75,7 +75,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       assertEquals(vm0Count + vm1Count + 1, getReceivedMessages(vm0) + getReceivedMessages(vm1));
 
-      // Make sure the normal guy didn't see any messages
+      // Make sure the normal vm didn't see any messages
       assertEquals(vm2Count, getReceivedMessages(vm2));
     }
 
@@ -98,7 +98,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       assertEquals(vm0Count + vm1Count + 1, getReceivedMessages(vm0) + getReceivedMessages(vm1));
 
-      // Make sure the normal guy didn't see any messages
+      // Make sure the normal vm didn't see any messages
       assertEquals(vm2Count, getReceivedMessages(vm2));
     }
 
@@ -129,7 +129,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
       // Make sure we only processed one message
       waitForReceivedMessages(vm3, vm3Count + 3);
 
-      // Make sure the normal guys each saw 1 query message.
+      // Make sure the normal vms each saw 1 query message.
       assertEquals(vm0Count + vm1Count + vm2Count + 3,
           getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
     }
@@ -151,7 +151,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       waitForReceivedMessages(vm3, vm3Count + 3);
 
-      // Make sure the normal guys each saw 1 query message.
+      // Make sure the normal vms each saw 1 query message.
       assertEquals(vm0Count + vm1Count + vm2Count + 3,
           getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
     }

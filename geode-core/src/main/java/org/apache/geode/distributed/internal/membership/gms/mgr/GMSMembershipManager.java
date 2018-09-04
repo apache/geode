@@ -923,8 +923,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         return false;
       }
 
-      // Adding him to this set ensures we won't remove him if a new
-      // view comes in and he's still not visible.
+      // Adding the member to this set ensures we won't remove it if a new
+      // view comes in and it is still not visible.
       surpriseMembers.put(member, Long.valueOf(System.currentTimeMillis()));
 
       if (shutdownInProgress()) {
@@ -955,8 +955,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         // membership view.
 
         // However, we put the new member at the end of the list. This
-        // should ensure he's not chosen as an elder.
-        // This will get corrected when he finally shows up in the
+        // should ensure it is not chosen as an elder.
+        // This will get corrected when the member finally shows up in the
         // view.
         NetView newMembers = new NetView(latestView, latestView.getViewId());
         newMembers.add(member);
