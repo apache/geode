@@ -240,7 +240,7 @@ public abstract class EvictionAttributes implements DataSerializable {
    * determined by monitoring the size of entries added and evicted. Capacity is specified in terms
    * of megabytes. GemFire uses an efficient algorithm to determine the amount of space a region
    * entry occupies in the JVM. However, this algorithm may not yield optimal results for all kinds
-   * of data. The user may provide his or her own algorithm for determining the size of objects by
+   * of data. The user may provide their own algorithm for determining the size of objects by
    * implementing an {@link ObjectSizer}.
    * <p/>
    * <p/>

@@ -1258,7 +1258,7 @@ public abstract class ServerConnection implements Runnable {
   }
 
   /**
-   * Switch this guy to blocking mode so we can use oldIO to read and write messages.
+   * Switch this connection to blocking mode so we can use oldIO to read and write messages.
    */
   void makeBlocking() throws IOException {
     SelectableChannel c = this.theSocket.getChannel();

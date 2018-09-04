@@ -1371,7 +1371,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       }
 
       // ???:ezoerner:20080815 why throw a new exception here and lose the
-      // stack trace when he had a perfectly good one already?
+      // stack trace when there was a perfectly good one already?
       // throw new EntryNotFoundException("Entry not found for key = " +
       // event.getKey());
 
@@ -1524,7 +1524,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * (BH).
    *
    * 1. REB sends an "unhostBucket" message to BH. This message will be rejected if the member finds
-   * itself to be the primary or if he doesn't host the bucket by sending a failure reply to REB. 2.
+   * itself to be the primary or if it doesn't host the bucket by sending a failure reply to REB. 2.
    * BH marks itself as "not-hosting". This causes any read operations that come in to not start and
    * retry. BH also updates the advisor to know that it is no longer hosting the bucket. 3. BH then
    * waits for any in-progress reads (which read ops to wait for are TBD) to complete. 4. BH then

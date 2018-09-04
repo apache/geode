@@ -581,7 +581,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             if (this.creation instanceof ClientCacheCreation) {
               try {
                 ClientRegionShortcut.valueOf(id);
-                // skip this guy since id mapped to one of the enum types
+                // skip this client region since id mapped to one of the enum types
                 continue;
               } catch (IllegalArgumentException ignore) {
                 // id is not a shortcut so go ahead and call generate
@@ -589,7 +589,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             } else {
               try {
                 RegionShortcut.valueOf(id);
-                // skip this guy since id mapped to one of the enum types
+                // skip this region since id mapped to one of the enum types
                 continue;
               } catch (IllegalArgumentException ignore) {
                 // id is not a shortcut so go ahead and call generate

@@ -51,7 +51,7 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
    * then this code should be changed to use attrs' hasXXX methods to initialize the has booleans
    * when defaults is false.
    *
-   * @param attrs the attributes to initialize this guy with.
+   * @param attrs the attributes with which to initialize this DiskStore.
    */
   public DiskStoreAttributesCreation(DiskStoreAttributes attrs) {
     this.name = attrs.getName();

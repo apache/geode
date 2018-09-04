@@ -2903,8 +2903,8 @@ public class ClusterDistributionManager implements DistributionManager {
     boolean removedMember = false;
     synchronized (this.membersLock) {
       // to fix bug 39747 we can only remove this member from
-      // membersAndAdmin if he is not in members.
-      // This happens when we have an admin guy colocated with a normal DS.
+      // membersAndAdmin if it is not in members.
+      // This happens when we have an admin member colocated with a normal DS.
       // In this case we need for the normal DS to shutdown or crash.
       if (!this.members.containsKey(theId)) {
         if (logger.isDebugEnabled())
@@ -3344,7 +3344,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Waits until elder if newElder or newElder is no longer a member
    *
-   * @return true if newElder is the elder; false if he is no longer a member or we are the elder.
+   * @return true if newElder is the elder; false if it is no longer a member or we are the elder.
    */
   public boolean waitForElder(final InternalDistributedMember desiredElder) {
     MembershipListener l = null;

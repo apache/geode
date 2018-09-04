@@ -230,7 +230,7 @@ class PooledConnection implements Connection {
   }
 
   /**
-   * Returns the number of nanos remaining is this guys life.
+   * Returns the number of nanos remaining is this connection's life.
    */
   public long remainingLife(long now, long timeoutNanos) {
     return (getBirthDate() - now) + timeoutNanos;
@@ -242,10 +242,8 @@ class PooledConnection implements Connection {
 
   /**
    * If we were able to idle timeout this connection then return -1. If this connection has already
-   * been destroyed return 0. Otherwise return the amount of idle time he has remaining. If he is
-   * active we can't time him out now and a hint is returned as when we should check him next.
-   *
-   *
+   * been destroyed return 0. Otherwise return the amount of idle time remaining. If the connection
+   * is active we can't time it out now and a hint is returned as when we should check again.
    */
   public long doIdleTimeout(long now, long timeoutNanos) {
     if (shouldDestroy())
@@ -253,7 +251,7 @@ class PooledConnection implements Connection {
     synchronized (this) {
       if (isActive()) {
         // this is a reasonable value to return since odds are that
-        // when he goes inactive he will be resetting his access time.
+        // when the connection goes inactive it will be resetting its access time.
         return timeoutNanos;
       } else {
         long idleRemaining = remainingIdle(now, timeoutNanos);
