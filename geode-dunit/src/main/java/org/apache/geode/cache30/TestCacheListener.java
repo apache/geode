@@ -32,25 +32,26 @@ import org.apache.geode.cache.RegionEvent;
  *
  * @since GemFire 3.0
  */
-public abstract class TestCacheListener extends TestCacheCallback implements CacheListener {
-
-  private List eventHistory = null;
+public abstract class TestCacheListener<K, V> extends TestCacheCallback
+    implements CacheListener<K, V> {
+  private final Object lock = new Object();
+  private List<CacheEvent<K, V>> eventHistory = null;
 
   /**
    * Should be called for every event delivered to this listener
    */
-  private void addEvent(CacheEvent e, boolean setInvoked) {
-    if (setInvoked) {
-      this.invoked = true;
-    }
-    if (this.eventHistory != null) {
-      synchronized (this.eventHistory) {
+  private void addEvent(CacheEvent<K, V> e, boolean setInvoked) {
+    synchronized (lock) {
+      if (setInvoked) {
+        this.invoked = true;
+      }
+      if (this.eventHistory != null) {
         this.eventHistory.add(e);
       }
     }
   }
 
-  private void addEvent(CacheEvent e) {
+  private void addEvent(CacheEvent<K, V> e) {
     addEvent(e, true);
   }
 
@@ -60,8 +61,10 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
    * @since GemFire 5.0
    */
   public void enableEventHistory() {
-    if (this.eventHistory == null) {
-      this.eventHistory = new ArrayList();
+    synchronized (lock) {
+      if (this.eventHistory == null) {
+        this.eventHistory = new ArrayList<>();
+      }
     }
   }
 
@@ -71,7 +74,9 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
    * @since GemFire 5.0
    */
   public void disableEventHistory() {
-    this.eventHistory = null;
+    synchronized (lock) {
+      this.eventHistory = null;
+    }
   }
 
   /**
@@ -80,19 +85,20 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
    *
    * @since GemFire 5.0
    */
-  public List getEventHistory() {
-    if (this.eventHistory == null) {
-      return Collections.EMPTY_LIST;
-    } else {
-      synchronized (this.eventHistory) {
-        List result = this.eventHistory;
-        this.eventHistory = new ArrayList();
+  public List<CacheEvent<K, V>> getEventHistory() {
+    synchronized (lock) {
+      if (this.eventHistory == null) {
+        return Collections.emptyList();
+      } else {
+        List<CacheEvent<K, V>> result = this.eventHistory;
+        this.eventHistory = new ArrayList<>();
         return result;
       }
     }
   }
 
-  public void afterCreate(EntryEvent event) {
+  @Override
+  public void afterCreate(EntryEvent<K, V> event) {
     addEvent(event);
     try {
       afterCreate2(event);
@@ -104,12 +110,13 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     }
   }
 
-  public void afterCreate2(EntryEvent event) {
+  public void afterCreate2(EntryEvent<K, V> event) {
     String s = "Unexpected callback invocation";
     throw new UnsupportedOperationException(s);
   }
 
-  public void afterUpdate(EntryEvent event) {
+  @Override
+  public void afterUpdate(EntryEvent<K, V> event) {
     addEvent(event);
     try {
       afterUpdate2(event);
@@ -121,12 +128,13 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     }
   }
 
-  public void afterUpdate2(EntryEvent event) {
+  public void afterUpdate2(EntryEvent<K, V> event) {
     String s = "Unexpected callback invocation";
     throw new UnsupportedOperationException(s);
   }
 
-  public void afterInvalidate(EntryEvent event) {
+  @Override
+  public void afterInvalidate(EntryEvent<K, V> event) {
     addEvent(event);
     try {
       afterInvalidate2(event);
@@ -138,12 +146,13 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     }
   }
 
-  public void afterInvalidate2(EntryEvent event) {
+  public void afterInvalidate2(EntryEvent<K, V> event) {
     String s = "Unexpected callback invocation";
     throw new UnsupportedOperationException(s);
   }
 
-  public void afterDestroy(EntryEvent event) {
+  @Override
+  public void afterDestroy(EntryEvent<K, V> event) {
     afterDestroyBeforeAddEvent(event);
     addEvent(event);
     try {
@@ -156,16 +165,17 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     }
   }
 
-  public void afterDestroyBeforeAddEvent(EntryEvent event) {
+  public void afterDestroyBeforeAddEvent(EntryEvent<K, V> event) {
     // do nothing by default
   }
 
-  public void afterDestroy2(EntryEvent event) {
+  public void afterDestroy2(EntryEvent<K, V> event) {
     String s = "Unexpected callback invocation";
     throw new UnsupportedOperationException(s);
   }
 
-  public void afterRegionInvalidate(RegionEvent event) {
+  @Override
+  public void afterRegionInvalidate(RegionEvent<K, V> event) {
     addEvent(event);
     try {
       afterRegionInvalidate2(event);
@@ -177,12 +187,13 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     }
   }
 
-  public void afterRegionInvalidate2(RegionEvent event) {
+  public void afterRegionInvalidate2(RegionEvent<K, V> event) {
     String s = "Unexpected callback invocation";
     throw new UnsupportedOperationException(s);
   }
 
-  public void afterRegionDestroy(RegionEvent event) {
+  @Override
+  public void afterRegionDestroy(RegionEvent<K, V> event) {
     // check argument to see if this is during tearDown
     if ("teardown".equals(event.getCallbackArgument()))
       return;
@@ -198,26 +209,24 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
     }
   }
 
-  public void afterRegionDestroyBeforeAddEvent(RegionEvent event) {
-    // do nothing by default
-  }
+  public void afterRegionDestroyBeforeAddEvent(RegionEvent<K, V> ignored) {}
 
-  public void afterRegionDestroy2(RegionEvent event) {
+  public void afterRegionDestroy2(RegionEvent<K, V> event) {
     if (!event.getOperation().isClose()) {
       String s = "Unexpected callback invocation";
       throw new UnsupportedOperationException(s);
     }
   }
 
-  public void afterRegionClear(RegionEvent event) {
+  public void afterRegionClear(RegionEvent<K, V> event) {
     addEvent(event, false);
   }
 
-  public void afterRegionCreate(RegionEvent event) {
+  public void afterRegionCreate(RegionEvent<K, V> event) {
     addEvent(event, false);
   }
 
-  public void afterRegionLive(RegionEvent event) {
+  public void afterRegionLive(RegionEvent<K, V> event) {
     addEvent(event, false);
   }
 }

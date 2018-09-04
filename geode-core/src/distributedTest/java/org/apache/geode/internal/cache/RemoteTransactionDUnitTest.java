@@ -1771,8 +1771,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     protected boolean isAccessor;
     protected Exception ex = null;
 
-    protected void verify(TransactionEvent txEvent) {
-      for (CacheEvent e : txEvent.getEvents()) {
+    protected void verify(TransactionEvent<Object, Object> txEvent) {
+      for (CacheEvent<Object, Object> e : txEvent.getEvents()) {
         verifyOrigin(e);
         verifyPutAll(e);
       }
@@ -1786,11 +1786,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
-    private void verifyPutAll(CacheEvent p_event) {
+    private void verifyPutAll(CacheEvent<Object, Object> p_event) {
       if (!(p_event instanceof EntryEvent)) {
         return;
       }
-      EntryEvent event = (EntryEvent) p_event;
+      EntryEvent<Object, Object> event = (EntryEvent<Object, Object>) p_event;
       CustId knownCustId = new CustId(1);
       OrderId knownOrderId = new OrderId(2, knownCustId);
       if (event.getKey().equals(knownOrderId)) {
@@ -2039,10 +2039,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void doTestIterator(final OP iteratorType, final int redundancy, final OP op) {
-    Host host = Host.getHost(0);
-    VM accessor = host.getVM(0);
-    VM datastore1 = host.getVM(1);
-    VM datastore2 = host.getVM(2);
+    VM accessor = VM.getVM(0);
+    VM datastore1 = VM.getVM(1);
+    VM datastore2 = VM.getVM(2);
     initAccessorAndDataStore(accessor, datastore1, datastore2, redundancy);
 
     accessor.invoke(new SerializableCallable() {
@@ -3144,7 +3143,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         getGemfireCache().getTxManager().addListener(new TestTxListener(true));
-        Region custRegion = getCache().getRegion(CUSTOMER);
+        Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         Context ctx = getCache().getJNDIContext();
         UserTransaction tx = (UserTransaction) ctx.lookup("java:/UserTransaction");
         assertEquals(Status.STATUS_NO_TRANSACTION, tx.getStatus());

@@ -41,6 +41,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.EntryOperationImpl;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -77,7 +78,11 @@ public class ClientMetadataService {
 
   private boolean isMetadataRefreshed_TEST_ONLY = false;
 
+  /** for testing - the current number of metadata refresh tasks running or queued to run */
   private int refreshTaskCount = 0;
+
+  /** for testing - the total number of scheduled metadata refreshes */
+  private long totalRefreshTaskCount = 0;
 
   private Set<String> regionsBeingRefreshed = new HashSet<>();
 
@@ -211,9 +216,14 @@ public class ClientMetadataService {
 
     HashMap<ServerLocation, HashSet> serverToKeysMap = new HashMap<ServerLocation, HashSet>();
     HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
-        groupByServerToBuckets(prAdvisor, bucketToKeysMap.keySet(), primaryMembersNeeded);
+        groupByServerToBuckets(prAdvisor, bucketToKeysMap.keySet(), primaryMembersNeeded, region);
 
     if (serverToBuckets == null) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("One or more primary bucket locations are unknown "
+            + "- scheduling metadata refresh for region {}", region.getFullPath());
+      }
+      scheduleGetPRMetaData((LocalRegion) region, false);
       return null;
     }
 
@@ -251,7 +261,7 @@ public class ClientMetadataService {
     for (int i = 0; i < totalNumberOfBuckets; i++) {
       allBucketIds.add(i);
     }
-    return groupByServerToBuckets(prAdvisor, allBucketIds, primaryOnly);
+    return groupByServerToBuckets(prAdvisor, allBucketIds, primaryOnly, region);
   }
 
   /**
@@ -259,7 +269,8 @@ public class ClientMetadataService {
    * are not available due to mismatch in metadata it should fill up a random server for it.
    */
   private HashMap<ServerLocation, HashSet<Integer>> groupByServerToBuckets(
-      ClientPartitionAdvisor prAdvisor, Set<Integer> bucketSet, boolean primaryOnly) {
+      ClientPartitionAdvisor prAdvisor, Set<Integer> bucketSet, boolean primaryOnly,
+      Region region) {
     if (primaryOnly) {
       HashMap<ServerLocation, HashSet<Integer>> serverToBucketsMap =
           new HashMap<ServerLocation, HashSet<Integer>>();
@@ -269,6 +280,9 @@ public class ClientMetadataService {
           // If we don't have the metadata for some buckets, return
           // null, indicating that we don't have any metadata. This
           // will cause us to use the non-single hop path.
+          logger.info("Primary for bucket {} is not known for Region {}.  "
+              + "Known server locations: {}", bucketId, region.getFullPath(),
+              prAdvisor.adviseServerLocations(bucketId));
           return null;
         }
         HashSet<Integer> buckets = serverToBucketsMap.get(server);
@@ -505,6 +519,7 @@ public class ClientMetadataService {
     } else {
       synchronized (fetchTaskCountLock) {
         refreshTaskCount++;
+        totalRefreshTaskCount++;
       }
       Runnable fetchTask = new Runnable() {
         @SuppressWarnings("synthetic-access")
@@ -615,6 +630,7 @@ public class ClientMetadataService {
         }
         regionsBeingRefreshed.add(region.getFullPath());
         refreshTaskCount++;
+        totalRefreshTaskCount++;
       }
       Runnable fetchTask = new Runnable() {
         @SuppressWarnings("synthetic-access")
@@ -828,9 +844,17 @@ public class ClientMetadataService {
     this.isMetadataStable = isMetadataStable;
   }
 
-  public int getRefreshTaskCount() {
+  /** For Testing */
+  public int getRefreshTaskCount_TEST_ONLY() {
     synchronized (fetchTaskCountLock) {
       return refreshTaskCount;
+    }
+  }
+
+  /** for testing */
+  public long getTotalRefreshTaskCount_TEST_ONLY() {
+    synchronized (fetchTaskCountLock) {
+      return totalRefreshTaskCount;
     }
   }
 }

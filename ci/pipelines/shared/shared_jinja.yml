@@ -24,7 +24,7 @@
 {%- if repository.fork=="apache" %}
 {%- else -%}
 {{repository.sanitized_fork}}-{{repository.sanitized_branch}}-
-{%- endif %}
+{%- endif -%}
 {%- endmacro %}
 
 {%- macro docker_config(repository_url) %}

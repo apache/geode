@@ -46,6 +46,9 @@ allprojects {
         tasks.withType(PublishToMavenRepository) {
           it.enabled = false
         }
+        tasks.withType(GenerateMavenPom) {
+          it.enabled = false
+        }
       }
     }
     disableSigning = {

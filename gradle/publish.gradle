@@ -218,6 +218,51 @@ subprojects {
     }
   }
 
+  task('checkPom') {
+    dependsOn('generatePomFileForMavenPublication')
+    description 'Checks the generated POM against an expected POM for dependency changes.'
+
+    doLast {
+      if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
+        def expectedPomFile = sourceSets.test.resources.find() { it.name == "expected-pom.xml" }
+        if (null == expectedPomFile) {
+          throw new RuntimeException("expected-pom.xml not found.")
+        }
+        def expectedPom = new XmlParser().parse(expectedPomFile)
+        def expectedDependencies = new TreeSet()
+        expectedPom.dependencies.dependency.each() {
+          expectedDependencies.add(it as String)
+        }
+
+        def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+        def actualPom = new XmlParser().parse(actualPomFile)
+        def actualDependencies = new TreeSet()
+        actualPom.dependencies.dependency.each() {
+          actualDependencies.add(it as String)
+        }
+
+        if (actualDependencies != expectedDependencies) {
+          def newDependencies = new TreeSet(actualDependencies)
+          newDependencies.removeAll(expectedDependencies)
+          def removedDependencies = new TreeSet(expectedDependencies)
+          removedDependencies.removeAll(actualDependencies)
+
+          def message =
+              "The ".concat(project.name).concat(" pom-default.xml has changed. Verify dependencies.")
+                  .concat("\nWhen fixed, copy ").concat(actualPomFile as String)
+                  .concat("\nto ").concat(expectedPomFile as String)
+                  .concat("\nRemoved Dependencies\n--------------\n")
+                  .concat(String.join("\n", removedDependencies.toString()))
+                  .concat("\n\nNew Dependencies\n--------------\n")
+                  .concat(String.join("\n", newDependencies.toString()) + "\n\n")
+
+          throw new RuntimeException(message)
+        }
+      }
+    }
+
+  }
+  check.dependsOn('checkPom')
 
 } // subprojects
 

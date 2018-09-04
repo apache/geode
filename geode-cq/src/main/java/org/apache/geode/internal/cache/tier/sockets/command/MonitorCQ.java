@@ -47,10 +47,6 @@ public class MonitorCQ extends BaseCQCommand {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
 
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
     int op = clientMessage.getPart(0).getInt();
 
     if (op < 1) {

@@ -12,18 +12,36 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.IntSupplier;
+import java.util.stream.IntStream;
 
 /**
- * This is utility class for hydra tests. This class is used to set the values of parameters of
- * internal classes which have local visibility.
- *
+ * Supplies unique ports that have not already been supplied by this instance of PortSupplier
  */
+public class UniquePortSupplier {
 
-public class TestHelperForHydraTests {
+  private final IntSupplier supplier;
+  private final Set<Integer> usedPorts = new HashSet<>();
 
-  public static void setIssueCallbacksOfCacheObserver(boolean value) {
-    LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = value;
+  public UniquePortSupplier() {
+    supplier = () -> AvailablePortHelper.getRandomAvailableTCPPort();
   }
 
+  public UniquePortSupplier(IntSupplier supplier) {
+    this.supplier = supplier;
+  }
+
+  public synchronized int getAvailablePort() {
+    int result = IntStream.generate(supplier)
+        .filter(port -> !usedPorts.contains(port))
+        .findFirst()
+        .getAsInt();
+
+    usedPorts.add(result);
+    return result;
+  }
 }

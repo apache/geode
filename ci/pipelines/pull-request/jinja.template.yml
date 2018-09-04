@@ -102,6 +102,7 @@ jobs:
         platform: linux
         params:
           MAINTENANCE_VERSION: {{repository.branch}}
+          SOURCE_REPOSITORY: {{repository.branch}}
           PUBLIC_BUCKET: ((!public-bucket))
           SERVICE_ACCOUNT: ((!concourse-gcp-account))
         run:
@@ -191,6 +192,7 @@ jobs:
           GRADLE_TASK: {{test.GRADLE_TASK}}
           GRADLE_TASK_OPTIONS: ""
           MAINTENANCE_VERSION: {{repository.branch}}
+          SOURCE_REPOSITORY: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
           PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
           PUBLIC_BUCKET: ((!public-bucket))
