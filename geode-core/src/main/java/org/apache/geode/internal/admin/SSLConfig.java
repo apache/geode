@@ -63,7 +63,7 @@ public class SSLConfig {
     this.alias = alias;
   }
 
-  public boolean doEndpointIdentification() {
+  public Boolean doEndpointIdentification() {
     return this.endpointIdentification;
   }
 
