@@ -658,7 +658,8 @@ class Bogus {
 
 
 /**
- * This data serializer can be created locally but remote guys who call the default constructor will
+ * This data serializer can be created locally but remote members who call the default constructor
+ * will
  * fail.
  */
 class DSObjectLocalOnly extends DataSerializer {

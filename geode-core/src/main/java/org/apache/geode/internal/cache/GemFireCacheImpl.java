@@ -4430,7 +4430,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public void waitForRegisterInterestsInProgress() {
     // In *this* particular context, let the caller know that
-    // his cache has been cancelled. doWait below would do that as
+    // its cache has been cancelled. doWait below would do that as
     // well, so this is just an early out.
     getCancelCriterion().checkCancelInProgress(null);
 

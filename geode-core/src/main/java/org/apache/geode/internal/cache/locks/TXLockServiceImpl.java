@@ -195,7 +195,7 @@ public class TXLockServiceImpl extends TXLockService {
       } else { // not lock grantor
         LockGrantorId lockGrantorId = txLockId.getLockGrantorId();
         if (lockGrantorId == null || !this.dlock.isLockGrantorId(lockGrantorId)) {
-          return; // grantor is gone so we cannot update him
+          return; // grantor is gone so we cannot update it
         }
         InternalDistributedMember grantorId = lockGrantorId.getLockGrantorMember();
 

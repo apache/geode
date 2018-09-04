@@ -24,7 +24,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * An extension of AdminRequest for messages that are used as part of the new CLI. The new CLI
- * expects errors to be logged on the side where he message is processed, which none of the rest of
+ * expects errors to be logged on the side where the message is processed, which none of the rest of
  * gemfire messages do. This is a extension of AdminRequest so that old admin messages which are
  * still used as part of the new CLI still log the message.
  *

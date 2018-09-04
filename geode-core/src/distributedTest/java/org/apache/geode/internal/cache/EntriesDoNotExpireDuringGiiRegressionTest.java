@@ -122,7 +122,7 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
   private void doRegionOps() {
     Region<String, String> region = cacheRule.getCache().getRegion(REGION_NAME);
-    // let the main guys gii get started; we want to do updates during his gii
+    // let the main region's gii get started; we want to do updates during its gii
 
     // wait for profile of getInitialImage cache to show up
     CacheDistributionAdvisor advisor = ((DistributedRegion) region).getCacheDistributionAdvisor();

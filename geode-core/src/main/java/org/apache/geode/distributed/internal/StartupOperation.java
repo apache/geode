@@ -108,8 +108,8 @@ public class StartupOperation {
                   LocalizedStrings.StartupOperation_DISAPPEARED_DURING_STARTUP_HANDSHAKE
                       .toLocalizedString());
             } else if (dm.isCurrentMember(um)) {
-              // he must have connected back to us and now we just
-              // need to get his startup response
+              // the member must have connected back to us and now we just
+              // need to get its startup response
               logger.warn(LocalizedMessage.create(
                   LocalizedStrings.StartupOperation_MEMBERSHIP_RECEIVED_CONNECTION_FROM_0_BUT_RECEIVED_NO_STARTUP_RESPONSE_AFTER_1_MS,
                   new Object[] {um, Long.valueOf(timeout)}));

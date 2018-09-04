@@ -129,7 +129,7 @@ public class MsgDestreamer {
   // }
 
   /**
-   * Adds a chunk for this guy to deserialize
+   * Adds a chunk to be deserialize
    *
    * @param bb contains the bytes of the chunk
    * @param length the number of bytes in bb that are this chunk
@@ -144,7 +144,7 @@ public class MsgDestreamer {
   }
 
   /**
-   * Adds a chunk for this guy to deserialize
+   * Adds a chunk to be deserialize
    *
    * @param b a byte array contains the bytes of the chunk
    */
