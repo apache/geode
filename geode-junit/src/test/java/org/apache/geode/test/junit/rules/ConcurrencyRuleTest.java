@@ -181,6 +181,33 @@ public class ConcurrencyRuleTest {
 
   @Test
   @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runAndExpectExceptionAndCauseTypes(Execution execution) {
+    concurrencyRule.add(callWithExceptionAndCause)
+        .expectExceptionType(expectedExceptionWithCause.getClass())
+        .expectExceptionCauseType(expectedExceptionWithCause.getCause().getClass());
+    execution.execute(concurrencyRule);
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runAndExpectExceptionAndCauseTypes_wrongExceptionTypeFails(Execution execution) {
+    concurrencyRule.add(callWithExceptionAndCause)
+        .expectExceptionType(NullPointerException.class)
+        .expectExceptionCauseType(expectedExceptionWithCause.getCause().getClass());
+    assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
+  public void runAndExpectExceptionAndCauseTypes_wrongCauseTypeFails(Execution execution) {
+    concurrencyRule.add(callWithExceptionAndCause)
+        .expectExceptionType(expectedExceptionWithCause.getClass())
+        .expectExceptionCauseType(IllegalStateException.class);
+    assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
   public void runAndExpectExceptionCauseType_wrongTypeFails(Execution execution) {
     concurrencyRule.add(callWithExceptionAndCause)
         .expectExceptionCauseType(expectedExceptionWithCause.getClass());
@@ -221,6 +248,21 @@ public class ConcurrencyRuleTest {
     assertThatThrownBy(() -> execution.execute(concurrencyRule))
         .isInstanceOf(AssertionError.class);
     assertThat(invoked.get()).isTrue();
+  }
+
+  @Test
+  public void failsWhenMultipleReturnValuesExpected() {
+    try {
+      Throwable thrown = catchThrowable(() -> concurrencyRule.add(callWithRetVal)
+          .expectException(expectedException)
+          .expectValue(expectedRetVal));
+
+      assertThat(thrown)
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("Specify only one expected outcome.");
+    } finally {
+      concurrencyRule.clear();
+    }
   }
 
   @Test
