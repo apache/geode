@@ -706,6 +706,24 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingTombstoneDoesDestroyAndReschedulesTombstone()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenExistingTombstone();
+    givenEventWithVersionTag();
+    givenOriginIsRemote();
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner, times(1)).recordEvent(event);
+    verify(owner, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
+    verify(existingRegionEntry, times(1)).setValue(owner, Token.TOMBSTONE);
+    verifyPart2(true);
+    verifyNoPart3();
+  }
+
+  @Test
   public void evictDestroyOfExistingTombstoneWithConcurrencyChecksReturnsFalse() {
     givenConcurrencyChecks(true);
     givenExistingTombstoneAndVersionTag();
