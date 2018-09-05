@@ -613,6 +613,22 @@ public class RegionMapDestroyTest {
     Throwable thrown = catchThrowable(() -> doDestroy());
 
     assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+    verify(owner, never()).notifyTimestampsToGateways(event);
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneWithTimeStampUpdatedWillCallNotifyTimestampsToGateways()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenExistingTombstoneAndVersionTag();
+    givenInTokenMode();
+    givenEntryDestroyThrows(existingRegionEntry, ConcurrentCacheModificationException.class);
+    when(event.getVersionTag().isTimeStampUpdated()).thenReturn(true);
+
+    Throwable thrown = catchThrowable(() -> doDestroy());
+
+    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+    verify(owner, times(1)).notifyTimestampsToGateways(event);
   }
 
   @Test
