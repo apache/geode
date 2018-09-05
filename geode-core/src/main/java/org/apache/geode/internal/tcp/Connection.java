@@ -1102,7 +1102,7 @@ public class Connection implements Runnable {
             conn.attemptHandshake(t);
             if (conn.isSocketClosed()) {
               // something went wrong while reading the handshake
-              // and the socket was closed or we were sent us a
+              // and the socket was closed or we were sent
               // ShutdownMessage
               if (giveUpOnMember(mgr, remoteAddr)) {
                 throw new IOException(LocalizedStrings.Connection_MEMBER_LEFT_THE_GROUP
