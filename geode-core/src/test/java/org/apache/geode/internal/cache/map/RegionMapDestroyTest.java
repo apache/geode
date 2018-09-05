@@ -641,6 +641,26 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfTombstoneThatBecomesNonTombstoneRetriesAndDoesDestroy() throws Exception {
+    givenConcurrencyChecks(true);
+    givenExistingTombstone();
+    givenVersionStampThatDetectsConflict();
+    givenEventWithVersionTag();
+    when(existingRegionEntry.isTombstone()).thenReturn(true).thenReturn(false);
+    when(existingRegionEntry.isRemoved()).thenReturn(false);
+    when(existingRegionEntry.isDestroyedOrRemoved()).thenReturn(false);
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(regionMap, times(2)).getEntry(any());
+    verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
+    verify(regionMap, times(1)).lruEntryDestroy(existingRegionEntry);
+    verifyNoMoreInteractions(regionMap);
+    verifyEntryDestroyed(existingRegionEntry, false);
+    verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
   public void destroyOfExistingTombstoneThatThrowsConcurrentCacheModificationExceptionWithTimeStampUpdatedCallsNotify()
       throws Exception {
     givenConcurrencyChecks(true);
