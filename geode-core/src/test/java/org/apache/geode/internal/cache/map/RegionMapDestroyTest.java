@@ -902,6 +902,23 @@ public class RegionMapDestroyTest {
 
     assertThat(doDestroy()).isTrue();
 
+    verify(event, never()).inhibitCacheListenerNotification(true);
+    verifyInvokedDestroyMethodsOnRegion(true);
+  }
+
+  @Test
+  public void destroyOfExistingEntryWithRegionClearedExceptionInTokenModeCallsInhibitCacheListenerNotification()
+      throws RegionClearedException {
+    givenConcurrencyChecks(false);
+    givenExistingEntry();
+    when(regionMap.getEntry(event)).thenReturn(existingRegionEntry);
+    givenEventWithVersionTag();
+    givenEntryDestroyThrows(existingRegionEntry, RegionClearedException.class);
+    givenInTokenMode();
+
+    assertThat(doDestroy()).isTrue();
+
+    verify(event, times(1)).inhibitCacheListenerNotification(true);
     verifyInvokedDestroyMethodsOnRegion(true);
   }
 
