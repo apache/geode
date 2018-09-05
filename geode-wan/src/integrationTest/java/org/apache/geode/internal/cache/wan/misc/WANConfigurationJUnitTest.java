@@ -437,18 +437,25 @@ public class WANConfigurationJUnitTest {
   public void test_ValidateGatewayReceiverAttributes_WrongBindAddress() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
-    fact.setStartPort(50505);
+    fact.setStartPort(50504);
     fact.setMaximumTimeBetweenPings(1000);
     fact.setSocketBufferSize(4000);
-    fact.setEndPort(50505);
+    fact.setEndPort(70707);
     fact.setManualStart(true);
     fact.setBindAddress("200.112.204.10");
     GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
     fact.addGatewayTransportFilter(myStreamFilter1);
 
-
     GatewayReceiver receiver = fact.create();
-    assertThatThrownBy(() -> receiver.start()).isInstanceOf(GatewayReceiverException.class);
+    try {
+      receiver.start();
+      fail("Expected GatewayReceiverException");
+    } catch (GatewayReceiverException gRE) {
+      assertTrue(gRE.getMessage().contains("Failed to create server socket on"));
+    } catch (IOException e) {
+      e.printStackTrace();
+      fail("The test failed with IOException");
+    }
   }
 
   @Test
