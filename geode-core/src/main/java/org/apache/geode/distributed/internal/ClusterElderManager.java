@@ -139,13 +139,16 @@ public class ClusterElderManager {
 
     boolean interrupted = false;
     try {
+      InternalDistributedMember currentElder = getElderCandidate();
+      logger.debug(LocalizedMessage.create(
+          LocalizedStrings.DistributionManager_CHANGING_ELDER_FROM_0_TO_1,
+          new Object[] {desiredElder, currentElder}));
+
       while (true) {
         if (clusterDistributionManager.isCloseInProgress()) {
           return false;
         }
-        InternalDistributedMember currentElder = getElderCandidate();
-        // Assert.assertTrue(
-        // currentElder.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE);
+        currentElder = getElderCandidate();
         if (desiredElder.equals(currentElder)) {
           return true;
         }
@@ -159,16 +162,12 @@ public class ClusterElderManager {
           return false;
         }
 
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.DistributionManager_CHANGING_ELDER_FROM_0_TO_1,
-            new Object[] {currentElder, desiredElder}));
-
         try {
           changeListener.waitForMembershipChange();
         } catch (InterruptedException e) {
           interrupted = true;
         }
-      } // while true
+      }
     } finally {
       clusterDistributionManager.removeMembershipListener(changeListener);
 
