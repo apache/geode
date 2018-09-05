@@ -214,8 +214,8 @@ public class ClusterElderManager {
     }
 
     public synchronized void waitForMembershipChange() throws InterruptedException {
-      while (!changeOccurred) {
-        wait();
+      if (!changeOccurred) {
+        wait(100);
       }
       changeOccurred = false;
     }

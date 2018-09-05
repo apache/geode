@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -306,9 +307,11 @@ public class ClusterElderManagerTest {
 
     waitThread.start();
 
+    EnumSet<Thread.State> waitingStates =
+        EnumSet.of(Thread.State.WAITING, Thread.State.TIMED_WAITING);
     try {
       Awaitility.await().atMost(1, TimeUnit.MINUTES)
-          .until(() -> waitThread.getState().equals(Thread.State.WAITING));
+          .until(() -> waitingStates.contains(waitThread.getState()));
     } finally {
       waitThread.interrupt();
     }
