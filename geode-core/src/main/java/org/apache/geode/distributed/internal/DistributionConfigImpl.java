@@ -2764,6 +2764,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public Boolean getSSLEndPointIdentificationEnabled() {
+    // sslEndPointIdentificationEnabled is a boxed boolean and no default value is set, so that
+    // we can differentiate between an assigned default vs user provided override. This is set
+    // to true when ssl-use-default-context is true or else its false. So return false if its null.
     if (this.sslEndPointIdentificationEnabled == null) {
       return Boolean.FALSE;
     }

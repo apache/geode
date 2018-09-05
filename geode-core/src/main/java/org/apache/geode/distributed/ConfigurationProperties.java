@@ -1937,7 +1937,9 @@ public interface ConfigurationProperties {
    * <U>Description</U> When true, either uses the default context as returned by
    * SSLContext.getInstance('Default') or uses the context as set by using
    * SSLContext.setDefault(). If false, then specify the keystore and the truststore by setting
-   * ssl-keystore-* and ssl-truststore-* properties. This property does not enable SSL.
+   * ssl-keystore-* and ssl-truststore-* properties. If true, then
+   * ssl-endpoint-identification-enabled
+   * is set to true. This property does not enable SSL.
    * </p>
    *
    * <U>Default</U>: "false"
@@ -1952,7 +1954,7 @@ public interface ConfigurationProperties {
    * name="ssl-endpoint-identification-enabled"/a>
    * </p>
    * <U>Description</U>: If true, clients validate server hostname using server certificate during
-   * SSL handshake.
+   * SSL handshake. It defaults to true when ssl-use-default-context is true or else false.
    * </p>
    * <U>Default</U>: code>"false"</code>
    * </p>
