@@ -63,16 +63,14 @@ public class ElderInitProcessor extends ReplyProcessor21 {
    */
   static void init(DistributionManager dm, HashMap<String, GrantorInfo> map) {
     HashSet<String> crashedGrantors = new HashSet<>();
-    if (!dm.isPeerless()) {
-      Set others = dm.getOtherDistributionManagerIds();
-      if (!others.isEmpty()) {
-        ElderInitProcessor processor = new ElderInitProcessor(dm, others, map, crashedGrantors);
-        ElderInitMessage.send(others, dm, processor);
-        try {
-          processor.waitForRepliesUninterruptibly();
-        } catch (ReplyException e) {
-          e.handleCause();
-        }
+    Set others = dm.getOtherDistributionManagerIds();
+    if (!others.isEmpty()) {
+      ElderInitProcessor processor = new ElderInitProcessor(dm, others, map, crashedGrantors);
+      ElderInitMessage.send(others, dm, processor);
+      try {
+        processor.waitForRepliesUninterruptibly();
+      } catch (ReplyException e) {
+        e.handleCause();
       }
     }
     // always recover from ourself

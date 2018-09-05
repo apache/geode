@@ -134,13 +134,6 @@ public interface DistributionManager extends ReplySender {
   InternalDistributedMember getId();
 
   /**
-   * Return true if no other distribution manager was in this group when it joined.
-   *
-   * @since GemFire 4.0
-   */
-  boolean isPeerless();
-
-  /**
    * Returns the identity of the oldest DM in this group.
    *
    * Note that this method may return null (no valid elders exist).
