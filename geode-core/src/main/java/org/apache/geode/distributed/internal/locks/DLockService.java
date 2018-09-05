@@ -2819,11 +2819,7 @@ public class DLockService extends DistributedLockService {
             needsRecovery.remove(serviceName);
           }
         }
-        // fix for elder init bug... peerless elder was hitting the following
-        // block and found no grantors for services that were just created
-        // and flagged them as needing recovery even though it's not needed
-        if (!foundGrantor && !(dm.isPeerless() && !service.hasHeldLocks())) {
-          // !F && !(T && !T) ==> T && !F ==> T
+        if (!foundGrantor) {
           if (!grantors.containsKey(serviceName)) {
             needsRecovery.add(serviceName);
           }

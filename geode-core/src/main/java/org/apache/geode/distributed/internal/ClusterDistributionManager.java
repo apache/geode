@@ -3059,12 +3059,6 @@ public class ClusterDistributionManager implements DistributionManager {
     message.schedule(ClusterDistributionManager.this);
   }
 
-  @Override
-  public boolean isPeerless() {
-
-    return clusterElderManager.isPeerless();
-  }
-
   private List<InternalDistributedMember> getElderCandidates() {
 
     return clusterElderManager.getElderCandidates();

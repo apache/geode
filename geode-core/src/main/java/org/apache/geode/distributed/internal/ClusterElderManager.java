@@ -59,13 +59,6 @@ public class ClusterElderManager {
     return getElderCandidates().stream().findFirst().orElse(null);
   }
 
-  public boolean isPeerless() {
-    List<InternalDistributedMember> candidates = getElderCandidates();
-
-    return candidates.size() == 1 && clusterDistributionManager.getId()
-        .equals(candidates.get(0));
-  }
-
   List<InternalDistributedMember> getElderCandidates() {
     List<InternalDistributedMember> theMembers = clusterDistributionManager.getViewMembers();
 

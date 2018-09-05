@@ -108,45 +108,6 @@ public class ClusterElderManagerTest {
   }
 
   @Test
-  public void isPeerlessWhenAlone() {
-    ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
-    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member0));
-    when(clusterDistributionManager.getId()).thenReturn(member0);
-
-    assertThat(clusterElderManager.isPeerless()).isTrue();
-  }
-
-  @Test
-  public void isPeerlessWithSurpriseMembers() {
-    ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
-    when(memberManager.isSurpriseMember(eq(member1))).thenReturn(true);
-    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member0, member1));
-    when(clusterDistributionManager.getId()).thenReturn(member0);
-
-    assertThat(clusterElderManager.isPeerless()).isTrue();
-  }
-
-  @Test
-  public void isPeerlessWithAdminMembers() {
-    ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
-
-    when(member1.getVmKind()).thenReturn(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
-    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member0, member1));
-    when(clusterDistributionManager.getId()).thenReturn(member0);
-
-    assertThat(clusterElderManager.isPeerless()).isTrue();
-  }
-
-  @Test
-  public void isNotPeerlessWithFriends() {
-    ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
-    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member0, member1));
-    when(clusterDistributionManager.getId()).thenReturn(member0);
-
-    assertThat(clusterElderManager.isPeerless()).isFalse();
-  }
-
-  @Test
   public void isElderIfOldestMember() {
     ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
     when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member0, member1));

@@ -219,10 +219,6 @@ public class LonerDistributionManager implements DistributionManager {
     return getDistributionManagerId();
   }
 
-  public boolean isPeerless() {
-    return true;
-  }
-
   public InternalDistributedMember getElderId() {
     return getId();
   }
