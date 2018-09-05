@@ -35,7 +35,6 @@ publishing {
       artifacts = []
 
       artifact distTar
-      artifact distZip
     }
   }
 }
@@ -67,6 +66,29 @@ gradle.taskGraph.whenReady( { graph ->
   tasks.withType(Jar).each { jarTasks ->
     distTar.dependsOn(jarTasks)
     distZip.dependsOn(jarTasks)
+  }
+  srcDistZip.enabled = false
+  distZip.enabled = false
+
+  project.getGradle().startParameter.getTaskNames().each { givenTask ->
+    switch (givenTask) {
+      case 'geode-assembly:srcDistZip':
+      case 'srcDistZip':
+        srcDistZip.enabled = true
+        break
+      case 'geode-assembly:distZip':
+      case 'distZip':
+        distZip.enabled = true
+        break
+      }
+  }
+
+  tasks.withType(AbstractArchiveTask).findAll {
+    it.name.toLowerCase().contains("dist")
+  }.each { archive ->
+    archive.doLast {
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
+    }
   }
 })
 
@@ -319,16 +341,6 @@ task writeBuildInfo {
     }
   }
 }
-
-gradle.taskGraph.whenReady( { graph ->
-  tasks.withType(AbstractArchiveTask).findAll {
-    it.name.toLowerCase().contains("dist")
-  }.each { archive ->
-    archive.doLast {
-      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
-    }
-  }
-})
 
 distributions {
   src {
