@@ -15,7 +15,9 @@
 package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,15 +25,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.locks.ElderState;
@@ -199,22 +202,26 @@ public class ClusterElderManagerTest {
   public void waitForElderStopsWaitingWhenUpdated() {
     ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
     when(clusterDistributionManager.getId()).thenReturn(member0);
-    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member1, member0));
     when(clusterDistributionManager.isCurrentMember(eq(member0))).thenReturn(true);
+
+    AtomicReference<List<InternalDistributedMember>> currentMembers =
+        new AtomicReference<>(Arrays.asList(member1, member0));
+    when(clusterDistributionManager.getViewMembers()).then(invocation -> currentMembers.get());
+
+    AtomicReference<MembershipListener> membershipListener = new AtomicReference<>();
+    doAnswer(invocation -> {
+      membershipListener.set(invocation.getArgument(0));
+      return null;
+    }).when(clusterDistributionManager).addMembershipListener(any());
 
     Callable<Boolean> waitForElder = () -> clusterElderManager.waitForElder(member0);
 
     Callable<Void> updateMembershipView = () -> {
-      ArgumentCaptor<MembershipListener> listenerArgumentCaptor =
-          ArgumentCaptor.forClass(MembershipListener.class);
-
       // Wait for membership listener to be added
-      Awaitility.await().untilAsserted(() -> verify(clusterDistributionManager)
-          .addMembershipListener(listenerArgumentCaptor.capture()));
+      Awaitility.await().until(() -> membershipListener.get() != null);
 
-      MembershipListener membershipListener = listenerArgumentCaptor.getValue();
-      when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member0));
-      membershipListener.memberDeparted(clusterDistributionManager, member1, true);
+      currentMembers.set(Arrays.asList(member0));
+      membershipListener.get().memberDeparted(clusterDistributionManager, member1, true);
       return null;
     };
 
