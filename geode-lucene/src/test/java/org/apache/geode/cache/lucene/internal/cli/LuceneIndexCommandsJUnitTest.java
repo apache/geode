@@ -129,18 +129,18 @@ public class LuceneIndexCommandsJUnitTest {
 
     CommandResult result = (CommandResult) commands.listIndex(false);
     TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(Arrays.asList("memberFive", "memberSix", "memberTen"))
-        .isEqualTo(data.retrieveAllValues("Index Name"));
-    assertThat(Arrays.asList("/Employees", "/Employees", "/Employees"))
-        .isEqualTo(data.retrieveAllValues("Region Path"));
-    assertThat(Arrays.asList("[field1, field2, field3]", "[field1, field2, field3]",
-        "[field1, field2, field3]")).isEqualTo(data.retrieveAllValues("Indexed Fields"));
-    assertThat(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
-        "{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
-        "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"))
-            .isEqualTo(data.retrieveAllValues("Field Analyzer"));
-    assertThat(Arrays.asList("INITIALIZED", "NOT_INITIALIZED", "INITIALIZED"))
-        .isEqualTo(data.retrieveAllValues("Status"));
+    assertThat(data.retrieveAllValues("Index Name"))
+        .isEqualTo(Arrays.asList("memberFive", "memberSix", "memberTen"));
+    assertThat(data.retrieveAllValues("Region Path"))
+        .isEqualTo(Arrays.asList("/Employees", "/Employees", "/Employees"));
+    assertThat(data.retrieveAllValues("Indexed Fields")).isEqualTo(Arrays.asList(
+        "[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"));
+    assertThat(data.retrieveAllValues("Field Analyzer"))
+        .isEqualTo(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
+            "{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
+            "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"));
+    assertThat(data.retrieveAllValues("Status"))
+        .isEqualTo(Arrays.asList("INITIALIZED", "NOT_INITIALIZED", "INITIALIZED"));
   }
 
   @Test
@@ -180,24 +180,24 @@ public class LuceneIndexCommandsJUnitTest {
 
     CommandResult result = (CommandResult) commands.listIndex(true);
     TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(Arrays.asList("memberFive", "memberSix", "memberTen"))
-        .isEqualTo(data.retrieveAllValues("Index Name"));
-    assertThat(Arrays.asList("/Employees", "/Employees", "/Employees"))
-        .isEqualTo(data.retrieveAllValues("Region Path"));
-    assertThat(Arrays.asList("[field1, field2, field3]", "[field1, field2, field3]",
-        "[field1, field2, field3]")).isEqualTo(data.retrieveAllValues("Indexed Fields"));
-    assertThat(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
-        "{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
-        "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"))
-            .isEqualTo(data.retrieveAllValues("Field Analyzer"));
-    assertThat(Arrays.asList("1", "2", "3")).isEqualTo(data.retrieveAllValues("Query Executions"));
-    assertThat(Arrays.asList("10", "20", "30")).isEqualTo(data.retrieveAllValues("Commits"));
-    assertThat(Arrays.asList("5", "10", "15")).isEqualTo(data.retrieveAllValues("Updates"));
-    assertThat(Arrays.asList("1", "2", "3")).isEqualTo(data.retrieveAllValues("Documents"));
-    assertThat(Arrays.asList(HeterogeneousLuceneSerializer.class.getSimpleName(),
-        HeterogeneousLuceneSerializer.class.getSimpleName(),
-        HeterogeneousLuceneSerializer.class.getSimpleName()))
-            .isEqualTo(data.retrieveAllValues("Serializer"));
+    assertThat(data.retrieveAllValues("Index Name"))
+        .isEqualTo(Arrays.asList("memberFive", "memberSix", "memberTen"));
+    assertThat(data.retrieveAllValues("Region Path"))
+        .isEqualTo(Arrays.asList("/Employees", "/Employees", "/Employees"));
+    assertThat(data.retrieveAllValues("Indexed Fields")).isEqualTo(Arrays.asList(
+        "[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"));
+    assertThat(data.retrieveAllValues("Field Analyzer"))
+        .isEqualTo(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
+            "{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
+            "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"));
+    assertThat(data.retrieveAllValues("Query Executions")).isEqualTo(Arrays.asList("1", "2", "3"));
+    assertThat(data.retrieveAllValues("Commits")).isEqualTo(Arrays.asList("10", "20", "30"));
+    assertThat(data.retrieveAllValues("Updates")).isEqualTo(Arrays.asList("5", "10", "15"));
+    assertThat(data.retrieveAllValues("Documents")).isEqualTo(Arrays.asList("1", "2", "3"));
+    assertThat(data.retrieveAllValues("Serializer"))
+        .isEqualTo(Arrays.asList(HeterogeneousLuceneSerializer.class.getSimpleName(),
+            HeterogeneousLuceneSerializer.class.getSimpleName(),
+            HeterogeneousLuceneSerializer.class.getSimpleName()));
   }
 
   @Test
@@ -227,12 +227,13 @@ public class LuceneIndexCommandsJUnitTest {
 
     CommandResult result = (CommandResult) commands.createIndex(indexName, regionPath,
         searchableFields, fieldAnalyzers, serializer);
-    assertThat(Status.OK).isEqualTo(result.getStatus());
+    assertThat(result.getStatus()).isEqualTo(Status.OK);
     TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(Arrays.asList("member1", "member2", "member3"))
-        .isEqualTo(data.retrieveAllValues("Member"));
-    assertThat(Arrays.asList("Successfully created lucene index", "Failed: Index creation failed",
-        "Successfully created lucene index")).isEqualTo(data.retrieveAllValues("Status"));
+    assertThat(data.retrieveAllValues("Member"))
+        .isEqualTo(Arrays.asList("member1", "member2", "member3"));
+    assertThat(data.retrieveAllValues("Status"))
+        .isEqualTo(Arrays.asList("Successfully created lucene index",
+            "Failed: Index creation failed", "Successfully created lucene index"));
   }
 
   @Test
@@ -259,21 +260,21 @@ public class LuceneIndexCommandsJUnitTest {
     CommandResult result = (CommandResult) commands.describeIndex("memberFive", "/Employees");
 
     TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(Collections.singletonList("memberFive"))
-        .isEqualTo(data.retrieveAllValues("Index Name"));
-    assertThat(Collections.singletonList("/Employees"))
-        .isEqualTo(data.retrieveAllValues("Region Path"));
-    assertThat(Collections.singletonList("[field1, field2, field3]"))
-        .isEqualTo(data.retrieveAllValues("Indexed Fields"));
-    assertThat(Collections.singletonList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}"))
-        .isEqualTo(data.retrieveAllValues("Field Analyzer"));
-    assertThat(Collections.singletonList("INITIALIZED"))
-        .isEqualTo(data.retrieveAllValues("Status"));
-    assertThat(Collections.singletonList("1"))
-        .isEqualTo(data.retrieveAllValues("Query Executions"));
-    assertThat(Collections.singletonList("10")).isEqualTo(data.retrieveAllValues("Commits"));
-    assertThat(Collections.singletonList("5")).isEqualTo(data.retrieveAllValues("Updates"));
-    assertThat(Collections.singletonList("1")).isEqualTo(data.retrieveAllValues("Documents"));
+    assertThat(data.retrieveAllValues("Index Name"))
+        .isEqualTo(Collections.singletonList("memberFive"));
+    assertThat(data.retrieveAllValues("Region Path"))
+        .isEqualTo(Collections.singletonList("/Employees"));
+    assertThat(data.retrieveAllValues("Indexed Fields"))
+        .isEqualTo(Collections.singletonList("[field1, field2, field3]"));
+    assertThat(data.retrieveAllValues("Field Analyzer"))
+        .isEqualTo(Collections.singletonList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}"));
+    assertThat(data.retrieveAllValues("Status"))
+        .isEqualTo(Collections.singletonList("INITIALIZED"));
+    assertThat(data.retrieveAllValues("Query Executions"))
+        .isEqualTo(Collections.singletonList("1"));
+    assertThat(data.retrieveAllValues("Commits")).isEqualTo(Collections.singletonList("10"));
+    assertThat(data.retrieveAllValues("Updates")).isEqualTo(Collections.singletonList("5"));
+    assertThat(data.retrieveAllValues("Documents")).isEqualTo(Collections.singletonList("1"));
   }
 
   @Test
@@ -293,10 +294,10 @@ public class LuceneIndexCommandsJUnitTest {
     CommandResult result =
         (CommandResult) commands.searchIndex("index", "region", "Result1", "field1", -1, false);
     TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(Arrays.asList("A", "B", "C")).isEqualTo(data.retrieveAllValues("key"));
-    assertThat(Arrays.asList("Result1", "Result1", "Result1"))
-        .isEqualTo(data.retrieveAllValues("value"));
-    assertThat(Arrays.asList("1.3", "1.2", "1.1")).isEqualTo(data.retrieveAllValues("score"));
+    assertThat(data.retrieveAllValues("key")).isEqualTo(Arrays.asList("A", "B", "C"));
+    assertThat(data.retrieveAllValues("value"))
+        .isEqualTo(Arrays.asList("Result1", "Result1", "Result1"));
+    assertThat(data.retrieveAllValues("score")).isEqualTo(Arrays.asList("1.3", "1.2", "1.1"));
   }
 
   @Ignore
@@ -334,36 +335,36 @@ public class LuceneIndexCommandsJUnitTest {
     verify(mockGfsh, times(20)).printAsInfo(resultCaptor.capture());
     List<String> actualPageResults = resultCaptor.getAllValues();
 
-    assertThat(expectedPage1).isEqualTo(actualPageResults.get(0));
-    assertThat("\t\tPage 1 of 4").isEqualTo(actualPageResults.get(1));
+    assertThat(actualPageResults.get(0)).isEqualTo(expectedPage1);
+    assertThat(actualPageResults.get(1)).isEqualTo("\t\tPage 1 of 4");
 
-    assertThat(expectedPage2).isEqualTo(actualPageResults.get(2));
-    assertThat("\t\tPage 2 of 4").isEqualTo(actualPageResults.get(3));
+    assertThat(actualPageResults.get(2)).isEqualTo(expectedPage2);
+    assertThat(actualPageResults.get(3)).isEqualTo("\t\tPage 2 of 4");
 
-    assertThat(expectedPage3).isEqualTo(actualPageResults.get(4));
-    assertThat("\t\tPage 3 of 4").isEqualTo(actualPageResults.get(5));
+    assertThat(actualPageResults.get(4)).isEqualTo(expectedPage3);
+    assertThat(actualPageResults.get(5)).isEqualTo("\t\tPage 3 of 4");
 
-    assertThat(expectedPage4).isEqualTo(actualPageResults.get(6));
-    assertThat("\t\tPage 4 of 4").isEqualTo(actualPageResults.get(7));
+    assertThat(actualPageResults.get(6)).isEqualTo(expectedPage4);
+    assertThat(actualPageResults.get(7)).isEqualTo("\t\tPage 4 of 4");
 
-    assertThat("No more results to display.").isEqualTo(actualPageResults.get(8));
+    assertThat(actualPageResults.get(8)).isEqualTo("No more results to display.");
 
-    assertThat(expectedPage4).isEqualTo(actualPageResults.get(9));
-    assertThat("\t\tPage 4 of 4").isEqualTo(actualPageResults.get(10));
+    assertThat(actualPageResults.get(9)).isEqualTo(expectedPage4);
+    assertThat(actualPageResults.get(10)).isEqualTo("\t\tPage 4 of 4");
 
-    assertThat(expectedPage3).isEqualTo(actualPageResults.get(11));
-    assertThat("\t\tPage 3 of 4").isEqualTo(actualPageResults.get(12));
+    assertThat(actualPageResults.get(11)).isEqualTo(expectedPage3);
+    assertThat(actualPageResults.get(12)).isEqualTo("\t\tPage 3 of 4");
 
-    assertThat(expectedPage2).isEqualTo(actualPageResults.get(13));
-    assertThat("\t\tPage 2 of 4").isEqualTo(actualPageResults.get(14));
+    assertThat(actualPageResults.get(13)).isEqualTo(expectedPage2);
+    assertThat(actualPageResults.get(14)).isEqualTo("\t\tPage 2 of 4");
 
-    assertThat(expectedPage1).isEqualTo(actualPageResults.get(15));
-    assertThat("\t\tPage 1 of 4").isEqualTo(actualPageResults.get(16));
+    assertThat(actualPageResults.get(15)).isEqualTo(expectedPage1);
+    assertThat(actualPageResults.get(16)).isEqualTo("\t\tPage 1 of 4");
 
-    assertThat("At the top of the search results.").isEqualTo(actualPageResults.get(17));
+    assertThat(actualPageResults.get(17)).isEqualTo("At the top of the search results.");
 
-    assertThat(expectedPage1).isEqualTo(actualPageResults.get(18));
-    assertThat("\t\tPage 1 of 4").isEqualTo(actualPageResults.get(19));
+    assertThat(actualPageResults.get(18)).isEqualTo(expectedPage1);
+    assertThat(actualPageResults.get(19)).isEqualTo("\t\tPage 1 of 4");
   }
 
   @Test
@@ -382,10 +383,8 @@ public class LuceneIndexCommandsJUnitTest {
 
     CommandResult result =
         (CommandResult) commands.searchIndex("index", "region", "Result1", "field1", -1, true);
-
     TabularResultData data = (TabularResultData) result.getResultData();
-
-    assertThat(Arrays.asList("A", "B", "C")).isEqualTo(data.retrieveAllValues("key"));
+    assertThat(data.retrieveAllValues("key")).isEqualTo(Arrays.asList("A", "B", "C"));
   }
 
   @Test
@@ -421,10 +420,8 @@ public class LuceneIndexCommandsJUnitTest {
 
     CommandResult result =
         (CommandResult) commands.searchIndex("index", "region", "Result1", "field1", -1, true);
-
     TabularResultData data = (TabularResultData) result.getResultData();
-
-    assertThat(queryResults.size()).isEqualTo(data.retrieveAllValues("key").size());
+    assertThat(data.retrieveAllValues("key").size()).isEqualTo(queryResults.size());
   }
 
   @Test
@@ -543,19 +540,19 @@ public class LuceneIndexCommandsJUnitTest {
 
   private void verifyDestroyIndexCommandResult(CommandResult result,
       List<CliFunctionResult> cliFunctionResults, String expectedStatus) {
-    assertThat(Status.OK).isEqualTo(result.getStatus());
+    assertThat(result.getStatus()).isEqualTo(Status.OK);
     if (result.getType().equals(TYPE_TABULAR)) {
       TabularResultData data = (TabularResultData) result.getResultData();
       List<String> members = data.retrieveAllValues("Member");
       assertThat(cliFunctionResults.size()).isEqualTo(members.size());
       // Verify each member
       for (int i = 0; i < members.size(); i++) {
-        assertThat("member" + i).isEqualTo(members.get(i));
+        assertThat(members.get(i)).isEqualTo("member" + i);
       }
       // Verify each status
       List<String> status = data.retrieveAllValues("Status");
       for (String statu : status) {
-        assertThat(expectedStatus).isEqualTo(statu);
+        assertThat(statu).isEqualTo(expectedStatus);
       }
     } else {
       // Info result. Verify next lines are equal.

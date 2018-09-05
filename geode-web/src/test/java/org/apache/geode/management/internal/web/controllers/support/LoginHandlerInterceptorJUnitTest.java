@@ -100,10 +100,10 @@ public class LoginHandlerInterceptorJUnitTest {
     assertThat(handlerInterceptor.preHandle(mockHttpRequest, null, null)).isTrue();
     Map<String, String> environmentAfterPreHandle = LoginHandlerInterceptor.getEnvironment();
     assertThat(environmentAfterPreHandle).isNotNull();
-    assertThat(environmentBeforePreHandle).isNotSameAs(environmentAfterPreHandle);
-    assertThat(1).isEqualTo(environmentAfterPreHandle.size());
+    assertThat(environmentAfterPreHandle).isNotSameAs(environmentBeforePreHandle);
+    assertThat(environmentAfterPreHandle.size()).isEqualTo(1);
     assertThat(environmentAfterPreHandle.containsKey("variable")).isTrue();
-    assertThat("two").isEqualTo(environmentAfterPreHandle.get("variable"));
+    assertThat(environmentAfterPreHandle.get("variable")).isEqualTo("two");
     Properties expectedLoginProperties = new Properties();
     expectedLoginProperties.put(USER_NAME, "admin");
     expectedLoginProperties.put(PASSWORD, "password");
@@ -126,9 +126,9 @@ public class LoginHandlerInterceptorJUnitTest {
     assertThat(handlerInterceptor.preHandle(mockHttpRequest, null, null)).isTrue();
     Map<String, String> environmentAfterPreHandle = LoginHandlerInterceptor.getEnvironment();
     assertThat(environmentAfterPreHandle).isNotNull();
-    assertThat(1).isEqualTo(environmentAfterPreHandle.size());
+    assertThat(environmentAfterPreHandle.size()).isEqualTo(1);
     assertThat(environmentAfterPreHandle.containsKey("variable")).isTrue();
-    assertThat("two").isEqualTo(environmentAfterPreHandle.get("variable"));
+    assertThat(environmentAfterPreHandle.get("variable")).isEqualTo("two");
     Properties expectedLoginProperties = new Properties();
     expectedLoginProperties.put(USER_NAME, "admin");
     expectedLoginProperties.put(PASSWORD, "password");
@@ -205,38 +205,38 @@ public class LoginHandlerInterceptorJUnitTest {
 
       env = LoginHandlerInterceptor.getEnvironment();
       assertThat(env).isNotNull();
-      assertThat(2).isEqualTo(env.size());
+      assertThat(env.size()).isEqualTo(2);
       assertThat(env.containsKey("param")).isFalse();
       assertThat(env.containsKey("parameter")).isFalse();
       assertThat(env.containsKey("HOST")).isFalse();
       assertThat(env.containsKey("security-username")).isFalse();
       assertThat(env.containsKey("security-password")).isFalse();
-      assertThat("test").isEqualTo(env.get("STAGE"));
-      assertThat("/path/to/geode").isEqualTo(env.get("GEODE_HOME"));
+      assertThat(env.get("STAGE")).isEqualTo("test");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode");
 
       waitForTick(2);
       env = LoginHandlerInterceptor.getEnvironment();
       assertThat(env).isNotNull();
-      assertThat(2).isEqualTo(env.size());
+      assertThat(env.size()).isEqualTo(2);
       assertThat(env.containsKey("param")).isFalse();
       assertThat(env.containsKey("parameter")).isFalse();
       assertThat(env.containsKey("HOST")).isFalse();
       assertThat(env.containsKey("security-username")).isFalse();
       assertThat(env.containsKey("security-password")).isFalse();
-      assertThat("test").isEqualTo(env.get("STAGE"));
-      assertThat("/path/to/geode").isEqualTo(env.get("GEODE_HOME"));
+      assertThat(env.get("STAGE")).isEqualTo("test");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode");
 
       waitForTick(4);
       env = LoginHandlerInterceptor.getEnvironment();
       assertThat(env).isNotNull();
-      assertThat(2).isEqualTo(env.size());
+      assertThat(env.size()).isEqualTo(2);
       assertThat(env.containsKey("param")).isFalse();
       assertThat(env.containsKey("parameter")).isFalse();
       assertThat(env.containsKey("HOST")).isFalse();
       assertThat(env.containsKey("security-username")).isFalse();
       assertThat(env.containsKey("security-password")).isFalse();
-      assertThat("test").isEqualTo(env.get("STAGE"));
-      assertThat("/path/to/geode").isEqualTo(env.get("GEODE_HOME"));
+      assertThat(env.get("STAGE")).isEqualTo("test");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode");
 
       handlerInterceptor.afterCompletion(mockHttpRequestOne, null, null, null);
       env = LoginHandlerInterceptor.getEnvironment();
@@ -257,14 +257,14 @@ public class LoginHandlerInterceptorJUnitTest {
 
       env = LoginHandlerInterceptor.getEnvironment();
       assertThat(env).isNotNull();
-      assertThat(2).isEqualTo(env.size());
+      assertThat(env.size()).isEqualTo(2);
       assertThat(env.containsKey("parameter")).isFalse();
       assertThat(env.containsKey("param")).isFalse();
       assertThat(env.containsKey("STAGE")).isFalse();
       assertThat(env.containsKey("security-username")).isFalse();
       assertThat(env.containsKey("security-password")).isFalse();
-      assertThat("localhost").isEqualTo(env.get("HOST"));
-      assertThat("/path/to/geode/180").isEqualTo(env.get("GEODE_HOME"));
+      assertThat(env.get("HOST")).isEqualTo("localhost");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode/180");
 
       waitForTick(3);
       handlerInterceptor.afterCompletion(mockHttpRequestTwo, null, null, null);

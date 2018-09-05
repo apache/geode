@@ -98,7 +98,7 @@ public class ListIndexCommandJUnitTest {
 
     final List<IndexDetails> actualIndexDetails = listIndexCommand.getIndexListing();
     assertThat(actualIndexDetails).isNotNull();
-    assertThat(expectedIndexDetails).isEqualTo(actualIndexDetails);
+    assertThat(actualIndexDetails).isEqualTo(expectedIndexDetails);
     verify(mockFunctionExecutor, times(1)).setIgnoreDepartedMembers(true);
     verify(mockFunctionExecutor, times(1)).execute(any(ListIndexFunction.class));
   }
@@ -114,7 +114,7 @@ public class ListIndexCommandJUnitTest {
 
     final List<IndexDetails> actualIndexDetails = listIndexCommand.getIndexListing();
     assertThat(actualIndexDetails).isNotNull();
-    assertThat(expectedIndexDetails).isEqualTo(actualIndexDetails);
+    assertThat(actualIndexDetails).isEqualTo(expectedIndexDetails);
     verify(mockFunctionExecutor, times(1)).setIgnoreDepartedMembers(true);
     verify(mockFunctionExecutor, times(1)).execute(any(ListIndexFunction.class));
   }

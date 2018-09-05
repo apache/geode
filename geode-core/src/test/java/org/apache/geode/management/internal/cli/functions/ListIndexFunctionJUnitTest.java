@@ -84,41 +84,41 @@ public class ListIndexFunctionJUnitTest {
     when(mockFunctionContext.getResultSender()).thenReturn(testResultSender);
   }
 
-  private void assertIndexDetailsEquals(final IndexDetails expectedIndexDetails,
-      final IndexDetails actualIndexDetails) {
-    assertThat(expectedIndexDetails.getFromClause()).isEqualTo(actualIndexDetails.getFromClause());
-    assertThat(expectedIndexDetails.getIndexedExpression())
-        .isEqualTo(actualIndexDetails.getIndexedExpression());
-    assertThat(expectedIndexDetails.getIndexName()).isEqualTo(actualIndexDetails.getIndexName());
-    assertIndexStatisticsDetailsEquals(expectedIndexDetails.getIndexStatisticsDetails(),
-        actualIndexDetails.getIndexStatisticsDetails());
-    assertThat(expectedIndexDetails.getIndexType()).isEqualTo(actualIndexDetails.getIndexType());
-    assertThat(expectedIndexDetails.getMemberId()).isEqualTo(actualIndexDetails.getMemberId());
-    assertThat(expectedIndexDetails.getMemberName()).isEqualTo(actualIndexDetails.getMemberName());
-    assertThat(expectedIndexDetails.getProjectionAttributes())
-        .isEqualTo(actualIndexDetails.getProjectionAttributes());
-    assertThat(expectedIndexDetails.getRegionName()).isEqualTo(actualIndexDetails.getRegionName());
-    assertThat(expectedIndexDetails.getRegionPath()).isEqualTo(actualIndexDetails.getRegionPath());
-  }
-
   private void assertIndexStatisticsDetailsEquals(
-      final IndexStatisticsDetails expectedIndexStatisticsDetails,
-      final IndexStatisticsDetails actualIndexStatisticsDetails) {
+      final IndexStatisticsDetails actualIndexStatisticsDetails,
+      final IndexStatisticsDetails expectedIndexStatisticsDetails) {
     if (expectedIndexStatisticsDetails != null) {
       assertThat(actualIndexStatisticsDetails).isNotNull();
-      assertThat(expectedIndexStatisticsDetails.getNumberOfKeys())
-          .isEqualTo(actualIndexStatisticsDetails.getNumberOfKeys());
-      assertThat(expectedIndexStatisticsDetails.getNumberOfUpdates())
-          .isEqualTo(actualIndexStatisticsDetails.getNumberOfUpdates());
-      assertThat(expectedIndexStatisticsDetails.getNumberOfValues())
-          .isEqualTo(actualIndexStatisticsDetails.getNumberOfValues());
-      assertThat(expectedIndexStatisticsDetails.getTotalUpdateTime())
-          .isEqualTo(actualIndexStatisticsDetails.getTotalUpdateTime());
-      assertThat(expectedIndexStatisticsDetails.getTotalUses())
-          .isEqualTo(actualIndexStatisticsDetails.getTotalUses());
+      assertThat(actualIndexStatisticsDetails.getNumberOfKeys())
+          .isEqualTo(expectedIndexStatisticsDetails.getNumberOfKeys());
+      assertThat(actualIndexStatisticsDetails.getNumberOfUpdates())
+          .isEqualTo(expectedIndexStatisticsDetails.getNumberOfUpdates());
+      assertThat(actualIndexStatisticsDetails.getNumberOfValues())
+          .isEqualTo(expectedIndexStatisticsDetails.getNumberOfValues());
+      assertThat(actualIndexStatisticsDetails.getTotalUpdateTime())
+          .isEqualTo(expectedIndexStatisticsDetails.getTotalUpdateTime());
+      assertThat(actualIndexStatisticsDetails.getTotalUses())
+          .isEqualTo(expectedIndexStatisticsDetails.getTotalUses());
     } else {
       assertThat(actualIndexStatisticsDetails).isNull();
     }
+  }
+
+  private void assertIndexDetailsEquals(final IndexDetails actualIndexDetails,
+      final IndexDetails expectedIndexDetails) {
+    assertThat(actualIndexDetails.getFromClause()).isEqualTo(expectedIndexDetails.getFromClause());
+    assertThat(actualIndexDetails.getIndexedExpression())
+        .isEqualTo(expectedIndexDetails.getIndexedExpression());
+    assertThat(actualIndexDetails.getIndexName()).isEqualTo(expectedIndexDetails.getIndexName());
+    assertThat(actualIndexDetails.getIndexType()).isEqualTo(expectedIndexDetails.getIndexType());
+    assertThat(actualIndexDetails.getMemberId()).isEqualTo(expectedIndexDetails.getMemberId());
+    assertThat(actualIndexDetails.getMemberName()).isEqualTo(expectedIndexDetails.getMemberName());
+    assertThat(actualIndexDetails.getProjectionAttributes())
+        .isEqualTo(expectedIndexDetails.getProjectionAttributes());
+    assertThat(actualIndexDetails.getRegionName()).isEqualTo(expectedIndexDetails.getRegionName());
+    assertThat(actualIndexDetails.getRegionPath()).isEqualTo(expectedIndexDetails.getRegionPath());
+    assertIndexStatisticsDetailsEquals(actualIndexDetails.getIndexStatisticsDetails(),
+        expectedIndexDetails.getIndexStatisticsDetails());
   }
 
   private IndexDetails createIndexDetails(final String regionPath, final String indexName,
@@ -218,17 +218,17 @@ public class ListIndexFunctionJUnitTest {
 
     final List<?> results = testResultSender.getResults();
     assertThat(results).isNotNull();
-    assertThat(1).isEqualTo(results.size());
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<IndexDetails> actualIndexDetailsSet = (Set<IndexDetails>) results.get(0);
     assertThat(actualIndexDetailsSet).isNotNull();
-    assertThat(expectedIndexDetailsSet.size()).isEqualTo(actualIndexDetailsSet.size());
+    assertThat(actualIndexDetailsSet.size()).isEqualTo(expectedIndexDetailsSet.size());
 
     for (final IndexDetails expectedIndexDetails : expectedIndexDetailsSet) {
       final IndexDetails actualIndexDetails = CollectionUtils.findBy(actualIndexDetailsSet,
           indexDetails -> ObjectUtils.equals(expectedIndexDetails, indexDetails));
       assertThat(actualIndexDetails).isNotNull();
-      assertIndexDetailsEquals(expectedIndexDetails, actualIndexDetails);
+      assertIndexDetailsEquals(actualIndexDetails, expectedIndexDetails);
     }
   }
 
@@ -244,7 +244,7 @@ public class ListIndexFunctionJUnitTest {
 
     final List<?> results = testResultSender.getResults();
     assertThat(results).isNotNull();
-    assertThat(1).isEqualTo(results.size());
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<IndexDetails> actualIndexDetailsSet = (Set<IndexDetails>) results.get(0);
     assertThat(actualIndexDetailsSet).isNotNull();

@@ -63,11 +63,6 @@ public class ListDiskStoresFunctionJUnitTest {
     mockFunctionContext = mock(FunctionContext.class, "FunctionContext");
   }
 
-  private DiskStoreDetails createDiskStoreDetails(final UUID id, final String name,
-      final String memberName, final String memberId) {
-    return new DiskStoreDetails(id, name, memberId, memberName);
-  }
-
   @Test
   @SuppressWarnings("unchecked")
   public void testExecute() throws Throwable {
@@ -102,17 +97,17 @@ public class ListDiskStoresFunctionJUnitTest {
 
     final List<?> results = testResultSender.getResults();
     assertThat(results).isNotNull();
-    assertThat(1).isEqualTo(results.size());
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<DiskStoreDetails> diskStoreDetails = (Set<DiskStoreDetails>) results.get(0);
     assertThat(diskStoreDetails).isNotNull();
-    assertThat(3).isEqualTo(diskStoreDetails.size());
+    assertThat(diskStoreDetails.size()).isEqualTo(3);
     verify(mockMember, times(3)).getId();
     verify(mockMember, times(3)).getName();
     diskStoreDetails.containsAll(
-        Arrays.asList(createDiskStoreDetails(mockDiskStoreOneId, "ds-backup", memberId, memberName),
-            createDiskStoreDetails(mockDiskStoreTwoId, "ds-overflow", memberId, memberName),
-            createDiskStoreDetails(mockDiskStoreThreeId, "ds-persistence", memberId, memberName)));
+        Arrays.asList(new DiskStoreDetails(mockDiskStoreOneId, "ds-backup", memberId, memberName),
+            new DiskStoreDetails(mockDiskStoreTwoId, "ds-overflow", memberId, memberName),
+            new DiskStoreDetails(mockDiskStoreThreeId, "ds-persistence", memberId, memberName)));
   }
 
   @Test
@@ -144,7 +139,7 @@ public class ListDiskStoresFunctionJUnitTest {
 
     final List<?> results = testResultSender.getResults();
     assertThat(results).isNotNull();
-    assertThat(1).isEqualTo(results.size());
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<DiskStoreDetails> diskStoreDetails = (Set<DiskStoreDetails>) results.get(0);
     assertThat(diskStoreDetails).isNotNull();
@@ -164,7 +159,7 @@ public class ListDiskStoresFunctionJUnitTest {
 
     final List<?> results = testResultSender.getResults();
     assertThat(results).isNotNull();
-    assertThat(1).isEqualTo(results.size());
+    assertThat(results.size()).isEqualTo(1);
 
     final Set<DiskStoreDetails> diskStoreDetails = (Set<DiskStoreDetails>) results.get(0);
     assertThat(diskStoreDetails).isNotNull();

@@ -112,7 +112,7 @@ public class DiskStoreCommandsJUnitTest {
     final DiskStoreDetails actualDiskStoreDetails =
         describeDiskStoreCommand.getDiskStoreDescription(memberId, diskStoreName);
     AssertionsForClassTypes.assertThat(actualDiskStoreDetails).isNotNull();
-    AssertionsForClassTypes.assertThat(expectedDiskStoredDetails).isEqualTo(actualDiskStoreDetails);
+    AssertionsForClassTypes.assertThat(actualDiskStoreDetails).isEqualTo(expectedDiskStoredDetails);
   }
 
   @Test
@@ -175,7 +175,7 @@ public class DiskStoreCommandsJUnitTest {
     final List<DiskStoreDetails> actualDiskStores =
         listDiskStoresCommand.getDiskStoreListing(Collections.singleton(mockDistributedMember));
     assertThat(actualDiskStores).isNotNull();
-    assertThat(expectedDiskStores).isEqualTo(actualDiskStores);
+    assertThat(actualDiskStores).isEqualTo(expectedDiskStores);
     verify(mockFunctionExecutor, times(1)).setIgnoreDepartedMembers(true);
   }
 
@@ -204,7 +204,7 @@ public class DiskStoreCommandsJUnitTest {
     final List<DiskStoreDetails> actualDiskStores =
         listDiskStoresCommand.getDiskStoreListing(Collections.singleton(mockDistributedMember));
     assertThat(actualDiskStores).isNotNull();
-    assertThat(expectedDiskStores).isEqualTo(actualDiskStores);
+    assertThat(actualDiskStores).isEqualTo(expectedDiskStores);
     verify(mockFunctionExecutor, times(1)).setIgnoreDepartedMembers(true);
   }
 }

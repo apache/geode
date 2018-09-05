@@ -70,15 +70,15 @@ public class IOUtilsJUnitTest {
   @Test
   public void testAppendToPath() {
     assertThat(IOUtils.appendToPath(null, (String[]) null)).isNull();
-    assertThat(File.separator).isEqualTo(IOUtils.appendToPath(null));
-    assertThat(File.separator).isEqualTo(IOUtils.appendToPath(""));
-    assertThat(File.separator).isEqualTo(IOUtils.appendToPath(" "));
-    assertThat(File.separator).isEqualTo(IOUtils.appendToPath(File.separator));
-    assertThat(toPathname("bin", "a.out")).isEqualTo(IOUtils.appendToPath(null, "bin", "a.out"));
-    assertThat(toPathname("bin", "a.out"))
-        .isEqualTo(IOUtils.appendToPath(File.separator, "bin", "a.out"));
-    assertThat(toPathname("usr", "local", "bin", "a.out"))
-        .isEqualTo(IOUtils.appendToPath(toPathname("usr", "local"), "bin", "a.out"));
+    assertThat(IOUtils.appendToPath(null)).isEqualTo(File.separator);
+    assertThat(IOUtils.appendToPath("")).isEqualTo(File.separator);
+    assertThat(IOUtils.appendToPath(" ")).isEqualTo(File.separator);
+    assertThat(IOUtils.appendToPath(File.separator)).isEqualTo(File.separator);
+    assertThat(IOUtils.appendToPath(null, "bin", "a.out")).isEqualTo(toPathname("bin", "a.out"));
+    assertThat(IOUtils.appendToPath(File.separator, "bin", "a.out"))
+        .isEqualTo(toPathname("bin", "a.out"));
+    assertThat(IOUtils.appendToPath(toPathname("usr", "local"), "bin", "a.out"))
+        .isEqualTo(toPathname("usr", "local", "bin", "a.out"));
   }
 
   @Test
@@ -97,35 +97,35 @@ public class IOUtilsJUnitTest {
 
   @Test
   public void testCreatePath() {
-    assertThat("").isEqualTo(IOUtils.createPath());
-    assertThat("/path/to/file.test".replace("/", File.separator))
-        .isEqualTo(IOUtils.createPath("path", "to", "file.test"));
-    assertThat("/path/to/a/directory".replace("/", File.separator))
-        .isEqualTo(IOUtils.createPath("path", "to", "a", "directory"));
+    assertThat(IOUtils.createPath()).isEqualTo("");
+    assertThat(IOUtils.createPath("path", "to", "file.test"))
+        .isEqualTo("/path/to/file.test".replace("/", File.separator));
+    assertThat(IOUtils.createPath("path", "to", "a", "directory"))
+        .isEqualTo("/path/to/a/directory".replace("/", File.separator));
   }
 
   @Test
   public void testCreatePathWithSeparator() {
-    assertThat("").isEqualTo(IOUtils.createPath(new String[0], "-"));
-    assertThat("-path-to-file.ext".replace("/", File.separator))
-        .isEqualTo(IOUtils.createPath(new String[] {"path", "to", "file.ext"}, "-"));
-    assertThat("-path-to-a-directory")
-        .isEqualTo(IOUtils.createPath(new String[] {"path", "to", "a", "directory"}, "-"));
+    assertThat(IOUtils.createPath(new String[0], "-")).isEqualTo("");
+    assertThat(IOUtils.createPath(new String[] {"path", "to", "file.ext"}, "-"))
+        .isEqualTo("-path-to-file.ext".replace("/", File.separator));
+    assertThat(IOUtils.createPath(new String[] {"path", "to", "a", "directory"}, "-"))
+        .isEqualTo("-path-to-a-directory");
   }
 
   @Test
   public void testGetFilename() {
     assertThat(IOUtils.getFilename(null)).isNull();
-    assertThat("").isEqualTo(IOUtils.getFilename(""));
-    assertThat("  ").isEqualTo(IOUtils.getFilename("  "));
-    assertThat("").isEqualTo(IOUtils.getFilename(File.separator));
-    assertThat("a.ext").isEqualTo(IOUtils.getFilename("a.ext"));
-    assertThat("b.ext").isEqualTo(IOUtils.getFilename(toPathname("b.ext")));
-    assertThat("c.ext").isEqualTo(IOUtils.getFilename(toPathname("path", "to", "c.ext")));
-    assertThat("filename.ext")
-        .isEqualTo(IOUtils.getFilename(toPathname("export", "path", "to", "some", "filename.ext")));
-    assertThat("").isEqualTo(
-        IOUtils.getFilename(toPathname("path", "to", "a", "directory") + File.separator));
+    assertThat(IOUtils.getFilename("")).isEqualTo("");
+    assertThat(IOUtils.getFilename("  ")).isEqualTo("  ");
+    assertThat(IOUtils.getFilename(File.separator)).isEqualTo("");
+    assertThat(IOUtils.getFilename("a.ext")).isEqualTo("a.ext");
+    assertThat(IOUtils.getFilename(toPathname("b.ext"))).isEqualTo("b.ext");
+    assertThat(IOUtils.getFilename(toPathname("path", "to", "c.ext"))).isEqualTo("c.ext");
+    assertThat(IOUtils.getFilename(toPathname("export", "path", "to", "some", "filename.ext")))
+        .isEqualTo("filename.ext");
+    assertThat(IOUtils.getFilename(toPathname("path", "to", "a", "directory") + File.separator))
+        .isEqualTo("");
   }
 
   @Test
@@ -147,7 +147,7 @@ public class IOUtilsJUnitTest {
 
     final Object nowObj = IOUtils.deserializeObject(nowBytes);
     assertThat(nowObj).isInstanceOf(Calendar.class);
-    assertThat(now.getTimeInMillis()).isEqualTo(((Calendar) nowObj).getTimeInMillis());
+    assertThat(((Calendar) nowObj).getTimeInMillis()).isEqualTo(now.getTimeInMillis());
   }
 
   @Test
@@ -161,7 +161,7 @@ public class IOUtilsJUnitTest {
     final Object piObj =
         IOUtils.deserializeObject(piBytes, IOUtilsJUnitTest.class.getClassLoader());
     assertThat(piObj).isInstanceOf(BigDecimal.class);
-    assertThat(pi).isEqualTo(piObj);
+    assertThat(piObj).isEqualTo(pi);
   }
 
   @Test
@@ -170,11 +170,8 @@ public class IOUtilsJUnitTest {
     final byte[] actual = IOUtils.toByteArray(new ByteArrayInputStream(expected));
 
     assertThat(actual).isNotNull();
-    assertThat(expected.length).isEqualTo(actual.length);
-
-    for (int index = 0; index < actual.length; index++) {
-      assertThat(expected[index]).isEqualTo(actual[index]);
-    }
+    assertThat(actual.length).isEqualTo(expected.length);
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test

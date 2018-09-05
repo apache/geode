@@ -81,7 +81,7 @@ public class ValueMonitorIntegrationTest {
 
       @Override
       public Iterator<StatisticId> iterator() {
-        throw null;
+        return null;
       }
 
       @Override
@@ -140,13 +140,13 @@ public class ValueMonitorIntegrationTest {
 
     monitor.addListener(listener);
     monitor.notifyListeners(notification);
-    assertThat(1).isEqualTo(notifications.size());
+    assertThat(notifications.size()).isEqualTo(1);
     notification = notifications.remove(0);
     assertThat(notification).isNotNull();
-    assertThat(timeStamp).isEqualTo(notification.getTimeStamp());
-    assertThat(type).isEqualTo(notification.getType());
+    assertThat(notification.getTimeStamp()).isEqualTo(timeStamp);
+    assertThat(notification.getType()).isEqualTo(type);
     StatisticId statId = mock(StatisticId.class);
-    assertThat(value).isEqualTo(notification.getValue(statId));
+    assertThat(notification.getValue(statId)).isEqualTo(value);
 
     monitor.removeListener(listener);
     monitor.notifyListeners(notification);
@@ -159,7 +159,7 @@ public class ValueMonitorIntegrationTest {
     for (StatisticId statId : notification) {
       Number value = expectedValues.remove(statId.getStatisticDescriptor().getName());
       assertThat(value).isNotNull();
-      assertThat(value).isEqualTo(notification.getValue(statId));
+      assertThat(notification.getValue(statId)).isEqualTo(value);
       statCount++;
     }
 
@@ -204,10 +204,10 @@ public class ValueMonitorIntegrationTest {
     sampleCollector.sample(timeStamp);
     Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
         .until(() -> notifications.size() > 0);
-    assertThat(1).isEqualTo(notifications.size());
+    assertThat(notifications.size()).isEqualTo(1);
 
     StatisticsNotification notification = notifications.remove(0);
-    assertThat(StatisticsNotification.Type.VALUE_CHANGED).isEqualTo(notification.getType());
+    assertThat(notification.getType()).isEqualTo(StatisticsNotification.Type.VALUE_CHANGED);
 
     // validate 1 notification occurs with all 3 stats of st1_1
     st1_1.incDouble("double_counter_1", 1.1);
@@ -217,16 +217,16 @@ public class ValueMonitorIntegrationTest {
     sampleCollector.sample(timeStamp);
     Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
         .until(() -> notifications.size() > 0);
-    assertThat(1).isEqualTo(notifications.size());
+    assertThat(notifications.size()).isEqualTo(1);
     notification = notifications.remove(0);
-    assertThat(StatisticsNotification.Type.VALUE_CHANGED).isEqualTo(notification.getType());
+    assertThat(notification.getType()).isEqualTo(StatisticsNotification.Type.VALUE_CHANGED);
 
     Map<String, Number> expectedValues = new HashMap<>();
     expectedValues.put("double_counter_1", 1001.1001);
     expectedValues.put("int_counter_2", 4);
     expectedValues.put("long_counter_3", 3333333336L);
     int statCount = assertStatisticsNotification(notification, expectedValues);
-    assertThat(3).isEqualTo(statCount);
+    assertThat(statCount).isEqualTo(3);
 
     // validate no notification occurs when no stats are updated
     timeStamp += NanoTimer.millisToNanos(1000);
@@ -248,17 +248,17 @@ public class ValueMonitorIntegrationTest {
     // validate notification only contains stats added to monitor
     st1_1.incInt("int_counter_2", 100);
     st1_2.incInt("int_counter_2", 200);
-    assertThat(2).isEqualTo(sampleCollector.currentHandlersForTesting().size());
+    assertThat(sampleCollector.currentHandlersForTesting().size()).isEqualTo(2);
     timeStamp += NanoTimer.millisToNanos(1000);
     sampleCollector.sample(timeStamp);
     Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
         .until(() -> notifications.size() > 0);
-    assertThat(1).isEqualTo(notifications.size());
+    assertThat(notifications.size()).isEqualTo(1);
     notification = notifications.remove(0);
-    assertThat(StatisticsNotification.Type.VALUE_CHANGED).isEqualTo(notification.getType());
+    assertThat(notification.getType()).isEqualTo(StatisticsNotification.Type.VALUE_CHANGED);
     expectedValues = new HashMap<>();
     expectedValues.put("int_counter_2", 104);
     statCount = assertStatisticsNotification(notification, expectedValues);
-    assertThat(1).isEqualTo(statCount);
+    assertThat(statCount).isEqualTo(1);
   }
 }

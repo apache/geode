@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.File;
@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.StatisticsTest;
  * Technically a linux only test - the file handling is all mocked up so the test can run on any
  * host os.
  */
-@Category({StatisticsTest.class})
+@Category(StatisticsTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.IntegrationTest")
 @PrepareForTest(LinuxProcFsStatistics.class)
@@ -71,7 +71,7 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
   @Before
   public void setUp() throws Exception {
     File testDir = this.temporaryFolder.getRoot();
-    assertTrue(testDir.exists());
+    assertThat(testDir.exists()).isTrue();
     System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, testDir.getAbsolutePath()
         + File.separator + SimpleStatSampler.DEFAULT_ARCHIVE_FILE_NAME);
     LinuxProcFsStatistics.init();

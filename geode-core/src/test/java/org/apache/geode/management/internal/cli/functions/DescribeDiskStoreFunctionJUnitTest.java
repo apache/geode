@@ -25,12 +25,14 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,7 +66,6 @@ import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundExcepti
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@SuppressWarnings({"null", "unused"})
 public class DescribeDiskStoreFunctionJUnitTest {
   private InternalCache mockCache;
 
@@ -83,11 +84,12 @@ public class DescribeDiskStoreFunctionJUnitTest {
       final DiskStoreDetails.AsyncEventQueueDetails expectedAsyncEventQueueDetails = CollectionUtils
           .findBy(expectedAsyncEventQueueDetailsSet, asyncEventQueueDetails -> ObjectUtils
               .equals(asyncEventQueueDetails.getId(), actualAsyncEventQueueDetails.getId()));
+
       assertThat(expectedAsyncEventQueueDetails).isNotNull();
       actualCount++;
     }
 
-    assertThat(expectedAsyncEventQueueDetailsSet.size()).isEqualTo(actualCount);
+    assertThat(actualCount).isEqualTo(expectedAsyncEventQueueDetailsSet.size());
   }
 
   private void assertCacheServerDetails(
@@ -103,13 +105,14 @@ public class DescribeDiskStoreFunctionJUnitTest {
                   actualCacheServerDetails.getBindAddress())
                   && ObjectUtils.equals(cacheServerDetails.getPort(),
                       actualCacheServerDetails.getPort()));
+
       assertThat(expectedCacheServerDetails).isNotNull();
-      assertThat(expectedCacheServerDetails.getHostName())
-          .isEqualTo(actualCacheServerDetails.getHostName());
+      assertThat(actualCacheServerDetails.getHostName())
+          .isEqualTo(expectedCacheServerDetails.getHostName());
       actualCount++;
     }
 
-    assertThat(expectedCacheServerDetailsSet.size()).isEqualTo(actualCount);
+    assertThat(actualCount).isEqualTo(expectedCacheServerDetailsSet.size());
   }
 
   private void assertGatewayDetails(
@@ -122,13 +125,14 @@ public class DescribeDiskStoreFunctionJUnitTest {
       DiskStoreDetails.GatewayDetails expectedGatewayDetails =
           CollectionUtils.findBy(expectedGatewayDetailsSet, gatewayDetails -> ObjectUtils
               .equals(gatewayDetails.getId(), actualGatewayDetails.getId()));
+
       assertThat(expectedGatewayDetails).isNotNull();
-      assertThat(expectedGatewayDetails.isPersistent())
-          .isEqualTo(actualGatewayDetails.isPersistent());
+      assertThat(actualGatewayDetails.isPersistent())
+          .isEqualTo(expectedGatewayDetails.isPersistent());
       actualCount++;
     }
 
-    assertThat(expectedGatewayDetailsSet.size()).isEqualTo(actualCount);
+    assertThat(actualCount).isEqualTo(expectedGatewayDetailsSet.size());
   }
 
   private void assertRegionDetails(
@@ -143,15 +147,15 @@ public class DescribeDiskStoreFunctionJUnitTest {
               .equals(regionDetails.getFullPath(), actualRegionDetails.getFullPath()));
 
       assertThat(expectedRegionDetails).isNotNull();
-      assertThat(expectedRegionDetails.getName()).isEqualTo(actualRegionDetails.getName());
-      assertThat(expectedRegionDetails.isOverflowToDisk())
-          .isEqualTo(actualRegionDetails.isOverflowToDisk());
-      assertThat(expectedRegionDetails.isPersistent())
-          .isEqualTo(actualRegionDetails.isPersistent());
+      assertThat(actualRegionDetails.getName()).isEqualTo(expectedRegionDetails.getName());
+      assertThat(actualRegionDetails.isPersistent())
+          .isEqualTo(expectedRegionDetails.isPersistent());
+      assertThat(actualRegionDetails.isOverflowToDisk())
+          .isEqualTo(expectedRegionDetails.isOverflowToDisk());
       actualCount++;
     }
 
-    assertThat(expectedRegionDetailsSet.size()).isEqualTo(actualCount);
+    assertThat(actualCount).isEqualTo(expectedRegionDetailsSet.size());
   }
 
   private DiskStoreDetails.AsyncEventQueueDetails createAsyncEventQueueDetails(final String id) {
@@ -355,7 +359,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
         mock(FunctionContext.class, "testExecute$FunctionContext");
     final DiskStore mockDiskStore =
         createMockDiskStore(diskStoreId, diskStoreName, true, false,
-            75, 8192l, 500, 120l, 10240, createFileArray("/export/disk/backup",
+            75, 8192L, 500, 120L, 10240, createFileArray("/export/disk/backup",
                 "/export/disk/overflow", "/export/disk/persistence"),
             createIntArray(10240, 204800, 4096000), 50, 75);
     final TestResultSender testResultSender = new TestResultSender();
@@ -385,26 +389,26 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     final List<?> results = testResultSender.getResults();
     assertThat(results).isNotNull();
-    assertThat(1).isEqualTo(results.size());
+    assertThat(results.size()).isEqualTo(1);
 
     final DiskStoreDetails diskStoreDetails = (DiskStoreDetails) results.get(0);
-    assertThat(diskStoreDetails != null).isTrue();
-    assertThat(diskStoreId).isEqualTo(diskStoreDetails.getId());
-    assertThat(diskStoreName).isEqualTo(diskStoreDetails.getName());
-    assertThat(memberId).isEqualTo(diskStoreDetails.getMemberId());
-    assertThat(memberName).isEqualTo(diskStoreDetails.getMemberName());
+    AssertionsForClassTypes.assertThat(diskStoreDetails).isNotNull();
+    assertThat(diskStoreDetails.getId()).isEqualTo(diskStoreId);
+    assertThat(diskStoreDetails.getName()).isEqualTo(diskStoreName);
+    assertThat(diskStoreDetails.getMemberId()).isEqualTo(memberId);
+    assertThat(diskStoreDetails.getMemberName()).isEqualTo(memberName);
     assertThat(diskStoreDetails.getAllowForceCompaction()).isTrue();
     assertThat(diskStoreDetails.getAutoCompact()).isFalse();
-    assertThat(75).isEqualTo(diskStoreDetails.getCompactionThreshold().intValue());
-    assertThat(8192L).isEqualTo(diskStoreDetails.getMaxOplogSize().longValue());
+    assertThat(diskStoreDetails.getCompactionThreshold().intValue()).isEqualTo(75);
+    assertThat(diskStoreDetails.getMaxOplogSize().longValue()).isEqualTo(8192L);
     assertThat(diskStoreDetails.isPdxSerializationMetaDataStored()).isFalse();
-    assertThat(500).isEqualTo(diskStoreDetails.getQueueSize().intValue());
-    assertThat(120L).isEqualTo(diskStoreDetails.getTimeInterval().longValue());
-    assertThat(10240).isEqualTo(diskStoreDetails.getWriteBufferSize().intValue());
-    assertThat(50.0f).isEqualTo(diskStoreDetails.getDiskUsageWarningPercentage());
-    assertThat(75.0f).isEqualTo(diskStoreDetails.getDiskUsageCriticalPercentage());
+    assertThat(diskStoreDetails.getQueueSize().intValue()).isEqualTo(500);
+    assertThat(diskStoreDetails.getTimeInterval().longValue()).isEqualTo(120L);
+    assertThat(diskStoreDetails.getWriteBufferSize().intValue()).isEqualTo(10240);
+    assertThat(diskStoreDetails.getDiskUsageWarningPercentage()).isEqualTo(50.0f);
+    assertThat(diskStoreDetails.getDiskUsageCriticalPercentage()).isEqualTo(75.0f);
 
-    final List<Integer> expectdDiskDirSizes = Arrays.asList(10240, 204800, 4096000);
+    final List<Integer> expectedDiskDirSizes = Arrays.asList(10240, 204800, 4096000);
     final List<String> expectedDiskDirs =
         Arrays.asList(new File("/export/disk/backup").getAbsolutePath(),
             new File("/export/disk/overflow").getAbsolutePath(),
@@ -412,14 +416,14 @@ public class DescribeDiskStoreFunctionJUnitTest {
     int count = 0;
 
     for (final DiskStoreDetails.DiskDirDetails diskDirDetails : diskStoreDetails) {
-      assertThat(expectdDiskDirSizes.contains(diskDirDetails.getSize())).isTrue();
+      assertThat(expectedDiskDirSizes.contains(diskDirDetails.getSize())).isTrue();
       assertThat(expectedDiskDirs.contains(diskDirDetails.getAbsolutePath())).isTrue();
       count++;
     }
 
     verify(mockDiskStore, atLeastOnce()).getName();
     verify(mockDiskStore, atLeastOnce()).getDiskStoreUUID();
-    assertThat(expectedDiskDirs.size()).isEqualTo(count);
+    assertThat(count).isEqualTo(expectedDiskDirs.size());
     assertRegionDetails(expectedRegionDetails, diskStoreDetails);
     assertCacheServerDetails(expectedCacheServerDetails, diskStoreDetails);
     assertGatewayDetails(expectedGatewayDetails, diskStoreDetails);
@@ -529,7 +533,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(expectedDiskStoreName);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(expectedDiskStoreName).isEqualTo(function.getDiskStoreName(mockRegion));
+    assertThat(function.getDiskStoreName(mockRegion)).isEqualTo(expectedDiskStoreName);
   }
 
   @Test
@@ -540,8 +544,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(DiskStoreDetails.DEFAULT_DISK_STORE_NAME)
-        .isEqualTo(function.getDiskStoreName(mockRegion));
+    assertThat(function.getDiskStoreName(mockRegion))
+        .isEqualTo(DiskStoreDetails.DEFAULT_DISK_STORE_NAME);
   }
 
   @Test
@@ -801,8 +805,11 @@ public class DescribeDiskStoreFunctionJUnitTest {
     final DiskStore mockDiskStore = mock(DiskStore.class, "DiskStore");
     when(mockDiskStore.getName()).thenReturn(diskStoreName);
 
-    when(mockCache.rootRegions()).thenReturn(
-        CollectionUtils.asSet(mockCompanyRegion, mockPartnersRegion, mockCustomersRegion));
+    Set<Region<?, ?>> mockRootRegions = new HashSet<>();
+    mockRootRegions.add(mockCompanyRegion);
+    mockRootRegions.add(mockPartnersRegion);
+    mockRootRegions.add(mockCustomersRegion);
+    when(mockCache.rootRegions()).thenReturn(mockRootRegions);
     when(mockCompanyRegion.subregions(false)).thenReturn(CollectionUtils
         .asSet(mockContractorsRegion, mockEmployeeRegion, mockProductsRegion, mockServicesRegion));
     when(mockEmployeeRegion.subregions(false)).thenReturn(CollectionUtils.asSet(mockRolesRegion));
@@ -850,7 +857,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockClientSubscriptionConfig.getDiskStoreName()).thenReturn(expectedDiskStoreName);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(expectedDiskStoreName).isEqualTo(function.getDiskStoreName(mockCacheServer));
+    assertThat(function.getDiskStoreName(mockCacheServer)).isEqualTo(expectedDiskStoreName);
     verify(mockCacheServer, times(2)).getClientSubscriptionConfig();
   }
 
@@ -863,8 +870,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockClientSubscriptionConfig.getDiskStoreName()).thenReturn(null);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(DiskStoreDetails.DEFAULT_DISK_STORE_NAME)
-        .isEqualTo(function.getDiskStoreName(mockCacheServer));
+    assertThat(function.getDiskStoreName(mockCacheServer))
+        .isEqualTo(DiskStoreDetails.DEFAULT_DISK_STORE_NAME);
     verify(mockCacheServer, times(2)).getClientSubscriptionConfig();
   }
 
@@ -967,7 +974,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockGatewaySender.getDiskStoreName()).thenReturn(expectedDiskStoreName);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(expectedDiskStoreName).isEqualTo(function.getDiskStoreName(mockGatewaySender));
+    assertThat(function.getDiskStoreName(mockGatewaySender)).isEqualTo(expectedDiskStoreName);
   }
 
   @Test
@@ -976,8 +983,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockGatewaySender.getDiskStoreName()).thenReturn(" ");
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(DiskStoreDetails.DEFAULT_DISK_STORE_NAME)
-        .isEqualTo(function.getDiskStoreName(mockGatewaySender));
+    assertThat(function.getDiskStoreName(mockGatewaySender))
+        .isEqualTo(DiskStoreDetails.DEFAULT_DISK_STORE_NAME);
   }
 
   @Test
@@ -1077,7 +1084,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockQueue.getDiskStoreName()).thenReturn(expectedDiskStoreName);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(expectedDiskStoreName).isEqualTo(function.getDiskStoreName(mockQueue));
+    assertThat(function.getDiskStoreName(mockQueue)).isEqualTo(expectedDiskStoreName);
   }
 
   @Test
@@ -1086,8 +1093,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     when(mockQueue.getDiskStoreName()).thenReturn(null);
 
     final DescribeDiskStoreFunction function = new DescribeDiskStoreFunction();
-    assertThat(DiskStoreDetails.DEFAULT_DISK_STORE_NAME)
-        .isEqualTo(function.getDiskStoreName(mockQueue));
+    assertThat(function.getDiskStoreName(mockQueue))
+        .isEqualTo(DiskStoreDetails.DEFAULT_DISK_STORE_NAME);
   }
 
   @Test

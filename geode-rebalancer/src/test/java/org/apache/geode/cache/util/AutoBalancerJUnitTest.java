@@ -225,8 +225,8 @@ public class AutoBalancerJUnitTest {
     AutoBalancer balancer = new AutoBalancer();
     balancer.initialize(null, getBasicConfig());
     SizeBasedOOBAuditor auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
-    assertThat(AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT).isEqualTo(auditor.getSizeThreshold());
-    assertThat(AutoBalancer.DEFAULT_MINIMUM_SIZE).isEqualTo(auditor.getSizeMinimum());
+    assertThat(auditor.getSizeThreshold()).isEqualTo(AutoBalancer.DEFAULT_SIZE_THRESHOLD_PERCENT);
+    assertThat(auditor.getSizeMinimum()).isEqualTo(AutoBalancer.DEFAULT_MINIMUM_SIZE);
 
     Properties props = getBasicConfig();
     props.put(AutoBalancer.SIZE_THRESHOLD_PERCENT, "17");
@@ -234,8 +234,8 @@ public class AutoBalancerJUnitTest {
     balancer = new AutoBalancer();
     balancer.initialize(null, props);
     auditor = (SizeBasedOOBAuditor) balancer.getOOBAuditor();
-    assertThat(17).isEqualTo(auditor.getSizeThreshold());
-    assertThat(10).isEqualTo(auditor.getSizeMinimum());
+    assertThat(auditor.getSizeThreshold()).isEqualTo(17);
+    assertThat(auditor.getSizeMinimum()).isEqualTo(10);
   }
 
   @Test
@@ -299,7 +299,7 @@ public class AutoBalancerJUnitTest {
 
   @Test
   public void testFacadeTotalTransferSize() throws Exception {
-    assertThat(12345).isEqualTo(getFacadeForResourceManagerOps(true).getTotalTransferSize());
+    assertThat(getFacadeForResourceManagerOps(true).getTotalTransferSize()).isEqualTo(12345);
   }
 
   @Test
@@ -312,7 +312,7 @@ public class AutoBalancerJUnitTest {
   public void testFacadeTotalBytesNoRegion() {
     CacheOperationFacade facade = new AutoBalancer().getCacheOperationFacade();
 
-    assertThat(0).isEqualTo(facade.getTotalDataSize(new HashMap<>()));
+    assertThat(facade.getTotalDataSize(new HashMap<>())).isEqualTo(0);
   }
 
   @Test
@@ -322,7 +322,7 @@ public class AutoBalancerJUnitTest {
     when(mockCache.getPartitionedRegions()).thenReturn(Collections.emptySet());
     GeodeCacheFacade facade = new GeodeCacheFacade(mockCache);
 
-    assertThat(0).isEqualTo(facade.getRegionMemberDetails().size());
+    assertThat(facade.getRegionMemberDetails().size()).isEqualTo(0);
   }
 
   @Test
@@ -357,7 +357,7 @@ public class AutoBalancerJUnitTest {
     GeodeCacheFacade facade = new GeodeCacheFacade(mockCache);
     Map<PartitionedRegion, InternalPRInfo> map = facade.getRegionMemberDetails();
     assertThat(map).isNotNull();
-    assertThat(2).isEqualTo(map.size());
+    assertThat(map.size()).isEqualTo(2);
     assertThat(map.get(mockR1)).isEqualTo(mockR1PRInfo);
     assertThat(map.get(mockR2)).isEqualTo(mockR2PRInfo);
   }
@@ -394,7 +394,7 @@ public class AutoBalancerJUnitTest {
       }
     };
 
-    assertThat(123 + 74 + 3475).isEqualTo(facade.getTotalDataSize(details));
+    assertThat(facade.getTotalDataSize(details)).isEqualTo(123 + 74 + 3475);
     verify(mockR1M1Info, atLeastOnce()).getSize();
     verify(mockR1M2Info, atLeastOnce()).getSize();
     verify(mockR2M1Info, atLeastOnce()).getSize();
@@ -410,7 +410,7 @@ public class AutoBalancerJUnitTest {
     });
 
     Properties props = AutoBalancerJUnitTest.getBasicConfig();
-    assertThat(3).isEqualTo(latch.getCount());
+    assertThat(latch.getCount()).isEqualTo(3);
     AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
     autoR.initialize(null, props);
 
@@ -436,7 +436,7 @@ public class AutoBalancerJUnitTest {
     });
 
     Properties props = AutoBalancerJUnitTest.getBasicConfig();
-    assertThat(2).isEqualTo(latch.getCount());
+    assertThat(latch.getCount()).isEqualTo(2);
     AutoBalancer autoR = new AutoBalancer(null, mockAuditor, mockClock, null);
     autoR.initialize(null, props);
     assertThat(latch.await(1, TimeUnit.MINUTES)).isTrue();

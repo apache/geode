@@ -56,7 +56,7 @@ public class JettyHelperJUnitTest {
         .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
     assertThat(jetty).isNotNull();
     assertThat(jetty.getConnectors()[0]).isNotNull();
-    assertThat(8090).isEqualTo(((ServerConnector) jetty.getConnectors()[0]).getPort());
+    assertThat(((ServerConnector) jetty.getConnectors()[0]).getPort()).isEqualTo(8090);
   }
 
   @Test
@@ -65,6 +65,6 @@ public class JettyHelperJUnitTest {
         .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
     assertThat(jetty).isNotNull();
     assertThat(jetty.getConnectors()[0]).isNotNull();
-    assertThat(10480).isEqualTo(((ServerConnector) jetty.getConnectors()[0]).getPort());
+    assertThat(((ServerConnector) jetty.getConnectors()[0]).getPort()).isEqualTo(10480);
   }
 }

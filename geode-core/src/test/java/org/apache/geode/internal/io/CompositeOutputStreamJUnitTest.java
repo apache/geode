@@ -39,7 +39,7 @@ public class CompositeOutputStreamJUnitTest {
   public void testNewCompositeOutputStreamWithNoStreams() throws IOException {
     final CompositeOutputStream cos = new CompositeOutputStream();
     assertThat(cos.isEmpty()).isTrue();
-    assertThat(0).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(0);
 
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
@@ -69,7 +69,7 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream mockStreamOne = mock(OutputStream.class, "streamOne");
     final CompositeOutputStream compositeOutputStream = new CompositeOutputStream(mockStreamOne);
     assertThat(compositeOutputStream.isEmpty()).isFalse();
-    assertThat(1).isEqualTo(compositeOutputStream.size());
+    assertThat(compositeOutputStream.size()).isEqualTo(1);
     compositeOutputStream.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     compositeOutputStream.write(new byte[] {0, 1});
     compositeOutputStream.write(9);
@@ -93,7 +93,7 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne, streamTwo);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(2).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(2);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
@@ -118,9 +118,9 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamThree = mock(OutputStream.class, "streamThree");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne, streamTwo);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(2).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(2);
     cos.addOutputStream(streamThree);
-    assertThat(3).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(3);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
@@ -144,9 +144,9 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(1).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(1);
     cos.addOutputStream(streamTwo);
-    assertThat(2).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(2);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
@@ -169,10 +169,10 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamOne = mock(OutputStream.class, "streamOne");
     final CompositeOutputStream cos = new CompositeOutputStream();
     assertThat(cos.isEmpty()).isTrue();
-    assertThat(0).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(0);
     cos.addOutputStream(streamOne);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(1).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(1);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
@@ -196,11 +196,11 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream();
     assertThat(cos.isEmpty()).isTrue();
-    assertThat(0).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(0);
     cos.addOutputStream(streamOne);
     cos.addOutputStream(streamTwo);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(2).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(2);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
@@ -224,10 +224,10 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne, streamTwo);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(2).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(2);
     cos.removeOutputStream(streamTwo);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(1).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(1);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
@@ -251,10 +251,10 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamOne = mock(OutputStream.class, "streamOne");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne);
     assertThat(cos.isEmpty()).isFalse();
-    assertThat(1).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(1);
     cos.removeOutputStream(streamOne);
     assertThat(cos.isEmpty()).isTrue();
-    assertThat(0).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(0);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
@@ -269,10 +269,10 @@ public class CompositeOutputStreamJUnitTest {
     final OutputStream streamOne = mock(OutputStream.class, "streamOne");
     final CompositeOutputStream cos = new CompositeOutputStream();
     assertThat(cos.isEmpty()).isTrue();
-    assertThat(0).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(0);
     cos.removeOutputStream(streamOne);
     assertThat(cos.isEmpty()).isTrue();
-    assertThat(0).isEqualTo(cos.size());
+    assertThat(cos.size()).isEqualTo(0);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);

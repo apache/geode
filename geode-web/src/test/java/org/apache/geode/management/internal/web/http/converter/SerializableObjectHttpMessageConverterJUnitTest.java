@@ -80,7 +80,7 @@ public class SerializableObjectHttpMessageConverterJUnitTest {
 
     final Serializable obj = converter.readInternal(String.class, mockInputMessage);
     assertThat(obj).isInstanceOf(String.class);
-    assertThat(expectedInputMessageBody).isEqualTo(obj);
+    assertThat(obj).isEqualTo(expectedInputMessageBody);
   }
 
   @Test
@@ -91,7 +91,7 @@ public class SerializableObjectHttpMessageConverterJUnitTest {
     when(mockOutputMessage.getHeaders()).thenReturn(headers);
 
     converter.setContentLength(mockOutputMessage, bytes);
-    assertThat(bytes.length).isEqualTo(headers.getContentLength());
+    assertThat(headers.getContentLength()).isEqualTo(bytes.length);
   }
 
   @Test
@@ -108,13 +108,9 @@ public class SerializableObjectHttpMessageConverterJUnitTest {
 
     converter.writeInternal(expectedOutputMessageBody, mockOutputMessage);
     final byte[] actualOutputMessageBodyBytes = out.toByteArray();
-    assertThat(expectedOutputMessageBodyBytes.length).isEqualTo(headers.getContentLength());
-    assertThat(expectedOutputMessageBodyBytes.length)
-        .isEqualTo(actualOutputMessageBodyBytes.length);
-
-    for (int index = 0; index < actualOutputMessageBodyBytes.length; index++) {
-      assertThat(expectedOutputMessageBodyBytes[index])
-          .isEqualTo(actualOutputMessageBodyBytes[index]);
-    }
+    assertThat(headers.getContentLength()).isEqualTo(expectedOutputMessageBodyBytes.length);
+    assertThat(actualOutputMessageBodyBytes.length)
+        .isEqualTo(expectedOutputMessageBodyBytes.length);
+    assertThat(actualOutputMessageBodyBytes).isEqualTo(expectedOutputMessageBodyBytes);
   }
 }

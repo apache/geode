@@ -41,7 +41,7 @@ public class TopEntriesJUnitTest {
     hits.addHit(r1_2);
     hits.addHit(r2_2);
 
-    assertThat(4).isEqualTo(hits.size());
+    assertThat(hits.size()).isEqualTo(4);
     LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
 
@@ -54,17 +54,17 @@ public class TopEntriesJUnitTest {
     hits.addHit(r1);
     hits.addHit(r2);
 
-    assertThat(2).isEqualTo(hits.size());
+    assertThat(hits.size()).isEqualTo(2);
     LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1, r2);
   }
 
   @Test
   public void testInitialization() {
     TopEntries<String> hits = new TopEntries<>();
-    assertThat(LuceneQueryFactory.DEFAULT_LIMIT).isEqualTo(hits.getLimit());
+    assertThat(hits.getLimit()).isEqualTo(LuceneQueryFactory.DEFAULT_LIMIT);
 
     hits = new TopEntries<>(123);
-    assertThat(123).isEqualTo(hits.getLimit());
+    assertThat(hits.getLimit()).isEqualTo(123);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -81,7 +81,7 @@ public class TopEntriesJUnitTest {
     hits.addHit(r1_2);
     hits.addHit(r2_2);
 
-    assertThat(3).isEqualTo(hits.size());
+    assertThat(hits.size()).isEqualTo(3);
     LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2);
   }
 
@@ -92,8 +92,9 @@ public class TopEntriesJUnitTest {
     TopEntries<String> hits = new TopEntries<>(3);
 
     TopEntries<String> copy = CopyHelper.deepCopy(hits);
-    assertThat(3).isEqualTo(copy.getLimit());
-    assertThat(0).isEqualTo(copy.getHits().size());
+    assertThat(copy).isNotNull();
+    assertThat(copy.getLimit()).isEqualTo(3);
+    assertThat(copy.getHits().size()).isEqualTo(0);
 
     hits = new TopEntries<>(3);
     hits.addHit(r1_1);
@@ -101,7 +102,8 @@ public class TopEntriesJUnitTest {
     hits.addHit(r1_2);
 
     copy = CopyHelper.deepCopy(hits);
-    assertThat(3).isEqualTo(copy.size());
+    assertThat(copy).isNotNull();
+    assertThat(copy.size()).isEqualTo(3);
     LuceneTestUtilities.verifyResultOrder(copy.getHits(), r1_1, r2_1, r1_2);
   }
 }

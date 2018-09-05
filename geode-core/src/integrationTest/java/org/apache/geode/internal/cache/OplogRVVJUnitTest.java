@@ -125,9 +125,9 @@ public class OplogRVVJUnitTest {
 
     oplog = new Oplog(1, oplogSet);
     Collection<File> drfFiles = FileUtils.listFiles(testDirectory, new String[] {"drf"}, true);
-    assertThat(1).isEqualTo(drfFiles.size());
+    assertThat(drfFiles.size()).isEqualTo(1);
     Collection<File> crfFiles = FileUtils.listFiles(testDirectory, new String[] {"crf"}, true);
-    assertThat(1).isEqualTo(crfFiles.size());
+    assertThat(crfFiles.size()).isEqualTo(1);
     oplog.addRecoveredFile(drfFiles.iterator().next(), dirHolder);
     oplog.addRecoveredFile(crfFiles.iterator().next(), dirHolder);
     OplogEntryIdSet deletedIds = new OplogEntryIdSet();
