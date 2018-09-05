@@ -944,7 +944,7 @@ public interface DiskEntry extends RegionEntry {
                 newValueStoredInEntry = true;
                 entry.setValueWithContext(region, newValue); // OFFHEAP newValue already prepared
                 // newValue is prepared and compressed. We can't write compressed values to disk.
-                if (!region.isThisRegionBeingClosedOrDestroyed()) {
+                if (!entry.isRemovedFromDisk()) {
                   writeToDisk(entry, region, false, event);
                 }
               } else {
