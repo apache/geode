@@ -186,7 +186,8 @@ public abstract class CommonCrudController extends AbstractBaseController {
       function = FunctionService.onMembers(getAllMembersInDS());
     } catch (FunctionException fe) {
       throw new GemfireRestException(
-          "Disributed system does not contain any valid data node that can host REST service!", fe);
+          "Distributed system does not contain any valid data node that can host REST service!",
+          fe);
     }
 
     try {

@@ -82,7 +82,8 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     if (autoStart) {
       startServer();
       regions.forEach((regionName, regionType) -> {
-        getCache().createRegionFactory(regionType).create(regionName);
+        RegionFactory rf = getCache().createRegionFactory(regionType);
+        rf.create(regionName);
       });
     }
   }

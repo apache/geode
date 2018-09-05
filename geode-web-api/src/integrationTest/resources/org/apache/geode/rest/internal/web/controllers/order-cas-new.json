@@ -1,0 +1,35 @@
+{
+  "@type": "org.apache.geode.rest.internal.web.controllers.Order",
+  "purchaseOrderNo": 11101,
+  "customerId": 101,
+  "description": "Purchase order for company - A",
+  "orderDate": "01/10/2014",
+  "deliveryDate": "01/20/2014",
+  "contact": "Nilkanthkumar N Patel",
+  "email": "npatel@pivotal.io",
+  "phone": "020-2048096",
+  "totalPrice": 205,
+  "items": [
+    {
+      "itemNo": 1,
+      "description": "Product-1",
+      "quantity": 5,
+      "unitPrice": 10,
+      "totalPrice": 50
+    },
+    {
+      "itemNo": 3,
+      "description": "Product-3",
+      "quantity": 10,
+      "unitPrice": 100,
+      "totalPrice": 1000
+    },
+    {
+      "itemNo": 1,
+      "description": "Product-2",
+      "quantity": 10,
+      "unitPrice": 15.5,
+      "totalPrice": 155
+    }
+  ]
+}
