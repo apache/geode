@@ -15,8 +15,6 @@
 package org.apache.geode.internal.cache.wan;
 
 import java.io.IOException;
-import java.net.BindException;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
@@ -138,6 +136,32 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     return receiver;
   }
 
+  private boolean tryToStart(int port) {
+    if (!AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
+        AvailablePort.getAddress(AvailablePort.SOCKET))) {
+      return false;
+    }
+
+    receiver.setPort(port);
+    receiver.setSocketBufferSize(socketBufferSize);
+    receiver.setMaximumTimeBetweenPings(timeBetPings);
+    if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
+      receiver.setHostnameForClients(hostnameForSenders);
+    }
+    receiver.setBindAddress(bindAdd);
+    receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
+    ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
+    try {
+      receiver.start();
+      this.port = port;
+      return true;
+    } catch (IOException e) {
+      logger.info(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
+          .toLocalizedString(new Object[] {bindAdd, port}));
+      return false;
+    }
+  }
+
   public void start() throws IOException {
     if (receiver == null) {
       receiver = this.cache.addCacheServer(true);
@@ -146,53 +170,27 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_IS_ALREADY_RUNNING));
       return;
     }
-    boolean started = false;
-    this.port = getPortToStart();
-    while (!started && this.port != -1) {
-      receiver.setPort(this.port);
-      receiver.setSocketBufferSize(socketBufferSize);
-      receiver.setMaximumTimeBetweenPings(timeBetPings);
-      if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
-        receiver.setHostnameForClients(hostnameForSenders);
-      }
-      receiver.setBindAddress(bindAdd);
-      receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
-      ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
-      try {
-        receiver.start();
-        started = true;
-      } catch (BindException be) {
-        if (be.getCause() != null
-            && be.getCause().getMessage().contains("assign requested address")) {
-          throw new GatewayReceiverException(
-              LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                  .toLocalizedString(new Object[] {bindAdd, this.port}));
-        }
-        // ignore as this port might have been used by other threads.
-        logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use,
-            this.port));
-        this.port = getPortToStart();
-      } catch (SocketException se) {
-        if (se.getMessage().contains("Address already in use")) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.GatewayReceiver_Address_Already_In_Use, this.port));
-          this.port = getPortToStart();
 
-        } else {
-          throw se;
-        }
+    int loopStartPort = getPortToStart();
+    int port = loopStartPort;
+    while (!tryToStart(port)) {
+      // get next port to try
+      if (port == endPort && startPort != endPort) {
+        port = startPort;
+      } else {
+        port++;
       }
+      if (port == loopStartPort || port > endPort) {
+        throw new GatewayReceiverException("No available free port found in the given range (" +
+            this.startPort + "-" + this.endPort + ")");
+      }
+    }
 
-    }
-    if (!started) {
-      throw new IllegalStateException("No available free port found in the given range.");
-    }
     logger
         .info(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_STARTED_ON_PORT, this.port));
 
     InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
-
   }
 
   private int getPortToStart() {
