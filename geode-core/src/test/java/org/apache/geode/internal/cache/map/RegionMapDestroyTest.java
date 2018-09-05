@@ -392,7 +392,7 @@ public class RegionMapDestroyTest {
     givenEntryDestroyReturnsFalse(evictableEntry);
     when(evictableEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     givenOriginIsRemote();
-    removeRecoveredEntry = true;
+    givenRemoveRecoveredEntry();
 
     assertThat(doDestroy()).isTrue();
 
@@ -411,7 +411,7 @@ public class RegionMapDestroyTest {
     when(regionMap.getEntry(event)).thenReturn(evictableEntry);
     givenEntryDestroyReturnsFalse(evictableEntry);
     when(evictableEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
-    removeRecoveredEntry = true;
+    givenRemoveRecoveredEntry();
 
     assertThat(doDestroy()).isTrue();
 
@@ -709,6 +709,22 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyOfExistingEntryThatBecomesTombstoneAfterInitialCheckCallsProcessVersionTagAndMakeTombstoneButDoesNotDoDestroy()
+      throws Exception {
+    givenConcurrencyChecks(true);
+    givenExistingTombstoneAndVersionTag();
+    when(existingRegionEntry.isTombstone()).thenReturn(false).thenReturn(true);
+
+    assertThat(doDestroy()).isFalse();
+
+    verify(regionMap, times(1)).getEntry(any());
+    verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
+    verifyNoMoreInteractions(regionMap);
+    verify(existingRegionEntry, times(1)).makeTombstone(any(), any());
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void destroyOfExistingTombstoneWithConcurrencyChecksAndFromRILocalDestroyDoesRemove()
       throws Exception {
     givenConcurrencyChecks(true);
@@ -996,7 +1012,7 @@ public class RegionMapDestroyTest {
     when(owner.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
     givenOriginIsRemote();
     cacheWrite = true;
-    removeRecoveredEntry = true;
+    givenRemoveRecoveredEntry();
 
     assertThat(doDestroy()).isFalse();
   }
