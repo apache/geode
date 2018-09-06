@@ -1264,6 +1264,34 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void destroyWhoseNewRegionEntryThrowsConcurrentCheckThrowsException() throws Exception {
+    givenConcurrencyChecks(true);
+    givenEventWithGatewayTag();
+    givenEntryDestroyThrows(newRegionEntry, ConcurrentCacheModificationException.class);
+
+    doDestroyExpectingThrowable();
+
+    verifyThrowableInstanceOf(ConcurrentCacheModificationException.class);
+    verify(owner, never()).notifyTimestampsToGateways(any());
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
+  public void destroyWhoseNewRegionEntryThrowsConcurrentCheckAndTimeStampUpdatedThrowsException()
+      throws Exception {
+    givenConcurrencyChecks(true);
+    givenEventWithGatewayTag();
+    givenEventTimeStampUpdated();
+    givenEntryDestroyThrows(newRegionEntry, ConcurrentCacheModificationException.class);
+
+    doDestroyExpectingThrowable();
+
+    verifyThrowableInstanceOf(ConcurrentCacheModificationException.class);
+    verify(owner, times(1)).notifyTimestampsToGateways(any());
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void validateNoDestroyWhenExistingTombstoneAndNewEntryDestroyFails()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
