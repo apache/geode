@@ -275,6 +275,22 @@ public class RegionMapDestroyTest {
   }
 
   @Test
+  public void evictDestroyWithInUseByTransactionInTokenModeDoesNothing()
+      throws RegionClearedException {
+    givenConcurrencyChecks(true);
+    givenEviction();
+    givenExistingEntry();
+    givenEntryIsInUseByTransaction();
+    givenInTokenMode();
+
+    doDestroy();
+
+    verifyDestroyReturnedFalse();
+    verifyNoDestroyInvocationsOnEntry(existingRegionEntry);
+    verifyNoDestroyInvocationsOnRegion();
+  }
+
+  @Test
   public void destroyWithConcurrentChangeFromNullToValidRetriesAndDoesDestroy()
       throws Exception {
     givenConcurrencyChecks(true);
