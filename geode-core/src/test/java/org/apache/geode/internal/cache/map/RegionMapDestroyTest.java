@@ -39,9 +39,6 @@ import org.mockito.InOrder;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -51,8 +48,6 @@ import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -71,8 +66,6 @@ public class RegionMapDestroyTest {
   private RegionEntry newRegionEntry;
   private RegionEntry existingRegionEntry;
   private InternalRegion owner;
-  private EvictionController evictionController;
-  private EvictionAttributes evictionAttributes;
 
   private EntryEventImpl event;
   private Object expectedOldValue;
@@ -112,14 +105,6 @@ public class RegionMapDestroyTest {
     // Instead of mocking checkEntryNotFound to throw an exception,
     // this test now just verifies that checkEntryNotFound was called.
     // Having the mock throw the exception confuses the code coverage tools.
-
-    evictionAttributes = mock(EvictionAttributes.class);
-    when(evictionAttributes.getAlgorithm()).thenReturn(EvictionAlgorithm.LRU_ENTRY);
-    when(evictionAttributes.getAction()).thenReturn(EvictionAction.DEFAULT_EVICTION_ACTION);
-    when(evictionAttributes.getMaximum()).thenReturn(EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM);
-    evictionController = mock(EvictionController.class);
-    when(evictionController.getEvictionAlgorithm()).thenReturn(EvictionAlgorithm.LRU_ENTRY);
-    when(evictionController.getCounters()).thenReturn(mock(EvictionCounters.class));
 
     regionMap = mock(FocusedRegionMap.class);
     when(regionMap.getEntryFactory()).thenReturn(factory);
@@ -334,9 +319,8 @@ public class RegionMapDestroyTest {
   public void destroyWithInTokenModeAndTombstoneCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
-    givenEviction();
     givenExistingEntryWithValue(Token.TOMBSTONE);
-    when(regionMap.getEntry(event)).thenReturn(null).thenReturn(existingRegionEntry);
+    givenMissThenExistingEntry();
     givenInTokenMode();
     givenEntryDestroyReturnsFalse(existingRegionEntry);
 
@@ -351,9 +335,7 @@ public class RegionMapDestroyTest {
   public void destroyWithInTokenModeAndTombstoneCallsDestroyWhichThrowsRegionClearedStillDoesDestroy()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
-    givenEviction();
-    givenExistingEntryWithValue(Token.TOMBSTONE);
-    when(regionMap.getEntry(event)).thenReturn(null).thenReturn(existingRegionEntry);
+    givenMissThenExistingTombstone();
     givenInTokenMode();
     givenEntryDestroyThrows(existingRegionEntry, RegionClearedException.class);
 
@@ -367,10 +349,9 @@ public class RegionMapDestroyTest {
   public void destroyWithInTokenModeCallsDestroyWhichReturnsFalseCausingDestroyToNotHappen()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
-    givenEviction();
-    givenExistingEntryWithValue("value");
+    givenExistingEntry();
     givenEntryDestroyReturnsFalse(existingRegionEntry);
-    inTokenMode = true;
+    givenInTokenMode();
 
     doDestroy();
 
@@ -383,10 +364,8 @@ public class RegionMapDestroyTest {
   public void destroyExistingEntryWithVersionStampCallsDestroyWhichReturnsFalseCausingDestroyToNotHappenAndDoesNotCallRemovePhase2()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
-    givenEviction();
-    givenExistingEntryWithValue("value");
+    givenExistingEntry();
     givenEntryDestroyReturnsFalse(existingRegionEntry);
-    when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     givenOriginIsRemote();
 
     doDestroy();
@@ -403,9 +382,7 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntryWithValue(Token.TOMBSTONE);
-    when(existingRegionEntry.isTombstone()).thenReturn(true);
     givenEntryDestroyReturnsFalse(existingRegionEntry);
-    when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     givenOriginIsRemote();
     givenRemoveRecoveredEntry();
 
@@ -423,9 +400,7 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntryWithValue(Token.TOMBSTONE);
-    when(existingRegionEntry.isTombstone()).thenReturn(true);
     givenEntryDestroyReturnsFalse(existingRegionEntry);
-    when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
     givenRemoveRecoveredEntry();
 
     doDestroy();
@@ -509,7 +484,7 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(false);
     givenExistingEntry();
     givenInTokenMode();
-    duringRI = true;
+    givenDuringRegisterInterest();
 
     doDestroy();
 
@@ -574,32 +549,20 @@ public class RegionMapDestroyTest {
   public void destroyOfExistingFromPutIfAbsentWithRemoteOriginCallsBasicDestroyBeforeRemoval()
       throws Exception {
     givenConcurrencyChecks(true);
-    RegionEntry existingEntry = mock(RegionEntry.class);
-    when(existingEntry.getValue()).thenReturn("value");
-    when(regionMap.getEntry(event)).thenReturn(null);
-    RegionEntry newUnusedEntry = mock(RegionEntry.class);
-    when(factory.createEntry(any(), any(), any())).thenReturn(newUnusedEntry);
-    when(regionMap.putEntryIfAbsent(eq(KEY), any())).thenReturn(existingEntry);
-    givenEntryDestroyReturnsTrue(existingEntry);
+    givenMissThenExistingEntry();
     givenOriginIsRemote();
 
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(owner, times(1)).basicDestroyBeforeRemoval(existingEntry, event);
+    verify(owner, times(1)).basicDestroyBeforeRemoval(existingRegionEntry, event);
   }
 
   @Test
   public void destroyOfExistingFromPutIfAbsentWithTokenModeAndLocalOriginDoesNotCallBasicDestroyBeforeRemoval()
       throws Exception {
     givenConcurrencyChecks(true);
-    RegionEntry existingEntry = mock(RegionEntry.class);
-    when(existingEntry.getValue()).thenReturn("value");
-    when(regionMap.getEntry(event)).thenReturn(null);
-    RegionEntry newUnusedEntry = mock(RegionEntry.class);
-    when(factory.createEntry(any(), any(), any())).thenReturn(newUnusedEntry);
-    when(regionMap.putEntryIfAbsent(eq(KEY), any())).thenReturn(existingEntry);
-    givenEntryDestroyReturnsTrue(existingEntry);
+    givenMissThenExistingEntry();
     givenInTokenMode();
 
     doDestroy();
@@ -607,7 +570,7 @@ public class RegionMapDestroyTest {
     verifyDestroyReturnedTrue();
     // TODO: this seems like a bug in the product. See the comment in:
     // RegionMapDestroy.destroyExistingFromPutIfAbsent(RegionEntry)
-    verify(owner, never()).basicDestroyBeforeRemoval(existingEntry, event);
+    verify(owner, never()).basicDestroyBeforeRemoval(existingRegionEntry, event);
   }
 
   @Test
@@ -1014,9 +977,8 @@ public class RegionMapDestroyTest {
   public void expireDestroyOfEntryInUseIsCancelled()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
-    givenEntryDestroyReturnsTrue(existingRegionEntry);
-    when(existingRegionEntry.isInUseByTransaction()).thenReturn(true);
-    when(regionMap.getEntry(event)).thenReturn(existingRegionEntry);
+    givenExistingEntry();
+    givenEntryIsInUseByTransaction();
     givenExpireDestroy();
 
     doDestroy();
@@ -1411,15 +1373,21 @@ public class RegionMapDestroyTest {
   }
 
   private void givenEviction() {
-    when(owner.getEvictionAttributes()).thenReturn(evictionAttributes);
     isEviction = true;
     when(regionMap.confirmEvictionDestroy(any())).thenReturn(true);
   }
 
   private void givenExistingEntryWithValue(Object value) throws RegionClearedException {
-    when(existingRegionEntry.getValue()).thenReturn(value);
+    if (value == Token.TOMBSTONE) {
+      givenExistingTombstone();
+    } else {
+      when(existingRegionEntry.getValue()).thenReturn(value);
+    }
     when(regionMap.getEntry(event)).thenReturn(value == null ? null : existingRegionEntry);
     when(regionMap.putEntryIfAbsent(eq(KEY), any())).thenReturn(existingRegionEntry);
+    if (withConcurrencyChecks) {
+      when(existingRegionEntry.getVersionStamp()).thenReturn(mock(VersionStamp.class));
+    }
   }
 
   private void givenDestroyThrowsRegionClearedException() throws RegionClearedException {
@@ -1475,7 +1443,15 @@ public class RegionMapDestroyTest {
     givenEventWithVersionTag();
   }
 
+  private void givenMissThenExistingTombstone() {
+    givenExistingTombstone(true);
+  }
+
   private void givenExistingTombstone() {
+    givenExistingTombstone(false);
+  }
+
+  private void givenExistingTombstone(boolean miss) {
     givenExistingEntry();
     when(existingRegionEntry.isTombstone()).thenReturn(true);
     when(existingRegionEntry.isRemoved()).thenReturn(true);
@@ -1504,6 +1480,10 @@ public class RegionMapDestroyTest {
 
   private void givenInTokenMode() {
     inTokenMode = true;
+  }
+
+  private void givenDuringRegisterInterest() {
+    duringRI = true;
   }
 
   private void givenRemoveRecoveredEntry() {
