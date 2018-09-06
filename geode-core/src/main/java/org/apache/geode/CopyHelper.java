@@ -162,7 +162,7 @@ public final class CopyHelper {
         if (o instanceof Cloneable) {
           try {
             // Note that Object.clone is protected so we need to use reflection
-            // to call clone even though this guy implements Cloneable
+            // to call clone even though this object implements Cloneable
             Class<?> c = o.getClass();
             // By convention, the user should make the clone method public.
             // But even if they don't, let's go ahead and use it.

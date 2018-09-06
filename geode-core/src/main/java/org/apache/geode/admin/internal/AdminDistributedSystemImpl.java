@@ -2150,7 +2150,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         for (Throwable cause = ex.getCause(); cause != null; cause = cause.getCause()) {
           if (cause instanceof InterruptedException) {
             // We interrupted the runnable but we don't want the thread
-            // that called get to think he was interrupted.
+            // that called get() to think that the runnable was interrupted.
             CancellationException ex2 = new CancellationException(
                 LocalizedStrings.AdminDistributedSystemImpl_BY_INTERRUPT.toLocalizedString());
             ex2.setStackTrace(cause.getStackTrace());

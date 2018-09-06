@@ -53,7 +53,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
   private static final int ITERATIONS = 4;
   private static final long MAX_OPLOG_SIZE_IN_BYTES = 1024 * 16;
   /**
-   * Need to limit he max open oplogs so that we don't run out of file descriptors
+   * Need to limit the max open oplogs so that we don't run out of file descriptors
    */
   private static final int MAX_OPEN_OPLOGS = 400;
   private static final long RECORDS_PER_OPLOG =

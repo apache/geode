@@ -130,6 +130,10 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     }
     VM sub = getHost(0).getVM(NUM_PUBS);
 
+    for (VM pub : pubs) {
+      pub.invoke(() -> puts.set(0));
+    }
+
     String subArchive =
         this.directory.getAbsolutePath() + File.separator + getName() + "_sub" + ".gfs";
     String[] pubArchives = new String[NUM_PUBS];
@@ -263,7 +267,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
                   statistics.endPut(start);
                 }
 
-                // cycle through he keys in order and wrapping back around
+                // cycle through the keys in order and wrapping back around
               } else {
                 int key = 0;
                 for (int idx = 0; idx < MAX_PUTS; idx++) {

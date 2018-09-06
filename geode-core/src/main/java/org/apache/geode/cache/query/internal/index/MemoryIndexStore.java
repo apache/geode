@@ -185,7 +185,7 @@ public class MemoryIndexStore implements IndexStore {
                 DefaultQuery.testHook
                     .doTestHook("BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET");
               }
-              // on a remove from the elem array, another thread could start and complete his remove
+              // on a remove from the elem array, another thread could start and complete its remove
               // at this point, that is why we need to replace before adding the elem array elements
               // once we put this set into the forward map, we know any future removes are either
               // captured

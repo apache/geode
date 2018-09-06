@@ -220,7 +220,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    * code should be changed to use attrs' hasXXX methods to initialize the has booleans when
    * defaults is false.
    *
-   * @param attrs the attributes to initialize this guy with.
+   * @param attrs the attributes with which to initialize this region.
    * @param defaults true if <code>attrs</code> are defaults; false if they are not
    */
   public RegionAttributesCreation(CacheCreation cc, RegionAttributes attrs, boolean defaults) {

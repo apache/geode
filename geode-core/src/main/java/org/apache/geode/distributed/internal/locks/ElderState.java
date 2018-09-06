@@ -120,7 +120,7 @@ public class ElderState {
                 serviceName, requestor, (currentGrantor != null ? "current grantor crashed"
                     : "of unclean grantor shutdown"));
           }
-          // current grantor crashed; make new guy grantor and force recovery
+          // current grantor crashed; make new member grantor and force recovery
           long myVersion = gi.getVersionId() + 1;
           this.nameToInfo.put(serviceName,
               new GrantorInfo(requestor, myVersion, dlsSerialNumberRequestor, false));
@@ -251,7 +251,7 @@ public class ElderState {
                     "Elder forced to set grantor for {} to {} and noticed previous grantor had crashed",
                     serviceName, newGrantor);
               }
-              // current grantor crashed; make new guy grantor and force recovery
+              // current grantor crashed; make new member grantor and force recovery
               this.nameToInfo.put(serviceName,
                   new GrantorInfo(newGrantor, myVersion, newGrantorSerialNumber, false));
             }

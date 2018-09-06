@@ -171,7 +171,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     if (server == null) {
       // Nothing worked! Let's try without the denylist.
       if (excludedServers.size() > origExcludedServers.size()) {
-        // We had some guys denylisted so lets give this another whirl.
+        // We had some servers denylisted so lets give this another whirl.
         server = source.findReplacementServer(currentServer, origExcludedServers);
       }
     }
