@@ -34,18 +34,6 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
   }
 
   @Override
-  public void setPrimaryRecoveryCheck() {}
-
-  @Override
-  public void checkPrimaryRecovery() {}
-
-  @Override
-  public void configureClientStop1() {}
-
-  @Override
-  public void configureClientStop2() {}
-
-  @Override
   public void closeDurableClient() {
     this.durableClientVM.invoke(() -> CacheServerTestUtil.reconnectClient());
     this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
@@ -68,12 +56,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
 
   @Override
   public void verifyListenerUpdatesDisconnected(int numberOfEntries) {
-    this.verifyListenerUpdates(numberOfEntries);
-  }
-
-  @Override
-  public void verifyListenerUpdates(int numEntries, int numEntriesBeforeDisconnect) {
-    this.verifyListenerUpdatesEntries(numEntries, numEntriesBeforeDisconnect);
+    this.verifyListenerUpdatesEntries(numberOfEntries);
   }
 
 }
