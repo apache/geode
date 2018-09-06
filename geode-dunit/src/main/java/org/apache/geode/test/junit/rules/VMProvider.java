@@ -82,6 +82,15 @@ public abstract class VMProvider {
     return getVM().invoke(name, callable);
   }
 
+  public <T> AsyncInvocation<T> invokeAsync(final SerializableCallableIF<T> callable) {
+    return getVM().invokeAsync(callable);
+  }
+
+
+  public <T> AsyncInvocation<T> invokeAsync(String name, final SerializableCallableIF<T> runnable) {
+    return getVM().invokeAsync(name, runnable);
+  }
+
   public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {
     return getVM().invokeAsync(runnable);
   }
