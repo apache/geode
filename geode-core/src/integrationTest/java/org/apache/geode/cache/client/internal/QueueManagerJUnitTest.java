@@ -546,8 +546,8 @@ public class QueueManagerJUnitTest {
       return null;
     }
 
-    public ServerBlackList getBlackList() {
-      return new ServerBlackList(1);
+    public ServerDenyList getDenyList() {
+      return new ServerDenyList(1);
     }
 
     public Connection createClientToServerConnection(ServerLocation location, boolean forQueue) {

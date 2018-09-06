@@ -44,11 +44,17 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-  {% for test in (tests + windowstests) if not test.name=="StressNew" -%}
+  {% for test in (tests) if not test.name=="StressNew" -%}
   - {{test.name}}Test
   {% endfor -%}
   - UpdatePassingRef
   - PublishArtifacts
+- name: windows
+  jobs:
+  - {{ build_test.name }}
+  {% for test in (windowstests) if not test.name=="StressNew" -%}
+  - {{test.name}}Test
+  {% endfor %}
 
 resources:
 - name: send-notification-email
