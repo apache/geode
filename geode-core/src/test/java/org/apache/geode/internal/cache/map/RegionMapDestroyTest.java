@@ -87,6 +87,8 @@ public class RegionMapDestroyTest {
 
   private RegionMapDestroy regionMapDestroy;
 
+  private Throwable doDestroyThrowable;
+
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
@@ -295,7 +297,7 @@ public class RegionMapDestroyTest {
     when(regionMap.getEntry(event)).thenReturn(null).thenReturn(existingRegionEntry);
     givenEntryDestroyThrows(existingRegionEntry, ConcurrentCacheModificationException.class);
 
-    Throwable thrown = catchThrowable(() -> doDestroy());
+    doDestroyExpectingThrowable();
 
     assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
     verifyNoDestroyInvocationsOnRegion();
@@ -610,9 +612,9 @@ public class RegionMapDestroyTest {
     givenInTokenMode();
     givenEntryDestroyThrows(existingRegionEntry, ConcurrentCacheModificationException.class);
 
-    Throwable thrown = catchThrowable(() -> doDestroy());
+    doDestroyExpectingThrowable();
 
-    assertThat(thrown).isInstanceOf(ConcurrentCacheModificationException.class);
+    verifyThrowableInstanceOf(ConcurrentCacheModificationException.class);
     verify(owner, never()).notifyTimestampsToGateways(event);
   }
 
@@ -1499,6 +1501,14 @@ public class RegionMapDestroyTest {
   private boolean doDestroy() {
     return regionMapDestroy.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
         expectedOldValue, removeRecoveredEntry);
+  }
+
+  private void doDestroyExpectingThrowable() {
+    doDestroyThrowable = catchThrowable(() -> doDestroy());
+  }
+
+  private void verifyThrowableInstanceOf(Class<?> expected) {
+    assertThat(doDestroyThrowable).isInstanceOf(expected);
   }
 
   private void verifyEntryAddedToMap(RegionEntry entry) {
