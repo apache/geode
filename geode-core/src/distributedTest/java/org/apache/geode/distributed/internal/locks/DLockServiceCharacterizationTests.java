@@ -15,16 +15,13 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static java.lang.Thread.currentThread;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.DistributedLockService.getServiceNamed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -88,19 +85,19 @@ public class DLockServiceCharacterizationTests {
     DistributedLockService service = DistributedLockService.create(serviceName, distributedSystem);
 
     // Not locked initially
-    assertFalse(service.isHeldByCurrentThread(objectName));
+    assertThat(service.isHeldByCurrentThread(objectName)).isFalse();
 
     // Get lock
-    assertTrue(service.lock(objectName, 3000, -1));
-    assertTrue(service.isHeldByCurrentThread(objectName));
-    assertTrue(service.lock(objectName, 3000, -1));
-    assertTrue(service.isHeldByCurrentThread(objectName));
+    assertThat(service.lock(objectName, 3000, -1)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objectName)).isTrue();
+    assertThat(service.lock(objectName, 3000, -1)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objectName)).isTrue();
 
     // Release lock
     service.unlock(objectName);
-    assertTrue(service.isHeldByCurrentThread(objectName));
+    assertThat(service.isHeldByCurrentThread(objectName)).isTrue();
     service.unlock(objectName);
-    assertFalse(service.isHeldByCurrentThread(objectName));
+    assertThat(service.isHeldByCurrentThread(objectName)).isFalse();
 
     // Destroy service
     DistributedLockService.destroy(serviceName);
@@ -108,20 +105,20 @@ public class DLockServiceCharacterizationTests {
 
   @Test
   public void reentrantLockIncreasesReentrancy() {
-    assertTrue(dLockService.lock("key1", -1, -1));
+    assertThat(dLockService.lock("key1", -1, -1)).isTrue();
     DLockToken key1 = ((DLockService) dLockService).getToken("key1");
 
-    assertEquals(0, key1.getRecursion());
-    assertEquals(1, key1.getUsageCount());
+    assertThat(key1.getRecursion()).isEqualTo(0);
+    assertThat(key1.getUsageCount()).isEqualTo(1);
     // reentrancy + 1
-    assertTrue(dLockService.lock("key1", -1, -1));
+    assertThat(dLockService.lock("key1", -1, -1)).isTrue();
 
-    assertEquals(1, key1.getRecursion());
-    assertEquals(2, key1.getUsageCount());
+    assertThat(key1.getRecursion()).isEqualTo(1);
+    assertThat(key1.getUsageCount()).isEqualTo(2);
 
     dLockService.unlock("key1");
-    assertEquals(0, key1.getRecursion());
-    assertEquals(1, key1.getUsageCount());
+    assertThat(key1.getRecursion()).isEqualTo(0);
+    assertThat(key1.getUsageCount()).isEqualTo(1);
 
     dLockService.unlock("key1");
     assertTokenIsUnused(key1);
@@ -129,12 +126,12 @@ public class DLockServiceCharacterizationTests {
 
   @Test
   public void threadWaitingOnLockIncreasesUsageCount() {
-    assertTrue(dLockService.lock("key1", -1, -1));
+    assertThat(dLockService.lock("key1", -1, -1)).isTrue();
     DLockToken key1 = ((DLockService) dLockService).getToken("key1");
 
-    assertEquals(0, key1.getRecursion());
-    assertEquals(1, key1.getUsageCount());
-    assertEquals(Thread.currentThread(), key1.getThread());
+    assertThat(key1.getRecursion()).isEqualTo(0);
+    assertThat(key1.getUsageCount()).isEqualTo(1);
+    assertThat(key1.getThread()).isEqualTo(currentThread());
 
     Thread otherThread = new Thread(() -> dLockService.lock("key1", -1, -1));
     otherThread.start();
@@ -143,16 +140,16 @@ public class DLockServiceCharacterizationTests {
 
     await("other thread is waiting on this lock").atMost(3, TimeUnit.SECONDS)
         .until(() -> key1.getUsageCount() == 2);
-    assertEquals(0, key1.getRecursion());
-    assertEquals(Thread.currentThread(), key1.getThread());
+    assertThat(key1.getRecursion()).isEqualTo(0);
+    assertThat(key1.getThread()).isEqualTo(currentThread());
 
     dLockService.unlock("key1");
 
     await("other thread has acquired this lock").atMost(3, TimeUnit.SECONDS)
         .until(() -> key1.getThread() == otherThread);
 
-    assertEquals(0, key1.getRecursion());
-    assertEquals(1, key1.getUsageCount());
+    assertThat(key1.getRecursion()).isEqualTo(0);
+    assertThat(key1.getUsageCount()).isEqualTo(1);
 
     // We can unlock from a different thread than locked it.
     dLockService.unlock("key1");
@@ -214,9 +211,9 @@ public class DLockServiceCharacterizationTests {
     final Cache cache = new CacheFactory().create();
     final DistributedSystem distributedSystem = cache.getDistributedSystem();
 
-    assertNull(DistributedLockService.getServiceNamed(serviceName));
+    assertThat(getServiceNamed(serviceName)).isNull();
     DistributedLockService service = DistributedLockService.create(serviceName, distributedSystem);
-    assertSame(service, DistributedLockService.getServiceNamed(serviceName));
+    assertThat(getServiceNamed(serviceName)).isSameAs(service);
     DistributedLockService.destroy(serviceName);
   }
 
@@ -274,10 +271,10 @@ public class DLockServiceCharacterizationTests {
   }
 
   private void assertTokenIsUnused(DLockToken dLockToken) {
-    assertEquals(0, dLockToken.getRecursion());
-    assertEquals(0, dLockToken.getUsageCount());
-    assertNull(dLockToken.getThread());
-    assertNull(dLockToken.getLesseeThread());
-    assertEquals(-1, dLockToken.getLeaseId());
+    assertThat(dLockToken.getRecursion()).isEqualTo(0);
+    assertThat(dLockToken.getUsageCount()).isEqualTo(0);
+    assertThat(dLockToken.getThread()).isNull();
+    assertThat(dLockToken.getLesseeThread()).isNull();
+    assertThat(dLockToken.getLeaseId()).isEqualTo(-1);
   }
 }
