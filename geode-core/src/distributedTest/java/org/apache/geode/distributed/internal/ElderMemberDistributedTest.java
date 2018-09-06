@@ -107,7 +107,8 @@ public class ElderMemberDistributedTest {
   private static InternalDistributedMember assertIsElderAndGetId() {
     DistributionManager distributionManager =
         ClusterStartupRule.getCache().getInternalDistributedSystem().getDistributionManager();
-    assertThat(distributionManager.isElder()).isTrue();
+    Awaitility.waitAtMost(1, TimeUnit.MINUTES)
+        .untilAsserted(() -> assertThat(distributionManager.isElder()).isTrue());
     return distributionManager.getElderId();
   }
 
@@ -121,6 +122,6 @@ public class ElderMemberDistributedTest {
           distributionManager.waitForElder(elderId);
           return true;
         });
-    // assertThat(distributionManager.getElderId()).isEqualTo(elderId);
+    assertThat(distributionManager.getElderId()).isEqualTo(elderId);
   }
 }

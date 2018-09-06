@@ -2819,7 +2819,7 @@ public class DLockService extends DistributedLockService {
             needsRecovery.remove(serviceName);
           }
         }
-        if (!foundGrantor) {
+        if (!foundGrantor && !dm.isLoner()) {
           if (!grantors.containsKey(serviceName)) {
             needsRecovery.add(serviceName);
           }
