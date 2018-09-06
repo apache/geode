@@ -32,12 +32,12 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * Distribution message for dropping client from blacklist.
+ * Distribution message for dropping client from denylist.
  *
  * @since GemFire 6.0
  *
  */
-public class RemoveClientFromBlacklistMessage extends PooledDistributionMessage {
+public class RemoveClientFromDenylistMessage extends PooledDistributionMessage {
   private static final Logger logger = LogService.getLogger();
 
   // The proxy id of the client represented by this proxy
@@ -53,14 +53,14 @@ public class RemoveClientFromBlacklistMessage extends PooledDistributionMessage 
         while (i.hasNext()) {
           CacheServerImpl bs = (CacheServerImpl) i.next();
           CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-          Set s = ccn.getBlacklistedClient();
+          Set s = ccn.getDenylistedClient();
           if (s != null) {
             if (s.remove(proxyID)) {
               DistributedSystem ds = dm.getSystem();
               if (ds != null) {
                 if (logger.isDebugEnabled()) {
                   logger.debug(
-                      "Remove the client from black list as its queue is already destroyed: {}",
+                      "Remove the client from deny list as its queue is already destroyed: {}",
                       proxyID);
                 }
               }
@@ -71,7 +71,7 @@ public class RemoveClientFromBlacklistMessage extends PooledDistributionMessage 
     }
   }
 
-  public RemoveClientFromBlacklistMessage() {
+  public RemoveClientFromDenylistMessage() {
     this.setRecipient(ALL_RECIPIENTS);
   }
 
@@ -86,7 +86,7 @@ public class RemoveClientFromBlacklistMessage extends PooledDistributionMessage 
   }
 
   public int getDSFID() {
-    return REMOVE_CLIENT_FROM_BLACKLIST_MESSAGE;
+    return REMOVE_CLIENT_FROM_DENYLIST_MESSAGE;
   }
 
   @Override

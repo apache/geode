@@ -477,10 +477,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     return result.toString();
   }
 
-  public void waitForBlacklistToClear(final PoolImpl pool) {
+  public void waitForDenylistToClear(final PoolImpl pool) {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        return pool.getBlacklistedServers().size() == 0;
+        return pool.getDenylistedServers().size() == 0;
       }
 
       public String description() {
@@ -488,8 +488,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
     Wait.waitForCriterion(ev, 30 * 1000, 200, true);
-    assertEquals("unexpected blacklistedServers=" + pool.getBlacklistedServers(), 0,
-        pool.getBlacklistedServers().size());
+    assertEquals("unexpected denylistedServers=" + pool.getDenylistedServers(), 0,
+        pool.getDenylistedServers().size());
   }
 
   public void verifyServerCount(final PoolImpl pool, final int expectedCount) {

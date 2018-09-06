@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  * the License.
  */
 @Category({SerializationTest.class})
-public class InternalDataSerializerSerializationWhitelistTest {
+public class InternalDataSerializerSerializationAcceptlistTest {
   private HeapDataOutputStream outputStream;
   private Object testSerializable;
   private Properties properties;
@@ -76,14 +76,14 @@ public class InternalDataSerializerSerializationWhitelistTest {
   }
 
   @Test(expected = java.io.InvalidClassException.class)
-  public void notWhitelistedWithFilterCannotSerialize() throws Exception {
+  public void notAcceptlistedWithFilterCannotSerialize() throws Exception {
     properties.setProperty(DistributionConfig.VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
 
     trySerializingTestObject(properties);
   }
 
   @Test
-  public void whitelistedWithFilterCanSerialize() throws Exception {
+  public void acceptlistedWithFilterCanSerialize() throws Exception {
     properties.setProperty(DistributionConfig.VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
     properties.setProperty(DistributionConfig.SERIALIZABLE_OBJECT_FILTER_NAME,
         TestSerializable.class.getName());
@@ -92,33 +92,33 @@ public class InternalDataSerializerSerializationWhitelistTest {
   }
 
   @Test(expected = java.io.InvalidClassException.class)
-  public void whitelistedWithNonMatchingFilterCannotSerialize() throws Exception {
+  public void acceptlistedWithNonMatchingFilterCannotSerialize() throws Exception {
     trySerializingWithFilter("RabidMonkeyTurnip");
   }
 
   @Test(expected = java.io.InvalidClassException.class)
-  public void whitelistedWithPartialMatchingFilterCannotSerialize() throws Exception {
+  public void acceptlistedWithPartialMatchingFilterCannotSerialize() throws Exception {
     trySerializingWithFilter("TestSerializable"); // Not fully qualified class name
   }
 
   @Test(expected = java.io.InvalidClassException.class)
-  public void whitelistedWithEmptyFilterCannotSerialize() throws Exception {
+  public void acceptlistedWithEmptyFilterCannotSerialize() throws Exception {
     trySerializingWithFilter("");
   }
 
   @Test(expected = java.io.InvalidClassException.class)
-  public void whitelistedWithIncorrectPathFilterCannotSerialize() throws Exception {
+  public void acceptlistedWithIncorrectPathFilterCannotSerialize() throws Exception {
     trySerializingWithFilter(
-        "org.apache.commons.InternalDataSerializerSerializationWhitelistTest$TestSerializable");
+        "org.apache.commons.InternalDataSerializerSerializationAcceptlistTest$TestSerializable");
   }
 
   @Test(expected = java.io.InvalidClassException.class)
-  public void whitelistedWithWildcardPathFilterCannotSerialize() throws Exception {
+  public void acceptlistedWithWildcardPathFilterCannotSerialize() throws Exception {
     trySerializingWithFilter("org.apache.*");
   }
 
   @Test
-  public void whitelistedWithWildcardSubpathFilterCanSerialize() throws Exception {
+  public void acceptlistedWithWildcardSubpathFilterCanSerialize() throws Exception {
     trySerializingWithFilter("org.apache.**");
   }
 

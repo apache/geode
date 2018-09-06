@@ -39,28 +39,28 @@ import org.apache.geode.internal.logging.LogService;
  * that the locator may tell us a server is alive but we are unable to reach it.
  *
  * This class keeps track of the number of consecutive failures that happen to on each server. If
- * the number of failures exceeds the limit, the server is added to a blacklist for a certain period
- * of time. After the time is expired, the server comes off the blacklist, but the next failure will
+ * the number of failures exceeds the limit, the server is added to a denylist for a certain period
+ * of time. After the time is expired, the server comes off the denylist, but the next failure will
  * put the server back on the list for a longer period of time.
  *
  *
  */
-public class ServerBlackList {
+public class ServerDenyList {
 
   private static final Logger logger = LogService.getLogger();
 
   private final Map/* <ServerLocation, AI> */ failureTrackerMap = new HashMap();
-  protected final Set blacklist = new CopyOnWriteArraySet();
-  private final Set unmodifiableBlacklist = Collections.unmodifiableSet(blacklist);
+  protected final Set denylist = new CopyOnWriteArraySet();
+  private final Set unmodifiableDenylist = Collections.unmodifiableSet(denylist);
   protected ScheduledExecutorService background;
   protected final ListenerBroadcaster broadcaster = new ListenerBroadcaster();
 
   // not final for tests.
   static int THRESHOLD = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "ServerBlackList.THRESHOLD", 3).intValue();
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "ServerDenyList.THRESHOLD", 3).intValue();
   protected final long pingInterval;
 
-  public ServerBlackList(long pingInterval) {
+  public ServerDenyList(long pingInterval) {
     this.pingInterval = pingInterval;
   }
 
@@ -82,7 +82,7 @@ public class ServerBlackList {
   }
 
   public Set getBadServers() {
-    return unmodifiableBlacklist;
+    return unmodifiableDenylist;
   }
 
   public class FailureTracker {
@@ -98,21 +98,21 @@ public class ServerBlackList {
     }
 
     public void addFailure() {
-      if (blacklist.contains(location)) {
+      if (denylist.contains(location)) {
         // A second failure must have happened before we added
-        // this server to the blacklist. Don't count that failure.
+        // this server to the denylist. Don't count that failure.
         return;
       }
       long failures = consecutiveFailures.incrementAndGet();
       if (failures >= THRESHOLD) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Blacklisting server {} for {}ms because it had {} consecutive failures",
+          logger.debug("Denylisting server {} for {}ms because it had {} consecutive failures",
               location, pingInterval, failures);
         }
-        blacklist.add(location);
+        denylist.add(location);
         broadcaster.serverAdded(location);
         try {
-          background.schedule(new ExpireBlackListTask(location), pingInterval,
+          background.schedule(new ExpireDenyListTask(location), pingInterval,
               TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
           // ignore, the timer has been cancelled, which means we're shutting down.
@@ -122,40 +122,40 @@ public class ServerBlackList {
     }
   }
 
-  public void addListener(BlackListListener blackListListener) {
-    broadcaster.listeners.add(blackListListener);
+  public void addListener(DenyListListener denyListListener) {
+    broadcaster.listeners.add(denyListListener);
   }
 
-  public void removeListener(BlackListListener blackListListener) {
-    broadcaster.listeners.remove(blackListListener);
+  public void removeListener(DenyListListener denyListListener) {
+    broadcaster.listeners.remove(denyListListener);
   }
 
 
 
-  private class ExpireBlackListTask extends PoolTask {
+  private class ExpireDenyListTask extends PoolTask {
     private ServerLocation location;
 
-    public ExpireBlackListTask(ServerLocation location) {
+    public ExpireDenyListTask(ServerLocation location) {
       this.location = location;
     }
 
     @Override
     public void run2() {
       if (logger.isDebugEnabled()) {
-        logger.debug("{} is no longer blacklisted", location);
+        logger.debug("{} is no longer denylisted", location);
       }
-      blacklist.remove(location);
+      denylist.remove(location);
       broadcaster.serverRemoved(location);
     }
   }
 
-  public interface BlackListListener {
+  public interface DenyListListener {
     void serverAdded(ServerLocation location);
 
     void serverRemoved(ServerLocation location);
   }
 
-  public static class BlackListListenerAdapter implements BlackListListener {
+  public static class DenyListListenerAdapter implements DenyListListener {
     public void serverAdded(ServerLocation location) {
       // do nothing
     }
@@ -165,20 +165,20 @@ public class ServerBlackList {
     }
   }
 
-  protected static class ListenerBroadcaster implements BlackListListener {
+  protected static class ListenerBroadcaster implements DenyListListener {
 
     protected Set listeners = new CopyOnWriteArraySet();
 
     public void serverAdded(ServerLocation location) {
       for (Iterator itr = listeners.iterator(); itr.hasNext();) {
-        BlackListListener listener = (BlackListListener) itr.next();
+        DenyListListener listener = (DenyListListener) itr.next();
         listener.serverAdded(location);
       }
     }
 
     public void serverRemoved(ServerLocation location) {
       for (Iterator itr = listeners.iterator(); itr.hasNext();) {
-        BlackListListener listener = (BlackListListener) itr.next();
+        DenyListListener listener = (DenyListListener) itr.next();
         listener.serverRemoved(location);
       }
     }
