@@ -131,11 +131,15 @@ public class ClusterElderManager {
     clusterDistributionManager.addMembershipListener(changeListener);
 
     boolean interrupted = false;
+    InternalDistributedMember currentElder;
+
     try {
-      InternalDistributedMember currentElder = getElderCandidate();
-      logger.debug(LocalizedMessage.create(
-          LocalizedStrings.DistributionManager_CHANGING_ELDER_FROM_0_TO_1,
-          new Object[] {desiredElder, currentElder}));
+      if (logger.isDebugEnabled()) {
+        currentElder = getElderCandidate();
+        logger.debug(LocalizedMessage.create(
+            LocalizedStrings.DistributionManager_CHANGING_ELDER_TO_0_FROM_1,
+            new Object[] {desiredElder, currentElder}));
+      }
 
       while (true) {
         if (clusterDistributionManager.isCloseInProgress()) {
