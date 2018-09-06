@@ -269,9 +269,9 @@ subprojects {
         systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
         systemProperty 'gemfire.disallowMcastDefaults', 'true'
         systemProperty 'jline.terminal', 'jline.UnsupportedTerminal'
-        def logLevel = System.getProperty('logLevel')
+        def logLevel = System.getProperty('log-level')
         if (logLevel != null) {
-          systemProperty 'logLevel', logLevel
+          systemProperty 'log-level', logLevel
         }
         def log4jLocation = System.getProperty('log4j.configurationFile')
         if (log4jLocation != null) {
