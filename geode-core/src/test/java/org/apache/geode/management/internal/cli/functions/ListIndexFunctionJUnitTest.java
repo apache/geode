@@ -106,6 +106,7 @@ public class ListIndexFunctionJUnitTest {
 
   private void assertIndexDetailsEquals(final IndexDetails actualIndexDetails,
       final IndexDetails expectedIndexDetails) {
+    assertThat(actualIndexDetails).isNotNull();
     assertThat(actualIndexDetails.getFromClause()).isEqualTo(expectedIndexDetails.getFromClause());
     assertThat(actualIndexDetails.getIndexedExpression())
         .isEqualTo(expectedIndexDetails.getIndexedExpression());
@@ -227,7 +228,6 @@ public class ListIndexFunctionJUnitTest {
     for (final IndexDetails expectedIndexDetails : expectedIndexDetailsSet) {
       final IndexDetails actualIndexDetails = CollectionUtils.findBy(actualIndexDetailsSet,
           indexDetails -> ObjectUtils.equals(expectedIndexDetails, indexDetails));
-      assertThat(actualIndexDetails).isNotNull();
       assertIndexDetailsEquals(actualIndexDetails, expectedIndexDetails);
     }
   }

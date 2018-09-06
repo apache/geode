@@ -156,18 +156,19 @@ public class DiskStoreCommandsJUnitTest {
 
   @Test
   public void testGetDiskStoreList() {
-    final DiskStoreDetails diskStoreDetails3 = createDiskStoreDetails("memberTwo", "pdxDiskStore");
-    final DiskStoreDetails diskStoreDetails4 =
-        createDiskStoreDetails("memberTwo", "regionDiskStore");
-    final DiskStoreDetails diskStoreDetails2 =
-        createDiskStoreDetails("memberOne", "gatewayDiskStore");
     final DiskStoreDetails diskStoreDetails1 =
-        createDiskStoreDetails("memberOne", "cacheServerDiskStore");
+        createDiskStoreDetails("memberOne", "cacheServer1DiskStore1");
+    final DiskStoreDetails diskStoreDetails2 =
+        createDiskStoreDetails("memberOne", "cacheServer1DiskStore2");
+    final DiskStoreDetails diskStoreDetails3 =
+        createDiskStoreDetails("memberTwo", "cacheServer2DiskStore1");
+    final DiskStoreDetails diskStoreDetails4 =
+        createDiskStoreDetails("memberTwo", "cacheServer2DiskStore2");
     final List<DiskStoreDetails> expectedDiskStores =
         Arrays.asList(diskStoreDetails1, diskStoreDetails2, diskStoreDetails3, diskStoreDetails4);
     final List<Set<DiskStoreDetails>> results = new ArrayList<>();
-    results.add(CollectionUtils.asSet(diskStoreDetails4, diskStoreDetails3));
     results.add(CollectionUtils.asSet(diskStoreDetails1, diskStoreDetails2));
+    results.add(CollectionUtils.asSet(diskStoreDetails4, diskStoreDetails3));
     when(mockFunctionExecutor.execute(any(ListDiskStoresFunction.class)))
         .thenReturn(mockResultCollector);
     when(mockResultCollector.getResult()).thenReturn(results);
