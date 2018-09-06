@@ -14,21 +14,18 @@
  */
 package org.apache.geode.internal.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.Sequence;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 
 /**
@@ -38,29 +35,11 @@ import org.junit.Test;
  */
 public class CompositeOutputStreamJUnitTest {
 
-  private Mockery mockContext;
-
-  @Before
-  public void setUp() {
-    mockContext = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-        setThreadingPolicy(new Synchroniser());
-      }
-    };
-  }
-
-  @After
-  public void tearDown() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
-  }
-
   @Test
   public void testNewCompositeOutputStreamWithNoStreams() throws IOException {
     final CompositeOutputStream cos = new CompositeOutputStream();
-    assertTrue(cos.isEmpty());
-    assertEquals(0, cos.size());
+    assertThat(cos.isEmpty()).isTrue();
+    assertThat(cos.size()).isEqualTo(0);
 
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
@@ -71,523 +50,235 @@ public class CompositeOutputStreamJUnitTest {
 
   @Test
   public void testMockOutputStream() throws IOException {
-    final OutputStream mockOutputStream = mockContext.mock(OutputStream.class, "OutputStream");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockOutputStream).write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
-        oneOf(mockOutputStream).write(new byte[] {0, 1});
-        oneOf(mockOutputStream).write(9);
-        oneOf(mockOutputStream).flush();
-        oneOf(mockOutputStream).close();
-      }
-    });
-
+    final OutputStream mockOutputStream = mock(OutputStream.class, "OutputStream");
     mockOutputStream.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     mockOutputStream.write(new byte[] {0, 1});
     mockOutputStream.write(9);
     mockOutputStream.flush();
     mockOutputStream.close();
+
+    verify(mockOutputStream, times(1)).write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
+    verify(mockOutputStream, times(1)).write(new byte[] {0, 1});
+    verify(mockOutputStream, times(1)).write(9);
+    verify(mockOutputStream, times(1)).flush();
+    verify(mockOutputStream, times(1)).close();
   }
 
   @Test
   public void testNewCompositeOutputStreamWithOneStream() throws IOException {
-    final Sequence seqStreamOne = mockContext.sequence("seqStreamOne");
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamOne).write(2);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(3);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(4);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(0);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(1);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(9);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).close();
-        inSequence(seqStreamOne);
-      }
-    });
+    final OutputStream mockStreamOne = mock(OutputStream.class, "streamOne");
+    final CompositeOutputStream compositeOutputStream = new CompositeOutputStream(mockStreamOne);
+    assertThat(compositeOutputStream.isEmpty()).isFalse();
+    assertThat(compositeOutputStream.size()).isEqualTo(1);
+    compositeOutputStream.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
+    compositeOutputStream.write(new byte[] {0, 1});
+    compositeOutputStream.write(9);
+    compositeOutputStream.flush();
+    compositeOutputStream.close();
 
-    final CompositeOutputStream cos = new CompositeOutputStream(streamOne);
-
-    assertFalse(cos.isEmpty());
-    assertEquals(1, cos.size());
-
-    cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
-    cos.write(new byte[] {0, 1});
-    cos.write(9);
-    cos.flush();
-    cos.close();
+    InOrder inOrder = inOrder(mockStreamOne);
+    inOrder.verify(mockStreamOne, times(1)).write(2);
+    inOrder.verify(mockStreamOne, times(1)).write(3);
+    inOrder.verify(mockStreamOne, times(1)).write(4);
+    inOrder.verify(mockStreamOne, times(1)).write(0);
+    inOrder.verify(mockStreamOne, times(1)).write(1);
+    inOrder.verify(mockStreamOne, times(1)).write(9);
+    inOrder.verify(mockStreamOne, times(2)).flush();
+    inOrder.verify(mockStreamOne, times(1)).close();
   }
 
   @Test
   public void testNewCompositeOutputStreamWithTwoStreams() throws IOException {
-    final Sequence seqStreamOne = mockContext.sequence("seqStreamOne");
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamOne).write(2);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(3);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(4);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(0);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(1);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(9);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).close();
-        inSequence(seqStreamOne);
-      }
-    });
-
-    final Sequence seqStreamTwo = mockContext.sequence("seqStreamTwo");
-    final OutputStream streamTwo = mockContext.mock(OutputStream.class, "streamTwo");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamTwo).write(2);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(3);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(4);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(0);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(1);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(9);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).close();
-        inSequence(seqStreamTwo);
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
+    final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne, streamTwo);
-
-    assertFalse(cos.isEmpty());
-    assertEquals(2, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(2);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    InOrder inOrderStreams = inOrder(streamOne, streamTwo);
+    inOrderStreams.verify(streamOne, times(1)).write(2);
+    inOrderStreams.verify(streamOne, times(1)).write(3);
+    inOrderStreams.verify(streamOne, times(1)).write(4);
+    inOrderStreams.verify(streamOne, times(1)).write(0);
+    inOrderStreams.verify(streamOne, times(1)).write(1);
+    inOrderStreams.verify(streamOne, times(1)).write(9);
+    inOrderStreams.verify(streamOne, times(2)).flush();
+    inOrderStreams.verify(streamOne, times(1)).close();
   }
 
   @Test
   public void testAddOutputStreamWithTwoStreams() throws IOException {
-    final Sequence seqStreamOne = mockContext.sequence("seqStreamOne");
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamOne).write(2);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(3);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(4);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(0);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(1);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(9);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).close();
-        inSequence(seqStreamOne);
-      }
-    });
-
-    final Sequence seqStreamTwo = mockContext.sequence("seqStreamTwo");
-    final OutputStream streamTwo = mockContext.mock(OutputStream.class, "streamTwo");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamTwo).write(2);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(3);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(4);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(0);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(1);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(9);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).close();
-        inSequence(seqStreamTwo);
-      }
-    });
-
-    final Sequence seqStreamThree = mockContext.sequence("seqStreamThree");
-    final OutputStream streamThree = mockContext.mock(OutputStream.class, "streamThree");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamThree).write(2);
-        inSequence(seqStreamThree);
-        oneOf(streamThree).write(3);
-        inSequence(seqStreamThree);
-        oneOf(streamThree).write(4);
-        inSequence(seqStreamThree);
-        oneOf(streamThree).write(0);
-        inSequence(seqStreamThree);
-        oneOf(streamThree).write(1);
-        inSequence(seqStreamThree);
-        oneOf(streamThree).write(9);
-        inSequence(seqStreamThree);
-        oneOf(streamThree).flush();
-        inSequence(seqStreamThree);
-        oneOf(streamThree).flush();
-        inSequence(seqStreamThree);
-        oneOf(streamThree).close();
-        inSequence(seqStreamThree);
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
+    final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
+    final OutputStream streamThree = mock(OutputStream.class, "streamThree");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne, streamTwo);
-
-    assertFalse(cos.isEmpty());
-    assertEquals(2, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(2);
     cos.addOutputStream(streamThree);
-    assertEquals(3, cos.size());
-
+    assertThat(cos.size()).isEqualTo(3);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    InOrder inOrderStreams = inOrder(streamOne, streamTwo, streamThree);
+    inOrderStreams.verify(streamOne, times(1)).write(2);
+    inOrderStreams.verify(streamOne, times(1)).write(3);
+    inOrderStreams.verify(streamOne, times(1)).write(4);
+    inOrderStreams.verify(streamOne, times(1)).write(0);
+    inOrderStreams.verify(streamOne, times(1)).write(1);
+    inOrderStreams.verify(streamOne, times(1)).write(9);
+    inOrderStreams.verify(streamOne, times(2)).flush();
+    inOrderStreams.verify(streamOne, times(1)).close();
   }
 
   @Test
   public void testAddOutputStreamWithOneStream() throws IOException {
-    final Sequence seqStreamOne = mockContext.sequence("seqStreamOne");
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamOne).write(2);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(3);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(4);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(0);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(1);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(9);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).close();
-        inSequence(seqStreamOne);
-      }
-    });
-
-    final Sequence seqStreamTwo = mockContext.sequence("seqStreamTwo");
-    final OutputStream streamTwo = mockContext.mock(OutputStream.class, "streamTwo");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamTwo).write(2);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(3);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(4);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(0);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(1);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(9);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).close();
-        inSequence(seqStreamTwo);
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
+    final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne);
-
-    assertFalse(cos.isEmpty());
-    assertEquals(1, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(1);
     cos.addOutputStream(streamTwo);
-    assertEquals(2, cos.size());
-
+    assertThat(cos.size()).isEqualTo(2);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    InOrder inOrderStreams = inOrder(streamOne, streamTwo);
+    inOrderStreams.verify(streamOne, times(1)).write(2);
+    inOrderStreams.verify(streamOne, times(1)).write(3);
+    inOrderStreams.verify(streamOne, times(1)).write(4);
+    inOrderStreams.verify(streamOne, times(1)).write(0);
+    inOrderStreams.verify(streamOne, times(1)).write(1);
+    inOrderStreams.verify(streamOne, times(1)).write(9);
+    inOrderStreams.verify(streamOne, times(2)).flush();
+    inOrderStreams.verify(streamOne, times(1)).close();
   }
 
   @Test
   public void testAddOneOutputStreamWhenEmpty() throws IOException {
-    final Sequence seqStreamOne = mockContext.sequence("seqStreamOne");
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamOne).write(2);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(3);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(4);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(0);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(1);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(9);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).close();
-        inSequence(seqStreamOne);
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
     final CompositeOutputStream cos = new CompositeOutputStream();
-
-    assertTrue(cos.isEmpty());
-    assertEquals(0, cos.size());
-
+    assertThat(cos.isEmpty()).isTrue();
+    assertThat(cos.size()).isEqualTo(0);
     cos.addOutputStream(streamOne);
-    assertFalse(cos.isEmpty());
-    assertEquals(1, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(1);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    InOrder inOrderStreams = inOrder(streamOne);
+    inOrderStreams.verify(streamOne, times(1)).write(2);
+    inOrderStreams.verify(streamOne, times(1)).write(3);
+    inOrderStreams.verify(streamOne, times(1)).write(4);
+    inOrderStreams.verify(streamOne, times(1)).write(0);
+    inOrderStreams.verify(streamOne, times(1)).write(1);
+    inOrderStreams.verify(streamOne, times(1)).write(9);
+    inOrderStreams.verify(streamOne, times(2)).flush();
+    inOrderStreams.verify(streamOne, times(1)).close();
   }
 
   @Test
   public void testAddTwoOutputStreamsWhenEmpty() throws IOException {
-    final Sequence seqStreamOne = mockContext.sequence("seqStreamOne");
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamOne).write(2);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(3);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(4);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(0);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(1);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(9);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).close();
-        inSequence(seqStreamOne);
-      }
-    });
-
-    final Sequence seqStreamTwo = mockContext.sequence("seqStreamTwo");
-    final OutputStream streamTwo = mockContext.mock(OutputStream.class, "streamTwo");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamTwo).write(2);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(3);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(4);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(0);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(1);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).write(9);
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).flush();
-        inSequence(seqStreamTwo);
-        oneOf(streamTwo).close();
-        inSequence(seqStreamTwo);
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
+    final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream();
-
-    assertTrue(cos.isEmpty());
-    assertEquals(0, cos.size());
-
+    assertThat(cos.isEmpty()).isTrue();
+    assertThat(cos.size()).isEqualTo(0);
     cos.addOutputStream(streamOne);
     cos.addOutputStream(streamTwo);
-    assertFalse(cos.isEmpty());
-    assertEquals(2, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(2);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    InOrder inOrderStreams = inOrder(streamOne, streamTwo);
+    inOrderStreams.verify(streamOne, times(1)).write(2);
+    inOrderStreams.verify(streamOne, times(1)).write(3);
+    inOrderStreams.verify(streamOne, times(1)).write(4);
+    inOrderStreams.verify(streamOne, times(1)).write(0);
+    inOrderStreams.verify(streamOne, times(1)).write(1);
+    inOrderStreams.verify(streamOne, times(1)).write(9);
+    inOrderStreams.verify(streamOne, times(2)).flush();
+    inOrderStreams.verify(streamOne, times(1)).close();
   }
 
   @Test
   public void testRemoveOutputStreamWithTwoStreams() throws IOException {
-    final Sequence seqStreamOne = mockContext.sequence("seqStreamOne");
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(streamOne).write(2);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(3);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(4);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(0);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(1);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).write(9);
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).flush();
-        inSequence(seqStreamOne);
-        oneOf(streamOne).close();
-        inSequence(seqStreamOne);
-      }
-    });
-
-    final OutputStream streamTwo = mockContext.mock(OutputStream.class, "streamTwo");
-    mockContext.checking(new Expectations() {
-      {
-        never(streamTwo).write(2);
-        never(streamTwo).write(3);
-        never(streamTwo).write(4);
-        never(streamTwo).write(0);
-        never(streamTwo).write(1);
-        never(streamTwo).write(9);
-        never(streamTwo).flush();
-        never(streamTwo).flush();
-        never(streamTwo).close();
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
+    final OutputStream streamTwo = mock(OutputStream.class, "streamTwo");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne, streamTwo);
-
-    assertFalse(cos.isEmpty());
-    assertEquals(2, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(2);
     cos.removeOutputStream(streamTwo);
-
-    assertFalse(cos.isEmpty());
-    assertEquals(1, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(1);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    verifyZeroInteractions(streamTwo);
+    InOrder inOrderStreams = inOrder(streamOne);
+    inOrderStreams.verify(streamOne, times(1)).write(2);
+    inOrderStreams.verify(streamOne, times(1)).write(3);
+    inOrderStreams.verify(streamOne, times(1)).write(4);
+    inOrderStreams.verify(streamOne, times(1)).write(0);
+    inOrderStreams.verify(streamOne, times(1)).write(1);
+    inOrderStreams.verify(streamOne, times(1)).write(9);
+    inOrderStreams.verify(streamOne, times(2)).flush();
+    inOrderStreams.verify(streamOne, times(1)).close();
   }
 
   @Test
   public void testRemoveOutputStreamWithOneStream() throws IOException {
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        never(streamOne).write(2);
-        never(streamOne).write(3);
-        never(streamOne).write(4);
-        never(streamOne).write(0);
-        never(streamOne).write(1);
-        never(streamOne).write(9);
-        never(streamOne).flush();
-        never(streamOne).flush();
-        never(streamOne).close();
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
     final CompositeOutputStream cos = new CompositeOutputStream(streamOne);
-
-    assertFalse(cos.isEmpty());
-    assertEquals(1, cos.size());
-
+    assertThat(cos.isEmpty()).isFalse();
+    assertThat(cos.size()).isEqualTo(1);
     cos.removeOutputStream(streamOne);
-
-    assertTrue(cos.isEmpty());
-    assertEquals(0, cos.size());
-
+    assertThat(cos.isEmpty()).isTrue();
+    assertThat(cos.size()).isEqualTo(0);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    verifyZeroInteractions(streamOne);
   }
 
   @Test
   public void testRemoveOutputStreamWhenEmpty() throws IOException {
-    final OutputStream streamOne = mockContext.mock(OutputStream.class, "streamOne");
-    mockContext.checking(new Expectations() {
-      {
-        never(streamOne).write(2);
-        never(streamOne).write(3);
-        never(streamOne).write(4);
-        never(streamOne).write(0);
-        never(streamOne).write(1);
-        never(streamOne).write(9);
-        never(streamOne).flush();
-        never(streamOne).flush();
-        never(streamOne).close();
-      }
-    });
-
+    final OutputStream streamOne = mock(OutputStream.class, "streamOne");
     final CompositeOutputStream cos = new CompositeOutputStream();
-
-    assertTrue(cos.isEmpty());
-    assertEquals(0, cos.size());
-
+    assertThat(cos.isEmpty()).isTrue();
+    assertThat(cos.size()).isEqualTo(0);
     cos.removeOutputStream(streamOne);
-
-    assertTrue(cos.isEmpty());
-    assertEquals(0, cos.size());
-
+    assertThat(cos.isEmpty()).isTrue();
+    assertThat(cos.size()).isEqualTo(0);
     cos.write(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 2, 3);
     cos.write(new byte[] {0, 1});
     cos.write(9);
     cos.flush();
     cos.close();
+
+    verifyZeroInteractions(streamOne);
   }
 }

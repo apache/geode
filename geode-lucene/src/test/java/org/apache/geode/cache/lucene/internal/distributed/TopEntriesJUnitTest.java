@@ -14,13 +14,8 @@
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,17 +25,15 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
-@Category({LuceneTest.class})
+@Category(LuceneTest.class)
 public class TopEntriesJUnitTest {
-
-  private Mockery mockContext;
-
-  private EntryScore<String> r1_1 = new EntryScore("3", .9f);
-  private EntryScore<String> r1_2 = new EntryScore("1", .8f);
-  private EntryScore<String> r2_1 = new EntryScore("2", 0.85f);
-  private EntryScore<String> r2_2 = new EntryScore("4", 0.1f);
+  private EntryScore<String> r1_1 = new EntryScore<>("3", .9f);
+  private EntryScore<String> r1_2 = new EntryScore<>("1", .8f);
+  private EntryScore<String> r2_1 = new EntryScore<>("2", 0.85f);
+  private EntryScore<String> r2_2 = new EntryScore<>("4", 0.1f);
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testPopulateTopEntries() {
     TopEntries<String> hits = new TopEntries<>();
     hits.addHit(r1_1);
@@ -48,11 +41,12 @@ public class TopEntriesJUnitTest {
     hits.addHit(r1_2);
     hits.addHit(r2_2);
 
-    assertEquals(4, hits.size());
+    assertThat(hits.size()).isEqualTo(4);
     LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void putSameScoreEntries() {
     TopEntries<String> hits = new TopEntries<>();
     EntryScore<String> r1 = new EntryScore<>("1", .8f);
@@ -60,17 +54,17 @@ public class TopEntriesJUnitTest {
     hits.addHit(r1);
     hits.addHit(r2);
 
-    assertEquals(2, hits.size());
+    assertThat(hits.size()).isEqualTo(2);
     LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1, r2);
   }
 
   @Test
   public void testInitialization() {
     TopEntries<String> hits = new TopEntries<>();
-    assertEquals(LuceneQueryFactory.DEFAULT_LIMIT, hits.getLimit());
+    assertThat(hits.getLimit()).isEqualTo(LuceneQueryFactory.DEFAULT_LIMIT);
 
     hits = new TopEntries<>(123);
-    assertEquals(123, hits.getLimit());
+    assertThat(hits.getLimit()).isEqualTo(123);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -79,25 +73,28 @@ public class TopEntriesJUnitTest {
   }
 
   @Test
-  public void enforceLimit() throws Exception {
+  @SuppressWarnings("unchecked")
+  public void enforceLimit() {
     TopEntries<String> hits = new TopEntries<>(3);
     hits.addHit(r1_1);
     hits.addHit(r2_1);
     hits.addHit(r1_2);
     hits.addHit(r2_2);
 
-    assertEquals(3, hits.size());
+    assertThat(hits.size()).isEqualTo(3);
     LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
     TopEntries<String> hits = new TopEntries<>(3);
 
     TopEntries<String> copy = CopyHelper.deepCopy(hits);
-    assertEquals(3, copy.getLimit());
-    assertEquals(0, copy.getHits().size());
+    assertThat(copy).isNotNull();
+    assertThat(copy.getLimit()).isEqualTo(3);
+    assertThat(copy.getHits().size()).isEqualTo(0);
 
     hits = new TopEntries<>(3);
     hits.addHit(r1_1);
@@ -105,23 +102,8 @@ public class TopEntriesJUnitTest {
     hits.addHit(r1_2);
 
     copy = CopyHelper.deepCopy(hits);
-    assertEquals(3, copy.size());
+    assertThat(copy).isNotNull();
+    assertThat(copy.size()).isEqualTo(3);
     LuceneTestUtilities.verifyResultOrder(copy.getHits(), r1_1, r2_1, r1_2);
-  }
-
-  @Before
-  public void setupMock() {
-    mockContext = new Mockery() {
-      {
-        setImposteriser(ClassImposteriser.INSTANCE);
-        setThreadingPolicy(new Synchroniser());
-      }
-    };
-  }
-
-  @After
-  public void validateMock() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
   }
 }
