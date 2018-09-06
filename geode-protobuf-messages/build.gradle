@@ -64,16 +64,4 @@ assemble.dependsOn 'zip'
 
 afterEvaluate {
   rootProject.generate.dependsOn(generateProto)
-  project.assemble.dependsOn(generateProto)
-  tasks.each {
-    switch (it.name) {
-      case 'generateProto':
-      case 'extractProto':
-      case 'extractIncludeProto':
-        break
-      default:
-        it.mustRunAfter(generateProto)
-        break
-    }
-  }
 }

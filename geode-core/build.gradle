@@ -304,10 +304,4 @@ distributedTest {
 
 afterEvaluate {
   rootProject.generate.dependsOn(generateGrammarSource)
-  project.assemble.dependsOn(generateGrammarSource)
-  tasks.each {
-    if (it.name != 'generateGrammarSource') {
-      it.mustRunAfter(generateGrammarSource)
-    }
-  }
 }
