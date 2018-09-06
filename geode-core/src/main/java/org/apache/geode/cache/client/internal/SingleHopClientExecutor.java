@@ -235,7 +235,6 @@ public class SingleHopClientExecutor {
         Iterator futureItr = futures.iterator();
         Iterator taskItr = callableTasks.iterator();
         RuntimeException rte = null;
-        final boolean isDebugEnabled = logger.isDebugEnabled();
         while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
           Future fut = (Future) futureItr.next();
           SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();

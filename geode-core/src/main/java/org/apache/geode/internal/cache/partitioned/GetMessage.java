@@ -141,7 +141,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     } else if (ORDER_PR_GETS) {
       return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
     } else {
-      // Make this guy serial so that it will be processed in the p2p msg reader
+      // Make this executor serial so that it will be processed in the p2p msg reader
       // which gives it better performance.
       return ClusterDistributionManager.SERIAL_EXECUTOR;
     }

@@ -160,7 +160,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
    */
   Set adviseUpdate(final EntryEventImpl event) throws IllegalStateException {
     if (event.hasNewValue() || event.getOperation().isPutAll()) {
-      // only need to distribute it to guys that want all events or cache data
+      // only need to distribute it to members that want all events or cache data
       return adviseAllEventsOrCached(true/* fixes 41147 */);
     } else {
       // The new value is null so this is a create with a null value,
@@ -284,7 +284,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
 
   /*
-   * * Same as adviseGeneric but excludes guys in recover
+   * * Same as adviseGeneric but excludes if cache profile is in recovery
    */
   public Set adviseInvalidateRegion() {
     return adviseFilter(new Filter() {

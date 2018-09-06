@@ -930,10 +930,10 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * Test hook that returns an unnmodifiable list of the current blacklisted servers
+   * Test hook that returns an unnmodifiable list of the current denylisted servers
    */
-  public Set getBlacklistedServers() {
-    return connectionFactory.getBlackList().getBadServers();
+  public Set getDenylistedServers() {
+    return connectionFactory.getDenyList().getBadServers();
   }
 
   /**

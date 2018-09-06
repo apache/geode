@@ -231,7 +231,7 @@ public class CacheLogRollingIntegrationTest {
     String rollingCurrentLogTo01 = "Rolling current log to " + childLogFile01;
     String rollingCurrentLogTo02 = "Rolling current log to " + childLogFile02;
 
-    String messageInChild = "hey guys im the first child";
+    String messageInChild = "hey im the first child";
     String messagePrefix = "hey whatsup i can't believe it wow ";
 
     this.system.getLogWriter().info(messageInChild);
@@ -277,8 +277,8 @@ public class CacheLogRollingIntegrationTest {
     String rollingCurrentLogTo01 = "Rolling current log to " + childLogFile01;
     String rollingCurrentLogTo02 = "Rolling current log to " + childLogFile02;
 
-    String messageInChild = "hey guys im the first child";
-    String messageInSecurityChild = "hey guys im the first security child";
+    String messageInChild = "hey im the first child";
+    String messageInSecurityChild = "hey im the first security child";
     String messagePrefix = "hey whatsup i can't believe it wow ";
 
     this.system.getLogWriter().info(messageInChild);

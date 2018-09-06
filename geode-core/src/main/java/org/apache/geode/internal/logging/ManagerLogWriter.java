@@ -243,7 +243,7 @@ public class ManagerLogWriter extends LocalLogWriter {
               // so we can rename it. We don't actually write to this tmp file
               File tmpLogDir = rollingFileHandler.getParentFile(this.cfg.getLogFile());
               tmpFile = File.createTempFile("mlw", null, tmpLogDir);
-              // close the old guy down before we do the rename
+              // close the old print writer down before we do the rename
               PrintStream tmpps = OSProcess.redirectOutput(tmpFile,
                   AlertAppender.getInstance().isAlertingDisabled()/* See #49492 */);
               PrintWriter oldPW = this.setTarget(new PrintWriter(tmpps, true));

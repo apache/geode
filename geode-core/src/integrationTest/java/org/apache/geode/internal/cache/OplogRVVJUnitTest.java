@@ -14,29 +14,32 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.FileUtils;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
@@ -44,14 +47,7 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
 
 public class OplogRVVJUnitTest {
-
   private File testDirectory;
-  private Mockery context = new Mockery() {
-    {
-      setImposteriser(ClassImposteriser.INSTANCE);
-      setThreadingPolicy(new Synchroniser());
-    }
-  };
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -68,59 +64,37 @@ public class OplogRVVJUnitTest {
   }
 
   @Test
-  public void testRecoverRVV() throws UnknownHostException {
-    final DiskInitFile df = context.mock(DiskInitFile.class);
-    final LogWriterI18n logger = context.mock(LogWriterI18n.class);
-    final GemFireCacheImpl cache = context.mock(GemFireCacheImpl.class);
+  public void testRecoverRVV() {
+    final DiskInitFile df = mock(DiskInitFile.class);
+    final GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+
     // Create a mock disk store impl.
-    final DiskStoreImpl parent = context.mock(DiskStoreImpl.class);
-    final StatisticsFactory sf = context.mock(StatisticsFactory.class);
+    final DiskStoreImpl parent = mock(DiskStoreImpl.class);
+    final StatisticsFactory sf = mock(StatisticsFactory.class);
     final DiskStoreID ownerId = DiskStoreID.random();
     final DiskStoreID m1 = DiskStoreID.random();
     final DiskStoreID m2 = DiskStoreID.random();
-    final DiskRecoveryStore drs = context.mock(DiskRecoveryStore.class);
+    final DiskRecoveryStore drs = mock(DiskRecoveryStore.class);
+    when(df.getOrCreateCanonicalId(m1)).thenReturn(1);
+    when(df.getOrCreateCanonicalId(m2)).thenReturn(2);
+    when(df.getOrCreateCanonicalId(ownerId)).thenReturn(3);
+    when(df.getCanonicalObject(1)).thenReturn(m1);
+    when(df.getCanonicalObject(2)).thenReturn(m2);
+    when(df.getCanonicalObject(3)).thenReturn(ownerId);
+    when(sf.createStatistics(any(), anyString())).thenReturn(mock(Statistics.class));
+    when(sf.createAtomicStatistics(any(), anyString())).thenReturn(mock(Statistics.class));
 
-    context.checking(new Expectations() {
-      {
-        ignoring(sf);
-        allowing(df).getOrCreateCanonicalId(m1);
-        will(returnValue(1));
-        allowing(df).getOrCreateCanonicalId(m2);
-        will(returnValue(2));
-        allowing(df).getOrCreateCanonicalId(ownerId);
-        will(returnValue(3));
-        allowing(df).getCanonicalObject(1);
-        will(returnValue(m1));
-        allowing(df).getCanonicalObject(2);
-        will(returnValue(m2));
-        allowing(df).getCanonicalObject(3);
-        will(returnValue(ownerId));
-        ignoring(df);
-      }
-    });
     DirectoryHolder dirHolder = new DirectoryHolder(sf, testDirectory, 0, 0);
-
-    context.checking(new Expectations() {
-      {
-        ignoring(logger);
-        allowing(cache).getLoggerI18n();
-        will(returnValue(logger));
-        allowing(cache).cacheTimeMillis();
-        will(returnValue(System.currentTimeMillis()));
-        allowing(parent).getCache();
-        will(returnValue(cache));
-        allowing(parent).getMaxOplogSizeInBytes();
-        will(returnValue(10000L));
-        allowing(parent).getName();
-        will(returnValue("test"));
-        allowing(parent).getStats();
-        will(returnValue(new DiskStoreStats(sf, "stats")));
-        allowing(parent).getDiskInitFile();
-        will(returnValue(df));
-        allowing(parent).getDiskStoreID();
-        will(returnValue(DiskStoreID.random()));
-      }
-    });
+    when(cache.cacheTimeMillis()).thenReturn(System.currentTimeMillis());
+    when(parent.getCache()).thenReturn(cache);
+    when(parent.getMaxOplogSizeInBytes()).thenReturn(10000L);
+    when(parent.getName()).thenReturn("test");
+    DiskStoreStats diskStoreStats = new DiskStoreStats(sf, "stats");
+    when(parent.getStats()).thenReturn(diskStoreStats);
+    when(parent.getDiskInitFile()).thenReturn(df);
+    when(parent.getDiskStoreID()).thenReturn(DiskStoreID.random());
+    when(parent.getBackupLock()).thenReturn(mock(ReentrantLock.class));
+    when(parent.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
     final DiskRegionVersionVector rvv = new DiskRegionVersionVector(ownerId);
     rvv.recordVersion(m1, 0);
@@ -135,57 +109,36 @@ public class OplogRVVJUnitTest {
     rvv.recordGCVersion(m2, 0);
 
     // create the oplog
-
-    final AbstractDiskRegion diskRegion = context.mock(AbstractDiskRegion.class);
-    final PersistentOplogSet oplogSet = context.mock(PersistentOplogSet.class);
-    final Map<Long, AbstractDiskRegion> map = new HashMap<Long, AbstractDiskRegion>();
+    final AbstractDiskRegion diskRegion = mock(AbstractDiskRegion.class);
+    final PersistentOplogSet oplogSet = mock(PersistentOplogSet.class);
+    final Map<Long, AbstractDiskRegion> map = new HashMap<>();
     map.put(5L, diskRegion);
-    context.checking(new Expectations() {
-      {
-        allowing(diskRegion).getRegionVersionVector();
-        will(returnValue(rvv));
-        allowing(diskRegion).getRVVTrusted();
-        will(returnValue(true));
-        allowing(parent).getAllDiskRegions();
-        will(returnValue(map));
-        allowing(oplogSet).getCurrentlyRecovering(5L);
-        will(returnValue(drs));
-        allowing(oplogSet).getParent();
-        will(returnValue(parent));
-        ignoring(oplogSet);
-        ignoring(parent);
-        allowing(diskRegion).getFlags();
-        will(returnValue(EnumSet.of(DiskRegionFlag.IS_WITH_VERSIONING)));
-      }
-    });
-
-    Map<Long, AbstractDiskRegion> regions = parent.getAllDiskRegions();
+    when(diskRegion.getRegionVersionVector()).thenReturn(rvv);
+    when(diskRegion.getRVVTrusted()).thenReturn(true);
+    when(parent.getAllDiskRegions()).thenReturn(map);
+    when(oplogSet.getCurrentlyRecovering(5L)).thenReturn(drs);
+    when(oplogSet.getParent()).thenReturn(parent);
+    when(diskRegion.getFlags()).thenReturn(EnumSet.of(DiskRegionFlag.IS_WITH_VERSIONING));
 
     Oplog oplog = new Oplog(1, oplogSet, dirHolder);
     oplog.close();
 
-    context.checking(new Expectations() {
-      {
-        one(drs).recordRecoveredGCVersion(m1, 1);
-        one(drs).recordRecoveredGCVersion(m2, 0);
-        one(drs).recordRecoveredVersonHolder(ownerId, rvv.getMemberToVersion().get(ownerId), true);
-        one(drs).recordRecoveredVersonHolder(m1, rvv.getMemberToVersion().get(m1), true);
-        one(drs).recordRecoveredVersonHolder(m2, rvv.getMemberToVersion().get(m2), true);
-        one(drs).setRVVTrusted(true);
-      }
-    });
-
     oplog = new Oplog(1, oplogSet);
     Collection<File> drfFiles = FileUtils.listFiles(testDirectory, new String[] {"drf"}, true);
-    assertEquals(1, drfFiles.size());
+    assertThat(drfFiles.size()).isEqualTo(1);
     Collection<File> crfFiles = FileUtils.listFiles(testDirectory, new String[] {"crf"}, true);
-    assertEquals(1, crfFiles.size());
+    assertThat(crfFiles.size()).isEqualTo(1);
     oplog.addRecoveredFile(drfFiles.iterator().next(), dirHolder);
     oplog.addRecoveredFile(crfFiles.iterator().next(), dirHolder);
     OplogEntryIdSet deletedIds = new OplogEntryIdSet();
     oplog.recoverDrf(deletedIds, false, true);
     oplog.recoverCrf(deletedIds, true, true, false, Collections.singleton(oplog), true);
-    context.assertIsSatisfied();
+    verify(drs, times(1)).recordRecoveredGCVersion(m1, 1);
+    verify(drs, times(1)).recordRecoveredGCVersion(m2, 0);
+    verify(drs, times(1)).recordRecoveredVersonHolder(ownerId,
+        rvv.getMemberToVersion().get(ownerId), true);
+    verify(drs, times(1)).recordRecoveredVersonHolder(m1, rvv.getMemberToVersion().get(m1), true);
+    verify(drs, times(1)).recordRecoveredVersonHolder(m2, rvv.getMemberToVersion().get(m2), true);
+    verify(drs, times(1)).setRVVTrusted(true);
   }
-
 }

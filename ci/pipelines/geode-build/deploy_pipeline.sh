@@ -33,7 +33,7 @@ for cmd in Jinja2 PyYAML; do
   fi
 done
 
-set -e
+set -ex
 
 if [ -z "${GEODE_BRANCH}" ]; then
   GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)

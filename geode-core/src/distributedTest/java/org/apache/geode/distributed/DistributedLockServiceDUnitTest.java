@@ -501,7 +501,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       try {
         for (int vm = 0; vm < numVMs; vm++) {
           if (vm == originalVM)
-            continue; // skip because he's disconnected
+            continue; // skip because it is disconnected
           final int finalvm = vm;
           logInfo("[testBasicGrantorRecovery] VM " + finalvm + " in " + serviceName
               + " about to invoke");

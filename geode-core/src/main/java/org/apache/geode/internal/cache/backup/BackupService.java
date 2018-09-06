@@ -121,7 +121,7 @@ public class BackupService {
   }
 
   void validateRequestingSender(InternalDistributedMember sender) {
-    // We need to watch for pure admin guys that depart. this allMembershipListener set
+    // We need to watch for pure admin members that depart. this allMembershipListener set
     // looks like it should receive those events.
     Set allIds =
         cache.getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);

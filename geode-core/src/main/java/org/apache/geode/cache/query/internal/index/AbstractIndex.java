@@ -557,7 +557,6 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   private void addToResultsWithUnionOrIntersection(Collection results,
       SelectResults intermediateResults, boolean isIntersection, Object value) {
-
     value = verifyAndGetPdxDomainObject(value);
 
     if (intermediateResults == null) {
@@ -625,6 +624,17 @@ public abstract class AbstractIndex implements IndexProtocol {
           }
         }
       }
+    }
+  }
+
+  void applyCqOrProjection(List projAttrib, ExecutionContext context, Collection result,
+      Object iterValue, SelectResults intermediateResults, boolean isIntersection, Object key)
+      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException {
+    if (context != null && context.isCqQueryContext()) {
+      result.add(new CqEntry(key, iterValue));
+    } else {
+      applyProjection(projAttrib, context, result, iterValue, intermediateResults, isIntersection);
     }
   }
 

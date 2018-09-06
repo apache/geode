@@ -14,10 +14,9 @@
  */
 package org.apache.geode.management.internal.web.http.converter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,11 +24,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
@@ -45,139 +39,78 @@ import org.apache.geode.internal.util.IOUtils;
  * <p/>
  *
  * @see org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter
- * @see org.jmock.Mockery
- * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 8.0
  */
 public class SerializableObjectHttpMessageConverterJUnitTest {
-
-  private Mockery mockContext;
+  private SerializableObjectHttpMessageConverter converter;
 
   @Before
   public void setUp() {
-    mockContext = new Mockery();
-    mockContext.setImposteriser(ClassImposteriser.INSTANCE);
-    mockContext.setThreadingPolicy(new Synchroniser());
-  }
-
-  @After
-  public void tearDown() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
+    converter = new SerializableObjectHttpMessageConverter();
   }
 
   @Test
   public void testCreateSerializableObjectHttpMessageConverter() {
-    final SerializableObjectHttpMessageConverter converter =
-        new SerializableObjectHttpMessageConverter();
-
-    assertNotNull(converter);
-    assertTrue(converter.getSupportedMediaTypes().contains(MediaType.APPLICATION_OCTET_STREAM));
-    assertTrue(converter.getSupportedMediaTypes().contains(MediaType.ALL));
+    assertThat(converter).isNotNull();
+    assertThat(converter.getSupportedMediaTypes().contains(MediaType.ALL)).isTrue();
+    assertThat(converter.getSupportedMediaTypes().contains(MediaType.APPLICATION_OCTET_STREAM))
+        .isTrue();
   }
 
   @Test
   public void testSupport() {
-    final SerializableObjectHttpMessageConverter converter =
-        new SerializableObjectHttpMessageConverter();
-
-    assertTrue(converter.supports(Boolean.class));
-    assertTrue(converter.supports(Calendar.class));
-    assertTrue(converter.supports(Character.class));
-    assertTrue(converter.supports(Integer.class));
-    assertTrue(converter.supports(Double.class));
-    assertTrue(converter.supports(String.class));
-    assertTrue(converter.supports(Serializable.class));
-    assertFalse(converter.supports(Object.class));
-    assertFalse(converter.supports(null));
+    assertThat(converter.supports(Boolean.class)).isTrue();
+    assertThat(converter.supports(Calendar.class)).isTrue();
+    assertThat(converter.supports(Character.class)).isTrue();
+    assertThat(converter.supports(Integer.class)).isTrue();
+    assertThat(converter.supports(Double.class)).isTrue();
+    assertThat(converter.supports(String.class)).isTrue();
+    assertThat(converter.supports(Serializable.class)).isTrue();
+    assertThat(converter.supports(Object.class)).isFalse();
+    assertThat(converter.supports(null)).isFalse();
   }
 
   @Test
   public void testReadInternal() throws IOException {
     final String expectedInputMessageBody = "Expected content of the HTTP input message body!";
-
-    final HttpInputMessage mockInputMessage =
-        mockContext.mock(HttpInputMessage.class, "HttpInputMessage");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockInputMessage).getBody();
-        will(returnValue(
-            new ByteArrayInputStream(IOUtils.serializeObject(expectedInputMessageBody))));
-      }
-    });
-
-    final SerializableObjectHttpMessageConverter converter =
-        new SerializableObjectHttpMessageConverter();
+    final HttpInputMessage mockInputMessage = mock(HttpInputMessage.class, "HttpInputMessage");
+    when(mockInputMessage.getBody())
+        .thenReturn(new ByteArrayInputStream(IOUtils.serializeObject(expectedInputMessageBody)));
 
     final Serializable obj = converter.readInternal(String.class, mockInputMessage);
-
-    assertTrue(obj instanceof String);
-    assertEquals(expectedInputMessageBody, obj);
+    assertThat(obj).isInstanceOf(String.class);
+    assertThat(obj).isEqualTo(expectedInputMessageBody);
   }
 
   @Test
   public void testSetContentLength() {
-    final byte[] bytes = {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE};
-
     final HttpHeaders headers = new HttpHeaders();
-
-    final HttpOutputMessage mockOutputMessage =
-        mockContext.mock(HttpOutputMessage.class, "HttpOutputMessage");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockOutputMessage).getHeaders();
-        will(returnValue(headers));
-      }
-    });
-
-    final SerializableObjectHttpMessageConverter converter =
-        new SerializableObjectHttpMessageConverter();
+    final byte[] bytes = {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE};
+    final HttpOutputMessage mockOutputMessage = mock(HttpOutputMessage.class, "HttpOutputMessage");
+    when(mockOutputMessage.getHeaders()).thenReturn(headers);
 
     converter.setContentLength(mockOutputMessage, bytes);
-
-    assertEquals(bytes.length, headers.getContentLength());
+    assertThat(headers.getContentLength()).isEqualTo(bytes.length);
   }
 
   @Test
   public void testWriteInternal() throws IOException {
+    final HttpHeaders headers = new HttpHeaders();
     final String expectedOutputMessageBody = "Expected media of the HTTP output message body!";
-
     final byte[] expectedOutputMessageBodyBytes =
         IOUtils.serializeObject(expectedOutputMessageBody);
-
     final ByteArrayOutputStream out =
         new ByteArrayOutputStream(expectedOutputMessageBodyBytes.length);
-
-    final HttpHeaders headers = new HttpHeaders();
-
-    final HttpOutputMessage mockOutputMessage =
-        mockContext.mock(HttpOutputMessage.class, "HttpOutputMessage");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockOutputMessage).getHeaders();
-        will(returnValue(headers));
-        oneOf(mockOutputMessage).getBody();
-        will(returnValue(out));
-      }
-    });
-
-    final SerializableObjectHttpMessageConverter converter =
-        new SerializableObjectHttpMessageConverter();
+    final HttpOutputMessage mockOutputMessage = mock(HttpOutputMessage.class, "HttpOutputMessage");
+    when(mockOutputMessage.getBody()).thenReturn(out);
+    when(mockOutputMessage.getHeaders()).thenReturn(headers);
 
     converter.writeInternal(expectedOutputMessageBody, mockOutputMessage);
-
     final byte[] actualOutputMessageBodyBytes = out.toByteArray();
-
-    assertEquals(expectedOutputMessageBodyBytes.length, headers.getContentLength());
-    assertEquals(expectedOutputMessageBodyBytes.length, actualOutputMessageBodyBytes.length);
-
-    for (int index = 0; index < actualOutputMessageBodyBytes.length; index++) {
-      assertEquals(expectedOutputMessageBodyBytes[index], actualOutputMessageBodyBytes[index]);
-    }
+    assertThat(headers.getContentLength()).isEqualTo(expectedOutputMessageBodyBytes.length);
+    assertThat(actualOutputMessageBodyBytes.length)
+        .isEqualTo(expectedOutputMessageBodyBytes.length);
+    assertThat(actualOutputMessageBodyBytes).isEqualTo(expectedOutputMessageBodyBytes);
   }
-
 }

@@ -1239,7 +1239,8 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
   /**
-   * To fix the hang of 42951 make sure the guys waiting on this processor are told to quit waiting
+   * To fix the hang of 42951 make sure that everything waiting on this processor are told to quit
+   * waiting
    * and tell them why.
    *
    * @param ex the reason the reply processor is being canceled

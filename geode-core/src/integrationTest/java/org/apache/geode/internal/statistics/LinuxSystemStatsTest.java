@@ -14,18 +14,17 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.tools.ant.filters.StringInputStream;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,11 +46,12 @@ import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
+
 /**
  * Technically a linux only test - the file handling is all mocked up so the test can run on any
  * host os.
  */
-@Category({StatisticsTest.class})
+@Category(StatisticsTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.IntegrationTest")
 @PrepareForTest(LinuxProcFsStatistics.class)
@@ -67,13 +67,12 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
   private long[] longs;
   private double[] doubles;
   private LocalStatisticsFactory statisticsFactory;
-  private File testDir;
 
   @Before
   public void setUp() throws Exception {
-    this.testDir = this.temporaryFolder.getRoot();
-    assertTrue(this.testDir.exists());
-    System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, this.testDir.getAbsolutePath()
+    File testDir = this.temporaryFolder.getRoot();
+    assertThat(testDir.exists()).isTrue();
+    System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, testDir.getAbsolutePath()
         + File.separator + SimpleStatSampler.DEFAULT_ARCHIVE_FILE_NAME);
     LinuxProcFsStatistics.init();
     initStats();
@@ -162,10 +161,8 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
    */
   private File writeStringToFile(String mockProcStatFileContents) throws IOException {
     File mockFile = temporaryFolder.newFile();
-    StringInputStream sis = new StringInputStream(mockProcStatFileContents);
-    FileOutputStream mockFileOutputStream = new FileOutputStream(mockFile);
-    IOUtils.copy(sis, mockFileOutputStream);
-    IOUtils.closeQuietly(mockFileOutputStream);
+    FileUtils.writeStringToFile(mockFile, mockProcStatFileContents, (Charset) null);
+
     return mockFile;
   }
 

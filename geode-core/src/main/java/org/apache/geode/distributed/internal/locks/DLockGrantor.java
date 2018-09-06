@@ -299,7 +299,7 @@ public class DLockGrantor {
         return null;
       if (!grantor.isReady())
         return null;
-      // Now make sure the service still has this guy as its grantor
+      // Now make sure the service still has this member as its grantor
       oldGrantor = grantor;
       grantor = getGrantorForService(svc);
     } while (oldGrantor != grantor);

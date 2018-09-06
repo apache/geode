@@ -129,7 +129,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private boolean isDefaultServer;
 
   /**
-   * Needed because this guy is an advisee
+   * Needed because this server is an advisee
    *
    * @since GemFire 5.7
    */

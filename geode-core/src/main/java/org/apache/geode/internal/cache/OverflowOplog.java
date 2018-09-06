@@ -1274,7 +1274,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
                 byte userBits = wrapper.getBits();
                 if (oplogId != did.getOplogId()) {
                   // @todo: Is this even possible? Perhaps I should just assert here
-                  // skip this guy his oplogId changed
+                  // skip this one, its oplogId changed
                   if (did.getOplogId() == -1) {
                     // to prevent bug 42304 do a rmLive call
                     rmLive(de);
