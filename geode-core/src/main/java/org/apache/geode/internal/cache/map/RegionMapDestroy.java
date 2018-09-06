@@ -483,6 +483,11 @@ public class RegionMapDestroy {
         // tombstone version info
         focusedRegionMap.processVersionTag(tombstone, event);
         if (doPart3) {
+          // TODO: this looks like dead code. We only get here if doPart3 is true
+          // but then only happens if !event.isOriginRemote() && concurrencyChecks().
+          // But if we have a versionTag then we will have concurrencyChecks().
+          // If concurrencyChecks is false then this code makes no sense;
+          // we should not be doing anything with version tags in that case.
           internalRegion.generateAndSetVersionTag(event, newRegionEntry);
         }
         // This is not conflict, we need to persist the tombstone again with new
