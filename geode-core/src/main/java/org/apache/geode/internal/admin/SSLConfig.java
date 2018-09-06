@@ -32,6 +32,8 @@ import org.apache.geode.management.internal.SSLUtil;
  */
 public class SSLConfig {
 
+  private boolean endpointIdentification =
+      DistributionConfig.DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED;
   private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
   private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
   private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
@@ -59,6 +61,14 @@ public class SSLConfig {
 
   public void setAlias(final String alias) {
     this.alias = alias;
+  }
+
+  public boolean doEndpointIdentification() {
+    return this.endpointIdentification;
+  }
+
+  public void setEndpointIdentificationEnabled(boolean endpointIdentification) {
+    this.endpointIdentification = endpointIdentification;
   }
 
   public String getKeystore() {

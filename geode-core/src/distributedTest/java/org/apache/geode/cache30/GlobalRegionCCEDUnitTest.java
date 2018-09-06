@@ -132,7 +132,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   @Ignore("TODO: takes too long with global regions and cause false dunit hangs")
   @Test
   public void testClearWithConcurrentEvents() throws Exception {
-    z_versionTestClearWithConcurrentEvents(true);
+    versionTestClearWithConcurrentEvents();
   }
 
   @Ignore("TODO: takes too long with global regions and cause false dunit hangs")

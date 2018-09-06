@@ -148,27 +148,29 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void after() {
-    try {
-      DUnitLauncher.closeAndCheckForSuspects();
-    } finally {
-      MemberStarterRule.disconnectDSIfAny();
 
-      // stop all the members in the order of clients, servers and locators
-      List<VMProvider> vms = new ArrayList<>();
-      vms.addAll(
-          occupiedVMs.values().stream().filter(x -> x.isClient()).collect(Collectors.toSet()));
-      vms.addAll(
-          occupiedVMs.values().stream().filter(x -> x.isServer()).collect(Collectors.toSet()));
-      vms.addAll(
-          occupiedVMs.values().stream().filter(x -> x.isLocator()).collect(Collectors.toSet()));
-      vms.forEach(x -> x.stop());
+    MemberStarterRule.disconnectDSIfAny();
 
-      // delete any file under root dir
-      Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
-          .forEach(FileUtils::deleteQuietly);
+    // stop all the members in the order of clients, servers and locators
+    List<VMProvider> vms = new ArrayList<>();
+    vms.addAll(
+        occupiedVMs.values().stream().filter(x -> x.isClient()).collect(Collectors.toSet()));
+    vms.addAll(
+        occupiedVMs.values().stream().filter(x -> x.isServer()).collect(Collectors.toSet()));
+    vms.addAll(
+        occupiedVMs.values().stream().filter(x -> x.isLocator()).collect(Collectors.toSet()));
+    vms.forEach(x -> x.stop());
 
-      restoreSystemProperties.after();
-    }
+    // delete any file under root dir
+    Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
+        .forEach(FileUtils::deleteQuietly);
+
+    restoreSystemProperties.after();
+
+    // close suspect string at the end of tear down
+    // any background thread can fill the dunit_suspect.log
+    // after its been truncated if we do it before closing cache
+    DUnitLauncher.closeAndCheckForSuspects();
   }
 
   public MemberVM startLocatorVM(int index, int... locatorPort) {

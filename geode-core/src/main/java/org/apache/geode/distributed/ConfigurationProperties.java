@@ -1930,6 +1930,17 @@ public interface ConfigurationProperties {
    */
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
   /**
+   * The static String definition of the <i>"ssl-endpoint-identification-enabled"</i> property <a
+   * name="ssl-endpoint-identification-enabled"/a>
+   * </p>
+   * <U>Description</U>: If true, clients validate server hostname using server certificate during
+   * SSL handshake.
+   * </p>
+   * <U>Default</U>: code>"false"</code>
+   * <U>Since</U>: Geode 1.8
+   */
+  String SSL_ENDPOINT_IDENTIFICATION_ENABLED = "ssl-endpoint-identification-enabled";
+  /**
    * The static String definition of the <i>"ssl-enabled-components"</i> property <a
    * name="ssl-enabled-components"/a>
    * </p>
@@ -2084,7 +2095,8 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"serializable-object-filter"</i> property
    *
-   * <U>Description</U>A user provided whitelist of objects that the system will allow to serialize.
+   * <U>Description</U>A user provided acceptlist of objects that the system will allow to
+   * serialize.
    *
    * <p>
    * See java.io.ObjectInputFilter.Config for details on the syntax for creating filters.

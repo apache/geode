@@ -1390,7 +1390,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       msg.initialize(processor, regionName, key, multicast, timeoutMs, ttl, idleTime);
       msg.setRecipients(recipients);
       if (!multicast && recipients.size() == 1) {
-        // we are only searching one guy so tell him to send the value
+        // we are only searching one recipient, so tell it to send the value
         msg.alwaysSendResult = true;
       }
       processor.distributionManager.putOutgoing(msg);

@@ -119,8 +119,9 @@ public class DescribeClientCommandDUnitTest {
 
   private void validateResults(boolean subscriptionEnabled) {
     CommandResult result = gfsh.executeCommand("list members");
-    // list is always locator-0, server-1, server-2
-    String server1 = result.getTableColumnValues("members", "Id").get(1);
+    Map<String, List<String>> members = result.getMapFromTableContent("members");
+    int server1Idx = members.get("Name").indexOf("server-1");
+    String server1 = members.get("Id").get(server1Idx);
 
     result = gfsh.executeCommand("list clients");
     String clientId = result.getColumnFromTableContent(CliStrings.LIST_CLIENT_COLUMN_Clients,

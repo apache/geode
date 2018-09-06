@@ -24,16 +24,30 @@ platforms:
 - name: "Windows"
   prefix: "Windows"
 
+build_test:
+  name: "Build"
+  CPUS: "8"
+  RAM: "16"
+  ARTIFACT_SLUG: build
+  CALL_STACK_TIMEOUT: "1800"
+  PARALLEL_DUNIT: "false"
+  DUNIT_PARALLEL_FORKS: "4"
+  # Actual gradle task is "build install" but is hard-coded in execute_build.sh
+  # It's consumption is more like a "TEST_RESULTS_DESTINATIONS_DIRECTORY_STUB_THING.
+  GRADLE_TASK: build
+  execute_test_timeout: 10m
+
 tests:
 - name: "Acceptance"
   CPUS: "8"
   RAM: "12"
   ARTIFACT_SLUG: acceptancetestfiles
   CALL_STACK_TIMEOUT: "1800"
-  DUNIT_PARALLEL_FORKS: "7"
-  GRADLE_TASK: :geode-assembly:acceptanceTest geode-connectors:acceptanceTest
+  DUNIT_PARALLEL_FORKS: "0"
+  GRADLE_TASK: acceptanceTest
   execute_test_timeout: 45m
-  PARALLEL_DUNIT: "true"
+  PARALLEL_DUNIT: "false"
+  PARALLEL_GRADLE: "false"
 - name: "Distributed"
   CPUS: "96"
   RAM: "180"

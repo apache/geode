@@ -20,6 +20,7 @@ apply plugin: 'war'
 dependencies {
 
   compileOnly project(':geode-core')
+
   compileOnly 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
 
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'

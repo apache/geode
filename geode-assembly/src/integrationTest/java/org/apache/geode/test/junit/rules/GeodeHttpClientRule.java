@@ -72,22 +72,8 @@ public class GeodeHttpClientRule extends ExternalResource {
     return this;
   }
 
-  @Override
-  protected void before() {
-    host = new HttpHost(hostName, portSupplier.get(), useSSL ? "https" : "http");
-    if (useSSL) {
-      HttpClientBuilder clientBuilder = HttpClients.custom();
-      SSLContext ctx = SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.WEB).getSslContext();
-      clientBuilder.setSSLContext(ctx);
-      clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
-      httpClient = clientBuilder.build();
-    } else {
-      httpClient = HttpClients.createDefault();
-    }
-  }
-
   public HttpResponse loginToPulse(String username, String password) throws Exception {
+    connect();
     return post("/pulse/login", "username", username, "password", password);
   }
 
@@ -103,13 +89,33 @@ public class GeodeHttpClientRule extends ExternalResource {
   }
 
   public HttpResponse get(String uri, String... params) throws Exception {
+    connect();
     HttpClientContext clientContext = HttpClientContext.create();
     return httpClient.execute(host, buildHttpGet(uri, params), clientContext);
   }
 
   public HttpResponse post(String uri, String... params) throws Exception {
+    connect();
     HttpClientContext clientContext = HttpClientContext.create();
     return httpClient.execute(host, buildHttpPost(uri, params), clientContext);
+  }
+
+  private void connect() {
+    if (httpClient != null) {
+      return;
+    }
+
+    host = new HttpHost(hostName, portSupplier.get(), useSSL ? "https" : "http");
+    if (useSSL) {
+      HttpClientBuilder clientBuilder = HttpClients.custom();
+      SSLContext ctx = SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.WEB).getSslContext();
+      clientBuilder.setSSLContext(ctx);
+      clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+      httpClient = clientBuilder.build();
+    } else {
+      httpClient = HttpClients.createDefault();
+    }
   }
 
   private HttpPost buildHttpPost(String uri, String... params) throws Exception {

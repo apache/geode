@@ -553,7 +553,7 @@ public class LocatorLoadSnapshot {
       LoadHolder nextLoadReference = loadEntry.getValue();
       float nextLoad = nextLoadReference.getLoad();
       if (nextLoad > currentLoad) {
-        // found a guy who has a higher load than us so...
+        // found a server who has a higher load than us
         return null;
       }
     }

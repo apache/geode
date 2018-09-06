@@ -2084,8 +2084,8 @@ public class LocalizedStrings {
           "Method '' {0} '' in class '' {1} '' is not accessible to the query processor");
   public static final StringId AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1 =
       new StringId(2253, "No public attribute named '' {0} '' was found in class  {1}");
-  public static final StringId AttributeDescriptor_NO_ACCESS_BECAUSE_METHOD_WAS_BLACKLISTED =
-      new StringId(2254, "No access to attribute named '' {0} '' because it has been blacklisted");
+  public static final StringId AttributeDescriptor_NO_ACCESS_BECAUSE_METHOD_WAS_DENYLISTED =
+      new StringId(2254, "No access to attribute named '' {0} '' because it has been denylisted");
 
   public static final StringId AvailablePort_UNKNOWN_PROTOCOL_0 =
       new StringId(2258, "Unknown protocol:  {0}");

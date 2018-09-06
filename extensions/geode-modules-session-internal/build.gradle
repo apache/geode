@@ -16,7 +16,7 @@
  */
 
 dependencies {
-  compile project(':extensions/geode-modules')
+  compile project(':extensions:geode-modules')
   compile project(':geode-core')
 }
 

@@ -16,6 +16,8 @@
  */
 
 allprojects {
+  // There exist peculiarities surrounding our handling of ClassLoaders and cross-module resources,
+  // causing test failures if we apply the newer 'java-library' plugin.
   apply plugin: 'java'
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
@@ -23,6 +25,12 @@ allprojects {
 }
 
 subprojects {
+
+  dependencies {
+    // log4j-core has an annotation processor that is passed on the compile-classpath via geode-core and others.
+    // Fix Gradle warning here until we clean up our own classpath
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  }
 
   String javaVersion = System.properties['java.version']
   if (javaVersion.startsWith("1.8.0") && javaVersion.split("_")[1].toInteger() < 121) {

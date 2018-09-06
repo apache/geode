@@ -14,9 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -58,7 +57,7 @@ public abstract class JdbcWriterIntegrationTest {
   private Employee employee2;
 
   @Before
-  public void setup() throws Exception {
+  public void setUp() throws Exception {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME);
@@ -138,8 +137,8 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceFails() {
     Region nonPdxEmployees = this.employees;
-    catchException(nonPdxEmployees).put("1", "non pdx instance");
-    assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class);
+    Throwable thrown = catchThrowable(() -> nonPdxEmployees.put("1", "non pdx instance"));
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

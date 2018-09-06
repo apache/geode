@@ -300,9 +300,9 @@ public class CacheClientNotifier {
     byte clientConflation;
     try {
       proxyID = ClientProxyMembershipID.readCanonicalized(dis);
-      if (getBlacklistedClient().contains(proxyID)) {
+      if (getDenylistedClient().contains(proxyID)) {
         writeException(dos, Handshake.REPLY_INVALID,
-            new Exception("This client is blacklisted by server"), clientVersion);
+            new Exception("This client is denylisted by server"), clientVersion);
         return;
       }
       proxy = getClientProxy(proxyID);
@@ -993,7 +993,7 @@ public class CacheClientNotifier {
           }
           deadProxies.add(proxy);
         }
-        this.blackListSlowReceiver(proxy);
+        this.denyListSlowReceiver(proxy);
       }
     }
 
@@ -1045,15 +1045,15 @@ public class CacheClientNotifier {
     return result;
   }
 
-  private void blackListSlowReceiver(CacheClientProxy clientProxy) {
+  private void denyListSlowReceiver(CacheClientProxy clientProxy) {
     final CacheClientProxy proxy = clientProxy;
     if ((proxy.getHARegionQueue() != null && proxy.getHARegionQueue().isClientSlowReceiver())
-        && !blackListedClients.contains(proxy.getProxyID())) {
+        && !denyListedClients.contains(proxy.getProxyID())) {
       // log alert with client info.
       logger.warn(
           LocalizedMessage.create(LocalizedStrings.CacheClientNotifier_CLIENT_0_IS_A_SLOW_RECEIVER,
               new Object[] {proxy.getProxyID()}));
-      addToBlacklistedClient(proxy.getProxyID());
+      addToDenylistedClient(proxy.getProxyID());
       InternalDistributedSystem ids =
           (InternalDistributedSystem) this.getCache().getDistributedSystem();
       final DistributionManager dm = ids.getDistributionManager();
@@ -1065,8 +1065,8 @@ public class CacheClientNotifier {
                   .getCacheDistributionAdvisor();
           Set members = advisor.adviseCacheOp();
 
-          // Send client blacklist message
-          ClientBlacklistProcessor.sendBlacklistedClient(proxy.getProxyID(), dm, members);
+          // Send client denylist message
+          ClientDenylistProcessor.sendDenylistedClient(proxy.getProxyID(), dm, members);
 
           // close the proxy for slow receiver.
           proxy.close(false, false);
@@ -1077,11 +1077,11 @@ public class CacheClientNotifier {
             bo.afterQueueDestroyMessage();
           }
 
-          // send remove from blacklist.
-          RemoveClientFromBlacklistMessage rcm = new RemoveClientFromBlacklistMessage();
+          // send remove from denylist.
+          RemoveClientFromDenylistMessage rcm = new RemoveClientFromDenylistMessage();
           rcm.setProxyID(proxy.getProxyID());
           dm.putOutgoing(rcm);
-          blackListedClients.remove(proxy.getProxyID());
+          denyListedClients.remove(proxy.getProxyID());
         }
       });
     }
@@ -1458,7 +1458,7 @@ public class CacheClientNotifier {
         }
       }
       this.clearCompiledQueries();
-      blackListedClients.clear();
+      denyListedClients.clear();
 
       // cancel the ping task
       this.clientPingTask.cancel();
@@ -2209,18 +2209,18 @@ public class CacheClientNotifier {
     }
   }
 
-  private final Set blackListedClients = new CopyOnWriteArraySet();
+  private final Set denyListedClients = new CopyOnWriteArraySet();
 
-  public void addToBlacklistedClient(ClientProxyMembershipID proxyID) {
-    blackListedClients.add(proxyID);
+  public void addToDenylistedClient(ClientProxyMembershipID proxyID) {
+    denyListedClients.add(proxyID);
     // ensure that cache and distributed system state are current and open
     this.getCache();
-    new ScheduledThreadPoolExecutor(1).schedule(new ExpireBlackListTask(proxyID), 120,
+    new ScheduledThreadPoolExecutor(1).schedule(new ExpireDenyListTask(proxyID), 120,
         TimeUnit.SECONDS);
   }
 
-  public Set getBlacklistedClient() {
-    return blackListedClients;
+  public Set getDenylistedClient() {
+    return denyListedClients;
   }
 
   /**
@@ -2230,18 +2230,18 @@ public class CacheClientNotifier {
     this.cache = _cache;
   }
 
-  private class ExpireBlackListTask extends PoolTask {
+  private class ExpireDenyListTask extends PoolTask {
     private ClientProxyMembershipID proxyID;
 
-    public ExpireBlackListTask(ClientProxyMembershipID proxyID) {
+    public ExpireDenyListTask(ClientProxyMembershipID proxyID) {
       this.proxyID = proxyID;
     }
 
     @Override
     public void run2() {
-      if (blackListedClients.remove(proxyID)) {
+      if (denyListedClients.remove(proxyID)) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{} client is no longer blacklisted", proxyID);
+          logger.debug("{} client is no longer denylisted", proxyID);
         }
       }
     }

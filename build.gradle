@@ -28,7 +28,7 @@ buildscript {
     classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
-    classpath "me.champeau.gradle:jmh-gradle-plugin:0.3.1"
+    classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.7"
     classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6.2-SNAPSHOT"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
     classpath "com.netflix.nebula:nebula-project-plugin:4.0.1"
@@ -76,13 +76,13 @@ if (name == 'geode') {
 // utilities.gradle MUST be read before publish.gradle for reasons
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
+apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"
 apply from: "${scriptDir}/test.gradle"
 apply from: "${scriptDir}/test-by-category.gradle"
 apply from: "${scriptDir}/publish.gradle"
 apply from: "${scriptDir}/code-analysis.gradle"
 apply from: "${scriptDir}/sonar.gradle"
-apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/rat.gradle"
 apply from: "${scriptDir}/docker.gradle"
 apply from: "${scriptDir}/spotless.gradle"

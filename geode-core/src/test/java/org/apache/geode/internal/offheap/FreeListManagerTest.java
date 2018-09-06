@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -32,11 +31,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class FreeListManagerTest {
 
   private final int DEFAULT_SLAB_SIZE = 1024 * 1024 * 5;
+
   private final MemoryAllocatorImpl ma = mock(MemoryAllocatorImpl.class);
   private final OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
   private TestableFreeListManager freeListManager;
@@ -483,9 +484,9 @@ public class FreeListManagerTest {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     when(this.ma.getOutOfOffHeapMemoryListener()).thenReturn(ooohml);
 
-    catchException(this.freeListManager).allocate(DEFAULT_SLAB_SIZE - 7);
+    Throwable thrown = catchThrowable(() -> this.freeListManager.allocate(DEFAULT_SLAB_SIZE - 7));
 
-    verify(ooohml).outOfOffHeapMemory(caughtException());
+    verify(ooohml).outOfOffHeapMemory((OutOfOffHeapMemoryException) thrown);
   }
 
   @Test(expected = AssertionError.class)
@@ -623,11 +624,13 @@ public class FreeListManagerTest {
     this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
     assertThat(this.freeListManager.findSlab(address)).isEqualTo(0);
     assertThat(this.freeListManager.findSlab(address + 9)).isEqualTo(0);
-    catchException(this.freeListManager).findSlab(address - 1);
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+
+    Throwable thrown = catchThrowable(() -> this.freeListManager.findSlab(address - 1));
+    assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address - 1));
-    catchException(this.freeListManager).findSlab(address + 10);
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+
+    thrown = catchThrowable(() -> this.freeListManager.findSlab(address + 10));
+    assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address + 10));
   }
 
@@ -639,11 +642,13 @@ public class FreeListManagerTest {
     this.freeListManager = createFreeListManager(ma, new Slab[] {slab, chunk});
     assertThat(this.freeListManager.findSlab(address)).isEqualTo(1);
     assertThat(this.freeListManager.findSlab(address + 9)).isEqualTo(1);
-    catchException(this.freeListManager).findSlab(address - 1);
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+
+    Throwable thrown = catchThrowable(() -> this.freeListManager.findSlab(address - 1));
+    assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address - 1));
-    catchException(this.freeListManager).findSlab(address + 10);
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+
+    thrown = catchThrowable(() -> this.freeListManager.findSlab(address + 10));
+    assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage("could not find a slab for addr " + (address + 10));
   }
 
@@ -665,12 +670,16 @@ public class FreeListManagerTest {
     this.freeListManager = createFreeListManager(ma, new Slab[] {chunk});
     assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address, 1)).isTrue();
     assertThat(this.freeListManager.validateAddressAndSizeWithinSlab(address, 10)).isTrue();
-    catchException(this.freeListManager).validateAddressAndSizeWithinSlab(address, 0);
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+
+    Throwable thrown =
+        catchThrowable(() -> this.freeListManager.validateAddressAndSizeWithinSlab(address, 0));
+    assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(" address 0x" + Long.toString(address + 0 - 1, 16)
             + " does not address the original slab memory");
-    catchException(this.freeListManager).validateAddressAndSizeWithinSlab(address, 11);
-    assertThat((Exception) caughtException()).isExactlyInstanceOf(IllegalStateException.class)
+
+    thrown =
+        catchThrowable(() -> this.freeListManager.validateAddressAndSizeWithinSlab(address, 11));
+    assertThat(thrown).isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(" address 0x" + Long.toString(address + 11 - 1, 16)
             + " does not address the original slab memory");
   }

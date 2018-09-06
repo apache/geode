@@ -45,9 +45,6 @@ dependencies {
   compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
   compile 'org.awaitility:awaitility:' + project.'awaitility.version'
 
-  compile 'eu.codearte.catch-exception:catch-exception:' + project.'catch-exception.version'
-  compile 'eu.codearte.catch-exception:catch-throwable:' + project.'catch-throwable.version'
-
   compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }

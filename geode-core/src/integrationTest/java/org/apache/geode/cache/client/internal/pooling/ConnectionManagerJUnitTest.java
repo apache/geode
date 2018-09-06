@@ -52,7 +52,7 @@ import org.apache.geode.cache.client.internal.EndpointManager;
 import org.apache.geode.cache.client.internal.EndpointManagerImpl;
 import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.client.internal.QueueManager;
-import org.apache.geode.cache.client.internal.ServerBlackList;
+import org.apache.geode.cache.client.internal.ServerDenyList;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -852,8 +852,8 @@ public class ConnectionManagerJUnitTest {
     protected volatile int closes;
     protected volatile int finds;
 
-    public ServerBlackList getBlackList() {
-      return new ServerBlackList(1);
+    public ServerDenyList getDenyList() {
+      return new ServerDenyList(1);
     }
 
 

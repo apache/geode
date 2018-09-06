@@ -354,7 +354,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     };
     vm1.invoke(stopBS);
 
-    // now check to see if everyone else noticed him going away
+    // now check to see if everyone else noticed it going away
     vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
       public void run() {
         assertTrue(Locator.hasLocator());
@@ -854,7 +854,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     };
     vm1.invoke(stopBS);
 
-    // now check to see if everyone else noticed him going away
+    // now check to see if everyone else noticed it going away
     vm0.invoke(new SerializableRunnable("Verify other locator on " + port2) {
       public void run() {
         assertTrue(Locator.hasLocator());

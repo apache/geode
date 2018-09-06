@@ -78,7 +78,7 @@ public class LoggingThreadGroup extends ThreadGroup {
 
         LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
         if (group2.isDestroyed()) {
-          // Clean is this guy out
+          // Clean is this iterator out
           iter.remove();
           continue;
         }
@@ -128,7 +128,7 @@ public class LoggingThreadGroup extends ThreadGroup {
 
         LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
         if (group2.isDestroyed()) {
-          // Clean is this guy out
+          // Clean is this iterator out
           iter.remove();
           continue;
         }

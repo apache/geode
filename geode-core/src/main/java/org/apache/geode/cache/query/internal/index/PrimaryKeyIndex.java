@@ -31,6 +31,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.CompiledValue;
+import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.QueryObserver;
@@ -107,6 +108,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
       observer.limitAppliedAtIndexLevel(this, limit, results);
       return;
     }
+
     switch (operator) {
       case OQLLexerTokenTypes.TOK_EQ: {
         if (key != null && key != QueryService.UNDEFINED) {
@@ -114,7 +116,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
           if (entry != null) {
             Object value = entry.getValue();
             if (value != null) {
-              results.add(value);
+              addResultToResults(context, results, key, value);
             }
           }
         }
@@ -132,7 +134,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
         while (iter.hasNext()) {
           // Check if query execution on this thread is canceled.
           QueryMonitor.isQueryExecutionCanceled();
-          results.add(iter.next());
+          addResultToResults(context, results, key, iter.next());
           if (limit != -1 && results.size() == limit) {
             observer.limitAppliedAtIndexLevel(this, limit, results);
             return;
@@ -200,8 +202,8 @@ public class PrimaryKeyIndex extends AbstractIndex {
                 ok = QueryUtils.applyCondition(iterOps, context);
               }
               if (ok) {
-                applyProjection(projAttrib, context, results, value, intermediateResults,
-                    isIntersection);
+                applyCqOrProjection(projAttrib, context, results, value, intermediateResults,
+                    isIntersection, key);
               }
             }
           }
@@ -228,8 +230,8 @@ public class PrimaryKeyIndex extends AbstractIndex {
               ok = QueryUtils.applyCondition(iterOps, context);
             }
             if (ok) {
-              applyProjection(projAttrib, context, results, val, intermediateResults,
-                  isIntersection);
+              applyCqOrProjection(projAttrib, context, results, val, intermediateResults,
+                  isIntersection, key);
             }
             if (limit != -1 && results.size() == limit) {
               observer.limitAppliedAtIndexLevel(this, limit, results);
@@ -255,6 +257,14 @@ public class PrimaryKeyIndex extends AbstractIndex {
     return true;
   }
 
+  private void addResultToResults(ExecutionContext context, Collection results, Object key,
+      Object result) {
+    if (context != null && context.isCqQueryContext()) {
+      results.add(new CqEntry(key, result));
+    } else {
+      results.add(result);
+    }
+  }
 
   protected InternalIndexStatistics createStats(String indexName) {
     return new PrimaryKeyIndexStatistics();
