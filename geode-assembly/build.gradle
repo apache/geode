@@ -30,11 +30,13 @@ extraArchive {
 publishing {
   publications {
     maven(MavenPublication) {
-      artifactId = 'apache-geode'
+      afterEvaluate {
+        artifactId = 'apache-geode'
 
-      artifacts = []
+        artifacts = []
 
-      artifact distTar
+        artifact distTar
+      }
     }
   }
 }
@@ -53,6 +55,7 @@ configurations.all {
 }
 
 gradle.taskGraph.whenReady( { graph ->
+  tasks.install.enabled = false
   tasks.withType(Tar).each { tar ->
     tar.compression = Compression.GZIP
     tar.extension = 'tgz'
