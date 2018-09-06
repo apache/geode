@@ -77,8 +77,6 @@ public class RegionMapDestroyTest {
   private boolean removeRecoveredEntry;
   private boolean fromRILocalDestroy;
 
-  private RegionMapDestroy regionMapDestroy;
-
   private Throwable doDestroyThrowable;
 
   private boolean doDestroyResult;
@@ -123,8 +121,6 @@ public class RegionMapDestroyTest {
     isEviction = false;
     expectedOldValue = null;
     removeRecoveredEntry = false;
-
-    regionMapDestroy = new RegionMapDestroy(owner, regionMap, mock(CacheModificationLock.class), event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue, removeRecoveredEntry);
   }
 
   @After
@@ -1666,6 +1662,9 @@ public class RegionMapDestroyTest {
   ///////////////////// do methods /////////////////////////////
 
   private void doDestroy() {
+    RegionMapDestroy regionMapDestroy =
+        new RegionMapDestroy(owner, regionMap, mock(CacheModificationLock.class), event,
+            inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue, removeRecoveredEntry);
     doDestroyResult = regionMapDestroy.destroy();
   }
 
