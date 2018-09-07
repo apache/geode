@@ -73,19 +73,6 @@ gradle.taskGraph.whenReady( { graph ->
   srcDistZip.enabled = false
   distZip.enabled = false
 
-  project.getGradle().startParameter.getTaskNames().each { givenTask ->
-    switch (givenTask) {
-      case 'geode-assembly:srcDistZip':
-      case 'srcDistZip':
-        srcDistZip.enabled = true
-        break
-      case 'geode-assembly:distZip':
-      case 'distZip':
-        distZip.enabled = true
-        break
-      }
-  }
-
   tasks.withType(AbstractArchiveTask).findAll {
     it.name.toLowerCase().contains("dist")
   }.each { archive ->
