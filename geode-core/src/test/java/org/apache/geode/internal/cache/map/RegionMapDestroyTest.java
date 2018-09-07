@@ -649,24 +649,26 @@ public class RegionMapDestroyTest {
     verify(owner, never()).notifyTimestampsToGateways(any());
   }
 
-  @Test
-  public void destroyOfTombstoneThatBecomesNonTombstoneRetriesAndDoesDestroy() throws Exception {
-    givenConcurrencyChecks(true);
-    givenExistingTombstone();
-    givenEventWithVersionTag();
-    givenTombstoneThenAlive();
-    givenNotDestroyedOrRemoved();
-
-    doDestroy();
-
-    verifyDestroyReturnedTrue();
-    verify(regionMap, times(2)).getEntry(any());
-    verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
-    verify(regionMap, times(1)).lruEntryDestroy(existingRegionEntry);
-    verifyNoMoreInteractions(regionMap);
-    verifyEntryDestroyed(existingRegionEntry, false);
-    verifyInvokedDestroyMethodsOnRegion(false);
-  }
+  // this test is no longer valid because the tombstone check is only done
+  // once after syncing the entry. So it can't change.
+  // @Test
+  // public void destroyOfTombstoneThatBecomesNonTombstoneRetriesAndDoesDestroy() throws Exception {
+  // givenConcurrencyChecks(true);
+  // givenExistingTombstone();
+  // givenEventWithVersionTag();
+  // givenTombstoneThenAlive();
+  // givenNotDestroyedOrRemoved();
+  //
+  // doDestroy();
+  //
+  // verifyDestroyReturnedTrue();
+  // verify(regionMap, times(2)).getEntry(any());
+  // verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
+  // verify(regionMap, times(1)).lruEntryDestroy(existingRegionEntry);
+  // verifyNoMoreInteractions(regionMap);
+  // verifyEntryDestroyed(existingRegionEntry, false);
+  // verifyInvokedDestroyMethodsOnRegion(false);
+  // }
 
   @Test
   public void destroyOfExistingTombstoneThatThrowsConcurrentCacheModificationExceptionWithTimeStampUpdatedCallsNotify()
@@ -755,22 +757,25 @@ public class RegionMapDestroyTest {
     verifyInvokedDestroyMethodsOnRegion(false);
   }
 
-  @Test
-  public void destroyOfExistingEntryThatBecomesTombstoneAfterInitialCheckCallsProcessVersionTagAndMakeTombstoneButDoesNotDoDestroy()
-      throws Exception {
-    givenConcurrencyChecks(true);
-    givenExistingTombstoneAndVersionTag();
-    givenAliveThenTombstone();
-
-    doDestroy();
-
-    verifyDestroyReturnedFalse();
-    verify(regionMap, times(1)).getEntry(any());
-    verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
-    verifyNoMoreInteractions(regionMap);
-    verify(existingRegionEntry, times(1)).makeTombstone(any(), any());
-    verifyNoDestroyInvocationsOnRegion();
-  }
+  // this test is no longer valid because we hold the region entry sync
+  // while testing if it is a tombstone. So it is impossible for this to change.
+  // @Test
+  // public void
+  // destroyOfExistingEntryThatBecomesTombstoneAfterInitialCheckCallsProcessVersionTagAndMakeTombstoneButDoesNotDoDestroy()
+  // throws Exception {
+  // givenConcurrencyChecks(true);
+  // givenExistingTombstoneAndVersionTag();
+  // givenAliveThenTombstone();
+  //
+  // doDestroy();
+  //
+  // verifyDestroyReturnedFalse();
+  // verify(regionMap, times(1)).getEntry(any());
+  // verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
+  // verifyNoMoreInteractions(regionMap);
+  // verify(existingRegionEntry, times(1)).makeTombstone(any(), any());
+  // verifyNoDestroyInvocationsOnRegion();
+  // }
 
   @Test
   public void destroyOfExistingTombstoneWithConcurrencyChecksAndFromRILocalDestroyDoesRemove()
@@ -897,6 +902,7 @@ public class RegionMapDestroyTest {
   public void destroyOfExistingEntryRemovesEntryFromMapAndDoesNotifications() throws Exception {
     givenConcurrencyChecks(false);
     givenExistingEntry();
+    givenAliveThenRemoved();
 
     doDestroy();
 
@@ -1022,13 +1028,14 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenExistingEntry();
     givenExistingEntryWithNoVersionStamp();
+    givenAliveThenRemoved();
 
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verifyMapDoesNotContainKey();
     verify(existingRegionEntry, times(1)).removePhase2();
     verifyInvokedDestroyMethodsOnRegion(false);
+    verifyMapDoesNotContainKey();
   }
 
   @Test
@@ -1038,9 +1045,9 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verifyDestroyReturnedTrue();
     verifyEntryDestroyed(existingRegionEntry, false);
     verifyInvokedDestroyMethodsOnRegion(false);
+    verifyDestroyReturnedTrue();
   }
 
   @Test
@@ -1611,6 +1618,11 @@ public class RegionMapDestroyTest {
 
   private void givenAliveThenTombstone() {
     when(existingRegionEntry.isTombstone()).thenReturn(false).thenReturn(true);
+    when(existingRegionEntry.isRemoved()).thenReturn(false).thenReturn(true);
+  }
+
+  private void givenAliveThenRemoved() {
+    when(existingRegionEntry.isRemoved()).thenReturn(false).thenReturn(true);
   }
 
   private void givenTombstoneThenAlive() {
@@ -1745,8 +1757,7 @@ public class RegionMapDestroyTest {
   }
 
   private void verifyEntryRemoved(RegionEntry entry) {
-    int times = 2; // TODO: fix product to only call this once
-    verify(regionMap, times(times)).removeEntry(eq(KEY), same(entry), eq(false));
+    verify(regionMap, times(1)).removeEntry(eq(KEY), same(entry), eq(false));
   }
 
   private void verifyTestHookRun() {
