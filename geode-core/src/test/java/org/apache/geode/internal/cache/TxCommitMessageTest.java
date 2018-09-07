@@ -67,13 +67,13 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void toDataWithShadowKeyPre180Server() throws IOException {
+  public void toDataWithShadowKeyPre170Server() throws IOException {
     final Sequence toData = mockContext.sequence("toData");
     final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
     mockContext.checking(new Expectations() {
       {
         allowing(mockDataOutput).getVersion();
-        will(returnValue(Version.GEODE_170));
+        will(returnValue(Version.GEODE_160));
         // processor id
         oneOf(mockDataOutput).writeInt(with(any(int.class)));
         inSequence(toData);
@@ -178,13 +178,13 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void toDataWithoutShadowKeyPre180Client() throws IOException {
+  public void toDataWithoutShadowKeyPre170Client() throws IOException {
     final Sequence toData = mockContext.sequence("toData");
     final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
     mockContext.checking(new Expectations() {
       {
         allowing(mockDataOutput).getVersion();
-        will(returnValue(Version.GEODE_170));
+        will(returnValue(Version.GEODE_160));
         // processor id
         oneOf(mockDataOutput).writeInt(with(any(int.class)));
         inSequence(toData);
@@ -288,7 +288,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void toDataWithShadowKeyPost180Server() throws IOException {
+  public void toDataWithShadowKeyPost170Server() throws IOException {
     final Sequence toData = mockContext.sequence("toData");
     final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
     mockContext.checking(new Expectations() {
@@ -402,7 +402,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void toDataWithoutShadowKeyPost180Client() throws IOException {
+  public void toDataWithoutShadowKeyPost170Client() throws IOException {
     final Sequence toData = mockContext.sequence("toData");
     final VersionedDataOutput mockDataOutput = mockContext.mock(VersionedDataOutput.class);
     mockContext.checking(new Expectations() {
@@ -515,13 +515,13 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithShadowKeyPre180Server() throws Exception {
+  public void fromDataWithShadowKeyPre170Server() throws Exception {
     final Sequence fromData = mockContext.sequence("fromData");
     final VersionedDataInput mockDataInput = mockContext.mock(VersionedDataInput.class);
     mockContext.checking(new Expectations() {
       {
         allowing(mockDataInput).getVersion();
-        will(returnValue(Version.GEODE_170));
+        will(returnValue(Version.GEODE_160));
         // processor id
         oneOf(mockDataInput).readInt();
         will(returnValue(0));
@@ -707,7 +707,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithShadowKeyPost180Server() throws Exception {
+  public void fromDataWithShadowKeyPost170Server() throws Exception {
     final Sequence fromData = mockContext.sequence("fromData");
     final DataInput mockDataInput = mockContext.mock(DataInput.class);
     mockContext.checking(new Expectations() {
@@ -902,7 +902,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithoutShadowKeyPost180Client() throws Exception {
+  public void fromDataWithoutShadowKeyPost170Client() throws Exception {
     final Sequence fromData = mockContext.sequence("fromData");
     final DataInput mockDataInput = mockContext.mock(DataInput.class);
     mockContext.checking(new Expectations() {
