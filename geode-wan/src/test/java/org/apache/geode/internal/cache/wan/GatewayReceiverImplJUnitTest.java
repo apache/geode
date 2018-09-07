@@ -126,6 +126,7 @@ public class GatewayReceiverImplJUnitTest {
         new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
     assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
+    verify(server, times(2)).start();
   }
 
   @Test
@@ -138,6 +139,7 @@ public class GatewayReceiverImplJUnitTest {
         new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null, null, true);
     assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
+    verify(server, times(1)).start();
   }
 
   @Test
@@ -151,6 +153,7 @@ public class GatewayReceiverImplJUnitTest {
     assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
     assertTrue(gateway.getPort() == 0);
+    verify(server, times(101)).start(); // 2000-2100: contains 101 ports
   }
 
   @Test
@@ -162,17 +165,18 @@ public class GatewayReceiverImplJUnitTest {
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     AtomicInteger callCount = new AtomicInteger();
     doAnswer(invocation -> {
-      // only throw IOException for 10 times
-      if (callCount.get() < 10) {
+      // only throw IOException for 2 times
+      if (callCount.get() < 2) {
         callCount.incrementAndGet();
         throw new SocketException("Address already in use");
       }
       return 0;
     }).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2100, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2010, 5, 100, null, null, null, true);
     gateway.start();
-    assertTrue(gateway.getPort() > 2000);
-    assertEquals(10, callCount.get());
+    assertTrue(gateway.getPort() >= 2000);
+    assertEquals(2, callCount.get());
+    verify(server, times(3)).start(); // 2 failed tries, 1 succeeded
   }
 }
