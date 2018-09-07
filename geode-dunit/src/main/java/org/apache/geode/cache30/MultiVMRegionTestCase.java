@@ -8284,45 +8284,41 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       fail("neither member saw event conflation - check stats for " + name);
     }
 
-    // Wait for the members to eventually be consistent
     // For no-ack regions, messages may still be in flight between replicas at this point
-    waitAtMost(5, MINUTES).until(() -> {
+    await("Wait for the members to eventually be consistent").atMost(5, MINUTES)
+        .untilAsserted(() -> {
 
-      // check consistency of the regions
-      Map r1Contents = vm1.invoke(MultiVMRegionTestCase::getCCRegionContents);
-      Map r2Contents = vm2.invoke(MultiVMRegionTestCase::getCCRegionContents);
-      Map r3Contents = vm3.invoke(MultiVMRegionTestCase::getCCRegionContents);
+          // check consistency of the regions
+          Map r1Contents = vm1.invoke(MultiVMRegionTestCase::getCCRegionContents);
+          Map r2Contents = vm2.invoke(MultiVMRegionTestCase::getCCRegionContents);
+          Map r3Contents = vm3.invoke(MultiVMRegionTestCase::getCCRegionContents);
 
-      try {
-        for (int i = 0; i < 10; i++) {
-          String key = "cckey" + i;
-          assertThat(r2Contents.get(key)).describedAs(
-              "1 region contents are not consistent for i " + key).isEqualTo(r1Contents.get(key));
-          assertThat(r3Contents.get(key)).describedAs(
-              "2 region contents are not consistent for i " + key).isEqualTo(r2Contents.get(key));
-          for (int subi = 1; subi < 3; subi++) {
-            String subkey = key + "-" + subi;
-            if (r1Contents.containsKey(subkey)) {
-              assertThat(r2Contents.get(subkey)).describedAs(
-                  "3 region contents are not consistent for " + subkey).isEqualTo(
-                      r1Contents.get(subkey));
-              assertThat(r3Contents.get(subkey)).describedAs(
-                  "4 region contents are not consistent for " + subkey).isEqualTo(
-                      r2Contents.get(subkey));
-            } else {
-              boolean condition1 = !r2Contents.containsKey(subkey);
-              assertThat(condition1).describedAs("5 r2contents").isTrue();
-              boolean condition = !r3Contents.containsKey(subkey);
-              assertThat(condition).describedAs("6 r3contents").isTrue();
+          for (int i = 0; i < 10; i++) {
+            String key = "cckey" + i;
+            assertThat(r2Contents.get(key)).describedAs(
+                "r2 contents are not consistent with r1 for " + key)
+                .isEqualTo(r1Contents.get(key));
+            assertThat(r3Contents.get(key)).describedAs(
+                "r3 contents are not consistent with r2 for " + key)
+                .isEqualTo(r2Contents.get(key));
+            for (int subi = 1; subi < 3; subi++) {
+              String subkey = key + "-" + subi;
+              if (r1Contents.containsKey(subkey)) {
+                assertThat(r2Contents.get(subkey)).describedAs(
+                    "r2 contents are not consistent with r1 for subkey " + subkey).isEqualTo(
+                        r1Contents.get(subkey));
+                assertThat(r3Contents.get(subkey)).describedAs(
+                    "r3 contents are not consistent with r2 for subkey " + subkey).isEqualTo(
+                        r2Contents.get(subkey));
+              } else {
+                assertThat(r2Contents.containsKey(subkey))
+                    .describedAs("r2 contains subkey " + subkey + " that r1 does not").isFalse();
+                assertThat(r3Contents.containsKey(subkey))
+                    .describedAs("r3 contains subkey " + subkey + " that r1 does not").isFalse();
+              }
             }
           }
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-        throw (e);
-      }
-      return true;
-    });
+        });
 
   }
 
