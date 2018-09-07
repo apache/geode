@@ -32,7 +32,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -82,7 +81,6 @@ public class RegionMapPutTest {
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(internalRegion.getAttributes()).thenReturn(mock(RegionAttributes.class));
     when(internalRegion.getImageState()).thenReturn(mock(ImageState.class));
-    when(focusedRegionMap.getEntryMap()).thenReturn(mock(Map.class));
     when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
     givenAnOperationThatDoesNotGuaranteeOldValue();
     when(event.getKey()).thenReturn("key");
@@ -373,6 +371,7 @@ public class RegionMapPutTest {
   public void cacheWriteBeforePutCalledWithCacheWriter_givenACacheWriter() {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
+    @SuppressWarnings("rawtypes")
     CacheWriter cacheWriter = mock(CacheWriter.class);
     when(internalRegion.basicGetWriter()).thenReturn(cacheWriter);
 
@@ -387,6 +386,7 @@ public class RegionMapPutTest {
     givenPutNeedsToDoCacheWrite();
     when(internalRegion.isInitialized()).thenReturn(true);
     when(internalRegion.basicGetWriter()).thenReturn(null);
+    @SuppressWarnings("rawtypes")
     Set netWriteRecipients = mock(Set.class);
     when(internalRegion.adviseNetWrite()).thenReturn(netWriteRecipients);
 
@@ -764,6 +764,7 @@ public class RegionMapPutTest {
     ifNew = true;
     when(event.getOperation()).thenReturn(Operation.CREATE);
     doThrow(ConcurrentCacheModificationException.class).when(event).putNewEntry(any(), any());
+    @SuppressWarnings("rawtypes")
     VersionTag versionTag = mock(VersionTag.class);
     when(versionTag.isTimeStampUpdated()).thenReturn(true);
     when(event.getVersionTag()).thenReturn(versionTag);

@@ -29,8 +29,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -46,8 +44,6 @@ import org.apache.geode.internal.cache.RegionEntryFactory;
 public class AbstractRegionMapPutTest {
   private final InternalRegion internalRegion = mock(InternalRegion.class);
   private final FocusedRegionMap focusedRegionMap = mock(FocusedRegionMap.class);
-  @SuppressWarnings("rawtypes")
-  private final Map entryMap = mock(Map.class);
   private final EntryEventImpl event = mock(EntryEventImpl.class);
   private final RegionEntry createdRegionEntry = mock(RegionEntry.class);
   private final TestableRegionMapPut instance = spy(new TestableRegionMapPut());
@@ -57,7 +53,6 @@ public class AbstractRegionMapPutTest {
     RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(createdRegionEntry);
     when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
-    when(focusedRegionMap.getEntryMap()).thenReturn(entryMap);
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
   }
 
@@ -234,7 +229,7 @@ public class AbstractRegionMapPutTest {
     assertThat(result).isSameAs(existingEntry);
     verify(focusedRegionMap, times(2)).getEntry(eq(event));
     verify(focusedRegionMap, times(2)).getEntryFactory();
-    verify(entryMap, times(1)).remove(any(), eq(existingEntry));
+    verify(focusedRegionMap, times(1)).removeEntry(any(), eq(existingEntry));
     verifyAbstractContractWithRetry();
   }
 

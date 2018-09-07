@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +54,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 public class RegionMapCommitPutTest {
   private final InternalRegion internalRegion = mock(InternalRegion.class);
   private final FocusedRegionMap focusedRegionMap = mock(FocusedRegionMap.class);
-  @SuppressWarnings("rawtypes")
-  private final Map entryMap = mock(Map.class);
   private final EntryEventImpl event = mock(EntryEventImpl.class);
   private final RegionEntry regionEntry = mock(RegionEntry.class);
   private final TransactionId transactionId = mock(TransactionId.class);
@@ -74,7 +71,6 @@ public class RegionMapCommitPutTest {
     RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(regionEntry);
     when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
-    when(focusedRegionMap.getEntryMap()).thenReturn(entryMap);
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(internalRegion.getCache()).thenReturn(mock(InternalCache.class));
     when(internalRegion.getMyId()).thenReturn(myId);
@@ -422,6 +418,7 @@ public class RegionMapCommitPutTest {
   @Test
   public void putWithConcurrencyChecksEnabledDoesCallSetVersionTag() {
     when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    @SuppressWarnings("rawtypes")
     VersionTag versionTag = mock(VersionTag.class);
     when(event.getVersionTag()).thenReturn(versionTag);
     createInstance(Operation.UPDATE, false, null, localTxEntryState);

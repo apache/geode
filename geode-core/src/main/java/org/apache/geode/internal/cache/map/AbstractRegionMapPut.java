@@ -312,7 +312,7 @@ public abstract class AbstractRegionMapPut {
     final RegionEntry re = getRegionEntry();
     if (re.isRemovedPhase2()) {
       getOwner().getCachePerfStats().incRetries();
-      getRegionMap().getEntryMap().remove(getEvent().getKey(), re);
+      getRegionMap().removeEntry(getEvent().getKey(), re);
       return true;
     } else {
       return false;
