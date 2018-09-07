@@ -72,6 +72,14 @@ dependencies {
   integrationTestCompile project(":geode-dunit")
 }
 
+sourceSets {
+  integrationTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
+  }
+}
+
 war {
   rootSpec.exclude("**/*commons-logging-*.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE

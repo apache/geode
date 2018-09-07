@@ -95,8 +95,8 @@ public class RestAccessControllerTest {
 
   @ClassRule
   public static ServerStarterRule rule = new ServerStarterRule()
-      .withAutoStart()
       .withProperty("log-level", "warn")
+      .withPDXReadSerialized()
       .withRegion(RegionShortcut.REPLICATE, "customers")
       .withRegion(RegionShortcut.REPLICATE, "orders");
 
@@ -674,7 +674,6 @@ public class RestAccessControllerTest {
     putAll();
     mockMvc.perform(get("/v1/queries/adhoc?q=SELECT * FROM /customers LIMIT 100")
         .with(POST_PROCESSOR))
-        .andDo(print())
         .andExpect(status().isOk())
         .andExpect(content().json(jsonResources.get(CUSTOMER_LIST_NO_TYPE_JSON)));
   }
