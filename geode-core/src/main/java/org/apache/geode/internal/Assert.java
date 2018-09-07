@@ -26,7 +26,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * of bytes of data remaining in the buffer is zero. The system executes the assertion by evaluating
  * the boolean expression and reporting an error if it evaluates to false. By verifying that the
  * boolean expression is indeed true, the system corroborates the programmer's knowledge of the
- * program and increases his confidence that the program is free of bugs.Assertion checking may be
+ * program and increases their confidence that the program is free of bugs.Assertion checking may be
  * disabled for increased performance. Typically, assertion-checking is enabled during program
  * development and testing, and disabled during deployment." - from
  * http://java.sun.com/aboutJava/communityprocess/jsr/asrt_prop.html
@@ -59,10 +59,6 @@ public class Assert {
 
   private static boolean debug =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "haltOnAssertFailure");
-
-  public static boolean waitForDebuggerOnError() {
-    return debug;
-  }
 
   public static void fail(Object message) {
     throwError(message);

@@ -37,6 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATO
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -2017,16 +2018,9 @@ public class WANTestBase extends DistributedTestCase {
     fact.setManualStart(true);
     fact.setBindAddress("200.112.204.10");
     GatewayReceiver receiver = fact.create();
-    try {
-      receiver.start();
-      fail("Expected GatewayReceiver Exception");
-    } catch (GatewayReceiverException gRE) {
-      logger.debug("Got the GatewayReceiverException", gRE);
-      assertTrue(gRE.getMessage().contains("Failed to create server socket on"));
-    } catch (IOException e) {
-      e.printStackTrace();
-      fail("Test " + test.getName() + " failed to start GatewayReceiver on port " + port);
-    }
+    assertThatThrownBy(receiver::start)
+        .isInstanceOf(GatewayReceiverException.class)
+        .hasMessageContaining("No available free port found in the given range");
   }
 
   public static int createReceiverWithSSL(int locPort) {

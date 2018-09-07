@@ -96,7 +96,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   @Ignore("TODO: test is not implemented for partioned regions")
   @Override
   @Test
-  public void testCacheLoaderModifyingArgument() throws InterruptedException {
+  public void testCacheLoaderModifyingArgument() {
     // TODO, implement a specific PR related test that properly reflects primary allocation
     // and event deliver based on that allocation
   }
@@ -104,7 +104,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   @Ignore("TODO: test is not implemented for partioned regions")
   @Override
   @Test
-  public void testLocalAndRemoteCacheWriters() throws InterruptedException {
+  public void testLocalAndRemoteCacheWriters() {
     // TODO, implement a specific PR related test that properly reflects primary allocation
     // and event deliver based on that allocation
   }

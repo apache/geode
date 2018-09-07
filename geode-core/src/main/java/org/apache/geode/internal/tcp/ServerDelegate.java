@@ -39,7 +39,7 @@ public interface ServerDelegate {
   LogWriterI18n getLogger();
 
   /**
-   * Called when a possibly new member is detected by receiving a direct channel message from him.
+   * Called when a possibly new member is detected by receiving a direct channel message from it.
    */
   void newMemberConnected(InternalDistributedMember member);
 }

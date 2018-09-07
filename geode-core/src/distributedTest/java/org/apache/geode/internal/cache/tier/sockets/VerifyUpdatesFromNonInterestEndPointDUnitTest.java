@@ -51,8 +51,8 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
- * One Client , two servers. Ensure that client 1 has registered interest list on server 2. Now
- * Client does a put on server1 . The Client should not receive callback of his own put.
+ * One Client, two servers. Ensure that client 1 has registered interest list on server 2. Now
+ * Client does a put on server1. The Client should not receive callback of its own put.
  */
 @Category({ClientSubscriptionTest.class})
 public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4DistributedTestCase {

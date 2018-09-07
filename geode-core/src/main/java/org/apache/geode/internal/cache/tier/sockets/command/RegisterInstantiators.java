@@ -56,10 +56,6 @@ public class RegisterInstantiators extends BaseCommand {
           serverConnection.getSocketString());
     }
 
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
     int noOfParts = clientMessage.getNumberOfParts();
     // Assert parts
     Assert.assertTrue((noOfParts - 1) % 3 == 0);

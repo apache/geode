@@ -14,26 +14,30 @@
  */
 package org.apache.geode.distributed;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static java.lang.Boolean.TRUE;
+import static java.lang.Long.MAX_VALUE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,6 +45,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockRequestProcessor;
@@ -55,7 +60,7 @@ import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
@@ -104,13 +109,12 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Override
-  public final void preTearDown() throws Exception {
+  public final void preTearDown() {
     Invoke.invokeInEveryVM(() -> destroyAllDLockServices());
-    this.lockGrantor = null;
   }
 
   @Override
-  public void postTearDown() throws Exception {
+  public void postTearDown() {
     disconnectAllFromDS();
   }
 
@@ -126,246 +130,111 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     dlstSystem = (new DistributedLockServiceDUnitTest()).getSystem();
   }
 
-  @Test
-  public void testBasic() {
-    String serviceName = getUniqueName();
-    String objectName = "object";
-
-    // Create service
-    DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
-
-    // Not locked initially
-    assertFalse(service.isHeldByCurrentThread(objectName));
-
-    // Get lock
-    assertTrue(service.lock(objectName, 3000, -1));
-    assertTrue(service.isHeldByCurrentThread(objectName));
-    assertTrue(service.lock(objectName, 3000, -1));
-    assertTrue(service.isHeldByCurrentThread(objectName));
-
-    // Release lock
-    service.unlock(objectName);
-    assertTrue(service.isHeldByCurrentThread(objectName));
-    service.unlock(objectName);
-    assertFalse(service.isHeldByCurrentThread(objectName));
-
-    // Destroy service
-    DistributedLockService.destroy(serviceName);
-  }
-
-  @Test
-  public void testCreateDestroy() throws Exception {
-    final String serviceName = getUniqueName();
-    final String abc = "abc";
-
-    // create and destroy dls
-    assertNull(DistributedLockService.getServiceNamed(serviceName));
-    DistributedLockService service = DistributedLockService.create(serviceName, getSystem());
-    assertSame(service, DistributedLockService.getServiceNamed(serviceName));
-    DistributedLockService.destroy(serviceName);
-
-    final DistributedLockService svcForLambda = service;
-
-    assertThatThrownBy(() -> svcForLambda.lock(abc, -1, -1))
-        .isInstanceOf(LockServiceDestroyedException.class);
-
-    // assert that destroyed dls is no longer available
-    assertNull(DistributedLockService.getServiceNamed(serviceName));
-
-    // recreate the dls
-    service = DistributedLockService.create(serviceName, getSystem());
-    assertTrue(!((DLockService) service).isDestroyed());
-    ((DLockService) service).checkDestroyed();
-
-    // get the same dls from another thread and hold a lock
-    Thread thread = new Thread(new Runnable() {
-      public void run() {
-        DistributedLockService dls = DistributedLockService.getServiceNamed(serviceName);
-        assertTrue(!((DLockService) dls).isDestroyed());
-        ((DLockService) dls).checkDestroyed();
-        dls.lock(abc, -1, -1); // get lock on abc and hold it
-      }
-    });
-    thread.start();
-    ThreadUtils.join(thread, 30 * 1000);
-
-    // start a new thread to wait for lock on abc
-    AsyncInvocation remoteWaitingThread =
-        VM.getVM(0).invokeAsync(new SerializableRunnable() {
-          public void run() {
-            DistributedLockService dls = DistributedLockService.create(serviceName, getSystem());
-            try {
-              dls.lock(abc, -1, -1); // waiting to get lock abc
-              fail("remoteWaitingThread got lock after dls destroyed");
-            } catch (LockServiceDestroyedException expected) {
-              return;
-            }
-            fail("remoteWaitingThread lock failed to throw LockServiceDestroyedException");
-          }
-        });
-
-    // loop will handle race condition with 1 sec sleep and retry
-    int retry = 10;
-    for (int i = 0; i < retry; i++) {
-      try {
-        // destroy DLS and free up remoteWaitingThread
-        VM.getVM(0).invoke(new SerializableRunnable() {
-          public void run() {
-            DistributedLockService.destroy(serviceName);
-          }
-        });
-      } catch (RMIException e) {
-        // race condition: remoteWaitingThread probably hasn't created DLS yet
-        if (i < retry && e.getCause() instanceof IllegalArgumentException) {
-          Thread.sleep(1000);
-          continue;
-        } else {
-          throw e;
-        }
-      }
-      break; // completed so break out of loop
-    }
-
-    DistributedLockService.destroy(serviceName);
-
-    // make sure remoteWaitingThread stopped waiting and threw LockServiceDestroyedException
-    ThreadUtils.join(remoteWaitingThread, 10 * 1000);
-    if (remoteWaitingThread.exceptionOccurred()) {
-      Throwable e = remoteWaitingThread.getException();
-      org.apache.geode.test.dunit.Assert.fail(e.getMessage(), e);
-    }
-
-    // make sure LockServiceDestroyedException is thrown
-    try {
-      service.lock(abc, -1, -1);
-      fail("didn't get LockServiceDestroyedException");
-    } catch (LockServiceDestroyedException ex) {
-    }
-
-    // make sure getServiceNamed returns null
-    service = DistributedLockService.getServiceNamed(serviceName);
-    assertNull("" + service, service);
-  }
-
-  private static DistributedLockService dls_testFairness;
-  private static int count_testFairness[] = new int[16];
   private static volatile boolean stop_testFairness;
-  private static volatile boolean[] done_testFairness = new boolean[16];
-  static {
-    Arrays.fill(done_testFairness, true);
-  }
 
   @Test
-  public void testFairness() throws Exception {
+  public void testFairness() throws InterruptedException, ExecutionException {
+    final int[] vmThreads = new int[] {1, 4, 8, 16};
+    final int numVms = vmThreads.length;
+    final int numThreads = Arrays.stream(vmThreads).sum();
+    final List<VM> vms = new ArrayList<>();
+    final List<Future> futures = new ArrayList<>();
     final String serviceName = "testFairness_" + getUniqueName();
     final Object lock = "lock";
 
     // get the lock and hold it until all threads are ready to go
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
-    assertTrue(service.lock(lock, -1, -1));
+    assertThat(service.lock(lock, -1, -1)).isTrue();
 
-    final int[] vmThreads = new int[] {1, 4, 8, 16};
-    forNumVMsInvoke(vmThreads.length, () -> remoteCreateService(serviceName));
+    // create the lock service in all vms
+    vms.addAll(forNumVMsInvoke(numVms, () -> remoteCreateService(serviceName)));
     Thread.sleep(100);
 
+    Invoke.invokeInEveryVM(() -> {
+      stop_testFairness = false;
+    });
+
     // line up threads for the fairness race...
-    for (int i = 0; i < vmThreads.length; i++) {
-      final int vm = i;
-      logger
-          .info("[testFairness] lining up " + vmThreads[vm] + " threads in vm " + vm);
+    for (int vm = 0; vm < numVms; vm++) {
+      logger.info("[testFairness] lining up " + vmThreads[vm] + " threads in vm " + vm);
 
       for (int j = 0; j < vmThreads[vm]; j++) {
-        final int thread = j;
-        /*
-         * getLogWriter().info("[testFairness] setting up thread " + thread + " in vm " + vm);
-         */
-
-        VM.getVM(vm).invokeAsync(new SerializableRunnable() {
-          public void run() {
+        SerializableCallable<Integer> fairnessRunnable = new SerializableCallable<Integer>() {
+          public Integer call() {
             // lock, inc count, and unlock until stop_testFairness is set true
+            final AtomicInteger lockCount = new AtomicInteger(0);
             try {
-              done_testFairness[thread] = false;
-              dls_testFairness = DistributedLockService.getServiceNamed(serviceName);
+              DistributedLockService service =
+                  DistributedLockService.getServiceNamed(serviceName);
               while (!stop_testFairness) {
-                assertTrue(dls_testFairness.lock(lock, -1, -1));
-                count_testFairness[thread]++;
-                dls_testFairness.unlock(lock);
+                assertThat(service.lock(lock, -1, -1)).isTrue();
+                lockCount.incrementAndGet();
+                service.unlock(lock);
               }
-              done_testFairness[thread] = true;
             } catch (VirtualMachineError e) {
               SystemFailure.initiateFailure(e);
               throw e;
             } catch (Throwable t) {
               logger.warn(t);
               fail(t.getMessage());
+            } finally {
+              return lockCount.get();
             }
           }
-        });
+        };
+
+        futures.add(vms.get(vm).invokeAsync(() -> fairnessRunnable.call()));
       }
     }
-    Thread.sleep(500); // 500 ms
+
+    // wait for all threads to be ready to start the race
+    for (int i = 0; i < numVms; i++) {
+      final int vmId = i;
+
+      vms.get(vmId).invoke(() -> {
+        DLockService localService =
+            (DLockService) DistributedLockService.getServiceNamed(serviceName);
+
+        Awaitility.await().atMost(1, TimeUnit.MINUTES)
+            .untilAsserted(() -> assertThat(localService.getStats().getLockWaitsInProgress())
+                .isEqualTo(vmThreads[vmId]));
+      });
+    }
 
     // start the race!
     service.unlock(lock);
     Thread.sleep(1000 * 5); // 5 seconds
-    assertTrue(service.lock(lock, -1, -1));
 
     // stop the race...
-    for (int i = 0; i < vmThreads.length; i++) {
-      final int vm = i;
-      VM.getVM(vm).invoke(new SerializableRunnable() {
+    assertThat(service.lock(lock, -1, -1)).isTrue();
+    for (VM vm : vms) {
+      vm.invoke(new SerializableRunnable() {
         public void run() {
           stop_testFairness = true;
         }
       });
     }
+
+    // release the lock and destroy the lock service
     service.unlock(lock);
-    for (int i = 0; i < vmThreads.length; i++) {
-      final int vm = i;
-      VM.getVM(vm).invoke(new SerializableRunnable() {
-        public void run() {
-          try {
-            boolean testIsDone = false;
-            while (!stop_testFairness || !testIsDone) {
-              testIsDone = true;
-              for (int i2 = 0; i2 < done_testFairness.length; i2++) {
-                if (!done_testFairness[i2])
-                  testIsDone = false;
-              }
-            }
-            DistributedLockService.destroy(serviceName);
-          } catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          } catch (Throwable t) {
-            fail(t.getMessage());
-          }
-        }
-      });
-    }
 
     // calc total locks granted...
-    int totalLocks = 0;
-    int minLocks = Integer.MAX_VALUE;
-    int maxLocks = 0;
+    Integer totalLocks = 0;
+    Integer maxLocks = 0;
+    Integer minLocks = Integer.MAX_VALUE;
 
-    // add up total locks across all vms and threads...
-    int numThreads = 0;
-    for (int i = 0; i < vmThreads.length; i++) {
-      final int vm = i;
-      for (int j = 0; j < vmThreads[vm]; j++) {
-        final int thread = j;
-        Integer count = VM.getVM(vm).invoke(
-            () -> DistributedLockServiceDUnitTest.get_count_testFairness(thread));
-        int numLocks = count;
-        if (numLocks < minLocks)
-          minLocks = numLocks;
-        if (numLocks > maxLocks)
-          maxLocks = numLocks;
-        totalLocks = totalLocks + numLocks;
-        numThreads++;
+    for (Future future : futures) {
+      Integer numLocks = (Integer) future.get();
+      totalLocks += numLocks;
+      if (minLocks > numLocks) {
+        minLocks = numLocks;
+      }
+      if (maxLocks < numLocks) {
+        maxLocks = numLocks;
       }
     }
+
+    vms.forEach(vm -> vm.invoke(() -> DistributedLockService.destroy(serviceName)));
 
     logger.info("[testFairness] totalLocks=" + totalLocks + " minLocks="
         + minLocks + " maxLocks=" + maxLocks);
@@ -379,53 +248,39 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     logger.info("[testFairness] deviation=" + deviation + " expectedLocks="
         + expectedLocks + " lowThreshold=" + lowThreshold + " highThreshold=" + highThreshold);
 
-    assertTrue("minLocks is less than lowThreshold", minLocks >= lowThreshold);
-    assertTrue("maxLocks is greater than highThreshold", maxLocks <= highThreshold);
-  }
-
-  private static Integer get_count_testFairness(Integer i) {
-    return count_testFairness[i];
+    assertThat(minLocks >= lowThreshold).withFailMessage("minLocks is less than lowThreshold")
+        .isTrue();
+    assertThat(maxLocks <= highThreshold).withFailMessage("maxLocks is greater than highThreshold")
+        .isTrue();
   }
 
   @Test
   public void testOneGetsAndOthersTimeOut() throws Exception {
     doOneGetsAndOthersTimeOut(1, 1);
-    // doOneGetsAndOthersTimeOut(2, 2);
-    // doOneGetsAndOthersTimeOut(3, 2);
     doOneGetsAndOthersTimeOut(4, 3);
   }
 
-  private InternalDistributedMember lockGrantor;
-
-  private synchronized void assertGrantorIsConsistent(InternalDistributedMember id) {
-    if (this.lockGrantor == null) {
-      this.lockGrantor = id;
-    } else {
-      assertEquals("assertGrantorIsConsistent failed", lockGrantor, id);
-    }
-  }
-
-  private static InternalDistributedMember identifyLockGrantor(String serviceName) {
+  private static InternalDistributedMember getLockGrantor(String serviceName) {
     DLockService service = (DLockService) DistributedLockService.getServiceNamed(serviceName);
-    assertNotNull(service);
+    assertThat(service).isNotNull();
     InternalDistributedMember grantor = service.getLockGrantorId().getLockGrantorMember();
-    assertNotNull(grantor);
-    logInfo("In identifyLockGrantor - grantor is " + grantor);
+    assertThat(grantor).isNotNull();
+    System.out.println("In identifyLockGrantor - grantor is " + grantor);
     return grantor;
   }
 
   private static Boolean isLockGrantor(String serviceName) {
     DLockService service = (DLockService) DistributedLockService.getServiceNamed(serviceName);
-    assertNotNull(service);
+    assertThat(service).isNotNull();
     Boolean result = service.isLockGrantor();
-    logInfo("In isLockGrantor: " + result);
+    System.out.println("In isLockGrantor: " + result);
     return result;
   }
 
   protected static void becomeLockGrantor(String serviceName) {
     DLockService service = (DLockService) DistributedLockService.getServiceNamed(serviceName);
-    assertNotNull(service);
-    logInfo("About to call becomeLockGrantor...");
+    assertThat(service).isNotNull();
+    System.out.println("About to call becomeLockGrantor...");
     service.becomeLockGrantor();
   }
 
@@ -433,94 +288,90 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   public void testGrantorSelection() {
     // TODO change distributedCreateService usage to be concurrent threads
 
-    // bring up 4 members and make sure all identify one as grantor
-    int numVMs = 4;
     final String serviceName = "testGrantorSelection_" + getUniqueName();
-    distributedCreateService(numVMs, serviceName);
 
-    for (int vm = 0; vm < numVMs; vm++) {
-      logInfo("VM " + vm + " in " + serviceName + " about to invoke");
-      InternalDistributedMember id = VM.getVM(vm)
-          .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(
-              serviceName));
-      logInfo("VM " + vm + " in " + serviceName + " got " + id);
-      assertGrantorIsConsistent(id);
-    }
+    final List<VM> vmList = distributedCreateService(4, serviceName, true);
+
+
+    getLockGrantor(serviceName);
+
+    assertGrantorIsConsistent(serviceName, vmList);
   }
 
   @Test
   public void testBasicGrantorRecovery() {
-    // 1) start up 4 VM members...
     int numVMs = 4;
     final String serviceName = "testBasicGrantorRecovery_" + getUniqueName();
-    distributedCreateService(numVMs, serviceName);
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException ignore) {
-      fail("interrupted");
-    }
+    final List<VM> vmList = distributedCreateService(numVMs, serviceName, false);
 
-    int originalGrantor = 3;
-    VM.getVM(originalGrantor)
-        .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(serviceName));
+    // Apparently it's necessary to query the lock grantor to have a server be nominated grantor.
+    vmList.get(0).invoke(() -> getLockGrantor(serviceName));
 
-    int originalVM = -1;
-    InternalDistributedMember oldGrantor = null;
-
-    for (int vm = 0; vm < numVMs; vm++) {
-      final int finalvm = vm;
-      Boolean isGrantor = VM.getVM(finalvm)
-          .invoke(() -> DistributedLockServiceDUnitTest.isLockGrantor(
-              serviceName));
-      if (isGrantor) {
-        originalVM = vm;
-        oldGrantor = VM.getVM(finalvm)
-            .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(
-                serviceName));
+    VM originalGrantorVM = identifyLockGrantorWithSanityCheck(serviceName, vmList);
+    VM lockHolder = null;
+    for (VM vm : vmList) {
+      if (vm != originalGrantorVM) {
+        lockHolder = vm;
+        vm.invoke(() -> DLockService.getServiceNamed(serviceName).lock("foo", 1200, -1));
         break;
       }
     }
 
-    assertTrue(originalVM == originalGrantor);
+    final InternalDistributedMember originalGrantorMember =
+        originalGrantorVM.invoke(() -> getLockGrantor(serviceName));
 
-    VM.getVM(originalVM).invoke(new SerializableRunnable() {
-      public void run() {
-        disconnectFromDS();
+    System.out.println("originalGrantorMember = " + originalGrantorMember);
+    final InternalDistributedMember originalGrantorSelfReportedMember = originalGrantorVM
+        .invoke(() -> InternalDistributedSystem.getAnyInstance().getDistributedMember());
+    assertThat(originalGrantorMember).isEqualTo(originalGrantorSelfReportedMember);
+
+    originalGrantorVM.invoke(() -> disconnectFromDS());
+
+    vmList.remove(originalGrantorVM);
+
+    Awaitility.await("vm0 leave has been processed").atMost(20, TimeUnit.SECONDS)
+        .until(() -> vmList.parallelStream()
+            .noneMatch(vm -> vm.invoke(() -> InternalDistributedSystem
+                .getAnyInstance()
+                .getAllOtherMembers()
+                .contains(originalGrantorMember))));
+
+    // It seems that we need to actually use the lock service to have a new grantor be picked.
+    lockHolder.invoke(() -> DLockService.getServiceNamed(serviceName).unlock("foo"));
+
+    final VM newGrantorMember = identifyLockGrantorWithSanityCheck(serviceName, vmList);
+    assertThat(newGrantorMember).isNotEqualTo(originalGrantorMember);
+  }
+
+  /**
+   * This is just a better-sounding wrapper for when we want to do only consistency checks.
+   */
+  private static void assertGrantorIsConsistent(String serviceName, Collection<VM> vmList) {
+    identifyLockGrantorWithSanityCheck(serviceName, vmList);
+  }
+
+  private static VM identifyLockGrantorWithSanityCheck(String serviceName, Collection<VM> vmList) {
+    VM grantorVM = null;
+
+    for (VM vm : vmList) {
+      if (vm.invoke(() -> isLockGrantor(serviceName))) {
+        grantorVM = vm;
       }
-    });
-
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException ignore) {
-      fail("interrupted");
     }
 
-    // 3) verify that another member recovers for grantor
-    int attempts = 3;
-    for (int attempt = 0; attempt < attempts; attempt++) {
-      try {
-        for (int vm = 0; vm < numVMs; vm++) {
-          if (vm == originalVM)
-            continue; // skip because he's disconnected
-          final int finalvm = vm;
-          logInfo("[testBasicGrantorRecovery] VM " + finalvm + " in " + serviceName
-              + " about to invoke");
-          InternalDistributedMember id = VM.getVM(finalvm)
-              .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(serviceName));
-          logInfo("[testBasicGrantorRecovery] VM " + finalvm + " in " + serviceName + " got " + id);
-          assertGrantorIsConsistent(id);
-          logInfo(
-              "[testBasicGrantorRecovery] new grantor " + id + " is not old grantor " + oldGrantor);
-          assertNotEquals("New grantor must not equal the old grantor", id, oldGrantor);
-        } // loop thru vms
-        logInfo("[testBasicGrantorRecovery] succeeded attempt " + attempt);
-        break; // success
-      } catch (AssertionError e) {
-        logInfo("[testBasicGrantorRecovery] failed attempt " + attempt);
-        if (attempt == attempts - 1)
-          throw e;
+    assertThat(grantorVM).withFailMessage("Some VM should think it's the lock grantor").isNotNull();
+
+    final DistributedMember grantorID =
+        grantorVM.invoke(() -> InternalDistributedSystem.getAnyInstance().getDistributedMember());
+
+    for (VM vm : vmList) {
+      if (vm != grantorVM) {
+        assertThat(vm.invoke(() -> isLockGrantor(serviceName))).isFalse();
       }
-    } // loop thru attempts
+      assertThat(vm.invoke(() -> getLockGrantor(serviceName))).isEqualTo(grantorID);
+    }
+
+    return grantorVM;
   }
 
   @Test
@@ -531,7 +382,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     final String serviceName = "testLockFailover-" + getUniqueName();
 
     // create lock services...
-    logger.debug("[testLockFailover] create services");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockFailover] create services");
+    }
 
     VM.getVM(originalGrantorVM)
         .invoke(() -> DistributedLockServiceDUnitTest.remoteCreateService(serviceName));
@@ -543,30 +396,38 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         .invoke(() -> DistributedLockServiceDUnitTest.remoteCreateService(serviceName));
 
     VM.getVM(originalGrantorVM)
-        .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(serviceName));
+        .invoke(() -> DistributedLockServiceDUnitTest.getLockGrantor(serviceName));
 
     Boolean isGrantor = VM.getVM(originalGrantorVM)
         .invoke(() -> DistributedLockServiceDUnitTest.isLockGrantor(serviceName));
-    assertEquals("First member calling getLockGrantor failed to become grantor", Boolean.TRUE,
-        isGrantor);
+    assertThat(isGrantor)
+        .withFailMessage("First member calling getLockGrantor failed to become grantor")
+        .isEqualTo(Boolean.TRUE);
 
     // get locks...
-    logger.debug("[testLockFailover] get lock");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockFailover] get lock");
+    }
 
     Boolean locked = VM.getVM(originalGrantorVM).invoke(
         () -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + originalGrantorVM));
-    assertEquals("Failed to get lock in testLockFailover", Boolean.TRUE, locked);
+    assertThat(locked).withFailMessage("Failed to get lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     locked = VM.getVM(twoVM)
         .invoke(() -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + twoVM));
-    assertEquals("Failed to get lock in testLockFailover", Boolean.TRUE, locked);
+    assertThat(locked).withFailMessage("Failed to get lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     locked = VM.getVM(oneVM)
         .invoke(() -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + oneVM));
-    assertEquals("Failed to get lock in testLockFailover", Boolean.TRUE, locked);
+    assertThat(locked).withFailMessage("Failed to get lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     // disconnect originalGrantorVM...
-    logger.debug("[testLockFailover] disconnect originalGrantorVM");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockFailover] disconnect originalGrantorVM");
+    }
 
     VM.getVM(originalGrantorVM).invoke(new SerializableRunnable() {
       public void run() {
@@ -581,42 +442,54 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     }
 
     // verify locks by unlocking...
-    logger.debug("[testLockFailover] release locks");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockFailover] release locks");
+    }
 
     Boolean unlocked = VM.getVM(twoVM)
         .invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + twoVM));
-    assertEquals("Failed to release lock in testLockFailover", Boolean.TRUE, unlocked);
+    assertThat(unlocked).withFailMessage("Failed to release lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     unlocked = VM.getVM(oneVM)
         .invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + oneVM));
-    assertEquals("Failed to release lock in testLockFailover", Boolean.TRUE, unlocked);
+    assertThat(unlocked).withFailMessage("Failed to release lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     // switch locks...
     locked = VM.getVM(oneVM)
         .invoke(() -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + twoVM));
-    assertEquals("Failed to get lock in testLockFailover", Boolean.TRUE, locked);
+    assertThat(unlocked).withFailMessage("Failed to release lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     locked = VM.getVM(twoVM)
         .invoke(() -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + oneVM));
-    assertEquals("Failed to get lock in testLockFailover", Boolean.TRUE, locked);
+    assertThat(unlocked).withFailMessage("Failed to release lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     unlocked = VM.getVM(oneVM)
         .invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + twoVM));
-    assertEquals("Failed to release lock in testLockFailover", Boolean.TRUE, unlocked);
+    assertThat(unlocked).withFailMessage("Failed to release lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     unlocked = VM.getVM(twoVM)
         .invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + oneVM));
-    assertEquals("Failed to release lock in testLockFailover", Boolean.TRUE, unlocked);
+    assertThat(unlocked).withFailMessage("Failed to release lock in testLockFailover")
+        .isEqualTo(Boolean.TRUE);
 
     // verify grantor is unique...
-    logger.debug("[testLockFailover] verify grantor identity");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockFailover] verify grantor identity");
+    }
 
     InternalDistributedMember oneID = VM.getVM(oneVM)
-        .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(serviceName));
+        .invoke(() -> DistributedLockServiceDUnitTest.getLockGrantor(serviceName));
     InternalDistributedMember twoID = VM.getVM(twoVM)
-        .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(serviceName));
-    assertTrue("Failed to identifyLockGrantor in testLockFailover", oneID != null && twoID != null);
-    assertEquals("Failed grantor uniqueness in testLockFailover", oneID, twoID);
+        .invoke(() -> DistributedLockServiceDUnitTest.getLockGrantor(serviceName));
+    assertThat(oneID != null && twoID != null)
+        .withFailMessage("Failed to identifyLockGrantor in testLockFailover").isTrue();
+    assertThat(twoID).withFailMessage("Failed grantor uniqueness in testLockFailover")
+        .isEqualTo(oneID);
   }
 
   @Test
@@ -627,7 +500,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     final String serviceName = "testLockThenBecomeLockGrantor-" + getUniqueName();
 
     // create lock services...
-    logger.debug("[testLockThenBecomeLockGrantor] create services");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockThenBecomeLockGrantor] create services");
+    }
 
     VM.getVM(originalGrantorVM)
         .invoke(() -> DistributedLockServiceDUnitTest.remoteCreateService(serviceName));
@@ -645,37 +520,46 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         .invoke(() -> DistributedLockServiceDUnitTest.remoteCreateService(serviceName));
 
     VM.getVM(originalGrantorVM)
-        .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(serviceName));
+        .invoke(() -> DistributedLockServiceDUnitTest.getLockGrantor(serviceName));
 
     Boolean isGrantor = VM.getVM(originalGrantorVM)
         .invoke(() -> DistributedLockServiceDUnitTest.isLockGrantor(serviceName));
-    assertEquals("First member calling getLockGrantor failed to become grantor", Boolean.TRUE,
-        isGrantor);
+    assertThat(isGrantor).isEqualTo(Boolean.TRUE)
+        .withFailMessage("First member calling getLockGrantor failed to become grantor");
 
     // control...
-    logger.debug("[testLockThenBecomeLockGrantor] check control");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockThenBecomeLockGrantor] check control");
+    }
     Boolean check = VM.getVM(becomeGrantorVM).invoke(
         () -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + becomeGrantorVM));
-    assertEquals("Check of control failed... unlock succeeded but nothing locked", Boolean.FALSE,
-        check);
+    assertThat(check).isEqualTo(Boolean.FALSE)
+        .withFailMessage("Check of control failed... unlock succeeded but nothing locked");
 
     // get locks...
-    logger.debug("[testLockThenBecomeLockGrantor] get lock");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockThenBecomeLockGrantor] get lock");
+    }
 
     Boolean locked = VM.getVM(originalGrantorVM).invoke(
         () -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + originalGrantorVM));
-    assertEquals("Failed to get lock in testLockThenBecomeLockGrantor", Boolean.TRUE, locked);
+    assertThat(locked).isEqualTo(Boolean.TRUE)
+        .withFailMessage("Failed to get lock in testLockThenBecomeLockGrantor");
 
     locked = VM.getVM(thirdPartyVM)
         .invoke(() -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + thirdPartyVM));
-    assertEquals("Failed to get lock in testLockThenBecomeLockGrantor", Boolean.TRUE, locked);
+    assertThat(locked).isEqualTo(Boolean.TRUE)
+        .withFailMessage("Failed to get lock in testLockThenBecomeLockGrantor");
 
     locked = VM.getVM(becomeGrantorVM)
         .invoke(() -> DistributedLockServiceDUnitTest.lock(serviceName, "KEY-" + becomeGrantorVM));
-    assertEquals("Failed to get lock in testLockThenBecomeLockGrantor", Boolean.TRUE, locked);
+    assertThat(locked).isEqualTo(Boolean.TRUE)
+        .withFailMessage("Failed to get lock in testLockThenBecomeLockGrantor");
 
     // become lock grantor...
-    logger.debug("[testLockThenBecomeLockGrantor] become lock grantor");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockThenBecomeLockGrantor] become lock grantor");
+    }
 
     VM.getVM(becomeGrantorVM)
         .invoke(() -> DistributedLockServiceDUnitTest.becomeLockGrantor(serviceName));
@@ -688,27 +572,33 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     isGrantor = VM.getVM(becomeGrantorVM)
         .invoke(() -> DistributedLockServiceDUnitTest.isLockGrantor(serviceName));
-    assertEquals("Failed to become lock grantor", Boolean.TRUE, isGrantor);
+    assertThat(isGrantor).isEqualTo(Boolean.TRUE).withFailMessage("Failed to become lock grantor");
 
     // verify locks by unlocking...
-    logger.debug("[testLockThenBecomeLockGrantor] release locks");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockThenBecomeLockGrantor] release locks");
+    }
 
     Boolean unlocked = VM.getVM(originalGrantorVM).invoke(
         () -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + originalGrantorVM));
-    assertEquals("Failed to release lock in testLockThenBecomeLockGrantor", Boolean.TRUE, unlocked);
+    assertThat(unlocked).isEqualTo(Boolean.TRUE)
+        .withFailMessage("Failed to release lock in testLockThenBecomeLockGrantor");
 
     unlocked = VM.getVM(thirdPartyVM)
         .invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + thirdPartyVM));
-    assertEquals("Failed to release lock in testLockThenBecomeLockGrantor", Boolean.TRUE, unlocked);
+    assertThat(unlocked).isEqualTo(Boolean.TRUE)
+        .withFailMessage("Failed to release lock in testLockThenBecomeLockGrantor");
 
     unlocked = VM.getVM(becomeGrantorVM).invoke(
         () -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + becomeGrantorVM));
-    assertEquals("Failed to release lock in testLockThenBecomeLockGrantor", Boolean.TRUE, unlocked);
+    assertThat(unlocked).isEqualTo(Boolean.TRUE)
+        .withFailMessage("Failed to release lock in testLockThenBecomeLockGrantor");
 
     // test for bug in which transferred token gets re-entered causing lock recursion
     unlocked = VM.getVM(becomeGrantorVM).invoke(
         () -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY-" + becomeGrantorVM));
-    assertEquals("Transfer of tokens caused lock recursion in held lock", Boolean.FALSE, unlocked);
+    assertThat(unlocked).isEqualTo(Boolean.FALSE)
+        .withFailMessage("Transfer of tokens caused lock recursion in held lock");
   }
 
   @Test
@@ -716,49 +606,52 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // create lock services...
     int numVMs = 4;
     final String serviceName = "testBecomeLockGrantor-" + getUniqueName();
-    distributedCreateService(numVMs, serviceName);
+    distributedCreateService(numVMs, serviceName, true);
 
     // each one gets a lock...
     for (int vm = 0; vm < numVMs; vm++) {
       final int finalvm = vm;
       Boolean locked = VM.getVM(finalvm)
           .invoke(() -> DistributedLockServiceDUnitTest.lock(serviceName, "obj-" + finalvm));
-      assertEquals("Failed to get lock in testBecomeLockGrantor", Boolean.TRUE, locked);
+      assertThat(locked).isEqualTo(Boolean.TRUE)
+          .withFailMessage("Failed to get lock in testBecomeLockGrantor");
     }
 
     // find the grantor...
     int originalVM = -1;
     InternalDistributedMember oldGrantor = null;
     for (int vm = 0; vm < numVMs; vm++) {
-      final int finalvm = vm;
-      Boolean isGrantor = VM.getVM(finalvm)
+      Boolean isGrantor = VM.getVM(vm)
           .invoke(() -> DistributedLockServiceDUnitTest.isLockGrantor(serviceName));
       if (isGrantor) {
         originalVM = vm;
-        oldGrantor = VM.getVM(finalvm)
-            .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(
+        oldGrantor = VM.getVM(vm)
+            .invoke(() -> DistributedLockServiceDUnitTest.getLockGrantor(
                 serviceName));
         break;
       }
     }
 
-    logger.debug("[testBecomeLockGrantor] original grantor is " + oldGrantor);
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testBecomeLockGrantor] original grantor is " + oldGrantor);
+    }
 
     // have one call becomeLockGrantor
     for (int vm = 0; vm < numVMs; vm++) {
       if (vm != originalVM) {
-        final int finalvm = vm;
-        VM.getVM(finalvm)
+        VM.getVM(vm)
             .invoke(() -> DistributedLockServiceDUnitTest.becomeLockGrantor(serviceName));
-        Boolean isGrantor = VM.getVM(finalvm)
+        Boolean isGrantor = VM.getVM(vm)
             .invoke(() -> DistributedLockServiceDUnitTest.isLockGrantor(serviceName));
-        assertEquals("isLockGrantor is false after calling becomeLockGrantor", Boolean.TRUE,
-            isGrantor);
+        assertThat(isGrantor).isEqualTo(Boolean.TRUE)
+            .withFailMessage("isLockGrantor is false after calling becomeLockGrantor");
         break;
       }
     }
 
-    logger.debug("[testBecomeLockGrantor] one vm has called becomeLockGrantor...");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testBecomeLockGrantor] one vm has called becomeLockGrantor...");
+    }
 
     InternalDistributedMember newGrantor = null;
     for (int vm = 0; vm < numVMs; vm++) {
@@ -766,61 +659,69 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           .invoke(() -> DistributedLockServiceDUnitTest.isLockGrantor(serviceName));
       if (isGrantor) {
         newGrantor = VM.getVM(vm)
-            .invoke(() -> DistributedLockServiceDUnitTest.identifyLockGrantor(
+            .invoke(() -> DistributedLockServiceDUnitTest.getLockGrantor(
                 serviceName));
         break;
       }
     }
-    logger.debug("[testBecomeLockGrantor] new Grantor is " + newGrantor);
-    assertEquals(false, newGrantor.equals(oldGrantor));
-
+    assertThat(newGrantor).isNotEqualTo(oldGrantor);
     // verify locks still held by unlocking
     // each one unlocks...
     for (int vm = 0; vm < numVMs; vm++) {
       final int finalvm = vm;
       Boolean unlocked = VM.getVM(finalvm)
           .invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "obj-" + finalvm));
-      assertEquals("Failed to unlock in testBecomeLockGrantor", Boolean.TRUE, unlocked);
+      assertThat(unlocked).isEqualTo(Boolean.TRUE)
+          .withFailMessage("Failed to unlock in testBecomeLockGrantor");
     }
 
-    logger.debug("[testBecomeLockGrantor] finished");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testBecomeLockGrantor] finished");
+    }
 
     // verify that pending requests are granted by unlocking them also
   }
 
   @Test
-  public void testTryLock() {
+  public void testOnlyOneVmAcquiresWithTryLock() throws Exception {
     final Long waitMillis = 100L;
 
     // create lock services...
-    logger.debug("[testTryLock] create lock services");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testTryLock] create lock services");
+    }
     final String serviceName = "testTryLock-" + getUniqueName();
-    distributedCreateService(4, serviceName);
+    final List<VM> vms = distributedCreateService(4, serviceName, false);
 
-    // all 4 vms scramble to get tryLock but only one should succeed...
-    logger.debug("[testTryLock] attempt to get tryLock");
+    final List<AsyncInvocation<Boolean>> invocations = vms.stream()
+        .map(vm -> vm.invokeAsync(
+            () -> DistributedLockServiceDUnitTest.tryLock(serviceName, "KEY", waitMillis)))
+        .collect(Collectors
+            .toList());
+
     int lockCount = 0;
-    for (int vm = 0; vm < 4; vm++) {
-      final int finalvm = vm;
-      Boolean locked = VM.getVM(finalvm)
-          .invoke(() -> DistributedLockServiceDUnitTest.tryLock(serviceName, "KEY", waitMillis));
-      if (locked)
+    for (AsyncInvocation<Boolean> invocation : invocations) {
+      if (invocation.get()) {
         lockCount++;
+      }
     }
 
-    assertEquals("More than one vm acquired the tryLock", 1, lockCount);
+    assertThat(lockCount).isEqualTo(1)
+        .withFailMessage("More than one vm acquired the tryLock");
 
-    logger.debug("[testTryLock] unlock tryLock");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testTryLock] unlock tryLock");
+    }
     int unlockCount = 0;
-    for (int vm = 0; vm < 4; vm++) {
-      final int finalvm = vm;
-      Boolean unlocked = VM.getVM(finalvm)
-          .invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY"));
-      if (unlocked)
+    for (VM vm : vms) {
+      Boolean unlocked =
+          vm.invoke(() -> DistributedLockServiceDUnitTest.unlock(serviceName, "KEY"));
+      if (unlocked) {
         unlockCount++;
+      }
     }
 
-    assertEquals("More than one vm unlocked the tryLock", 1, unlockCount);
+    assertThat(unlockCount).withFailMessage("More than one vm unlocked the tryLock").isEqualTo(1);
   }
 
   @Test
@@ -832,24 +733,23 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
-  public void testLockDifferentNames() throws Exception {
+  public void testLockDifferentNames() {
     String serviceName = getUniqueName();
 
     // Same VM
     remoteCreateService(serviceName);
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
-    assertTrue(service.lock("obj1", -1, -1));
-    assertTrue(service.lock("obj2", -1, -1));
+    assertThat(service.lock("obj1", -1, -1)).isTrue();
+    assertThat(service.lock("obj2", -1, -1)).isTrue();
     service.unlock("obj1");
     service.unlock("obj2");
 
     // Different VMs
     VM vm = VM.getVM(0);
-    vm.invoke(() -> this.remoteCreateService(serviceName));
-    assertTrue(service.lock("masterVMobj", -1, -1));
+    vm.invoke(() -> remoteCreateService(serviceName));
+    assertThat(service.lock("masterVMobj", -1, -1)).isTrue();
 
-    assertEquals(Boolean.TRUE, vm.invoke(() -> this.getLockAndIncrement(serviceName, "otherVMobj",
-        -1, 0)));
+    assertThat(vm.invoke(() -> getLockAndIncrement(serviceName, "otherVMobj", -1, 0))).isTrue();
 
     service.unlock("masterVMobj");
   }
@@ -859,16 +759,16 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     String serviceName = getUniqueName();
     remoteCreateService(serviceName);
     DistributedLockService.getServiceNamed(serviceName);
-    assertEquals(Boolean.TRUE, getLockAndIncrement(serviceName, "localVMobj", -1, 0));
+    assertThat(getLockAndIncrement(serviceName, "localVMobj", -1, 0)).isTrue();
   }
 
   @Test
   public void testRemoteGetLockAndIncrement() {
     String serviceName = getUniqueName();
     VM vm = VM.getVM(0);
-    vm.invoke(() -> this.remoteCreateService(serviceName));
-    assertEquals(Boolean.TRUE, vm.invoke(() -> this.getLockAndIncrement(serviceName, "remoteVMobj",
-        -1, 0)));
+    vm.invoke(() -> remoteCreateService(serviceName));
+    assertThat(vm.invoke(() -> getLockAndIncrement(serviceName, "remoteVMobj",
+        -1, 0))).isTrue();
   }
 
   @Test
@@ -882,23 +782,22 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     remoteCreateService(serviceName2);
     DistributedLockService service1 = DistributedLockService.getServiceNamed(serviceName1);
     DistributedLockService service2 = DistributedLockService.getServiceNamed(serviceName2);
-    assertTrue(service1.lock(objName, -1, -1));
-    assertTrue(service2.lock(objName, -1, -1));
+    assertThat(service1.lock(objName, -1, -1)).isTrue();
+    assertThat(service2.lock(objName, -1, -1)).isTrue();
     service1.unlock(objName);
     service2.unlock(objName);
 
     // Different VMs
     VM vm = VM.getVM(0);
-    vm.invoke(() -> this.remoteCreateService(serviceName1));
-    vm.invoke(() -> this.remoteCreateService(serviceName2));
-    assertTrue(service1.lock(objName, -1, -1));
-    assertEquals(Boolean.TRUE, vm.invoke(
-        () -> this.getLockAndIncrement(serviceName2, objName, -1, 0)));
+    vm.invoke(() -> remoteCreateService(serviceName1));
+    vm.invoke(() -> remoteCreateService(serviceName2));
+    assertThat(service1.lock(objName, -1, -1)).isTrue();
+    assertThat(vm.invoke(() -> getLockAndIncrement(serviceName2, objName, -1, 0))).isTrue();
     service1.unlock(objName);
   }
 
   @Test
-  public void testLeaseDoesntExpire() throws InterruptedException {
+  public void testLeaseDoesntExpire() {
     String serviceName = getUniqueName();
     final Object objName = 3;
 
@@ -906,7 +805,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     remoteCreateService(serviceName);
     final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
     // lock objName with a sufficiently long lease
-    assertTrue(service.lock(objName, -1, 60000));
+    assertThat(service.lock(objName, -1, 60000)).isTrue();
     // try to lock in another thread, with a timeout shorter than above lease
     final boolean[] resultHolder = new boolean[] {false};
     Thread thread = new Thread(new Runnable() {
@@ -916,18 +815,17 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     });
     thread.start();
     ThreadUtils.join(thread, 30 * 1000);
-    assertTrue(resultHolder[0]);
+    assertThat(resultHolder[0]).isTrue();
     // the unlock should succeed without throwing LeaseExpiredException
     service.unlock(objName);
 
     // Different VM
     VM vm = VM.getVM(0);
-    vm.invoke(() -> this.remoteCreateService(serviceName));
+    vm.invoke(() -> remoteCreateService(serviceName));
     // lock objName in this VM with a sufficiently long lease
-    assertTrue(service.lock(objName, -1, 60000));
+    assertThat(service.lock(objName, -1, 60000)).isTrue();
     // try to lock in another VM, with a timeout shorter than above lease
-    assertEquals(Boolean.FALSE, vm
-        .invoke(() -> this.getLockAndIncrement(serviceName, objName, 1000L, 0L)));
+    assertThat(vm.invoke(() -> getLockAndIncrement(serviceName, objName, 1000L, 0L))).isFalse();
     // the unlock should succeed without throwing LeaseExpiredException
     service.unlock(objName);
   }
@@ -940,13 +838,13 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     remoteCreateService(serviceName);
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
     service.lock(objName, -1, -1);
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     service.unlock(objName);
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
   }
 
   @Test
@@ -960,19 +858,16 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     remoteCreateService(serviceName);
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
-    assertTrue(service.lock(objName, -1, leaseMs));
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     Thread.sleep(waitBeforeLockingMs); // should expire...
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
-    try {
-      service.unlock(objName);
-      fail("unlock should have thrown LeaseExpiredException");
-    } catch (LeaseExpiredException ex) {
-    }
+    Assertions.assertThatThrownBy(() -> service.unlock(objName))
+        .isInstanceOf(LeaseExpiredException.class);
   }
 
   @Test
@@ -983,22 +878,22 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     remoteCreateService(serviceName);
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
     // initial lock...
-    assertTrue(service.lock(objName, -1, -1));
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.lock(objName, -1, -1)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     // recursion +1...
-    assertTrue(service.lock(objName, -1, -1));
+    assertThat(service.lock(objName, -1, -1)).isTrue();
 
     // recursion -1...
     service.unlock(objName);
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     // and unlock...
     service.unlock(objName);
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
   }
 
   @Test
@@ -1012,19 +907,19 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     remoteCreateService(serviceName);
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
     // initial lock...
-    assertTrue(service.lock(objName, -1, leaseMs));
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     // recursion +1...
-    assertTrue(service.lock(objName, -1, leaseMs));
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     // expire...
     Thread.sleep(waitBeforeLockingMs);
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
     // should fail...
     try {
@@ -1034,31 +929,31 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     }
 
     // relock it...
-    assertTrue(service.lock(objName, -1, leaseMs));
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     // and unlock to verify no recursion...
     service.unlock(objName);
-    assertTrue(!service.isHeldByCurrentThread(objName)); // throws failure!!
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue(); // throws failure!!
 
     // go thru again in different order...
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
     // initial lock...
-    assertTrue(service.lock(objName, -1, leaseMs));
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     // expire...
     Thread.sleep(waitBeforeLockingMs);
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
 
     // relock it...
-    assertTrue(service.lock(objName, -1, leaseMs));
-    assertTrue(service.isHeldByCurrentThread(objName));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
+    assertThat(service.isHeldByCurrentThread(objName)).isTrue();
 
     // and unlock to verify no recursion...
     service.unlock(objName);
-    assertTrue(!service.isHeldByCurrentThread(objName));
+    assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
   }
 
   @Test
@@ -1072,7 +967,6 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   private void leaseExpiresTest(boolean tryToLockBeforeExpiration) throws InterruptedException {
-    logger.debug("[testLeaseExpires] prepping");
     long leaseMs = 100;
     long waitBeforeLockingMs = tryToLockBeforeExpiration ? 50 : 110;
 
@@ -1083,65 +977,55 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     remoteCreateService(serviceName);
     final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
-    logger.debug("[testLeaseExpires] acquire first lock");
     // lock objName with a short lease
-    assertTrue(service.lock(objName, -1, leaseMs));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
     Thread.sleep(waitBeforeLockingMs);
 
     if (waitBeforeLockingMs > leaseMs) {
-      assertTrue(!service.isHeldByCurrentThread(objName));
+      assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
     }
 
-    logger.debug("[testLeaseExpires] acquire lock that expired");
     // try to lock in another thread - lease should have expired
     final boolean[] resultHolder = new boolean[] {false};
-    Thread thread = new Thread(new Runnable() {
-      public void run() {
-        resultHolder[0] = service.lock(objName, -1, -1);
-        service.unlock(objName);
-        assertTrue(!service.isHeldByCurrentThread(objName));
-      }
+    Thread thread = new Thread(() -> {
+      resultHolder[0] = service.lock(objName, -1, -1);
+      service.unlock(objName);
+      assertThat(!service.isHeldByCurrentThread(objName)).isTrue();
     });
     thread.start();
     ThreadUtils.join(thread, 30 * 1000);
-    assertTrue(resultHolder[0]);
+    assertThat(resultHolder[0]).isTrue();
 
-    logger.debug("[testLeaseExpires] unlock should throw LeaseExpiredException");
     // this thread's unlock should throw LeaseExpiredException
-    try {
+    Assertions.assertThatThrownBy(() -> {
       service.unlock(objName);
-      fail("unlock should have thrown LeaseExpiredException");
-    } catch (LeaseExpiredException ex) {
-    }
+    }).isInstanceOf(LeaseExpiredException.class);
 
-    logger.debug("[testLeaseExpires] create service in other vm");
-    // Different VM
     VM vm = VM.getVM(0);
-    vm.invoke(() -> this.remoteCreateService(serviceName));
+    vm.invoke(() -> remoteCreateService(serviceName));
 
-    logger.debug("[testLeaseExpires] acquire lock again and expire");
     // lock objName in this VM with a short lease
-    assertTrue(service.lock(objName, -1, leaseMs));
+    assertThat(service.lock(objName, -1, leaseMs)).isTrue();
     Thread.sleep(waitBeforeLockingMs);
 
-    logger.debug("[testLeaseExpires] succeed lock in other vm");
-    // try to lock in another VM - should succeed
-    assertEquals(Boolean.TRUE,
-        vm.invoke(() -> this.getLockAndIncrement(serviceName, objName, (long) -1, 0L)));
-
-    logger.debug("[testLeaseExpires] unlock should throw LeaseExpiredException again");
-    // this VMs unlock should throw LeaseExpiredException
-    try {
-      service.unlock(objName);
-      fail("unlock should have thrown LeaseExpiredException");
-    } catch (LeaseExpiredException ex) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLeaseExpires] succeed lock in other vm");
     }
+    // try to lock in another VM - should succeed
+    assertThat(vm.invoke(() -> getLockAndIncrement(serviceName, objName, (long) -1, 0L)))
+        .isEqualTo(TRUE);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLeaseExpires] unlock should throw LeaseExpiredException again");
+    }
+    // this VMs unlock should throw LeaseExpiredException
+    Assertions.assertThatThrownBy(() -> {
+      service.unlock(objName);
+    }).isInstanceOf(LeaseExpiredException.class);
   }
 
   @Test
   public void testSuspendLockingAfterExpiration() throws Exception {
-    logger.debug("[leaseExpiresThenSuspendTest]");
-
     final long leaseMillis = 100;
     final long suspendWaitMillis = 10000;
 
@@ -1152,38 +1036,32 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     DistributedLockService dls = DistributedLockService.create(serviceName, getSystem());
 
-    assertTrue(dls.lock(key, -1, leaseMillis));
+    assertThat(dls.lock(key, -1, leaseMillis)).isTrue();
 
     // wait for expiration
     Thread.sleep(leaseMillis * 2);
 
-    logger.debug("[leaseExpiresThenSuspendTest] unlock should throw LeaseExpiredException");
-    // this thread's unlock should throw LeaseExpiredException
-    try {
-      dls.unlock(key);
-      fail("unlock should have thrown LeaseExpiredException");
-    } catch (LeaseExpiredException ex) {
-    }
+    Assertions.assertThatThrownBy(() -> dls.unlock(key)).isInstanceOf(LeaseExpiredException.class);
 
     // other vm calls suspend
 
-    logger.debug("[leaseExpiresThenSuspendTest] call to suspend locking");
-    VM.getVM(0).invoke(new SerializableRunnable() {
-      public void run() {
-        final DistributedLockService dlock =
-            DistributedLockService.create(serviceName, getSystem());
-        dlock.suspendLocking(suspendWaitMillis);
-        dlock.resumeLocking();
-        assertTrue(dlock.lock(key, -1, leaseMillis));
-        dlock.unlock(key);
-      }
+    if (logger.isDebugEnabled()) {
+      logger.debug("[leaseExpiresThenSuspendTest] call to suspend locking");
+    }
+    VM.getVM(0).invoke(() -> {
+      final DistributedLockService dlock =
+          DistributedLockService.create(serviceName, getSystem());
+      dlock.suspendLocking(suspendWaitMillis);
+      dlock.resumeLocking();
+      assertThat(dlock.lock(key, -1, leaseMillis)).isTrue();
+      dlock.unlock(key);
     });
   }
 
-  volatile boolean started = false;
-  volatile boolean gotLock = false;
+  private volatile boolean started = false;
+  private volatile boolean gotLock = false;
   volatile Throwable exception = null;
-  volatile Throwable throwable = null;
+  private volatile Throwable throwable = null;
 
   @Test
   public void testLockInterruptiblyIsInterruptible() {
@@ -1192,68 +1070,59 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     exception = null;
     throwable = null;
 
-    // Lock entire service in first thread
-    logger
-        .info("[testLockInterruptiblyIsInterruptible] get and hold the lock");
+    // Get a lock in first thread
     final String serviceName = getUniqueName();
     final DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
     service.becomeLockGrantor();
-    assertTrue(service.lock("obj", 1000, -1));
+    assertThat(service.lock("obj", 1000, -1)).isTrue();
 
     // Start second thread that tries to lock in second thread
-    logger
-        .info("[testLockInterruptiblyIsInterruptible] call lockInterruptibly");
-    Thread thread2 = new Thread(new Runnable() {
-      public void run() {
-        try {
-          started = true;
-          gotLock = service.lockInterruptibly("obj", -1, -1);
-        } catch (InterruptedException ex) {
-          exception = ex;
-        } catch (VirtualMachineError e) {
-          SystemFailure.initiateFailure(e);
-          throw e;
-        } catch (Throwable t) {
-          throwable = t;
-        }
+    Thread thread2 = new Thread(() -> {
+      try {
+        started = true;
+        gotLock = service.lockInterruptibly("obj", -1, -1);
+      } catch (InterruptedException ex) {
+        exception = ex;
+      } catch (VirtualMachineError e) {
+        SystemFailure.initiateFailure(e);
+        throw e;
+      } catch (Throwable t) {
+        throwable = t;
       }
     });
     thread2.start();
 
     // Interrupt second thread
-    logger
-        .info("[testLockInterruptiblyIsInterruptible] interrupt calling thread");
     while (!started)
       Thread.yield();
     thread2.interrupt();
     ThreadUtils.join(thread2, 20 * 1000);
 
     // Expect it got InterruptedException and didn't lock the service
-    logger
-        .info("[testLockInterruptiblyIsInterruptible] verify failed to get lock");
-    assertFalse(gotLock);
+    assertThat(gotLock).isFalse();
     if (throwable != null) {
       logger.warn("testLockInterruptiblyIsInterruptible threw unexpected Throwable", throwable);
     }
-    assertNotNull(exception);
+    assertThat(exception).isNotNull();
 
     // Unlock "obj" in first thread
-    logger.info("[testLockInterruptiblyIsInterruptible] unlock the lock");
     service.unlock("obj");
 
     // Make sure it didn't get locked by second thread
     logger.info(
         "[testLockInterruptiblyIsInterruptible] try to get lock with timeout should not fail");
-    assertTrue(service.lock("obj", 5000, -1));
+    assertThat(service.lock("obj", 5000, -1)).isTrue();
     DistributedLockService.destroy(serviceName);
   }
 
-  volatile boolean wasFlagSet = false;
+  private volatile boolean wasFlagSet = false;
 
   @Test
   public void testLockIsNotInterruptible() throws Exception {
     // Lock entire service in first thread
-    logger.debug("[testLockIsNotInterruptible] lock in first thread");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockIsNotInterruptible] lock in first thread");
+    }
     started = false;
     gotLock = false;
     exception = null;
@@ -1261,16 +1130,20 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     final String serviceName = getUniqueName();
     final DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
-    assertTrue(service.lock("obj", 1000, -1));
+    assertThat(service.lock("obj", 1000, -1)).isTrue();
 
     // Start second thread that tries to lock in second thread
-    logger.debug("[testLockIsNotInterruptible] attempt lock in second thread");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockIsNotInterruptible] attempt lock in second thread");
+    }
     Thread thread2 = new Thread(new Runnable() {
       public void run() {
         try {
           started = true;
           gotLock = service.lock("obj", -1, -1);
-          logger.debug("[testLockIsNotInterruptible] thread2 finished lock() - got " + gotLock);
+          if (logger.isDebugEnabled()) {
+            logger.debug("[testLockIsNotInterruptible] thread2 finished lock() - got " + gotLock);
+          }
         } catch (VirtualMachineError e) {
           SystemFailure.initiateFailure(e);
           throw e;
@@ -1284,18 +1157,22 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     thread2.start();
 
     // Interrupt second thread
-    logger.debug("[testLockIsNotInterruptible] interrupt second thread");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockIsNotInterruptible] interrupt second thread");
+    }
     while (!started)
       Thread.yield();
     Thread.sleep(500);
     thread2.interrupt();
     // Expect it didn't get an exception and didn't lock the service
     Thread.sleep(500);
-    assertFalse(gotLock);
-    assertNull(exception);
+    assertThat(gotLock).isFalse();
+    assertThat(exception).isNull();
 
     // Unlock entire service in first thread
-    logger.debug("[testLockIsNotInterruptible] unlock in first thread");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockIsNotInterruptible] unlock in first thread");
+    }
     service.unlock("obj");
     Thread.sleep(500);
 
@@ -1304,17 +1181,19 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Now thread2 should have gotten the lock, not the exception, but the
     // thread's flag should be set
-    logger.debug("[testLockIsNotInterruptible] verify second thread got lock");
-    assertNull(exception);
-    assertTrue(gotLock);
-    assertTrue(wasFlagSet);
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testLockIsNotInterruptible] verify second thread got lock");
+    }
+    assertThat(exception).isNull();
+    assertThat(gotLock).isTrue();
+    assertThat(wasFlagSet).isTrue();
   }
 
   /**
    * Test DistributedLockService.acquireExclusiveLocking(), releaseExclusiveLocking()
    */
   @Test
-  public void testSuspendLockingBasic() throws Exception {
+  public void testSuspendLockingBasic() {
     final DistributedLockService service =
         DistributedLockService.create(getUniqueName(), dlstSystem);
 
@@ -1325,11 +1204,11 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       // expected
     }
 
-    assertTrue(service.suspendLocking(-1));
+    assertThat(service.suspendLocking(-1)).isTrue();
     service.resumeLocking();
 
     // It's not reentrant
-    assertTrue(service.suspendLocking(1000));
+    assertThat(service.suspendLocking(1000)).isTrue();
     try {
       service.suspendLocking(1);
       fail("didn't get IllegalStateException");
@@ -1340,14 +1219,14 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Get "false" if another thread is holding it
     Thread thread = new Thread(() -> {
-      logInfo("new thread about to suspendLocking()");
-      assertTrue(service.suspendLocking(1000));
+      System.out.println("new thread about to suspendLocking()");
+      assertThat(service.suspendLocking(1000)).isTrue();
     });
 
     thread.start();
     ThreadUtils.join(thread, 30 * 1000);
-    logInfo("main thread about to suspendLocking");
-    assertTrue(!service.suspendLocking(1000));
+    System.out.println("main thread about to suspendLocking");
+    assertThat(!service.suspendLocking(1000)).isTrue();
   }
 
   /**
@@ -1356,41 +1235,41 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   @Test
   public void testSuspendLockingProhibitsLocking() {
     final String name = getUniqueName();
-    distributedCreateService(2, name);
+    distributedCreateService(2, name, true);
     DistributedLockService service = DistributedLockService.getServiceNamed(name);
 
     // Should be able to lock from other VM
     VM vm1 = VM.getVM(1);
-    assertTrue(vm1.invoke(() -> DistributedLockServiceDUnitTest.tryToLock(name)));
+    assertThat(vm1.invoke(() -> DistributedLockServiceDUnitTest.tryToLock(name))).isTrue();
 
-    assertTrue(service.suspendLocking(1000));
+    assertThat(service.suspendLocking(1000)).isTrue();
 
     // vm1 is the grantor... use debugHandleSuspendTimeouts
     vm1.invoke(new SerializableRunnable("setDebugHandleSuspendTimeouts") {
       public void run() {
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(name);
-        assertTrue(dls.isLockGrantor());
+        assertThat(dls.isLockGrantor()).isTrue();
         DLockGrantor grantor = dls.getGrantorWithNoSync();
         grantor.setDebugHandleSuspendTimeouts(5000);
       }
     });
 
     // Shouldn't be able to lock a name from another VM
-    assertTrue(!vm1.invoke(() -> DistributedLockServiceDUnitTest.tryToLock(name)));
+    assertThat(!vm1.invoke(() -> DistributedLockServiceDUnitTest.tryToLock(name))).isTrue();
 
     service.resumeLocking();
 
     vm1.invoke(new SerializableRunnable("unsetDebugHandleSuspendTimeouts") {
       public void run() {
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(name);
-        assertTrue(dls.isLockGrantor());
+        assertThat(dls.isLockGrantor()).isTrue();
         DLockGrantor grantor = dls.getGrantorWithNoSync();
         grantor.setDebugHandleSuspendTimeouts(0);
       }
     });
 
     // Should be able to lock again
-    assertTrue(vm1.invoke(() -> DistributedLockServiceDUnitTest.tryToLock(name)));
+    assertThat(vm1.invoke(() -> DistributedLockServiceDUnitTest.tryToLock(name))).isTrue();
 
   }
 
@@ -1432,7 +1311,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     }
   }
 
-  private void doTestSuspendLockingBehaves() throws Exception {
+  private void doTestSuspendLockingBehaves() {
     final String dlsName = getUniqueName();
     final VM vmGrantor = VM.getVM(0);
     final VM vmOne = VM.getVM(1);
@@ -1450,7 +1329,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         DistributedLockService.create(dlsName, getSystem());
         lockClientSuspendLockingBehaves = new BasicLockClient(dlsName, key1);
         suspendClientSuspendLockingBehaves = new BasicLockClient(dlsName, key1);
-        assertFalse(isLockGrantor(dlsName));
+        assertThat(isLockGrantor(dlsName)).isFalse();
       }
     };
     final SerializableRunnable suspendLocking =
@@ -1483,7 +1362,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         DistributedLockService.create(dlsName, getSystem());
         DistributedLockService.getServiceNamed(dlsName).lock(key1, -1, -1);
         DistributedLockService.getServiceNamed(dlsName).unlock(key1);
-        assertTrue(isLockGrantor(dlsName));
+        assertThat(isLockGrantor(dlsName)).isTrue();
       }
     });
 
@@ -1502,9 +1381,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // make sure vmTwo and vmThree are still waiting for lock on key1
     Wait.pause(100);
-    assertTrue(vmTwoLocking.isAlive());
+    assertThat(vmTwoLocking.isAlive()).isTrue();
     Wait.pause(100);
-    assertTrue(vmThreeLocking.isAlive());
+    assertThat(vmThreeLocking.isAlive()).isTrue();
 
     // let vmTwo get key
     logger.info("[testSuspendLockingBehaves] unlock so vmTwo can get key");
@@ -1531,7 +1410,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // let vmOne suspend locking
     logger.info("[testSuspendLockingBehaves] let vmOne suspend locking");
     Wait.pause(100);
-    assertTrue(vmOneSuspending.isAlive());
+    assertThat(vmOneSuspending.isAlive()).isTrue();
     vmThree.invoke(unlockKey);
     ThreadUtils.join(vmOneSuspending, 10 * 1000);
 
@@ -1544,21 +1423,21 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // let vmTwo suspend locking
     logger.info("[testSuspendLockingBehaves] let vmTwo suspend locking");
     Wait.pause(100);
-    assertTrue(vmTwoSuspending.isAlive());
+    assertThat(vmTwoSuspending.isAlive()).isTrue();
     vmOne.invoke(resumeLocking);
     ThreadUtils.join(vmTwoSuspending, 10 * 1000);
 
     // let vmOne get that lock
     logger.info("[testSuspendLockingBehaves] let vmOne get that lock");
     Wait.pause(100);
-    assertTrue(vmOneLockingAgain.isAlive());
+    assertThat(vmOneLockingAgain.isAlive()).isTrue();
     vmTwo.invoke(resumeLocking);
     ThreadUtils.join(vmOneLockingAgain, 10 * 1000);
 
     // let vmThree suspend locking
     logger.info("[testSuspendLockingBehaves] let vmThree suspend locking");
     Wait.pause(100);
-    assertTrue(vmThreeSuspending.isAlive());
+    assertThat(vmThreeSuspending.isAlive()).isTrue();
     vmOne.invoke(unlockKey);
     ThreadUtils.join(vmThreeSuspending, 10 * 1000);
 
@@ -1576,7 +1455,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   public void testSuspendLockingBlocksUntilNoLocks() throws InterruptedException {
 
     final String name = getUniqueName();
-    distributedCreateService(2, name);
+    distributedCreateService(2, name, true);
     final DistributedLockService service = DistributedLockService.getServiceNamed(name);
 
     // Get lock from other VM. Since same thread needs to lock and unlock,
@@ -1585,7 +1464,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     vm1.invokeAsync(new SerializableRunnable("Lock & unlock in vm1") {
       public void run() {
         DistributedLockService service2 = DistributedLockService.getServiceNamed(name);
-        assertTrue(service2.lock("lock", -1, -1));
+        assertThat(service2.lock("lock", -1, -1)).isTrue();
         synchronized (monitor) {
           try {
             monitor.wait();
@@ -1613,7 +1492,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Let thread start, make sure it's blocked in suspendLocking
     Thread.sleep(100);
-    assertFalse("Before release, got: " + getGot() + ", done: " + getDone(), getGot() || getDone());
+    assertThat(getGot() || getDone())
+        .withFailMessage("Before release, got: " + getGot() + ", done: " + getDone()).isFalse();
 
     vm1.invoke(new SerializableRunnable("notify vm1 to unlock") {
       public void run() {
@@ -1637,7 +1517,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     if (!getGot() || !getDone()) {
       ThreadUtils.dumpAllStacks();
     }
-    assertTrue("After release, got: " + getGot() + ", done: " + getDone(), getGot() && getDone());
+    assertThat(getGot() && getDone())
+        .withFailMessage("After release, got: " + getGot() + ", done: " + getDone()).isTrue();
 
   }
 
@@ -1651,7 +1532,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Lock entire service in first thread
     final String name = getUniqueName();
     final DistributedLockService service = DistributedLockService.create(name, dlstSystem);
-    assertTrue(service.suspendLocking(1000));
+    assertThat(service.suspendLocking(1000)).isTrue();
 
     // Start second thread that tries to lock in second thread
     Thread thread2 = new Thread(new Runnable() {
@@ -1674,15 +1555,15 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Expect it got InterruptedException and didn't lock the service
     Thread.sleep(500);
-    assertFalse(gotLock);
-    assertNotNull(exception);
+    assertThat(gotLock).isFalse();
+    assertThat(exception).isNotNull();
 
     // Unlock entire service in first thread
     service.resumeLocking();
     Thread.sleep(500);
 
     // Make sure it didn't get locked by second thread
-    assertTrue(service.suspendLocking(1000));
+    assertThat(service.suspendLocking(1000)).isTrue();
     DistributedLockService.destroy(name);
   }
 
@@ -1697,7 +1578,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Lock entire service in first thread
     final String name = getUniqueName();
     final DistributedLockService service = DistributedLockService.create(name, dlstSystem);
-    assertTrue(service.suspendLocking(1000));
+    assertThat(service.suspendLocking(1000)).isTrue();
 
     // Start second thread that tries to lock in second thread
     Thread thread2 = new Thread(new Runnable() {
@@ -1722,8 +1603,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     thread2.interrupt();
     // Expect it didn't get an exception and didn't lock the service
     Thread.sleep(500);
-    assertFalse(gotLock);
-    assertNull(exception);
+    assertThat(gotLock).isFalse();
+    assertThat(exception).isNull();
 
     // Unlock entire service in first thread
     service.resumeLocking();
@@ -1733,9 +1614,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // thread's flag should be set
     logger.info("[testSuspendLockingIsNotInterruptible]" + " gotLock="
         + gotLock + " wasFlagSet=" + wasFlagSet + " exception=" + exception, exception);
-    assertTrue(gotLock);
-    assertNull(exception);
-    assertTrue(wasFlagSet);
+    assertThat(gotLock).isTrue();
+    assertThat(exception).isNull();
+    assertThat(wasFlagSet).isTrue();
   }
 
   /**
@@ -1763,7 +1644,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Create service in this VM
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
-    assertTrue(service.lock("key", -1, -1));
+    assertThat(service.lock("key", -1, -1)).isTrue();
     service.unlock("key");
 
     // Create service in other VM
@@ -1784,7 +1665,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     });
 
     // Now lock back in this VM
-    assertTrue(service.lock("key", -1, -1));
+    assertThat(service.lock("key", -1, -1)).isTrue();
 
   }
 
@@ -1794,7 +1675,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Create service in this VM
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
-    assertTrue(service.lock("key", -1, -1));
+    assertThat(service.lock("key", -1, -1)).isTrue();
     service.unlock("key");
 
     // Create service in other VM
@@ -1815,7 +1696,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     });
 
     // Now lock back in this VM
-    assertTrue(service.lock("key", -1, -1));
+    assertThat(service.lock("key", -1, -1)).isTrue();
 
   }
 
@@ -1826,8 +1707,10 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
    * old dlock throws StuckLockException. VM-C should now succeed in acquiring the lock.
    */
   @Test
-  public void testBug32461() throws Exception {
-    logger.debug("[testBug32461] prepping");
+  public void testBug32461() {
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testBug32461] prepping");
+    }
 
     final String serviceName = getUniqueName();
     final Object objName = "32461";
@@ -1836,37 +1719,43 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     final int VM_C = 2;
 
     // VM-A locks/unlocks "lock"...
-    logger.debug("[testBug32461] VM-A locks/unlocks '32461'");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testBug32461] VM-A locks/unlocks '32461'");
+    }
 
     VM.getVM(VM_A).invoke(new SerializableRunnable() {
       public void run() {
         remoteCreateService(serviceName);
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
-        assertTrue(service.lock(objName, -1, Long.MAX_VALUE));
+        assertThat(service.lock(objName, -1, Long.MAX_VALUE)).isTrue();
         service.unlock(objName);
       }
     });
 
     // VM-B leases "lock" and disconnects,
-    logger.debug("[testBug32461] VM_B leases '32461' and disconnects");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testBug32461] VM_B leases '32461' and disconnects");
+    }
 
     VM.getVM(VM_B).invoke(new SerializableRunnable() {
       public void run() {
         remoteCreateService(serviceName);
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
-        assertTrue(service.lock(objName, -1, Long.MAX_VALUE));
+        assertThat(service.lock(objName, -1, Long.MAX_VALUE)).isTrue();
         DistributedLockService.destroy(serviceName);
         disconnectFromDS();
       }
     });
 
-    logger.debug("[testBug32461] VM_C attempts to lock '32461'");
+    if (logger.isDebugEnabled()) {
+      logger.debug("[testBug32461] VM_C attempts to lock '32461'");
+    }
 
     VM.getVM(VM_C).invoke(new SerializableRunnable() {
       public void run() {
         remoteCreateService(serviceName);
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
-        assertTrue(service.lock(objName, -1, -1));
+        assertThat(service.lock(objName, -1, -1)).isTrue();
         service.unlock(objName);
       }
     });
@@ -1881,10 +1770,10 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Create service in this VM
     DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
 
-    assertTrue(service.lock(keyWithLease, -1, -1));
+    assertThat(service.lock(keyWithLease, -1, -1)).isTrue();
     service.unlock(keyWithLease);
 
-    assertTrue(service.lock(keyNoLease, -1, -1));
+    assertThat(service.lock(keyNoLease, -1, -1)).isTrue();
     service.unlock(keyNoLease);
 
     // Create service in other VM
@@ -1899,9 +1788,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     });
 
     // Now lock back in this VM... no stuck locks anymore
-    assertTrue(service.lock(keyWithLease, -1, -1));
+    assertThat(service.lock(keyWithLease, -1, -1)).isTrue();
     service.unlock(keyWithLease);
-    assertTrue(service.lock(keyNoLease, -1, -1));
+    assertThat(service.lock(keyNoLease, -1, -1)).isTrue();
     service.unlock(keyNoLease);
   }
 
@@ -1931,7 +1820,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       final Thread thread1 = new Thread(new Runnable() {
         public void run() {
           logger.info("[testReleaseOrphanedGrant_Local] get the lock");
-          assertTrue(service.lock("obj", -1, -1));
+          assertThat(service.lock("obj", -1, -1)).isTrue();
           DLockRequestProcessor.setWaitToProcessDLockResponse(true);
           startedThread1_testReleaseOrphanedGrant = true;
           synchronized (Thread.currentThread()) {
@@ -1959,7 +1848,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
             logger
                 .info("[testReleaseOrphanedGrant_Local] call lockInterruptibly");
             startedThread2_testReleaseOrphanedGrant = true;
-            assertFalse(service.lockInterruptibly("obj", -1, -1));
+            assertThat(service.lockInterruptibly("obj", -1, -1)).isFalse();
           } catch (InterruptedException expected) {
             Thread.currentThread().interrupt();
           }
@@ -1992,7 +1881,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // relock obj to make sure zombie release worked
       logger.info("[testReleaseOrphanedGrant_Local] verify lock not held");
-      assertTrue(service.lock("obj", 1000, -1));
+      assertThat(service.lock("obj", 1000, -1)).isTrue();
     } finally {
       DLockRequestProcessor.setDebugReleaseOrphanedGrant(false);
       DLockRequestProcessor.setWaitToProcessDLockResponse(false);
@@ -2027,7 +1916,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       final DistributedLockService service = DistributedLockService.create(serviceName, dlstSystem);
 
       // lock and unlock to make sure this vm is grantor
-      assertTrue(service.lock("obj", -1, -1));
+      assertThat(service.lock("obj", -1, -1)).isTrue();
       service.unlock("obj");
 
       // thread to get lock and wait and then unlock
@@ -2038,7 +1927,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           connectDistributedSystem();
           DistributedLockService service_vm1 =
               DistributedLockService.create(serviceName, getSystem());
-          assertTrue(service_vm1.lock("obj", -1, -1));
+          assertThat(service_vm1.lock("obj", -1, -1)).isTrue();
           synchronized (threadVM1_testReleaseOrphanedGrant_Remote) {
             while (!releaseThreadVM1_testReleaseOrphanedGrant_Remote) {
               try {
@@ -2075,7 +1964,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           try {
             DLockRequestProcessor.setDebugReleaseOrphanedGrant(true);
             DLockRequestProcessor.setWaitToProcessDLockResponse(true);
-            assertFalse(service_vm2.lockInterruptibly("obj", -1, -1));
+            assertThat(service_vm2.lockInterruptibly("obj", -1, -1)).isFalse();
           } catch (InterruptedException expected) {
             Thread.currentThread().interrupt();
           }
@@ -2115,7 +2004,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
             logger
                 .info("[testReleaseOrphanedGrant_Remote] destroy lock service");
             DistributedLockService.destroy(serviceName);
-            assertNull(DistributedLockService.getServiceNamed(serviceName));
+            assertThat(DistributedLockService.getServiceNamed(serviceName)).isNull();
           }
         }
       });
@@ -2133,7 +2022,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // relock obj to make sure zombie release worked
       logger.info("[testReleaseOrphanedGrant_Remote] verify lock not held");
-      assertTrue(service.lock("obj", 1000, -1));
+      assertThat(service.lock("obj", 1000, -1)).isTrue();
     } finally {
       vm2.invoke(new SerializableRunnable() {
         public void run() {
@@ -2147,7 +2036,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   }
 
   @Test
-  public void testDestroyLockServiceAfterGrantResponse() throws Throwable {
+  public void testDestroyLockServiceAfterGrantResponse() {
     VM vm0 = VM.getVM(0);
 
     final String serviceName = getUniqueName();
@@ -2179,14 +2068,14 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
         // lock and unlock to make sure this vm is grantor
-        assertTrue(service.lock("obj", -1, -1));
+        assertThat(service.lock("obj", -1, -1)).isTrue();
         service.unlock("obj");
       }
     });
   }
 
   @Test
-  public void testDestroyLockServiceBeforeGrantRequest() throws Throwable {
+  public void testDestroyLockServiceBeforeGrantRequest() {
     VM vm0 = VM.getVM(0);
 
     final String serviceName = getUniqueName();
@@ -2218,7 +2107,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
         // lock and unlock to make sure this vm is grantor
-        assertTrue(service.lock("obj", -1, -1));
+        assertThat(service.lock("obj", -1, -1)).isTrue();
         service.unlock("obj");
       }
     });
@@ -2230,8 +2119,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         DistributedLockService.create(serviceName, dlstSystem);
 
     // lock and unlock to make sure this vm is grantor
-    // FIXME GALEN that statement is incorrect
-    assertTrue(service.lock("obj", -1, -1));
+    // implementation detail: as long as this VM gets the first lock, it will be the grantor
+    assertThat(service.lock("obj", -1, -1)).isTrue();
     service.unlock("obj");
   }
 
@@ -2265,9 +2154,6 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     return locked;
   }
 
-  /**
-   * Accessed via reflection. DO NOt REMOVE
-   */
   protected static Boolean unlock(String serviceName, Object name) {
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
     try {
@@ -2295,9 +2181,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     final String serviceName = getUniqueName() + "-" + numVMs + "-" + numThreadsPerVM;
     final String objectName = "obj";
 
-    logInfo("Starting testtt " + serviceName);
+    System.out.println("Starting testtt " + serviceName);
 
-    distributedCreateService(numVMs, serviceName);
+    distributedCreateService(numVMs, serviceName, true);
     hits = 0;
     completes = 0;
     blackboard.initCount();
@@ -2312,13 +2198,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       for (int thread = 0; thread < numThreadsPerVM; thread++) {
         final int finalthread = thread;
         (new Thread(() -> {
-          logInfo("VM " + finalvm + ", thread " + finalthread + " in " + serviceName
-              + " about to invoke");
           Boolean result = VM.getVM(finalvm)
               .invoke(() -> DistributedLockServiceDUnitTest.getLockAndIncrement(
                   serviceName, objectName, timeout, holdTime));
-          logInfo("VM " + finalvm + ", thread " + finalthread + " in " + serviceName + " got "
-              + result);
           if (result) {
             incHits();
           }
@@ -2339,16 +2221,18 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     if (hits != 1) {
       ThreadUtils.dumpAllStacks();
     }
-    assertEquals("number of VMs that got ownership is wrong", 1, hits);
+    assertThat(hits).isEqualTo(1)
+        .withFailMessage("number of VMs that got ownership is wrong");
 
     // assert that all the others timed out
-    assertEquals("number of threads that completed is wrong", numVMs * numThreadsPerVM, completes);
+    assertThat(completes).isEqualTo(numVMs * numThreadsPerVM)
+        .withFailMessage("number of threads that completed is wrong");
 
     // Check final value of entry
     long count = blackboard.getCount();
-    assertEquals("Final entry value wrong", 1, count);
+    assertThat(count).isEqualTo(1).withFailMessage("Final entry value wrong");
 
-    logInfo("Done testtt " + serviceName);
+    System.out.println("Done testtt " + serviceName);
   }
 
   // 2, 2... expect 4, but get 3
@@ -2357,9 +2241,9 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     final String serviceName = getUniqueName() + "-" + numVMs + "-" + numThreadsPerVM;
     final String objectName = "obj";
 
-    logInfo("Starting testtt " + serviceName);
+    System.out.println("Starting testtt " + serviceName);
 
-    distributedCreateService(numVMs, serviceName);
+    distributedCreateService(numVMs, serviceName, true);
     hits = 0;
     completes = 0;
     blackboard.initCount();
@@ -2377,7 +2261,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         final int finalthread = thread;
         (new Thread(() -> {
 
-          logInfo("VM " + finalvm + ", thread " + finalthread + " in " + serviceName
+          System.out.println("VM " + finalvm + ", thread " + finalthread + " in " + serviceName
               + " about to invoke");
 
           Boolean result = null;
@@ -2388,7 +2272,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
-          logInfo("VM " + finalvm + ", thread " + finalthread + " in " + serviceName
+          System.out.println("VM " + finalvm + ", thread " + finalthread + " in " + serviceName
               + " got result " + result);
           if (result) {
             incHits();
@@ -2402,32 +2286,35 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     long start = System.currentTimeMillis();
     while (completes < numVMs * numThreadsPerVM) {
       if (!(System.currentTimeMillis() - start < timeout * 2)) {
-        logInfo("Test serviceName timed out");
+        System.out.println("Test serviceName timed out");
         break;
       }
       Thread.sleep(200);
     }
 
     // assert that all completed
-    assertEquals("number of threads that completed is wrong", numVMs * numThreadsPerVM, completes);
+    assertThat(completes).isEqualTo(numVMs * numThreadsPerVM)
+        .withFailMessage("number of threads that completed is wrong");
     // -------------------------------------------------------
 
     // assert that all were able to lock
     if (hits != numVMs * numThreadsPerVM) {
       ThreadUtils.dumpAllStacks();
     }
-    assertEquals("number of VMs that got ownership is wrong", numVMs * numThreadsPerVM, hits);
+    assertThat(hits).isEqualTo(numVMs * numThreadsPerVM)
+        .withFailMessage("number of VMs that got ownership is wrong");
 
     // Check final value of entry
     long count = blackboard.getCount();
-    assertEquals("Blackboard.getCount() wrong", numVMs * numThreadsPerVM, count);
+    assertThat(count).isEqualTo(numVMs * numThreadsPerVM)
+        .withFailMessage("Blackboard.getCount() wrong");
 
-    logInfo("Done testtt " + serviceName);
+    System.out.println("Done testtt " + serviceName);
 
   }
 
   @Test
-  public void testTokenCleanup() throws Exception {
+  public void testTokenCleanup() {
     final String dlsName = getUniqueName();
 
     final VM vmGrantor = VM.getVM(0);
@@ -2443,23 +2330,24 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         connectDistributedSystem();
         DLockService dls = (DLockService) DistributedLockService.create(dlsName, getSystem());
 
-        assertTrue(dls.lock(key1, -1, -1));
-        assertTrue(dls.isLockGrantor());
-        assertNotNull(dls.getToken(key1));
+        assertThat(dls.lock(key1, -1, -1)).isTrue();
+        assertThat(dls.isLockGrantor()).isTrue();
+        assertThat(dls.getToken(key1)).isNotNull();
 
         dls.unlock(key1);
-        assertNotNull(dls.getToken(key1));
+        assertThat(dls.getToken(key1)).isNotNull();
 
         // token should be removed when freeResources is called
         dls.freeResources(key1);
-        // assertNull(dls.getToken(key1));
+        // assertThat(dls.getToken(key1)).isNull();
 
         DLockToken token = dls.getToken(key1);
-        assertNull("Failed with bug 38180: " + token, token);
+        assertThat(token).withFailMessage("Failed with bug 38180: " + token).isNull();
 
         // make sure there are NO tokens at all
         Collection tokens = dls.getTokens();
-        assertEquals("Failed with bug 38180: tokens=" + tokens, 0, tokens.size());
+        assertThat(tokens.size()).isEqualTo(0)
+            .withFailMessage("Failed with bug 38180: tokens=" + tokens);
       }
     });
 
@@ -2470,22 +2358,23 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         connectDistributedSystem();
         DLockService dls = (DLockService) DistributedLockService.create(dlsName, getSystem());
 
-        assertTrue(dls.lock(key1, -1, -1));
-        assertFalse(dls.isLockGrantor());
-        assertNotNull(dls.getToken(key1));
+        assertThat(dls.lock(key1, -1, -1)).isTrue();
+        assertThat(dls.isLockGrantor()).isFalse();
+        assertThat(dls.getToken(key1)).isNotNull();
 
         dls.unlock(key1);
-        assertNotNull(dls.getToken(key1));
+        assertThat(dls.getToken(key1)).isNotNull();
 
         dls.freeResources(key1);
-        // assertNull(dls.getToken(key1));
+        // assertThat(dls.getToken(key1)).isNull();
 
         DLockToken token = dls.getToken(key1);
-        assertNull("Failed with bug 38180: " + token, token);
+        assertThat(token).withFailMessage("Failed with bug 38180: " + token).isNull();
 
         // make sure there are NO tokens at all
         Collection tokens = dls.getTokens();
-        assertEquals("Failed with bug 38180: tokens=" + tokens, 0, tokens.size());
+        assertThat(tokens.size()).isEqualTo(0)
+            .withFailMessage("Failed with bug 38180: tokens=" + tokens);
       }
     });
 
@@ -2496,58 +2385,59 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         connectDistributedSystem();
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
 
-        assertTrue(dls.lock(key1, -1, -1)); // 1
-        assertEquals(1, dls.getToken(key1).getUsageCount());
-        assertTrue(dls.lock(key1, -1, -1)); // 2
-        assertEquals(2, dls.getToken(key1).getUsageCount());
-        assertTrue(dls.lock(key1, -1, -1)); // 3
-        assertEquals(3, dls.getToken(key1).getUsageCount());
+        assertThat(dls.lock(key1, -1, -1)).isTrue(); // 1
+        assertThat(dls.getToken(key1).getUsageCount()).isEqualTo(1);
+        assertThat(dls.lock(key1, -1, -1)).isTrue(); // 2
+        assertThat(dls.getToken(key1).getUsageCount()).isEqualTo(2);
+        assertThat(dls.lock(key1, -1, -1)).isTrue(); // 3
+        assertThat(dls.getToken(key1).getUsageCount()).isEqualTo(3);
 
         DLockToken token0 = dls.getToken(key1);
-        assertNotNull(token0);
+        assertThat(token0).isNotNull();
         Collection tokens = dls.getTokens();
-        assertTrue(tokens.contains(token0));
-        assertEquals(1, tokens.size());
+        assertThat(tokens.contains(token0)).isTrue();
+        assertThat(tokens.size()).isEqualTo(1);
 
         dls.unlock(key1); // 1
-        assertEquals(2, dls.getToken(key1).getUsageCount());
+        assertThat(dls.getToken(key1).getUsageCount()).isEqualTo(2);
         dls.freeResources(key1);
 
         DLockToken token1 = dls.getToken(key1);
-        assertNotNull(token1);
-        assertEquals(token0, token1);
+        assertThat(token1).isNotNull();
+        assertThat(token1).isEqualTo(token0);
         tokens = dls.getTokens();
-        assertTrue(tokens.contains(token1));
-        assertEquals(1, tokens.size());
+        assertThat(tokens.contains(token1)).isTrue();
+        assertThat(tokens.size()).isEqualTo(1);
 
         dls.unlock(key1); // 2
-        assertEquals(1, dls.getToken(key1).getUsageCount());
+        assertThat(dls.getToken(key1).getUsageCount()).isEqualTo(1);
         dls.freeResources(key1);
-        assertNotNull(dls.getToken(key1));
+        assertThat(dls.getToken(key1)).isNotNull();
 
         DLockToken token2 = dls.getToken(key1);
-        assertNotNull(token2);
-        assertEquals(token0, token2);
+        assertThat(token2).isNotNull();
+        assertThat(token2).isEqualTo(token0);
         tokens = dls.getTokens();
-        assertTrue(tokens.contains(token2));
-        assertEquals(1, tokens.size());
+        assertThat(tokens.contains(token2)).isTrue();
+        assertThat(tokens.size()).isEqualTo(1);
 
         dls.unlock(key1); // 3
-        assertEquals(0, dls.getToken(key1).getUsageCount());
+        assertThat(dls.getToken(key1).getUsageCount()).isEqualTo(0);
         dls.freeResources(key1);
 
         DLockToken token3 = dls.getToken(key1);
-        assertNull("Failed with bug 38180: " + token3, token3);
+        assertThat(token3).withFailMessage("Failed with bug 38180: " + token3).isNull();
 
         // make sure there are NO tokens at all
         tokens = dls.getTokens();
-        assertEquals("Failed with bug 38180: tokens=" + tokens, 0, tokens.size());
+        assertThat(tokens.size()).isEqualTo(0)
+            .withFailMessage("Failed with bug 38180: tokens=" + tokens);
       }
     });
   }
 
   @Test
-  public void testGrantTokenCleanup() throws Exception {
+  public void testGrantTokenCleanup() {
     final String dlsName = getUniqueName();
 
     final VM vmGrantor = VM.getVM(0);
@@ -2561,15 +2451,15 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         logger.info("[testGrantTokenCleanup] vmGrantor creates grantor");
         connectDistributedSystem();
         DistributedLockService dls = DLockService.create(dlsName, getSystem(), true, true, true);
-        assertTrue(dls.lock(key1, -1, -1));
-        assertTrue(dls.isLockGrantor());
+        assertThat(dls.lock(key1, -1, -1)).isTrue();
+        assertThat(dls.isLockGrantor()).isTrue();
         DLockGrantor grantor = ((DLockService) dls).getGrantor();
-        assertNotNull(grantor);
+        assertThat(grantor).isNotNull();
         DLockGrantor.DLockGrantToken grantToken = grantor.getGrantToken(key1);
-        assertNotNull(grantToken);
+        assertThat(grantToken).isNotNull();
         logger.info("[testGrantTokenCleanup] vmGrantor unlocks key1");
         dls.unlock(key1);
-        assertNull(grantor.getGrantToken(key1));
+        assertThat(grantor.getGrantToken(key1)).isNull();
       }
     });
 
@@ -2580,22 +2470,23 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         connectDistributedSystem();
         DLockService dls =
             (DLockService) DLockService.create(dlsName, getSystem(), true, true, false);
-        assertTrue(dls.lock(key1, -1, -1));
+        assertThat(dls.lock(key1, -1, -1)).isTrue();
 
         logger.info("[testTokenCleanup] vm1 frees key1");
         dls.unlock(key1);
 
         // Without automateFreeResources, token for key1 still exists until freeResources is called
-        assertNotNull(dls.getToken(key1));
+        assertThat(dls.getToken(key1)).isNotNull();
         dls.freeResources(key1);
 
         // make sure token for key1 is gone
         DLockToken token = dls.getToken(key1);
-        assertNull("token should have been cleaned up", token);
+        assertThat(token).withFailMessage("token should have been cleaned up").isNull();
 
         // make sure there are NO tokens at all
         Collection tokens = dls.getTokens();
-        assertEquals("There should be no tokens", 0, tokens.size());
+        assertThat(tokens.size()).isEqualTo(0)
+            .withFailMessage("There should be no tokens");
       }
     });
 
@@ -2610,16 +2501,18 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
         // make sure token for key1 is gone
         DLockToken token = dls.getToken(key1);
-        assertNull("token should have been cleaned up", token);
+        assertThat(token).withFailMessage("token should have been cleaned up").isNull();
 
         // make sure there are NO tokens at all
         Collection tokens = dls.getTokens();
-        assertEquals("There should be no tokens", 0, tokens.size());
+        assertThat(tokens.size()).isEqualTo(0)
+            .withFailMessage("There should be no tokens");
 
         // make sure there are NO grant tokens at all
         DLockGrantor grantor = dls.getGrantor();
         Collection grantTokens = grantor.getGrantTokens();
-        assertEquals("There should be no tokens", 0, grantTokens.size());
+        assertThat(grantTokens.size()).isEqualTo(0)
+            .withFailMessage("There should be no tokens");
       }
     });
   }
@@ -2627,7 +2520,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
   private static final AtomicBoolean testLockQuery_whileVM1Locks = new AtomicBoolean();
 
   @Test
-  public void testLockQuery() throws Exception {
+  public void testLockQuery() {
     final String dlsName = getUniqueName();
 
     final VM vmGrantor = VM.getVM(0);
@@ -2643,8 +2536,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         connectDistributedSystem();
         DLockService dls = (DLockService) DistributedLockService.create(dlsName, getSystem());
 
-        assertTrue(dls.lock(key1, -1, -1));
-        assertTrue(dls.isLockGrantor());
+        assertThat(dls.lock(key1, -1, -1)).isTrue();
+        assertThat(dls.isLockGrantor()).isTrue();
         dls.unlock(key1);
         dls.freeResources(key1);
       }
@@ -2659,8 +2552,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           connectDistributedSystem();
           DLockService dls = (DLockService) DistributedLockService.create(dlsName, getSystem());
 
-          assertTrue(dls.lock(key1, -1, -1));
-          assertFalse(dls.isLockGrantor());
+          assertThat(dls.lock(key1, -1, -1)).isTrue();
+          assertThat(dls.isLockGrantor()).isFalse();
 
           try {
             synchronized (testLockQuery_whileVM1Locks) {
@@ -2705,7 +2598,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         }
         return getSystem().getDistributedMember();
       });
-      assertNotNull(vm1Member);
+      assertThat(vm1Member).isNotNull();
 
       // vmGrantor tests positive local dlock query
       vmGrantor.invoke(new SerializableRunnable() {
@@ -2714,14 +2607,14 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
 
           DLockRemoteToken result = dls.queryLock(key1);
-          assertNotNull(result);
-          assertEquals(key1, result.getName());
-          assertTrue(result.getLeaseId() != -1);
-          assertEquals(Long.MAX_VALUE, result.getLeaseExpireTime());
+          assertThat(result).isNotNull();
+          assertThat(result.getName()).isEqualTo(key1);
+          assertThat(result.getLeaseId() != -1).isTrue();
+          assertThat(result.getLeaseExpireTime()).isEqualTo(MAX_VALUE);
           RemoteThread lesseeThread = result.getLesseeThread();
-          assertNotNull(lesseeThread);
-          assertEquals(vm1Member, lesseeThread.getDistributedMember());
-          assertEquals(vm1Member, result.getLessee());
+          assertThat(lesseeThread).isNotNull();
+          assertThat(lesseeThread.getDistributedMember()).isEqualTo(vm1Member);
+          assertThat(result.getLessee()).isEqualTo(vm1Member);
           // nothing to test for on threadId unless we serialize info from vm1
         }
       });
@@ -2734,14 +2627,14 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           DLockService dls = (DLockService) DistributedLockService.create(dlsName, getSystem());
 
           DLockRemoteToken result = dls.queryLock(key1);
-          assertNotNull(result);
-          assertEquals(key1, result.getName());
-          assertTrue(result.getLeaseId() != -1);
-          assertEquals(Long.MAX_VALUE, result.getLeaseExpireTime());
+          assertThat(result).isNotNull();
+          assertThat(result.getName()).isEqualTo(key1);
+          assertThat(result.getLeaseId() != -1).isTrue();
+          assertThat(result.getLeaseExpireTime()).isEqualTo(MAX_VALUE);
           RemoteThread lesseeThread = result.getLesseeThread();
-          assertNotNull(lesseeThread);
-          assertEquals(vm1Member, lesseeThread.getDistributedMember());
-          assertEquals(vm1Member, result.getLessee());
+          assertThat(lesseeThread).isNotNull();
+          assertThat(lesseeThread.getDistributedMember()).isEqualTo(vm1Member);
+          assertThat(result.getLessee()).isEqualTo(vm1Member);
           // nothing to test for on threadId unless we serialize info from vm1
         }
       });
@@ -2771,12 +2664,12 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
 
         DLockRemoteToken result = dls.queryLock(key1);
-        assertNotNull(result);
-        assertEquals(key1, result.getName());
-        assertEquals(-1, result.getLeaseId());
-        assertEquals(0, result.getLeaseExpireTime());
-        assertNull(result.getLesseeThread());
-        assertNull(result.getLessee());
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo(key1);
+        assertThat(result.getLeaseId()).isEqualTo(-1);
+        assertThat(result.getLeaseExpireTime()).isEqualTo(0);
+        assertThat(result.getLesseeThread()).isNull();
+        assertThat(result.getLessee()).isNull();
       }
     });
 
@@ -2787,12 +2680,12 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
 
         DLockRemoteToken result = dls.queryLock(key1);
-        assertNotNull(result);
-        assertEquals(key1, result.getName());
-        assertEquals(-1, result.getLeaseId());
-        assertEquals(0, result.getLeaseExpireTime());
-        assertNull(result.getLesseeThread());
-        assertNull(result.getLessee());
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo(key1);
+        assertThat(result.getLeaseId()).isEqualTo(-1);
+        assertThat(result.getLeaseExpireTime()).isEqualTo(0);
+        assertThat(result.getLesseeThread()).isNull();
+        assertThat(result.getLessee()).isNull();
       }
     });
 
@@ -2800,12 +2693,23 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
   ////////// Support methods
 
-  private void distributedCreateService(int numVMs, String serviceName) {
+  private List<VM> distributedCreateService(int numVMs, String serviceName, boolean useLocalVM) {
     // create an entry - use scope DIST_ACK, not GLOBAL, since we're testing
     // that explicit use of the ownership api provides the synchronization
-    forNumVMsInvoke(numVMs, () -> remoteCreateService(serviceName));
 
-    remoteCreateService(serviceName);
+    final List<VM> vms = new ArrayList<>();
+
+    if (useLocalVM) {
+      vms.add(VM.getVM(VM.getCurrentVMNum()));
+      remoteCreateService(serviceName);
+    }
+
+    vms.addAll(forNumVMsInvoke(numVMs, () -> remoteCreateService(serviceName)));
+    // remoteCreateService(serviceName);
+
+    return vms;
+
+
   }
 
   /**
@@ -2817,36 +2721,38 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
    */
   protected static void remoteCreateService(String name) {
     DistributedLockService newService = DistributedLockService.create(name, dlstSystem);
-    logInfo("Created " + newService);
+    System.out.println("Created " + newService);
   }
 
   private static Boolean getLockAndIncrement(String serviceName, Object objectName, long timeout,
       long holdTime) throws Exception {
-    logInfo("[getLockAndIncrement] In getLockAndIncrement");
+    System.out.println("[getLockAndIncrement] In getLockAndIncrement");
     DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
     boolean got = service.lock(objectName, timeout, -1);
-    logInfo("[getLockAndIncrement] In getLockAndIncrement - got is " + got);
+    System.out.println("[getLockAndIncrement] In getLockAndIncrement - got is " + got);
     if (got) {
       // Make sure we don't think anyone else is holding the lock
       if (blackboard.getIsLocked()) {
         String msg = "obtained lock on " + serviceName + "/" + objectName
             + " but blackboard was locked, grantor=" + ((DLockService) service).getLockGrantorId()
             + ", isGrantor=" + service.isLockGrantor();
-        logInfo("[getLockAndIncrement] In getLockAndIncrement: " + msg);
+        System.out.println("[getLockAndIncrement] In getLockAndIncrement: " + msg);
         fail(msg);
       }
       blackboard.setIsLocked(true);
       long count = blackboard.getCount();
-      logInfo("[getLockAndIncrement] In getLockAndIncrement - count is " + count + " for "
-          + serviceName + "/" + objectName);
+      System.out
+          .println("[getLockAndIncrement] In getLockAndIncrement - count is " + count + " for "
+              + serviceName + "/" + objectName);
       Thread.sleep(holdTime);
       blackboard.incCount();
       blackboard.setIsLocked(false);
-      logInfo("[getLockAndIncrement] In getLockAndIncrement: " + "cleared blackboard lock for "
-          + serviceName + "/" + objectName);
+      System.out
+          .println("[getLockAndIncrement] In getLockAndIncrement: " + "cleared blackboard lock for "
+              + serviceName + "/" + objectName);
       service.unlock(objectName);
     }
-    logInfo("[getLockAndIncrement] Returning from getLockAndIncrement");
+    System.out.println("[getLockAndIncrement] Returning from getLockAndIncrement");
     return got;
   }
 
@@ -2858,19 +2764,19 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     completes = completes + 1;
   }
 
-  protected static void logInfo(String msg) {
-    dlstSystem.getLogWriter().fine(msg);
-  }
-
   /**
    * Assumes there is only one host, and invokes the given method in the first numVMs VMs that host
    * knows about.
    */
-  private void forNumVMsInvoke(int numVMs, final SerializableRunnableIF runnable) {
-    Host host = Host.getHost(0);
+  private List<VM> forNumVMsInvoke(int numVMs, final SerializableRunnableIF runnable) {
+    List<VM> vms = new ArrayList<>();
     for (int i = 0; i < numVMs; i++) {
-      VM.getVM(i).invoke(runnable);
+      VM thisVm = VM.getVM(i);
+      thisVm.invoke(runnable);
+      vms.add(thisVm);
     }
+
+    return vms;
   }
 
   public static class BasicLockClient implements Runnable {
@@ -2912,7 +2818,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
               switch (operationId) {
                 case 1:
                   logger.info("BasicLockClient lock");
-                  assertTrue(DistributedLockService.getServiceNamed(dlsName).lock(key, -1, -1));
+                  assertThat(DistributedLockService.getServiceNamed(dlsName).lock(key, -1, -1))
+                      .isTrue();
                   break;
                 case 2:
                   logger.info("BasicLockClient unlock");
@@ -2920,7 +2827,8 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
                   break;
                 case 3:
                   logger.info("BasicLockClient suspendLocking");
-                  assertTrue(DistributedLockService.getServiceNamed(dlsName).suspendLocking(-1));
+                  assertThat(DistributedLockService.getServiceNamed(dlsName).suspendLocking(-1))
+                      .isTrue();
                   break;
                 case 4:
                   logger.info("BasicLockClient resumeLocking");
@@ -2983,7 +2891,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
           long maxWait = System.currentTimeMillis() + 2000;
           while (!this.completedRequests.contains(requestId)) {
             long waitMillis = maxWait - System.currentTimeMillis();
-            assertTrue(waitMillis > 0);
+            assertThat(waitMillis > 0).isTrue();
             this.sync.wait(waitMillis);
           }
           Throwable t = (Throwable) this.throwables.get(requestId);

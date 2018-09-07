@@ -238,7 +238,7 @@ public class CacheListenerJUnitTest {
       public void afterRollback(TransactionEvent e) {
         CacheListenerJUnitTest.this.invokeCount = 1;
         assertEquals(1, e.getEvents().size());
-        CacheListenerJUnitTest.this.lastEvent = e.getEvents().get(0);
+        CacheListenerJUnitTest.this.lastEvent = (CacheEvent) e.getEvents().get(0);
       }
     };
     CacheTransactionManager ctm = this.c.getCacheTransactionManager();

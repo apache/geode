@@ -1053,11 +1053,11 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
           ServerConnection sc;
           registeredKeys = checkRegisteredKeys(registeredKeys);
           if (registeredKeys == 0) {
-            // do blocking wait on queue until we get some guys registered
+            // do blocking wait on queue until we get some keys registered
             // with the selector
             sc = (ServerConnection) this.selectorQueue.take();
           } else {
-            // we already have some guys registered so just do a poll on queue
+            // we already have some keys registered so just do a poll on queue
             sc = (ServerConnection) this.selectorQueue.poll();
           }
           while (sc != null) {

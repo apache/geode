@@ -5973,7 +5973,7 @@ public class Oplog implements CompactableOplog, Flushable {
                 if (toCompact) {
                   if (oplogId != did.getOplogId()) {
                     // @todo: Is this even possible? Perhaps I should just assert here
-                    // skip this guy his oplogId changed
+                    // skip this one, its oplogId changed
                     if (!wrapper.isReusable()) {
                       wrapper = new BytesAndBitsForCompactor();
                     } else if (wrapper.getOffHeapData() != null) {
@@ -7406,14 +7406,14 @@ public class Oplog implements CompactableOplog, Flushable {
     long clear(RegionVersionVector rvv);
 
     /**
-     * Return true if we are the first guy to set it to true
+     * Return true if we are the first to set it to true
      */
     boolean testAndSetUnrecovered();
 
     boolean getUnrecovered();
 
     /**
-     * Return true if we are the first guy to set it to false
+     * Return true if we are the first to set it to false
      */
     boolean testAndSetRecovered(DiskRegionView dr);
 
@@ -7610,7 +7610,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     /**
-     * Return true if we are the first guy to set it to true
+     * Return true if we are the first to set it to true
      */
     @Override
     public synchronized boolean testAndSetUnrecovered() {

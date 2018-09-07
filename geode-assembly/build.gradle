@@ -467,7 +467,6 @@ distributedTest dependOnInstalledProduct
 upgradeTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
 uiTest dependOnInstalledProduct
-flakyTest dependOnInstalledProduct
 repeatTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources

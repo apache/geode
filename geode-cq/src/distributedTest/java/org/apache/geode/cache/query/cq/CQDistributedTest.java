@@ -36,6 +36,7 @@ import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -153,6 +154,25 @@ public class CQDistributedTest implements Serializable {
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
         .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
+  }
+
+  @Test
+  public void cqExecuteWithInitialResultsWithValuesMatchingPrimaryKeyShouldNotThrowClassCastException()
+      throws Exception {
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      ClusterStartupRule.getCache().getQueryService().createKeyIndex("PrimaryKeyIndex", "ID",
+          "/region");
+      regionOnServer.put(0, new Portfolio(0));
+      regionOnServer.put(1, new Portfolio(1));
+      regionOnServer.put(2, new Portfolio(2));
+      regionOnServer.put(3, new Portfolio(3));
+      regionOnServer.put(4, new Portfolio(4));
+    });
+
+    SelectResults results =
+        qs.newCq("Select * from /region where ID = 1", cqa).executeWithInitialResults();
+    assertEquals(1, results.size());
   }
 
 

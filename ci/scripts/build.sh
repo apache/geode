@@ -89,45 +89,20 @@ mkdir -p ${BUILD_ARTIFACTS_DIR}
 ln -s ${ROOT_DIR}/geode ${GEODE_BUILD_DIR}
 
 pushd ${GEODE_BUILD_DIR}
-set +e
-set -x
-./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" \
-  -PsourceRevision="$(git rev-parse HEAD)" -PsourceRepository="${SOURCE_REPOSITORY}" build install
-GRADLE_EXIT_STATUS=$?
-set +x
-set -e
-
+  set +e
+  set -x
+    ./gradlew --no-daemon --parallel -PbuildId=${BUILD_ID} --system-prop "java.io.tmpdir=${TMPDIR}" \
+      -PsourceRevision="$(git rev-parse HEAD)" -PsourceRepository="${SOURCE_REPOSITORY}" build install
+    GRADLE_EXIT_STATUS=$?
+  set +x
+  set -e
 popd
+
 ARTIFACTS_DESTINATION="${PUBLIC_BUCKET}/builds/${FULL_PRODUCT_VERSION}"
 TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/build/"
 FULL_BUILD_ARCHIVE_DESTINATION="${ARTIFACTS_DESTINATION}/geodefiles-${FULL_PRODUCT_VERSION}.tgz"
 BUILD_ARTIFACTS_FILENAME=geode-build-artifacts-${FULL_PRODUCT_VERSION}.tgz
 BUILD_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/${BUILD_ARTIFACTS_FILENAME}"
-
-function sendSuccessfulJobEmail {
-  echo "Sending job success email"
-
-  cat <<EOF >${EMAIL_SUBJECT}
-Build for version ${FULL_PRODUCT_VERSION} of Apache Geode succeeded.
-EOF
-
-  cat <<EOF >${EMAIL_BODY}
-=================================================================================================
-
-The build job for Apache Geode version ${FULL_PRODUCT_VERSION} has completed successfully.
-
-
-Build artifacts are available at:
-http://${BUILD_ARTIFACTS_DESTINATION}
-
-Test results are available at:
-http://${TEST_RESULTS_DESTINATION}
-
-
-=================================================================================================
-EOF
-
-}
 
 function sendFailureJobEmail {
   echo "Sending job failure email"
@@ -163,7 +138,7 @@ if [ ! -d "geode/build/reports/combined" ]; then
 fi
 
 pushd geode/build/reports/combined
-gsutil -q -m cp -r * gs://${TEST_RESULTS_DESTINATION}
+  gsutil -q -m cp -r * gs://${TEST_RESULTS_DESTINATION}
 popd
 
 echo ""
@@ -174,6 +149,7 @@ printf "\n"
 
 tar zcf ${DEST_DIR}/geodefiles-${FULL_PRODUCT_VERSION}.tgz geode
 gsutil cp ${DEST_DIR}/geodefiles-${FULL_PRODUCT_VERSION}.tgz gs://${FULL_BUILD_ARCHIVE_DESTINATION}
+
 cp -r geode/geode-assembly/build/distributions ${BUILD_ARTIFACTS_DIR}/
 cp -r geode/build/reports/rat ${BUILD_ARTIFACTS_DIR}/
 cp -r geode/build/reports/combined ${BUILD_ARTIFACTS_DIR}/
@@ -181,25 +157,24 @@ cp -r geode/build/reports/combined ${BUILD_ARTIFACTS_DIR}/
 directories_file=${DEST_DIR}/artifact_directories
 
 pushd geode
-find . -name "*-progress*txt" >> ${directories_file}
-echo "Collecting the following artifacts..."
-cat ${directories_file}
-echo ""
-mkdir -p ${BUILD_ARTIFACTS_DIR}/progress
-tar cf - -T ${directories_file} | (cd ${BUILD_ARTIFACTS_DIR}/progress; tar xpf -)
+  find . -name "*-progress*txt" >> ${directories_file}
+  echo "Collecting the following artifacts..."
+  cat ${directories_file}
+  echo ""
+  mkdir -p ${BUILD_ARTIFACTS_DIR}/progress
+  tar cf - -T ${directories_file} | (cd ${BUILD_ARTIFACTS_DIR}/progress; tar xpf -)
 popd
 
 pushd ${BUILD_ARTIFACTS_DIR}
-tar zcf ${DEST_DIR}/${BUILD_ARTIFACTS_FILENAME} .
+  tar zcf ${DEST_DIR}/${BUILD_ARTIFACTS_FILENAME} .
 popd
+
 gsutil -q cp ${DEST_DIR}/${BUILD_ARTIFACTS_FILENAME} gs://${BUILD_ARTIFACTS_DESTINATION}
 printf "\033[92mBuild artifacts from this job are available at:\033[0m\n"
 printf "\n"
 printf "\033[92mhttp://${BUILD_ARTIFACTS_DESTINATION}\033[0m\n"
 
-if [ ${GRADLE_EXIT_STATUS} -eq 0 ]; then
-    sendSuccessfulJobEmail
-else
+if [ ${GRADLE_EXIT_STATUS} -ne 0 ]; then
     sendFailureJobEmail
 fi
 

@@ -14,16 +14,22 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -110,4 +116,67 @@ public class GatewayReceiverImplJUnitTest {
     verify(cache, times(1)).removeGatewayReceiver(gateway);
   }
 
+  @Test
+  public void testFailToStartWith2NextPorts() throws IOException {
+    InternalCache cache = mock(InternalCache.class);
+    CacheServerImpl server = mock(CacheServerImpl.class);
+    when(cache.addCacheServer(eq(true))).thenReturn(server);
+    doThrow(new SocketException("Address already in use")).when(server).start();
+    GatewayReceiverImpl gateway =
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+    assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
+        .hasMessageContaining("No available free port found in the given range");
+    verify(server, times(2)).start();
+  }
+
+  @Test
+  public void testFailToStartWithSamePort() throws IOException {
+    InternalCache cache = mock(InternalCache.class);
+    CacheServerImpl server = mock(CacheServerImpl.class);
+    when(cache.addCacheServer(eq(true))).thenReturn(server);
+    doThrow(new SocketException("Address already in use")).when(server).start();
+    GatewayReceiverImpl gateway =
+        new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null, null, true);
+    assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
+        .hasMessageContaining("No available free port found in the given range");
+    verify(server, times(1)).start();
+  }
+
+  @Test
+  public void testFailToStartWithARangeOfPorts() throws IOException {
+    InternalCache cache = mock(InternalCache.class);
+    CacheServerImpl server = mock(CacheServerImpl.class);
+    when(cache.addCacheServer(eq(true))).thenReturn(server);
+    doThrow(new SocketException("Address already in use")).when(server).start();
+    GatewayReceiverImpl gateway =
+        new GatewayReceiverImpl(cache, 2000, 2100, 5, 100, null, null, null, true);
+    assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
+        .hasMessageContaining("No available free port found in the given range");
+    assertTrue(gateway.getPort() == 0);
+    verify(server, times(101)).start(); // 2000-2100: contains 101 ports
+  }
+
+  @Test
+  public void testSuccessToStartAtSpecifiedPort() throws IOException {
+    InternalCache cache = mock(InternalCache.class);
+    CacheServerImpl server = mock(CacheServerImpl.class);
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    when(cache.getInternalDistributedSystem()).thenReturn(system);
+    when(cache.addCacheServer(eq(true))).thenReturn(server);
+    AtomicInteger callCount = new AtomicInteger();
+    doAnswer(invocation -> {
+      // only throw IOException for 2 times
+      if (callCount.get() < 2) {
+        callCount.incrementAndGet();
+        throw new SocketException("Address already in use");
+      }
+      return 0;
+    }).when(server).start();
+    GatewayReceiverImpl gateway =
+        new GatewayReceiverImpl(cache, 2000, 2010, 5, 100, null, null, null, true);
+    gateway.start();
+    assertTrue(gateway.getPort() >= 2000);
+    assertEquals(2, callCount.get());
+    verify(server, times(3)).start(); // 2 failed tries, 1 succeeded
+  }
 }

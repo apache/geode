@@ -254,11 +254,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Initializes the optional serialization "white list" if the user has requested it in the
+   * Initializes the optional serialization "accept list" if the user has requested it in the
    * DistributionConfig
    *
    * @param distributionConfig the DistributedSystem configuration
-   * @param services DistributedSystem services that might have classes to white-list
+   * @param services DistributedSystem services that might have classes to acceptlist
    */
   public static void initialize(DistributionConfig distributionConfig,
       Collection<DistributedSystemService> services) {
@@ -283,9 +283,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
 
   /**
-   * {@link DistributedSystemService}s that need to whitelist Serializable objects can use this to
+   * {@link DistributedSystemService}s that need to acceptlist Serializable objects can use this to
    * read them from a file and then return them via
-   * {@link DistributedSystemService#getSerializationWhitelist}
+   * {@link DistributedSystemService#getSerializationAcceptlist}
    */
   public static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
     Collection<String> result = new ArrayList(1000);

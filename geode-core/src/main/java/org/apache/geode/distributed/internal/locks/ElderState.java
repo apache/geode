@@ -16,7 +16,6 @@
 package org.apache.geode.distributed.internal.locks;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
 
@@ -40,7 +39,7 @@ public class ElderState {
   /**
    * Maps service name keys to GrantorInfo values.
    */
-  private final HashMap nameToInfo;
+  private final HashMap<String, GrantorInfo> nameToInfo;
   private final DistributionManager dm;
 
   /**
@@ -50,7 +49,7 @@ public class ElderState {
   public ElderState(DistributionManager dm) {
     Assert.assertTrue(dm != null);
     this.dm = dm;
-    this.nameToInfo = new HashMap();
+    this.nameToInfo = new HashMap<>();
     try {
       this.dm.getStats().incElders(1);
       ElderInitProcessor.init(this.dm, this.nameToInfo);
@@ -62,11 +61,9 @@ public class ElderState {
       }
     } finally {
       if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
-        StringBuffer sb = new StringBuffer("ElderState initialized with:");
-        for (Iterator grantors = this.nameToInfo.keySet().iterator(); grantors.hasNext();) {
-          Object key = grantors.next();
-          // key=dlock svc name, value=GrantorInfo object
-          sb.append("\n\t" + key + ": " + this.nameToInfo.get(key));
+        StringBuilder sb = new StringBuilder("ElderState initialized with:");
+        for (String key : this.nameToInfo.keySet()) {
+          sb.append("\n\t").append(key).append(": ").append(this.nameToInfo.get(key));
         }
         logger.trace(LogMarker.DLS_VERBOSE, sb.toString());
       }
@@ -120,7 +117,7 @@ public class ElderState {
                 serviceName, requestor, (currentGrantor != null ? "current grantor crashed"
                     : "of unclean grantor shutdown"));
           }
-          // current grantor crashed; make new guy grantor and force recovery
+          // current grantor crashed; make new member grantor and force recovery
           long myVersion = gi.getVersionId() + 1;
           this.nameToInfo.put(serviceName,
               new GrantorInfo(requestor, myVersion, dlsSerialNumberRequestor, false));
@@ -251,7 +248,7 @@ public class ElderState {
                     "Elder forced to set grantor for {} to {} and noticed previous grantor had crashed",
                     serviceName, newGrantor);
               }
-              // current grantor crashed; make new guy grantor and force recovery
+              // current grantor crashed; make new member grantor and force recovery
               this.nameToInfo.put(serviceName,
                   new GrantorInfo(newGrantor, myVersion, newGrantorSerialNumber, false));
             }

@@ -219,10 +219,6 @@ public class LonerDistributionManager implements DistributionManager {
     return getDistributionManagerId();
   }
 
-  public boolean isAdam() {
-    return true;
-  }
-
   public InternalDistributedMember getElderId() {
     return getId();
   }
@@ -235,7 +231,7 @@ public class LonerDistributionManager implements DistributionManager {
     return true;
   }
 
-  public synchronized ElderState getElderState(boolean force, boolean useTryLock) {
+  public synchronized ElderState getElderState(boolean force) {
     // loners are always the elder
     if (this.elderState == null) {
       this.elderState = new ElderState(this);

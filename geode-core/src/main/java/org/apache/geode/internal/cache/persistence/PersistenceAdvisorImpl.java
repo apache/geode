@@ -860,7 +860,8 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       PersistentStateQueryResults results = fetchPersistentStateQueryResults(members,
           cacheDistributionAdvisor.getDistributionManager(), myPersistentID, myInitializingId);
 
-      // iterate through all of the peers. For each peer: if the guy was previously online according
+      // iterate through all of the peers. For each peer: if the member was previously online
+      // according
       // to us, grab its online members and add them to the members to wait for set. We may need to
       // do this several times until we discover all of the members that may have newer data than
       // us.

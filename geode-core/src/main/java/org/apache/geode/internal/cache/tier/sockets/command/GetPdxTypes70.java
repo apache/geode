@@ -46,10 +46,6 @@ public class GetPdxTypes70 extends BaseCommand {
           serverConnection.getSocketString());
     }
 
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
     Map<Integer, PdxType> types;
     try {
       InternalCache cache = serverConnection.getCache();

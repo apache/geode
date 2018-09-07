@@ -260,7 +260,7 @@ public class ObjIdMap {
   /**
    * Returns an iterator over the {@link Entry}s of this map. Note that this iterator is <b>not</b>
    * fail-fast. That is, it is the user's responsibility to ensure that the map does not change
-   * while he is iterating over it.
+   * while it is being iterated over.
    */
   public EntryIterator iterator() {
     return new EntryIterator();
