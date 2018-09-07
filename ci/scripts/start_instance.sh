@@ -50,16 +50,16 @@ fi
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
 SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
-SANITIZED_BUILD_PIPELINE_NAME=$(echo ${BUILD_PIPELINE_NAME} | tr "/" "-" | tr "." "_" | tr '[:upper:]' '[:lower:]')
-SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr "." "_" | tr '[:upper:]' '[:lower:]')
-SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr "." "_" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_PIPELINE_NAME=$(echo ${BUILD_PIPELINE_NAME} | tr "/" "-" | tr "." "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr "." "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr "." "-" | tr '[:upper:]' '[:lower:]')
 IMAGE_FAMILY_PREFIX=""
 
 if [[ "${SANITIZED_GEODE_FORK}" != "apache" ]]; then
   IMAGE_FAMILY_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
 
-INSTANCE_NAME="$(echo "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr "." "_" | tr '[:upper:]' '[:lower:]')"
+INSTANCE_NAME="$(echo "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr "." "-" | tr '[:upper:]' '[:lower:]')"
 PROJECT=apachegeode-ci
 ZONE=us-central1-f
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
