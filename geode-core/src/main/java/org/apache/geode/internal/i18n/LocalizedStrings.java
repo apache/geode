@@ -820,8 +820,8 @@ public class LocalizedStrings {
       new StringId(1466, "Admitting member <{0}>. Now there are {1} non-admin member(s).");
   public static final StringId DistributionManager_AT_LEAST_ONE_EXCEPTION_OCCURRED =
       new StringId(1467, "At least one Exception occurred.");
-  public static final StringId DistributionManager_CHANGING_ELDER_FROM_0_TO_1 =
-      new StringId(1468, "Changing Elder from {0} to {1}.");
+  public static final StringId DistributionManager_CHANGING_ELDER_TO_0_FROM_1 =
+      new StringId(1468, "Waiting for Elder to change. Expecting Elder to be {0}, is {1}.");
   public static final StringId DistributionManager_CLOBBERTHREAD_THREAD_REFUSED_TO_DIE__0 =
       new StringId(1469, "clobberThread: Thread refused to die:  {0}");
   public static final StringId DistributionManager_DAEMON_THREADS_ARE_SLOW_TO_STOP_CULPRITS_INCLUDE_0 =

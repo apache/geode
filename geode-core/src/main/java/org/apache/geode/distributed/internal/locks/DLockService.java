@@ -2800,7 +2800,8 @@ public class DLockService extends DistributedLockService {
    *
    * @param dm our local DM
    */
-  public static void recoverLocalElder(DistributionManager dm, Map grantors, Set needsRecovery) {
+  public static void recoverLocalElder(DistributionManager dm, Map<String, GrantorInfo> grantors,
+      Set<String> needsRecovery) {
     synchronized (services) {
       Iterator entries = services.entrySet().iterator();
       while (entries.hasNext()) {
@@ -2811,18 +2812,14 @@ public class DLockService extends DistributedLockService {
         DLockGrantor grantor = service.getGrantor();
         if (grantor != null && grantor.getVersionId() != -1 && !grantor.isDestroyed()) {
           foundGrantor = true;
-          GrantorInfo oldgi = (GrantorInfo) grantors.get(serviceName);
+          GrantorInfo oldgi = grantors.get(serviceName);
           if (oldgi == null || oldgi.getVersionId() < grantor.getVersionId()) {
             grantors.put(serviceName, new GrantorInfo(dm.getId(), grantor.getVersionId(),
                 service.getSerialNumber(), false));
             needsRecovery.remove(serviceName);
           }
         }
-        // fix for elder init bug... adam elder was hitting the following
-        // block and found no grantors for services that were just created
-        // and flagged them as needing recovery even though it's not needed
-        if (!foundGrantor && !(dm.isAdam() && !service.hasHeldLocks())) {
-          // !F && !(T && !T) ==> T && !F ==> T
+        if (!foundGrantor && !dm.isLoner()) {
           if (!grantors.containsKey(serviceName)) {
             needsRecovery.add(serviceName);
           }

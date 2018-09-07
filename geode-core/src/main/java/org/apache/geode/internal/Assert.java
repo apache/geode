@@ -60,10 +60,6 @@ public class Assert {
   private static boolean debug =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "haltOnAssertFailure");
 
-  public static boolean waitForDebuggerOnError() {
-    return debug;
-  }
-
   public static void fail(Object message) {
     throwError(message);
   }

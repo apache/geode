@@ -90,7 +90,6 @@ import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
-import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 
 /**
  * The <code>DistributionManager</code> uses a {@link MembershipManager} to distribute
@@ -272,32 +271,8 @@ public class ClusterDistributionManager implements DistributionManager {
 
   ///////////////////// Instance Fields //////////////////////
 
-  /**
-   * Mutex to control access to {@link #waitingForElderChange} or {@link #elder}.
-   */
-  private final Object elderMonitor = new Object();
+  private final Stopper stopper = new Stopper(this);
 
-  /**
-   * Must be read/written while holding {@link #elderMonitor}
-   *
-   * @see #elderChangeWait()
-   */
-  private boolean waitingForElderChange = false;
-
-  /**
-   * @see DistributionManager#isAdam()
-   */
-  private boolean adam = false;
-
-  /**
-   * This is the "elder" member of the distributed system, responsible for certain types of
-   * arbitration.
-   *
-   * Must hold {@link #elderMonitor} in order to change this.
-   *
-   * @see #getElderId()
-   */
-  protected volatile InternalDistributedMember elder = null;
 
   /** The id of this distribution manager */
   private final InternalDistributedMember localAddress;
@@ -311,6 +286,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * The <code>MembershipListener</code>s that are registered on this manager.
    */
   private final ConcurrentMap<MembershipListener, Boolean> membershipListeners;
+  private final ClusterElderManager clusterElderManager = new ClusterElderManager(this);
 
   /**
    * The <code>MembershipListener</code>s that are registered on this manager for ALL members.
@@ -573,7 +549,7 @@ public class ClusterDistributionManager implements DistributionManager {
               // I'm counting on the members returned by getViewMembers being ordered such that
               // members that joined before us will precede us AND members that join after us
               // will succeed us.
-              // SO once we find ourself break out of this loop.
+              // SO once we find ourselves break out of this loop.
               break;
             }
             if (id.getName().equals(m.getName())) {
@@ -587,7 +563,6 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         }
         distributionManager.addNewMember(id); // add ourselves
-        distributionManager.selectElder(); // ShutdownException could be thrown here
       }
 
       // Send out a StartupMessage to the other members.
@@ -595,7 +570,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
       try {
         if (!distributionManager.sendStartupMessage(op)) {
-          // We'll we didn't hear back from anyone else. We assume that
+          // Well we didn't hear back from anyone else. We assume that
           // we're the first one.
           if (distributionManager.getOtherDistributionManagerIds().size() == 0) {
             logger.info(LocalizedMessage.create(
@@ -663,7 +638,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
     this.dmType = transport.getVmKind();
     this.system = system;
-    this.elderLock = new StoppableReentrantLock(stopper);
     this.transport = transport;
 
     this.membershipListeners = new ConcurrentHashMap<>();
@@ -1294,8 +1268,6 @@ public class ClusterDistributionManager implements DistributionManager {
         addNewMember(internalDistributedMember);
       }
 
-      // Figure out who the elder is...
-      selectElder(); // ShutdownException could be thrown here
     } catch (Exception ex) {
       throw new InternalGemFireException(
           LocalizedStrings.DistributionManager_COULD_NOT_PROCESS_INITIAL_VIEW.toLocalizedString(),
@@ -2171,7 +2143,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Returns true if this DM or the DistributedSystem owned by it is closing or is closed.
    */
-  private boolean isCloseInProgress() {
+  protected boolean isCloseInProgress() {
     if (closeInProgress) {
       return true;
     }
@@ -2503,7 +2475,7 @@ public class ClusterDistributionManager implements DistributionManager {
         } // and none responded
       } // there exist others
 
-      InternalDistributedMember e = getElderId();
+      InternalDistributedMember e = clusterElderManager.getElderId();
       if (e != null) { // an elder exists
         boolean unresponsiveElder;
         synchronized (unfinishedStartupsLock) {
@@ -2609,123 +2581,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * @return the elder candidate, possibly this VM.
    */
   private InternalDistributedMember getElderCandidate() {
-    List<InternalDistributedMember> theMembers = getViewMembers();
-
-    // Assert.assertTrue(!closeInProgress
-    // && theMembers.contains(this.localAddress)); // bug36202?
-
-    int elderCandidates = 0;
-    Iterator<InternalDistributedMember> it;
-
-    // for bug #50510 we need to know if there are any members older than v8.0
-    it = theMembers.iterator();
-    boolean anyPre80Members = false;
-    while (it.hasNext()) {
-      InternalDistributedMember member = it.next();
-      if (member.getVersionObject().compareTo(Version.GFE_80) < 0) {
-        anyPre80Members = true;
-      }
-    }
-
-    // determine number of elder candidates (unless adam)
-    if (!this.adam) {
-      it = theMembers.iterator();
-      while (it.hasNext()) {
-        InternalDistributedMember member = it.next();
-        int managerType = member.getVmKind();
-        if (managerType == ADMIN_ONLY_DM_TYPE)
-          continue;
-
-        if (managerType == LOCATOR_DM_TYPE) {
-          // Fix for #50510 - pre-8.0 members will not let a locator be the elder
-          // so we need to make the same decision here
-          if (anyPre80Members) {
-            continue;
-          }
-        }
-
-        // Fix for #45566. Using a surprise member as the elder can cause a
-        // deadlock.
-        if (getMembershipManager().isSurpriseMember(member)) {
-          continue;
-        }
-
-        elderCandidates++;
-        if (elderCandidates > 1) {
-          // If we have more than one candidate then we are not adam
-          break;
-        }
-      } // while
-    }
-
-    // Second pass over members...
-    it = theMembers.iterator();
-    while (it.hasNext()) {
-      InternalDistributedMember member = it.next();
-      int managerType = member.getVmKind();
-      if (managerType == ADMIN_ONLY_DM_TYPE)
-        continue;
-
-      if (managerType == LOCATOR_DM_TYPE) {
-        // Fix for #50510 - pre-8.0 members will not let a locator be the elder
-        // so we need to make the same decision here
-        if (anyPre80Members) {
-          continue;
-        }
-      }
-
-      // Fix for #45566. Using a surprise member as the elder can cause a
-      // deadlock.
-      if (getMembershipManager().isSurpriseMember(member)) {
-        continue;
-      }
-
-      if (member.equals(this.localAddress)) {
-        if (!this.adam && elderCandidates == 1) {
-          this.adam = true;
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.DistributionManager_0_IS_THE_ELDER_AND_THE_ONLY_MEMBER,
-              this.localAddress));
-        } else {
-          logger.info(LocalizedMessage.create(LocalizedStrings.DistributionManager_I_0_AM_THE_ELDER,
-              this.localAddress));
-        }
-      }
-      return member;
-    } // while
-    // If we get this far then no elder exists
-    return null;
-  }
-
-  /**
-   * Select a new elder
-   *
-   */
-  private void selectElder() {
-    getSystem().getCancelCriterion().checkCancelInProgress(null); // bug 37884, if DS is
-                                                                  // disconnecting, throw exception
-
-    // Once we are the elder, we're stuck until we leave the view.
-    if (this.localAddress.equals(this.elder)) {
-      return;
-    }
-
-    // Determine who is the elder...
-    InternalDistributedMember candidate = getElderCandidate();
-    if (candidate == null) {
-      changeElder(null);
-      return; // No valid elder in current context
-    }
-
-    // Carefully switch to new elder
-    synchronized (this.elderMonitor) {
-      if (!candidate.equals(this.elder)) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("The elder is: {} (was {})", candidate, this.elder);
-        }
-        changeElder(candidate);
-      }
-    } // synchronized
+    return clusterElderManager.getElderCandidate();
   }
 
   private String prettifyReason(String r) {
@@ -2784,15 +2640,6 @@ public class ClusterDistributionManager implements DistributionManager {
         this.removeHostedLocators(theId);
       } // synchronized
     } // if
-
-    // In any event, make sure that this member is no longer an elder.
-    if (!theId.equals(localAddress) && theId.equals(elder)) {
-      try {
-        selectElder();
-      } catch (DistributedSystemDisconnectedException e) {
-        // ignore
-      }
-    }
 
     redundancyZones.remove(theId);
 
@@ -2971,17 +2818,6 @@ public class ClusterDistributionManager implements DistributionManager {
       String p_reason) {
 
     AlertAppender.getInstance().removeAlertListener(theId);
-
-    // this fixes a race introduced in 5.0.1 by the fact that an explicit
-    // shutdown will cause a member to no longer be in our DM membership
-    // but still in the javagroup view.
-    try {
-      selectElder();
-    } catch (DistributedSystemDisconnectedException e) {
-      // keep going
-    }
-
-
 
     int vmType = theId.getVmKind();
     if (vmType == ADMIN_ONLY_DM_TYPE) {
@@ -3223,39 +3059,20 @@ public class ClusterDistributionManager implements DistributionManager {
     message.schedule(ClusterDistributionManager.this);
   }
 
-  @Override
-  public boolean isAdam() {
-    return this.adam;
+  private List<InternalDistributedMember> getElderCandidates() {
+
+    return clusterElderManager.getElderCandidates();
   }
 
   @Override
   public InternalDistributedMember getElderId() throws DistributedSystemDisconnectedException {
-    if (closeInProgress) {
-      throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.DistributionManager_NO_VALID_ELDER_WHEN_SYSTEM_IS_SHUTTING_DOWN
-              .toLocalizedString(),
-          this.getRootCause());
-    }
-    getSystem().getCancelCriterion().checkCancelInProgress(null);
 
-    // Cache a recent value of the elder
-    InternalDistributedMember result = elder;
-    if (result != null && membershipManager.memberExists(result)) {
-      return result;
-    }
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.DistributionManager_ELDER__0__IS_NOT_CURRENTLY_AN_ACTIVE_MEMBER_SELECTING_NEW_ELDER,
-        elder));
-
-    selectElder(); // ShutdownException can be thrown here
-    logger.info(LocalizedMessage
-        .create(LocalizedStrings.DistributionManager_NEWLY_SELECTED_ELDER_IS_NOW__0_, elder));
-    return elder;
+    return clusterElderManager.getElderId();
   }
 
   @Override
   public boolean isElder() {
-    return getId().equals(elder);
+    return clusterElderManager.isElder();
   }
 
   @Override
@@ -3263,82 +3080,9 @@ public class ClusterDistributionManager implements DistributionManager {
     return false;
   }
 
-  private final StoppableReentrantLock elderLock;
-  private ElderState elderState;
-  private volatile boolean elderStateInitialized;
-
   @Override
-  public ElderState getElderState(boolean force, boolean useTryLock) {
-    if (force) {
-      if (logger.isDebugEnabled()) {
-        if (!this.localAddress.equals(this.elder)) {
-          logger.debug("Forcing myself, {}, to be the elder.", this.localAddress);
-        }
-      }
-      changeElder(this.localAddress);
-    }
-    if (force || this.localAddress.equals(elder)) {
-      // we are the elder
-      if (this.elderStateInitialized) {
-        return this.elderState;
-      }
-      return getElderStateWithTryLock(useTryLock);
-    } else {
-      // we are not the elder so return null
-      return null;
-    }
-  }
-
-  /**
-   * Usage: GrantorRequestProcessor calls getElderState with useTryLock set to true if the
-   * becomeGrantor Collaboration is already acquired.
-   * <p>
-   * This tryLock is attempted and if it fails, an exception is thrown to cause a Doug Lea style
-   * back-off (p. 149). It throws an exception because it needs to back down a couple of packages
-   * and I didn't want to couple this pkg too tightly with the dlock pkg.
-   * <p>
-   * GrantorRequestProcessor catches the exception, releases and reacquires the Collaboration, and
-   * then comes back here to attempt the tryLock again. Currently nothing will stop it from
-   * re-attempting forever. It has to get the ElderState and cannot give up, but it can free up the
-   * Collaboration and then re-enter it. The other thread holding the elder lock will hold it only
-   * briefly. I've added a volatile called elderStateInitialized which should cause this back-off to
-   * occur only once in the life of a vm... once the elder, always the elder.
-   * <p>
-   */
-  private ElderState getElderStateWithTryLock(boolean useTryLock) {
-    boolean locked = false;
-    if (useTryLock) {
-      boolean interrupted = Thread.interrupted();
-      try {
-        locked = this.elderLock.tryLock(2000);
-      } catch (InterruptedException e) {
-        interrupted = true;
-        getCancelCriterion().checkCancelInProgress(e);
-        // one last attempt and then allow it to fail for back-off...
-        locked = this.elderLock.tryLock();
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    } else {
-      locked = true;
-      this.elderLock.lock();
-    }
-    if (!locked) {
-      // try-lock must have failed
-      throw new IllegalStateException(
-          LocalizedStrings.DistributionManager_POSSIBLE_DEADLOCK_DETECTED.toLocalizedString());
-    }
-    try {
-      if (this.elderState == null) {
-        this.elderState = new ElderState(this);
-      }
-    } finally {
-      this.elderLock.unlock();
-    }
-    this.elderStateInitialized = true;
-    return this.elderState;
+  public ElderState getElderState(boolean waitToBecomeElder) {
+    return clusterElderManager.getElderState(waitToBecomeElder);
   }
 
   /**
@@ -3347,125 +3091,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * @return true if newElder is the elder; false if it is no longer a member or we are the elder.
    */
   public boolean waitForElder(final InternalDistributedMember desiredElder) {
-    MembershipListener l = null;
-    try {
-      // Assert.assertTrue(
-      // desiredElder.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE);
-      synchronized (this.elderMonitor) {
-        while (true) {
-          if (closeInProgress)
-            return false;
-          InternalDistributedMember currentElder = this.elder;
-          // Assert.assertTrue(
-          // currentElder.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE);
-          if (desiredElder.equals(currentElder)) {
-            return true;
-          }
-          if (!isCurrentMember(desiredElder)) {
-            return false; // no longer present
-          }
-          if (this.localAddress.equals(currentElder)) {
-            // Once we become the elder we no longer allow anyone else to be the
-            // elder so don't let them wait anymore.
-            return false;
-          }
-          if (l == null) {
-            l = new MembershipListener() {
-              @Override
-              public void memberJoined(DistributionManager distributionManager,
-                  InternalDistributedMember theId) {
-                // nothing needed
-              }
 
-              @Override
-              public void memberDeparted(DistributionManager distributionManager,
-                  InternalDistributedMember theId, boolean crashed) {
-                if (desiredElder.equals(theId)) {
-                  notifyElderChangeWaiters();
-                }
-              }
-
-              @Override
-              public void memberSuspect(DistributionManager distributionManager,
-                  InternalDistributedMember id, InternalDistributedMember whoSuspected,
-                  String reason) {}
-
-              @Override
-              public void quorumLost(DistributionManager distributionManager,
-                  Set<InternalDistributedMember> failures,
-                  List<InternalDistributedMember> remaining) {}
-            };
-            addMembershipListener(l);
-          }
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.DistributionManager_CHANGING_ELDER_FROM_0_TO_1,
-              new Object[] {currentElder, desiredElder}));
-          elderChangeWait();
-        } // while true
-      }
-    } finally {
-      if (l != null) {
-        removeMembershipListener(l);
-      }
-    }
-  }
-
-  /**
-   * Set the elder to newElder and notify anyone waiting for it to change
-   */
-  private void changeElder(InternalDistributedMember newElder) {
-    synchronized (this.elderMonitor) {
-      if (newElder != null && this.localAddress != null && !this.localAddress.equals(newElder)) {
-        if (this.localAddress.equals(this.elder)) {
-          // someone else changed the elder while this thread was off cpu
-          if (logger.isDebugEnabled()) {
-            logger.debug("changeElder found this VM to be the elder and is taking an early out");
-          }
-          return;
-        }
-      }
-      this.elder = newElder;
-      if (this.waitingForElderChange) {
-        this.waitingForElderChange = false;
-        this.elderMonitor.notifyAll();
-      }
-    }
-  }
-
-  /**
-   * Used to wakeup someone in elderChangeWait even though the elder has not changed
-   */
-  private void notifyElderChangeWaiters() {
-    synchronized (this.elderMonitor) {
-      if (this.waitingForElderChange) {
-        this.waitingForElderChange = false;
-        this.elderMonitor.notifyAll();
-      }
-    }
-  }
-
-  /**
-   * Must be called holding {@link #elderMonitor} lock
-   */
-  private void elderChangeWait() {
-    // This is OK since we're holding the elderMonitor lock, so no
-    // new events will come through until the wait() below.
-    this.waitingForElderChange = true;
-
-    while (this.waitingForElderChange) {
-      stopper.checkCancelInProgress(null);
-      boolean interrupted = Thread.interrupted();
-      try {
-        this.elderMonitor.wait();
-        break;
-      } catch (InterruptedException ignore) {
-        interrupted = true;
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    } // while
+    return clusterElderManager.waitForElder(desiredElder);
   }
 
   @Override
@@ -4030,7 +3657,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
     @Override
     public void viewInstalled(NetView view) {
-      processElderSelection();
       dm.handleViewInstalled(view);
     }
 
@@ -4045,15 +3671,6 @@ public class ClusterDistributionManager implements DistributionManager {
       return dm;
     }
 
-    private void processElderSelection() {
-      // If we currently had no elder, this member might be the elder;
-      // go through the selection process and decide now.
-      try {
-        dm.selectElder();
-      } catch (DistributedSystemDisconnectedException e) {
-        // ignore
-      }
-    }
   }
 
 
@@ -4538,8 +4155,6 @@ public class ClusterDistributionManager implements DistributionManager {
       }
     }
   }
-
-  private final Stopper stopper = new Stopper(this);
 
   @Override
   public CancelCriterion getCancelCriterion() {

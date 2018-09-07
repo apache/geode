@@ -202,123 +202,129 @@ public class GMSLocator implements Locator, NetLocator {
         response = new GetViewResponse(view);
       }
     } else if (request instanceof FindCoordinatorRequest) {
-      findServices();
-
-      FindCoordinatorRequest findRequest = (FindCoordinatorRequest) request;
-      if (!findRequest.getDHAlgo().equals(securityUDPDHAlgo)) {
-        return new FindCoordinatorResponse(
-            "Rejecting findCoordinatorRequest, as member not configured same udp security("
-                + findRequest.getDHAlgo() + " )as locator (" + securityUDPDHAlgo + ")");
-      }
-
-      if (services != null) {
-        services.getMessenger().setPublicKey(findRequest.getMyPublicKey(),
-            findRequest.getMemberID());
-      } else {
-        if (findRequest.getMyPublicKey() != null) {
-          registerMbrVsPK.put(new InternalDistributedMemberWrapper(findRequest.getMemberID()),
-              findRequest.getMyPublicKey());
-        }
-        logger.debug("Rejecting a request to find the coordinator - membership services are"
-            + " still initializing");
-        return null;
-      }
-
-      if (findRequest.getMemberID() != null) {
-        InternalDistributedMember coord = null;
-
-        // at this level we want to return the coordinator known to membership services,
-        // which may be more up-to-date than the one known by the membership manager
-        if (view == null) {
-          findServices();
-          if (services == null) {
-            // we must know this process's identity in order to respond
-            return null;
-          }
-        }
-
-        boolean fromView = false;
-        NetView v = this.view;
-        if (v == null) {
-          v = this.recoveredView;
-        }
-
-        synchronized (registrants) {
-          registrants.add(findRequest.getMemberID());
-        }
-
-        if (v != null) {
-          // if the ID of the requester matches an entry in the membership view then remove
-          // that entry - it's obviously an old member since the ID has been reused
-          InternalDistributedMember rid = findRequest.getMemberID();
-          for (InternalDistributedMember id : v.getMembers()) {
-            if (rid.compareTo(id, false) == 0) {
-              NetView newView = new NetView(v, v.getViewId());
-              newView.remove(id);
-              v = newView;
-              break;
-            }
-          }
-
-          if (v.getViewId() > findRequest.getLastViewId()) {
-            // ignore the requests rejectedCoordinators if the view has changed
-            coord = v.getCoordinator(Collections.emptyList());
-          } else {
-            coord = v.getCoordinator(findRequest.getRejectedCoordinators());
-          }
-          logger.debug("Peer locator: coordinator from view is {}", coord);
-          fromView = true;
-        }
-
-        if (coord == null) {
-          // find the "oldest" registrant
-          Collection<InternalDistributedMember> rejections = findRequest.getRejectedCoordinators();
-          if (rejections == null) {
-            rejections = Collections.emptyList();
-          }
-          synchronized (registrants) {
-            coord = services.getJoinLeave().getMemberID();
-            for (InternalDistributedMember mbr : registrants) {
-              if (mbr != coord && (coord == null || mbr.compareTo(coord) < 0)) {
-                if (!rejections.contains(mbr) && (mbr.getNetMember().preferredForCoordinator()
-                    || !mbr.getNetMember().isNetworkPartitionDetectionEnabled())) {
-                  coord = mbr;
-                }
-              }
-            }
-            logger.debug("Peer locator: coordinator from registrations is {}", coord);
-          }
-        }
-
-        synchronized (registrants) {
-          if (isCoordinator) {
-            coord = localAddress;
-            InternalDistributedMember viewCoordinator = null;
-            if (v != null) {
-              viewCoordinator = v.getCoordinator();
-            }
-            fromView = viewCoordinator != null && !viewCoordinator.equals(localAddress);
-            if (!fromView) {
-              v = null;
-            }
-          }
-          byte[] coordPk = null;
-          if (v != null) {
-            coordPk = (byte[]) v.getPublicKey(coord);
-          }
-          if (coordPk == null) {
-            coordPk = services.getMessenger().getPublicKey(coord);
-          }
-          response = new FindCoordinatorResponse(coord, localAddress, fromView, v,
-              new HashSet<InternalDistributedMember>(registrants),
-              this.networkPartitionDetectionEnabled, this.usePreferredCoordinators, coordPk);
-        }
-      }
+      response = processFindCoordinatorRequest((FindCoordinatorRequest) request);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("Peer locator returning {}", response);
     }
     return response;
+  }
+
+  private FindCoordinatorResponse processFindCoordinatorRequest(
+      FindCoordinatorRequest findRequest) {
+    findServices();
+    if (!findRequest.getDHAlgo().equals(securityUDPDHAlgo)) {
+      return new FindCoordinatorResponse(
+          "Rejecting findCoordinatorRequest, as member not configured same udp security("
+              + findRequest.getDHAlgo() + " )as locator (" + securityUDPDHAlgo + ")");
+    }
+
+    if (services == null) {
+      if (findRequest.getMyPublicKey() != null) {
+        registerMbrVsPK.put(new InternalDistributedMemberWrapper(findRequest.getMemberID()),
+            findRequest.getMyPublicKey());
+      }
+      logger.debug("Rejecting a request to find the coordinator - membership services are"
+          + " still initializing");
+      return null;
+    }
+
+    if (findRequest.getMemberID() == null) {
+      return null;
+    }
+
+    services.getMessenger().setPublicKey(findRequest.getMyPublicKey(),
+        findRequest.getMemberID());
+
+    InternalDistributedMember coordinator = null;
+
+    // at this level we want to return the coordinator known to membership services,
+    // which may be more up-to-date than the one known by the membership manager
+    if (view == null) {
+      findServices();
+      if (services == null) {
+        // we must know this process's identity in order to respond
+        return null;
+      }
+    }
+
+    boolean fromView = false;
+    NetView v = this.view;
+    if (v == null) {
+      v = this.recoveredView;
+    }
+
+    synchronized (registrants) {
+      registrants.add(findRequest.getMemberID());
+    }
+
+    if (v != null) {
+      // if the ID of the requester matches an entry in the membership view then remove
+      // that entry - it's obviously an old member since the ID has been reused
+      InternalDistributedMember requestingMemberID = findRequest.getMemberID();
+      for (InternalDistributedMember id : v.getMembers()) {
+        if (requestingMemberID.compareTo(id, false) == 0) {
+          NetView newView = new NetView(v, v.getViewId());
+          newView.remove(id);
+          v = newView;
+          break;
+        }
+      }
+
+      if (v.getViewId() > findRequest.getLastViewId()) {
+        // ignore the requests rejectedCoordinators if the view has changed
+        coordinator = v.getCoordinator(Collections.emptyList());
+      } else {
+        coordinator = v.getCoordinator(findRequest.getRejectedCoordinators());
+      }
+      logger.info("Peer locator: coordinator from view is {}", coordinator);
+      fromView = true;
+    }
+
+    if (coordinator == null) {
+      // find the "oldest" registrant
+      Collection<InternalDistributedMember> rejections = findRequest.getRejectedCoordinators();
+      if (rejections == null) {
+        rejections = Collections.emptyList();
+      }
+
+      synchronized (registrants) {
+        coordinator = services.getJoinLeave().getMemberID();
+        for (InternalDistributedMember mbr : registrants) {
+          if (mbr != coordinator && (coordinator == null || mbr.compareTo(coordinator) < 0)) {
+            if (!rejections.contains(mbr) && (mbr.getNetMember().preferredForCoordinator()
+                || !mbr.getNetMember().isNetworkPartitionDetectionEnabled())) {
+              coordinator = mbr;
+            }
+          }
+        }
+        logger.info("Peer locator: coordinator from registrations is {}", coordinator);
+      }
+    }
+
+    synchronized (registrants) {
+      if (isCoordinator) {
+        coordinator = localAddress;
+
+        if (v != null && !v.getCoordinator().equals(localAddress)) {
+          logger.info("This member is becoming coordinator since view {}", v);
+          v = null;
+        }
+      }
+
+      byte[] coordinatorPublicKey = null;
+      if (v != null) {
+        coordinatorPublicKey = (byte[]) v.getPublicKey(coordinator);
+      }
+      if (coordinatorPublicKey == null) {
+        coordinatorPublicKey = services.getMessenger().getPublicKey(coordinator);
+      }
+
+      return new FindCoordinatorResponse(coordinator, localAddress, fromView, v,
+          new HashSet<>(registrants),
+          this.networkPartitionDetectionEnabled, this.usePreferredCoordinators,
+          coordinatorPublicKey);
+    }
   }
 
   private void saveView(NetView view) {
