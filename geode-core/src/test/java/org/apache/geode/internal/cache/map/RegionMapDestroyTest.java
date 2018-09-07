@@ -81,7 +81,6 @@ public class RegionMapDestroyTest {
 
   private IndexManager indexManager;
 
-  @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
     factory = mock(RegionEntryFactory.class);
@@ -643,27 +642,6 @@ public class RegionMapDestroyTest {
     verify(owner, never()).notifyTimestampsToGateways(any());
   }
 
-  // this test is no longer valid because the tombstone check is only done
-  // once after syncing the entry. So it can't change.
-  // @Test
-  // public void destroyOfTombstoneThatBecomesNonTombstoneRetriesAndDoesDestroy() throws Exception {
-  // givenConcurrencyChecks(true);
-  // givenExistingTombstone();
-  // givenEventWithVersionTag();
-  // givenTombstoneThenAlive();
-  // givenNotDestroyedOrRemoved();
-  //
-  // doDestroy();
-  //
-  // verifyDestroyReturnedTrue();
-  // verify(regionMap, times(2)).getEntry(any());
-  // verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
-  // verify(regionMap, times(1)).lruEntryDestroy(existingRegionEntry);
-  // verifyNoMoreInteractions(regionMap);
-  // verifyEntryDestroyed(existingRegionEntry, false);
-  // verifyInvokedDestroyMethodsOnRegion(false);
-  // }
-
   @Test
   public void destroyOfExistingTombstoneThatThrowsConcurrentCacheModificationExceptionWithTimeStampUpdatedCallsNotify()
       throws Exception {
@@ -750,26 +728,6 @@ public class RegionMapDestroyTest {
     verifyMapDoesNotContainKey();
     verifyInvokedDestroyMethodsOnRegion(false);
   }
-
-  // this test is no longer valid because we hold the region entry sync
-  // while testing if it is a tombstone. So it is impossible for this to change.
-  // @Test
-  // public void
-  // destroyOfExistingEntryThatBecomesTombstoneAfterInitialCheckCallsProcessVersionTagAndMakeTombstoneButDoesNotDoDestroy()
-  // throws Exception {
-  // givenConcurrencyChecks(true);
-  // givenExistingTombstoneAndVersionTag();
-  // givenAliveThenTombstone();
-  //
-  // doDestroy();
-  //
-  // verifyDestroyReturnedFalse();
-  // verify(regionMap, times(1)).getEntry(any());
-  // verify(regionMap, times(1)).processVersionTag(existingRegionEntry, event);
-  // verifyNoMoreInteractions(regionMap);
-  // verify(existingRegionEntry, times(1)).makeTombstone(any(), any());
-  // verifyNoDestroyInvocationsOnRegion();
-  // }
 
   @Test
   public void destroyOfExistingTombstoneWithConcurrencyChecksAndFromRILocalDestroyDoesRemove()
@@ -1603,16 +1561,6 @@ public class RegionMapDestroyTest {
   private void givenIndexManager() {
     indexManager = mock(IndexManager.class);
     when(owner.getIndexManager()).thenReturn(indexManager);
-  }
-
-  private void givenNotDestroyedOrRemoved() {
-    when(existingRegionEntry.isRemoved()).thenReturn(false);
-    when(existingRegionEntry.isDestroyedOrRemoved()).thenReturn(false);
-  }
-
-  private void givenAliveThenTombstone() {
-    when(existingRegionEntry.isTombstone()).thenReturn(false).thenReturn(true);
-    when(existingRegionEntry.isRemoved()).thenReturn(false).thenReturn(true);
   }
 
   private void givenAliveThenRemoved() {
