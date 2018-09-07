@@ -750,7 +750,8 @@ public class SocketCreator {
       } catch (BindException e) {
         BindException throwMe =
             new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                .toLocalizedString(bindAddr, Integer.valueOf(nport)));
+                .toLocalizedString(bindAddr == null ? InetAddress.getLocalHost() : bindAddr,
+                    String.valueOf(nport)));
         throwMe.initCause(e);
         throw throwMe;
       }
