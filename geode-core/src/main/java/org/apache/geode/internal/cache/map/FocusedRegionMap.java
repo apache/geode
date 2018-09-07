@@ -37,6 +37,8 @@ public interface FocusedRegionMap {
 
   void lruEntryDestroy(RegionEntry regionEntry); // TODO: subclass
 
+  boolean removeEntry(Object key, RegionEntry regionEntry);
+
   void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat);
 
   void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat, EntryEventImpl event,

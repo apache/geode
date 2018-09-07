@@ -30,8 +30,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,8 +56,6 @@ public class RegionMapDestroyTest {
 
   private static final Object KEY = "key";
 
-  @SuppressWarnings("rawtypes")
-  private Map entryMap;
   private FocusedRegionMap regionMap;
   private boolean withConcurrencyChecks;
   private RegionEntryFactory factory;
@@ -89,7 +85,6 @@ public class RegionMapDestroyTest {
   @Before
   public void setUp() throws Exception {
     factory = mock(RegionEntryFactory.class);
-    entryMap = mock(Map.class);
     newRegionEntry = mock(RegionEntry.class);
     givenEntryDestroyReturnsTrue(newRegionEntry);
     when(newRegionEntry.isDestroyedOrRemoved()).thenReturn(true);
@@ -107,7 +102,6 @@ public class RegionMapDestroyTest {
     regionMap = mock(FocusedRegionMap.class);
     when(regionMap.getEntryFactory()).thenReturn(factory);
     when(factory.createEntry(any(), any(), any())).thenReturn(newRegionEntry);
-    when(regionMap.getEntryMap()).thenReturn(entryMap);
 
     event = mock(EntryEventImpl.class);
     when(event.getRegion()).thenReturn(owner);
@@ -446,7 +440,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(entryMap).remove(eq(KEY), eq(existingRegionEntry));
+    verify(regionMap).removeEntry(KEY, existingRegionEntry);
     verify(regionMap, times(2)).putEntryIfAbsent(eq(KEY), any());
     verifyNoDestroyInvocationsOnEntry(existingRegionEntry);
     verifyInvokedDestroyMethodsOnRegion(false);
@@ -878,7 +872,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(entryMap, times(1)).remove(KEY, existingRegionEntry);
+    verify(regionMap).removeEntry(KEY, existingRegionEntry);
     verifyEntryAddedToMap(newRegionEntry);
     verifyEntryDestroyed(newRegionEntry, true);
   }
@@ -893,7 +887,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(entryMap, times(1)).remove(KEY, existingRegionEntry);
+    verify(regionMap).removeEntry(KEY, existingRegionEntry);
     verifyEntryAddedToMap(newRegionEntry);
     verifyEntryDestroyed(newRegionEntry, true);
   }
@@ -1308,8 +1302,8 @@ public class RegionMapDestroyTest {
 
     verifyDestroyReturnedFalse();
     verifyNoDestroyInvocationsOnRegion();
-    verify(entryMap, never()).remove(KEY, newRegionEntry); // TODO: this seems like a bug. This
-                                                           // should be called once.
+    // TODO: this seems like a bug. This should be called once.
+    verify(regionMap, never()).removeEntry(KEY, newRegionEntry);
   }
 
   @Test

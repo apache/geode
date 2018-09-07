@@ -853,7 +853,7 @@ public class RegionMapDestroy {
   }
 
   private boolean removeEntry(RegionEntry entry) {
-    return focusedRegionMap.getEntryMap().remove(getKey(), entry);
+    return focusedRegionMap.removeEntry(getKey(), entry);
   }
 
   private void removeExistingFromMap(RegionEntry entry) {

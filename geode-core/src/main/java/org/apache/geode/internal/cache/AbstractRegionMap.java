@@ -285,7 +285,7 @@ public abstract class AbstractRegionMap
       Object v = regionEntry.getValue();
       if (v != Token.REMOVED_PHASE1 && v != Token.REMOVED_PHASE2 && v instanceof StoredObject
           && ((StoredObject) v).hasRefCount()) {
-        if (getEntryMap().remove(key, regionEntry)) {
+        if (removeEntry(key, regionEntry)) {
           ((OffHeapRegionEntry) regionEntry).release();
         }
       }
@@ -299,6 +299,10 @@ public abstract class AbstractRegionMap
     return re;
   }
 
+  @Override
+  public boolean removeEntry(Object key, RegionEntry regionEntry) {
+    return getEntryMap().remove(key, regionEntry);
+  }
 
   @Override
   public void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat) {
@@ -308,7 +312,7 @@ public abstract class AbstractRegionMap
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }
-    if (getEntryMap().remove(key, regionEntry)) {
+    if (removeEntry(key, regionEntry)) {
       regionEntry.removePhase2();
       if (updateStat) {
         incEntryCount(-1);
@@ -326,7 +330,7 @@ public abstract class AbstractRegionMap
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }
-    if (getEntryMap().remove(key, regionEntry)) {
+    if (removeEntry(key, regionEntry)) {
       regionEntry.removePhase2();
       success = true;
       if (updateStat) {
@@ -438,7 +442,7 @@ public abstract class AbstractRegionMap
 
               boolean tombstone = re.isTombstone();
               // note: it.remove() did not reliably remove the entry so we use remove(K,V) here
-              if (getEntryMap().remove(re.getKey(), re)) {
+              if (removeEntry(re.getKey(), re)) {
                 if (OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()) {
                   GatewaySenderEventImpl.release(re.getValue()); // OFFHEAP _getValue ok
                 }
@@ -710,7 +714,7 @@ public abstract class AbstractRegionMap
             if (_isOwnerALocalRegion()) {
               _getOwner().getCachePerfStats().incRetries();
             }
-            getEntryMap().remove(key, oldRe);
+            removeEntry(key, oldRe);
             oldRe = putEntryIfAbsent(key, newRe);
           }
           /*
@@ -845,7 +849,7 @@ public abstract class AbstractRegionMap
             synchronized (oldRe) {
               if (oldRe.isRemovedPhase2()) {
                 owner.getCachePerfStats().incRetries();
-                getEntryMap().remove(key, oldRe);
+                removeEntry(key, oldRe);
                 oldRe = putEntryIfAbsent(key, newRe);
               } else {
                 if (acceptedVersionTag) {
@@ -1150,7 +1154,7 @@ public abstract class AbstractRegionMap
               synchronized (oldRe) {
                 if (oldRe.isRemovedPhase2()) {
                   owner.getCachePerfStats().incRetries();
-                  getEntryMap().remove(key, oldRe);
+                  removeEntry(key, oldRe);
                   oldRe = putEntryIfAbsent(key, newRe);
                 } else {
                   try {
@@ -1365,7 +1369,7 @@ public abstract class AbstractRegionMap
                     // proceed to phase 2 of removal.
                     if (oldRe.isRemovedPhase2()) {
                       owner.getCachePerfStats().incRetries();
-                      getEntryMap().remove(event.getKey(), oldRe);
+                      removeEntry(event.getKey(), oldRe);
                       oldRe = putEntryIfAbsent(event.getKey(), newRe);
                     } else {
                       opCompleted = true;
@@ -1843,7 +1847,7 @@ public abstract class AbstractRegionMap
               synchronized (oldRe) {
                 if (oldRe.isRemovedPhase2()) {
                   owner.getCachePerfStats().incRetries();
-                  getEntryMap().remove(key, oldRe);
+                  removeEntry(key, oldRe);
                   oldRe = putEntryIfAbsent(key, newRe);
                 } else {
                   opCompleted = true;
@@ -2566,7 +2570,7 @@ public abstract class AbstractRegionMap
   }
 
   private boolean removeTombstone(RegionEntry re) {
-    return getEntryMap().remove(re.getKey(), re);
+    return removeEntry(re.getKey(), re);
   }
 
   // method used for debugging tombstone count issues
