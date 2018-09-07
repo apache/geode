@@ -47,6 +47,14 @@ resources:
     paths:
     - ci/images/google-geode-builder
 
+- name: google-windows-geode-builder
+  type: git
+  source:
+    uri: https://github.com/((!geode-fork))/geode.git
+    branch: ((!geode-build-branch))
+    paths:
+    - ci/images/google-windows-geode-builder
+
 - name: alpine37-docker-image
   type: docker-image
   source:
@@ -162,7 +170,6 @@ jobs:
       trigger: true
     - get: google-geode-builder
       trigger: true
-    - get: alpine-tools-docker-image
   - task: build-image
     image: alpine-tools-docker-image
     config:
@@ -177,6 +184,28 @@ jobs:
         GEODE_DOCKER_IMAGE: gcr.io/apachegeode-ci/((!docker-image-prefix))test-container
       run:
         path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
+
+- name: build-google-windows-geode-builder
+  public: ((!public-pipelines))
+  serial: true
+  plan:
+  - aggregate:
+    - get: google-windows-geode-builder
+      trigger: true
+  - task: build-image
+    image: alpine-tools-docker-image
+    config:
+      inputs:
+      - name: google-windows-geode-builder
+      outputs:
+      - name: results
+      platform: linux
+      params:
+        GEODE_FORK: ((!geode-fork))
+        GEODE_BRANCH: ((!geode-build-branch))
+        GEODE_DOCKER_IMAGE: gcr.io/apachegeode-ci/((!docker-image-prefix))test-container
+      run:
+        path: google-windows-geode-builder/ci/images/google-windows-geode-builder/build_image.sh
 
 - name: build-alpine-tools-docker-image
   public: ((!public-pipelines))
