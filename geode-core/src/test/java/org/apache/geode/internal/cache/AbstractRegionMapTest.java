@@ -392,34 +392,6 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndDoesDestroy()
-      throws RegionClearedException {
-    CustomEntryConcurrentHashMap<Object, EvictableEntry> map =
-        mock(CustomEntryConcurrentHashMap.class);
-    EvictableEntry entry = mock(EvictableEntry.class);
-    when(entry.getValue()).thenReturn("value");
-    when(entry.isTombstone()).thenReturn(true).thenReturn(false);
-    when(entry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyBoolean()))
-        .thenReturn(true);
-    when(map.get(KEY)).thenReturn(entry);
-    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true, map);
-    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
-    final Object expectedOldValue = null;
-    final boolean inTokenMode = false;
-    final boolean duringRI = false;
-    final boolean evict = false;
-    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
-        .isTrue();
-    verify(entry, times(1)).destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
-        eq(expectedOldValue), anyBoolean(), anyBoolean());
-    boolean invokeCallbacks = true;
-    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
-        eq(false), eq(duringRI), eq(invokeCallbacks));
-    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
-        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
-  }
-
-  @Test
   public void destroyOfExistingEntryInTokenModeAddsAToken() {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     addEntry(arm);
@@ -621,22 +593,6 @@ public class AbstractRegionMapTest {
     EntryEventImpl event = createEventForDestroy(arm._getOwner());
     assertThatThrownBy(() -> arm.destroy(event, false, false, false, false, null, false))
         .isInstanceOf(EntryNotFoundException.class);
-  }
-
-  @Test
-  public void evictDestroyWithEmptyRegionWithConcurrencyChecksDoesNothing() {
-    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true);
-    EntryEventImpl event = createEventForDestroy(arm._getOwner());
-    assertThat(arm.destroy(event, false, false, false, true, null, false)).isFalse();
-    verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
-        anyBoolean(), anyBoolean());
-    verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
-        anyBoolean(), any());
-    // This seems to be a bug. We should not leave an entry in the map
-    // added by the destroy call if destroy returns false.
-    assertThat(arm.getEntryMap().containsKey(event.getKey())).isTrue();
-    RegionEntry re = (RegionEntry) arm.getEntryMap().get(event.getKey());
-    assertThat(re.getValueAsToken()).isEqualTo(Token.REMOVED_PHASE1);
   }
 
   @Test
