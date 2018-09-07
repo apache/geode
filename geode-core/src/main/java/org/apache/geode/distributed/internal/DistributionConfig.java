@@ -4885,14 +4885,14 @@ public interface DistributionConfig extends Config, LogConfig {
    * property.
    */
   @ConfigAttributeGetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
-  Boolean getSSLEndPointIdentificationEnabled();
+  boolean getSSLEndPointIdentificationEnabled();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}
    * property.
    */
   @ConfigAttributeSetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
-  void setSSLEndPointIdentificationEnabled(Boolean enabled);
+  void setSSLEndPointIdentificationEnabled(boolean enabled);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED} property
