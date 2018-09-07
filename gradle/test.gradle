@@ -157,13 +157,11 @@ subprojects {
     outputs.upToDateWhen { false }
   }
 
-  // Until the category can be removed, we exclude FlakyTest from some targets.
   configure([integrationTest, distributedTest, performanceTest]) {
     useJUnit {
       if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
   }
 
@@ -195,23 +193,6 @@ subprojects {
         setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
       }
     }
-  }
-
-  task flakyTest(type: Test) {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-      includeCategories += 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-
-    forkEvery 1
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-
-    reports.junitXml.destination = file "$buildDir/test-reports-flaky"
-    outputs.upToDateWhen { false }
   }
 
   /*
@@ -303,8 +284,8 @@ subprojects {
     description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
   }
 
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, acceptanceTest, repeatTest, upgradeTest
+  [build, check, test, integrationTest, distributedTest, acceptanceTest, repeatTest, upgradeTest].each {
     it.finalizedBy combineReports
   }
 }

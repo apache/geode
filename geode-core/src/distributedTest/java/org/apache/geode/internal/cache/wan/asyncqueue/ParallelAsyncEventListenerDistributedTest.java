@@ -546,7 +546,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    * Test case to test possibleDuplicates. vm0 & vm1 are hosting the PR. vm1 is killed so the
    * buckets hosted by it are shifted to vm0.
    */
-  @Test // parallel, PartitionedRegion, FlakyTest, possibleDuplicates
+  @Test // parallel, PartitionedRegion, possibleDuplicates
   public void testParallelAsyncEventQueueHA_Scenario1() throws InterruptedException {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());
@@ -658,7 +658,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    * Test case to test possibleDuplicates. vm0 & vm1 are hosting the PR. vm2 is brought up and
    * rebalancing is triggered so the buckets get balanced among vm0, vm1 & vm2.
    */
-  @Test // FlakyTest, parallel, PartitionedRegion, possibleDuplicates
+  @Test // parallel, PartitionedRegion, possibleDuplicates
   public void testParallelAsyncEventQueueHA_Scenario3() {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());
@@ -830,7 +830,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     });
   }
 
-  @Test // parallel, FlakyTest, PartitionedRegion, Rebalancing
+  @Test // parallel, PartitionedRegion, Rebalancing
   public void testParallelAsyncEventQueueMovePrimaryAndMoveItBackDuringDispatching() {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());

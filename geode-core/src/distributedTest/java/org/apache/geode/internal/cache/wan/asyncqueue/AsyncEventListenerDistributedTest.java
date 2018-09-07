@@ -278,7 +278,7 @@ public class AsyncEventListenerDistributedTest implements Serializable {
     vm2.invoke(() -> waitForAsyncEventListenerWithEventsMapSize(0));
   }
 
-  @Test // serial, persistent, ReplicateRegion, FlakyTest, IntegrationTest
+  @Test // serial, persistent, ReplicateRegion, IntegrationTest
   public void testReplicatedSerialAsyncEventQueueWithPersistenceEnabled_Restart() {
     vm0.invoke(() -> {
       createCache();
@@ -312,7 +312,7 @@ public class AsyncEventListenerDistributedTest implements Serializable {
    * TODO: fix this test
    */
   @Ignore("TODO: Disabled for 52351")
-  @Test // serial, persistent, ReplicateRegion, FlakyTest
+  @Test // serial, persistent, ReplicateRegion
   public void testReplicatedSerialAsyncEventQueueWithPersistenceEnabled_Restart2() {
     vm0.invoke(() -> createCache());
     vm1.invoke(() -> createCache());
