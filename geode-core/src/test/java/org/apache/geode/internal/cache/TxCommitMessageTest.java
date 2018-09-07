@@ -96,7 +96,7 @@ public class TxCommitMessageTest {
   @Test
   public void toDataWithShadowKeyPre180Server() throws IOException {
     final VersionedDataOutput mockDataOutput = mock(VersionedDataOutput.class);
-    when(mockDataOutput.getVersion()).thenReturn(Version.GEODE_170);
+    when(mockDataOutput.getVersion()).thenReturn(Version.GEODE_160);
     final InternalDistributedMember mockInternalDistributedMember =
         createInternalDistributedMember();
     final TXId txId = new TXId(mockInternalDistributedMember, 0);
@@ -161,9 +161,9 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void toDataWithoutShadowKeyPre180Client() throws IOException {
+  public void toDataWithoutShadowKeyPre170Client() throws IOException {
     final VersionedDataOutput mockDataOutput = mock(VersionedDataOutput.class);
-    when(mockDataOutput.getVersion()).thenReturn(Version.GEODE_170);
+    when(mockDataOutput.getVersion()).thenReturn(Version.GEODE_160);
     final InternalDistributedMember mockInternalDistributedMember =
         createInternalDistributedMember();
     final TXId txId = new TXId(mockInternalDistributedMember, 0);
@@ -296,7 +296,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void toDataWithoutShadowKeyPost180Client() throws IOException {
+  public void toDataWithoutShadowKeyPost170Client() throws IOException {
     final VersionedDataOutput mockDataOutput = mock(VersionedDataOutput.class);
     when(mockDataOutput.getVersion()).thenReturn(Version.CURRENT);
     final InternalDistributedMember mockInternalDistributedMember =
@@ -364,9 +364,9 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithShadowKeyPre180Server() throws Exception {
+  public void fromDataWithShadowKeyPre170Server() throws Exception {
     final VersionedDataInput mockDataInput = mock(VersionedDataInput.class);
-    when(mockDataInput.getVersion()).thenReturn(Version.GEODE_170);
+    when(mockDataInput.getVersion()).thenReturn(Version.GEODE_160);
     when(mockDataInput.readInt()).thenReturn(/* processor id */0, /* txId.uniqId */0,
         /* member version */0, 0, 0, 0, /* totalMaxSize */0, /* regionsSize */1,
         /* opKeys size */ 1, /* offset */0);
@@ -407,7 +407,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithShadowKeyPost180Server() throws Exception {
+  public void fromDataWithShadowKeyPost170Server() throws Exception {
     final DataInput mockDataInput = mock(DataInput.class);
     when(mockDataInput.readInt()).thenReturn(/* processor id */0, /* txId.uniqId */0,
         /* member version */0, 0, 0, 0, /* totalMaxSize */0, /* regionsSize */1,
@@ -444,7 +444,7 @@ public class TxCommitMessageTest {
   }
 
   @Test
-  public void fromDataWithoutShadowKeyPost180Client() throws Exception {
+  public void fromDataWithoutShadowKeyPost170Client() throws Exception {
     final DataInput mockDataInput = mock(DataInput.class);
     when(mockDataInput.readInt()).thenReturn(/* processor id */0, /* txId.uniqId */0,
         /* member version */0, 0, 0, 0, /* totalMaxSize */0, /* regionsSize */1,
