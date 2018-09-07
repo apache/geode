@@ -118,6 +118,7 @@ public class PersistentRegionTransactionDUnitTest extends JUnit4CacheTestCase {
         cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT).create(REGIONNAME);
       }
       CacheServer cacheServer = cache.addCacheServer();
+      cacheServer.setPort(0);
       cacheServer.start();
       return cacheServer.getPort();
     });
