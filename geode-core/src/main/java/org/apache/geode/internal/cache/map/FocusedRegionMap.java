@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.map;
 
-import java.util.Map;
-
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -30,8 +28,6 @@ public interface FocusedRegionMap {
   RegionEntryFactory getEntryFactory();
 
   RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry);
-
-  Map<Object, Object> getEntryMap();
 
   boolean confirmEvictionDestroy(RegionEntry regionEntry); // TODO: subclass
 

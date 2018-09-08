@@ -203,7 +203,6 @@ public abstract class AbstractRegionMap
     return map;
   }
 
-  @Override
   public Map<Object, Object> getEntryMap() {
     return map;
   }
