@@ -235,7 +235,7 @@ public class RegionMapDestroy {
   }
 
   private void handleConcurrentModificationException() {
-    VersionTag tag = getVersionTag();
+    VersionTag<?> tag = getVersionTag();
     if (tag == null) {
       return;
     }
@@ -662,8 +662,8 @@ public class RegionMapDestroy {
     return false;
   }
 
-  private VersionTag createVersionTagFromStamp(VersionStamp stamp) {
-    VersionTag tag = VersionTag.create(stamp.getMemberID());
+  private VersionTag<?> createVersionTagFromStamp(VersionStamp<?> stamp) {
+    VersionTag<?> tag = VersionTag.create(stamp.getMemberID());
     tag.setEntryVersion(stamp.getEntryVersion());
     tag.setRegionVersion(stamp.getRegionVersion());
     tag.setVersionTimeStamp(stamp.getVersionTimeStamp());
@@ -811,11 +811,11 @@ public class RegionMapDestroy {
   }
 
   private boolean isGatewayTag() {
-    VersionTag versionTag = getVersionTag();
+    VersionTag<?> versionTag = getVersionTag();
     return versionTag != null && versionTag.isGatewayTag();
   }
 
-  private VersionTag getVersionTag() {
+  private VersionTag<?> getVersionTag() {
     return event.getVersionTag();
   }
 
@@ -898,7 +898,7 @@ public class RegionMapDestroy {
     return getVersionStamp(entry) != null;
   }
 
-  private VersionStamp getVersionStamp(RegionEntry entry) {
+  private VersionStamp<?> getVersionStamp(RegionEntry entry) {
     return entry.getVersionStamp();
   }
 
@@ -922,7 +922,7 @@ public class RegionMapDestroy {
     return entry.isInUseByTransaction();
   }
 
-  private VersionTag getVersionTag(RegionEntry entry) {
+  private VersionTag<?> getVersionTag(RegionEntry entry) {
     return getVersionStamp(entry).asVersionTag();
   }
 
