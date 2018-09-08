@@ -165,7 +165,6 @@ public abstract class AbstractRegionMap
     this.entryFactory = f;
   }
 
-  @Override
   public RegionEntryFactory getEntryFactory() {
     return this.entryFactory;
   }
@@ -1021,9 +1020,10 @@ public abstract class AbstractRegionMap
   public boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
       boolean cacheWrite, boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
-    RegionMapDestroy regionMapDestroy = new RegionMapDestroy((InternalRegion) owner, this, this,
-        event, inTokenMode, duringRI, cacheWrite, isEviction,
-        expectedOldValue, removeRecoveredEntry);
+    RegionMapDestroy regionMapDestroy =
+        new RegionMapDestroy((InternalRegion) owner, this, getEntryFactory(), this,
+            event, inTokenMode, duringRI, cacheWrite, isEviction,
+            expectedOldValue, removeRecoveredEntry);
     return regionMapDestroy.destroy();
   }
 
@@ -2082,7 +2082,8 @@ public abstract class AbstractRegionMap
       throws CacheWriterException, TimeoutException {
 
     final RegionMapPut regionMapPut =
-        new RegionMapPut(this, _getOwner(), this, entryEventSerialization, event, ifNew, ifOld,
+        new RegionMapPut(this, getEntryFactory(), _getOwner(), this, entryEventSerialization, event,
+            ifNew, ifOld,
             overwriteDestroyed, requireOldValue, expectedOldValue);
 
     return regionMapPut.put();
@@ -2116,8 +2117,9 @@ public abstract class AbstractRegionMap
       callbackEvent.makeSerializedNewValue();
       txHandleWANEvent(owner, callbackEvent, txEntryState);
     }
-    RegionMapCommitPut commitPut = new RegionMapCommitPut(this, owner, callbackEvent, putOp,
-        didDestroy, txId, txEvent, pendingCallbacks, txEntryState);
+    RegionMapCommitPut commitPut =
+        new RegionMapCommitPut(this, getEntryFactory(), owner, callbackEvent, putOp,
+            didDestroy, txId, txEvent, pendingCallbacks, txEntryState);
     commitPut.put();
   }
 

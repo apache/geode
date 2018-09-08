@@ -23,6 +23,7 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.logging.LogService;
 
@@ -32,6 +33,7 @@ public abstract class AbstractRegionMapPut {
   private final InternalRegion owner;
   private final FocusedRegionMap focusedRegionMap;
   private final EntryEventImpl event;
+  private final RegionEntryFactory entryFactory;
   private final boolean ownerInitialized;
 
   private boolean clearOccurred;
@@ -41,10 +43,11 @@ public abstract class AbstractRegionMapPut {
   private boolean completed;
 
   public AbstractRegionMapPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
-      EntryEventImpl event) {
+      EntryEventImpl event, RegionEntryFactory entryFactory) {
     this.focusedRegionMap = focusedRegionMap;
     this.owner = owner;
     this.event = event;
+    this.entryFactory = entryFactory;
     this.ownerInitialized = owner.isInitialized();
   }
 
@@ -224,8 +227,7 @@ public abstract class AbstractRegionMapPut {
     setCreate(getRegionEntry() == null);
     if (isCreate()) {
       final Object key = getEvent().getKey();
-      RegionEntry newEntry =
-          getRegionMap().getEntryFactory().createEntry(getOwner(), key, Token.REMOVED_PHASE1);
+      RegionEntry newEntry = entryFactory.createEntry(getOwner(), key, Token.REMOVED_PHASE1);
       setRegionEntry(newEntry);
     }
   }

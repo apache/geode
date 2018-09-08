@@ -58,6 +58,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 
 public class RegionMapPutTest {
   private final InternalRegion internalRegion = mock(InternalRegion.class);
+  private final RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
   private final FocusedRegionMap focusedRegionMap = mock(FocusedRegionMap.class);
   private final CacheModificationLock cacheModificationLock = mock(CacheModificationLock.class);
   private final EntryEventSerialization entryEventSerialization =
@@ -74,14 +75,12 @@ public class RegionMapPutTest {
 
   @Before
   public void setup() {
-    RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(createdRegionEntry);
     when(internalRegion.getScope()).thenReturn(Scope.LOCAL);
     when(internalRegion.isInitialized()).thenReturn(true);
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(internalRegion.getAttributes()).thenReturn(mock(RegionAttributes.class));
     when(internalRegion.getImageState()).thenReturn(mock(ImageState.class));
-    when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
     givenAnOperationThatDoesNotGuaranteeOldValue();
     when(event.getKey()).thenReturn("key");
     when(event.getRegion()).thenReturn(internalRegion);
@@ -91,7 +90,8 @@ public class RegionMapPutTest {
   }
 
   private void createInstance() {
-    instance = new RegionMapPut(focusedRegionMap, internalRegion, cacheModificationLock,
+    instance = new RegionMapPut(focusedRegionMap, regionEntryFactory, internalRegion,
+        cacheModificationLock,
         entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue,
         expectedOldValue);
   }

@@ -26,6 +26,7 @@ import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
@@ -55,11 +56,12 @@ public class RegionMapPut extends AbstractRegionMapPut {
   @Released
   private Object oldValueForDelta;
 
-  public RegionMapPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
+  public RegionMapPut(FocusedRegionMap focusedRegionMap, RegionEntryFactory entryFactory,
+      InternalRegion owner,
       CacheModificationLock cacheModificationLock, EntryEventSerialization entryEventSerialization,
       EntryEventImpl event, boolean ifNew, boolean ifOld, boolean overwriteDestroyed,
       boolean requireOldValue, Object expectedOldValue) {
-    super(focusedRegionMap, owner, event);
+    super(focusedRegionMap, owner, event, entryFactory);
     this.cacheModificationLock = cacheModificationLock;
     this.entryEventSerialization = entryEventSerialization;
     this.ifNew = ifNew;

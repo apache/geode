@@ -54,6 +54,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 public class RegionMapCommitPutTest {
   private final InternalRegion internalRegion = mock(InternalRegion.class);
   private final FocusedRegionMap focusedRegionMap = mock(FocusedRegionMap.class);
+  private final RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
   private final EntryEventImpl event = mock(EntryEventImpl.class);
   private final RegionEntry regionEntry = mock(RegionEntry.class);
   private final TransactionId transactionId = mock(TransactionId.class);
@@ -68,9 +69,7 @@ public class RegionMapCommitPutTest {
 
   @Before
   public void setup() {
-    RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(regionEntry);
-    when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(internalRegion.getCache()).thenReturn(mock(InternalCache.class));
     when(internalRegion.getMyId()).thenReturn(myId);
@@ -81,7 +80,8 @@ public class RegionMapCommitPutTest {
 
   private void createInstance(Operation putOp, boolean didDestroy, TXRmtEvent txEvent,
       TXEntryState txEntryState) {
-    instance = new RegionMapCommitPut(focusedRegionMap, internalRegion, event, putOp, didDestroy,
+    instance = new RegionMapCommitPut(focusedRegionMap, regionEntryFactory, internalRegion, event,
+        putOp, didDestroy,
         transactionId, txEvent, pendingCallbacks, txEntryState);
   }
 

@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.TXEntryState;
 import org.apache.geode.internal.cache.TXRmtEvent;
 import org.apache.geode.internal.cache.Token;
@@ -51,11 +52,12 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
   private boolean callbackEventInPending;
   private Operation putOp;
 
-  public RegionMapCommitPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
+  public RegionMapCommitPut(FocusedRegionMap focusedRegionMap, RegionEntryFactory entryFactory,
+      InternalRegion owner,
       @Released EntryEventImpl callbackEvent, Operation putOp, boolean didDestroy,
       TransactionId txId, TXRmtEvent txEvent, List<EntryEventImpl> pendingCallbacks,
       TXEntryState txEntryState) {
-    super(focusedRegionMap, owner, callbackEvent);
+    super(focusedRegionMap, owner, callbackEvent, entryFactory);
     this.putOp = putOp;
     this.didDestroy = didDestroy;
     this.txEvent = txEvent;

@@ -25,6 +25,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -46,6 +47,7 @@ public class RegionMapDestroy {
 
   private final InternalRegion internalRegion;
   private final FocusedRegionMap focusedRegionMap;
+  private final RegionEntryFactory entryFactory;
   private final CacheModificationLock cacheModificationLock;
 
   private final EntryEventImpl event;
@@ -63,12 +65,14 @@ public class RegionMapDestroy {
   private boolean wasTombstone;
 
   public RegionMapDestroy(InternalRegion internalRegionArg, FocusedRegionMap focusedRegionMapArg,
-      CacheModificationLock cacheModificationLockArg, final EntryEventImpl eventArg,
+      RegionEntryFactory entryFactoryArg, CacheModificationLock cacheModificationLockArg,
+      final EntryEventImpl eventArg,
       final boolean inTokenModeArg,
       final boolean duringRIArg, final boolean cacheWriteArg, final boolean isEvictionArg,
       final Object expectedOldValueArg, final boolean removeRecoveredEntryArg) {
     internalRegion = internalRegionArg;
     focusedRegionMap = focusedRegionMapArg;
+    entryFactory = entryFactoryArg;
     cacheModificationLock = cacheModificationLockArg;
     event = eventArg;
     inTokenMode = inTokenModeArg;
@@ -848,8 +852,7 @@ public class RegionMapDestroy {
   }
 
   private RegionEntry createNewRegionEntry() {
-    return focusedRegionMap.getEntryFactory().createEntry(internalRegion, getKey(),
-        Token.REMOVED_PHASE1);
+    return entryFactory.createEntry(internalRegion, getKey(), Token.REMOVED_PHASE1);
   }
 
   private boolean removeEntry(RegionEntry entry) {

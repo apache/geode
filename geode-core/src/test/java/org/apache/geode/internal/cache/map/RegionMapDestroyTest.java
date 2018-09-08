@@ -99,7 +99,6 @@ public class RegionMapDestroyTest {
     // Having the mock throw the exception confuses the code coverage tools.
 
     regionMap = mock(FocusedRegionMap.class);
-    when(regionMap.getEntryFactory()).thenReturn(factory);
     when(factory.createEntry(any(), any(), any())).thenReturn(newRegionEntry);
 
     event = mock(EntryEventImpl.class);
@@ -1617,7 +1616,7 @@ public class RegionMapDestroyTest {
 
   private void doDestroy() {
     RegionMapDestroy regionMapDestroy =
-        new RegionMapDestroy(owner, regionMap, mock(CacheModificationLock.class), event,
+        new RegionMapDestroy(owner, regionMap, factory, mock(CacheModificationLock.class), event,
             inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue, removeRecoveredEntry);
     doDestroyResult = regionMapDestroy.destroy();
   }

@@ -18,14 +18,11 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.TXEntryState;
 
 public interface FocusedRegionMap {
 
   RegionEntry getEntry(EntryEventImpl event);
-
-  RegionEntryFactory getEntryFactory();
 
   RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry);
 

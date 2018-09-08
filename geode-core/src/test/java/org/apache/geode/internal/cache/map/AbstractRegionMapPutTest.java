@@ -44,15 +44,14 @@ import org.apache.geode.internal.cache.RegionEntryFactory;
 public class AbstractRegionMapPutTest {
   private final InternalRegion internalRegion = mock(InternalRegion.class);
   private final FocusedRegionMap focusedRegionMap = mock(FocusedRegionMap.class);
+  private final RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
   private final EntryEventImpl event = mock(EntryEventImpl.class);
   private final RegionEntry createdRegionEntry = mock(RegionEntry.class);
   private final TestableRegionMapPut instance = spy(new TestableRegionMapPut());
 
   @Before
   public void setup() {
-    RegionEntryFactory regionEntryFactory = mock(RegionEntryFactory.class);
     when(regionEntryFactory.createEntry(any(), any(), any())).thenReturn(createdRegionEntry);
-    when(focusedRegionMap.getEntryFactory()).thenReturn(regionEntryFactory);
     when(internalRegion.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
   }
 
@@ -196,7 +195,6 @@ public class AbstractRegionMapPutTest {
 
     assertThat(result).isSameAs(existingEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
-    verify(focusedRegionMap, never()).getEntryFactory();
     verify(focusedRegionMap, never()).putEntryIfAbsent(any(), eq(createdRegionEntry));
     verifyAbstractContract();
   }
@@ -212,7 +210,6 @@ public class AbstractRegionMapPutTest {
 
     assertThat(result).isSameAs(existingEntry);
     verify(focusedRegionMap, times(1)).getEntry(eq(event));
-    verify(focusedRegionMap, times(1)).getEntryFactory();
     verifyAbstractContract();
   }
 
@@ -228,7 +225,6 @@ public class AbstractRegionMapPutTest {
 
     assertThat(result).isSameAs(existingEntry);
     verify(focusedRegionMap, times(2)).getEntry(eq(event));
-    verify(focusedRegionMap, times(2)).getEntryFactory();
     verify(focusedRegionMap, times(1)).removeEntry(any(), eq(existingEntry));
     verifyAbstractContractWithRetry();
   }
@@ -288,7 +284,7 @@ public class AbstractRegionMapPutTest {
     public boolean shouldCreatedEntryBeRemoved;
 
     public TestableRegionMapPut() {
-      super(focusedRegionMap, internalRegion, event);
+      super(focusedRegionMap, internalRegion, event, regionEntryFactory);
     }
 
     @Override
