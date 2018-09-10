@@ -44,10 +44,9 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
     extends LocatorLauncherIntegrationTestCase {
 
   /**
-   * Using Awaitility will increase total thread count by 2: ConditionAwaiter and
-   * ConditionAwaiter$ConditionPoller.
+   * Using Awaitility will increase total thread count by 1: ConditionAwaiter$ConditionPoller.
    */
-  private static final int AWAITILITY_USAGE_THREAD_COUNT = 2;
+  private static final int AWAITILITY_USAGE_THREAD_COUNT = 1;
 
   private Set<Thread> initialThreads;
   private int jmxManagerPort;
@@ -95,7 +94,8 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
 
   private void assertThatThreadsStopped() {
     Awaitility.await().atMost(30, SECONDS).untilAsserted(
-        () -> assertThat(currentThreadCount()).isEqualTo(initialThreadCountPlusAwaitility()));
+        () -> assertThat(currentThreadCount())
+            .isLessThanOrEqualTo(initialThreadCountPlusAwaitility()));
   }
 
   private int currentThreadCount() {
