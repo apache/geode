@@ -43,6 +43,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -90,7 +91,6 @@ import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
-import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -1752,32 +1752,20 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         latch.countDown();
       }
     };
-    final String tenuredPoolName = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getName();
-    LogWriterUtils.getLogWriter().info("TenuredPoolName:" + tenuredPoolName);
-    final List list = internalSystem.getStatsList();
-    assertFalse(list.isEmpty());
 
     // fix: found race condition here...
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        int i = 0;
-        synchronized (list) {
-          for (Object o : list) {
-            LogWriterUtils.getLogWriter().info("List:" + (++i) + ":" + o);
-            if (o instanceof StatisticsImpl) {
-              StatisticsImpl si = (StatisticsImpl) o;
-              LogWriterUtils.getLogWriter().info("stat:" + si.getTextId());
-              if (si.getTextId().contains(tenuredPoolName)) {
-                sampler.addLocalStatListener(l, si, "currentUsedMemory");
-                return true;
-              }
-            }
-          }
+        Statistics si = HeapMemoryMonitor.getTenuredPoolStatistics(internalSystem);
+        if (si != null) {
+          sampler.addLocalStatListener(l, si, "currentUsedMemory");
+          return true;
         }
         return false;
       }
 
       public String description() {
+        String tenuredPoolName = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getName();
         return "Waiting for " + tenuredPoolName + " statistics to be added to create listener for";
       }
     };
