@@ -191,7 +191,7 @@ public class OffHeapRegionEntryHelper {
       @Released StoredObject expectedValue) {
     long oldAddress = objectToAddress(expectedValue);
     final long newAddress = objectToAddress(Token.REMOVED_PHASE2);
-    if (re.setAddress(oldAddress, newAddress) || re.getAddress() != newAddress) {
+    if (re.setAddress(oldAddress, newAddress)) {
       releaseAddress(oldAddress);
     } /*
        * else { if (!calledSetValue || re.getAddress() != newAddress) { expectedValue.release(); } }
