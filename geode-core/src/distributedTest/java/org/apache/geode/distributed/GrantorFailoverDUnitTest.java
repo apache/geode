@@ -49,6 +49,12 @@ public class GrantorFailoverDUnitTest {
     locators.add(clusterStartupRule.startLocatorVM(0));
     locators.add(clusterStartupRule.startLocatorVM(1, locators.get(0).getPort()));
     locators.add(clusterStartupRule.startLocatorVM(2, locators.get(0).getPort()));
+
+
+    for (MemberVM locator : locators) {
+      locator.invoke((SerializableRunnableIF) () -> DistributedLockService.create(SERVICE_NAME,
+          ClusterStartupRule.getCache().getDistributedSystem()));
+    }
   }
 
   @After
@@ -64,11 +70,6 @@ public class GrantorFailoverDUnitTest {
     final String lock1 = "lock 1";
     final AtomicBoolean lock0Status = new AtomicBoolean(false);
     final AtomicBoolean lock1Status = new AtomicBoolean(false);
-
-    for (MemberVM locator : locators) {
-      locator.invoke((SerializableRunnableIF) () -> DistributedLockService.create(SERVICE_NAME,
-          ClusterStartupRule.getCache().getDistributedSystem()));
-    }
 
     lock0Status.set(locators.get(0)
         .invoke(() -> DistributedLockService.getServiceNamed(SERVICE_NAME).lock(lock0, 20, -1)));
@@ -108,11 +109,6 @@ public class GrantorFailoverDUnitTest {
     final String lock3 = "lock 3";
 
     locators.get(0).invoke(GrantorFailoverDUnitTest::assertIsElderAndGetId);
-
-    for (MemberVM locator : locators) {
-      locator.invoke((SerializableRunnableIF) () -> DistributedLockService.create(SERVICE_NAME,
-          ClusterStartupRule.getCache().getDistributedSystem()));
-    }
 
     // Grantor but not the elder
     final MemberVM grantorVM = locators.get(1);
@@ -180,7 +176,7 @@ public class GrantorFailoverDUnitTest {
   private static InternalDistributedMember assertIsElderAndGetId() {
     DistributionManager distributionManager =
         ClusterStartupRule.getCache().getInternalDistributedSystem().getDistributionManager();
-    Awaitility.await("Wait to be elder").atMost(1, TimeUnit.SECONDS)
+    Awaitility.await("Wait to be elder").atMost(2, TimeUnit.MINUTES)
         .untilAsserted(() -> assertThat(distributionManager.isElder()).isTrue());
     return distributionManager.getElderId();
   }
