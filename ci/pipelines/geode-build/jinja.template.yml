@@ -329,7 +329,7 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-      timeout: 5m
+      timeout: 15m
     - task: execute_tests
       {{ alpine_tools_config()|indent(6) }}
         params:
@@ -355,7 +355,7 @@ jobs:
           - name: instance-data
           outputs:
           - name: geode-results
-        timeout: 5m
+        timeout: 15m
       ensure:
         do:
         - aggregate:
