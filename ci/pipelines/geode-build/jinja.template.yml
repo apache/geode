@@ -267,7 +267,7 @@ jobs:
   plan:
   - get: geode
     passed:
-    {% for test in tests if not test.name=="StressNew" -%}
+    {% for test in tests if not (test.name=="StressNew" or test.name.startswith("Windows"))-%}
     - {{test.name}}Test
     {% endfor %}
     trigger: true
