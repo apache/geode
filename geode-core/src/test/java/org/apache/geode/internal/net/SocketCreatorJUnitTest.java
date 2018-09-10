@@ -81,16 +81,25 @@ public class SocketCreatorJUnitTest {
   }
 
   @Test
-  public void testBindExceptionMessageFormatting() throws Exception {
+  public void testBindExceptionMessageFormattingWithBindAddr() throws Exception {
+    testBindExceptionMessageFormatting(InetAddress.getLocalHost());
+  }
+
+  @Test
+  public void testBindExceptionMessageFormattingNullBindAddr() throws Exception {
+    testBindExceptionMessageFormatting(null);
+  }
+
+  private void testBindExceptionMessageFormatting(InetAddress inetAddress) throws Exception {
     final SocketCreator socketCreator = new SocketCreator(mock(SSLConfig.class));
     final Socket socket = mock(Socket.class);
 
     ServerSocket serverSocket = null;
     try {
-      serverSocket = socketCreator.createServerSocket(11234, 10, null);
+      serverSocket = socketCreator.createServerSocket(11234, 10, inetAddress);
       assertThatExceptionOfType(BindException.class).isThrownBy(() -> {
         // call twice on the same port to trigger exception
-        socketCreator.createServerSocket(11234, 10, null);
+        socketCreator.createServerSocket(11234, 10, inetAddress);
       }).withMessageContaining("11234")
           .withMessageContaining(InetAddress.getLocalHost().getHostAddress());
     } finally {
