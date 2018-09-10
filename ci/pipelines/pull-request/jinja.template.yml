@@ -22,7 +22,7 @@ groups:
 - name: main
   jobs:
   - Build
-{%- for test in tests %}
+{%- for test in tests if not test.name.startswith("Windows") %}
   - {{test.name}}Test
 {%- endfor %}
 resources:
