@@ -130,7 +130,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(event, times(1)).setIsRedestroyedEntry(true);
+    verify(event).setIsRedestroyedEntry(true);
     verifyPart3();
   }
 
@@ -140,7 +140,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -315,7 +315,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(existingRegionEntry, times(1)).removePhase2();
+    verify(existingRegionEntry).removePhase2();
     verifyNoDestroyInvocationsOnRegion();
   }
 
@@ -393,7 +393,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(owner, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
+    verify(owner).rescheduleTombstone(same(existingRegionEntry), any());
     verify(existingRegionEntry, never()).removePhase2();
     verifyNoDestroyInvocationsOnRegion();
   }
@@ -424,7 +424,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(owner, times(1)).updateSizeOnRemove(any(), anyInt());
+    verify(owner).updateSizeOnRemove(any(), anyInt());
   }
 
   @Test
@@ -480,7 +480,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(event, times(1)).inhibitCacheListenerNotification(true);
+    verify(event).inhibitCacheListenerNotification(true);
   }
 
   @Test
@@ -528,7 +528,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(owner, times(1)).updateSizeOnRemove(any(), anyInt());
+    verify(owner).updateSizeOnRemove(any(), anyInt());
   }
 
   @Test
@@ -559,7 +559,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(owner, times(1)).basicDestroyBeforeRemoval(existingRegionEntry, event);
+    verify(owner).basicDestroyBeforeRemoval(existingRegionEntry, event);
   }
 
   @Test
@@ -615,7 +615,7 @@ public class RegionMapDestroyTest {
     doDestroyExpectingThrowable();
 
     verifyThrowableInstanceOf(ConcurrentCacheModificationException.class);
-    verify(owner, times(1)).notifyTimestampsToGateways(event);
+    verify(owner).notifyTimestampsToGateways(event);
   }
 
   @Test
@@ -625,7 +625,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -653,7 +653,7 @@ public class RegionMapDestroyTest {
     doDestroyExpectingThrowable();
 
     verifyThrowableInstanceOf(ConcurrentCacheModificationException.class);
-    verify(owner, times(1)).notifyTimestampsToGateways(eq(event));
+    verify(owner).notifyTimestampsToGateways(eq(event));
   }
 
   @Test
@@ -670,7 +670,7 @@ public class RegionMapDestroyTest {
 
     verifyThrowableInstanceOf(ConcurrentCacheModificationException.class);
     verifyNoDestroyInvocationsOnRegion();
-    verify(owner, times(1)).notifyTimestampsToGateways(eq(event));
+    verify(owner).notifyTimestampsToGateways(eq(event));
   }
 
   @Test
@@ -680,7 +680,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -694,10 +694,10 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(owner, times(1)).checkEntryNotFound(any());
-    verify(owner, times(1)).recordEvent(event);
-    verify(owner, times(1)).rescheduleTombstone(same(existingRegionEntry), any());
-    verify(existingRegionEntry, times(1)).setValue(owner, Token.TOMBSTONE);
+    verify(owner).checkEntryNotFound(any());
+    verify(owner).recordEvent(event);
+    verify(owner).rescheduleTombstone(same(existingRegionEntry), any());
+    verify(existingRegionEntry).setValue(owner, Token.TOMBSTONE);
     verifyPart2(true);
     verifyNoPart3();
   }
@@ -763,7 +763,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -773,7 +773,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -816,7 +816,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -859,7 +859,7 @@ public class RegionMapDestroyTest {
 
     verifyDestroyReturnedTrue();
     verifyEntryDestroyed(existingRegionEntry, false);
-    verify(regionMap, times(1)).removeEntry(KEY, existingRegionEntry, true, event, owner);
+    verify(regionMap).removeEntry(KEY, existingRegionEntry, true, event, owner);
     verifyInvokedDestroyMethodsOnRegion(false);
   }
 
@@ -915,7 +915,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(event, times(1)).inhibitCacheListenerNotification(true);
+    verify(event).inhibitCacheListenerNotification(true);
     verifyInvokedDestroyMethodsOnRegion(true);
   }
 
@@ -966,7 +966,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(owner, times(1)).updateSizeOnRemove(any(), anyInt());
+    verify(owner).updateSizeOnRemove(any(), anyInt());
   }
 
   /**
@@ -984,7 +984,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedTrue();
-    verify(existingRegionEntry, times(1)).removePhase2();
+    verify(existingRegionEntry).removePhase2();
     verifyInvokedDestroyMethodsOnRegion(false);
     verifyMapDoesNotContainKey();
   }
@@ -1020,7 +1020,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -1031,7 +1031,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -1043,7 +1043,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -1095,7 +1095,7 @@ public class RegionMapDestroyTest {
 
     doDestroy();
 
-    verify(owner, times(1)).checkEntryNotFound(any());
+    verify(owner).checkEntryNotFound(any());
   }
 
   @Test
@@ -1111,7 +1111,7 @@ public class RegionMapDestroyTest {
 
     verifyDestroyReturnedTrue();
     verifyEntryAddedToMap(newRegionEntry);
-    verify(newRegionEntry, times(1)).makeTombstone(any(), any());
+    verify(newRegionEntry).makeTombstone(any(), any());
     verifyPart3();
   }
 
@@ -1127,7 +1127,7 @@ public class RegionMapDestroyTest {
 
     verifyDestroyReturnedTrue();
     verifyEntryAddedToMap(newRegionEntry);
-    verify(newRegionEntry, times(1)).makeTombstone(any(), any());
+    verify(newRegionEntry).makeTombstone(any(), any());
     verifyPart3();
   }
 
@@ -1170,7 +1170,7 @@ public class RegionMapDestroyTest {
     doDestroy();
 
     verifyDestroyReturnedFalse();
-    verify(regionMap, times(1)).getEntry(event);
+    verify(regionMap).getEntry(event);
     verifyNoMoreInteractions(regionMap);
     verifyNoDestroyInvocationsOnRegion();
   }
@@ -1241,7 +1241,7 @@ public class RegionMapDestroyTest {
     doDestroyExpectingThrowable();
 
     verifyThrowableInstanceOf(ConcurrentCacheModificationException.class);
-    verify(owner, times(1)).notifyTimestampsToGateways(any());
+    verify(owner).notifyTimestampsToGateways(any());
     verifyNoDestroyInvocationsOnRegion();
   }
 
@@ -1640,17 +1640,17 @@ public class RegionMapDestroyTest {
   }
 
   private void verifyEntryAddedToMap(RegionEntry entry) {
-    verify(regionMap, times(1)).putEntryIfAbsent(KEY, entry);
+    verify(regionMap).putEntryIfAbsent(KEY, entry);
   }
 
   private void verifyEntryDestroyed(RegionEntry entry, boolean force) throws Exception {
-    verify(entry, times(1)).destroy(same(owner), same(event), eq(inTokenMode), eq(cacheWrite),
+    verify(entry).destroy(same(owner), same(event), eq(inTokenMode), eq(cacheWrite),
         same(expectedOldValue), eq(force), eq(removeRecoveredEntry || fromRILocalDestroy));
   }
 
   private void verifyMapDoesNotContainKey() throws Exception {
     verifyEntryDestroyed(existingRegionEntry, false);
-    verify(regionMap, times(1)).removeEntry(KEY, existingRegionEntry, true, event, owner);
+    verify(regionMap).removeEntry(KEY, existingRegionEntry, true, event, owner);
   }
 
   private void verifyNoDestroyInvocationsOnEntry(RegionEntry entry) throws RegionClearedException {
@@ -1664,12 +1664,12 @@ public class RegionMapDestroyTest {
   }
 
   private void verifyPart3() {
-    verify(owner, times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+    verify(owner).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
         eq(duringRI), eq(true), eq(expectedOldValue));
   }
 
   private void verifyPart2(boolean conflictWithClear) {
-    verify(owner, times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+    verify(owner).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
         eq(conflictWithClear), eq(duringRI), eq(true));
   }
 
@@ -1690,18 +1690,18 @@ public class RegionMapDestroyTest {
 
   private void verifyIndexManagerOrder() {
     InOrder inOrder = inOrder(indexManager, owner);
-    inOrder.verify(indexManager, times(1)).waitForIndexInit();
-    inOrder.verify(owner, times(1)).basicDestroyPart2(any(), any(), anyBoolean(),
+    inOrder.verify(indexManager).waitForIndexInit();
+    inOrder.verify(owner).basicDestroyPart2(any(), any(), anyBoolean(),
         anyBoolean(),
         anyBoolean(), anyBoolean());
-    inOrder.verify(indexManager, times(1)).countDownIndexUpdaters();
+    inOrder.verify(indexManager).countDownIndexUpdaters();
   }
 
   private void verifyEntryRemoved(RegionEntry entry) {
-    verify(regionMap, times(1)).removeEntry(eq(KEY), same(entry), eq(false));
+    verify(regionMap).removeEntry(eq(KEY), same(entry), eq(false));
   }
 
   private void verifyTestHookRun() {
-    verify(testHook, times(1)).run();
+    verify(testHook).run();
   }
 }
