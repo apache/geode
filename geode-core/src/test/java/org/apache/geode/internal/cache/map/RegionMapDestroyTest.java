@@ -114,7 +114,7 @@ public class RegionMapDestroyTest {
     expectedOldValue = null;
     removeRecoveredEntry = false;
   }
-  
+
   private RegionEntry createRegionEntry() throws RegionClearedException {
     RegionEntry result = mock(RegionEntry.class);
     givenEntryDestroyReturnsTrue(result);

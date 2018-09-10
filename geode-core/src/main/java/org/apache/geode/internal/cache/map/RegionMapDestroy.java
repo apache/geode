@@ -892,13 +892,7 @@ public class RegionMapDestroy {
    * @return false if op is an eviction and entry is not ready to be evicted; otherwise true
    */
   private boolean isEntryReadyForEviction(RegionEntry entry) {
-    boolean result = entry.isReadyForDestroy();
-    if (result) {
-      return true;
-    } else {
-      return false;
-    }
-    //return entry.isReadyForDestroy();
+    return entry.isReadyForDestroy();
   }
 
   // RegionEntry helper methods
