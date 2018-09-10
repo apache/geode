@@ -410,4 +410,5 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   MemoryThresholdInfo getAtomicThresholdInfo();
 
+  InternalCache getInternalCache();
 }
