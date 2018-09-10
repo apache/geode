@@ -170,6 +170,7 @@ jobs:
       trigger: true
     - get: google-geode-builder
       trigger: true
+    - get: alpine-tools-docker-image
   - task: build-image
     image: alpine-tools-docker-image
     config:
@@ -192,6 +193,7 @@ jobs:
   - aggregate:
     - get: google-windows-geode-builder
       trigger: true
+    - get: alpine-tools-docker-image
   - task: build-image
     image: alpine-tools-docker-image
     config:
