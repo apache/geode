@@ -872,7 +872,7 @@ public class TXState implements TXStateInterface {
 
   protected void cleanup() {
     if (singleThreadJTAExecutor.shouldDoCleanup()) {
-      singleThreadJTAExecutor.cleanup(getCancelCriterion());
+      singleThreadJTAExecutor.cleanup();
     } else {
       doCleanup();
     }
@@ -1112,7 +1112,7 @@ public class TXState implements TXStateInterface {
     // sitting in the waiting pool to execute afterCompletion. Otherwise
     // throw FailedSynchronizationException().
     if (beforeCompletionCalled) {
-      singleThreadJTAExecutor.executeAfterCompletion(getCancelCriterion(), status);
+      singleThreadJTAExecutor.executeAfterCompletion(status);
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {

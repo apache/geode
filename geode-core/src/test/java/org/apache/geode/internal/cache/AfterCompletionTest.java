@@ -46,22 +46,6 @@ public class AfterCompletionTest {
   }
 
   @Test
-  public void executeThrowsIfCancelCriterionThrows() {
-    doThrow(new RuntimeException()).when(cancelCriterion).checkCancelInProgress(null);
-
-    assertThatThrownBy(() -> afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED))
-        .isInstanceOf(RuntimeException.class);
-  }
-
-  @Test
-  public void cancelThrowsIfCancelCriterionThrows() {
-    doThrow(new RuntimeException()).when(cancelCriterion).checkCancelInProgress(null);
-
-    assertThatThrownBy(() -> afterCompletion.cancel(cancelCriterion))
-        .isInstanceOf(RuntimeException.class);
-  }
-
-  @Test
   public void isStartedReturnsFalseIfNotExecuted() {
     assertThat(afterCompletion.isStarted()).isFalse();
   }
@@ -70,7 +54,7 @@ public class AfterCompletionTest {
   public void isStartedReturnsTrueIfExecuted() {
     startDoOp();
 
-    afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED);
+    afterCompletion.execute(Status.STATUS_COMMITTED);
 
     verifyDoOpFinished();
     assertThat(afterCompletion.isStarted()).isTrue();
@@ -80,7 +64,7 @@ public class AfterCompletionTest {
   public void executeCallsDoAfterCompletion() {
     startDoOp();
 
-    afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED);
+    afterCompletion.execute(Status.STATUS_COMMITTED);
     verifyDoOpFinished();
     verify(txState, times(1)).doAfterCompletion(eq(Status.STATUS_COMMITTED));
   }
@@ -90,7 +74,7 @@ public class AfterCompletionTest {
     startDoOp();
     doThrow(new RuntimeException()).when(txState).doAfterCompletion(Status.STATUS_COMMITTED);
 
-    assertThatThrownBy(() -> afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED))
+    assertThatThrownBy(() -> afterCompletion.execute(Status.STATUS_COMMITTED))
         .isInstanceOf(RuntimeException.class);
 
     verifyDoOpFinished();
@@ -100,20 +84,9 @@ public class AfterCompletionTest {
   public void cancelCallsDoCleanup() {
     startDoOp();
 
-    afterCompletion.cancel(cancelCriterion);
+    afterCompletion.cancel();
     verifyDoOpFinished();
     verify(txState, times(1)).doCleanup();
-  }
-
-  @Test
-  public void cancelThrowsDoCleanupThrows() {
-    startDoOp();
-    doThrow(new RuntimeException()).when(txState).doCleanup();
-
-    assertThatThrownBy(() -> afterCompletion.cancel(cancelCriterion))
-        .isInstanceOf(RuntimeException.class);
-
-    verifyDoOpFinished();
   }
 
   private void startDoOp() {

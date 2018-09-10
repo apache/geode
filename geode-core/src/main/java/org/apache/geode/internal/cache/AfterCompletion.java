@@ -36,10 +36,13 @@ public class AfterCompletion {
     // The above was done by setting afterCompletionCancelled in txState
     // during cleanup. When client departed, the transaction/JTA
     // will be timed out and cleanup code will be executed.
-    waitForExecuteOrCancel(cancelCriterion);
+    try {
+      waitForExecuteOrCancel(cancelCriterion);
+    } catch (RuntimeException | Error ignore) {
+      cancelled = true;
+    }
     started = true;
     logger.debug("executing afterCompletion notification");
-
     try {
       if (cancelled) {
         txState.doCleanup();
@@ -62,7 +65,9 @@ public class AfterCompletion {
   private synchronized void waitForCondition(CancelCriterion cancelCriterion,
       BooleanSupplier condition) {
     while (!condition.getAsBoolean()) {
-      cancelCriterion.checkCancelInProgress(null);
+      if (cancelCriterion != null) {
+        cancelCriterion.checkCancelInProgress(null);
+      }
       try {
         logger.debug("waiting for notification");
         wait(1000);
@@ -72,26 +77,26 @@ public class AfterCompletion {
     }
   }
 
-  public synchronized void execute(CancelCriterion cancelCriterion, int status) {
+  public synchronized void execute(int status) {
     this.status = status;
-    signalAndWaitForDoOp(cancelCriterion);
-  }
-
-  private void signalAndWaitForDoOp(CancelCriterion cancelCriterion) {
-    notifyAll();
-    waitUntilFinished(cancelCriterion);
+    signalAndWaitForDoOp();
     if (exception != null) {
       throw exception;
     }
   }
 
-  private void waitUntilFinished(CancelCriterion cancelCriterion) {
-    waitForCondition(cancelCriterion, () -> finished);
+  private void signalAndWaitForDoOp() {
+    notifyAll();
+    waitUntilFinished();
   }
 
-  public synchronized void cancel(CancelCriterion cancelCriterion) {
+  private void waitUntilFinished() {
+    waitForCondition(null, () -> finished);
+  }
+
+  public synchronized void cancel() {
     cancelled = true;
-    signalAndWaitForDoOp(cancelCriterion);
+    signalAndWaitForDoOp();
   }
 
   public synchronized boolean isStarted() {

@@ -42,9 +42,12 @@ public class SingleThreadJTAExecutor {
     this.afterCompletion = afterCompletion;
   }
 
-  private void doOps(TXState txState, CancelCriterion cancelCriterion) {
-    beforeCompletion.doOp(txState);
-    afterCompletion.doOp(txState, cancelCriterion);
+  void doOps(TXState txState, CancelCriterion cancelCriterion) {
+    try {
+      beforeCompletion.doOp(txState);
+    } finally {
+      afterCompletion.doOp(txState, cancelCriterion);
+    }
   }
 
   public void executeBeforeCompletion(TXState txState, Executor executor,
@@ -54,15 +57,15 @@ public class SingleThreadJTAExecutor {
     beforeCompletion.execute(cancelCriterion);
   }
 
-  public void executeAfterCompletion(CancelCriterion cancelCriterion, int status) {
-    afterCompletion.execute(cancelCriterion, status);
+  public void executeAfterCompletion(int status) {
+    afterCompletion.execute(status);
   }
 
   /**
    * stop waiting for an afterCompletion to arrive and just exit
    */
-  public void cleanup(CancelCriterion cancelCriterion) {
-    afterCompletion.cancel(cancelCriterion);
+  public void cleanup() {
+    afterCompletion.cancel();
   }
 
   public boolean shouldDoCleanup() {
