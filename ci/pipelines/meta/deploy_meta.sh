@@ -77,15 +77,29 @@ fi
 
 if [[ "${GEODE_FORK}" != "apache" ]]; then
   echo "Disabling unnecessary jobs for forks."
-  set -x
   for job in set set-images set-reaper; do
+    set -x
     fly -t ${TARGET} pause-job \
         -j ${META_PIPELINE}/${job}-pipeline
+    set +x
   done
-
-  fly -t ${TARGET} trigger-job \
-      -j ${META_PIPELINE}/build-meta-mini-docker-image
-  fly -t ${TARGET} unpause-pipeline \
-      -p ${META_PIPELINE}
-  set +x
+else
+  echo "Disabling unnecessary jobs for release branches."
+  echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
+  for job in set set-pr set-images set-reaper set-metrics set-examples; do
+    set -x
+    fly -t ${TARGET} pause-job \
+        -j ${META_PIPELINE}/${job}-pipeline
+    set +x
+  done
 fi
+
+set -x
+fly -t ${TARGET} trigger-job \
+    -j ${META_PIPELINE}/build-meta-mini-docker-image
+fly -t ${TARGET} unpause-pipeline \
+    -p ${META_PIPELINE}
+
+set +x
+
+echo "When 'build-meta-mini-docker-image' job is complete, manually unpause and trigger 'set-pipeline'."
