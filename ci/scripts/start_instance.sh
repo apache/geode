@@ -18,7 +18,6 @@
 # limitations under the License.
 
 set -e
-set -x
 
 BASE_DIR=$(pwd)
 
