@@ -57,8 +57,12 @@ public class SingleThreadJTAExecutor {
     beforeCompletion.execute(cancelCriterion);
   }
 
-  public void executeAfterCompletion(int status) {
-    afterCompletion.execute(status);
+  public void executeAfterCompletionCommit() {
+    afterCompletion.executeCommit();
+  }
+
+  public void executeAfterCompletionRollback() {
+    afterCompletion.executeRollback();
   }
 
   /**

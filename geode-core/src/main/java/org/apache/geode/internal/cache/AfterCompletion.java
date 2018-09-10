@@ -26,9 +26,13 @@ public class AfterCompletion {
 
   private boolean started;
   private boolean finished;
-  private int status = -1;
-  private boolean cancelled;
   private RuntimeException exception;
+
+  private enum Action {
+    COMMIT, ROLLBACK, CANCEL
+  };
+
+  private Action action;
 
   public synchronized void doOp(TXState txState, CancelCriterion cancelCriterion) {
     // there should be a transaction timeout that keeps this thread
@@ -39,15 +43,21 @@ public class AfterCompletion {
     try {
       waitForExecuteOrCancel(cancelCriterion);
     } catch (RuntimeException | Error ignore) {
-      cancelled = true;
+      action = Action.CANCEL;
     }
     started = true;
     logger.debug("executing afterCompletion notification");
     try {
-      if (cancelled) {
-        txState.doCleanup();
-      } else {
-        txState.doAfterCompletion(status);
+      switch (action) {
+        case CANCEL:
+          txState.doCleanup();
+          break;
+        case COMMIT:
+          txState.doAfterCompletionCommit();
+          break;
+        case ROLLBACK:
+          txState.doAfterCompletionRollback();
+          break;
       }
     } catch (RuntimeException exception) {
       this.exception = exception;
@@ -59,7 +69,7 @@ public class AfterCompletion {
   }
 
   private void waitForExecuteOrCancel(CancelCriterion cancelCriterion) {
-    waitForCondition(cancelCriterion, () -> status != -1 || cancelled);
+    waitForCondition(cancelCriterion, () -> action != null);
   }
 
   private synchronized void waitForCondition(CancelCriterion cancelCriterion,
@@ -77,12 +87,21 @@ public class AfterCompletion {
     }
   }
 
-  public synchronized void execute(int status) {
-    this.status = status;
+  public void executeCommit() {
+    executeAction(Action.COMMIT);
+  }
+
+  public void executeRollback() {
+    executeAction(Action.ROLLBACK);
+  }
+
+  private synchronized void executeAction(Action action) {
+    this.action = action;
     signalAndWaitForDoOp();
     if (exception != null) {
       throw exception;
     }
+
   }
 
   private void signalAndWaitForDoOp() {
@@ -95,7 +114,7 @@ public class AfterCompletion {
   }
 
   public synchronized void cancel() {
-    cancelled = true;
+    action = Action.CANCEL;
     signalAndWaitForDoOp();
   }
 
