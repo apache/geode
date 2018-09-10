@@ -28,4 +28,14 @@ public interface EvictableEntry extends EvictionNode, RegionEntry {
   Object getKeyForSizing();
 
   void setDelayedDiskId(DiskRecoveryStore diskRecoveryStore);
+  
+  @Override
+  default boolean isReadyForDestroy() {
+    if (isInUseByTransaction() || isDestroyed()) {
+      unsetEvicted();
+      return false;
+    } else {
+      return true;
+    }
+  }
 }

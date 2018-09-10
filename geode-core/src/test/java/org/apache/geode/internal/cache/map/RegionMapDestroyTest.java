@@ -84,11 +84,11 @@ public class RegionMapDestroyTest {
   @Before
   public void setUp() throws Exception {
     factory = mock(RegionEntryFactory.class);
-    newRegionEntry = mock(RegionEntry.class);
-    givenEntryDestroyReturnsTrue(newRegionEntry);
+
+    newRegionEntry = createRegionEntry();
     when(newRegionEntry.isDestroyedOrRemoved()).thenReturn(true);
-    existingRegionEntry = mock(RegionEntry.class);
-    givenEntryDestroyReturnsTrue(existingRegionEntry);
+
+    existingRegionEntry = createRegionEntry();
 
     owner = mock(InternalRegion.class);
     when(owner.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
@@ -113,6 +113,13 @@ public class RegionMapDestroyTest {
     isEviction = false;
     expectedOldValue = null;
     removeRecoveredEntry = false;
+  }
+  
+  private RegionEntry createRegionEntry() throws RegionClearedException {
+    RegionEntry result = mock(RegionEntry.class);
+    givenEntryDestroyReturnsTrue(result);
+    when(result.isReadyForDestroy()).thenReturn(true);
+    return result;
   }
 
   @After
@@ -231,12 +238,12 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void evictDestroyWithExistingTombstoneInUseByTransactionInTokenModeDoesNothing()
+  public void evictDestroyWithExistingTombstoneNotReadyInTokenModeDoesNothing()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntryWithValue(Token.TOMBSTONE);
-    givenEntryIsInUseByTransaction();
+    givenEntryIsNotReadyForEviction();
     givenInTokenMode();
 
     doDestroy();
@@ -252,7 +259,7 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntryWithValue(null);
-    givenEntryIsInUseByTransaction();
+    givenEntryIsNotReadyForEviction();
     givenInTokenMode();
 
     doDestroy();
@@ -263,12 +270,12 @@ public class RegionMapDestroyTest {
   }
 
   @Test
-  public void evictDestroyWithInUseByTransactionInTokenModeDoesNothing()
+  public void evictDestroyWithEntryNotReadyInTokenModeDoesNothing()
       throws RegionClearedException {
     givenConcurrencyChecks(true);
     givenEviction();
     givenExistingEntry();
-    givenEntryIsInUseByTransaction();
+    givenEntryIsNotReadyForEviction();
     givenInTokenMode();
 
     doDestroy();
@@ -1372,7 +1379,6 @@ public class RegionMapDestroyTest {
 
   private void givenEviction() {
     isEviction = true;
-    when(regionMap.confirmEvictionDestroy(any())).thenReturn(true);
   }
 
   private void givenExistingEntryWithValue(Object value) throws RegionClearedException {
@@ -1493,8 +1499,11 @@ public class RegionMapDestroyTest {
   }
 
   private void givenEntryIsInUseByTransaction() {
-    when(regionMap.confirmEvictionDestroy(existingRegionEntry)).thenReturn(false);
     when(existingRegionEntry.isInUseByTransaction()).thenReturn(true);
+  }
+
+  private void givenEntryIsNotReadyForEviction() {
+    when(existingRegionEntry.isReadyForDestroy()).thenReturn(false);
   }
 
   private void givenOriginIsRemote() {

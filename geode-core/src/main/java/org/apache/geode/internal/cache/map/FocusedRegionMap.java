@@ -26,8 +26,6 @@ public interface FocusedRegionMap {
 
   RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry);
 
-  boolean confirmEvictionDestroy(RegionEntry regionEntry); // TODO: subclass
-
   void lruEntryDestroy(RegionEntry regionEntry); // TODO: subclass
 
   boolean removeEntry(Object key, RegionEntry regionEntry);

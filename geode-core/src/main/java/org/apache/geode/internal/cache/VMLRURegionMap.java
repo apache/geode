@@ -781,18 +781,6 @@ public class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public boolean confirmEvictionDestroy(RegionEntry regionEntry) {
-    // We assume here that a LRURegionMap contains LRUEntries
-    EvictableEntry lruRe = (EvictableEntry) regionEntry;
-    if (lruRe.isInUseByTransaction() || lruRe.isDestroyed()) {
-      lruRe.unsetEvicted();
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  @Override
   public long getEvictions() {
     return this.getEvictionController().getCounters().getEvictions();
   }

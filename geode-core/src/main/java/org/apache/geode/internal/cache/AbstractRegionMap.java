@@ -1010,13 +1010,6 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public boolean confirmEvictionDestroy(RegionEntry regionEntry) {
-    /* We arn't in an LRU context, and should never get here */
-    Assert.assertTrue(false, "Not an LRU region, can not confirm LRU eviction operation");
-    return true;
-  }
-
-  @Override
   public boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
       boolean cacheWrite, boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {

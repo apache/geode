@@ -463,4 +463,13 @@ public interface RegionEntry {
       boolean isEntryUpdate);
 
   boolean isEvicted();
+  
+  /**
+   * Currently the only entries that will not be ready for destroy
+   * are evictable entries that are in use by a transaction.
+   * @return true if this entry can be destroyed; false if it should not be
+   */
+  default boolean isReadyForDestroy() {
+    return true;
+  }
 }
