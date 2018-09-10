@@ -28,7 +28,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
+import org.apache.geode.cache.TransactionException;
 
 public class BeforeCompletionTest {
 
@@ -52,6 +55,27 @@ public class BeforeCompletionTest {
     assertThatThrownBy(() -> beforeCompletion.execute(cancelCriterion))
         .isInstanceOf(SynchronizationCommitConflictException.class);
   }
+
+  @Test
+  public void executeThrowsTransactionDataNodeHasDepartedExceptionIfDoOpFailedWithCacheClosedException() {
+    doThrow(new CacheClosedException("")).when(txState).doBeforeCompletion();
+
+    beforeCompletion.doOp(txState);
+
+    assertThatThrownBy(() -> beforeCompletion.execute(cancelCriterion))
+        .isInstanceOf(TransactionDataNodeHasDepartedException.class);
+  }
+
+  @Test
+  public void executeThrowsTransactionExceptionIfDoOpFailedWithRuntimeException() {
+    doThrow(new RuntimeException("")).when(txState).doBeforeCompletion();
+
+    beforeCompletion.doOp(txState);
+
+    assertThatThrownBy(() -> beforeCompletion.execute(cancelCriterion))
+        .isInstanceOf(TransactionException.class);
+  }
+
 
   @Test
   public void doOpCallsDoBeforeCompletion() {
