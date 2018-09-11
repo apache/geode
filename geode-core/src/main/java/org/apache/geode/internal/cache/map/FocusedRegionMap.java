@@ -35,8 +35,6 @@ public interface FocusedRegionMap {
   void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat, EntryEventImpl event,
       final InternalRegion internalRegion);
 
-  void processVersionTag(RegionEntry regionEntry, EntryEventImpl event);
-
   void lruEntryUpdate(RegionEntry regionEntry);
 
   void lruEntryCreate(RegionEntry regionEntry);

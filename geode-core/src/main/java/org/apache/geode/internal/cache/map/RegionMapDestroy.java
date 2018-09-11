@@ -881,7 +881,7 @@ public class RegionMapDestroy {
 
   private void processVersionTag(RegionEntry entry) {
     try {
-      focusedRegionMap.processVersionTag(entry, event);
+      entry.checkForConcurrencyConflict(event);
     } catch (ConcurrentCacheModificationException e) {
       handleConcurrentModificationException();
       throw e;

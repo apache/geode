@@ -8227,6 +8227,22 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return this.imageState;
   }
 
+  @Override
+  public void addVersionTagToImageState(Object key, VersionTag tag) {
+    // during initialization we record version tag info to detect ops the
+    // image provider hasn't seen
+    if (!isInitialized() && !isUsedForPartitionedRegionBucket()) {
+      ImageState is = getImageState();
+      if (is != null) {
+        if (logger.isTraceEnabled()) {
+          logger.trace("recording version tag in image state: {}", tag);
+        }
+        is.addVersionTag(key, tag);
+      }
+    }
+  }
+
+
   /**
    * Callers of this method should always follow the call with: if (lockGII()) { try { } finally {
    * unlockGII(); } }

@@ -1373,8 +1373,8 @@ public class RegionMapDestroyTest {
   }
 
   private void givenVersionStampThatDetectsConflict() {
-    doThrow(ConcurrentCacheModificationException.class).when(regionMap)
-        .processVersionTag(same(existingRegionEntry), same(event));
+    doThrow(ConcurrentCacheModificationException.class).when(existingRegionEntry)
+        .checkForConcurrencyConflict(event);
   }
 
   private void givenEviction() {

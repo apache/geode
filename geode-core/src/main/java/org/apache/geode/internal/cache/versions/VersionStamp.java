@@ -17,8 +17,9 @@ package org.apache.geode.internal.cache.versions;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 
-public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<T> {
+public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<T>, RegionEntry {
 
   /**
    * Sets the time stamp from the given clock value
@@ -49,6 +50,11 @@ public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<
    */
   void processVersionTag(EntryEvent event);
 
+  @Override
+  default void checkForConcurrencyConflict(EntryEvent<?, ?> event) {
+    processVersionTag(event);
+  }
+
   /**
    * Perform a versioning check with the given GII information. Throws a
    * ConcurrentCacheModificationException if there is a problem.
@@ -69,4 +75,10 @@ public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<
    * Returns true if this stamp has valid entry/region version information, false if not
    */
   boolean hasValidVersion();
+
+  @Override
+  default boolean needsToCheckForConflict(InternalRegion region) {
+    return true;
+  }
+
 }

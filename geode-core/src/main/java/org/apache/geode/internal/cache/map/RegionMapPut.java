@@ -356,7 +356,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
       // only update, so just do tombstone maintainence and exit
       if (re.isTombstone() && event.getVersionTag() != null) {
         // refresh the tombstone so it doesn't time out too soon
-        getRegionMap().processVersionTag(re, event);
+        re.checkForConcurrencyConflict(event);
         try {
           re.setValue(getOwner(), Token.TOMBSTONE);
         } catch (RegionClearedException e) {
@@ -418,7 +418,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     final EntryEventImpl event = getEvent();
     final RegionEntry re = getRegionEntry();
     final boolean wasTombstone = re.isTombstone();
-    getRegionMap().processVersionTag(re, event);
+    re.checkForConcurrencyConflict(event);
     event.putNewEntry(getOwner(), re);
     updateSize(0, false, wasTombstone);
     if (!event.getRegion().isInitialized()) {
@@ -431,7 +431,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     final RegionEntry re = getRegionEntry();
     final boolean wasTombstone = re.isTombstone();
     final int oldSize = event.getRegion().calculateRegionEntryValueSize(re);
-    getRegionMap().processVersionTag(re, event);
+    re.checkForConcurrencyConflict(event);
     event.putExistingEntry(event.getRegion(), re, isRequireOldValue(), getOldValueForDelta());
     EntryLogger.logPut(event);
     updateSize(oldSize, true/* isUpdate */, wasTombstone);

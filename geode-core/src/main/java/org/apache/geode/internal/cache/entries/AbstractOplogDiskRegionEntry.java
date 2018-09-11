@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.entries;
 
-import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ByteArrayDataInput;
@@ -146,24 +145,22 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   }
 
   /**
-   * Process a version tag. This overrides AbtractRegionEntry so we can check to see if the old
-   * value was recovered from disk. If so, we don't check for conflicts.
+   * No need to check for conflicts if this region entry was recovered from disk.
    */
   @Override
-  public void processVersionTag(EntryEvent cacheEvent) {
+  public boolean needsToCheckForConflict(InternalRegion region) {
+    boolean checkForConflicts = true;
     DiskId did = getDiskId();
-    boolean checkConflicts = true;
     if (did != null) {
-      InternalRegion lr = (InternalRegion) cacheEvent.getRegion();
-      if (lr != null && lr.getDiskRegion().isReadyForRecovery()) {
+      if (region.getDiskRegion().isReadyForRecovery()) {
         synchronized (did) {
-          checkConflicts = !EntryBits.isRecoveredFromDisk(did.getUserBits());
+          checkForConflicts = !EntryBits.isRecoveredFromDisk(did.getUserBits());
         }
       }
     }
-
-    processVersionTag(cacheEvent, checkConflicts);
+    return checkForConflicts;
   }
+
 
   /**
    * Returns true if the DiskEntry value is equal to {@link Token#DESTROYED},

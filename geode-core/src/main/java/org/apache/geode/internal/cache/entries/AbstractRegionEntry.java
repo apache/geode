@@ -856,12 +856,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       if (cacheWrite) {
         region.cacheWriteBeforeDestroy(event, expectedOldValue);
         if (event.getRegion().getServerProxy() != null) {
-          // server will return a version tag
-          // update version information (may throw ConcurrentCacheModificationException)
-          VersionStamp stamp = getVersionStamp();
-          if (stamp != null) {
-            stamp.processVersionTag(event);
-          }
+          checkForConcurrencyConflict(event);
         }
       }
       region.recordEvent(event);
@@ -1691,17 +1686,14 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
    * @throws ConcurrentCacheModificationException if the event conflicts with an event that has
    *         already been applied to the entry.
    */
-  public void processVersionTag(EntryEvent cacheEvent) {
-    processVersionTag(cacheEvent, true);
-  }
-
-  protected void processVersionTag(EntryEvent cacheEvent, boolean conflictCheck) {
+  protected void processVersionTag(EntryEvent cacheEvent) {
     EntryEventImpl event = (EntryEventImpl) cacheEvent;
-    VersionTag tag = event.getVersionTag();
+    final VersionTag tag = event.getVersionTag();
     if (tag == null) {
       return;
     }
 
+    final InternalRegion region = event.getRegion();
     try {
       if (tag.isGatewayTag()) {
         // this may throw ConcurrentCacheModificationException or modify the event
@@ -1720,8 +1712,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
 
       final InternalDistributedMember originator =
           (InternalDistributedMember) event.getDistributedMember();
-      final VersionSource dmId = event.getRegion().getVersionMember();
-      InternalRegion r = event.getRegion();
+      final VersionSource dmId = region.getVersionMember();
       boolean eventHasDelta = event.getDeltaBytes() != null && event.getRawNewValue() == null;
 
       VersionStamp stamp = getVersionStamp();
@@ -1748,7 +1739,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
               logger.trace(LogMarker.TOMBSTONE_VERBOSE, verbose);
             }
             // Update the stamp with event's version information.
-            applyVersionTag(r, stamp, tag, originator);
+            applyVersionTag(region, stamp, tag, originator);
             return;
           }
 
@@ -1757,21 +1748,21 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
               verbose.append(" - disallowing event");
               logger.trace(LogMarker.TOMBSTONE_VERBOSE, verbose);
             }
-            r.getCachePerfStats().incConflatedEventsCount();
-            persistConflictingTag(r, tag);
+            region.getCachePerfStats().incConflatedEventsCount();
+            persistConflictingTag(region, tag);
             throw new ConcurrentCacheModificationException("conflicting event detected");
           }
         }
       }
 
-      if (r.getVersionVector() != null && r.getServerProxy() == null
-          && (r.getDataPolicy().withPersistence() || !r.getScope().isLocal())) {
+      if (region.getVersionVector() != null && region.getServerProxy() == null
+          && (region.getDataPolicy().withPersistence() || !region.getScope().isLocal())) {
         // bug #45258 - perf degradation for local regions and RVV
         VersionSource who = tag.getMemberID();
         if (who == null) {
           who = originator;
         }
-        r.getVersionVector().recordVersion(who, tag);
+        region.getVersionVector().recordVersion(who, tag);
       }
 
       assert !tag.isFromOtherMember()
@@ -1795,11 +1786,13 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       // will be the winner in both buckets.
 
       // The new value in event is not from GII, even it could be tombstone
-      basicProcessVersionTag(r, tag, false, eventHasDelta, dmId, originator, conflictCheck);
+      boolean conflictCheck = needsToCheckForConflict(region);
+      basicProcessVersionTag(region, tag, false, eventHasDelta, dmId, originator, conflictCheck);
     } catch (ConcurrentCacheModificationException ex) {
       event.isConcurrencyConflict(true);
       throw ex;
     }
+    region.addVersionTagToImageState(event.getKey(), tag);
   }
 
   protected void basicProcessVersionTag(InternalRegion region, VersionTag tag,

@@ -27,6 +27,7 @@ import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.eviction.EvictionList;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -82,6 +83,19 @@ public interface RegionEntry {
    * @return the version information for this entry
    */
   VersionStamp getVersionStamp();
+
+  /**
+   * Process an incoming version tag for concurrent operation detection. This must be done before
+   * modifying the region entry.
+   *
+   * @param event the modification being made to the entry
+   * @throws ConcurrentCacheModificationException if the event is in conflict with a previously
+   *         applied change
+   */
+  default void checkForConcurrencyConflict(EntryEvent<?, ?> event) {
+    // do nothing by default.
+    // VersionStamp overrides to call processVersionTag.
+  }
 
   /**
    * @param member the member performing the change, or null if it's this member
@@ -472,5 +486,13 @@ public interface RegionEntry {
    */
   default boolean isReadyForDestroy() {
     return true;
+  }
+
+  /**
+   * @param region the region this entry belongs to
+   * @return true if caller should check for conflicts
+   */
+  default boolean needsToCheckForConflict(InternalRegion region) {
+    return false;
   }
 }

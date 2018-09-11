@@ -410,4 +410,6 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   MemoryThresholdInfo getAtomicThresholdInfo();
 
+  void addVersionTagToImageState(Object key, VersionTag tag);
+
 }

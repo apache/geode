@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DiskAccessException;
@@ -550,36 +549,6 @@ public abstract class AbstractRegionMap
   @Override
   public void lruEntryFaultIn(EvictableEntry entry) {
     // do nothing by default
-  }
-
-  /**
-   * Process an incoming version tag for concurrent operation detection. This must be done before
-   * modifying the region entry.
-   *
-   * @param regionEntry the entry that is to be modified
-   * @param event the modification to the entry
-   * @throws InvalidDeltaException if the event contains a delta that cannot be applied
-   * @throws ConcurrentCacheModificationException if the event is in conflict with a previously
-   *         applied change
-   */
-  @Override
-  public void processVersionTag(RegionEntry regionEntry, EntryEventImpl event) {
-    if (regionEntry.getVersionStamp() != null) {
-      regionEntry.getVersionStamp().processVersionTag(event);
-
-      // during initialization we record version tag info to detect ops the
-      // image provider hasn't seen
-      VersionTag<?> tag = event.getVersionTag();
-      if (tag != null && !event.getRegion().isInitialized()) {
-        ImageState is = event.getRegion().getImageState();
-        if (is != null && !event.getRegion().isUsedForPartitionedRegionBucket()) {
-          if (logger.isTraceEnabled()) {
-            logger.trace("recording version tag in image state: {}", tag);
-          }
-          is.addVersionTag(event.getKey(), tag);
-        }
-      }
-    }
   }
 
   private void processVersionTagForGII(RegionEntry re, LocalRegion owner, VersionTag entryVersion,
@@ -1414,7 +1383,7 @@ public abstract class AbstractRegionMap
                         boolean isCreate = false;
                         try {
                           if (oldRe.isRemoved()) {
-                            processVersionTag(oldRe, event);
+                            oldRe.checkForConcurrencyConflict(event);
                             event.putNewEntry(owner, oldRe);
                             EntryLogger.logInvalidate(event);
                             owner.recordEvent(event);
@@ -1427,7 +1396,7 @@ public abstract class AbstractRegionMap
                               isCreate = true;
                             }
                           } else {
-                            processVersionTag(oldRe, event);
+                            oldRe.checkForConcurrencyConflict(event);
                             event.putExistingEntry(owner, oldRe);
                             EntryLogger.logInvalidate(event);
                             owner.recordEvent(event);
@@ -1569,7 +1538,7 @@ public abstract class AbstractRegionMap
                         // entry here
                         return false;
                       } else if (tombstone != null) {
-                        processVersionTag(tombstone, event);
+                        tombstone.checkForConcurrencyConflict(event);
                         try {
                           tombstone.setValue(owner, Token.TOMBSTONE);
                         } catch (RegionClearedException e) {
@@ -1719,7 +1688,7 @@ public abstract class AbstractRegionMap
     if (logger.isDebugEnabled()) {
       logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
     }
-    processVersionTag(re, event);
+    re.checkForConcurrencyConflict(event);
     if (owner.getConcurrencyChecksEnabled() && event.hasValidVersionTag()) {
       // notify clients so they can update their version stamps
       event.invokeCallbacks(owner, true, true);
@@ -1728,7 +1697,7 @@ public abstract class AbstractRegionMap
 
   private void invalidateNewEntry(EntryEventImpl event, final LocalRegion owner, RegionEntry newRe)
       throws RegionClearedException {
-    processVersionTag(newRe, event);
+    newRe.checkForConcurrencyConflict(event);
     event.putNewEntry(owner, newRe);
     owner.recordEvent(event);
     owner.updateSizeOnCreate(event.getKey(), event.getNewValueBucketSize());
@@ -1736,7 +1705,7 @@ public abstract class AbstractRegionMap
 
   protected void invalidateEntry(EntryEventImpl event, RegionEntry re, int oldSize)
       throws RegionClearedException {
-    processVersionTag(re, event);
+    re.checkForConcurrencyConflict(event);
     event.putExistingEntry(_getOwner(), re);
     EntryLogger.logInvalidate(event);
     _getOwner().recordEvent(event);
@@ -1781,7 +1750,7 @@ public abstract class AbstractRegionMap
             if (re.isTombstone() || (!re.isRemoved() && !re.isDestroyed())) {
               entryExisted = true;
             }
-            processVersionTag(re, event);
+            re.checkForConcurrencyConflict(event);
             owner.generateAndSetVersionTag(event, re);
             EntryLogger.logUpdateEntryVersion(event);
             _getOwner().recordEvent(event);
@@ -2142,7 +2111,7 @@ public abstract class AbstractRegionMap
             stamp.setVersions(remoteTag);
           }
         }
-        processVersionTag(re, callbackEvent);
+        re.checkForConcurrencyConflict(callbackEvent);
       } catch (ConcurrentCacheModificationException ignore) {
         // ignore this exception, however invoke callbacks for this operation
       }
