@@ -2478,7 +2478,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
     }
     waitForCurrentOperations();
-
   }
 
   protected void waitForCurrentOperations() {

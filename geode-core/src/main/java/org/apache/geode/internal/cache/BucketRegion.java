@@ -1558,7 +1558,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // No need to close advisor, assume its already closed
     // However we need to remove our listener from the advisor (see bug 43950).
     this.distAdvisor.removeMembershipListener(this.advisorListener);
-    waitForCurrentOperations();
   }
 
   /**

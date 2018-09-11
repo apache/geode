@@ -31,11 +31,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.junit.Test;
-
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 
 public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
 
@@ -128,24 +124,6 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     } else {
       verify(br, never()).distributeUpdateEntryVersionOperation(eq(event));
     }
-  }
-
-  @Test
-  public void regionCleanupWaitsForCurrentOperationToBeCompleted() {
-    RegionEventImpl regionEventImpl = mock(RegionEventImpl.class);
-    CacheDistributionAdvisor cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class);
-    DistributionManager distributionManager = mock(DistributionManager.class);
-    MembershipManager membershipManager = mock(MembershipManager.class);
-    when(membershipManager.isConnected()).thenReturn(true);
-    when(distributionManager.getMembershipManager()).thenReturn(membershipManager);
-    BucketRegion bucketRegion = (BucketRegion) prepare(true, false);
-    when(bucketRegion.getDistributionAdvisor()).thenReturn(cacheDistributionAdvisor);
-    when(bucketRegion.getDistributionManager()).thenReturn(distributionManager);
-
-    bucketRegion.distributedRegionCleanup(regionEventImpl);
-
-    verify(bucketRegion, times(1)).distributedRegionCleanup(eq(regionEventImpl));
-    verify(cacheDistributionAdvisor, times(1)).waitForCurrentOperations();
   }
 
 }
