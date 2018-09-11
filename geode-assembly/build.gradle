@@ -30,12 +30,13 @@ extraArchive {
 publishing {
   publications {
     maven(MavenPublication) {
-      artifactId = 'apache-geode'
+      afterEvaluate {
+        artifactId = 'apache-geode'
 
-      artifacts = []
+        artifacts = []
 
-      artifact distTar
-      artifact distZip
+        artifact distTar
+      }
     }
   }
 }
@@ -54,6 +55,7 @@ configurations.all {
 }
 
 gradle.taskGraph.whenReady( { graph ->
+  tasks.install.enabled = false
   tasks.withType(Tar).each { tar ->
     tar.compression = Compression.GZIP
     tar.extension = 'tgz'
@@ -67,6 +69,16 @@ gradle.taskGraph.whenReady( { graph ->
   tasks.withType(Jar).each { jarTasks ->
     distTar.dependsOn(jarTasks)
     distZip.dependsOn(jarTasks)
+  }
+  srcDistZip.enabled = false
+  distZip.enabled = false
+
+  tasks.withType(AbstractArchiveTask).findAll {
+    it.name.toLowerCase().contains("dist")
+  }.each { archive ->
+    archive.doLast {
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
+    }
   }
 })
 
@@ -319,16 +331,6 @@ task writeBuildInfo {
     }
   }
 }
-
-gradle.taskGraph.whenReady( { graph ->
-  tasks.withType(AbstractArchiveTask).findAll {
-    it.name.toLowerCase().contains("dist")
-  }.each { archive ->
-    archive.doLast {
-      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
-    }
-  }
-})
 
 distributions {
   src {
