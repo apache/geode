@@ -124,7 +124,7 @@ public class DiskRegionAttributesIntegrationTest {
     diskStoreFactory.setAutoCompact(true);
     diskStoreFactory.setDiskDirsAndSizes(diskDirs, diskDirSizes);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 10737418240l);
+    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, MAX_OPLOG_SIZE_IN_BYTES);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -134,7 +134,7 @@ public class DiskRegionAttributesIntegrationTest {
     Region region = regionFactory.create(regionName);
 
     assertThat(region.getAttributes().isDiskSynchronous()).isEqualTo(true);
-    verifyRegionAndDiskStoreAttributes(true, 10737418240l, 0, -1);
+    verifyRegionAndDiskStoreAttributes(true, MAX_OPLOG_SIZE_IN_BYTES, 0, -1);
   }
 
   @Test
@@ -163,7 +163,7 @@ public class DiskRegionAttributesIntegrationTest {
     diskStoreFactory.setAutoCompact(true);
     diskStoreFactory.setDiskDirsAndSizes(diskDirs, diskDirSizes);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 10737418240l);
+    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, MAX_OPLOG_SIZE_IN_BYTES);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -173,7 +173,7 @@ public class DiskRegionAttributesIntegrationTest {
     Region region = regionFactory.create(regionName);
 
     assertThat(region.getAttributes().isDiskSynchronous()).isEqualTo(false);
-    verifyRegionAndDiskStoreAttributes(true, 10737418240l, 0, -1);
+    verifyRegionAndDiskStoreAttributes(true, MAX_OPLOG_SIZE_IN_BYTES, 0, -1);
   }
 
   @Test
@@ -201,7 +201,7 @@ public class DiskRegionAttributesIntegrationTest {
     diskStoreFactory.setAutoCompact(true);
     diskStoreFactory.setDiskDirsAndSizes(diskDirs, diskDirSizes);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 10737418240l);
+    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, MAX_OPLOG_SIZE_IN_BYTES);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setDiskStoreName(diskStoreName);
@@ -211,7 +211,7 @@ public class DiskRegionAttributesIntegrationTest {
     Region region = regionFactory.create(regionName);
 
     assertThat(region.getAttributes().isDiskSynchronous()).isEqualTo(true);
-    verifyRegionAndDiskStoreAttributes(true, 10737418240l, 0, -1);
+    verifyRegionAndDiskStoreAttributes(true, MAX_OPLOG_SIZE_IN_BYTES, 0, -1);
   }
 
   @Test
@@ -241,7 +241,7 @@ public class DiskRegionAttributesIntegrationTest {
     diskStoreFactory.setQueueSize(10_000);
     diskStoreFactory.setTimeInterval(15);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 10737418240l);
+    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, MAX_OPLOG_SIZE_IN_BYTES);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setDiskStoreName(diskStoreName);
@@ -252,7 +252,7 @@ public class DiskRegionAttributesIntegrationTest {
     Region region = regionFactory.create(regionName);
 
     assertThat(region.getAttributes().isDiskSynchronous()).isEqualTo(false);
-    verifyRegionAndDiskStoreAttributes(true, 10737418240l, 10_000, 15);
+    verifyRegionAndDiskStoreAttributes(true, MAX_OPLOG_SIZE_IN_BYTES, 10_000, 15);
   }
 
   @Test
@@ -282,7 +282,7 @@ public class DiskRegionAttributesIntegrationTest {
     diskStoreFactory.setAutoCompact(true);
     diskStoreFactory.setDiskDirsAndSizes(diskDirs, diskDirSizes);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 10737418240l);
+    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, MAX_OPLOG_SIZE_IN_BYTES);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -293,7 +293,7 @@ public class DiskRegionAttributesIntegrationTest {
     Region region = regionFactory.create(regionName);
 
     assertThat(region.getAttributes().isDiskSynchronous()).isEqualTo(true);
-    verifyRegionAndDiskStoreAttributes(true, 10737418240l, 0, -1);
+    verifyRegionAndDiskStoreAttributes(true, MAX_OPLOG_SIZE_IN_BYTES, 0, -1);
   }
 
   @Test
@@ -324,7 +324,7 @@ public class DiskRegionAttributesIntegrationTest {
     diskStoreFactory.setQueueSize(10_000);
     diskStoreFactory.setTimeInterval(15);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 10737418240l);
+    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, MAX_OPLOG_SIZE_IN_BYTES);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -335,7 +335,7 @@ public class DiskRegionAttributesIntegrationTest {
     Region region = regionFactory.create(regionName);
 
     assertThat(region.getAttributes().isDiskSynchronous()).isEqualTo(false);
-    verifyRegionAndDiskStoreAttributes(true, 10737418240l, 10_000, 15);
+    verifyRegionAndDiskStoreAttributes(true, MAX_OPLOG_SIZE_IN_BYTES, 10_000, 15);
   }
 
   @Test
