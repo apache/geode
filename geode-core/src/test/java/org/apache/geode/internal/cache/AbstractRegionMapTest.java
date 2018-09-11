@@ -340,6 +340,7 @@ public class AbstractRegionMapTest {
         mock(CustomEntryConcurrentHashMap.class);
     EvictableEntry entry = mock(EvictableEntry.class);
     when(entry.getValue()).thenReturn("value");
+    when(entry.isReadyForDestroy()).thenReturn(true);
     when(entry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyBoolean()))
         .thenReturn(true);
     when(map.get(KEY)).thenReturn(null).thenReturn(entry);
