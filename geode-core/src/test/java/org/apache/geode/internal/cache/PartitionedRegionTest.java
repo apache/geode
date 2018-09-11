@@ -179,7 +179,7 @@ public class PartitionedRegionTest {
   }
 
   @Test
-  public void remoteAttemptOfDestroyInBucketThrowsEntryNotFoundException() throws Exception {
+  public void destroyInBucketRemoteOperationThrowsEntryNotFoundException() throws Exception {
     int bucketId = 0;
     Object expectedOldValue = "expectedOldValue";
     KeyInfo keyInfo = mock(KeyInfo.class);
@@ -201,7 +201,7 @@ public class PartitionedRegionTest {
   }
 
   @Test
-  public void remoteAttemptOfDestroyInBucketForPosDupEventIgnoresEntryNotFoundException()
+  public void destroyInBucketRemoteOperationDoesNotThrowEntryNotFoundExceptionForPossibleDuplicateEvent()
       throws Exception {
     int bucketId = 0;
     Object expectedOldValue = "expectedOldValue";
@@ -217,6 +217,7 @@ public class PartitionedRegionTest {
         eq(bucketId), eq(entryEventImpl), eq(expectedOldValue));
 
     spyPR.destroyInBucket(entryEventImpl, expectedOldValue);
+
     verify(spyPR, times(1)).getOrCreateNodeForBucketWrite(eq(bucketId), isNull());
   }
 }
