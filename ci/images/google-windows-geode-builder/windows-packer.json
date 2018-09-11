@@ -21,7 +21,7 @@
       },
       "zone": "us-central1-a",
       "omit_external_ip": false,
-      "use_internal_ip": true
+      "use_internal_ip": false
     }
   ],
   "provisioners": [
