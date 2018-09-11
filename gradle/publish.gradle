@@ -299,3 +299,12 @@ gradle.taskGraph.whenReady { taskGraph ->
     }
   }
 }
+
+
+allprojects {
+  afterEvaluate {
+    tasks.withType(PublishToMavenRepository) {
+      it.enabled = version.endsWith('SNAPSHOT')
+    }
+  }
+}
