@@ -17,12 +17,13 @@ package org.apache.geode.test.junit.rules.gfsh;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class GfshScript {
-  private final String[] commands;
+  private final DebuggableCommand[] commands;
   private String name;
   private TimeUnit timeoutTimeUnit = TimeUnit.MINUTES;
   private int timeout = 4;
@@ -31,7 +32,7 @@ public class GfshScript {
   private List<String> extendedClasspath = new ArrayList<>();
   private Random random = new Random();
 
-  public GfshScript(String... commands) {
+  public GfshScript(DebuggableCommand... commands) {
     this.commands = commands;
     this.name = defaultName();
   }
@@ -40,6 +41,11 @@ public class GfshScript {
    * By default, this GfshScript will await at most 2 minutes and will expect success.
    */
   public static GfshScript of(String... commands) {
+    return new GfshScript(
+        Arrays.stream(commands).map(DebuggableCommand::new).toArray(DebuggableCommand[]::new));
+  }
+
+  public static GfshScript of(DebuggableCommand... commands) {
     return new GfshScript(commands);
   }
 
@@ -103,7 +109,11 @@ public class GfshScript {
   }
 
   public GfshExecution execute(GfshRule gfshRule) {
-    return gfshRule.execute(this);
+    return execute(gfshRule, -1);
+  }
+
+  public GfshExecution execute(GfshRule gfshRule, int gfshDebugPort) {
+    return gfshRule.execute(this, gfshDebugPort);
   }
 
   protected void awaitIfNecessary(GfshExecution gfshExecution) {
@@ -158,7 +168,7 @@ public class GfshScript {
     return shouldAwait() && !awaitQuietly;
   }
 
-  public String[] getCommands() {
+  public DebuggableCommand[] getCommands() {
     return commands;
   }
 
@@ -169,7 +179,4 @@ public class GfshScript {
   private String defaultName() {
     return Long.toHexString(random.nextLong());
   }
-
-
-
 }

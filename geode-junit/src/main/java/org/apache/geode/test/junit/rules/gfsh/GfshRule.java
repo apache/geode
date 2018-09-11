@@ -38,6 +38,13 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
  * The {@code GfshRule} allows a test to execute Gfsh commands via the actual (fully-assembled) gfsh
  * binaries. Each call to {@link GfshRule#execute(GfshScript)} will invoke the given gfsh script in
  * a forked JVM. The {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
+ *
+ * if you want to debug into the gfsh or the locator/servers started using this rule, you can do:
+ *
+ * GfshScript.of(new DebuggableCommand("start locator", 30001)).execute(gfshRule, 30000);
+ *
+ * this will set the gfsh to be debuggable at port 30000, and the locator started to be debuggable
+ * at port 30001
  */
 public class GfshRule extends ExternalResource {
 
@@ -125,11 +132,15 @@ public class GfshRule extends ExternalResource {
   }
 
   public GfshExecution execute(GfshScript gfshScript) {
+    return execute(gfshScript, -1);
+  }
+
+  public GfshExecution execute(GfshScript gfshScript, int gfshDebugPort) {
     GfshExecution gfshExecution;
     try {
       File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
       workingDir.mkdirs();
-      Process process = toProcessBuilder(gfshScript, gfsh, workingDir).start();
+      Process process = toProcessBuilder(gfshScript, gfsh, workingDir, gfshDebugPort).start();
       gfshExecution = new GfshExecution(process, workingDir);
       gfshExecutions.add(gfshExecution);
       gfshScript.awaitIfNecessary(gfshExecution);
@@ -140,7 +151,8 @@ public class GfshRule extends ExternalResource {
     return gfshExecution;
   }
 
-  protected ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir) {
+  protected ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
+      int gfshDebugPort) {
     List<String> commandsToExecute = new ArrayList<>();
 
     if (isWindows()) {
@@ -149,16 +161,22 @@ public class GfshRule extends ExternalResource {
     }
     commandsToExecute.add(gfshPath.toAbsolutePath().toString());
 
-    for (String command : gfshScript.getCommands()) {
-      commandsToExecute.add("-e " + command);
+    for (DebuggableCommand command : gfshScript.getCommands()) {
+      if (command.debugPort > 0) {
+        commandsToExecute.add("-e " + command.command
+            + " --J='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address="
+            + command.debugPort + "'");
+      } else {
+        commandsToExecute.add("-e " + command.command);
+      }
     }
 
     ProcessBuilder processBuilder = new ProcessBuilder(commandsToExecute);
     processBuilder.directory(workingDir);
 
     List<String> extendedClasspath = gfshScript.getExtendedClasspath();
+    Map<String, String> environmentMap = processBuilder.environment();
     if (!extendedClasspath.isEmpty()) {
-      Map<String, String> environmentMap = processBuilder.environment();
       String classpathKey = "CLASSPATH";
       String existingJavaArgs = environmentMap.get(classpathKey);
       String specified = String.join(PATH_SEPARATOR, extendedClasspath);
@@ -166,6 +184,10 @@ public class GfshRule extends ExternalResource {
           String.format("%s%s", existingJavaArgs == null ? "" : existingJavaArgs + PATH_SEPARATOR,
               specified);
       environmentMap.put(classpathKey, newValue);
+    }
+    if (gfshDebugPort > 0) {
+      environmentMap.put("JAVA_ARGS",
+          "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + gfshDebugPort);
     }
 
     return processBuilder;
@@ -180,7 +202,7 @@ public class GfshRule extends ExternalResource {
     String stopServerCommand = "stop server --dir=" + quoteArgument(dir.toString());
 
     GfshScript stopServerScript =
-        new GfshScript(stopServerCommand).withName("teardown-stop-server").awaitQuietly();
+        GfshScript.of(stopServerCommand).withName("teardown-stop-server").awaitQuietly();
     execute(stopServerScript);
   }
 
@@ -188,7 +210,7 @@ public class GfshRule extends ExternalResource {
     String stopLocatorCommand = "stop locator --dir=" + quoteArgument(dir.toString());
 
     GfshScript stopServerScript =
-        new GfshScript(stopLocatorCommand).withName("teardown-stop-locator").awaitQuietly();
+        GfshScript.of(stopLocatorCommand).withName("teardown-stop-locator").awaitQuietly();
     execute(stopServerScript);
   }
 
