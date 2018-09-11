@@ -27,7 +27,6 @@ public class GfshScript {
   private String name;
   private TimeUnit timeoutTimeUnit = TimeUnit.MINUTES;
   private int timeout = 4;
-  private boolean awaitQuietly = false;
   private int expectedExitValue = 0;
   private List<String> extendedClasspath = new ArrayList<>();
   private Random random = new Random();
@@ -67,7 +66,7 @@ public class GfshScript {
   }
 
   /**
-   * Will cause the thread that executes {@link GfshScript#awaitIfNecessary} to wait, if necessary,
+   * Will cause the thread that executes to wait, if necessary,
    * until the subprocess executing this Gfsh script has terminated, or the specified waiting time
    * elapses.
    *
@@ -91,23 +90,6 @@ public class GfshScript {
     return this;
   }
 
-  /**
-   * Will cause the thread that executes {@link GfshScript#awaitIfNecessary} to wait, if necessary,
-   * until the subprocess executing this Gfsh script has terminated, or the specified waiting time
-   * elapses.
-   */
-  public GfshScript awaitQuietlyAtMost(int timeout, TimeUnit timeUnit) {
-    this.awaitQuietly = true;
-
-    return awaitAtMost(timeout, timeUnit);
-  }
-
-  public GfshScript awaitQuietly() {
-    this.awaitQuietly = true;
-
-    return this;
-  }
-
   public GfshExecution execute(GfshRule gfshRule) {
     return execute(gfshRule, -1);
   }
@@ -116,64 +98,24 @@ public class GfshScript {
     return gfshRule.execute(this, gfshDebugPort);
   }
 
-  protected void awaitIfNecessary(GfshExecution gfshExecution) {
-    if (shouldAwaitQuietly()) {
-      awaitQuietly(gfshExecution);
-    } else if (shouldAwaitLoudly()) {
-      awaitLoudly(gfshExecution);
-    }
-
-    try {
-      assertThat(gfshExecution.getProcess().exitValue()).isEqualTo(expectedExitValue);
-    } catch (AssertionError e) {
-      gfshExecution.printLogFiles();
-      throw e;
-    }
-
-  }
-
-  private void awaitQuietly(GfshExecution gfshExecution) {
-    try {
-      gfshExecution.getProcess().waitFor(timeout, timeoutTimeUnit);
-    } catch (InterruptedException ignore) {
-      // ignore since we are waiting *quietly*
-    }
-  }
-
-  private void awaitLoudly(GfshExecution gfshExecution) {
-    boolean exited;
-    try {
-      exited = gfshExecution.getProcess().waitFor(timeout, timeoutTimeUnit);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-
-    try {
-      assertThat(exited).isTrue();
-    } catch (AssertionError e) {
-      gfshExecution.printLogFiles();
-      throw e;
-    }
-  }
-
-  private boolean shouldAwait() {
-    return timeoutTimeUnit != null;
-  }
-
-  private boolean shouldAwaitQuietly() {
-    return shouldAwait() && awaitQuietly;
-  }
-
-  private boolean shouldAwaitLoudly() {
-    return shouldAwait() && !awaitQuietly;
-  }
-
   public DebuggableCommand[] getCommands() {
     return commands;
   }
 
   public String getName() {
     return name;
+  }
+
+  public TimeUnit getTimeoutTimeUnit() {
+    return timeoutTimeUnit;
+  }
+
+  public int getTimeout() {
+    return timeout;
+  }
+
+  public int getExpectedExitValue() {
+    return expectedExitValue;
   }
 
   private String defaultName() {
