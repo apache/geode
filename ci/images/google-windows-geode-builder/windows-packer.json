@@ -52,7 +52,7 @@
         "$Env:JAVA_HOME = 'C:\\Program Files\\Java\\jdk1.8.0_181'",
         ".\\gradlew.bat --no-daemon rat getDeps",
         "popd",
-        "rm -force geode"
+        "rm -force -recurse geode"
       ]
     }
   ]
