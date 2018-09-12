@@ -47,11 +47,6 @@ The following steps have been tested with:
    2. Enable **Use auto-import**
    3. Enable **Create separate module per source set**
    4. Select **Use Project JDK 1.8.0_*nnn*** where *nnn* is latest build required for Geode
-   5. Expand **Global Gradle settings** and edit **Gradle VM options:** to contain `-DUSING_INTELLIJ=true` and press **OK**.
-
-   From an existing IntelliJ project (skip this if you imported from the **Welcome IntelliJ IDEA** window):
-
-   Navigate to **File -> New -> Project from Existing Sources...**, select *build.gradle* file from Geode repository root and press **Open**. Then follow b. through e. above.
 
 3. Change Code Style Scheme to GeodeStyle
 
