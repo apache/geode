@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,8 +31,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -309,6 +315,82 @@ public class RegisterInterestDistributedTest {
     ccf.setPoolSubscriptionEnabled(true);
     ClientCache cache = ccf.create();
     return cache;
+  }
+
+  @Test
+  public void testInvalidateReceivedByClientAfterLRUEvictionOfPreviousNullValue() throws Exception {
+    ClientCache clientCache = createClientCache(locatorPort);
+    Region region =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).addCacheListener(
+            new CacheListener<Object, Object>() {
+              @Override
+              public void afterCreate(EntryEvent<Object, Object> event) {
+                log("create key:" + event.getKey());
+              }
+
+              @Override
+              public void afterUpdate(EntryEvent<Object, Object> event) {
+                log("update key:" + event.getKey());
+
+              }
+
+              @Override
+              public void afterInvalidate(EntryEvent<Object, Object> event) {
+                log("invalidate key:" + event.getKey());
+
+              }
+
+              @Override
+              public void afterDestroy(EntryEvent<Object, Object> event) {
+                log("destroy key:" + event.getKey());
+
+              }
+
+              @Override
+              public void afterRegionInvalidate(RegionEvent<Object, Object> event) {
+
+              }
+
+              @Override
+              public void afterRegionDestroy(RegionEvent<Object, Object> event) {
+
+              }
+
+              @Override
+              public void afterRegionClear(RegionEvent<Object, Object> event) {
+
+              }
+
+              @Override
+              public void afterRegionCreate(RegionEvent<Object, Object> event) {
+
+              }
+
+              @Override
+              public void afterRegionLive(RegionEvent<Object, Object> event) {
+
+              }
+
+              private void log(String logString) {
+                System.out.println("JASON log:" + logString);
+              }
+            }).setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.LOCAL_DESTROY)).create("region");
+    region.registerInterestForAllKeys();
+
+
+    server.invoke(() -> {
+      Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
+      regionOnServer.putIfAbsent("1", null);
+      regionOnServer.putIfAbsent("2", "hello");
+      regionOnServer.putIfAbsent("3", "world");
+
+    });
+
+    Thread.sleep(5000);
+
+    region.invalidate("1");
+
+    assertEquals(true, region.containsKey("1"));
   }
 
   private void createServerRegion(MemberVM server, RegionShortcut regionShortcut) {

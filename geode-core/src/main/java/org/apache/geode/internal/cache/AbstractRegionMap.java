@@ -1727,6 +1727,7 @@ public abstract class AbstractRegionMap
       // notify clients so they can update their version stamps
       event.invokeCallbacks(owner, true, true);
     }
+    event.setVersionTag(re.getVersionStamp().asVersionTag());
   }
 
   private void invalidateNewEntry(EntryEventImpl event, final LocalRegion owner, RegionEntry newRe)
