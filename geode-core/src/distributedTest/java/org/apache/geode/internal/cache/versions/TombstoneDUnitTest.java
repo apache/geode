@@ -38,9 +38,9 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(() -> {
       createRegion("TestRegion", true);
-      Region r = getCache().getRegion("TestRegion");
-      r.put("K1", "V1");
-      r.put("K2", "V2");
+      Region<String, String> region = getCache().getRegion("TestRegion");
+      region.put("K1", "V1");
+      region.put("K2", "V2");
     });
 
     vm1.invoke(() -> {
@@ -49,10 +49,10 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(() -> {
       // Send tombstone gc message to vm1.
-      Region r = getCache().getRegion("TestRegion");
-      r.destroy("K1");
+      Region<String, String> region = getCache().getRegion("TestRegion");
+      region.destroy("K1");
       assertEquals(1, getGemfireCache().getCachePerfStats().getTombstoneCount());
-      performGC(r);
+      performGC(region);
     });
 
     vm1.invoke(() -> {
@@ -61,9 +61,9 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
       assertEquals(0, getGemfireCache().getCachePerfStats().getTombstoneCount());
 
       // Send tombstone gc message to vm0.
-      Region r = getCache().getRegion("TestRegion");
-      r.destroy("K2");
-      performGC(r);
+      Region<String, String> region = getCache().getRegion("TestRegion");
+      region.destroy("K2");
+      performGC(region);
     });
 
     vm0.invoke(() -> {
@@ -91,7 +91,7 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private void performGC(Region r) throws Exception {
+  private void performGC(Region region) throws Exception {
     getGemfireCache().getTombstoneService().forceBatchExpirationForTests(1);
   }
 
