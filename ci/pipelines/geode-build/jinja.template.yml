@@ -335,7 +335,6 @@ jobs:
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
-          SOURCE_REPOSITORY: {{repository.branch}}
           {{ common_test_params(test) | indent(10) }}
         run:
           path: geode-ci/ci/scripts/execute_tests.sh
