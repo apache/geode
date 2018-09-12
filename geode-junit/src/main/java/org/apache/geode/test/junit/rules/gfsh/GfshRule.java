@@ -38,11 +38,10 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
  * a forked JVM. The {@link GfshRule#after()} method will attempt to clean up all forked JVMs.
  *
  * if you want to debug into the gfsh or the locator/servers started using this rule, you can do:
+ * GfshScript.of("start locator", 30000).and("start server", 30001).withDebugPort(30002).execute
  *
- * GfshScript.of(new DebuggableCommand("start locator", 30001)).execute(gfshRule, 30000);
- *
- * this will set the gfsh to be debuggable at port 30000, and the locator started to be debuggable
- * at port 30001
+ * this will set the gfsh to be debuggable at port 30002, and the locator started to be debuggable
+ * at port 30000, and the server to be debuggable at 30001
  */
 public class GfshRule extends ExternalResource {
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -114,15 +113,12 @@ public class GfshRule extends ExternalResource {
   }
 
   public GfshExecution execute(GfshScript gfshScript) {
-    return execute(gfshScript, -1);
-  }
-
-  public GfshExecution execute(GfshScript gfshScript, int gfshDebugPort) {
     GfshExecution gfshExecution;
     try {
       File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
       workingDir.mkdirs();
-      Process process = toProcessBuilder(gfshScript, gfsh, workingDir, gfshDebugPort).start();
+      Process process =
+          toProcessBuilder(gfshScript, gfsh, workingDir, gfshScript.getDebugPort()).start();
       gfshExecution = new GfshExecution(process, workingDir);
       gfshExecutions.add(gfshExecution);
       gfshExecution.awaitTermination(gfshScript);

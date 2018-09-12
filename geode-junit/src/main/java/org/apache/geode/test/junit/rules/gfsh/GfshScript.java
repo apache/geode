@@ -17,35 +17,68 @@ package org.apache.geode.test.junit.rules.gfsh;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * All the commands represented in this script is executed within one gfsh session.
+ *
+ * all the commands in this script are executed using this bash command:
+ * gfsh -e command1 -e command2 -e command3 ....
+ *
+ * You can chain commands together to create a gfshScript
+ * GfshScript.of("command1").and("command2").and("command3", "command4")
+ *
+ * If your command started another process and you want to that process to be debuggable, you can do
+ * GfshScript.of("start locator", 30000).and("start server", 30001)
+ * this will allow locator to be debuggable at 30000 and the server to be debuggable at 30001
+ *
+ * By default, each scripts await at most 4 minutes for all the commands to finish
+ * and will expect success. if you want to change this, you can use:
+ * gfshScript.awaitAtMost(1, TimeUnit.MINUTES).expectFailure()
+ *
+ * if you want this gfsh session to be debuggable, you can use:
+ * gfshScript.withDebugPort(30000)
+ * This will allow gfsh to be debuggable at port 30000.
+ *
+ */
 public class GfshScript {
-  private final DebuggableCommand[] commands;
+  private List<DebuggableCommand> commands = new ArrayList<>();
   private String name;
   private TimeUnit timeoutTimeUnit = TimeUnit.MINUTES;
   private int timeout = 4;
   private int expectedExitValue = 0;
   private List<String> extendedClasspath = new ArrayList<>();
   private Random random = new Random();
+  private int debugPort = -1;
 
-  public GfshScript(DebuggableCommand... commands) {
-    this.commands = commands;
+  public GfshScript() {
     this.name = defaultName();
   }
 
-  /**
-   * By default, this GfshScript will await at most 2 minutes and will expect success.
-   */
   public static GfshScript of(String... commands) {
-    return new GfshScript(
-        Arrays.stream(commands).map(DebuggableCommand::new).toArray(DebuggableCommand[]::new));
+    GfshScript script = new GfshScript();
+    script.and(commands);
+    return script;
   }
 
-  public static GfshScript of(DebuggableCommand... commands) {
-    return new GfshScript(commands);
+  public static GfshScript of(String command, int debugPort) {
+    GfshScript script = new GfshScript();
+    script.and(command, debugPort);
+    return script;
+  }
+
+  public GfshScript and(String... commands) {
+    for (String command : commands) {
+      this.commands.add(new DebuggableCommand(command));
+    }
+    return this;
+  }
+
+  public GfshScript and(String command, int debugPort) {
+    this.commands.add(new DebuggableCommand(command, debugPort));
+    return this;
   }
 
   public GfshScript withName(String name) {
@@ -90,15 +123,16 @@ public class GfshScript {
     return this;
   }
 
+  public GfshScript withDebugPort(int debugPort) {
+    this.debugPort = debugPort;
+    return this;
+  }
+
   public GfshExecution execute(GfshRule gfshRule) {
-    return execute(gfshRule, -1);
+    return gfshRule.execute(this);
   }
 
-  public GfshExecution execute(GfshRule gfshRule, int gfshDebugPort) {
-    return gfshRule.execute(this, gfshDebugPort);
-  }
-
-  public DebuggableCommand[] getCommands() {
+  public List<DebuggableCommand> getCommands() {
     return commands;
   }
 
@@ -116,6 +150,10 @@ public class GfshScript {
 
   public int getExpectedExitValue() {
     return expectedExitValue;
+  }
+
+  public int getDebugPort() {
+    return debugPort;
   }
 
   private String defaultName() {
