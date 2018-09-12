@@ -516,17 +516,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
             // encounter cacheWriter exception
             partialKeys.saveFailedKey(key, cwe);
           } finally {
-            try {
-              // Only RemoveAllPRMessage knows if the thread id is fake. Event has no idea.
-              // So we have to manually set useFakeEventId for this op
-              op.setUseFakeEventId(true);
-              r.checkReadiness();
-              bucketRegion.getDataView().postRemoveAll(op, this.versions, bucketRegion);
-            } finally {
-              if (lockedForPrimary) {
-                bucketRegion.doUnlockForPrimary();
-              }
-            }
+            doPostRemoveAll(r, op, bucketRegion, lockedForPrimary);
           }
           if (partialKeys.hasFailure()) {
             partialKeys.addKeysAndVersions(this.versions);
@@ -565,6 +555,22 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     }
 
     return true;
+  }
+
+  void doPostRemoveAll(PartitionedRegion r, DistributedRemoveAllOperation op,
+      BucketRegion bucketRegion, boolean lockedForPrimary) {
+    try {
+      // Only RemoveAllPRMessage knows if the thread id is fake. Event has no idea.
+      // So we have to manually set useFakeEventId for this op
+      op.setUseFakeEventId(true);
+      r.checkReadiness();
+      bucketRegion.getDataView().postRemoveAll(op, this.versions, bucketRegion);
+      r.checkReadiness();
+    } finally {
+      if (lockedForPrimary) {
+        bucketRegion.doUnlockForPrimary();
+      }
+    }
   }
 
   public VersionedObjectList getVersions() {

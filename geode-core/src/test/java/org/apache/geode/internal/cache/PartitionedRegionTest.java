@@ -15,12 +15,14 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.ThrowableAssert.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -37,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -175,4 +178,46 @@ public class PartitionedRegionTest {
     verify(spyPR, times(1)).getNodeForBucketWrite(anyInt(), isNull());
   }
 
+  @Test
+  public void destroyInBucketRemoteOperationThrowsEntryNotFoundException() throws Exception {
+    int bucketId = 0;
+    Object expectedOldValue = "expectedOldValue";
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    when(keyInfo.getBucketId()).thenReturn(bucketId);
+    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
+    when(entryEventImpl.getKeyInfo()).thenReturn(keyInfo);
+    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
+    PartitionedRegion spyPR = spy(partitionedRegion);
+    doReturn(primaryMember).when(spyPR).getOrCreateNodeForBucketWrite(eq(bucketId), isNull());
+    doThrow(EntryNotFoundException.class).when(spyPR).destroyRemotely(eq(primaryMember),
+        eq(bucketId), eq(entryEventImpl), eq(expectedOldValue));
+
+    Throwable thrown = catchThrowable(() -> {
+      spyPR.destroyInBucket(entryEventImpl, expectedOldValue);
+    });
+
+    assertThat(thrown).isInstanceOf(EntryNotFoundException.class);
+    verify(spyPR, times(1)).getOrCreateNodeForBucketWrite(eq(bucketId), isNull());
+  }
+
+  @Test
+  public void destroyInBucketRemoteOperationDoesNotThrowEntryNotFoundExceptionForPossibleDuplicateEvent()
+      throws Exception {
+    int bucketId = 0;
+    Object expectedOldValue = "expectedOldValue";
+    EntryEventImpl entryEventImpl = mock(EntryEventImpl.class);
+    when(entryEventImpl.isPossibleDuplicate()).thenReturn(true);
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    when(keyInfo.getBucketId()).thenReturn(bucketId);
+    when(entryEventImpl.getKeyInfo()).thenReturn(keyInfo);
+    InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
+    PartitionedRegion spyPR = spy(partitionedRegion);
+    doReturn(primaryMember).when(spyPR).getOrCreateNodeForBucketWrite(eq(bucketId), isNull());
+    doThrow(EntryNotFoundException.class).when(spyPR).destroyRemotely(eq(primaryMember),
+        eq(bucketId), eq(entryEventImpl), eq(expectedOldValue));
+
+    spyPR.destroyInBucket(entryEventImpl, expectedOldValue);
+
+    verify(spyPR, times(1)).getOrCreateNodeForBucketWrite(eq(bucketId), isNull());
+  }
 }

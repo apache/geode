@@ -507,17 +507,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
             // encounter cacheWriter exception
             partialKeys.saveFailedKey(key, cwe);
           } finally {
-            try {
-              // Only PutAllPRMessage knows if the thread id is fake. Event has no idea.
-              // So we have to manually set useFakeEventId for this DPAO
-              dpao.setUseFakeEventId(true);
-              r.checkReadiness();
-              bucketRegion.getDataView().postPutAll(dpao, this.versions, bucketRegion);
-            } finally {
-              if (lockedForPrimary) {
-                bucketRegion.doUnlockForPrimary();
-              }
-            }
+            doPostPutAll(r, dpao, bucketRegion, lockedForPrimary);
           }
           if (partialKeys.hasFailure()) {
             partialKeys.addKeysAndVersions(this.versions);
@@ -557,6 +547,22 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     }
 
     return true;
+  }
+
+  void doPostPutAll(PartitionedRegion r, DistributedPutAllOperation dpao,
+      BucketRegion bucketRegion, boolean lockedForPrimary) {
+    try {
+      // Only PutAllPRMessage knows if the thread id is fake. Event has no idea.
+      // So we have to manually set useFakeEventId for this DPAO
+      dpao.setUseFakeEventId(true);
+      r.checkReadiness();
+      bucketRegion.getDataView().postPutAll(dpao, this.versions, bucketRegion);
+      r.checkReadiness();
+    } finally {
+      if (lockedForPrimary) {
+        bucketRegion.doUnlockForPrimary();
+      }
+    }
   }
 
   public VersionedObjectList getVersions() {
