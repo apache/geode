@@ -349,32 +349,35 @@ public class RegisterInterestDistributedTest {
               @Override
               public void afterRegionInvalidate(RegionEvent<Object, Object> event) {
 
-              }
+            }
 
               @Override
               public void afterRegionDestroy(RegionEvent<Object, Object> event) {
 
-              }
+            }
 
               @Override
               public void afterRegionClear(RegionEvent<Object, Object> event) {
 
-              }
+            }
 
               @Override
               public void afterRegionCreate(RegionEvent<Object, Object> event) {
 
-              }
+            }
 
               @Override
               public void afterRegionLive(RegionEvent<Object, Object> event) {
 
-              }
+            }
 
               private void log(String logString) {
                 System.out.println("JASON log:" + logString);
               }
-            }).setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.LOCAL_DESTROY)).create("region");
+            })
+            .setEvictionAttributes(
+                EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.LOCAL_DESTROY))
+            .create("region");
     region.registerInterestForAllKeys();
 
 
