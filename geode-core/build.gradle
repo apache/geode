@@ -222,8 +222,12 @@ task createVersionPropertiesFile {
   def scmInfo = readScmInfo()
 
   outputs.file propertiesFile
-  inputs.property("Source-Revision",
-                  scmInfo.getProperty("Source-Revision"))
+  // This task is up-to-date only when the properties file exists and the SHA is unchanged.
+  if (propertiesFile.exists()) {
+    inputs.property("Source-Revision", scmInfo.getProperty("Source-Revision"))
+  } else {
+    outputs.upToDateWhen { false }
+  }
 
   doLast {
     def props = [
