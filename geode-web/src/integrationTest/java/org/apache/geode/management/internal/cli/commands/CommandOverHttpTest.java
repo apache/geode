@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -86,7 +87,7 @@ public class CommandOverHttpTest {
   public void exportConfig() throws Exception {
     String dir = temporaryFolder.getRoot().getAbsolutePath();
     gfshRule.executeAndAssertThat("export config --dir=" + dir).statusIsSuccess()
-        .containsOutput("File saved to " + dir + "/server-cache.xml")
-        .containsOutput("File saved to " + dir + "/server-gf.properties");
+        .containsOutput("File saved to " + Paths.get(dir, "server-cache.xml").toString())
+        .containsOutput("File saved to " + Paths.get(dir, "server-gf.properties").toString());
   }
 }
