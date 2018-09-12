@@ -302,6 +302,4 @@ distributedTest {
   exclude "**/*\$*.class"
 }
 
-afterEvaluate {
-  rootProject.generate.dependsOn(generateGrammarSource)
-}
+rootProject.generate.dependsOn(generateGrammarSource)
