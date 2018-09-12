@@ -20,6 +20,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -99,14 +100,13 @@ public class DiskRegionCompactorCloseIntegrationTest {
   @After
   public void tearDown() throws Exception {
     try {
-      if (cache != null) {
-        cache.close();
-      }
+      beforeGoingToCompactLatch.countDown();
+      cache.close();
     } finally {
       CacheObserverHolder.setInstance(null);
       DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
       LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-      beforeGoingToCompactLatch.countDown();
+      disconnectAllFromDS();
     }
   }
 
