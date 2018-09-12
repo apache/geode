@@ -39,7 +39,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -1176,11 +1178,11 @@ public class DiskRegionJUnitTest {
     Region<String, String> region =
         createRegion(regionName, diskStoreName, true, true, false, true, 1);
 
-    AtomicReference<CompletableFuture> doClear = new AtomicReference<>();
+    AtomicReference<Future<Void>> doClearFuture = new AtomicReference<>();
     region.getAttributesMutator().addCacheListener(new CacheListenerAdapter<String, String>() {
       @Override
       public void afterCreate(EntryEvent<String, String> event) {
-        doClear.set(executorServiceRule.runAsync(() -> {
+        doClearFuture.set(executorServiceRule.runAsync(() -> {
           try {
             region.clear();
           } catch (AssertionError | Exception e) {
@@ -1191,7 +1193,7 @@ public class DiskRegionJUnitTest {
     });
 
     region.create("key1", "value1");
-    doClear.get().get(2, MINUTES);
+    awaitFuture(doClearFuture);
     assertThat(region.isEmpty()).isTrue();
 
     VMLRURegionMap vmlruRegionMap = getVMLRURegionMap(region);
@@ -1225,13 +1227,13 @@ public class DiskRegionJUnitTest {
     Region<String, String> region =
         createRegion(regionName, diskStoreName, true, true, false, false, 0);
 
-    AtomicReference<Future<Void>> doCreateFutureRef = new AtomicReference<>();
+    AtomicReference<Future<Void>> doCreateFuture = new AtomicReference<>();
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       @Override
       public void beforeDiskClear() {
         LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-        doCreateFutureRef.set(executorServiceRule.runAsync(() -> {
+        doCreateFuture.set(executorServiceRule.runAsync(() -> {
           try {
             region.create("key1", "value1");
           } catch (AssertionError | Exception e) {
@@ -1242,7 +1244,7 @@ public class DiskRegionJUnitTest {
     });
 
     region.clear();
-    doCreateFutureRef.get().get(5, MINUTES);
+    awaitFuture(doCreateFuture);
 
     // We expect 1 entry to exist, because the clear was triggered before the update
     assertThat(region.size()).isEqualTo(1);
@@ -1279,13 +1281,13 @@ public class DiskRegionJUnitTest {
 
     region.create("key1", "value1");
 
-    AtomicReference<Future<Void>> doPutFutureRef = new AtomicReference<>();
+    AtomicReference<Future<Void>> doPutFuture = new AtomicReference<>();
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       @Override
       public void beforeDiskClear() {
         LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-        doPutFutureRef.set(executorServiceRule.runAsync(() -> {
+        doPutFuture.set(executorServiceRule.runAsync(() -> {
           try {
             region.put("key1", "value1");
           } catch (AssertionError | Exception e) {
@@ -1296,7 +1298,7 @@ public class DiskRegionJUnitTest {
     });
 
     region.clear();
-    doPutFutureRef.get().get(5, MINUTES);
+    awaitFuture(doPutFuture);
 
     // We expect 1 entry to exist, because the clear was triggered before the update
     assertThat(region.size()).isEqualTo(1);
@@ -1738,13 +1740,13 @@ public class DiskRegionJUnitTest {
       region.put(String.valueOf(i), String.valueOf(i));
     }
 
-    AtomicReference<Future<Void>> closeRegionFutureRef = new AtomicReference<>();
+    AtomicReference<Future<Void>> closeRegionFuture = new AtomicReference<>();
 
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       @Override
       public void beforeGoingToCompact() {
-        closeRegionFutureRef.set(executorServiceRule.runAsync(() -> {
+        closeRegionFuture.set(executorServiceRule.runAsync(() -> {
           try {
             region.close();
           } catch (AssertionError | Exception e) {
@@ -1763,7 +1765,7 @@ public class DiskRegionJUnitTest {
 
     getDiskRegion(region).forceRolling();
 
-    closeRegionFutureRef.get().get(5, MINUTES);
+    awaitFuture(closeRegionFuture);
 
     // Restart the region
     Region<String, String> region2 =
@@ -1846,7 +1848,7 @@ public class DiskRegionJUnitTest {
     Region<String, String> region =
         createRegion(regionName, diskStoreName, true, true, false, false, 0);
 
-    AtomicReference<Future<Void>> closeRegionFutureRef = new AtomicReference<>();
+    AtomicReference<Future<Void>> closeRegionFuture = new AtomicReference<>();
     CountDownLatch closingRegionLatch = new CountDownLatch(1);
     CountDownLatch allowCompactorLatch = new CountDownLatch(1);
 
@@ -1866,7 +1868,7 @@ public class DiskRegionJUnitTest {
           oplogSizeBeforeRolling = diskRegion.getOplogIdToOplog().size();
           assertThat(oplogSizeBeforeRolling).isGreaterThan(0);
 
-          closeRegionFutureRef.set(executorServiceRule.runAsync(() -> {
+          closeRegionFuture.set(executorServiceRule.runAsync(() -> {
             closingRegionLatch.countDown();
             DiskStoreImpl diskStoreImpl = getDiskStore(region);
             region.close();
@@ -1917,7 +1919,7 @@ public class DiskRegionJUnitTest {
 
     allowCompactorLatch.countDown();
     awaitLatch(closingRegionLatch);
-    closeRegionFutureRef.get().get(5, MINUTES);
+    awaitFuture(closeRegionFuture);
   }
 
   @Test
@@ -2001,7 +2003,7 @@ public class DiskRegionJUnitTest {
     Region<Object, Object> region =
         createRegion(regionName, diskStoreName, true, true, false, false, 0);
 
-    AtomicReference<Future<Void>> closeRegionFutureRef = new AtomicReference<>();
+    AtomicReference<Future<Void>> closeRegionFuture = new AtomicReference<>();
     CountDownLatch closeThreadStartedLatch = new CountDownLatch(1);
     CountDownLatch allowCompactorLatch = new CountDownLatch(1);
 
@@ -2020,7 +2022,7 @@ public class DiskRegionJUnitTest {
           oplogSizeBeforeRolling = diskRegion.getOplogIdToOplog().size();
           assertThat(oplogSizeBeforeRolling).isGreaterThan(0);
 
-          closeRegionFutureRef.set(executorServiceRule.runAsync(() -> {
+          closeRegionFuture.set(executorServiceRule.runAsync(() -> {
             DiskStoreImpl diskStore = getDiskStore(region);
             region.close();
             diskStore.close();
@@ -2062,7 +2064,7 @@ public class DiskRegionJUnitTest {
 
     allowCompactorLatch.countDown();
     awaitLatch(closeThreadStartedLatch);
-    closeRegionFutureRef.get().get(5, MINUTES);
+    awaitFuture(closeRegionFuture);
   }
 
   /**
@@ -2369,6 +2371,17 @@ public class DiskRegionJUnitTest {
 
   private void awaitLatch(CountDownLatch latch) throws InterruptedException {
     assertThat(latch.await(5, MINUTES)).as("Timed out awaiting latch").isTrue();
+  }
+
+  private void awaitFuture(AtomicReference<Future<Void>> voidFuture)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    await().atMost(5, MINUTES).until(() -> voidFuture.get() != null);
+    awaitFuture(voidFuture.get());
+  }
+
+  private void awaitFuture(Future<Void> voidFuture)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    voidFuture.get(5, MINUTES);
   }
 
   private File newFolder(String folder) {
