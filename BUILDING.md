@@ -43,15 +43,15 @@ The following steps have been tested with:
 
    From the **Welcome to IntelliJ IDEA** window:
 
-   a. **Import Project ->** select *build.gradle* file from Geode repository root and press **Open**.
-   b. Enable **Use auto-import**
-   c. Enable **Create separate module per source set**
-   d. Select **Use Project JDK 1.8.0_*nnn*** where *nnn* is latest build required for Geode
-   e. Expand **Global Gradle settings** and edit **Gradle VM options:** to contain `-DUSING_INTELLIJ=true` and press **OK**.
+   1. **Import Project ->** select *build.gradle* file from Geode repository root and press **Open**.
+   2. Enable **Use auto-import**
+   3. Enable **Create separate module per source set**
+   4. Select **Use Project JDK 1.8.0_*nnn*** where *nnn* is latest build required for Geode
+   5. Expand **Global Gradle settings** and edit **Gradle VM options:** to contain `-DUSING_INTELLIJ=true` and press **OK**.
 
    From an existing IntelliJ project (skip this if you imported from the **Welcome IntelliJ IDEA** window):
 
-   a. Navigate to **File -> New -> Project from Existing Sources...**, select *build.gradle* file from Geode repository root and press **Open**. Then follow b. through e. above.
+   Navigate to **File -> New -> Project from Existing Sources...**, select *build.gradle* file from Geode repository root and press **Open**. Then follow b. through e. above.
 
 3. Change Code Style Scheme to GeodeStyle
 
@@ -90,6 +90,6 @@ The following steps have been tested with:
 
    Some optional sanity tests to make sure things are working properly:
 
-   a) Try looking up classes in both closed and open with Command-O.
+   a) Try looking up classes using **Navigate -> Class...**
    b) Open and run a distributed test such as BasicDistributedTest in geode-core.
    c) Create a new java class and ensure the Apache license is automatically added to the top of the file with no blank line before the package line.
