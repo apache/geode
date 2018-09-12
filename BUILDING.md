@@ -89,7 +89,6 @@ The following steps have been tested with:
    Navigate to **Build -> Rebuild Project** and the full project should compile without errors.
 
    Some optional sanity tests to make sure things are working properly:
-
-   a) Try looking up classes using **Navigate -> Class...**
-   b) Open and run a distributed test such as BasicDistributedTest in geode-core.
-   c) Create a new java class and ensure the Apache license is automatically added to the top of the file with no blank line before the package line.
+   * Try looking up classes using **Navigate -> Class...**
+   * Open and run a distributed test such as BasicDistributedTest in geode-core.
+   * Create a new java class and ensure the Apache license is automatically added to the top of the file with no blank line before the package line.
