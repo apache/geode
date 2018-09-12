@@ -58,6 +58,7 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler;
 import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler.ANSIStyle;
@@ -708,7 +709,10 @@ public class Gfsh extends JLineShell {
 
         resultTypeTL.set(null);
 
-        if (result instanceof CommandResult) {
+        // this only saves the incoming file to the user.dir. We should not rely on this
+        // to save the exported file at this point. All file saving should be done in the
+        // specific command's postExecutor
+        if (result instanceof LegacyCommandResult) {
           CommandResult cmdResult = (CommandResult) result;
           if (cmdResult.hasIncomingFiles()) {
             boolean isAlreadySaved = cmdResult.getNumTimesSaved() > 0;

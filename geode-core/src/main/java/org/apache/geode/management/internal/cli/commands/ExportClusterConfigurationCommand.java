@@ -195,12 +195,11 @@ public class ExportClusterConfigurationCommand extends InternalGfshCommand {
         }
       } else if (zipFile != null) {
         // delete the existing file since at this point, user is OK to replace the old zip.
-        File file = new File(zipFile);
+        File file = new File(zipFile).getAbsoluteFile();
         if (file.exists()) {
           FileUtils.deleteQuietly(file);
         }
-        FileResultModel fileResultModel = result.getFiles().values().iterator().next();
-        fileResultModel.writeFile(file.getParentFile().getAbsolutePath());
+        result.saveFileTo(file.getParentFile());
       }
       return result;
     }
