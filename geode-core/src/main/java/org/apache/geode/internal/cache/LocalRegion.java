@@ -185,7 +185,6 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
-import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.query.IndexMap;
@@ -233,7 +232,7 @@ import org.apache.geode.pdx.PdxInstance;
  */
 @SuppressWarnings("deprecation")
 public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
-    ResourceListener<MemoryEvent>, DiskExceptionHandler, DiskRecoveryStore {
+    ResourceListener<MemoryEvent>, DiskExceptionHandler, InternalPersistentRegion {
 
   // package-private to avoid synthetic accessor
   static final Logger logger = LogService.getLogger();
