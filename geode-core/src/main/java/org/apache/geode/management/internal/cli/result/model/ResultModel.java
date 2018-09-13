@@ -146,8 +146,8 @@ public class ResultModel {
     this.files = files;
   }
 
-  public void addFile(String fileName, String content, String message) {
-    FileResultModel fileModel = new FileResultModel(fileName, content, message);
+  public void addFile(String fileName, String content) {
+    FileResultModel fileModel = new FileResultModel(fileName, content);
     files.put(fileName, fileModel);
   }
 
@@ -384,4 +384,34 @@ public class ResultModel {
     return result;
   }
 
+  /**
+   * this saves the file data in this result model to the specified directory, and add appropriate
+   * information to the result model to indicate the result of the file save.
+   *
+   */
+  public void saveFileTo(File dir) throws IOException {
+    if (getFiles().size() == 0 || dir == null) {
+      return;
+    }
+    InfoResultModel info = addInfo("fileSave");
+    if (!dir.exists() && !dir.mkdirs()) {
+      info.addLine(dir.getAbsolutePath() + " can not be created.");
+      setStatus(Result.Status.ERROR);
+      return;
+    }
+    if (!dir.isDirectory()) {
+      info.addLine(dir.getAbsolutePath() + " is not a directory.");
+      setStatus(Result.Status.ERROR);
+      return;
+    }
+    if (!dir.canWrite()) {
+      info.addLine("Can not write to " + dir.getAbsolutePath());
+      setStatus(Result.Status.ERROR);
+      return;
+    }
+
+    for (FileResultModel fileResult : files.values()) {
+      info.addLine(fileResult.saveFile(dir));
+    }
+  }
 }
