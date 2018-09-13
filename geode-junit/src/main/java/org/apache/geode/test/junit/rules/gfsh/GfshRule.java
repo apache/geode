@@ -114,6 +114,7 @@ public class GfshRule extends ExternalResource {
 
   public GfshExecution execute(GfshScript gfshScript) {
     GfshExecution gfshExecution;
+    System.out.println("Executing " + gfshScript);
     try {
       File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
       workingDir.mkdirs();
@@ -176,6 +177,6 @@ public class GfshRule extends ExternalResource {
     if (stopMemberScripts.length == 0) {
       return;
     }
-    execute(stopMemberScripts);
+    execute(GfshScript.of(stopMemberScripts).withName("Stop-Members"));
   }
 }

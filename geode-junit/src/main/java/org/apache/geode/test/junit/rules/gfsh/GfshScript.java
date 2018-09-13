@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * All the commands represented in this script is executed within one gfsh session.
@@ -158,5 +159,12 @@ public class GfshScript {
 
   private String defaultName() {
     return Long.toHexString(random.nextLong());
+  }
+
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append(name).append(": gfsh ");
+    builder.append(commands.stream().map(c -> "-e " + c.command).collect(Collectors.joining(" ")));
+    return builder.toString();
   }
 }
