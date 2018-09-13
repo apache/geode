@@ -21,7 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
@@ -29,6 +35,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.management.internal.configuration.ClusterConfig;
+import org.apache.geode.management.internal.configuration.ConfigGroup;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -45,7 +53,7 @@ public class ExportClusterConfigurationCommandDUnitTest {
 
 
   private static File xmlFile;
-  private static MemberVM locator;
+  private static MemberVM locator, server;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -53,7 +61,7 @@ public class ExportClusterConfigurationCommandDUnitTest {
     locator = cluster.startLocatorVM(0);
     Properties properties = new Properties();
     properties.setProperty(GROUPS_NAME, "groupB");
-    cluster.startServerVM(1, properties, locator.getPort());
+    server = cluster.startServerVM(1, properties, locator.getPort());
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=regionA --type=REPLICATE").statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=regionB --type=REPLICATE --group=groupB")
@@ -86,4 +94,60 @@ public class ExportClusterConfigurationCommandDUnitTest {
     assertThat(content).startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>")
         .contains("<region name=\"regionA\">");
   }
+
+  @Test
+  public void testExportWithAbsolutePath() throws Exception {
+    Path exportedZipPath =
+        tempFolder.getRoot().toPath().resolve("exportedCC.zip").toAbsolutePath();
+
+    testExportClusterConfig(exportedZipPath.toString());
+  }
+
+  @Test
+  public void testExportWithRelativePath() throws Exception {
+    testExportClusterConfig("mytemp/exportedCC.zip");
+    FileUtils.deleteQuietly(new File("mytemp"));
+  }
+
+  @Test
+  public void testExportWithOnlyFileName() throws Exception {
+    testExportClusterConfig("exportedCC.zip");
+    FileUtils.deleteQuietly(new File("exportedCC.zip"));
+  }
+
+  public void testExportClusterConfig(String zipFilePath) throws Exception {
+    ConfigGroup cluster = new ConfigGroup("cluster").regions("regionA");
+    ConfigGroup groupB = new ConfigGroup("groupB").regions("regionB");
+    ClusterConfig expectedClusterConfig = new ClusterConfig(cluster, groupB);
+    expectedClusterConfig.verify(locator);
+    expectedClusterConfig.verify(server);
+
+    String expectedFilePath = new File(zipFilePath).getAbsolutePath();
+    gfsh.executeAndAssertThat("export cluster-configuration --zip-file-name=" + zipFilePath)
+        .statusIsSuccess()
+        .containsOutput("File saved to " + expectedFilePath);
+
+    File exportedZip = new File(zipFilePath);
+    assertThat(exportedZip).exists();
+
+    Set<String> actualZipEnries =
+        new ZipFile(exportedZip).stream().map(ZipEntry::getName).collect(Collectors.toSet());
+
+    ConfigGroup exportedClusterGroup = cluster.configFiles("cluster.xml", "cluster.properties");
+    ConfigGroup exportedGroupB = groupB.configFiles("groupB.xml", "groupB.properties");
+    ClusterConfig expectedExportedClusterConfig =
+        new ClusterConfig(exportedClusterGroup, exportedGroupB);
+
+    Set<String> expectedZipEntries = new HashSet<>();
+    for (ConfigGroup group : expectedExportedClusterConfig.getGroups()) {
+      String groupDir = group.getName() + File.separator;
+
+      for (String jarOrXmlOrPropFile : group.getAllFiles()) {
+        expectedZipEntries.add(groupDir + jarOrXmlOrPropFile);
+      }
+    }
+
+    assertThat(actualZipEnries).isEqualTo(expectedZipEntries);
+  }
+
 }
