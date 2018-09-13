@@ -112,7 +112,7 @@ public class ExportClusterConfigurationCommandDUnitTest {
   @Test
   public void testExportWithOnlyFileName() throws Exception {
     testExportClusterConfig("exportedCC.zip");
-    FileUtils.deleteQuietly(new File("mytemp"));
+    FileUtils.deleteQuietly(new File("exportedCC.zip"));
   }
 
   public void testExportClusterConfig(String zipFilePath) throws Exception {
