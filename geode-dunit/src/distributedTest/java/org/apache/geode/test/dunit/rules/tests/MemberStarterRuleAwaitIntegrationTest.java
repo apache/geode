@@ -37,10 +37,8 @@ import org.junit.runners.Parameterized.Parameters;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class MemberStarterRuleAwaitIntegrationTest {
 
   private static MemberStarterRule locatorStarterRule = new LocatorStarterRule();

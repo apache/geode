@@ -59,7 +59,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.VersionManager;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * RollingUpgrade dunit tests are distributed among subclasses of RollingUpgradeDUnitTest to avoid
@@ -78,7 +77,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {

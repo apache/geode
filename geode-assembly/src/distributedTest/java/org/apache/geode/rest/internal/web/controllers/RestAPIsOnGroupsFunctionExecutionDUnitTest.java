@@ -33,11 +33,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({RestAPITest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase {
 
   @Parameterized.Parameter

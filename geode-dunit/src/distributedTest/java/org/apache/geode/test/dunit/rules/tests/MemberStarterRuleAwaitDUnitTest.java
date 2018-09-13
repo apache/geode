@@ -35,10 +35,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class MemberStarterRuleAwaitDUnitTest {
 
   @ClassRule

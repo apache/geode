@@ -28,10 +28,8 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class BaseStringConverterJUnitTest {
 
   @ClassRule

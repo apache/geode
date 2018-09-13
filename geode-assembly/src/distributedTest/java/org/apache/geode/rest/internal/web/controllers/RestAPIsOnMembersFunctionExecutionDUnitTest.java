@@ -35,11 +35,9 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({RestAPITest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase {
 
   @Parameterized.Parameter

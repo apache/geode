@@ -68,7 +68,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -76,7 +75,6 @@ import org.apache.geode.util.test.TestUtil;
  */
 @Category(ClientServerTest.class)
 @RunWith(value = Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CacheConnectionJUnitTest {
   private final String TEST_KEY = "testKey";
   private final String TEST_VALUE = "testValue";

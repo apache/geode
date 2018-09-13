@@ -26,11 +26,9 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class QuerySecurityRetrictedButMethodsDoNotExistDUnitTest extends QuerySecurityBase {
 
   @Parameterized.Parameters
