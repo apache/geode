@@ -65,12 +65,10 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @SuppressWarnings("ConstantConditions")
 @Category(WanTest.class)
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection data() {

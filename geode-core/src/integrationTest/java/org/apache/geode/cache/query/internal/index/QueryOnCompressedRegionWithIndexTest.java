@@ -56,11 +56,9 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({OQLIndexTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class QueryOnCompressedRegionWithIndexTest {
 
   private Cache cache;

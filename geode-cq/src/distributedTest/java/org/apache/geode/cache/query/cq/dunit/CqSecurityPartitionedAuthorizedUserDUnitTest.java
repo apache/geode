@@ -28,11 +28,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CqSecurityPartitionedAuthorizedUserDUnitTest
     extends CqSecurityAuthorizedUserDUnitTest {
   public RegionShortcut getRegionType() {
