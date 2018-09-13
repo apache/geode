@@ -39,7 +39,7 @@
  */
 
 
-if (project.hasProperty('parallelDunit')) {
+if (project.hasProperty('parallelDunit') && !project.hasProperty('dunitDockerVolumes')) {
   def pwd = System.getenv('PWD')
   def geodeDir = new File(pwd).getCanonicalPath()
   ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
