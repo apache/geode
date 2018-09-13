@@ -442,8 +442,6 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     Awaitility.waitAtMost(50 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, SECONDS)
         .pollInterval(200, MILLISECONDS)
         .until(() -> {
-          logger.info("Number of client proxies was " + getNumberOfClientProxies()
-              + " expected " + expected);
           return expected == getNumberOfClientProxies();
         });
   }
