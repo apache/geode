@@ -2227,7 +2227,7 @@ public class WANTestBase extends DistributedTestCase {
       Region r = cache.getRegion(Region.SEPARATOR + regionName);
       assertNotNull(r);
       for (long i = 0; i < numPuts; i++) {
-        r.put(i, i);
+        r.put(i, "Value_" + i);
       }
     } finally {
       exp1.remove();
@@ -2239,7 +2239,7 @@ public class WANTestBase extends DistributedTestCase {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
     for (long i = 300; i < numPuts; i++) {
-      r.put(i, i);
+      r.put(i, "Value_" + i);
     }
   }
 
@@ -2247,7 +2247,7 @@ public class WANTestBase extends DistributedTestCase {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
     for (long i = from; i < numPuts; i++) {
-      r.put(i, i);
+      r.put(i, "Value_" + i);
     }
   }
 
@@ -2265,7 +2265,7 @@ public class WANTestBase extends DistributedTestCase {
     for (long i = 0; i < numPuts; i++) {
       Map putAllMap = new HashMap();
       for (long j = 0; j < size; j++) {
-        putAllMap.put((size * i) + j, i);
+        putAllMap.put((size * i) + j, "Value_" + i);
       }
       r.putAll(putAllMap, "putAllCallback");
       putAllMap.clear();
@@ -2277,7 +2277,7 @@ public class WANTestBase extends DistributedTestCase {
     Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
     for (long i = 0; i < numPuts; i++) {
-      r.put("Object_" + i, i);
+      r.put("Object_" + i, "Value_" + i);
     }
   }
 
