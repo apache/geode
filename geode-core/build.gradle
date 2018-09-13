@@ -217,33 +217,22 @@ dependencies {
 
 // Creates the version properties file and writes it to the classes dir
 task createVersionPropertiesFile {
-
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
-  // Allow this step to be skipped.
-  onlyIf {
-    // Project properties are parsed as strings.
-    // Use boolean comparison, not the value itself, to determine truth.
-    !propertiesFile.exists() || sourceRevision != "unknown"
-  }
-  // onlyIf takes precedence, but we should generate the file whenever the revision is specified.
-  outputs.upToDateWhen { false }
-  outputs.files {
-    propertiesFile
-  }
+  outputs.file propertiesFile
+  inputs.dir "../.git/index"
 
   doLast {
     def props = [
-        "Product-Name"      : productName,
-        "Product-Version"   : version,
-        "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
-        "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
-        "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
-        "Build-Java-Version": System.properties['java.version'],
-        'Source-Repository' : sourceRepository,
-        'Source-Revision'   : sourceRevision,
-        'Source-Date'       : new Date().format('yyyy-MM-dd HH:mm:ss Z')
+      "Product-Name"      : productName,
+      "Product-Version"   : version,
+      "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
+      "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
+      "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+      "Build-Java-Version": System.properties['java.version']
     ] as Properties
-    propertiesFile.getParentFile().mkdirs()
+    props.putAll(readScmInfo())
+
+    propertiesFile.getParentFile().mkdirs();
     new FileOutputStream(propertiesFile).withStream { fos ->
       props.store(fos, '')
     }
