@@ -46,8 +46,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * <p>
  * Note: See LocalRegionTest and MultiVMRegionTestCase for more expiration tests.
  *
- * <p>
- * Single-JVM tests were extracted to {@link RegionExpirationIntegrationTest}.
  *
  * @since GemFire 3.0
  */

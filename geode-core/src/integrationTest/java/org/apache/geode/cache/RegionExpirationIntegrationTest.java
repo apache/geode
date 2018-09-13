@@ -37,10 +37,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.mockito.InOrder;
 
-
-/**
- * Extracted from {@link RegionExpirationDistributedTest}.
- */
 public class RegionExpirationIntegrationTest {
 
   private Cache cache;
