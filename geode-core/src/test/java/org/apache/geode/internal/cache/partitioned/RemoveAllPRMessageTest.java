@@ -14,20 +14,12 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.mockito.InOrder;
 
-import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
-import org.apache.geode.internal.cache.InternalDataView;
-import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class RemoveAllPRMessageTest {
 
@@ -39,25 +31,5 @@ public class RemoveAllPRMessageTest {
     mockRemoveAllPRMessage.appendFields(stringBuilder);
 
     verify(mockRemoveAllPRMessage, times(1)).appendFields(stringBuilder);
-  }
-
-
-  @Test
-  public void doPostRemoveAllCallsCheckReadinessBeforeAndAfter() throws Exception {
-    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
-    DistributedRemoveAllOperation distributedRemoveAllOperation =
-        mock(DistributedRemoveAllOperation.class);
-    BucketRegion bucketRegion = mock(BucketRegion.class);
-    InternalDataView internalDataView = mock(InternalDataView.class);
-    when(bucketRegion.getDataView()).thenReturn(internalDataView);
-    RemoveAllPRMessage removeAllPRMessage = new RemoveAllPRMessage();
-
-    removeAllPRMessage.doPostRemoveAll(partitionedRegion, distributedRemoveAllOperation,
-        bucketRegion, true);
-
-    InOrder inOrder = inOrder(partitionedRegion, internalDataView);
-    inOrder.verify(partitionedRegion).checkReadiness();
-    inOrder.verify(internalDataView).postRemoveAll(any(), any(), any());
-    inOrder.verify(partitionedRegion).checkReadiness();
   }
 }
