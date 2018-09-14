@@ -14,9 +14,15 @@
  */
 package org.apache.geode.internal;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
+import java.io.DataInput;
+import java.io.IOException;
+import java.net.SocketException;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Level;
@@ -25,6 +31,7 @@ import org.apache.logging.log4j.util.PropertiesUtil;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -49,6 +56,18 @@ public class InternalDataSerializerJUnitTest {
         InternalDataSerializer.isGemfireObject(new InternalGemFireException()));
     assertTrue("Instances of anything under org.apache.geode. are GemFire objects",
         InternalDataSerializer.isGemfireObject(new ExampleSecurityManager()));
+  }
+
+  @Test
+  public void testInvokeFromData_SocketExceptionRethrown()
+      throws IOException, ClassNotFoundException {
+    DataInput in = mock(DataInput.class);
+    DataSerializable ds = mock(DataSerializable.class);
+
+    doThrow(SocketException.class).when(ds).fromData(in);
+
+    assertThatThrownBy(() -> InternalDataSerializer.invokeFromData(ds, in))
+        .isInstanceOf(SocketException.class);
   }
 
   class TestFunction implements Function {
