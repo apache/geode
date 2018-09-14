@@ -204,6 +204,8 @@ public class QueryAccessController extends AbstractBaseController {
       throw new GemfireRestException(
           "Query execution gets canceled due to low memory conditions and the resource manager critical heap percentage has been set!",
           qelme);
+    } catch (Exception ex) {
+      throw new GemfireRestException(ex.getMessage(), ex);
     }
   }
 
