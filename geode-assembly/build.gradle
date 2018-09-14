@@ -199,6 +199,7 @@ def cp = {
     it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
       .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
         // depedencies from geode-core
+        it.contains('activation') ||
         it.contains('antlr') ||
         it.contains('commons-io') ||
         it.contains('classgraph') ||
@@ -216,6 +217,7 @@ def cp = {
         it.contains('javax.resource-api') ||
         it.contains('javax.servlet-api') ||
         it.contains('javax.transaction-api') ||
+        it.contains('jaxb') ||
         it.contains('jetty-http') ||
         it.contains('jetty-io') ||
         it.contains('jetty-security') ||
