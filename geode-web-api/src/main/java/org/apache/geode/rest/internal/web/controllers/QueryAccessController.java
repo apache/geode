@@ -343,8 +343,8 @@ public class QueryAccessController extends AbstractBaseController {
 
     // delete the OQL statement with 'queryId' as the Key into the hidden,
     // ParameterizedQueries Region...
-    compiledQueries.remove(queryId);
     deleteNamedQuery(PARAMETERIZED_QUERIES_REGION, queryId);
+    compiledQueries.remove(queryId);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 

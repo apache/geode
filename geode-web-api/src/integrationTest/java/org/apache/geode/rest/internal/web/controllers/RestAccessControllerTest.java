@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,10 +31,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.IntStream;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -50,6 +51,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -138,7 +140,6 @@ public class RestAccessControllerTest {
 
     rule.getCache().getRegion("customers").clear();
     rule.getCache().getRegion("orders").clear();
-    rule.getCache().getRegion(QueryAccessController.PARAMETERIZED_QUERIES_REGION).clear();
   }
 
   @Test
@@ -619,12 +620,7 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void createQueries() throws Exception {
-    mockMvc.perform(delete("/v1/queries/selectOrder")
-        .with(POST_PROCESSOR));
-    mockMvc.perform(delete("/v1/queries/selectCustomer")
-        .with(POST_PROCESSOR));
-    mockMvc.perform(delete("/v1/queries/selectHighRoller")
-        .with(POST_PROCESSOR));
+    deleteAllQueries();
 
     mockMvc.perform(post(
         "/v1/queries?id=selectOrder&q=SELECT DISTINCT o FROM /orders o, o.items item WHERE item.quantity > $1 AND item.totalPrice > $2")
@@ -685,6 +681,7 @@ public class RestAccessControllerTest {
         + "{\"@type\": \"int\", \"@value\": 120},"
         + "{\"@type\": \"int\", \"@value\": 130}]";
 
+    deleteAllQueries();
     putAll(); // Create customers
     mockMvc.perform(
         post("/v1/queries?id=testQuery&q=SELECT DISTINCT c from /customers c where lastName=$1")
@@ -700,7 +697,6 @@ public class RestAccessControllerTest {
     mockMvc.perform(post("/v1/queries/testQuery")
         .content(QUERY_ARGS)
         .with(POST_PROCESSOR))
-        .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.[*].customerId", containsInAnyOrder(120, 130)))
         .andExpect(jsonPath("$.[*].firstName", containsInAnyOrder("Preeti", "Varun")))
@@ -741,6 +737,8 @@ public class RestAccessControllerTest {
   @Test
   @WithMockUser
   public void createQueryFromRequestBody() throws Exception {
+    deleteAllQueries();
+
     mockMvc.perform(post("/v1/queries?id=testQuery")
         .content("SELECT * from /customers")
         .with(POST_PROCESSOR))
@@ -848,6 +846,23 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isOk())
         .andExpect(header().string("Resource-Count", "60"));
+  }
+
+
+  private void deleteAllQueries() throws Exception {
+    MvcResult result = mockMvc.perform(get("/v1/queries")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    String content = result.getResponse().getContentAsString();
+    List<String> ids = JsonPath.read(content, "$.queries[*].id");
+
+    for (String id : ids) {
+      mockMvc.perform(delete("/v1/queries/" + id)
+          .with(POST_PROCESSOR))
+          .andExpect(status().isOk());
+    }
   }
 
   private static class StandardRequestPostProcessor implements RequestPostProcessor {
