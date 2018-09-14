@@ -213,6 +213,8 @@ def cp = {
         it.contains('jackson-core') ||
         it.contains('jackson-databind') ||
         it.contains('jansi') ||
+        it.contains('activation') ||
+        it.contains('jaxb') ||
         it.contains('javax.resource-api') ||
         it.contains('javax.servlet-api') ||
         it.contains('javax.transaction-api') ||

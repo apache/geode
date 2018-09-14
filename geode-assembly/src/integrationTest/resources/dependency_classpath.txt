@@ -1,4 +1,5 @@
 HikariCP-3.2.0.jar
+activation-1.1.1.jar
 antlr-2.7.7.jar
 classgraph-4.0.6.jar
 commons-beanutils-1.9.3.jar
@@ -20,6 +21,9 @@ geode-protobuf-1.8.0-SNAPSHOT.jar
 geode-protobuf-messages-1.8.0-SNAPSHOT.jar
 geode-rebalancer-1.8.0-SNAPSHOT.jar
 geode-wan-1.8.0-SNAPSHOT.jar
+jaxb-api-2.2.11.jar
+jaxb-core-2.2.11.jar
+jaxb-impl-2.2.11.jar
 jackson-annotations-2.9.6.jar
 jackson-core-2.9.6.jar
 jackson-databind-2.9.6.jar
