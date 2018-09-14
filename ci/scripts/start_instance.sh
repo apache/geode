@@ -44,15 +44,13 @@ if [[ -z "${GEODE_BRANCH}" ]]; then
 fi
 
 
-
-
 . ${SCRIPTDIR}/../pipelines/shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
 SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
-SANITIZED_BUILD_PIPELINE_NAME=$(echo ${BUILD_PIPELINE_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
-SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
-SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_PIPELINE_NAME=$(sanitizeName ${BUILD_PIPELINE_NAME})
+SANITIZED_BUILD_JOB_NAME=$(sanitizeName ${BUILD_JOB_NAME})
+SANITIZED_BUILD_NAME=$(sanitizeName ${BUILD_NAME})
 IMAGE_FAMILY_PREFIX=""
 WINDOWS_PREFIX=""
 
@@ -64,7 +62,7 @@ if [[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows ]]; then
   WINDOWS_PREFIX="windows-"
 fi
 
-INSTANCE_NAME="$(echo "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr '[:upper:]' '[:lower:]')"
+INSTANCE_NAME=$(sanitizeName "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}")
 PROJECT=apachegeode-ci
 ZONE=us-central1-f
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
