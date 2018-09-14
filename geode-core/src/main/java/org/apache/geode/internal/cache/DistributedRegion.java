@@ -2477,6 +2477,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             this.getFullPath()), ex);
       }
     }
+    waitForCurrentOperations();
+  }
+
+  protected void waitForCurrentOperations() {
     // Fix for #48066 - make sure that region operations are completely
     // distributed to peers before destroying the region.
     Boolean flushOnClose =
