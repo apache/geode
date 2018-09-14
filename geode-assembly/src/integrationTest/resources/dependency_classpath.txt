@@ -21,9 +21,6 @@ geode-protobuf-1.8.0-SNAPSHOT.jar
 geode-protobuf-messages-1.8.0-SNAPSHOT.jar
 geode-rebalancer-1.8.0-SNAPSHOT.jar
 geode-wan-1.8.0-SNAPSHOT.jar
-jaxb-api-2.2.11.jar
-jaxb-core-2.2.11.jar
-jaxb-impl-2.2.11.jar
 jackson-annotations-2.9.6.jar
 jackson-core-2.9.6.jar
 jackson-databind-2.9.6.jar
@@ -31,6 +28,9 @@ jansi-1.17.1.jar
 javax.resource-api-1.7.jar
 javax.servlet-api-3.1.0.jar
 javax.transaction-api-1.2.jar
+jaxb-api-2.2.11.jar
+jaxb-core-2.2.11.jar
+jaxb-impl-2.2.11.jar
 jetty-http-9.4.8.v20171121.jar
 jetty-io-9.4.8.v20171121.jar
 jetty-security-9.4.8.v20171121.jar
