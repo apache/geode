@@ -39,9 +39,9 @@ dependencies {
   runtimeOnly('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }
-
-
+  
   testCompile project(':geode-core')
+  testCompile project(':geode-junit')
   // have to use output since we exclude the dependent classes from jar :(
   testCompile project(path: ':geode-core', configuration: 'classesOutput')
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'
