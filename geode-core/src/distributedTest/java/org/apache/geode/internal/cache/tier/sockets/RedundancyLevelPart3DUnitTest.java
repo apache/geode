@@ -213,10 +213,10 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase {
     assertThat(pool.getRedundantNames().size()).isEqualTo(0);
     server3.invoke(RedundancyLevelTestBase::stopServer);
     server0.invoke(RedundancyLevelTestBase::startServer);
+    verifyConnectedAndRedundantServers(1, 0);
     doPuts();
     server0.invoke(RedundancyLevelTestBase::verifyDispatcherIsAlive);
     server0.invoke(RedundancyLevelTestBase::verifyInterestRegistration);
-    verifyConnectedAndRedundantServers(1, 0);
     assertThat(pool.getRedundantNames().size()).isEqualTo(0);
   }
 }
