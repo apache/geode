@@ -1393,12 +1393,12 @@ public abstract class AbstractRegionMap
                         }
                       } else {
                         owner.serverInvalidate(event);
-                        if (owner.getConcurrencyChecksEnabled()
-                            && event.noVersionReceivedFromServer()) {
-                          // server did not perform the invalidation, so don't leave an invalid
-                          // entry here
-                          return false;
-                        }
+//                        if (owner.getConcurrencyChecksEnabled()
+//                            && event.noVersionReceivedFromServer()) {
+//                          // server did not perform the invalidation, so don't leave an invalid
+//                          // entry here
+//                          return false;
+//                        }
                         final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
                         // added for cq which needs old value. rdubey
                         FilterProfile fp = owner.getFilterProfile();
@@ -1727,9 +1727,9 @@ public abstract class AbstractRegionMap
       // notify clients so they can update their version stamps
       event.invokeCallbacks(owner, true, true);
     }
-    if (re.getVersionStamp() != null) {
-      event.setVersionTag(re.getVersionStamp().asVersionTag());
-    }
+//    if (re.getVersionStamp() != null) {
+//      event.setVersionTag(re.getVersionStamp().asVersionTag());
+//    }
   }
 
   private void invalidateNewEntry(EntryEventImpl event, final LocalRegion owner, RegionEntry newRe)
