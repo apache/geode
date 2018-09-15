@@ -33,6 +33,7 @@ import java.net.Socket;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -231,28 +232,43 @@ public class StartLocatorCommandDUnitTest {
   @Test
   public void testInMissingRelativeDirectoryWithoutCreatePermissions() {
     // path to a missing dir that cannot be created due to insufficient permissions
-    final String missingDirPath = "/missing/path/to/start/in";
-    final String expectedMessage = "Could not create directory " + missingDirPath
+    String readOnlyPathname = "readOnlyDir";
+    File readOnlyDir = new File(readOnlyPathname);
+    final String missingDirPath =
+        Paths.get(readOnlyPathname, "missing", "path", "to", "start", "in").toString();
+
+    final String expectedMessage = "Could not create directory .*" + missingDirPath
         + ". Please verify directory path or user permissions.";
     final String memberName = "testInMissingRelativeDirectoryWithoutCreatePermissions-locator";
 
-    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, missingDirPath);
+    try {
+      assertThat(readOnlyDir.mkdir()).isTrue();
+      assertThat(readOnlyDir.setReadOnly()).isTrue();
 
-    CommandResult result = gfsh.executeCommand(command.getCommandString());
+      CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
+          .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+          .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
+          .addOption(START_LOCATOR__DIR, missingDirPath);
 
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage);
+      CommandResult result = gfsh.executeCommand(command.getCommandString());
+
+      assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+      assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
+    } finally {
+      FileUtils.deleteQuietly(readOnlyDir);
+    }
   }
 
   @Test
   public void testInMissingRelativeDirectoryThatCanBeCreated() {
     // path to a missing dir that can be created
-    final String missingDirPath = System.getProperty("user.dir") + "/missing/path/to/start/in";
+    String readWritePathname = "readWriteDir";
+    File readWriteDir = new File(readWritePathname);
+    final String missingDirPath =
+        Paths.get(readWritePathname, "missing", "path", "to", "start", "in").toString();
+
     final String memberName = "testInMissingRelativeDirectoryThatCanBeCreated-locator";
-    final String expectedMessage = "Locator in " + missingDirPath;
+    final String expectedMessage = "Locator in .*" + missingDirPath;
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
@@ -262,11 +278,11 @@ public class StartLocatorCommandDUnitTest {
     try {
       CommandResult result = gfsh.executeCommand(command.getCommandString());
 
+
       assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-      assertThat(result.getMessageFromContent()).contains(expectedMessage);
+      assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
     } finally {
-      File toDelete = new File(missingDirPath);
-      deleteLocatorFiles(toDelete);
+      FileUtils.deleteQuietly(readWriteDir);
     }
   }
 
@@ -313,7 +329,7 @@ public class StartLocatorCommandDUnitTest {
           .doesNotContain("GemFire");
       assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
     } finally {
-      String pathToFile = System.getProperty("user.dir") + "/" + memberName;
+      String pathToFile = Paths.get(System.getProperty("user.dir"), memberName).toString();
       File toDelete = new File(pathToFile);
       deleteLocatorFiles(toDelete);
     }
