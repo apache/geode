@@ -46,8 +46,8 @@ if [ -z ${SERVICE_ACCOUNT+x} ]; then
   exit 1
 fi
 
-if [ -z ${PUBLIC_BUCKET+x} ]; then
-  echo "PUBLIC_BUCKET is unset. Check your pipeline configuration and make sure this script is called properly."
+if [ -z ${ARTIFACT_BUCKET+x} ]; then
+  echo "ARTIFACT_BUCKET is unset. Check your pipeline configuration and make sure this script is called properly."
   exit 1
 fi
 
