@@ -1331,22 +1331,32 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       return;
     }
 
-    if (!this.entries.isEmpty()) {
-      closeEntries();
-      if (getDiskRegion() != null) {
-        getDiskRegion().clear(this, null);
+    if (!getRegionMap().isEmpty()) {
+      RegionVersionVector rvv = getVersionVector();
+      if (rvv != null) {
+        rvv.lockForClear(getFullPath(), getDistributionManager(), getMyId());
       }
-      // clear the left-members and version-tags sets in imageState
-      getImageState().getLeftMembers();
-      getImageState().getVersionTags();
-      // Clear OQL indexes
-      if (this.indexManager != null) {
-        try {
-          this.indexManager.rerunIndexCreationQuery();
-        } catch (Exception ex) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Exception while clearing indexes after GII failure.", ex);
+      try {
+        closeEntries();
+        if (getDiskRegion() != null) {
+          getDiskRegion().clear(this, null);
+        }
+        // clear the left-members and version-tags sets in imageState
+        getImageState().getLeftMembers();
+        getImageState().getVersionTags();
+        // Clear OQL indexes
+        if (this.indexManager != null) {
+          try {
+            this.indexManager.rerunIndexCreationQuery();
+          } catch (Exception ex) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Exception while clearing indexes after GII failure.", ex);
+            }
           }
+        }
+      } finally {
+        if (rvv != null) {
+          rvv.unlockForClear(getMyId());
         }
       }
     }
