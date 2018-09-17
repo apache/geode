@@ -5307,18 +5307,6 @@ public class PartitionedRegion extends LocalRegion
           retryTime = new RetryTimeKeeper(this.retryTimeout);
         }
         currentTarget = getOrCreateNodeForBucketWrite(bucketId, retryTime);
-      } catch (EntryNotFoundException entryNotFoundException) {
-        if (!event.isPossibleDuplicate()) {
-          throw entryNotFoundException;
-        }
-        // EntryNotFoundException during retry attempt. The operation
-        // may have been applied during the initial attempt.
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "EntryNotFoundException is ignored during retry attempt for destroy operation. "
-                  + event);
-        }
-        return;
       }
 
       // If we get here, the attempt failed.

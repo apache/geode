@@ -15,7 +15,10 @@
 package org.apache.geode.distributed.internal.tcpserver;
 
 import static org.apache.geode.security.SecurableCommunicationChannels.LOCATOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -62,7 +65,7 @@ public class TCPClientSSLIntegrationTest {
   }
 
   private void startServerAndClient(CertificateBuilder serverCertificate,
-      CertificateBuilder clientCertificate)
+      CertificateBuilder clientCertificate, boolean enableHostNameValidation)
       throws GeneralSecurityException, IOException {
 
     CertStores serverStore = CertStores.locatorStore();
@@ -74,11 +77,11 @@ public class TCPClientSSLIntegrationTest {
     Properties serverProperties = serverStore
         .trustSelf()
         .trust(clientStore.alias(), clientStore.certificate())
-        .propertiesWith(LOCATOR, true, true);
+        .propertiesWith(LOCATOR, true, enableHostNameValidation);
 
     Properties clientProperties = clientStore
         .trust(serverStore.alias(), serverStore.certificate())
-        .propertiesWith(LOCATOR, true, true);
+        .propertiesWith(LOCATOR, true, enableHostNameValidation);
 
     startTcpServer(serverProperties);
 
@@ -94,8 +97,11 @@ public class TCPClientSSLIntegrationTest {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
+    TcpHandler tcpHandler = Mockito.mock(TcpHandler.class);
+    when(tcpHandler.processRequest(any())).thenReturn("Running!");
+
     server = new FakeTcpServer(port, localhost, sslProperties, null,
-        Mockito.mock(TcpHandler.class), Mockito.mock(PoolStatHelper.class),
+        tcpHandler, Mockito.mock(PoolStatHelper.class),
         Thread.currentThread().getThreadGroup(), "server thread");
     server.start();
   }
@@ -109,7 +115,25 @@ public class TCPClientSSLIntegrationTest {
     CertificateBuilder clientCertificate = new CertificateBuilder()
         .commonName("tcp-client");
 
-    startServerAndClient(serverCertificate, clientCertificate);
+    startServerAndClient(serverCertificate, clientCertificate, true);
+    String response =
+        (String) client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
+    assertThat(response).isEqualTo("Running!");
+  }
+
+  @Test
+  public void clientChooseToDisableHasHostnameValidation() throws Exception {
+    // no host name in server cert
+    CertificateBuilder serverCertificate = new CertificateBuilder()
+        .commonName("tcp-server");
+
+    CertificateBuilder clientCertificate = new CertificateBuilder()
+        .commonName("tcp-client");
+
+    startServerAndClient(serverCertificate, clientCertificate, false);
+    String response =
+        (String) client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
+    assertThat(response).isEqualTo("Running!");
   }
 
   @Test
@@ -120,7 +144,7 @@ public class TCPClientSSLIntegrationTest {
     CertificateBuilder clientCertificate = new CertificateBuilder()
         .commonName("tcp-client");
 
-    startServerAndClient(serverCertificate, clientCertificate);
+    startServerAndClient(serverCertificate, clientCertificate, true);
 
     assertThatExceptionOfType(LocatorCancelException.class)
         .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
@@ -138,7 +162,7 @@ public class TCPClientSSLIntegrationTest {
     CertificateBuilder clientCertificate = new CertificateBuilder()
         .commonName("tcp-client");
 
-    startServerAndClient(serverCertificate, clientCertificate);
+    startServerAndClient(serverCertificate, clientCertificate, true);
 
     assertThatExceptionOfType(LocatorCancelException.class)
         .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
@@ -147,7 +171,7 @@ public class TCPClientSSLIntegrationTest {
                 + localhost.getHostName() + " found."));
   }
 
-  private class FakeTcpServer extends TcpServer {
+  private static class FakeTcpServer extends TcpServer {
     private DistributionConfig distributionConfig;
 
     public FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,

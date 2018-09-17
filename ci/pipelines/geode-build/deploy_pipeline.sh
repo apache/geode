@@ -84,4 +84,7 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
     --var docker-image-prefix=${DOCKER_IMAGE_PREFIX} \
     --config ${SCRIPTDIR}/generated-pipeline.yml
 
+  if [[ "${SANITIZED_GEODE_FORK}" == "apache" ]]; then
+    fly -t ${TARGET} expose-pipeline -p ${PIPELINE_NAME}
+  fi
 popd 2>&1 > /dev/null

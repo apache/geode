@@ -30,17 +30,16 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 SSHKEY_FILE="instance-data/sshkey"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
 
 INSTANCE_NAME="$(cat instance-data/instance-name)"
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
 PROJECT="$(cat instance-data/project)"
 ZONE="$(cat instance-data/zone)"
 
-echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
-
 OUTPUT_DIR=${BASE_DIR}/geode-results
 
-ssh -i ${SSHKEY_FILE} geode@${INSTANCE_IP_ADDRESS} "bash -c 'cd geode; ./gradlew --no-daemon combineReports'"
+ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "bash -c 'cd geode; ./gradlew --no-daemon combineReports'"
 
-time rsync -e "ssh -i ${SSHKEY_FILE}" -ah geode@${INSTANCE_IP_ADDRESS}:geode ${OUTPUT_DIR}/
+time rsync -e "ssh ${SSH_OPTIONS}" -ah geode@${INSTANCE_IP_ADDRESS}:geode ${OUTPUT_DIR}/
 set +x

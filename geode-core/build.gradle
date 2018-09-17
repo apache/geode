@@ -54,6 +54,10 @@ dependencies {
   compile 'commons-io:commons-io:' + project.'commons-io.version'
   compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
+  compile 'javax.activation:activation:' + project.'javax-activation.version'
+  compile 'javax.xml.bind:jaxb-api:' + project.'jaxb.version'
+  compile 'com.sun.xml.bind:jaxb-core:' + project.'jaxb.version'
+  compile 'com.sun.xml.bind:jaxb-impl:' + project.'jaxb.version'
 
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
@@ -299,3 +303,5 @@ distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
 }
+
+rootProject.generate.dependsOn(generateGrammarSource)

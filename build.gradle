@@ -146,3 +146,8 @@ task writeBuildInfo {
     }
   }
 }
+
+task generate() {
+  group = 'Build'
+  description = "Top-level target for all source generation. Helps IDE integration"
+}

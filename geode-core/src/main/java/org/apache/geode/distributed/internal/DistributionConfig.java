@@ -162,6 +162,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_AL
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
@@ -4880,25 +4881,18 @@ public interface DistributionConfig extends Config, LogConfig {
   String SERVER_SSL_ALIAS_NAME = SSL_SERVER_ALIAS;
 
   /**
-   * The default {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED} value.
-   * <p>
-   * Actual value of this constant is <code>false</code>.
-   */
-  boolean DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED = false;
-
-  /**
    * Returns the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}
    * property.
    */
   @ConfigAttributeGetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
-  boolean getSSLEndpointIdentificationEnabled();
+  boolean getSSLEndPointIdentificationEnabled();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}
    * property.
    */
   @ConfigAttributeSetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
-  void setSSLEndpointIdentificationEnabled(boolean enabled);
+  void setSSLEndPointIdentificationEnabled(boolean enabled);
 
   /**
    * The name of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED} property
@@ -4937,6 +4931,23 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
       new SecurableCommunicationChannel[] {};
+
+  boolean DEFAULT_SSL_USE_DEFAULT_CONTEXT = false;
+
+  @ConfigAttribute(type = Boolean.class)
+  String SSL_USE_DEFAULT_CONTEXT_NAME = SSL_USE_DEFAULT_CONTEXT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_CONTEXT} property.
+   */
+  @ConfigAttributeGetter(name = SSL_USE_DEFAULT_CONTEXT)
+  boolean getSSLUseDefaultContext();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_CONTEXT} property.
+   */
+  @ConfigAttributeSetter(name = SSL_USE_DEFAULT_CONTEXT)
+  void setSSLUseDefaultContext(boolean defaultContext);
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS} property.

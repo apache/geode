@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.net;
 
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.BindException;
@@ -389,6 +390,10 @@ public class SocketCreator {
    * @throws IOException if information can not be loaded
    */
   private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException, IOException {
+
+    if (sslConfig.useDefaultSSLContext()) {
+      return SSLContext.getDefault();
+    }
 
     SSLContext newSSLContext = getSSLContextInstance();
     KeyManager[] keyManagers = getKeyManagers();
@@ -1036,6 +1041,9 @@ public class SocketCreator {
         SSLParameters sslParameters = sslSocket.getSSLParameters();
         sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
         sslSocket.setSSLParameters(sslParameters);
+      } else {
+        logger.warn("Your SSL configuration disables hostname validation. "
+            + "Future releases will mandate hostname validation.");
       }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();

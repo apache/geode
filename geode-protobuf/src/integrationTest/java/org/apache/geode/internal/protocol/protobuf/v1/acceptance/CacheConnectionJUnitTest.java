@@ -252,6 +252,7 @@ public class CacheConnectionJUnitTest {
     sslConfig.setKeystorePassword("password");
     sslConfig.setTruststore(trustStorePath);
     sslConfig.setKeystorePassword("password");
+    sslConfig.setEndpointIdentificationEnabled(false);
 
     SocketCreator socketCreator = new SocketCreator(sslConfig);
     return socketCreator.connectForClient("localhost", cacheServerPort, 5000);

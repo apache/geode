@@ -621,38 +621,53 @@ public abstract class InternalDataSerializer extends DataSerializer {
             return true;
           }
         });
-    classesToSerializers.put(TimeUnit.NANOSECONDS.getClass().getName(), new WellKnownDS() {
+
+    WellKnownDS TIME_UNIT_SERIALIZER = new WellKnownDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(DSCODE.TIME_UNIT.toByte());
-        out.writeByte(TIME_UNIT_NANOSECONDS);
+        TimeUnit timeUnit = (TimeUnit) o;
+        switch (timeUnit) {
+          case NANOSECONDS: {
+            out.writeByte(DSCODE.TIME_UNIT.toByte());
+            out.writeByte(TIME_UNIT_NANOSECONDS);
+            break;
+          }
+          case MICROSECONDS: {
+            out.writeByte(DSCODE.TIME_UNIT.toByte());
+            out.writeByte(TIME_UNIT_MICROSECONDS);
+            break;
+          }
+          case MILLISECONDS: {
+            out.writeByte(DSCODE.TIME_UNIT.toByte());
+            out.writeByte(TIME_UNIT_MILLISECONDS);
+            break;
+          }
+          case SECONDS: {
+            out.writeByte(DSCODE.TIME_UNIT.toByte());
+            out.writeByte(TIME_UNIT_SECONDS);
+            break;
+          }
+          // handles all other timeunits
+          default: {
+            writeGemFireEnum(timeUnit, out);
+          }
+        }
         return true;
       }
-    });
-    classesToSerializers.put(TimeUnit.MICROSECONDS.getClass().getName(), new WellKnownDS() {
-      @Override
-      public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(DSCODE.TIME_UNIT.toByte());
-        out.writeByte(TIME_UNIT_MICROSECONDS);
-        return true;
-      }
-    });
-    classesToSerializers.put(TimeUnit.MILLISECONDS.getClass().getName(), new WellKnownDS() {
-      @Override
-      public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(DSCODE.TIME_UNIT.toByte());
-        out.writeByte(TIME_UNIT_MILLISECONDS);
-        return true;
-      }
-    });
-    classesToSerializers.put(TimeUnit.SECONDS.getClass().getName(), new WellKnownDS() {
-      @Override
-      public boolean toData(Object o, DataOutput out) throws IOException {
-        out.writeByte(DSCODE.TIME_UNIT.toByte());
-        out.writeByte(TIME_UNIT_SECONDS);
-        return true;
-      }
-    });
+    };
+
+    // in java 9 and above, TimeUnit implementation changes. the class name of these units are the
+    // same now.
+    if (TimeUnit.NANOSECONDS.getClass().getName().equals(TimeUnit.SECONDS.getClass().getName())) {
+      classesToSerializers.put(TimeUnit.class.getName(), TIME_UNIT_SERIALIZER);
+    }
+    // in java 8 and below
+    else {
+      classesToSerializers.put(TimeUnit.NANOSECONDS.getClass().getName(), TIME_UNIT_SERIALIZER);
+      classesToSerializers.put(TimeUnit.MICROSECONDS.getClass().getName(), TIME_UNIT_SERIALIZER);
+      classesToSerializers.put(TimeUnit.MILLISECONDS.getClass().getName(), TIME_UNIT_SERIALIZER);
+      classesToSerializers.put(TimeUnit.SECONDS.getClass().getName(), TIME_UNIT_SERIALIZER);
+    }
     classesToSerializers.put("java.util.Date", new WellKnownPdxDS() {
       @Override
       public boolean toData(Object o, DataOutput out) throws IOException {

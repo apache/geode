@@ -37,8 +37,15 @@
         "refreshenv",
 
         "winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'",
-        "New-NetfirewallRule -displayname sshd -direction inbound -action allow -protocol tcp -localport 22",        "New-Service -name sshd -description 'OpenSSH sshd server' -binarypathname 'c:\\Program Files\\OpenSSH-Win64\\sshd.exe' -startuptype automatic",                                "$OldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH).Path",        "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin'",        "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
-        "Install-Module -Name ProcessMitigations -Force",        "Get-ChildItem -Path \"C:\\Program Files\\Git\\bin\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",        "Get-ChildItem -Path \"C:\\ProgramData\\chocolatey\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
+        "New-NetFirewallRule -DisplayName sshd -Direction inbound -Action allow -Protocol tcp -LocalPort 22",
+        "New-NetFirewallRule -DisplayName \"Docker containers\" -LocalAddress 172.0.0.0/8 -Action allow -Direction inbound",
+        "New-Service -name sshd -description 'OpenSSH sshd server' -binarypathname 'c:\\Program Files\\OpenSSH-Win64\\sshd.exe' -startuptype automatic",
+        "$OldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH).Path",
+        "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin'",
+        "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
+        "Install-Module -Name ProcessMitigations -Force",
+        "Get-ChildItem -Path \"C:\\Program Files\\Git\\bin\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
+        "Get-ChildItem -Path \"C:\\ProgramData\\chocolatey\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
 
         "write-output 'Adding openjdk docker image'",
         "docker pull openjdk:8u181-jdk-windowsservercore-1709",
