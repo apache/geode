@@ -603,11 +603,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String httpServiceSSLAlias = DEFAULT_SSL_ALIAS;
 
-  private boolean sslEndpointIdentificationEnabled = DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+  private Boolean sslEndPointIdentificationEnabled = null;
 
   private SecurableCommunicationChannel[] securableCommunicationChannels =
       DEFAULT_SSL_ENABLED_COMPONENTS;
 
+  private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
   private boolean sslRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
@@ -849,10 +850,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.serverSSLAlias = other.getServerSSLAlias();
     this.locatorSSLAlias = other.getLocatorSSLAlias();
 
-    this.sslEndpointIdentificationEnabled = other.getSSLEndpointIdentificationEnabled();
+    this.sslEndPointIdentificationEnabled = other.getSSLEndPointIdentificationEnabled();
     this.securableCommunicationChannels =
         ((DistributionConfigImpl) other).securableCommunicationChannels;
 
+    this.sslUseDefaultSSLContext = other.getSSLUseDefaultContext();
     this.sslCiphers = other.getSSLCiphers();
     this.sslProtocols = other.getSSLProtocols();
     this.sslRequireAuthentication = other.getSSLRequireAuthentication();
@@ -2761,13 +2763,19 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public boolean getSSLEndpointIdentificationEnabled() {
-    return sslEndpointIdentificationEnabled;
+  public boolean getSSLEndPointIdentificationEnabled() {
+    // sslEndPointIdentificationEnabled is a boxed boolean and no default value is set, so that
+    // we can differentiate between an assigned default vs user provided override. This is set
+    // to true when ssl-use-default-context is true or else its false. So return false if its null.
+    if (this.sslEndPointIdentificationEnabled == null) {
+      return false;
+    }
+    return sslEndPointIdentificationEnabled;
   }
 
   @Override
-  public void setSSLEndpointIdentificationEnabled(final boolean sslEnabledIdentification) {
-    this.sslEndpointIdentificationEnabled = sslEnabledIdentification;
+  public void setSSLEndPointIdentificationEnabled(final boolean sslEndPointIdentificationEnabled) {
+    this.sslEndPointIdentificationEnabled = sslEndPointIdentificationEnabled;
   }
 
   @Override
@@ -2779,6 +2787,19 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   public void setSecurableCommunicationChannels(
       final SecurableCommunicationChannel[] sslEnabledComponents) {
     this.securableCommunicationChannels = sslEnabledComponents;
+  }
+
+  @Override
+  public boolean getSSLUseDefaultContext() {
+    return sslUseDefaultSSLContext;
+  }
+
+  @Override
+  public void setSSLUseDefaultContext(final boolean sslUseDefaultSSLContext) {
+    if (this.sslEndPointIdentificationEnabled == null) {
+      this.sslEndPointIdentificationEnabled = Boolean.TRUE;
+    }
+    this.sslUseDefaultSSLContext = sslUseDefaultSSLContext;
   }
 
   @Override

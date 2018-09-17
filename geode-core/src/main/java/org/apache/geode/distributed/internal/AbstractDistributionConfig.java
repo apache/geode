@@ -161,6 +161,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_AL
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
@@ -1362,7 +1363,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "User defined fully qualified class name implementing PostProcessor interface for integrated security. Defaults to \"{0}\". Legal values can be any \"class name\" implementing PostProcessor that is present in the classpath.");
 
     m.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED,
-        "If true, clients validate server hostname using server certificate during SSL handshake.");
+        "If true, clients validate server hostname using server certificate during SSL handshake. It defaults to true when ssl-use-default-context is true or else false.");
+
+    m.put(SSL_USE_DEFAULT_CONTEXT,
+        "When true, either uses the default context as returned by SSLContext.getInstance('Default') or uses the context as set by using SSLContext.setDefault(). "
+            + "If false, then specify the keystore and the truststore by setting ssl-keystore-* and ssl-truststore-* properties. If true, then ssl-endpoint-identification-enabled is set to true. This property does not enable SSL.");
 
     m.put(SSL_ENABLED_COMPONENTS,
         "A comma delimited list of components that require SSL communications");
