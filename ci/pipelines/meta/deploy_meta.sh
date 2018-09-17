@@ -23,44 +23,53 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-TARGET=geode
-GEODE_FORK=${1:-apache}
+for cmd in Jinja2 PyYAML; do
+  if ! [[ $(pip3 list |grep ${cmd}) ]]; then
+    echo "${cmd} must be installed for pipeline deployment to work."
+    echo " 'pip3 install ${cmd}'"
+    echo ""
+    exit 1
+  fi
+done
 
-. ${SCRIPTDIR}/shared/utilities.sh
+export GEODE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+TARGET=geode
+export GEODE_FORK=${1:-apache}
+
+. ${SCRIPTDIR}/../shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
 SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
-TEAM=$(fly targets | grep ^${TARGET} | awk '{print $3}')
-
 PUBLIC=true
 
-echo "Deploying pipline for ${GEODE_FORK}/${GEODE_BRANCH} on team ${TEAM}"
-
-if [ "${TEAM}" = "staging" ]; then
-  PUBLIC=false
-fi
+echo "Deploying pipline for ${GEODE_FORK}/${GEODE_BRANCH}"
 
 if [[ "${GEODE_FORK}" == "apache" ]]; then
   META_PIPELINE="meta-${SANITIZED_GEODE_BRANCH}"
   PIPELINE_PREFIX=""
 else
+  PUBLIC=false
   META_PIPELINE="meta-${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}"
   PIPELINE_PREFIX="${GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
-set -x
-fly -t ${TARGET} set-pipeline \
-  -p ${META_PIPELINE} \
-  -c meta.yml \
-  --var geode-build-branch=${GEODE_BRANCH} \
-  --var sanitized-geode-build-branch=${SANITIZED_GEODE_BRANCH} \
-  --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
-  --var geode-fork=${GEODE_FORK} \
-  --var pipeline-prefix=${PIPELINE_PREFIX} \
-  --var concourse-team=${TEAM} \
-  --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
 
-set +x
+
+pushd ${SCRIPTDIR} 2>&1 > /dev/null
+# Template and output share a directory with this script, but variables are shared in the parent directory.
+  python3 ../render.py $(basename ${SCRIPTDIR}) || exit 1
+
+  fly -t ${TARGET} set-pipeline \
+    -p ${META_PIPELINE} \
+    --config ${SCRIPTDIR}/generated-pipeline.yml \
+    --var geode-build-branch=${GEODE_BRANCH} \
+    --var sanitized-geode-build-branch=${SANITIZED_GEODE_BRANCH} \
+    --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
+    --var geode-fork=${GEODE_FORK} \
+    --var pipeline-prefix=${PIPELINE_PREFIX} \
+    --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
+
+popd 2>&1 > /dev/null
+
 
 if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then
   exit 1
@@ -68,15 +77,29 @@ fi
 
 if [[ "${GEODE_FORK}" != "apache" ]]; then
   echo "Disabling unnecessary jobs for forks."
-  set -x
-  for job in set set-pr set-images set-metrics set-reaper set-examples; do
+  for job in set set-images set-reaper; do
+    set -x
     fly -t ${TARGET} pause-job \
         -j ${META_PIPELINE}/${job}-pipeline
+    set +x
   done
-
-  fly -t ${TARGET} trigger-job \
-      -j ${META_PIPELINE}/build-meta-mini-docker-image
-  fly -t ${TARGET} unpause-pipeline \
-      -p ${META_PIPELINE}
-  set +x
+else
+  echo "Disabling unnecessary jobs for release branches."
+  echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
+  for job in set set-pr set-images set-reaper set-metrics set-examples; do
+    set -x
+    fly -t ${TARGET} pause-job \
+        -j ${META_PIPELINE}/${job}-pipeline
+    set +x
+  done
 fi
+
+set -x
+fly -t ${TARGET} trigger-job \
+    -j ${META_PIPELINE}/build-meta-mini-docker-image
+fly -t ${TARGET} unpause-pipeline \
+    -p ${META_PIPELINE}
+
+set +x
+
+echo "When 'build-meta-mini-docker-image' job is complete, manually unpause and trigger 'set-pipeline'."

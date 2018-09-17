@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.file.Paths;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -103,7 +104,8 @@ public class StartServerCommandDUnitTest {
   @Test
   public void testWithMissingCacheXml() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingCacheXmlPath = "/missing/cache.xml";
+    final String missingCacheXmlPath =
+        Paths.get("missing", "cache.xml").toAbsolutePath().toString();
     final String memberName = "testWithMissingCacheXml-server";
     final String expectedError =
         CliStrings.format(CACHE_XML_NOT_FOUND_MESSAGE, missingCacheXmlPath);
@@ -125,7 +127,8 @@ public class StartServerCommandDUnitTest {
   @Test
   public void testWithMissingGemFirePropertiesFile() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingGemfirePropertiesPath = "/missing/gemfire.properties";
+    final String missingGemfirePropertiesPath =
+        Paths.get("missing", "gemfire.properties").toAbsolutePath().toString();
     final String memberName = "testWithMissingGemFirePropertiesFile-server";
     final String expectedError =
         CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "", missingGemfirePropertiesPath);
@@ -167,7 +170,8 @@ public class StartServerCommandDUnitTest {
   @Test
   public void testWithMissingSecurityPropertiesFile() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingSecurityPropertiesPath = "/missing/security.properties";
+    final String missingSecurityPropertiesPath =
+        Paths.get("missing", "security.properties").toAbsolutePath().toString();
     final String memberName = "testWithMissingSecurityPropertiesFile-server";
     final String expectedError = CliStrings.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
         "Security ", missingSecurityPropertiesPath);

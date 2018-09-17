@@ -45,8 +45,6 @@ subprojects {
     testCompile 'junit:junit:' + project.'junit.version'
     testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
     testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
-    testCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
-    testCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
 
     testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
     testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
@@ -140,9 +138,6 @@ subprojects {
   }
 
   dependencies {
-    integrationTestCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
-    integrationTestCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
-
     integrationTestCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
 
     integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
@@ -162,13 +157,11 @@ subprojects {
     outputs.upToDateWhen { false }
   }
 
-  // Until the category can be removed, we exclude FlakyTest from some targets.
   configure([integrationTest, distributedTest, performanceTest]) {
     useJUnit {
       if (project.hasProperty("testCategory")) {
         includeCategories += project.testCategory
       }
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
   }
 
@@ -200,23 +193,6 @@ subprojects {
         setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
       }
     }
-  }
-
-  task flakyTest(type: Test) {
-    useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
-      }
-      includeCategories += 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-
-    forkEvery 1
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-
-    reports.junitXml.destination = file "$buildDir/test-reports-flaky"
-    outputs.upToDateWhen { false }
   }
 
   /*
@@ -269,9 +245,9 @@ subprojects {
         systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
         systemProperty 'gemfire.disallowMcastDefaults', 'true'
         systemProperty 'jline.terminal', 'jline.UnsupportedTerminal'
-        def logLevel = System.getProperty('logLevel')
+        def logLevel = System.getProperty('log-level')
         if (logLevel != null) {
-          systemProperty 'logLevel', logLevel
+          systemProperty 'log-level', logLevel
         }
         def log4jLocation = System.getProperty('log4j.configurationFile')
         if (log4jLocation != null) {
@@ -308,8 +284,8 @@ subprojects {
     description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
   }
 
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, acceptanceTest, repeatTest, upgradeTest].each {
+  combineReports.mustRunAfter check, test, integrationTest, distributedTest, acceptanceTest, repeatTest, upgradeTest
+  [build, check, test, integrationTest, distributedTest, acceptanceTest, repeatTest, upgradeTest].each {
     it.finalizedBy combineReports
   }
 }

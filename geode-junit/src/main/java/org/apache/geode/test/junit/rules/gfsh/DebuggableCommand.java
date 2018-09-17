@@ -12,22 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.process.io;
+package org.apache.geode.test.junit.rules.gfsh;
 
-import java.io.File;
-import java.io.IOException;
+public class DebuggableCommand {
+  final int debugPort;
+  final String command;
 
-/**
- * Writes an integer to the file.
- */
-public class IntegerFileWriter extends StringFileWriter {
-
-  public IntegerFileWriter(final File file) {
-    super(file);
+  public DebuggableCommand(String command) {
+    this.command = command;
+    this.debugPort = -1;
   }
 
-  public void writeToFile(final int pid) throws IOException {
-    writeToFile(String.valueOf(pid));
+  public DebuggableCommand(String command, int debugPort) {
+    this.command = command;
+    this.debugPort = debugPort;
   }
-
 }

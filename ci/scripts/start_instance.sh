@@ -44,22 +44,25 @@ if [[ -z "${GEODE_BRANCH}" ]]; then
 fi
 
 
-
-
 . ${SCRIPTDIR}/../pipelines/shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
 SANITIZED_GEODE_FORK=$(getSanitizedFork ${GEODE_FORK})
 
-SANITIZED_BUILD_PIPELINE_NAME=$(echo ${BUILD_PIPELINE_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
-SANITIZED_BUILD_JOB_NAME=$(echo ${BUILD_JOB_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
-SANITIZED_BUILD_NAME=$(echo ${BUILD_NAME} | tr "/" "-" | tr '[:upper:]' '[:lower:]')
+SANITIZED_BUILD_PIPELINE_NAME=$(sanitizeName ${BUILD_PIPELINE_NAME})
+SANITIZED_BUILD_JOB_NAME=$(sanitizeName ${BUILD_JOB_NAME})
+SANITIZED_BUILD_NAME=$(sanitizeName ${BUILD_NAME})
 IMAGE_FAMILY_PREFIX=""
+WINDOWS_PREFIX=""
 
 if [[ "${SANITIZED_GEODE_FORK}" != "apache" ]]; then
   IMAGE_FAMILY_PREFIX="${SANITIZED_GEODE_FORK}-${SANITIZED_GEODE_BRANCH}-"
 fi
 
-INSTANCE_NAME="$(echo "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}" | tr '[:upper:]' '[:lower:]')"
+if [[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows ]]; then
+  WINDOWS_PREFIX="windows-"
+fi
+
+INSTANCE_NAME=$(sanitizeName "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}")
 PROJECT=apachegeode-ci
 ZONE=us-central1-f
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
@@ -80,9 +83,9 @@ while true; do
       --zone=${ZONE} \
       --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
       --min-cpu-platform=Intel\ Skylake \
-      --network="heavy-lifters" \
-      --subnet="heavy-lifters" \
-      --image-family="${IMAGE_FAMILY_PREFIX}geode-builder" \
+      --network="heavy-lifters-2" \
+      --subnet="heavy-lifters-2" \
+      --image-family="${IMAGE_FAMILY_PREFIX}${WINDOWS_PREFIX}geode-builder" \
       --image-project=${PROJECT} \
       --boot-disk-size=100GB \
       --boot-disk-type=pd-ssd \
@@ -105,6 +108,22 @@ echo "${INSTANCE_INFORMATION}" > instance-data/instance-information
 INSTANCE_IP_ADDRESS=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].networkInterfaces[0].accessConfigs[0].natIP')
 echo "${INSTANCE_IP_ADDRESS}" > "instance-data/instance-ip-address"
 
-while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
-  echo -n .
-done
+if [[ -z "${WINDOWS_PREFIX}" ]]; then
+  while ! gcloud compute --project=${PROJECT} ssh geode@${INSTANCE_NAME} --zone=${ZONE} --ssh-key-file=${SSHKEY_FILE} --quiet -- true; do
+    echo -n .
+  done
+else
+  # Set up ssh access for Windows systems
+  while [[ -z "${PASSWORD}" ]]; do
+    PASSWORD=$( yes | gcloud beta compute reset-windows-password ${INSTANCE_NAME} --user=geode --zone=${ZONE} --format json | jq -r .password )
+    sleep 5
+  done
+
+  ssh-keygen -N "" -f ${SSHKEY_FILE}
+
+  KEY=$( cat ${SSHKEY_FILE}.pub )
+
+  winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
+    -https -insecure -port 5986 \
+    "powershell -command \"&{ mkdir c:\users\geode\.ssh -force; set-content -path c:\users\geode\.ssh\authorized_keys -encoding utf8 -value '${KEY}' }\""
+fi

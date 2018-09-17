@@ -820,8 +820,8 @@ public class LocalizedStrings {
       new StringId(1466, "Admitting member <{0}>. Now there are {1} non-admin member(s).");
   public static final StringId DistributionManager_AT_LEAST_ONE_EXCEPTION_OCCURRED =
       new StringId(1467, "At least one Exception occurred.");
-  public static final StringId DistributionManager_CHANGING_ELDER_FROM_0_TO_1 =
-      new StringId(1468, "Changing Elder from {0} to {1}.");
+  public static final StringId DistributionManager_CHANGING_ELDER_TO_0_FROM_1 =
+      new StringId(1468, "Waiting for Elder to change. Expecting Elder to be {0}, is {1}.");
   public static final StringId DistributionManager_CLOBBERTHREAD_THREAD_REFUSED_TO_DIE__0 =
       new StringId(1469, "clobberThread: Thread refused to die:  {0}");
   public static final StringId DistributionManager_DAEMON_THREADS_ARE_SLOW_TO_STOP_CULPRITS_INCLUDE_0 =
@@ -2084,8 +2084,8 @@ public class LocalizedStrings {
           "Method '' {0} '' in class '' {1} '' is not accessible to the query processor");
   public static final StringId AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1 =
       new StringId(2253, "No public attribute named '' {0} '' was found in class  {1}");
-  public static final StringId AttributeDescriptor_NO_ACCESS_BECAUSE_METHOD_WAS_BLACKLISTED =
-      new StringId(2254, "No access to attribute named '' {0} '' because it has been blacklisted");
+  public static final StringId AttributeDescriptor_NO_ACCESS_BECAUSE_METHOD_WAS_DENYLISTED =
+      new StringId(2254, "No access to attribute named '' {0} '' because it has been denylisted");
 
   public static final StringId AvailablePort_UNKNOWN_PROTOCOL_0 =
       new StringId(2258, "Unknown protocol:  {0}");

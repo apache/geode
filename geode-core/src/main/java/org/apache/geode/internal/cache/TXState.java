@@ -872,7 +872,7 @@ public class TXState implements TXStateInterface {
 
   protected void cleanup() {
     if (singleThreadJTAExecutor.shouldDoCleanup()) {
-      singleThreadJTAExecutor.cleanup(getCancelCriterion());
+      singleThreadJTAExecutor.cleanup();
     } else {
       doCleanup();
     }
@@ -1111,45 +1111,54 @@ public class TXState implements TXStateInterface {
     // if there was a beforeCompletion call then there will be a thread
     // sitting in the waiting pool to execute afterCompletion. Otherwise
     // throw FailedSynchronizationException().
-    if (beforeCompletionCalled) {
-      singleThreadJTAExecutor.executeAfterCompletion(getCancelCriterion(), status);
+    if (wasBeforeCompletionCalled()) {
+      switch (status) {
+        case Status.STATUS_COMMITTED:
+          singleThreadJTAExecutor.executeAfterCompletionCommit();
+          break;
+        case Status.STATUS_ROLLEDBACK:
+          singleThreadJTAExecutor.executeAfterCompletionRollback();
+          break;
+        default:
+          throw new TransactionException("Unknown JTA Synchronization status " + status);
+      }
     } else {
       // rollback does not run beforeCompletion.
       if (status != Status.STATUS_ROLLEDBACK) {
         throw new FailedSynchronizationException(
             "Could not execute afterCompletion when beforeCompletion was not executed");
       }
-      doAfterCompletion(status);
+      doAfterCompletionRollback();
     }
   }
 
-  void doAfterCompletion(int status) {
+  void doAfterCompletionCommit() {
     final long opStart = CachePerfStats.getStatTime();
     try {
-      switch (status) {
-        case Status.STATUS_COMMITTED:
-          Assert.assertTrue(this.locks != null,
-              "Gemfire Transaction afterCompletion called with illegal state.");
-          try {
-            commit();
-            saveTXCommitMessageForClientFailover();
-          } catch (CommitConflictException error) {
-            Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
-                + " afterCompletion failed.due to CommitConflictException: " + error);
-          }
-
-          this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
-          this.locks = null;
-          break;
-        case Status.STATUS_ROLLEDBACK:
-          this.jtaLifeTime = opStart - getBeginTime();
-          rollback();
-          saveTXCommitMessageForClientFailover();
-          this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
-          break;
-        default:
-          Assert.assertTrue(false, "Unknown JTA Synchronization status " + status);
+      Assert.assertTrue(this.locks != null,
+          "Gemfire Transaction afterCompletion called with illegal state.");
+      try {
+        commit();
+        saveTXCommitMessageForClientFailover();
+      } catch (CommitConflictException error) {
+        Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
+            + " afterCompletion failed.due to CommitConflictException: " + error);
       }
+      this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
+      this.locks = null;
+
+    } catch (InternalGemFireError error) {
+      throw new TransactionException(error);
+    }
+  }
+
+  void doAfterCompletionRollback() {
+    final long opStart = CachePerfStats.getStatTime();
+    this.jtaLifeTime = opStart - getBeginTime();
+    try {
+      rollback();
+      saveTXCommitMessageForClientFailover();
+      this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
     } catch (InternalGemFireError error) {
       throw new TransactionException(error);
     }

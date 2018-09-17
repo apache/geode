@@ -793,12 +793,8 @@ public class CompactRangeIndex extends AbstractIndex {
                 ok = QueryUtils.applyCondition(iterOps, context);
               }
               if (ok) {
-                if (context != null && context.isCqQueryContext()) {
-                  result.add(new CqEntry(indexEntry.getDeserializedRegionKey(), value));
-                } else {
-                  applyProjection(projAttrib, context, result, value, intermediateResults,
-                      isIntersection);
-                }
+                applyCqOrProjection(projAttrib, context, result, value, intermediateResults,
+                    isIntersection, indexEntry.getDeserializedRegionKey());
                 if (verifyLimit(result, limit)) {
                   observer.limitAppliedAtIndexLevel(this, limit, result);
                   return;

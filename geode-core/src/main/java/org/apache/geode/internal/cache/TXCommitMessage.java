@@ -220,7 +220,7 @@ public class TXCommitMessage extends PooledDistributionMessage
             if (logger.isDebugEnabled()) {
               logger.debug("Skipping member {} due to dist list absence", recipient);
             }
-            // skip this guy since the dm no longer knows about him
+            // skip this member since the dm no longer knows about it
             continue;
           }
           RegionCommitList rcl = this.msgMap.get(recipient);
@@ -367,12 +367,12 @@ public class TXCommitMessage extends PooledDistributionMessage
           Map.Entry me = (Map.Entry) it.next();
           RegionCommitList rcl = (RegionCommitList) me.getKey();
           HashSet recipients = (HashSet) me.getValue();
-          // now remove from the recipients any guys that the dm no
+          // now remove from the recipients any recipients that the dm no
           // longer knows about
           recipients.retainAll(this.dm.getDistributionManagerIds());
           if (!recipients.isEmpty()) {
             if (this.txState.internalDuringIndividualSend != null) {
-              // Run in test mode, splitting out individaual recipients,
+              // Run in test mode, splitting out individual recipients,
               // so we can control who gets what
               Iterator indivRecip = recipients.iterator();
               while (indivRecip.hasNext()) {
@@ -380,7 +380,7 @@ public class TXCommitMessage extends PooledDistributionMessage
                 setRecipientsSendData(Collections.singleton(indivRecip.next()), processor, rcl);
               }
             } else {
-              // Run in normal mode sending to mulitiple recipients in
+              // Run in normal mode sending to multiple recipients in
               // one shot
               setRecipientsSendData(recipients, processor, rcl);
             }
@@ -927,7 +927,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   private boolean hasFlagsField(final Version version) {
-    return version.compareTo(Version.GEODE_180) >= 0;
+    return version.compareTo(Version.GEODE_170) >= 0;
   }
 
   private boolean useShadowKey() {

@@ -18,6 +18,10 @@
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
+afterEvaluate {
+  project.tasks.remove(srcDistZip)
+  project.tasks.remove(distZip)
+}
 
 // disable artifact generation for this project
 jar.enabled = false
@@ -30,12 +34,13 @@ extraArchive {
 publishing {
   publications {
     maven(MavenPublication) {
-      artifactId = 'apache-geode'
+      afterEvaluate {
+        artifactId = 'apache-geode'
 
-      artifacts = []
+        artifacts = []
 
-      artifact distTar
-      artifact distZip
+        artifact distTar
+      }
     }
   }
 }
@@ -54,19 +59,24 @@ configurations.all {
 }
 
 gradle.taskGraph.whenReady( { graph ->
+  tasks.install.enabled = false
   tasks.withType(Tar).each { tar ->
     tar.compression = Compression.GZIP
     tar.extension = 'tgz'
-  }
-  tasks.srcDistZip {
-    classifier 'src'
   }
   tasks.srcDistTar {
     classifier 'src'
   }
   tasks.withType(Jar).each { jarTasks ->
     distTar.dependsOn(jarTasks)
-    distZip.dependsOn(jarTasks)
+  }
+
+  tasks.withType(AbstractArchiveTask).findAll {
+    it.name.toLowerCase().contains("dist")
+  }.each { archive ->
+    archive.doLast {
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
+    }
   }
 })
 
@@ -189,6 +199,7 @@ def cp = {
     it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
       .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
         // depedencies from geode-core
+        it.contains('activation') ||
         it.contains('antlr') ||
         it.contains('commons-io') ||
         it.contains('classgraph') ||
@@ -206,6 +217,7 @@ def cp = {
         it.contains('javax.resource-api') ||
         it.contains('javax.servlet-api') ||
         it.contains('javax.transaction-api') ||
+        it.contains('jaxb') ||
         it.contains('jetty-http') ||
         it.contains('jetty-io') ||
         it.contains('jetty-security') ||
@@ -319,16 +331,6 @@ task writeBuildInfo {
     }
   }
 }
-
-gradle.taskGraph.whenReady( { graph ->
-  tasks.withType(AbstractArchiveTask).findAll {
-    it.name.toLowerCase().contains("dist")
-  }.each { archive ->
-    archive.doLast {
-      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
-    }
-  }
-})
 
 distributions {
   src {
@@ -467,7 +469,6 @@ distributedTest dependOnInstalledProduct
 upgradeTest dependOnInstalledProduct
 integrationTest dependOnInstalledProduct
 uiTest dependOnInstalledProduct
-flakyTest dependOnInstalledProduct
 repeatTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources

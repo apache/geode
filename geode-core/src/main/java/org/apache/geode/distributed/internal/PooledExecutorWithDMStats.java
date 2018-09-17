@@ -199,7 +199,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   }
 
   /**
-   * This guy does a put which will just wait until the queue has room.
+   * This handler does a put which will just wait until the queue has room.
    */
   public static class BlockHandler implements RejectedExecutionHandler {
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
@@ -221,7 +221,8 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
     }
   }
   /**
-   * This guy fronts a synchronous queue, that is owned by the parent ThreadPoolExecutor, with a the
+   * This handler fronts a synchronous queue, that is owned by the parent ThreadPoolExecutor, with a
+   * the
    * client supplied BlockingQueue that supports storage (the buffer queue). A dedicated thread is
    * used to consume off the buffer queue and put into the synchronous queue.
    */

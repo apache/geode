@@ -1308,7 +1308,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             logger.info("Requesting removal of suspect member {}", mbr);
             services.getJoinLeave().remove(mbr, reason);
           }
-          // make sure he's still suspected
+          // make sure it is still suspected
           memberSuspected(localAddress, mbr, reason);
           failed = true;
         } else {

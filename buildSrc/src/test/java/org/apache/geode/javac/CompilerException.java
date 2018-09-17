@@ -12,32 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.process.io;
 
-import static org.assertj.core.api.Assertions.assertThat;
+package org.apache.geode.javac;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-/**
- * Writes a string to the file.
- */
-public class StringFileWriter {
-
-  private final File file;
-
-  public StringFileWriter(final File file) {
-    this.file = file;
+public class CompilerException extends RuntimeException {
+  public CompilerException(String message){
+    super(message);
   }
-
-  public void writeToFile(final String string) throws IOException {
-    assertThat(file).doesNotExist();
-    try (FileWriter writer = new FileWriter(file)) {
-      writer.write(string);
-      writer.flush();
-    }
-    assertThat(file).exists();
-  }
-
 }

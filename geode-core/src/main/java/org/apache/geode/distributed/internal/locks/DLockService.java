@@ -426,7 +426,7 @@ public class DLockService extends DistributedLockService {
             logger.trace(LogMarker.DLS_VERBOSE, "{} failed to depose {}",
                 this.deposingLockGrantorId, myLockGrantorId);
           }
-          // older grantor couldn't depose us, so null him out...
+          // older grantor couldn't depose us, so null it out...
           this.deposingLockGrantorId = null;
         }
 
@@ -934,7 +934,7 @@ public class DLockService extends DistributedLockService {
   }
 
   /**
-   * @param predecessor non-null if a predecessor asked us to take over for him
+   * @param predecessor non-null if a predecessor asked us to take over for it
    */
   private void becomeLockGrantor(InternalDistributedMember predecessor) {
     Assert.assertTrue(predecessor == null);
@@ -2800,7 +2800,8 @@ public class DLockService extends DistributedLockService {
    *
    * @param dm our local DM
    */
-  public static void recoverLocalElder(DistributionManager dm, Map grantors, Set needsRecovery) {
+  public static void recoverLocalElder(DistributionManager dm, Map<String, GrantorInfo> grantors,
+      Set<String> needsRecovery) {
     synchronized (services) {
       Iterator entries = services.entrySet().iterator();
       while (entries.hasNext()) {
@@ -2811,18 +2812,14 @@ public class DLockService extends DistributedLockService {
         DLockGrantor grantor = service.getGrantor();
         if (grantor != null && grantor.getVersionId() != -1 && !grantor.isDestroyed()) {
           foundGrantor = true;
-          GrantorInfo oldgi = (GrantorInfo) grantors.get(serviceName);
+          GrantorInfo oldgi = grantors.get(serviceName);
           if (oldgi == null || oldgi.getVersionId() < grantor.getVersionId()) {
             grantors.put(serviceName, new GrantorInfo(dm.getId(), grantor.getVersionId(),
                 service.getSerialNumber(), false));
             needsRecovery.remove(serviceName);
           }
         }
-        // fix for elder init bug... adam elder was hitting the following
-        // block and found no grantors for services that were just created
-        // and flagged them as needing recovery even though it's not needed
-        if (!foundGrantor && !(dm.isAdam() && !service.hasHeldLocks())) {
-          // !F && !(T && !T) ==> T && !F ==> T
+        if (!foundGrantor && !dm.isLoner()) {
           if (!grantors.containsKey(serviceName)) {
             needsRecovery.add(serviceName);
           }

@@ -70,7 +70,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
     Set<String> sanctionedClasses = new HashSet<>(500);
     for (DistributedSystemService service : services) {
       try {
-        Collection<String> classNames = service.getSerializationWhitelist();
+        Collection<String> classNames = service.getSerializationAcceptlist();
         logger.info("loaded {} sanctioned serializables from {}", classNames.size(),
             service.getClass().getSimpleName());
         sanctionedClasses.addAll(classNames);
@@ -88,7 +88,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
       sanctionedClasses.addAll(coreClassNames);
     } catch (IOException e) {
       throw new InternalGemFireException(
-          "unable to read sanctionedSerializables.txt to form a serialization white-list", e);
+          "unable to read sanctionedSerializables.txt to form a serialization acceptlist", e);
     }
 
     logger.info("setting a serialization filter containing {}", serializationFilterSpec);
@@ -200,8 +200,8 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
       throws InvocationTargetException, IllegalAccessException {
 
     /*
-     * create a user filter with the serialization whitelist/blacklist. This will be wrapped
-     * by a filter that white-lists sanctioned classes
+     * create a user filter with the serialization acceptlist/denylist. This will be wrapped
+     * by a filter that accept-lists sanctioned classes
      */
     Object userFilter = createFilterMethod.invoke(null, serializationFilterSpec);
 
@@ -210,7 +210,7 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
         case "checkInput":
           Object filterInfo = args[0];
           Class serialClass = (Class) serialClassMethod.invoke(filterInfo);
-          if (serialClass == null) { // no class to check, so nothing to white-list
+          if (serialClass == null) { // no class to check, so nothing to accept-list
             return checkInputMethod.invoke(userFilter, filterInfo);
           }
           String className = serialClass.getName();

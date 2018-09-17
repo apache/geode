@@ -99,7 +99,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private volatile boolean isBalanced = true;
   /**
    * key is the InetSocketAddress of the locator. value will be an exception if we have already
-   * found the locator to be dead. value will be null if we last saw him alive.
+   * found the locator to be dead. value will be null if we last saw it alive.
    */
   private final Map<InetSocketAddress, Exception> locatorState =
       new HashMap<InetSocketAddress, Exception>();

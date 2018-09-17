@@ -1102,7 +1102,7 @@ public class Connection implements Runnable {
             conn.attemptHandshake(t);
             if (conn.isSocketClosed()) {
               // something went wrong while reading the handshake
-              // and the socket was closed or this guy sent us a
+              // and the socket was closed or we were sent
               // ShutdownMessage
               if (giveUpOnMember(mgr, remoteAddr)) {
                 throw new IOException(LocalizedStrings.Connection_MEMBER_LEFT_THE_GROUP
@@ -4003,14 +4003,14 @@ public class Connection implements Runnable {
   }
 
   /**
-   * return the DM id of the guy on the other side of this connection.
+   * return the DM id of the member on the other side of this connection.
    */
   public InternalDistributedMember getRemoteAddress() {
     return this.remoteAddr;
   }
 
   /**
-   * Return the version of the guy on the other side of this connection.
+   * Return the version of the member on the other side of this connection.
    */
   public Version getRemoteVersion() {
     return this.remoteVersion;
@@ -4107,9 +4107,9 @@ public class Connection implements Runnable {
 
   private void closeSenderSem() {
     // All we need to do is increase the number of permits by one
-    // just in case 1 or more guys are currently waiting to acquire.
-    // One of them will get it and then find out the connection is closed
-    // and then he will release it until all guys currently waiting to acquire
+    // just in case 1 or more connections are currently waiting to acquire.
+    // One of them will get the permit, then find out the connection is closed
+    // and release the permit until all the connections currently waiting to acquire
     // will complete by throwing a ConnectionException.
     releaseSendPermission();
   }

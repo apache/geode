@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.util.StopWatch;
 
 /**
  * Unit test for basic DataPolicy.EMPTY feature. NOTE: these tests using a loner DistributedSystem
@@ -1038,112 +1037,6 @@ public class ProxyJUnitTest {
         fail("expected IllegalStateException");
       } catch (IllegalStateException expected) {
       }
-    }
-  }
-
-  /**
-   * Make sure a proxy region expiration behaves as expected
-   */
-  @Test
-  public void testExpiration() throws Exception {
-    System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-    try {
-      // now make sure they don't on proxy
-      {
-        AttributesFactory af = new AttributesFactory();
-        af.setStatisticsEnabled(true);
-        af.setEntryIdleTimeout(new ExpirationAttributes(1, ExpirationAction.LOCAL_INVALIDATE));
-        af.setEntryTimeToLive(new ExpirationAttributes(2, ExpirationAction.LOCAL_DESTROY));
-        af.setDataPolicy(DataPolicy.EMPTY);
-        try {
-          af.create();
-          fail("expected IllegalStateException");
-        } catch (IllegalStateException expected) {
-        }
-      }
-
-      // make sure regionIdleTimeout works on proxy
-      {
-        CacheListener cl1 = new CacheListenerAdapter() {
-          public void afterRegionDestroy(RegionEvent e) {
-            clInvokeCount++;
-          }
-
-          public void afterRegionInvalidate(RegionEvent e) {
-            clInvokeCount++;
-          }
-        };
-        AttributesFactory af = new AttributesFactory();
-        af.setStatisticsEnabled(true);
-        final int EXPIRE_MS = 500;
-        af.setRegionIdleTimeout(
-            new ExpirationAttributes(EXPIRE_MS, ExpirationAction.LOCAL_DESTROY));
-        af.addCacheListener(cl1);
-        af.setDataPolicy(DataPolicy.EMPTY);
-        clearCallbackState();
-        Region r = this.c.createRegion("rEMPTY", af.create());
-        assertTrue(clInvokeCount == 0);
-        r.put("key", "value");
-        long endTime = System.currentTimeMillis() + (EXPIRE_MS * 2);
-        do {
-          r.get("key");
-        } while (System.currentTimeMillis() < endTime);
-        assertEquals(0, this.clInvokeCount);
-        Thread.sleep(EXPIRE_MS * 2);
-        boolean done = false;
-        try {
-          for (StopWatch time = new StopWatch(true); !done
-              && time.elapsedTimeMillis() < 1000; done = (ProxyJUnitTest.this.clInvokeCount == 1)) {
-            Thread.sleep(200);
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-        assertTrue("waiting for invocation", done);
-      }
-
-      // make sure regionTimeToLive works on proxy
-      {
-        CacheListener cl1 = new CacheListenerAdapter() {
-          public void afterRegionDestroy(RegionEvent e) {
-            clInvokeCount++;
-          }
-
-          public void afterRegionInvalidate(RegionEvent e) {
-            clInvokeCount++;
-          }
-        };
-        AttributesFactory af = new AttributesFactory();
-        af.setStatisticsEnabled(true);
-        final int EXPIRE_MS = 500;
-        af.setRegionTimeToLive(new ExpirationAttributes(EXPIRE_MS, ExpirationAction.LOCAL_DESTROY));
-        af.addCacheListener(cl1);
-        af.setDataPolicy(DataPolicy.EMPTY);
-        clearCallbackState();
-        Region r = this.c.createRegion("rEMPTY", af.create());
-        assertTrue(clInvokeCount == 0);
-        r.put("key", "value");
-        long endTime = System.currentTimeMillis() + (EXPIRE_MS * 2);
-        do {
-          r.put("key", "value");
-        } while (System.currentTimeMillis() < endTime);
-        assertEquals(0, this.clInvokeCount);
-        Thread.sleep(EXPIRE_MS * 2);
-        boolean done = false;
-        try {
-          for (StopWatch time = new StopWatch(true); !done
-              && time.elapsedTimeMillis() < 1000; done = (ProxyJUnitTest.this.clInvokeCount == 1)) {
-            Thread.sleep(200);
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-        assertTrue("waiting for invocation", done);
-      }
-
-    } finally {
-      System.clearProperty(LocalRegion.EXPIRY_MS_PROPERTY);
-      assertEquals(null, System.getProperty(LocalRegion.EXPIRY_MS_PROPERTY));
     }
   }
 

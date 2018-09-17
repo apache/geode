@@ -35,13 +35,24 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.InOrder;
 
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-/**
- * Extracted from {@link RegionExpirationDistributedTest}.
- */
+
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RegionExpirationIntegrationTest {
+
+  @Parameterized.Parameter(0)
+  public DataPolicy dataPolicy;
+
+  @Parameterized.Parameters(name = "{0}")
+  public static Object[] data() {
+    return new Object[] {DataPolicy.NORMAL, DataPolicy.EMPTY};
+  }
 
   private Cache cache;
   private String regionName;
@@ -66,6 +77,7 @@ public class RegionExpirationIntegrationTest {
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(firstTtlSeconds, DESTROY));
+    regionFactory.setDataPolicy(dataPolicy);
     Region<String, String> region = regionFactory.create(regionName);
 
     region.getAttributesMutator()
@@ -84,6 +96,7 @@ public class RegionExpirationIntegrationTest {
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(firstTtlSeconds, DESTROY));
+    regionFactory.setDataPolicy(dataPolicy);
     Region<String, String> region = regionFactory.create(regionName);
 
     region.getAttributesMutator()
@@ -101,6 +114,7 @@ public class RegionExpirationIntegrationTest {
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(LOCAL);
     regionFactory.setRegionTimeToLive(new ExpirationAttributes(ttlSeconds, DESTROY));
     regionFactory.setRegionIdleTimeout(new ExpirationAttributes(idleSeconds, INVALIDATE));
+    regionFactory.setDataPolicy(dataPolicy);
     regionFactory.addCacheListener(spyCacheListener);
     Region<String, String> region = regionFactory.create(regionName);
 

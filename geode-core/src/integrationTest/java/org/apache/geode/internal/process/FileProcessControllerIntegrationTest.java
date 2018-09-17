@@ -23,9 +23,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.Before;
@@ -41,8 +43,6 @@ import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.internal.process.io.EmptyFileWriter;
-import org.apache.geode.internal.process.io.IntegerFileWriter;
-import org.apache.geode.internal.process.io.StringFileWriter;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 /**
@@ -110,7 +110,7 @@ public class FileProcessControllerIntegrationTest {
   @Test
   public void statusShouldReturnJsonFromStatusFile() throws Exception {
     // given: FileProcessController with pidFile containing real pid
-    new IntegerFileWriter(pidFile).writeToFile(pid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(pid), Charset.defaultCharset());
     FileProcessController controller = new FileProcessController(params, pid, 2, MINUTES);
 
     // when: status is called in one thread
@@ -123,7 +123,7 @@ public class FileProcessControllerIntegrationTest {
     });
 
     // and: json is written to the status file
-    new StringFileWriter(statusFile).writeToFile(STATUS_JSON);
+    FileUtils.writeStringToFile(statusFile, STATUS_JSON, Charset.defaultCharset());
 
     // then: returned status should be the json in the file
     await().untilAsserted(() -> assertThat(statusRef.get()).isEqualTo(STATUS_JSON));
@@ -138,7 +138,7 @@ public class FileProcessControllerIntegrationTest {
   @Test
   public void emptyStatusFileCausesStatusToHang() throws Exception {
     // given: FileProcessController with pidFile containing real pid
-    new IntegerFileWriter(pidFile).writeToFile(pid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(pid), Charset.defaultCharset());
     FileProcessController controller = new FileProcessController(params, pid, 2, MINUTES);
 
     // when: status is called in one thread
@@ -198,7 +198,7 @@ public class FileProcessControllerIntegrationTest {
       }
     });
 
-    new StringFileWriter(statusFile).writeToFile(STATUS_JSON);
+    FileUtils.writeStringToFile(statusFile, STATUS_JSON, Charset.defaultCharset());
 
     // assert
     await().untilAsserted(() -> assertThat(statusRequestFile).exists());
@@ -207,7 +207,7 @@ public class FileProcessControllerIntegrationTest {
   @Test
   public void statusCreatesStatusRequestFile() throws Exception {
     // arrange
-    new IntegerFileWriter(pidFile).writeToFile(pid);
+    FileUtils.writeStringToFile(pidFile, String.valueOf(pid), Charset.defaultCharset());
     FileProcessController controller = new FileProcessController(params, pid, 2, MINUTES);
 
     // act

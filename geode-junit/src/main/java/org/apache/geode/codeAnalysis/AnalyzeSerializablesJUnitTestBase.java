@@ -14,8 +14,7 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static org.apache.geode.internal.lang.SystemUtils.getJavaVersion;
-import static org.apache.geode.internal.lang.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang.SystemUtils.isJavaVersionAtLeast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.core.Is.is;
@@ -46,6 +45,7 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 
+import org.apache.commons.lang.SystemUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -127,8 +127,9 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   @Before
   public void setUp() throws Exception {
     assumeThat(
-        "AnalyzeSerializables requires Java 8 but tests are running with v" + getJavaVersion(),
-        isJavaVersionAtLeast("1.8"), is(true));
+        "AnalyzeSerializables requires Java 8 but tests are running with v"
+            + SystemUtils.JAVA_VERSION,
+        isJavaVersionAtLeast(1.8f), is(true));
     TypeRegistry.init();
   }
 

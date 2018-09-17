@@ -21,6 +21,7 @@ import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
+import org.apache.geode.internal.offheap.annotations.Unretained;
 
 public abstract class AbstractDiskRegionEntry extends AbstractRegionEntry implements DiskEntry {
   protected AbstractDiskRegionEntry(RegionEntryContext context, Object value) {
@@ -28,12 +29,13 @@ public abstract class AbstractDiskRegionEntry extends AbstractRegionEntry implem
   }
 
   @Override
-  public void setValue(RegionEntryContext context, Object v) throws RegionClearedException {
+  public void setValue(RegionEntryContext context, @Unretained Object v)
+      throws RegionClearedException {
     setValue(context, v, null);
   }
 
   @Override
-  public void setValue(RegionEntryContext context, Object value, EntryEventImpl event)
+  public void setValue(RegionEntryContext context, @Unretained Object value, EntryEventImpl event)
       throws RegionClearedException {
     Helper.update(this, (LocalRegion) context, value, event);
     setRecentlyUsed(context); // fix for bug #42284 - entry just put into the cache is evicted
@@ -46,7 +48,7 @@ public abstract class AbstractDiskRegionEntry extends AbstractRegionEntry implem
    * @param value an entry value.
    */
   @Override
-  public void setValueWithContext(RegionEntryContext context, Object value) {
+  public void setValueWithContext(RegionEntryContext context, @Unretained Object value) {
     _setValue(value);
     releaseOffHeapRefIfRegionBeingClosedOrDestroyed(context, value);
   }

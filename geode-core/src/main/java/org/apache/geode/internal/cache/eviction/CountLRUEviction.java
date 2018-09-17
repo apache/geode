@@ -93,7 +93,7 @@ public class CountLRUEviction extends AbstractEvictionController {
     }
     if ((value == null /* overflow to disk */ || value == Token.INVALID
         || value == Token.LOCAL_INVALID) && getEvictionAction().isOverflowToDisk()) {
-      // Don't count this guys toward LRU
+      // Don't count this entry toward LRU
       return 0;
 
     } else {

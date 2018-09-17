@@ -16,15 +16,12 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.TimeUnit;
-
-import javax.transaction.Status;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
@@ -46,22 +43,6 @@ public class AfterCompletionTest {
   }
 
   @Test
-  public void executeThrowsIfCancelCriterionThrows() {
-    doThrow(new RuntimeException()).when(cancelCriterion).checkCancelInProgress(null);
-
-    assertThatThrownBy(() -> afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED))
-        .isInstanceOf(RuntimeException.class);
-  }
-
-  @Test
-  public void cancelThrowsIfCancelCriterionThrows() {
-    doThrow(new RuntimeException()).when(cancelCriterion).checkCancelInProgress(null);
-
-    assertThatThrownBy(() -> afterCompletion.cancel(cancelCriterion))
-        .isInstanceOf(RuntimeException.class);
-  }
-
-  @Test
   public void isStartedReturnsFalseIfNotExecuted() {
     assertThat(afterCompletion.isStarted()).isFalse();
   }
@@ -70,50 +51,68 @@ public class AfterCompletionTest {
   public void isStartedReturnsTrueIfExecuted() {
     startDoOp();
 
-    afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED);
+    afterCompletion.executeCommit();
 
     verifyDoOpFinished();
     assertThat(afterCompletion.isStarted()).isTrue();
   }
 
   @Test
-  public void executeCallsDoAfterCompletion() {
+  public void executeCallsDoAfterCompletionCommit() {
     startDoOp();
 
-    afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED);
+    afterCompletion.executeCommit();
     verifyDoOpFinished();
-    verify(txState, times(1)).doAfterCompletion(eq(Status.STATUS_COMMITTED));
+    verify(txState, times(1)).doAfterCompletionCommit();
   }
 
   @Test
-  public void executeThrowsDoAfterCompletionThrows() {
+  public void executeThrowsDoAfterCompletionCommitThrows() {
     startDoOp();
-    doThrow(new RuntimeException()).when(txState).doAfterCompletion(Status.STATUS_COMMITTED);
+    doThrow(new RuntimeException()).when(txState).doAfterCompletionCommit();
 
-    assertThatThrownBy(() -> afterCompletion.execute(cancelCriterion, Status.STATUS_COMMITTED))
+    assertThatThrownBy(() -> afterCompletion.executeCommit())
         .isInstanceOf(RuntimeException.class);
 
     verifyDoOpFinished();
+  }
+
+  @Test
+  public void executeCallsDoAfterCompletionRollback() {
+    startDoOp();
+
+    afterCompletion.executeRollback();
+    verifyDoOpFinished();
+    verify(txState, times(1)).doAfterCompletionRollback();
+  }
+
+  @Test
+  public void executeThrowsDoAfterCompletionRollbackThrows() {
+    startDoOp();
+    doThrow(new RuntimeException()).when(txState).doAfterCompletionRollback();
+
+    assertThatThrownBy(() -> afterCompletion.executeRollback())
+        .isInstanceOf(RuntimeException.class);
+
+    verifyDoOpFinished();
+  }
+
+  @Test
+  public void doOpInvokesDoCleanupIfCancelCriteriaThrows() {
+    doThrow(new RuntimeException()).when(cancelCriterion).checkCancelInProgress(null);
+
+    afterCompletion.doOp(txState, cancelCriterion);
+
+    verify(txState).doCleanup();
   }
 
   @Test
   public void cancelCallsDoCleanup() {
     startDoOp();
 
-    afterCompletion.cancel(cancelCriterion);
+    afterCompletion.cancel();
     verifyDoOpFinished();
     verify(txState, times(1)).doCleanup();
-  }
-
-  @Test
-  public void cancelThrowsDoCleanupThrows() {
-    startDoOp();
-    doThrow(new RuntimeException()).when(txState).doCleanup();
-
-    assertThatThrownBy(() -> afterCompletion.cancel(cancelCriterion))
-        .isInstanceOf(RuntimeException.class);
-
-    verifyDoOpFinished();
   }
 
   private void startDoOp() {

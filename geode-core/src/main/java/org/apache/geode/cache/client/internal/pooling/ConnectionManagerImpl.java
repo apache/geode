@@ -899,7 +899,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /**
    * An existing connections lifetime has expired. We only want to create one replacement connection
-   * at a time so this guy should block until this connection replaces an existing one. Note that if
+   * at a time so this should block until this connection replaces an existing one. Note that if
    * a connection is created here it must not count against the pool max and its idle time and
    * lifetime must not begin until it actually replaces the existing one.
    *
@@ -1224,18 +1224,18 @@ public class ConnectionManagerImpl implements ConnectionManager {
           if (pc.remainingLife(now, lifetimeTimeoutNanos) > 0) {
             // no more connections whose lifetime could have expired
             break;
-            // note don't ignore idle guys because they are still connected
+            // note don't ignore idle connections because they are still connected
             // } else if (pc.remainingIdle(now, idleTimeoutNanos) <= 0) {
             // // this con has already idle expired so ignore it
           } else if (pc.shouldDestroy()) {
             // this con has already been destroyed so ignore it
           } else if (sl.equals(pc.getEndpoint().getLocation())) {
-            // we found a guy to whose lifetime we can extend
+            // we found a connection to whose lifetime we can extend
             it.remove();
             pc.setBirthDate(now);
             getPoolStats().incLoadConditioningExtensions();
             this.allConnections.add(pc);
-            // break so we only do this to the oldest guy
+            // break so we only do this to the oldest connection
             break;
           }
         }

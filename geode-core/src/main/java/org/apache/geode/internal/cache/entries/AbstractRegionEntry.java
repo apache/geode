@@ -1344,7 +1344,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
           return prepareValueForCache(r, heapValue, event, isEntryUpdate);
         }
         if (soVal.hasRefCount()) {
-          // if the reused guy has a refcount then need to inc it
+          // if the reused StoredObject has a refcount then need to increment it
           if (!soVal.retain()) {
             throw new IllegalStateException("Could not use an off heap value because it was freed");
           }

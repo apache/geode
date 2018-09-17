@@ -14,10 +14,14 @@
  */
 package org.apache.geode.management.internal.web.controllers.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.management.internal.security.ResourceConstants.PASSWORD;
+import static org.apache.geode.management.internal.security.ResourceConstants.USER_NAME;
+import static org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -29,13 +33,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.lib.concurrent.Synchroniser;
-import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
@@ -44,36 +46,24 @@ import org.apache.geode.management.internal.security.ResourceConstants;
  * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract and
  * functionality of the Spring HandlerInterceptor, LoginHandlerInterceptor class.
  *
- * @see org.jmock.Mockery
- * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 8.0
  */
 public class LoginHandlerInterceptorJUnitTest {
-
-  private Mockery mockContext;
-
   private SecurityService securityService;
+
+  @Rule
+  public TestName name = new TestName();
 
   @Before
   public void setUp() {
-    mockContext = new Mockery();
-    mockContext.setImposteriser(ClassImposteriser.INSTANCE);
-    mockContext.setThreadingPolicy(new Synchroniser());
     LoginHandlerInterceptor.getEnvironment().clear();
-
-    securityService = mockContext.mock(SecurityService.class);
+    securityService = mock(SecurityService.class);
   }
 
   @After
   public void tearDown() {
-    mockContext.assertIsSatisfied();
-    mockContext = null;
     LoginHandlerInterceptor.getEnvironment().clear();
-  }
-
-  private String createEnvironmentVariable(final String name) {
-    return (LoginHandlerInterceptor.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + name);
   }
 
   private <T> Enumeration<T> enumeration(final Iterator<T> iterator) {
@@ -89,52 +79,66 @@ public class LoginHandlerInterceptorJUnitTest {
   }
 
   @Test
-  public void testPreHandleAfterCompletion() throws Exception {
+  public void preHandleShouldSetEnvironmentVariablesFromSpecificRequestParameters()
+      throws Exception {
     final Map<String, String> requestParameters = new HashMap<>(2);
-
     requestParameters.put("parameter", "one");
-    requestParameters.put(createEnvironmentVariable("variable"), "two");
-
-    final HttpServletRequest mockHttpRequest = mockContext.mock(HttpServletRequest.class,
-        "testPreHandleAfterCompletion.HttpServletRequest");
-
-    mockContext.checking(new Expectations() {
-      {
-        oneOf(mockHttpRequest).getParameterNames();
-        will(returnValue(enumeration(requestParameters.keySet().iterator())));
-        oneOf(mockHttpRequest).getHeader(ResourceConstants.USER_NAME);
-        will(returnValue("admin"));
-        oneOf(mockHttpRequest).getHeader(ResourceConstants.PASSWORD);
-        will(returnValue("password"));
-        oneOf(mockHttpRequest).getParameter(with(equal(createEnvironmentVariable("variable"))));
-        will(returnValue(requestParameters.get(createEnvironmentVariable("variable"))));
-        oneOf(securityService).login(with(aNonNull(Properties.class)));
-        oneOf(securityService).logout();
-      }
-    });
+    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable", "two");
+    final HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class, name.getMethodName());
+    when(mockHttpRequest.getParameterNames())
+        .thenReturn(enumeration(requestParameters.keySet().iterator()));
+    when(mockHttpRequest.getHeader(USER_NAME)).thenReturn("admin");
+    when(mockHttpRequest.getHeader(PASSWORD)).thenReturn("password");
+    when(mockHttpRequest.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable"))
+        .thenReturn("two");
 
     LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor(securityService);
+    Map<String, String> environmentBeforePreHandle = LoginHandlerInterceptor.getEnvironment();
+    assertThat(environmentBeforePreHandle).isNotNull();
+    assertThat(environmentBeforePreHandle.isEmpty()).isTrue();
 
-    Map<String, String> envBefore = LoginHandlerInterceptor.getEnvironment();
+    assertThat(handlerInterceptor.preHandle(mockHttpRequest, null, null)).isTrue();
+    Map<String, String> environmentAfterPreHandle = LoginHandlerInterceptor.getEnvironment();
+    assertThat(environmentAfterPreHandle).isNotNull();
+    assertThat(environmentAfterPreHandle).isNotSameAs(environmentBeforePreHandle);
+    assertThat(environmentAfterPreHandle.size()).isEqualTo(1);
+    assertThat(environmentAfterPreHandle.containsKey("variable")).isTrue();
+    assertThat(environmentAfterPreHandle.get("variable")).isEqualTo("two");
+    Properties expectedLoginProperties = new Properties();
+    expectedLoginProperties.put(USER_NAME, "admin");
+    expectedLoginProperties.put(PASSWORD, "password");
+    verify(securityService, times(1)).login(expectedLoginProperties);
+  }
 
-    assertNotNull(envBefore);
-    assertTrue(envBefore.isEmpty());
-    assertTrue(handlerInterceptor.preHandle(mockHttpRequest, null, null));
+  @Test
+  public void afterCompletionShouldCleanTheEnvironment() throws Exception {
+    final Map<String, String> requestParameters = new HashMap<>(2);
+    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable", "two");
+    final HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class, name.getMethodName());
+    when(mockHttpRequest.getParameterNames())
+        .thenReturn(enumeration(requestParameters.keySet().iterator()));
+    when(mockHttpRequest.getHeader(USER_NAME)).thenReturn("admin");
+    when(mockHttpRequest.getHeader(PASSWORD)).thenReturn("password");
+    when(mockHttpRequest.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable"))
+        .thenReturn("two");
 
-    Map<String, String> envSet = LoginHandlerInterceptor.getEnvironment();
-
-    assertNotNull(envSet);
-    assertNotSame(envBefore, envSet);
-    assertEquals(1, envSet.size());
-    assertTrue(envSet.containsKey("variable"));
-    assertEquals("two", envSet.get("variable"));
+    LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor(securityService);
+    assertThat(handlerInterceptor.preHandle(mockHttpRequest, null, null)).isTrue();
+    Map<String, String> environmentAfterPreHandle = LoginHandlerInterceptor.getEnvironment();
+    assertThat(environmentAfterPreHandle).isNotNull();
+    assertThat(environmentAfterPreHandle.size()).isEqualTo(1);
+    assertThat(environmentAfterPreHandle.containsKey("variable")).isTrue();
+    assertThat(environmentAfterPreHandle.get("variable")).isEqualTo("two");
+    Properties expectedLoginProperties = new Properties();
+    expectedLoginProperties.put(USER_NAME, "admin");
+    expectedLoginProperties.put(PASSWORD, "password");
+    verify(securityService, times(1)).login(expectedLoginProperties);
 
     handlerInterceptor.afterCompletion(mockHttpRequest, null, null, null);
-
-    Map<String, String> envAfter = LoginHandlerInterceptor.getEnvironment();
-
-    assertNotNull(envAfter);
-    assertTrue(envAfter.isEmpty());
+    Map<String, String> environmentAfterCompletion = LoginHandlerInterceptor.getEnvironment();
+    assertThat(environmentAfterCompletion).isNotNull();
+    assertThat(environmentAfterCompletion.isEmpty()).isTrue();
+    verify(securityService, times(1)).logout();
   }
 
   @Test
@@ -143,162 +147,130 @@ public class LoginHandlerInterceptorJUnitTest {
   }
 
   private class HandlerInterceptorThreadSafetyMultiThreadedTestCase extends MultithreadedTestCase {
-
-    private LoginHandlerInterceptor handlerInterceptor;
-
     private HttpServletRequest mockHttpRequestOne;
     private HttpServletRequest mockHttpRequestTwo;
+    private LoginHandlerInterceptor handlerInterceptor;
 
     @Override
     public void initialize() {
       super.initialize();
 
       final Map<String, String> requestParametersOne = new HashMap<>(3);
-
       requestParametersOne.put("param", "one");
-      requestParametersOne.put(createEnvironmentVariable("STAGE"), "test");
-      requestParametersOne.put(createEnvironmentVariable("GEODE_HOME"), "/path/to/gemfire/700");
+      requestParametersOne.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "STAGE", "test");
+      requestParametersOne.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME",
+          "/path/to/geode");
 
-      mockHttpRequestOne = mockContext.mock(HttpServletRequest.class,
-          "testHandlerInterceptorThreadSafety.HttpServletRequest.1");
+      mockHttpRequestOne =
+          mock(HttpServletRequest.class, "testHandlerInterceptorThreadSafety.HttpServletRequest.1");
+      when(mockHttpRequestOne.getParameterNames())
+          .thenReturn(enumeration(requestParametersOne.keySet().iterator()));
+      when(mockHttpRequestOne.getHeader(ResourceConstants.USER_NAME)).thenReturn("admin");
+      when(mockHttpRequestOne.getHeader(ResourceConstants.PASSWORD)).thenReturn("password");
+      when(mockHttpRequestOne.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "STAGE"))
+          .thenReturn("test");
+      when(mockHttpRequestOne
+          .getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME"))
+              .thenReturn("/path/to/geode");
 
-      mockContext.checking(new Expectations() {
-        {
-          oneOf(mockHttpRequestOne).getParameterNames();
-          will(returnValue(enumeration(requestParametersOne.keySet().iterator())));
-          oneOf(mockHttpRequestOne).getHeader(ResourceConstants.USER_NAME);
-          will(returnValue("admin"));
-          oneOf(mockHttpRequestOne).getHeader(ResourceConstants.PASSWORD);
-          will(returnValue("password"));
-          oneOf(mockHttpRequestOne).getParameter(with(equal(createEnvironmentVariable("STAGE"))));
-          will(returnValue(requestParametersOne.get(createEnvironmentVariable("STAGE"))));
-          oneOf(mockHttpRequestOne)
-              .getParameter(with(equal(createEnvironmentVariable("GEODE_HOME"))));
-          will(returnValue(requestParametersOne.get(createEnvironmentVariable("GEODE_HOME"))));
-          oneOf(securityService).login(with(aNonNull(Properties.class)));
-          oneOf(securityService).logout();
-        }
-      });
-
-      mockHttpRequestTwo = mockContext.mock(HttpServletRequest.class,
-          "testHandlerInterceptorThreadSafety.HttpServletRequest.2");
-
+      mockHttpRequestTwo =
+          mock(HttpServletRequest.class, "testHandlerInterceptorThreadSafety.HttpServletRequest.2");
       final Map<String, String> requestParametersTwo = new HashMap<>(3);
-
       requestParametersTwo.put("parameter", "two");
-      requestParametersTwo.put(createEnvironmentVariable("HOST"), "localhost");
-      requestParametersTwo.put(createEnvironmentVariable("GEODE_HOME"), "/path/to/gemfire/75");
-
-      mockContext.checking(new Expectations() {
-        {
-          oneOf(mockHttpRequestTwo).getParameterNames();
-          will(returnValue(enumeration(requestParametersTwo.keySet().iterator())));
-          oneOf(mockHttpRequestTwo).getHeader(ResourceConstants.USER_NAME);
-          will(returnValue("admin"));
-          oneOf(mockHttpRequestTwo).getHeader(ResourceConstants.PASSWORD);
-          will(returnValue("password"));
-          oneOf(mockHttpRequestTwo).getParameter(with(equal(createEnvironmentVariable("HOST"))));
-          will(returnValue(requestParametersTwo.get(createEnvironmentVariable("HOST"))));
-          oneOf(mockHttpRequestTwo)
-              .getParameter(with(equal(createEnvironmentVariable("GEODE_HOME"))));
-          will(returnValue(requestParametersTwo.get(createEnvironmentVariable("GEODE_HOME"))));
-          oneOf(securityService).login(with(aNonNull(Properties.class)));
-          oneOf(securityService).logout();
-        }
-      });
+      requestParametersTwo.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "HOST", "localhost");
+      requestParametersTwo.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME",
+          "/path/to/geode/180");
+      when(mockHttpRequestTwo.getParameterNames())
+          .thenReturn(enumeration(requestParametersTwo.keySet().iterator()));
+      when(mockHttpRequestTwo.getHeader(ResourceConstants.USER_NAME)).thenReturn("admin");
+      when(mockHttpRequestTwo.getHeader(ResourceConstants.PASSWORD)).thenReturn("password");
+      when(mockHttpRequestTwo.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "HOST"))
+          .thenReturn("localhost");
+      when(mockHttpRequestTwo
+          .getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME"))
+              .thenReturn("/path/to/geode/180");
 
       handlerInterceptor = new LoginHandlerInterceptor(securityService);
     }
 
+    @SuppressWarnings("unused")
     public void thread1() throws Exception {
       assertTick(0);
       Thread.currentThread().setName("HTTP Request Processing Thread 1");
 
       Map<String, String> env = LoginHandlerInterceptor.getEnvironment();
-
-      assertNotNull(env);
-      assertTrue(env.isEmpty());
-      assertTrue(handlerInterceptor.preHandle(mockHttpRequestOne, null, null));
+      assertThat(env).isNotNull();
+      assertThat(env.isEmpty()).isTrue();
+      assertThat(handlerInterceptor.preHandle(mockHttpRequestOne, null, null)).isTrue();
 
       env = LoginHandlerInterceptor.getEnvironment();
-
-      assertNotNull(env);
-      assertEquals(2, env.size());
-      assertFalse(env.containsKey("param"));
-      assertFalse(env.containsKey("parameter"));
-      assertFalse(env.containsKey("HOST"));
-      assertFalse(env.containsKey("security-username"));
-      assertFalse(env.containsKey("security-password"));
-      assertEquals("test", env.get("STAGE"));
-      assertEquals("/path/to/gemfire/700", env.get("GEODE_HOME"));
+      assertThat(env).isNotNull();
+      assertThat(env.size()).isEqualTo(2);
+      assertThat(env.containsKey("param")).isFalse();
+      assertThat(env.containsKey("parameter")).isFalse();
+      assertThat(env.containsKey("HOST")).isFalse();
+      assertThat(env.containsKey("security-username")).isFalse();
+      assertThat(env.containsKey("security-password")).isFalse();
+      assertThat(env.get("STAGE")).isEqualTo("test");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode");
 
       waitForTick(2);
-
       env = LoginHandlerInterceptor.getEnvironment();
-
-      assertNotNull(env);
-      assertEquals(2, env.size());
-      assertFalse(env.containsKey("param"));
-      assertFalse(env.containsKey("parameter"));
-      assertFalse(env.containsKey("HOST"));
-      assertFalse(env.containsKey("security-username"));
-      assertFalse(env.containsKey("security-password"));
-      assertEquals("test", env.get("STAGE"));
-      assertEquals("/path/to/gemfire/700", env.get("GEODE_HOME"));
+      assertThat(env).isNotNull();
+      assertThat(env.size()).isEqualTo(2);
+      assertThat(env.containsKey("param")).isFalse();
+      assertThat(env.containsKey("parameter")).isFalse();
+      assertThat(env.containsKey("HOST")).isFalse();
+      assertThat(env.containsKey("security-username")).isFalse();
+      assertThat(env.containsKey("security-password")).isFalse();
+      assertThat(env.get("STAGE")).isEqualTo("test");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode");
 
       waitForTick(4);
-
       env = LoginHandlerInterceptor.getEnvironment();
-
-      assertNotNull(env);
-      assertEquals(2, env.size());
-      assertFalse(env.containsKey("param"));
-      assertFalse(env.containsKey("parameter"));
-      assertFalse(env.containsKey("HOST"));
-      assertFalse(env.containsKey("security-username"));
-      assertFalse(env.containsKey("security-password"));
-      assertEquals("test", env.get("STAGE"));
-      assertEquals("/path/to/gemfire/700", env.get("GEODE_HOME"));
+      assertThat(env).isNotNull();
+      assertThat(env.size()).isEqualTo(2);
+      assertThat(env.containsKey("param")).isFalse();
+      assertThat(env.containsKey("parameter")).isFalse();
+      assertThat(env.containsKey("HOST")).isFalse();
+      assertThat(env.containsKey("security-username")).isFalse();
+      assertThat(env.containsKey("security-password")).isFalse();
+      assertThat(env.get("STAGE")).isEqualTo("test");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode");
 
       handlerInterceptor.afterCompletion(mockHttpRequestOne, null, null, null);
-
       env = LoginHandlerInterceptor.getEnvironment();
-
       assertNotNull(env);
       assertTrue(env.isEmpty());
     }
 
+    @SuppressWarnings("unused")
     public void thread2() throws Exception {
       assertTick(0);
       Thread.currentThread().setName("HTTP Request Processing Thread 2");
+
       waitForTick(1);
-
       Map<String, String> env = LoginHandlerInterceptor.getEnvironment();
-
-      assertNotNull(env);
-      assertTrue(env.isEmpty());
-      assertTrue(handlerInterceptor.preHandle(mockHttpRequestTwo, null, null));
+      assertThat(env).isNotNull();
+      assertThat(env.isEmpty()).isTrue();
+      assertThat(handlerInterceptor.preHandle(mockHttpRequestTwo, null, null)).isTrue();
 
       env = LoginHandlerInterceptor.getEnvironment();
-
-      assertNotNull(env);
-      assertEquals(2, env.size());
-      assertFalse(env.containsKey("parameter"));
-      assertFalse(env.containsKey("param"));
-      assertFalse(env.containsKey("STAGE"));
-      assertFalse(env.containsKey("security-username"));
-      assertFalse(env.containsKey("security-password"));
-      assertEquals("localhost", env.get("HOST"));
-      assertEquals("/path/to/gemfire/75", env.get("GEODE_HOME"));
+      assertThat(env).isNotNull();
+      assertThat(env.size()).isEqualTo(2);
+      assertThat(env.containsKey("parameter")).isFalse();
+      assertThat(env.containsKey("param")).isFalse();
+      assertThat(env.containsKey("STAGE")).isFalse();
+      assertThat(env.containsKey("security-username")).isFalse();
+      assertThat(env.containsKey("security-password")).isFalse();
+      assertThat(env.get("HOST")).isEqualTo("localhost");
+      assertThat(env.get("GEODE_HOME")).isEqualTo("/path/to/geode/180");
 
       waitForTick(3);
-
       handlerInterceptor.afterCompletion(mockHttpRequestTwo, null, null, null);
-
       env = LoginHandlerInterceptor.getEnvironment();
-
-      assertNotNull(env);
-      assertTrue(env.isEmpty());
+      assertThat(env).isNotNull();
+      assertThat(env.isEmpty()).isTrue();
     }
 
     @Override
@@ -307,5 +279,4 @@ public class LoginHandlerInterceptorJUnitTest {
       handlerInterceptor = null;
     }
   }
-
 }

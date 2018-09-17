@@ -15,13 +15,26 @@
 package org.apache.geode.internal.cache.entries;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.offheap.StoredObject;
 
 public class DiskEntryHelperTest {
 
@@ -74,4 +87,97 @@ public class DiskEntryHelperTest {
     assertThat(result).isFalse();
   }
 
+  @Test
+  public void whenHelperUpdateCalledAndDiskRegionAcquireReadLockThrowsRegionDestroyedExceptionThenStoredObjectShouldBeReleased()
+      throws Exception {
+    LocalRegion lr = mock(LocalRegion.class);
+    DiskEntry diskEntry = mock(DiskEntry.class);
+    when(diskEntry.getDiskId()).thenReturn(mock(DiskId.class));
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    DiskRegion diskRegion = mock(DiskRegion.class);
+    when(lr.getDiskRegion()).thenReturn(diskRegion);
+    Mockito.doThrow(new RegionDestroyedException("Region Destroyed", "mocked region"))
+        .when(diskRegion).acquireReadLock();
+    StoredObject storedObject = mock(StoredObject.class);
+    try {
+      DiskEntry.Helper.update(diskEntry, lr, storedObject, entryEvent);
+      fail();
+    } catch (RegionDestroyedException rde) {
+      verify(storedObject, times(1)).release();
+    }
+  }
+
+
+  @Test
+  public void whenBasicUpdateWithDiskRegionBackupAndEntryNotSetThenReleaseOnStoredObjectShouldBeCalled()
+      throws Exception {
+    StoredObject storedObject = mock(StoredObject.class);
+    LocalRegion lr = mock(LocalRegion.class);
+    DiskEntry diskEntry = mock(DiskEntry.class);
+    when(diskEntry.getDiskId()).thenReturn(mock(DiskId.class));
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    DiskRegion diskRegion = mock(DiskRegion.class);
+    when(diskRegion.isBackup()).thenReturn(true);
+    doThrow(new RegionDestroyedException("", "")).when(diskRegion).put(eq(diskEntry), eq(lr),
+        ArgumentMatchers.any(DiskEntry.Helper.ValueWrapper.class), anyBoolean());
+    when(lr.getDiskRegion()).thenReturn(diskRegion);
+    try {
+      DiskEntry.Helper.basicUpdateForTesting(diskEntry, lr, storedObject, entryEvent);
+      fail();
+    } catch (RegionDestroyedException rde) {
+      verify(storedObject, times(1)).release();
+    }
+  }
+
+  @Test
+  public void whenBasicUpdateWithDiskRegionBackupAndAsyncWritesAndEntryNotSetThenReleaseOnStoredObjectShouldBeCalled()
+      throws Exception {
+    StoredObject storedObject = mock(StoredObject.class);
+    LocalRegion lr = mock(LocalRegion.class);
+    DiskEntry diskEntry = mock(DiskEntry.class);
+    when(diskEntry.getDiskId()).thenReturn(mock(DiskId.class));
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    DiskRegion diskRegion = mock(DiskRegion.class);
+    when(diskRegion.isBackup()).thenReturn(true);
+    doThrow(new RegionDestroyedException("", "")).when(diskRegion).put(eq(diskEntry), eq(lr),
+        ArgumentMatchers.any(DiskEntry.Helper.ValueWrapper.class), anyBoolean());
+    when(lr.getDiskRegion()).thenReturn(diskRegion);
+
+    when(diskRegion.isSync()).thenReturn(false);
+    when(lr.isInitialized()).thenReturn(true);
+    when(lr.getConcurrencyChecksEnabled()).thenThrow(new RegionDestroyedException("", ""));
+    try {
+      DiskEntry.Helper.basicUpdateForTesting(diskEntry, lr, storedObject, entryEvent);
+      fail();
+    } catch (RegionDestroyedException rde) {
+      verify(storedObject, times(1)).release();
+    }
+  }
+
+  @Test
+  public void whenBasicUpdateButNotBackupAndEntrySet() throws Exception {
+    StoredObject storedObject = mock(StoredObject.class);
+    LocalRegion lr = mock(LocalRegion.class);
+    DiskEntry diskEntry = mock(DiskEntry.class);
+    when(diskEntry.getDiskId()).thenReturn(mock(DiskId.class));
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    DiskRegion diskRegion = mock(DiskRegion.class);
+    when(diskRegion.isBackup()).thenReturn(false);
+    when(lr.getDiskRegion()).thenReturn(diskRegion);
+    DiskEntry.Helper.basicUpdateForTesting(diskEntry, lr, storedObject, entryEvent);
+    verify(storedObject, times(0)).release();
+  }
+
+  @Test
+  public void whenBasicUpdateButNotBackupAndDiskIdIsNullAndEntrySet() throws Exception {
+    StoredObject storedObject = mock(StoredObject.class);
+    LocalRegion lr = mock(LocalRegion.class);
+    DiskEntry diskEntry = mock(DiskEntry.class);
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    DiskRegion diskRegion = mock(DiskRegion.class);
+    when(diskRegion.isBackup()).thenReturn(false);
+    when(lr.getDiskRegion()).thenReturn(diskRegion);
+    DiskEntry.Helper.basicUpdateForTesting(diskEntry, lr, storedObject, entryEvent);
+    verify(storedObject, times(0)).release();
+  }
 }

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 
 import org.junit.AfterClass;
@@ -117,7 +118,8 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithMissingGemFirePropertiesFile() throws IOException {
-    final String missingPropertiesPath = "/path/to/missing/gemfire.properties";
+    final String missingPropertiesPath =
+        Paths.get("missing", "gemfire.properties").toAbsolutePath().toString();
     final String memberName = "testWithMissingGemFirePropertiesFile-locator";
     final String expectedError =
         MessageFormat.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "", missingPropertiesPath);
@@ -137,7 +139,8 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithMissingGemFireSecurityPropertiesFile() throws IOException {
-    final String missingSecurityPropertiesPath = "/path/to/missing/gemfire-security.properties";
+    final String missingSecurityPropertiesPath = Paths
+        .get("missing", "gemfire-security.properties").toAbsolutePath().toString();
     final String memberName = "testWithMissingGemFireSecurityPropertiesFile-locator";
     final String expectedError = MessageFormat.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
         "Security ", missingSecurityPropertiesPath);

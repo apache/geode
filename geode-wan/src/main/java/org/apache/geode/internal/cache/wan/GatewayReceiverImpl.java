@@ -26,6 +26,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -135,6 +136,32 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     return receiver;
   }
 
+  private boolean tryToStart(int port) {
+    if (!AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
+        AvailablePort.getAddress(AvailablePort.SOCKET))) {
+      return false;
+    }
+
+    receiver.setPort(port);
+    receiver.setSocketBufferSize(socketBufferSize);
+    receiver.setMaximumTimeBetweenPings(timeBetPings);
+    if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
+      receiver.setHostnameForClients(hostnameForSenders);
+    }
+    receiver.setBindAddress(bindAdd);
+    receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
+    ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
+    try {
+      receiver.start();
+      this.port = port;
+      return true;
+    } catch (IOException e) {
+      logger.info(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
+          .toLocalizedString(new Object[] {bindAdd, port}));
+      return false;
+    }
+  }
+
   public void start() throws IOException {
     if (receiver == null) {
       receiver = this.cache.addCacheServer(true);
@@ -144,37 +171,38 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       return;
     }
 
-    for (int port = this.startPort; port <= this.endPort; port++) {
-      receiver.setPort(port);
-      receiver.setSocketBufferSize(socketBufferSize);
-      receiver.setMaximumTimeBetweenPings(timeBetPings);
-      if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
-        receiver.setHostnameForClients(hostnameForSenders);
+    int loopStartPort = getPortToStart();
+    int port = loopStartPort;
+    while (!tryToStart(port)) {
+      // get next port to try
+      if (port == endPort && startPort != endPort) {
+        port = startPort;
+      } else {
+        port++;
       }
-      receiver.setBindAddress(bindAdd);
-      receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
-      ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
-      try {
-        receiver.start();
-        this.port = port;
-        break;
-      } catch (IOException e) {
-        if (port == this.endPort) {
-          throw new GatewayReceiverException("No available free port found in the given range (" +
-              this.startPort +
-              "-" +
-              this.endPort +
-              ")", e);
-        }
+      if (port == loopStartPort || port > endPort) {
+        throw new GatewayReceiverException("No available free port found in the given range (" +
+            this.startPort + "-" + this.endPort + ")");
       }
-
     }
+
     logger
         .info(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_STARTED_ON_PORT, this.port));
 
     InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
+  }
 
+  private int getPortToStart() {
+    // choose a random port from the given port range
+    int rPort;
+    if (this.startPort == this.endPort) {
+      rPort = this.startPort;
+    } else {
+      rPort = AvailablePort.getRandomAvailablePortInRange(this.startPort, this.endPort,
+          AvailablePort.SOCKET);
+    }
+    return rPort;
   }
 
   public void stop() {

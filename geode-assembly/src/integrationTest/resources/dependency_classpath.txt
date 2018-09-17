@@ -1,4 +1,5 @@
 HikariCP-3.2.0.jar
+activation-1.1.1.jar
 antlr-2.7.7.jar
 classgraph-4.0.6.jar
 commons-beanutils-1.9.3.jar
@@ -27,6 +28,9 @@ jansi-1.17.1.jar
 javax.resource-api-1.7.jar
 javax.servlet-api-3.1.0.jar
 javax.transaction-api-1.2.jar
+jaxb-api-2.2.11.jar
+jaxb-core-2.2.11.jar
+jaxb-impl-2.2.11.jar
 jetty-http-9.4.8.v20171121.jar
 jetty-io-9.4.8.v20171121.jar
 jetty-security-9.4.8.v20171121.jar

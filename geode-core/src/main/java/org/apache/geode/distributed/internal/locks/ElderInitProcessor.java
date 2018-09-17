@@ -61,28 +61,24 @@ public class ElderInitProcessor extends ReplyProcessor21 {
    * Initializes ElderState map by recovering all existing grantors and crashed grantors in the
    * current ds.
    */
-  static void init(DistributionManager dm, HashMap map) {
-    HashSet crashedGrantors = new HashSet();
-    if (!dm.isAdam()) {
-      Set others = dm.getOtherDistributionManagerIds();
-      if (!others.isEmpty()) {
-        ElderInitProcessor processor = new ElderInitProcessor(dm, others, map, crashedGrantors);
-        ElderInitMessage.send(others, dm, processor);
-        try {
-          processor.waitForRepliesUninterruptibly();
-        } catch (ReplyException e) {
-          e.handleCause();
-        }
+  static void init(DistributionManager dm, HashMap<String, GrantorInfo> map) {
+    HashSet<String> crashedGrantors = new HashSet<>();
+    Set others = dm.getOtherDistributionManagerIds();
+    if (!others.isEmpty()) {
+      ElderInitProcessor processor = new ElderInitProcessor(dm, others, map, crashedGrantors);
+      ElderInitMessage.send(others, dm, processor);
+      try {
+        processor.waitForRepliesUninterruptibly();
+      } catch (ReplyException e) {
+        e.handleCause();
       }
     }
     // always recover from ourself
     GrantorRequestProcessor.readyForElderRecovery(dm.getSystem(), null, null);
     DLockService.recoverLocalElder(dm, map, crashedGrantors);
-    {
-      Iterator it = crashedGrantors.iterator();
-      while (it.hasNext()) {
-        map.put(it.next(), new GrantorInfo(null, 0, 0, true));
-      }
+
+    for (String crashedGrantor : crashedGrantors) {
+      map.put(crashedGrantor, new GrantorInfo(null, 0, 0, true));
     }
   }
   //////////// Instance methods //////////////

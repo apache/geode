@@ -1992,8 +1992,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     public LocatorState(final LocatorLauncher launcher, final Status status) {
-      // if status is NOT_RESPONDING then this is executing inside the JVM asking for he status; pid
-      // etc will be set according to the caller's JVM instead
+      // if status is NOT_RESPONDING then this is executing inside the JVM asking for the status;
+      // pid etc will be set according to the caller's JVM instead
       this(status, launcher.statusMessage, System.currentTimeMillis(), launcher.getId(),
           identifyPid(), ManagementFactory.getRuntimeMXBean().getUptime(),
           launcher.getWorkingDirectory(), ManagementFactory.getRuntimeMXBean().getInputArguments(),

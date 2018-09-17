@@ -446,9 +446,10 @@ public class WANConfigurationJUnitTest {
     GatewayTransportFilter myStreamFilter1 = new MyGatewayTransportFilter1();
     fact.addGatewayTransportFilter(myStreamFilter1);
 
-
+    long then = System.currentTimeMillis();
     GatewayReceiver receiver = fact.create();
-    assertThatThrownBy(() -> receiver.start()).isInstanceOf(GatewayReceiverException.class);
+    assertThatThrownBy(() -> receiver.start()).isInstanceOf(GatewayReceiverException.class)
+        .hasMessageContaining("No available free port found in the given range");
   }
 
   @Test
