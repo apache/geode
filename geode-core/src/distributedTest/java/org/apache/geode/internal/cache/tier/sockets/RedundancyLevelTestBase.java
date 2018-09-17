@@ -196,13 +196,17 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
   }
 
   /**
-   *
-   * @param connectedServers is the expected number of connected servers (0 or more)
+   * @param connectedServers is the expected number of connected servers (1 or more)
    * @param redundantServers is the expected number of redundant servers (0 or more)
    */
   static void verifyConnectedAndRedundantServers(final int connectedServers,
       final int redundantServers) {
-
+    if (connectedServers < 1) {
+      throw new IllegalArgumentException("can't test for < 1 connected server via API");
+    }
+    if (redundantServers < 0) {
+      throw new IllegalArgumentException("can't test for < 0 redundant server via API");
+    }
     await(
         "Live server count didn't match expected and/or redundant server count didn't match expected in time")
             .atMost(180, SECONDS).pollInterval(2, SECONDS)
