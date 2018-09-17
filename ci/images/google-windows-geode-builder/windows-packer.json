@@ -53,12 +53,15 @@
         "docker rmi microsoft/windowsservercore:1709",
         "docker rmi microsoft/nanoserver:1709",
 
+        "Set-Content -Path c:\\ProgramData\\docker\\config\\daemon.json -Value '{ \"hosts\": [\"tcp://0.0.0.0:2375\", \"npipe://\"] }'",
+
         "write-output 'Cloning geode repo'",
         "& 'c:\\Program Files\\Git\\bin\\git.exe' clone -b develop --depth 1 https://github.com/apache/geode.git geode",
         "pushd geode",        "Add-Content -Path build.gradle -Value \"subprojects {`n  task getDeps(type: Copy) {`n  from project.sourceSets.main.runtimeClasspath`n  from project.sourceSets.test.runtimeClasspath`n from configurations.testRuntime`n  into 'runtime/'`n }`n}\"",
         "$Env:JAVA_HOME = 'C:\\Program Files\\Java\\jdk1.8.0_181'",
         ".\\gradlew.bat --no-daemon rat getDeps",
         "popd",
+        "kill -name java -force",
         "rm -force -recurse geode"
       ]
     }
