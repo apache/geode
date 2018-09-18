@@ -1547,7 +1547,7 @@ public class CliStrings {
   public static final String HINT__MSG__SHELL_NOT_INITIALIZED =
       "Shell is not initialized properly. Please restart the shell. Check gfsh-<timestamp>.log for errors.";
   public static final String HINT__MSG__UNKNOWN_TOPIC =
-      "Unknown topic: {0}. Use " + HINT + "; to view the list of available topics.";
+      "Unknown topic: {0}. Use " + HINT + " to view the list of available topics.";
   public static final String HINT__MSG__TOPICS_AVAILABLE =
       "Hints are available for the following topics. Use \"" + HINT
           + " <topic-name>\" for a specific hint.";
