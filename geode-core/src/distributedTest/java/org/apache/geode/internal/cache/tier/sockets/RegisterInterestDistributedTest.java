@@ -41,6 +41,7 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -320,7 +321,7 @@ public class RegisterInterestDistributedTest {
   @Test
   public void testInvalidateReceivedByClientAfterLRUEvictionOfPreviousNullValue() throws Exception {
     ClientCache clientCache = createClientCache(locatorPort);
-    Region region =
+    ClientRegionFactory crf =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).addCacheListener(
             new CacheListener<Object, Object>() {
               @Override
@@ -376,17 +377,18 @@ public class RegisterInterestDistributedTest {
               }
             })
             .setEvictionAttributes(
-                EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.LOCAL_DESTROY))
-            .create("region");
-    region.registerInterestForAllKeys();
+                EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.LOCAL_DESTROY));
 
+            crf.setConcurrencyChecksEnabled(false);
+            Region region = crf.create("region");
+
+    region.registerInterestForAllKeys();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
       regionOnServer.putIfAbsent("1", null);
       regionOnServer.putIfAbsent("2", "hello");
       regionOnServer.putIfAbsent("3", "world");
-
     });
 
     Thread.sleep(5000);
@@ -398,7 +400,7 @@ public class RegisterInterestDistributedTest {
 
   private void createServerRegion(MemberVM server, RegionShortcut regionShortcut) {
     server.invoke(() -> {
-      ClusterStartupRule.getCache().createRegionFactory(regionShortcut).create("region");
+      ClusterStartupRule.getCache().createRegionFactory(regionShortcut).setConcurrencyChecksEnabled(false).create("region");
     });
   }
 }
