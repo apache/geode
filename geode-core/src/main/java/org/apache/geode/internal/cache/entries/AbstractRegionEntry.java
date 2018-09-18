@@ -1686,7 +1686,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
    * @throws ConcurrentCacheModificationException if the event conflicts with an event that has
    *         already been applied to the entry.
    */
-  protected void processVersionTag(EntryEvent cacheEvent) {
+  public void processVersionTag(EntryEvent cacheEvent) {
     EntryEventImpl event = (EntryEventImpl) cacheEvent;
     final VersionTag tag = event.getVersionTag();
     if (tag == null) {
