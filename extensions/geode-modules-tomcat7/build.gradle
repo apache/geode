@@ -39,6 +39,7 @@ dependencies {
   integrationTestRuntime 'javax.ejb:ejb-api:' + project.'javax.ejb-api.version'
   integrationTestRuntime 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   integrationTestRuntime 'org.eclipse.persistence:javax.persistence:' + project.'javax.persistence-api.version'
+  integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 
   eclipse.classpath.file {
     whenMerged { classpath ->
