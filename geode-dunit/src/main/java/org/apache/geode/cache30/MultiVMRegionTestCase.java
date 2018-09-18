@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.hamcrest.Matchers.equalTo;
@@ -45,6 +46,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
@@ -5527,10 +5529,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     synchronized void assertCounts(int commitCount, int failedCommitCount, int rollbackCount,
         int closeCount1) {
-      assertThat(this.afterCommitCount).isEqualTo(commitCount);
-      assertThat(this.afterFailedCommitCount).isEqualTo(failedCommitCount);
-      assertThat(this.afterRollbackCount).isEqualTo(rollbackCount);
-      assertThat(this.closeCount).isEqualTo(closeCount1);
+      assertSoftly((softly) -> {
+        softly.assertThat(afterCommitCount).describedAs("After Commit Count")
+            .isEqualTo(commitCount);
+        softly.assertThat(afterFailedCommitCount).describedAs("After Failed Commit Count")
+            .isEqualTo(failedCommitCount);
+        softly.assertThat(afterRollbackCount).describedAs("After Rollback Count")
+            .isEqualTo(rollbackCount);
+        softly.assertThat(closeCount).describedAs("Close Count")
+            .isEqualTo(closeCount1);
+      });
     }
   }
 
@@ -6984,12 +6992,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     getSystem().getLogWriter().info("textTXRmtMirror: create mirror and non-mirror");
     txMgr.commit();
 
-    if (!region.getAttributes().getScope().isAck()) {
-      waitAtMost(5, MINUTES)
-          .untilAsserted(() -> validateTXRmtMirror(rgnName, vm0, vm1));
-    } else {
-      validateTXRmtMirror(rgnName, vm0, vm1);
-    }
+    validateTXRmtMirror(rgnName, vm0, vm1);
   }
 
   private void validateTXRmtMirror(String rgnName, VM vm0, VM vm1) {
@@ -6997,58 +7000,68 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         Region<String, String> rgn = getRootRegion().getSubregion(rgnName);
-        {
-          assertThat(rgn.getEntry("key")).describedAs("Could not find entry for 'key'").isNotNull();
-          assertThat(rgn.getEntry("key").getValue()).isEqualTo("value");
-        }
-        CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
-        tl.checkAfterCommitCount(1);
-        assertThat(tl.afterFailedCommitCount).isEqualTo(0);
-        assertThat(tl.afterRollbackCount).isEqualTo(0);
-        assertThat(tl.closeCount).isEqualTo(0);
-        assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
-        {
-          Collection<EntryEvent<String, String>> events =
-              TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
-          assertThat(events.size()).isEqualTo(1);
-          EntryEvent<String, String> ev = events.iterator().next();
-          assertThat(rgn).isSameAs(ev.getRegion());
-          assertThat(ev.getKey()).isEqualTo("key");
-          assertThat(ev.getNewValue()).isEqualTo("value");
-          assertThat(ev.getOldValue()).isNull();
-          assertThat(ev.getOperation().isLocalLoad()).isFalse();
-          assertThat(ev.getOperation().isNetLoad()).isFalse();
-          assertThat(ev.getOperation().isLoad()).isFalse();
-          assertThat(ev.getOperation().isNetSearch()).isFalse();
-          assertThat(ev.getOperation().isExpiration()).isFalse();
-          assertThat(ev.getCallbackArgument()).isNull();
-          assertThat(ev.isCallbackArgumentAvailable()).isTrue();
-          assertThat(ev.isOriginRemote()).isTrue();
-          assertThat(ev.getOperation().isDistributed()).isTrue();
+
+        if (!rgn.getAttributes().getScope().isAck()) {
+          waitAtMost(5, MINUTES).untilAsserted(() -> checkCommitAndDataExists(rgn));
+        } else {
+          checkCommitAndDataExists(rgn);
         }
       }
+
+      private void checkCommitAndDataExists(Region<String, String> rgn) {
+        assertThat(rgn.getEntry("key")).describedAs("Could not find entry for 'key'")
+            .isNotNull();
+        assertThat(rgn.getEntry("key").getValue()).isEqualTo("value");
+
+        CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
+        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        tl.assertCounts(1, 0, 0, 0);
+        assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
+        List<EntryEvent<String, String>> events =
+            TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
+        assertThat(events.size()).isEqualTo(1);
+        EntryEvent<String, String> ev = events.get(0);
+        assertThat(rgn).isSameAs(ev.getRegion());
+        assertThat(ev.getKey()).isEqualTo("key");
+        assertThat(ev.getNewValue()).isEqualTo("value");
+        assertThat(ev.getOldValue()).isNull();
+        assertThat(ev.getOperation().isLocalLoad()).isFalse();
+        assertThat(ev.getOperation().isNetLoad()).isFalse();
+        assertThat(ev.getOperation().isLoad()).isFalse();
+        assertThat(ev.getOperation().isNetSearch()).isFalse();
+        assertThat(ev.getOperation().isExpiration()).isFalse();
+        assertThat(ev.getCallbackArgument()).isNull();
+        assertThat(ev.isCallbackArgumentAvailable()).isTrue();
+        assertThat(ev.isOriginRemote()).isTrue();
+        assertThat(ev.getOperation().isDistributed()).isTrue();
+      }
     };
+
     SerializableRunnable checkNoKey = new SerializableRunnable("textTXRmtMirror: checkNoKey") {
       @Override
       public void run() {
         Region<String, String> rgn = getRootRegion().getSubregion(rgnName);
-        {
-          assertThat(rgn.getEntry("key")).isNull();
+
+        if (!rgn.getAttributes().getScope().isAck()) {
+          waitAtMost(5, TimeUnit.MINUTES).untilAsserted(() -> {
+            checkCommitAndNoData(rgn);
+          });
+        } else {
+          checkCommitAndNoData(rgn);
         }
+      }
+
+      private void checkCommitAndNoData(Region<String, String> rgn) {
+        assertThat(rgn.getEntry("key")).isNull();
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
         MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
-        tl.checkAfterCommitCount(1);
-        assertThat(tl.afterFailedCommitCount).isEqualTo(0);
-        assertThat(tl.afterRollbackCount).isEqualTo(0);
-        assertThat(tl.closeCount).isEqualTo(0);
-        assertThat(TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents()).size()).isEqualTo(
-            (long) 0);
-        assertThat(TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents()).size()).isEqualTo(
-            (long) 0);
+        tl.assertCounts(1, 0, 0, 0);
+        assertThat(TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents())).isEmpty();
+        assertThat(TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents())).isEmpty();
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
       }
     };
+
     vm0.invoke(checkExists);
     vm1.invoke(checkNoKey);
   }
@@ -8773,7 +8786,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   @SuppressWarnings("unchecked")
   private static <L extends TransactionListener> L firstTransactionListenerFrom(
       CacheTransactionManager transactionManager) {
-    return (L) transactionManager.getListeners()[0];
+    TransactionListener[] listeners = transactionManager.getListeners();
+    assertThat(listeners).describedAs("Listeners on transactionManager for transaction with id "
+        + transactionManager.getTransactionId()).hasSize(1);
+    return (L) listeners[0];
   }
 
   @SuppressWarnings("unchecked")
