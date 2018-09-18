@@ -261,6 +261,8 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testInMissingRelativeDirectoryThatCanBeCreated() {
+    final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+
     // path to a missing dir that can be created
     String readWritePathname = "readWriteDir";
     File readWriteDir = new File(readWritePathname);
@@ -273,7 +275,8 @@ public class StartLocatorCommandDUnitTest {
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, missingDirPath);
+        .addOption(START_LOCATOR__DIR, missingDirPath)
+        .addOption(START_LOCATOR__PORT, locatorPort.toString());
 
     try {
       CommandResult result = gfsh.executeCommand(command.getCommandString());
@@ -325,8 +328,7 @@ public class StartLocatorCommandDUnitTest {
       assertThat(result.getMessageFromContent()).contains(expectedMessage);
 
       // Verify GEODE-2138 (Geode commands do not contain GemFire in output)
-      assertThat(result.getMessageFromContent()).doesNotContain("Gemfire")
-          .doesNotContain("GemFire");
+      assertThat(result.getMessageFromContent()).doesNotContainPattern("Gem[Ff]ire Version");
       assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
     } finally {
       String pathToFile = Paths.get(System.getProperty("user.dir"), memberName).toString();
