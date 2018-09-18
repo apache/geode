@@ -245,9 +245,9 @@ public class FunctionAccessController extends AbstractBaseController {
       headers.setLocation(toUri("functions", functionId));
 
       Object functionResult = null;
-      if (results instanceof NoResult)
+      if (results instanceof NoResult) {
         return new ResponseEntity<>("", headers, HttpStatus.OK);
-
+      }
       functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {

@@ -65,8 +65,19 @@ dependencies {
   testCompile project(':geode-core')
   testCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
 
+  integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  integrationTestCompile 'org.springframework.security:spring-security-test:' + project.'spring-security.version'
 
   integrationTestCompile project(":geode-junit")
+  integrationTestCompile project(":geode-dunit")
+}
+
+sourceSets {
+  integrationTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
+  }
 }
 
 war {
