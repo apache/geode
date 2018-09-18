@@ -33,6 +33,7 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,7 +100,15 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   public TestName testName = new TestName();
 
   private void loadExpectedDataSerializables() throws Exception {
-    this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
+    if (SystemUtils.isJavaVersionAtLeast(9f)) {
+      this.expectedDataSerializablesFile =
+          getResourceAsFile("sanctionedDataSerializables-java9.txt");
+    }
+
+    if (this.expectedDataSerializablesFile == null) {
+      this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
+    }
+
     assertThat(this.expectedDataSerializablesFile).exists().canRead();
 
     this.expectedDataSerializables =
@@ -572,6 +581,10 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   }
 
   private File getResourceAsFile(Class associatedClass, String resourceName) {
-    return new File(associatedClass.getResource(resourceName).getFile());
+    URL resource = associatedClass.getResource(resourceName);
+    if (resource == null) {
+      return null;
+    }
+    return new File(resource.getFile());
   }
 }
