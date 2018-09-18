@@ -279,7 +279,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       NotificationEmitter emitter = (NotificationEmitter) ManagementFactory.getMemoryMXBean();
       try {
         emitter.removeNotificationListener(this, null, null);
-        this.cache.getLoggerI18n().fine("Removed Memory MXBean notification listener" + this);
+        if (logger.isTraceEnabled()) {
+          logger.trace("Removed Memory MXBean notification listener" + this);
+        }
       } catch (ListenerNotFoundException ignore) {
         logger.debug("This instance '{}' was not registered as a Memory MXBean listener", this);
       }
@@ -322,8 +324,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       Statistics si = getTenuredPoolStatistics(this.cache.getInternalDistributedSystem());
       if (si != null) {
         sampler.addLocalStatListener(this.statListener, si, "currentUsedMemory");
-        if (this.cache.getLogger().fineEnabled()) {
-          this.cache.getLogger().fine("Registered stat listener for " + si.getTextId());
+        if (logger.isTraceEnabled()) {
+          logger.trace("Registered stat listener for " + si.getTextId());
         }
 
         return true;
@@ -358,8 +360,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     this.pollerExecutor.scheduleAtFixedRate(new HeapPoller(), POLLER_INTERVAL, POLLER_INTERVAL,
         TimeUnit.MILLISECONDS);
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n().fine(
+    if (logger.isTraceEnabled()) {
+      logger.trace(
           "Started GemfireHeapPoller to poll the heap every " + POLLER_INTERVAL + " milliseconds");
     }
   }
@@ -607,11 +609,10 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       this.evictionToleranceCounter++;
       this.criticalToleranceCounter = 0;
       if (this.evictionToleranceCounter <= memoryStateChangeTolerance) {
-        if (this.cache.getLoggerI18n().fineEnabled()) {
-          this.cache.getLoggerI18n()
-              .fine("State " + newState + " ignored. toleranceCounter:"
-                  + this.evictionToleranceCounter + " MEMORY_EVENT_TOLERANCE:"
-                  + memoryStateChangeTolerance);
+        if (logger.isTraceEnabled()) {
+          logger.trace("State " + newState + " ignored. toleranceCounter:"
+              + this.evictionToleranceCounter + " MEMORY_EVENT_TOLERANCE:"
+              + memoryStateChangeTolerance);
         }
         return true;
       }
@@ -619,19 +620,18 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       this.criticalToleranceCounter++;
       this.evictionToleranceCounter = 0;
       if (this.criticalToleranceCounter <= memoryStateChangeTolerance) {
-        if (this.cache.getLoggerI18n().fineEnabled()) {
-          this.cache.getLoggerI18n()
-              .fine("State " + newState + " ignored. toleranceCounter:"
-                  + this.criticalToleranceCounter + " MEMORY_EVENT_TOLERANCE:"
-                  + memoryStateChangeTolerance);
+        if (logger.isTraceEnabled()) {
+          logger.trace("State " + newState + " ignored. toleranceCounter:"
+              + this.criticalToleranceCounter + " MEMORY_EVENT_TOLERANCE:"
+              + memoryStateChangeTolerance);
         }
         return true;
       }
     } else {
       this.criticalToleranceCounter = 0;
       this.evictionToleranceCounter = 0;
-      if (this.cache.getLoggerI18n().fineEnabled()) {
-        this.cache.getLoggerI18n().fine("TOLERANCE counters reset");
+      if (logger.isTraceEnabled()) {
+        logger.trace("TOLERANCE counters reset");
       }
     }
     return false;
@@ -661,8 +661,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   synchronized void processLocalEvent(MemoryEvent event) {
     assert event.isLocal();
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n().fine("Handling new local event " + event);
+    if (logger.isTraceEnabled()) {
+      logger.trace("Handling new local event " + event);
     }
 
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()) {
@@ -691,8 +691,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
           new Object[] {event.getMember(), "heap"});
     }
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n().fine("Informing remote members of event " + event);
+    if (logger.isTraceEnabled()) {
+      logger.trace("Informing remote members of event " + event);
     }
 
     this.resourceAdvisor.updateRemoteProfile();
@@ -834,8 +834,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
             }
           }
         });
-        if (HeapMemoryMonitor.this.cache.getLoggerI18n().fineEnabled()) {
-          HeapMemoryMonitor.this.cache.getLoggerI18n().fine(
+        if (HeapMemoryMonitor.logger.isTraceEnabled()) {
+          HeapMemoryMonitor.logger.trace(
               "StatSampler scheduled a " + "handleNotification call with " + usedBytes + " bytes");
         }
       } catch (RejectedExecutionException ignore) {
@@ -869,7 +869,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       try {
         updateStateAndSendEvent(getBytesUsed());
       } catch (Exception e) {
-        HeapMemoryMonitor.this.cache.getLoggerI18n().fine("Poller Thread caught exception:", e);
+        HeapMemoryMonitor.logger.debug("Poller Thread caught exception:", e);
       }
       // TODO: do we need to handle errors too?
     }
@@ -896,7 +896,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       builder.append(" maxMemoryBytes:").append(newThresholds.getMaxMemoryBytes());
       builder.append(" criticalThresholdBytes:").append(newThresholds.getCriticalThresholdBytes());
       builder.append(" evictionThresholdBytes:").append(newThresholds.getEvictionThresholdBytes());
-      this.cache.getLoggerI18n().fine(builder.toString());
+      logger.trace(builder.toString());
     }
   }
 
