@@ -322,8 +322,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       Statistics si = getTenuredPoolStatistics(this.cache.getInternalDistributedSystem());
       if (si != null) {
         sampler.addLocalStatListener(this.statListener, si, "currentUsedMemory");
-        if (this.cache.getLoggerI18n().fineEnabled()) {
-          this.cache.getLoggerI18n().fine("Registered stat listener for " + si.getTextId());
+        if (this.cache.getLogger().fineEnabled()) {
+          this.cache.getLogger().fine("Registered stat listener for " + si.getTextId());
         }
 
         return true;
