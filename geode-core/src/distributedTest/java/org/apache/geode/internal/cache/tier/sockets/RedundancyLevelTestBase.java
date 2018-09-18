@@ -136,8 +136,8 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     assertThat(r1).isNotNull();
     r1.put(k1, k1);
     r1.put(k2, k2);
-    assertThat(r1.getEntry(k1).getValue()).isEqualTo(k1);
-    assertThat(r1.getEntry(k2).getValue()).isEqualTo(k2);
+    assertThat(r1.get(k1)).isEqualTo(k1);
+    assertThat(r1.get(k2)).isEqualTo(k2);
   }
 
   static void verifyDispatcherIsAlive() {
