@@ -2291,7 +2291,7 @@ public class DiskRegionJUnitTest {
     region.close();
     closeDiskStore(diskStore);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
+    diskStore = createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
     region = createRegion(regionName, diskStoreName, true, true, false, false, 0);
     region.put("key1", payload);
 
@@ -2301,7 +2301,7 @@ public class DiskRegionJUnitTest {
     region.close();
     closeDiskStore(diskStore);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
+    diskStore = createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
     region = createRegion(regionName, diskStoreName, true, true, false, false, 0);
     region.put("key2", payload);
 
@@ -2311,7 +2311,7 @@ public class DiskRegionJUnitTest {
     region.close();
     closeDiskStore(diskStore);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
+    diskStore = createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
     region = createRegion(regionName, diskStoreName, true, true, false, false, 0);
     region.put("key3", payload);
 
@@ -2321,7 +2321,7 @@ public class DiskRegionJUnitTest {
     region.close();
     closeDiskStore(diskStore);
 
-    createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
+    diskStore = createDiskStoreWithSizeInBytes(diskStoreName, diskStoreFactory, 500);
     region = createRegion(regionName, diskStoreName, true, true, false, false, 0);
     region.put("key4", payload);
 
