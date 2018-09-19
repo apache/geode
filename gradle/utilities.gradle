@@ -47,13 +47,8 @@ allprojects {
         tasks.withType(GenerateMavenPom) {
           it.enabled = false
         }
-      }
-    }
-    disableSigning = {
-      // Use this closure when a project should not publish anything to maven.
-      afterEvaluate {
         tasks.withType(Sign) {
-          onlyIf({false})
+          it.enabled = false
         }
       }
     }

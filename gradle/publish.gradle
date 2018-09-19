@@ -178,6 +178,7 @@ subprojects {
 
 } // subprojects
 
+
 //Prompt the user for a password to sign archives or upload artifacts, if requested
 if (project.hasProperty('askpass')) {
   gradle.taskGraph.whenReady { taskGraph ->
