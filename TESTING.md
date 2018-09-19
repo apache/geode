@@ -6,15 +6,15 @@ Before running tests, ensure all steps in the [BUILDING.md](https://github.com/a
 ## Running Tests By Type
 Tests are broken up into five types - unit, integration, distributed, acceptance, and upgrade.  They can be executed using the following commands from the Geode repository root directory:
 * Unit tests: generally test a single class and run quickly  
-  `./gradlew test --parallel`
+  `./gradlew test`
 * Integration tests: involve inter-operation of components or subsystems  
-  `./gradlew integrationTest --parallel`
+  `./gradlew integrationTest`
 * Distributed tests: involve multiple members of a distributed system.  
-  `./gradlew distributedTest --parallel`
+  `./gradlew distributedTest`
 * Acceptance tests: test Geode from end user perspective  
-  `./gradlew acceptanceTest --parallel`
+  `./gradlew acceptanceTest`
 * Upgrade tests: test compatibility between versions of Geode and rolling upgrades  
-  `./gradlew upgradeTest --parallel`
+  `./gradlew upgradeTest`
 
 ## Running Individual Tests
 To run an individual test, you can either
