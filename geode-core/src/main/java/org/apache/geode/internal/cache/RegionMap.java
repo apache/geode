@@ -364,7 +364,10 @@ public interface RegionMap extends EvictableMap {
 
   void finishChangeValueForm();
 
-  int centralizedLruUpdateCallback();
+  /**
+   * @return the total number of bytes evicted by this invocation
+   */
+  int evictAndReturnBytesEvicted();
 
   void updateEvictionCounter();
 

@@ -24,8 +24,6 @@ public interface FocusedRegionMap {
 
   RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry);
 
-  void lruEntryDestroy(RegionEntry regionEntry); // TODO: subclass
-
   boolean removeEntry(Object key, RegionEntry regionEntry);
 
   void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat);
@@ -33,15 +31,17 @@ public interface FocusedRegionMap {
   void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat, EntryEventImpl event,
       final InternalRegion internalRegion);
 
-  void lruEntryUpdate(RegionEntry regionEntry);
+  void entryCreated(RegionEntry regionEntry);
 
-  void lruEntryCreate(RegionEntry regionEntry);
+  void entryUpdated(RegionEntry regionEntry);
+
+  void entryDestroyed(RegionEntry regionEntry);
 
   void incEntryCount(int delta);
 
   void runWhileEvictionDisabled(Runnable runnable);
 
-  void lruUpdateCallback();
+  void evictIfNeeded();
 
-  void resetThreadLocals();
+  void resetEvictionThreadState();
 }

@@ -1231,8 +1231,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       final Object value;
       if (clientEvent != null && regionEntry.getVersionStamp() != null) {
-        // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
-        final boolean disabled = this.entries.disableLruUpdateCallback();
+        // defer eviction to prevent a deadlock (see bug 51121).
+        final boolean disabled = this.entries.disableEviction();
         try {
           synchronized (regionEntry) { // bug #51059 value & version must be obtained atomically
             clientEvent.setVersionTag(regionEntry.getVersionStamp().asVersionTag());
@@ -1241,10 +1241,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           }
         } finally {
           if (disabled) {
-            this.entries.enableLruUpdateCallback();
+            this.entries.enableEviction();
           }
           try {
-            this.entries.lruUpdateCallback();
+            this.entries.evictIfNeeded();
           } catch (DiskAccessException dae) {
             this.handleDiskAccessException(dae);
             throw dae;
@@ -1284,7 +1284,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   Object getDeserialized(RegionEntry regionEntry, boolean updateStats, boolean disableCopyOnRead,
       boolean preferCachedDeserializable, boolean retainResult) {
     assert !retainResult || preferCachedDeserializable;
-    boolean disabledLRUCallback = this.entries.disableLruUpdateCallback();
+    boolean disabledLRUCallback = this.entries.disableEviction();
     try {
       @Retained
       Object value;
@@ -1328,8 +1328,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           .toLocalizedString("Error while deserializing value for key=" + regionEntry.getKey()), i);
     } finally {
       if (disabledLRUCallback) {
-        this.entries.enableLruUpdateCallback();
-        this.entries.lruUpdateCallback();
+        this.entries.enableEviction();
+        this.entries.evictIfNeeded();
       }
     }
   }
@@ -8451,14 +8451,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public boolean txLRUStart() {
-    return this.entries.disableLruUpdateCallback();
+    return this.entries.disableEviction();
   }
 
   @Override
   public void txLRUEnd() {
-    this.entries.enableLruUpdateCallback();
+    this.entries.enableEviction();
     try {
-      this.entries.lruUpdateCallback();
+      this.entries.evictIfNeeded();
     } catch (DiskAccessException dae) {
       handleDiskAccessException(dae);
       throw dae;

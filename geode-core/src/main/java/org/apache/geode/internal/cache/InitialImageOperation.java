@@ -943,7 +943,7 @@ public class InitialImageOperation {
               }
             }
             // fix for 41814, java level deadlock
-            this.entries.lruUpdateCallback();
+            this.entries.evictIfNeeded();
           }
         }
 

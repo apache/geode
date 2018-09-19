@@ -134,7 +134,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
         // run into situations where a cache listener performs a cache
         // operation that needs to update LRU stats. In order to do this
         // we first have to execute the previous LRU actions.
-        lruUpdateCallback();
+        evictIfNeeded();
       }
       setMustRemove(true);
     }
@@ -178,14 +178,14 @@ public class VMLRURegionMap extends AbstractRegionMap {
         le.updateEntrySize(getEvictionController(), new CachedDeserializableValueWrapper(v));
     if (delta != 0) {
       result = true;
-      boolean disabledLURCallbacks = disableLruUpdateCallback();
+      boolean disabledLURCallbacks = disableEviction();
       // by making sure that callbacks are disabled when we call
       // setDelta; it ensures that the setDelta will just inc the delta
-      // value and not call lruUpdateCallback which we call in
+      // value and not do eviction which we call in
       // finishChangeValueForm
       setDelta(delta);
       if (disabledLURCallbacks) {
-        enableLruUpdateCallback();
+        enableEviction();
       }
     }
     // fix for bug 42090
@@ -202,7 +202,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
    */
   @Override
   public void finishChangeValueForm() {
-    lruUpdateCallback();
+    evictIfNeeded();
   }
 
   private boolean getMustRemove() {
@@ -365,7 +365,19 @@ public class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public void lruUpdateCallback() {
+  public void runWhileEvictionDisabled(Runnable r) {
+    final boolean disabled = disableEviction();
+    try {
+      r.run();
+    } finally {
+      if (disabled) {
+        enableEviction();
+      }
+    }
+  }
+
+  @Override
+  public void evictIfNeeded() {
     final boolean isDebugEnabled_LRU = logger.isTraceEnabled(LogMarker.LRU_VERBOSE);
 
     if (getCallbackDisabled()) {
@@ -373,10 +385,10 @@ public class VMLRURegionMap extends AbstractRegionMap {
     }
     final int delta = getDelta();
     int bytesToEvict = delta;
-    resetThreadLocals();
+    resetEvictionThreadState();
     if (isDebugEnabled_LRU && _isOwnerALocalRegion()) {
       logger.trace(LogMarker.LRU_VERBOSE,
-          "lruUpdateCallback; list size is: {}; actual size is: {}; map size is: {}; delta is: {}; limit is: {}; tombstone count={}",
+          "evictIfNeeded; list size is: {}; actual size is: {}; map size is: {}; delta is: {}; limit is: {}; tombstone count={}",
           getTotalEntrySize(), this.getEvictionList().size(), size(), delta, getLimit(),
           _getOwner().getTombstoneCount());
     }
@@ -402,7 +414,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
               // only primaries can trigger inline eviction fix for 41814
               if (!region.getBucketAdvisor().isPrimary()) {
                 try {
-                  bytesEvicted = region.getRegionMap().centralizedLruUpdateCallback();
+                  bytesEvicted = region.getRegionMap().evictAndReturnBytesEvicted();
                   if (bytesEvicted == 0) {
                     iter.remove();
                   } else {
@@ -520,7 +532,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public int centralizedLruUpdateCallback() {
+  public int evictAndReturnBytesEvicted() {
     final boolean isDebugEnabled_LRU = logger.isTraceEnabled(LogMarker.LRU_VERBOSE);
 
     int evictedBytes = 0;
@@ -528,10 +540,10 @@ public class VMLRURegionMap extends AbstractRegionMap {
       return evictedBytes;
     }
     getDelta();
-    resetThreadLocals();
+    resetEvictionThreadState();
     if (isDebugEnabled_LRU) {
       logger.trace(LogMarker.LRU_VERBOSE,
-          "centralLruUpdateCallback: lru size is now {}, limit is: {}", getTotalEntrySize(),
+          "evictAndReturnBytesEvicted: lru size is now {}, limit is: {}", getTotalEntrySize(),
           getLimit());
     }
     EvictionCounters stats = getEvictionList().getStatistics();
@@ -581,7 +593,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
   @Override
   public void updateEvictionCounter() {
     final int delta = getDelta();
-    resetThreadLocals();
+    resetEvictionThreadState();
     if (logger.isTraceEnabled(LogMarker.LRU_VERBOSE)) {
       logger.trace(LogMarker.LRU_VERBOSE, "updateStats - delta is: {} total is: {} limit is: {}",
           delta, getTotalEntrySize(), getLimit());
@@ -593,7 +605,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public boolean disableLruUpdateCallback() {
+  public boolean disableEviction() {
     if (getCallbackDisabled()) {
       return false;
     } else {
@@ -603,12 +615,12 @@ public class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public void enableLruUpdateCallback() {
+  public void enableEviction() {
     setCallbackDisabled(false);
   }
 
   @Override
-  public void resetThreadLocals() {
+  public void resetEvictionThreadState() {
     mustRemove.set(null);
     lruDelta.set(null);
     callbackDisabled.set(null);
@@ -656,7 +668,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
    *
    */
   @Override
-  public void lruEntryCreate(RegionEntry re) {
+  public void entryCreated(RegionEntry re) {
     EvictableEntry e = (EvictableEntry) re;
     if (logger.isTraceEnabled(LogMarker.LRU_VERBOSE)) {
       logger.trace(LogMarker.LRU_VERBOSE,
@@ -670,12 +682,12 @@ public class VMLRURegionMap extends AbstractRegionMap {
     boolean possibleClear = disk != null && disk.didClearCountChange();
     if (!possibleClear || this._getOwner().basicGetEntry(re.getKey()) == re) {
       lruList.appendEntry(e);
-      lruEntryUpdate(e);
+      entryUpdated(e);
     }
   }
 
   @Override
-  public void lruEntryUpdate(RegionEntry re) {
+  public void entryUpdated(RegionEntry re) {
     final EvictableEntry e = (EvictableEntry) re;
     setDelta(e.updateEntrySize(getEvictionController()));
     if (logger.isDebugEnabled()) {
@@ -717,7 +729,7 @@ public class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public void lruEntryDestroy(RegionEntry regionEntry) {
+  public void entryDestroyed(RegionEntry regionEntry) {
     final EvictableEntry e = (EvictableEntry) regionEntry;
     if (logger.isTraceEnabled(LogMarker.LRU_VERBOSE)) {
       logger.trace(LogMarker.LRU_VERBOSE,
@@ -750,12 +762,12 @@ public class VMLRURegionMap extends AbstractRegionMap {
       DiskRegion disk = _getOwner().getDiskRegion();
       boolean possibleClear = disk != null && disk.didClearCountChange();
       if (!possibleClear || this._getOwner().basicGetEntry(e.getKey()) == e) {
-        lruEntryUpdate(e);
+        entryUpdated(e);
         e.unsetEvicted();
         lruList.appendEntry(e);
       }
     } else {
-      lruEntryUpdate(e);
+      entryUpdated(e);
       lruList.appendEntry(e);
     }
   }

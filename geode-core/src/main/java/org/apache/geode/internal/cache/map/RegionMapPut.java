@@ -264,7 +264,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     if (!isOwnerInitialized()) {
       event.inhibitCacheListenerNotification(true);
     }
-    updateLru();
+    informMapOfCreateOrUpdate();
 
     final RegionEntry re = getRegionEntry();
     long lastModTime = getOwner().basicPutPart2(event, re, isOwnerInitialized(),
@@ -272,12 +272,12 @@ public class RegionMapPut extends AbstractRegionMapPut {
     setLastModifiedTime(lastModTime);
   }
 
-  private void updateLru() {
+  private void informMapOfCreateOrUpdate() {
     if (!isClearOccurred()) {
       if (getEvent().getOperation().isCreate()) {
-        getRegionMap().lruEntryCreate(getRegionEntry());
+        getRegionMap().entryCreated(getRegionEntry());
       } else {
-        getRegionMap().lruEntryUpdate(getRegionEntry());
+        getRegionMap().entryUpdated(getRegionEntry());
       }
     }
   }
@@ -296,17 +296,17 @@ public class RegionMapPut extends AbstractRegionMapPut {
             getLastModifiedTime(), invokeListeners, isIfNew(), isIfOld(), getExpectedOldValue(),
             isRequireOldValue());
       } finally {
-        lruUpdateCallbackIfNotCleared();
+        evictIfNotCleared();
       }
     } else {
-      getRegionMap().resetThreadLocals();
+      getRegionMap().resetEvictionThreadState();
     }
   }
 
-  private void lruUpdateCallbackIfNotCleared() {
+  private void evictIfNotCleared() {
     if (!isClearOccurred()) {
       try {
-        getRegionMap().lruUpdateCallback();
+        getRegionMap().evictIfNeeded();
       } catch (DiskAccessException dae) {
         getOwner().handleDiskAccessException(dae);
         throw dae;

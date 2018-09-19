@@ -354,7 +354,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(true), anyBoolean());
-    verify(regionMap, never()).lruEntryDestroy(any());
+    verify(regionMap, never()).entryDestroyed(any());
   }
 
   @Test
@@ -368,7 +368,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     verify(owner, times(1)).txApplyDestroyPart2(any(), any(), anyBoolean(), eq(false),
         anyBoolean());
-    verify(regionMap, times(1)).lruEntryDestroy(any());
+    verify(regionMap, times(1)).entryDestroyed(any());
   }
 
   @Test
@@ -1431,14 +1431,14 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsLruEntryDestroy_givenOldRegionEntry() {
+  public void txApplyDestroyCallsEntryDestroyed_givenOldRegionEntry() {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
 
     doTxApplyDestroy();
 
-    verify(regionMap, times(1)).lruEntryDestroy(oldRegionEntry);
+    verify(regionMap, times(1)).entryDestroyed(oldRegionEntry);
   }
 
   @Test

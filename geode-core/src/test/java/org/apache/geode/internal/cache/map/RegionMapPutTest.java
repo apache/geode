@@ -682,60 +682,60 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void lruUpdateCallbackCalled_ifPutDoneWithoutAClear() throws Exception {
+  public void evictIfNeededCalled_ifPutDoneWithoutAClear() throws Exception {
     ifNew = true;
     when(event.getOperation()).thenReturn(Operation.CREATE);
 
     doPut();
 
-    verify(focusedRegionMap, times(1)).lruUpdateCallback();
+    verify(focusedRegionMap, times(1)).evictIfNeeded();
   }
 
   @Test
-  public void lruUpdateCallbackNotCalled_ifPutDoneWithAClear() throws Exception {
-    ifNew = true;
-    when(event.getOperation()).thenReturn(Operation.CREATE);
-    doThrow(RegionClearedException.class).when(event).putNewEntry(any(), any());
-
-    doPut();
-
-    verify(focusedRegionMap, never()).lruUpdateCallback();
-  }
-
-  @Test
-  public void lruEnryCreateCalled_ifCreateDoneWithoutAClear() throws Exception {
-    ifNew = true;
-    when(event.getOperation()).thenReturn(Operation.CREATE);
-
-    doPut();
-
-    verify(focusedRegionMap, times(1)).lruEntryCreate(createdRegionEntry);
-  }
-
-  @Test
-  public void lruEnryCreateNotCalled_ifCreateDoneWithAClear() throws Exception {
+  public void evictIfNeededNotCalled_ifPutDoneWithAClear() throws Exception {
     ifNew = true;
     when(event.getOperation()).thenReturn(Operation.CREATE);
     doThrow(RegionClearedException.class).when(event).putNewEntry(any(), any());
 
     doPut();
 
-    verify(focusedRegionMap, never()).lruEntryCreate(createdRegionEntry);
+    verify(focusedRegionMap, never()).evictIfNeeded();
   }
 
   @Test
-  public void lruEnryUpdateCalled_ifUpdateDoneWithoutAClear() throws Exception {
+  public void enryCreatedCalled_ifCreateDoneWithoutAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+
+    doPut();
+
+    verify(focusedRegionMap, times(1)).entryCreated(createdRegionEntry);
+  }
+
+  @Test
+  public void enryCreatedNotCalled_ifCreateDoneWithAClear() throws Exception {
+    ifNew = true;
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    doThrow(RegionClearedException.class).when(event).putNewEntry(any(), any());
+
+    doPut();
+
+    verify(focusedRegionMap, never()).entryCreated(createdRegionEntry);
+  }
+
+  @Test
+  public void enryUpdatedCalled_ifUpdateDoneWithoutAClear() throws Exception {
     ifOld = true;
     RegionEntry existingRegionEntry = mock(RegionEntry.class);
     when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
 
     doPut();
 
-    verify(focusedRegionMap, times(1)).lruEntryUpdate(existingRegionEntry);
+    verify(focusedRegionMap, times(1)).entryUpdated(existingRegionEntry);
   }
 
   @Test
-  public void lruEnryUpdateNotCalled_ifUpdateDoneWithAClear() throws Exception {
+  public void enryUpdatedNotCalled_ifUpdateDoneWithAClear() throws Exception {
     ifOld = true;
     RegionEntry existingRegionEntry = mock(RegionEntry.class);
     when(focusedRegionMap.getEntry(event)).thenReturn(existingRegionEntry);
@@ -744,7 +744,7 @@ public class RegionMapPutTest {
 
     doPut();
 
-    verify(focusedRegionMap, never()).lruEntryUpdate(existingRegionEntry);
+    verify(focusedRegionMap, never()).entryUpdated(existingRegionEntry);
   }
 
   @Test
@@ -775,10 +775,10 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void putThrows_ifLruUpdateCallbackThrowsDiskAccessException() throws Exception {
+  public void putThrows_ifEvictIfNeededThrowsDiskAccessException() throws Exception {
     ifNew = true;
     when(event.getOperation()).thenReturn(Operation.CREATE);
-    doThrow(DiskAccessException.class).when(focusedRegionMap).lruUpdateCallback();
+    doThrow(DiskAccessException.class).when(focusedRegionMap).evictIfNeeded();
 
     assertThatThrownBy(() -> doPut()).isInstanceOf(DiskAccessException.class);
 

@@ -269,10 +269,10 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     }
     if (!isClearOccurred()) {
       if (isCreate()) {
-        regionMap.lruEntryCreate(regionEntry);
+        regionMap.entryCreated(regionEntry);
         regionMap.incEntryCount(1);
       } else {
-        regionMap.lruEntryUpdate(regionEntry);
+        regionMap.entryUpdated(regionEntry);
       }
     }
   }

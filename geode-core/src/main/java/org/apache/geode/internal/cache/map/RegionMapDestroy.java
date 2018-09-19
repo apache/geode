@@ -190,8 +190,8 @@ public class RegionMapDestroy {
 
   private void destroyExistingWithIndexInUpdateMode(RegionEntry existing) {
     runWithIndexInUpdateMode(() -> destroyExistingWhileInUpdateMode(existing));
-    // No need to call lruUpdateCallback since the only lru action
-    // we may have taken was lruEntryDestroy. This fixes bug 31759.
+    // No need to call do eviction since the only action
+    // we may have taken was an entry destroy. This fixes bug 31759.
   }
 
   private void destroyExistingWhileInUpdateMode(RegionEntry existing) {
@@ -386,7 +386,7 @@ public class RegionMapDestroy {
     }
     inhibitCacheListenerNotification();
     doDestroyPart2(existing, false);
-    lruEntryDestroy(existing);
+    entryDestroyed(existing);
   }
 
   private void handleIncompleteDestroy(RegionEntry entry) {
@@ -399,7 +399,7 @@ public class RegionMapDestroy {
     } else if (isRemoteDestroyOfTombstone(entry)) {
       rescheduleTombstoneUsingEntryTag(entry);
     }
-    lruEntryDestroy(entry);
+    entryDestroyed(entry);
     opCompleted = true;
   }
 
@@ -628,7 +628,7 @@ public class RegionMapDestroy {
     }
     doDestroyPart2(existing, conflictWithClear);
     if (!conflictWithClear) {
-      lruEntryDestroy(existing);
+      entryDestroyed(existing);
     }
   }
 
@@ -867,8 +867,8 @@ public class RegionMapDestroy {
     focusedRegionMap.removeEntry(getKey(), entry, false);
   }
 
-  private void lruEntryDestroy(RegionEntry entry) {
-    focusedRegionMap.lruEntryDestroy(entry);
+  private void entryDestroyed(RegionEntry entry) {
+    focusedRegionMap.entryDestroyed(entry);
   }
 
   /**

@@ -118,7 +118,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         // If the region is persistent the get may need to fault a value
         // in which has to sync the region entry. Note it may need to
         // do this even if it is not overflow (after recovery values are faulted in async).
-        // If the region has an LRU then in lruUpdateCallback it will
+        // If the region has an LRU then in eviction it will
         // call getLRUEntry which has to sync a region entry.
         // Syncing a region entry can lead to dead-lock (see bug 52078).
         // So if either of these conditions hold this message can not be

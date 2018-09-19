@@ -77,7 +77,7 @@ public class RegionEvictorTask implements Runnable {
           for (Iterator<LocalRegion> iterator = regions.iterator(); iterator.hasNext();) {
             LocalRegion region = iterator.next();
             try {
-              long bytesEvicted = region.getRegionMap().centralizedLruUpdateCallback();
+              long bytesEvicted = region.getRegionMap().evictAndReturnBytesEvicted();
               if (bytesEvicted == 0) {
                 iterator.remove();
               }

@@ -450,7 +450,7 @@ public abstract class AbstractRegionMap
                   // do nothing, it's already cleared.
                 }
                 re.removePhase2();
-                lruEntryDestroy(re);
+                entryDestroyed(re);
                 if (tombstone) {
                   _getOwner().incTombstoneCount(-1);
                   tombstones += 1;
@@ -478,51 +478,38 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public void lruUpdateCallback() {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
-  public void lruUpdateCallback(boolean b) {
+  public void evictIfNeeded() {
     // By default do nothing; LRU maps needs to override this method
   }
 
   @Override
-  public boolean disableLruUpdateCallback() {
+  public boolean disableEviction() {
     // By default do nothing; LRU maps needs to override this method
     return false;
   }
 
   @Override
-  public void enableLruUpdateCallback() {
+  public void enableEviction() {
     // By default do nothing; LRU maps needs to override this method
   }
 
   @Override
-  public void resetThreadLocals() {
+  public void resetEvictionThreadState() {
     // By default do nothing; LRU maps needs to override this method
   }
 
-  /**
-   * Tell an LRU that a new entry has been created
-   */
   @Override
-  public void lruEntryCreate(RegionEntry e) {
+  public void entryCreated(RegionEntry e) {
     // do nothing by default
   }
 
-  /**
-   * Tell an LRU that an existing entry has been destroyed
-   */
   @Override
-  public void lruEntryDestroy(RegionEntry regionEntry) {
+  public void entryDestroyed(RegionEntry regionEntry) {
     // do nothing by default
   }
 
-  /**
-   * Tell an LRU that an existing entry has been modified
-   */
   @Override
-  public void lruEntryUpdate(RegionEntry e) {
+  public void entryUpdated(RegionEntry e) {
     // do nothing by default
   }
 
@@ -606,14 +593,14 @@ public abstract class AbstractRegionMap
             }
           }
           incEntryCount(1);
-          lruEntryUpdate(newRe);
+          entryUpdated(newRe);
         } finally {
           OffHeapHelper.release(value);
           if (oldRe instanceof OffHeapRegionEntry) {
             ((OffHeapRegionEntry) oldRe).release();
           }
         }
-        lruUpdateCallback();
+        evictIfNeeded();
       }
     } else {
       for (Iterator<RegionEntry> iter = regionEntries().iterator(); iter.hasNext();) {
@@ -637,7 +624,7 @@ public abstract class AbstractRegionMap
       }
       incEntryCount(size());
       // Since lru was not being done during recovery call it now.
-      lruUpdateCallback();
+      evictIfNeeded();
     }
 
     // Schedule all of the tombstones, now that we have sorted them
@@ -708,11 +695,11 @@ public abstract class AbstractRegionMap
         incEntryCount(1); // we are creating an entry that was recovered from disk including
                           // tombstone
       }
-      lruEntryUpdate(newRe);
+      entryUpdated(newRe);
       needsCallback = true;
     }
     if (needsCallback) {
-      lruUpdateCallback();
+      evictIfNeeded();
     }
 
     EntryLogger.logRecovery(_getOwnerObject(), key, value);
@@ -771,11 +758,11 @@ public abstract class AbstractRegionMap
         throw new IllegalStateException(
             "RegionClearedException should never happen in this context", rce);
       }
-      lruEntryUpdate(re);
+      entryUpdated(re);
       needsCallback = true;
     }
     if (needsCallback) {
-      lruUpdateCallback();
+      evictIfNeeded();
     }
 
     EntryLogger.logRecovery(_getOwnerObject(), key, value);
@@ -851,9 +838,9 @@ public abstract class AbstractRegionMap
                   if (oldIsTombstone) {
                     owner.unscheduleTombstone(oldRe);
                     if (newValue != Token.TOMBSTONE) {
-                      lruEntryCreate(oldRe);
+                      entryCreated(oldRe);
                     } else {
-                      lruEntryUpdate(oldRe);
+                      entryUpdated(oldRe);
                     }
                   }
                   if (newValue == Token.TOMBSTONE) {
@@ -872,7 +859,7 @@ public abstract class AbstractRegionMap
                       return false;
                     } else {
                       owner.scheduleTombstone(oldRe, entryVersion);
-                      lruEntryDestroy(oldRe);
+                      entryDestroyed(oldRe);
                     }
                   } else {
                     int newSize = owner.calculateRegionEntryValueSize(oldRe);
@@ -918,7 +905,7 @@ public abstract class AbstractRegionMap
               } else {
                 owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(newRe));
                 EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
-                lruEntryCreate(newRe);
+                entryCreated(newRe);
               }
               incEntryCount(1);
             }
@@ -968,9 +955,9 @@ public abstract class AbstractRegionMap
       cleared = true;
     } finally {
       if (done && !deferLRUCallback) {
-        lruUpdateCallback();
+        evictIfNeeded();
       } else if (!cleared) {
-        resetThreadLocals();
+        resetEvictionThreadState();
       }
     }
 
@@ -1081,7 +1068,7 @@ public abstract class AbstractRegionMap
                   callbackEventAddedToPending = true;
                 }
                 if (!clearOccured) {
-                  lruEntryDestroy(re);
+                  entryDestroyed(re);
                 }
                 if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
@@ -1157,7 +1144,7 @@ public abstract class AbstractRegionMap
                       }
                       owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
                           false /* Clear Conflicting with the operation */, wasDestroyedOrRemoved);
-                      lruEntryDestroy(oldRe);
+                      entryDestroyed(oldRe);
                     } finally {
                       if (!callbackEventAddedToPending)
                         releaseEvent(callbackEvent);
@@ -1412,9 +1399,9 @@ public abstract class AbstractRegionMap
                             clearOccured /* conflict with clear */, invokeCallbacks);
                         if (!clearOccured) {
                           if (isCreate) {
-                            lruEntryCreate(oldRe);
+                            entryCreated(oldRe);
                           } else {
-                            lruEntryUpdate(oldRe);
+                            entryUpdated(oldRe);
                           }
                         }
                         didInvalidate = true;
@@ -1456,7 +1443,7 @@ public abstract class AbstractRegionMap
                   owner.basicInvalidatePart2(newRe, event, clearOccured /* conflict with clear */,
                       invokeCallbacks);
                   if (!clearOccured) {
-                    lruEntryCreate(newRe);
+                    entryCreated(newRe);
                     incEntryCount(1);
                   }
                   opCompleted = true;
@@ -1624,9 +1611,9 @@ public abstract class AbstractRegionMap
                           invokeCallbacks);
                       if (!clearOccured) {
                         if (oldWasTombstone) {
-                          lruEntryCreate(re);
+                          entryCreated(re);
                         } else {
-                          lruEntryUpdate(re);
+                          entryUpdated(re);
                         }
                       }
                       didInvalidate = true;
@@ -1658,13 +1645,13 @@ public abstract class AbstractRegionMap
           }
           if (didInvalidate && !clearOccured) {
             try {
-              lruUpdateCallback();
+              evictIfNeeded();
             } catch (DiskAccessException dae) {
               this._getOwner().handleDiskAccessException(dae);
               throw dae;
             }
           } else if (!didInvalidate) {
-            resetThreadLocals();
+            resetEvictionThreadState();
           }
         }
         return didInvalidate;
@@ -1860,7 +1847,7 @@ public abstract class AbstractRegionMap
                       callbackEventInPending = true;
                     }
                     if (!clearOccured) {
-                      lruEntryUpdate(oldRe);
+                      entryUpdated(oldRe);
                     }
                     if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
                       txEntryState.setVersionTag(callbackEvent.getVersionTag());
@@ -1902,7 +1889,7 @@ public abstract class AbstractRegionMap
                 }
                 opCompleted = true;
                 if (!clearOccured) {
-                  lruEntryCreate(newRe);
+                  entryCreated(newRe);
                   incEntryCount(1);
                 }
                 if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
@@ -1965,7 +1952,7 @@ public abstract class AbstractRegionMap
                   callbackEventInPending = true;
                 }
                 if (!clearOccured) {
-                  lruEntryUpdate(re);
+                  entryUpdated(re);
                 }
                 if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
@@ -2051,14 +2038,7 @@ public abstract class AbstractRegionMap
 
   @Override
   public void runWhileEvictionDisabled(Runnable r) {
-    final boolean disabled = disableLruUpdateCallback();
-    try {
-      r.run();
-    } finally {
-      if (disabled) {
-        enableLruUpdateCallback();
-      }
-    }
+    r.run();
   }
 
   @Override
@@ -2249,7 +2229,7 @@ public abstract class AbstractRegionMap
   public void writeSyncIfPresent(Object key, Runnable runner) {
     RegionEntry re = getEntry(key);
     if (re != null) {
-      final boolean disabled = disableLruUpdateCallback();
+      final boolean disabled = disableEviction();
       try {
         synchronized (re) {
           if (!re.isRemoved()) {
@@ -2258,10 +2238,10 @@ public abstract class AbstractRegionMap
         }
       } finally {
         if (disabled) {
-          enableLruUpdateCallback();
+          enableEviction();
         }
         try {
-          lruUpdateCallback();
+          evictIfNeeded();
         } catch (DiskAccessException dae) {
           this._getOwner().handleDiskAccessException(dae);
           throw dae;
@@ -2527,7 +2507,7 @@ public abstract class AbstractRegionMap
   public void finishChangeValueForm() {}
 
   @Override
-  public int centralizedLruUpdateCallback() {
+  public int evictAndReturnBytesEvicted() {
     return 0;
   }
 

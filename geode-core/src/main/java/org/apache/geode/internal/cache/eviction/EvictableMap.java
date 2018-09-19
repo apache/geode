@@ -26,29 +26,27 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
 public interface EvictableMap {
 
   /**
-   * to be called by LocalRegion after any synchronization surrounding a map.put or map.replace call
-   * is made. This will then perform the eviction removals, or region.localDestroy() calls to make
-   * up for the recent addition.
+   * Does any eviction needed to compensate for changes made by the current thread.
    */
-  void lruUpdateCallback();
+  void evictIfNeeded();
 
   /**
-   * Disables lruUpdateCallback in calling thread
+   * Disables eviction in calling thread
    *
    * @return false if it's already disabled
    */
-  boolean disableLruUpdateCallback();
+  boolean disableEviction();
 
   /**
-   * Enables lruUpdateCallback in calling thread
+   * Enables eviction in calling thread
    */
-  void enableLruUpdateCallback();
+  void enableEviction();
 
   /**
-   * if an exception occurs between an LRUEntriesMap put and the call to lruUpdateCallback, then
+   * if an exception occurs between an LRUEntriesMap put and the call to evictIfNeeded, then
    * this must be called to allow the thread to continue to work with other regions.
    */
-  void resetThreadLocals();
+  void resetEvictionThreadState();
 
   /**
    * Return true if the lru has exceeded its limit and needs to evict. Note that this method is

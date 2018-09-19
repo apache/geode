@@ -35,10 +35,10 @@ public class BucketRegionQueueHelper {
 
   public GatewaySenderEventImpl addEvent(Object key) {
     this.bucketRegionQueue.getEventTracker().setInitialized();
-    this.bucketRegionQueue.entries.disableLruUpdateCallback();
+    this.bucketRegionQueue.entries.disableEviction();
     GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
     this.bucketRegionQueue.entries.initialImagePut(key, 0, event, false, false, null, null, false);
-    this.bucketRegionQueue.entries.enableLruUpdateCallback();
+    this.bucketRegionQueue.entries.enableEviction();
     return event;
   }
 

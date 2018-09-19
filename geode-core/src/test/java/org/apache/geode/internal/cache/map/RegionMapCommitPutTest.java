@@ -347,23 +347,23 @@ public class RegionMapCommitPutTest {
   }
 
   @Test
-  public void updateThatDoesNotSeeClearCallsLruEntryUpdate() {
+  public void updateThatDoesNotSeeClearCallsEntryUpdated() {
     RegionEntry existingEntry = mock(RegionEntry.class);
     when(focusedRegionMap.getEntry(eq(event))).thenReturn(existingEntry);
     createInstance(Operation.UPDATE, false, txRmtEvent, null);
 
     instance.put();
 
-    verify(focusedRegionMap, times(1)).lruEntryUpdate(existingEntry);
+    verify(focusedRegionMap, times(1)).entryUpdated(existingEntry);
   }
 
   @Test
-  public void createThatDoesNotSeeClearCallsLruEntryCreate() {
+  public void createThatDoesNotSeeClearCallsEntryCreated() {
     createInstance(Operation.CREATE, false, null, localTxEntryState);
 
     instance.put();
 
-    verify(focusedRegionMap, times(1)).lruEntryCreate(regionEntry);
+    verify(focusedRegionMap, times(1)).entryCreated(regionEntry);
     verify(focusedRegionMap, times(1)).incEntryCount(1);
   }
 
@@ -394,15 +394,16 @@ public class RegionMapCommitPutTest {
   }
 
   @Test
-  public void createThatDoesSeeClearDoesNotMakeLruCalls() throws RegionClearedException {
+  public void createThatDoesSeeClearDoesNotReportCreateOrUpdateToMap()
+      throws RegionClearedException {
     doThrow(RegionClearedException.class).when(regionEntry).setValue(any(), any());
     createInstance(Operation.CREATE, false, null, localTxEntryState);
 
     instance.put();
 
     assertThat(instance.isClearOccurred()).isTrue();
-    verify(focusedRegionMap, never()).lruEntryUpdate(any());
-    verify(focusedRegionMap, never()).lruEntryCreate(any());
+    verify(focusedRegionMap, never()).entryUpdated(any());
+    verify(focusedRegionMap, never()).entryCreated(any());
     verify(focusedRegionMap, never()).incEntryCount(1);
   }
 

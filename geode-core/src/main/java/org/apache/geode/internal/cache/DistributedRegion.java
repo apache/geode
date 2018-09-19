@@ -2294,8 +2294,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   private void updateEventWithCurrentRegionEntry(EntryEventImpl event, EntryEventImpl clientEvent) {
-    // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
-    final boolean disabled = this.entries.disableLruUpdateCallback();
+    // defer eviction to prevent a deadlock (see bug 51121).
+    final boolean disabled = this.entries.disableEviction();
     try {
       RegionEntry re = getRegionEntry(event.getKey());
       if (re != null) {
@@ -2310,10 +2310,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
     } finally {
       if (disabled) {
-        this.entries.enableLruUpdateCallback();
+        this.entries.enableEviction();
       }
       try {
-        this.entries.lruUpdateCallback();
+        this.entries.evictIfNeeded();
       } catch (DiskAccessException dae) {
         this.handleDiskAccessException(dae);
         throw dae;

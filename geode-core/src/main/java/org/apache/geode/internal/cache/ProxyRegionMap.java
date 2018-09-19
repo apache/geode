@@ -334,18 +334,18 @@ class ProxyRegionMap implements RegionMap {
 
   // LRUMapCallbacks methods
   @Override
-  public void lruUpdateCallback() {
+  public void evictIfNeeded() {
     // nothing needed
   }
 
   @Override
-  public boolean disableLruUpdateCallback() {
+  public boolean disableEviction() {
     // nothing needed
     return false;
   }
 
   @Override
-  public void enableLruUpdateCallback() {
+  public void enableEviction() {
     // nothing needed
   }
 
@@ -365,7 +365,7 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void resetThreadLocals() {
+  public void resetEvictionThreadState() {
     // nothing needed
   }
 
@@ -879,7 +879,7 @@ class ProxyRegionMap implements RegionMap {
   public void finishChangeValueForm() {}
 
   @Override
-  public int centralizedLruUpdateCallback() {
+  public int evictAndReturnBytesEvicted() {
     return 0;
   }
 

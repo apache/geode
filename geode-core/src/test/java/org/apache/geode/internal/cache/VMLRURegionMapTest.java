@@ -29,12 +29,12 @@ public class VMLRURegionMapTest {
   public void shouldBeMockable() throws Exception {
     VMLRURegionMap mockVMLRURegionMap = mock(VMLRURegionMap.class);
 
-    when(mockVMLRURegionMap.centralizedLruUpdateCallback()).thenReturn(1);
+    when(mockVMLRURegionMap.evictAndReturnBytesEvicted()).thenReturn(1);
 
     mockVMLRURegionMap.changeTotalEntrySize(1);
 
     verify(mockVMLRURegionMap, times(1)).changeTotalEntrySize(1);
 
-    assertThat(mockVMLRURegionMap.centralizedLruUpdateCallback()).isEqualTo(1);
+    assertThat(mockVMLRURegionMap.evictAndReturnBytesEvicted()).isEqualTo(1);
   }
 }

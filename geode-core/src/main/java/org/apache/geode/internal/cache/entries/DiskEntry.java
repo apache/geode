@@ -1103,7 +1103,7 @@ public interface DiskEntry extends RegionEntry {
         entry.setRecentlyUsed(region);
       }
       if (lruFaultedIn) {
-        lruUpdateCallback((DiskRecoveryStore) region);
+        evictIfNeeded((DiskRecoveryStore) region);
       }
       return v; // OFFHEAP: the value ends up being returned by RegionEntry.getValue
     }
@@ -1141,7 +1141,7 @@ public interface DiskEntry extends RegionEntry {
         }
       }
       if (lruFaultedIn) {
-        lruUpdateCallback(recoveryStore);
+        evictIfNeeded(recoveryStore);
       }
     }
 
@@ -1175,10 +1175,10 @@ public interface DiskEntry extends RegionEntry {
       return value;
     }
 
-    private static void lruUpdateCallback(DiskRecoveryStore recoveryStore) {
+    private static void evictIfNeeded(DiskRecoveryStore recoveryStore) {
       /*
        * Used conditional check to see if if its a LIFO Enabled, yes then disable
-       * lruUpdateCallback() and called updateStats() its keep track of actual entries present in
+       * eviction and called updateStats() its keep track of actual entries present in
        * memory - useful when checking capacity constraint
        */
       try {
@@ -1188,7 +1188,7 @@ public interface DiskEntry extends RegionEntry {
           return;
         }
         // this must be done after releasing synchronization
-        recoveryStore.getRegionMap().lruUpdateCallback();
+        recoveryStore.getRegionMap().evictIfNeeded();
       } catch (DiskAccessException dae) {
         recoveryStore.handleDiskAccessException(dae);
         throw dae;
