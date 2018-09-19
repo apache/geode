@@ -27,13 +27,6 @@ public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<
   void setVersionTimeStamp(long time);
 
   /**
-   * Sets the version information with what is in the tag
-   *
-   * @param tag the entryVersion to set
-   */
-  void setVersions(VersionTag<T> tag);
-
-  /**
    * @param memberID the memberID to set
    */
   void setMemberID(VersionSource memberID);

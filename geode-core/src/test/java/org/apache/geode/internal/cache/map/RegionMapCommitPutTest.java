@@ -539,7 +539,7 @@ public class RegionMapCommitPutTest {
     RegionEntry result = instance.put();
 
     assertThat(result).isSameAs(regionEntry);
-    verify(focusedRegionMap, times(1)).processAndGenerateTXVersionTag(eq(event), eq(regionEntry),
+    verify(internalRegion, times(1)).processAndGenerateTXVersionTag(eq(event), eq(regionEntry),
         eq(localTxEntryState));
   }
 

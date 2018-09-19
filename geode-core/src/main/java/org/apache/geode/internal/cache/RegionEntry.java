@@ -98,6 +98,17 @@ public interface RegionEntry {
   }
 
   /**
+   * Sets the version information with what is in the tag
+   *
+   * @param tag the entryVersion to set
+   */
+  default void setVersions(VersionTag<?> tag) {
+    // do nothing by default.
+    // VersionStamp overrides.
+  }
+
+
+  /**
    * @param member the member performing the change, or null if it's this member
    * @param withDelta whether delta version information should be included
    * @param region the owner of the region entry

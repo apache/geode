@@ -91,6 +91,9 @@ import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
+import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -1838,5 +1841,40 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   public void incRecentlyUsed() {
     // nothing
   }
+
+  /**
+   * called from txApply* methods to process and generate versionTags.
+   */
+  @Override
+  public void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry re,
+      TXEntryState txEntryState) {
+    if (!getConcurrencyChecksEnabled()) {
+      return;
+    }
+    try {
+      if (txEntryState != null && txEntryState.getRemoteVersionTag() != null) {
+        // to generate a version based on a remote VersionTag, we will
+        // have to put the remote versionTag in the regionEntry
+        if (re instanceof VersionStamp) {
+          VersionStamp stamp = (VersionStamp) re;
+          VersionTag remoteTag = txEntryState.getRemoteVersionTag();
+          stamp.setVersions(remoteTag);
+        }
+      }
+      re.checkForConcurrencyConflict(callbackEvent);
+    } catch (ConcurrentCacheModificationException ignore) {
+      // ignore this exception, however invoke callbacks for this operation
+    }
+
+    // For distributed transactions, stuff the next region version generated
+    // in phase-1 commit into the callbackEvent so that ARE.generateVersionTag can later
+    // just apply it and not regenerate it in phase-2 commit
+    if (txEntryState != null && txEntryState.getDistTxEntryStates() != null) {
+      callbackEvent.setNextRegionVersion(txEntryState.getDistTxEntryStates().getRegionVersion());
+    }
+
+    generateAndSetVersionTag(callbackEvent, re);
+  }
+
 
 }

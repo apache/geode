@@ -47,7 +47,6 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -262,7 +261,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     assertThat(pendingCallbacks).isEmpty();
-    verify(owner).generateAndSetVersionTag(any(EntryEventImpl.class), same(existingRegionEntry));
+    verify(owner).processAndGenerateTXVersionTag(any(EntryEventImpl.class),
+        same(existingRegionEntry), any());
     verify(existingRegionEntry, never()).makeTombstone(any(), any());
     verify(txEntryState).setVersionTag(any());
   }
@@ -283,7 +283,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(event.getRegionEntry()).isSameAs(existingRegionEntry);
     assertThat(event.getOldValue()).isSameAs(oldValue);
 
-    verify(owner).generateAndSetVersionTag(any(EntryEventImpl.class), same(existingRegionEntry));
+    verify(owner).processAndGenerateTXVersionTag(any(EntryEventImpl.class),
+        same(existingRegionEntry), any());
     verify(existingRegionEntry, never()).makeTombstone(any(), any());
     verify(txEntryState).setVersionTag(event.getVersionTag());
   }
@@ -322,25 +323,9 @@ public class AbstractRegionMapTxApplyDestroyTest {
     doTxApplyDestroy();
 
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
-    verify(regionMap, times(1)).processAndGenerateTXVersionTag(same(callbackEvent),
+    verify(owner, times(1)).processAndGenerateTXVersionTag(same(callbackEvent),
         same(existingRegionEntry), same(txEntryState));
     assertThat(callbackEvent.getNextRegionVersion()).isEqualTo(-1L); // Default value
-  }
-
-  @Test
-  public void setsEventNextRegionVersionOnCallbackEvent_givenExistingRegionEntryThatIsValidAndDistTxEntryStateExists() {
-    givenLocalRegion();
-    givenConcurrencyChecks();
-    givenExistingRegionEntry();
-
-    DistTxThinEntryState distTxEntryStates = mock(DistTxThinEntryState.class);
-    when(txEntryState.getDistTxEntryStates()).thenReturn(distTxEntryStates);
-    when(distTxEntryStates.getRegionVersion()).thenReturn(999L);
-
-    doTxApplyDestroy();
-
-    EntryEventImpl callbackEvent = pendingCallbacks.get(0);
-    assertThat(callbackEvent.getNextRegionVersion()).isEqualTo(999L); // Default value
   }
 
   @Test
@@ -914,7 +899,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(regionMap, times(1)).processAndGenerateTXVersionTag(any(), same(factoryRegionEntry),
+    verify(owner, times(1)).processAndGenerateTXVersionTag(any(), same(factoryRegionEntry),
         same(txEntryState));
   }
 
@@ -1272,7 +1257,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(regionMap, times(1)).processAndGenerateTXVersionTag(any(), same(oldRegionEntry),
+    verify(owner, times(1)).processAndGenerateTXVersionTag(any(), same(oldRegionEntry),
         same(txEntryState));
   }
 

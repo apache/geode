@@ -115,6 +115,9 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry);
 
+  void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry regionEntry,
+      TXEntryState txEntryState);
+
   boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException;
 

@@ -1042,7 +1042,7 @@ public abstract class AbstractRegionMap
                 }
                 boolean clearOccured = false;
                 try {
-                  processAndGenerateTXVersionTag(callbackEvent, re, txEntryState);
+                  owner.processAndGenerateTXVersionTag(callbackEvent, re, txEntryState);
                   if (inTokenMode) {
                     if (oldValue == Token.TOMBSTONE) {
                       owner.unscheduleTombstone(re);
@@ -1131,7 +1131,7 @@ public abstract class AbstractRegionMap
                       if (owner.isUsedForPartitionedRegionBucket()) {
                         txHandleWANEvent(owner, callbackEvent, txEntryState);
                       }
-                      processAndGenerateTXVersionTag(callbackEvent, oldRe, txEntryState);
+                      owner.processAndGenerateTXVersionTag(callbackEvent, oldRe, txEntryState);
                       if (invokeCallbacks) {
                         switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
                         pendingCallbacks.add(callbackEvent);
@@ -1194,7 +1194,7 @@ public abstract class AbstractRegionMap
                 if (owner.isUsedForPartitionedRegionBucket()) {
                   txHandleWANEvent(owner, callbackEvent, txEntryState);
                 }
-                processAndGenerateTXVersionTag(callbackEvent, newRe, txEntryState);
+                owner.processAndGenerateTXVersionTag(callbackEvent, newRe, txEntryState);
                 if (invokeCallbacks) {
                   switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
                   pendingCallbacks.add(callbackEvent);
@@ -1840,7 +1840,7 @@ public abstract class AbstractRegionMap
                           aCallbackArgument);
                     }
                     oldRe.setValueResultOfSearch(false);
-                    processAndGenerateTXVersionTag(callbackEvent, oldRe, txEntryState);
+                    owner.processAndGenerateTXVersionTag(callbackEvent, oldRe, txEntryState);
                     boolean clearOccured = false;
                     try {
                       oldRe.setValue(owner, oldRe.prepareValueForCache(owner, newValue, true));
@@ -1885,7 +1885,7 @@ public abstract class AbstractRegionMap
                 newRe.setValueResultOfSearch(false);
                 boolean clearOccured = false;
                 try {
-                  processAndGenerateTXVersionTag(callbackEvent, newRe, txEntryState);
+                  owner.processAndGenerateTXVersionTag(callbackEvent, newRe, txEntryState);
                   newRe.setValue(owner, newRe.prepareValueForCache(owner, newValue, true));
                   EntryLogger.logTXInvalidate(_getOwnerObject(), key);
                   owner.updateSizeOnCreate(newRe.getKey(), 0);// we are putting in a new invalidated
@@ -1948,7 +1948,7 @@ public abstract class AbstractRegionMap
                   txEvent.addInvalidate(owner, re, re.getKey(), newValue, aCallbackArgument);
                 }
                 re.setValueResultOfSearch(false);
-                processAndGenerateTXVersionTag(callbackEvent, re, txEntryState);
+                owner.processAndGenerateTXVersionTag(callbackEvent, re, txEntryState);
                 boolean clearOccured = false;
                 try {
                   re.setValue(owner, re.prepareValueForCache(owner, newValue, true));
@@ -2088,42 +2088,6 @@ public abstract class AbstractRegionMap
     owner.handleWANEvent(callbackEvent);
     if (txEntryState != null) {
       txEntryState.setTailKey(callbackEvent.getTailKey());
-    }
-  }
-
-  /**
-   * called from txApply* methods to process and generate versionTags.
-   */
-  @Override
-  public void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry re,
-      TXEntryState txEntryState) {
-    final LocalRegion owner = _getOwner();
-    if (owner.getConcurrencyChecksEnabled()) {
-      try {
-        if (txEntryState != null && txEntryState.getRemoteVersionTag() != null) {
-          // to generate a version based on a remote VersionTag, we will
-          // have to put the remote versionTag in the regionEntry
-          VersionTag remoteTag = txEntryState.getRemoteVersionTag();
-          if (re instanceof VersionStamp) {
-            VersionStamp stamp = (VersionStamp) re;
-            stamp.setVersions(remoteTag);
-          }
-        }
-        re.checkForConcurrencyConflict(callbackEvent);
-      } catch (ConcurrentCacheModificationException ignore) {
-        // ignore this exception, however invoke callbacks for this operation
-      }
-
-      // For distributed transactions, stuff the next region version generated
-      // in phase-1 commit into the callbackEvent so that ARE.generateVersionTag can later
-      // just apply it and not regenerate it in phase-2 commit
-      if (callbackEvent != null && txEntryState != null
-          && txEntryState.getDistTxEntryStates() != null) {
-        callbackEvent.setNextRegionVersion(txEntryState.getDistTxEntryStates().getRegionVersion());
-      }
-
-      // callbackEvent.setNextRegionVersion(txEntryState.getNextRegionVersion());
-      owner.generateAndSetVersionTag(callbackEvent, re);
     }
   }
 

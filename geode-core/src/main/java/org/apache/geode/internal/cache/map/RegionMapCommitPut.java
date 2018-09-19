@@ -207,7 +207,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     }
     regionEntry.setValueResultOfSearch(getPutOp().isNetSearch());
     try {
-      regionMap.processAndGenerateTXVersionTag(callbackEvent, regionEntry, txEntryState);
+      owner.processAndGenerateTXVersionTag(callbackEvent, regionEntry, txEntryState);
       setNewValueOnRegionEntry(newValue);
       int newSize = owner.calculateRegionEntryValueSize(regionEntry);
       if (isPutOpCreate()) {
