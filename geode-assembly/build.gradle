@@ -25,11 +25,6 @@ afterEvaluate {
 
 // disable artifact generation for this project
 jar.enabled = false
-extraArchive {
-  sources = false
-  javadoc = false
-  tests = false
-}
 
 publishing {
   publications {
@@ -59,7 +54,6 @@ configurations.all {
 }
 
 gradle.taskGraph.whenReady( { graph ->
-  tasks.install.enabled = false
   tasks.withType(Tar).each { tar ->
     tar.compression = Compression.GZIP
     tar.extension = 'tgz'
