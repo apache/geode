@@ -44,12 +44,6 @@ public interface VersionStamp<T extends VersionSource<T>> extends VersionHolder<
    */
   VersionTag<T> asVersionTag();
 
-  /**
-   * Perform a versioning check with the incoming event. Throws a
-   * ConcurrentCacheModificationException if there is a problem.
-   */
-  void processVersionTag(EntryEvent event);
-
   @Override
   default void checkForConcurrencyConflict(EntryEvent<?, ?> event) {
     processVersionTag(event);

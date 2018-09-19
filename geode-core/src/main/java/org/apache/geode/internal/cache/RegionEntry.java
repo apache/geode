@@ -495,4 +495,12 @@ public interface RegionEntry {
   default boolean needsToCheckForConflict(InternalRegion region) {
     return false;
   }
+
+  /**
+   * Perform a versioning check with the incoming event. Throws a
+   * ConcurrentCacheModificationException if there is a problem.
+   */
+  default void processVersionTag(EntryEvent event) {
+    // nothing needed by default
+  }
 }

@@ -19,7 +19,6 @@ package org.apache.geode.internal.cache.entries;
 // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
-import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -332,12 +331,6 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
       final InternalDistributedMember sender, final boolean checkForConflicts) {
     basicProcessVersionTag(region, versionTag, isTombstoneFromGII, hasDelta, versionSource, sender,
         checkForConflicts);
-  }
-
-  @Override
-  public void processVersionTag(final EntryEvent cacheEvent) {
-    // this keeps IDE happy. without it the sender chain becomes confused while browsing this code
-    super.processVersionTag(cacheEvent);
   }
 
   /** get rvv internal high byte. Used by region entries for transferring to storage */
