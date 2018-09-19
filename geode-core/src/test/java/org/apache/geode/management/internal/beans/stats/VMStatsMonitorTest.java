@@ -15,12 +15,14 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -70,6 +72,39 @@ public class VMStatsMonitorTest {
   }
 
   @Test
+  public void calculateCpuUsageShouldCorrectlyCalculateTheCpuUsed() {
+    Instant now = Instant.now();
+    long halfSecondAsNanoseconds = 500000000L;
+    long quarterSecondAsNanoseconds = 250000000L;
+    long threeQuarterSecondAsNanoseconds = 750000000L;
+    vmStatsMonitor = spy(new VMStatsMonitor(testName.getMethodName()));
+    when(vmStatsMonitor.getLastSystemTime()).thenReturn(now.toEpochMilli());
+
+    // 50% used
+    when(vmStatsMonitor.getLastProcessCpuTime()).thenReturn(0L);
+    float initialCpuUsage = vmStatsMonitor
+        .calculateCpuUsage(now.plus(1, ChronoUnit.SECONDS).toEpochMilli(), halfSecondAsNanoseconds);
+    assertThat(initialCpuUsage).isNotEqualTo(Float.NaN);
+    assertThat(initialCpuUsage).isCloseTo(50F, within(1F));
+
+    // 25% decrease
+    when(vmStatsMonitor.getLastProcessCpuTime()).thenReturn(50L);
+    float decreasedCpuUsage = vmStatsMonitor.calculateCpuUsage(
+        now.plus(1, ChronoUnit.SECONDS).toEpochMilli(), quarterSecondAsNanoseconds);
+    assertThat(decreasedCpuUsage).isNotEqualTo(Float.NaN);
+    assertThat(decreasedCpuUsage).isLessThan(initialCpuUsage);
+    assertThat(decreasedCpuUsage).isCloseTo(25F, within(1F));
+
+    // 50% increase
+    when(vmStatsMonitor.getLastProcessCpuTime()).thenReturn(25L);
+    float increasedCpuUsage = vmStatsMonitor.calculateCpuUsage(
+        now.plus(1, ChronoUnit.SECONDS).toEpochMilli(), threeQuarterSecondAsNanoseconds);
+    assertThat(increasedCpuUsage).isNotEqualTo(Float.NaN);
+    assertThat(increasedCpuUsage).isGreaterThan(decreasedCpuUsage);
+    assertThat(increasedCpuUsage).isCloseTo(75F, within(1F));
+  }
+
+  @Test
   public void refreshStatsShouldUpdateCpuUsage() {
     ZonedDateTime now = ZonedDateTime.now();
     when(MBeanJMXAdapter.isAttributeAvailable(anyString(), anyString())).thenReturn(true);
@@ -100,7 +135,8 @@ public class VMStatsMonitorTest {
 
       vmStatsMonitor.refreshStats();
       verify(vmStatsMonitor, times(1)).calculateCpuUsage(mockSystemTime, mockProcessCpuTime);
-      assertThat(vmStatsMonitor.getCpuUsage()).isNotEqualTo(0);
+      assertThat(vmStatsMonitor.getCpuUsage()).isNotEqualTo(Float.NaN);
+      assertThat(vmStatsMonitor.getCpuUsage()).isLessThan(1F);
     }
   }
 }

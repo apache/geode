@@ -52,6 +52,14 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
     return cpuUsage;
   }
 
+  long getLastSystemTime() {
+    return lastSystemTime;
+  }
+
+  long getLastProcessCpuTime() {
+    return lastProcessCpuTime;
+  }
+
   public VMStatsMonitor(String name) {
     super(name);
     processCPUTimeAvailable = MBeanJMXAdapter.isAttributeAvailable(PROCESS_CPU_TIME_ATTRIBUTE,
@@ -75,8 +83,8 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
    */
   float calculateCpuUsage(long systemTime, long cpuTime) {
     // 10000 = (Nano conversion factor / 100 for percentage)
-    long denom = (systemTime - lastSystemTime) * 10000;
-    return (float) (cpuTime - lastProcessCpuTime) / denom;
+    long denom = (systemTime - getLastSystemTime()) * 10000;
+    return (float) (cpuTime - getLastProcessCpuTime()) / denom;
   }
 
   /**
@@ -106,9 +114,9 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
       }
 
       long systemTime = currentTimeMillis();
+      cpuUsage = calculateCpuUsage(systemTime, cpuTime);
       lastSystemTime = systemTime;
       lastProcessCpuTime = cpuTime;
-      cpuUsage = calculateCpuUsage(systemTime, cpuTime);
     }
   }
 
