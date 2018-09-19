@@ -46,7 +46,6 @@ import org.mockito.Mock;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -290,17 +289,15 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyUpdateIndexes_givenExistingRegionEntryThatIsValid() throws Exception {
+  public void txApplyDestroyCallsRemoveOldIndexEntry_givenExistingRegionEntryThatIsValid()
+      throws Exception {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
-    IndexManager indexManager = mock(IndexManager.class);
-    when(owner.getIndexManager()).thenReturn(indexManager);
 
     doTxApplyDestroy();
 
-    verify(indexManager, times(1)).updateIndexes(same(existingRegionEntry),
-        eq(IndexManager.REMOVE_ENTRY), eq(IndexProtocol.OTHER_OP));
+    verify(owner).removeOldIndexEntry(eq(Operation.DESTROY), same(existingRegionEntry));
   }
 
   @Test
