@@ -16,6 +16,10 @@ package org.apache.geode.management.internal.web.controllers.support;
 
 import static java.lang.Thread.currentThread;
 import static java.util.Collections.enumeration;
+import static java.util.Collections.synchronizedSet;
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.geode.management.internal.security.ResourceConstants.PASSWORD;
 import static org.apache.geode.management.internal.security.ResourceConstants.USER_NAME;
 import static org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX;
@@ -24,44 +28,51 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.math.BigInteger;
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import edu.umd.cs.mtc.MultithreadedTestCase;
-import edu.umd.cs.mtc.TestFramework;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.mockito.Mock;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
-/**
- * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract and
- * functionality of the Spring HandlerInterceptor, LoginHandlerInterceptor class.
- *
- * @see org.junit.Test
- * @since GemFire 8.0
- */
 public class LoginHandlerInterceptorJUnitTest {
+  @Mock
   private SecurityService securityService;
+  private HandlerInterceptor interceptor;
 
   @Rule
   public TestName name = new TestName();
 
+  @Rule
+  public ConcurrencyRule runConcurrently = new ConcurrencyRule();
+
   @Before
   public void setUp() {
     LoginHandlerInterceptor.getEnvironment().clear();
-    securityService = mock(SecurityService.class);
+    initMocks(this);
+    interceptor = new LoginHandlerInterceptor(securityService);
   }
 
   @After
@@ -82,13 +93,12 @@ public class LoginHandlerInterceptorJUnitTest {
     when(mockHttpRequest.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable"))
         .thenReturn("two");
 
-    LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor(securityService);
     Map<String, String> environmentBeforePreHandle = LoginHandlerInterceptor.getEnvironment();
     assertThat(environmentBeforePreHandle)
         .describedAs("environment before preHandle()")
         .isEmpty();
 
-    assertThat(handlerInterceptor.preHandle(mockHttpRequest, null, null))
+    assertThat(interceptor.preHandle(mockHttpRequest, null, null))
         .describedAs("preHandle() result")
         .isTrue();
     assertThat(LoginHandlerInterceptor.getEnvironment())
@@ -114,8 +124,7 @@ public class LoginHandlerInterceptorJUnitTest {
     when(mockHttpRequest.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable"))
         .thenReturn("two");
 
-    LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor(securityService);
-    assertThat(handlerInterceptor.preHandle(mockHttpRequest, null, null))
+    assertThat(interceptor.preHandle(mockHttpRequest, null, null))
         .describedAs("preHandle() result")
         .isTrue();
 
@@ -129,7 +138,7 @@ public class LoginHandlerInterceptorJUnitTest {
     expectedLoginProperties.put(PASSWORD, "password");
     verify(securityService, times(1)).login(expectedLoginProperties);
 
-    handlerInterceptor.afterCompletion(mockHttpRequest, null, null, null);
+    interceptor.afterCompletion(mockHttpRequest, null, null, null);
 
     assertThat(LoginHandlerInterceptor.getEnvironment())
         .describedAs("environment after afterCompletion()")
@@ -138,174 +147,217 @@ public class LoginHandlerInterceptorJUnitTest {
   }
 
   @Test
-  public void testHandlerInterceptorThreadSafety() throws Throwable {
-    TestFramework.runOnce(new HandlerInterceptorThreadSafetyMultiThreadedTestCase(securityService));
+  public void eachRequestThreadsEnvironmentIsConfinedToItsThread() throws Throwable {
+//    int contentionThreadCount = 1 + Runtime.getRuntime().availableProcessors() / 2;
+    int contentionThreadCount = Runtime.getRuntime().availableProcessors();
+    CPUContentionService contentionService = new CPUContentionService(contentionThreadCount);
+
+    Semaphore primaryTaskPermit = new Semaphore(0);
+    Semaphore interferingTaskPermit = new Semaphore(0);
+
+    // Uncomment the following line to create contention for CPUs
+    contentionService.start();
+
+    Callable<Void> primaryTask = () -> primaryTask(primaryTaskPermit, interferingTaskPermit);
+    Callable<Void> interferingTask = () -> interferingTask(primaryTaskPermit, interferingTaskPermit);
+
+    try {
+      runConcurrently.setTimeout(Duration.ofSeconds(1));
+      runConcurrently.add(primaryTask);
+      runConcurrently.add(interferingTask);
+      runConcurrently.executeInParallel();
+    } finally {
+      contentionService.stop(Duration.ofSeconds(10));
+    }
   }
 
-  private static class HandlerInterceptorThreadSafetyMultiThreadedTestCase
-      extends MultithreadedTestCase {
-    private final SecurityService securityService;
-    private HttpServletRequest request1;
-    private HttpServletRequest request2;
-    private LoginHandlerInterceptor handlerInterceptor;
-    private final AtomicBoolean thread1Started = new AtomicBoolean(false);
-    private final AtomicBoolean thread2Started = new AtomicBoolean(false);
+  private Void primaryTask(Semaphore primaryTaskPermissionToRun,
+                           Semaphore interferingTaskPermissionToRun) throws Exception {
+    String taskName = "primary task";
+    currentThread().setName(taskName);
+    System.out.println(taskName + " starting, running preHandle()");
 
-    private HandlerInterceptorThreadSafetyMultiThreadedTestCase(SecurityService securityService) {
-      this.securityService = securityService;
-      setTrace(true);
+    // Only this thread's request has a STAGE parameter. Each thread's requests has a GEODE_HOME
+    // parameter, but the value is distinct in each request.
+    String[] parameterNames = { "GEODE_HOME", "STAGE" };
+
+    // Create a map of parameters, where each entry has a name name prefixed so that the handler
+    // will recognize it as an environment variable, and a value peculiar to this task.
+    Map<String, String> requestParameters = Stream.of(parameterNames)
+        .collect(
+            toMap(
+                name -> ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + name,
+                name -> taskName + " " + name));
+
+    // Create a map of environment expected environment variables, where each entry has a value
+    // peculiar to this task.
+    Map<String, String> expectedRequestEnvironment = Stream.of(parameterNames)
+        .collect(
+            toMap(
+                name -> name,
+                name -> taskName + " " + name));
+    
+    HttpServletRequest request = request(taskName, requestParameters);
+    
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment before preHandle() in " + taskName)
+        .isEmpty();
+
+    assertThat(interceptor.preHandle(request, null, null))
+        .describedAs("preHandle() result in " + taskName)
+        .isTrue();
+
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment after preHandle() in " + taskName)
+        .containsAllEntriesOf(expectedRequestEnvironment)
+        .hasSameSizeAs(expectedRequestEnvironment);
+
+    System.out.println(taskName + " handing off after preHandle()");
+    interferingTaskPermissionToRun.release();
+    primaryTaskPermissionToRun.acquire();
+    System.out.println(taskName + " checking for preHandle() pollution");
+
+    // Verify that the interfering thread's preHandle() did not affect this thread's environment
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment after tick 2 in " + taskName)
+        .containsAllEntriesOf(expectedRequestEnvironment)
+        .hasSameSizeAs(expectedRequestEnvironment);
+
+    System.out.println(taskName + " handing off after checking for preHandle() pollution");
+    interferingTaskPermissionToRun.release();
+    primaryTaskPermissionToRun.acquire();
+    System.out.println(taskName + " checking for afterCompletion() pollution and running afterCompletion()");
+    // The interfering thread has cleared its environment by calling afterCompletion()
+
+    // Verify that the interfering thread's afterCompletion() did not affect this thread's environment
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment after tick 4 in " + taskName)
+        .containsAllEntriesOf(expectedRequestEnvironment)
+        .hasSameSizeAs(expectedRequestEnvironment);
+
+    interceptor.afterCompletion(request, null, null, null);
+
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment after afterCompletion() in " + taskName)
+        .isEmpty();
+
+    System.out.println(taskName + " handing off and terminating after afterCompletion()");
+    interferingTaskPermissionToRun.release();
+
+    return null;
+  }
+
+  private Void interferingTask(Semaphore primaryTaskPermissionToRun,
+                               Semaphore interferingTaskPermissionToRun) throws Exception {
+    String taskName = "interfering task";
+    currentThread().setName(taskName);
+    
+    // Only this thread's request has a HOST parameter. Each thread's request has a GEODE_HOME
+    // parameter, but the value is distinct in each request.
+    String[] parameterNames = { "GEODE_HOME", "HOST"};
+
+    // Create a map of parameters, where each entry has a name prefixed so that the handler will
+    // recognize it as an environment variable, and a value peculiar to this task.
+    Map<String, String> requestParameters = Stream.of(parameterNames)
+        .collect(
+            toMap(
+                name -> ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + name,
+                name -> taskName + " " + name));
+
+    // Create a map of expected environment variables, where each entry has a value peculiar to this
+    // task.
+    Map<String, String> expectedRequestEnvironment = Stream.of(parameterNames)
+        .collect(
+            toMap(
+                name -> name,
+                name -> taskName + " " + name));
+    
+    HttpServletRequest request = request(taskName, requestParameters);
+
+    System.out.println(taskName + " starting");
+
+    System.out.println(taskName + " awaiting permission to preHandle()");
+    interferingTaskPermissionToRun.acquire();
+    // The primary thread has populated its environment by calling preHandle()
+
+    // Verify that the primary thread's preHandle() did not affect this thread's environment
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment before preHandle() in " + taskName)
+        .isEmpty();
+
+    assertThat(interceptor.preHandle(request, null, null))
+        .describedAs("preHandle() result in " + taskName)
+        .isTrue();
+
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment after preHandle() in " + taskName)
+        .containsAllEntriesOf(expectedRequestEnvironment)
+        .hasSameSizeAs(expectedRequestEnvironment);
+
+    System.out.println(taskName + " handing off after preHandle()");
+    primaryTaskPermissionToRun.release();
+    interferingTaskPermissionToRun.acquire();
+    System.out.println(taskName + " running afterCompletion()");
+    // The primary thread has cleared its environment by calling afterCompletion()
+
+    interceptor.afterCompletion(request, null, null, null);
+
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .describedAs("environment after afterCompletion() in " + taskName)
+        .isEmpty();
+
+    System.out.println(taskName + " handing off and terminating after afterCompletion()");
+    primaryTaskPermissionToRun.release();
+    return null;
+  }
+
+  private static HttpServletRequest request(String taskName, Map<String, String> parameters) {
+    HttpServletRequest request = mock(HttpServletRequest.class, taskName + " request");
+
+    when(request.getParameterNames()).thenReturn(enumeration(parameters.keySet()));
+    parameters.keySet()
+        .forEach(name -> when(request.getParameter(name)).thenReturn(parameters.get(name)));
+
+    when(request.getHeader(ResourceConstants.USER_NAME)).thenReturn(taskName + " admin");
+    when(request.getHeader(ResourceConstants.PASSWORD)).thenReturn(taskName + " password");
+
+    return request;
+  }
+
+  /**
+   * Keeps CPUs busy by searching for probable primes.
+   */
+  private static class CPUContentionService {
+    private final ExecutorService executor;
+    private final int threadCount;
+    private final Set<BigInteger> primes = synchronizedSet(new HashSet<>());
+
+    public CPUContentionService(int threadCount) {
+      this.executor = newFixedThreadPool(threadCount);
+      this.threadCount = threadCount;
     }
 
-    @Override
-    public void initialize() {
-      super.initialize();
-
-      Map<String, String> request1Parameters = new HashMap<>();
-      request1Parameters
-          .put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "STAGE", "request1 STAGE");
-      request1Parameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME",
-          "request1 GEODE_HOME");
-
-      request1 = mock(HttpServletRequest.class, "request1");
-      when(request1.getParameterNames())
-          .thenReturn(enumeration(request1Parameters.keySet()));
-      when(request1.getHeader(ResourceConstants.USER_NAME)).thenReturn("admin");
-      when(request1.getHeader(ResourceConstants.PASSWORD)).thenReturn("password");
-
-      when(request1.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "STAGE"))
-          .thenReturn(
-              request1Parameters.get(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "STAGE"));
-      when(request1
-          .getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME"))
-              .thenReturn(
-                  request1Parameters
-                      .get(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME"));
-
-      request2 =
-          mock(HttpServletRequest.class, "request2");
-      Map<String, String> request2Parameters = new HashMap<>();
-      request2Parameters
-          .put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "HOST", "request2 HOST");
-      request2Parameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME",
-          "request2 GEODE_HOME");
-      when(request2.getParameterNames())
-          .thenReturn(enumeration(request2Parameters.keySet()));
-      when(request2.getHeader(ResourceConstants.USER_NAME)).thenReturn("admin");
-      when(request2.getHeader(ResourceConstants.PASSWORD)).thenReturn("password");
-      when(request2.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "HOST"))
-          .thenReturn(
-              request2Parameters.get(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "HOST"));
-      when(request2
-          .getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME"))
-              .thenReturn(
-                  request2Parameters
-                      .get(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "GEODE_HOME"));
-
-      handlerInterceptor = new LoginHandlerInterceptor(securityService);
+    public void start() {
+      for (int i = 0; i < threadCount; i++) {
+        executor.submit(generatePrimes(primes), i);
+      }
     }
 
-    @SuppressWarnings("unused")
-    public void thread1() throws Exception {
-      thread1Started.set(true);
-      freezeClock();
-      Awaitility.await("thread 1 waiting for thread 2 to start").atMost(4, TimeUnit.SECONDS)
-          .until(thread2Started::get);
-      unfreezeClock();
-
-      String threadName = "HTTP Request Processing Thread 1";
-      currentThread().setName(threadName);
-
-      // Verify that this thread's environment starts empty
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment before preHandle() in " + threadName)
-          .isEmpty();
-
-      assertThat(handlerInterceptor.preHandle(request1, null, null))
-          .describedAs("preHandle() result in " + threadName)
-          .isTrue();
-
-      // Verify that preHandle() populated this thread's environment
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment after preHandle() in " + threadName)
-          .doesNotContainKeys("HOST")
-          .hasSize(2)
-          .containsEntry("STAGE", "request1 STAGE")
-          .containsEntry("GEODE_HOME", "request1 GEODE_HOME");
-
-      waitForTick(2);
-
-      // Verify that the other thread's preHandle() did not affect this thread's environment
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment after tick 2 in " + threadName)
-          .doesNotContainKeys("HOST")
-          .hasSize(2)
-          .containsEntry("STAGE", "request1 STAGE")
-          .containsEntry("GEODE_HOME", "request1 GEODE_HOME");
-
-      waitForTick(4);
-      // The other thread has cleared its environment by calling afterCompletion()
-
-      // Verify that the other thread's afterCompletion() did not affect this thread's environment
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment after tick 4 in " + threadName)
-          .doesNotContainKeys("HOST")
-          .hasSize(2)
-          .containsEntry("STAGE", "request1 STAGE")
-          .containsEntry("GEODE_HOME", "request1 GEODE_HOME");
-
-      handlerInterceptor.afterCompletion(request1, null, null, null);
-
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment after afterCompletion() in " + threadName)
-          .isEmpty();
+    public void stop(Duration duration) throws InterruptedException {
+      executor.shutdownNow();
+      executor.awaitTermination(duration.toMillis(), MILLISECONDS);
     }
 
-    @SuppressWarnings("unused")
-    public void thread2() throws Exception {
-      thread2Started.set(true);
-      freezeClock();
-      Awaitility.await("thread 2 waiting for thread 1 to start").atMost(4, TimeUnit.SECONDS)
-          .until(thread1Started::get);
-      unfreezeClock();
-
-      String threadName = "HTTP Request Processing Thread 2";
-      currentThread().setName(threadName);
-
-      waitForTick(1);
-      // The other thread has populated its environment by calling preHandle()
-
-      // Verify that the other thread's preHandle() did not affect this thread's environment
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment before preHandle() in " + threadName)
-          .isEmpty();
-
-      assertThat(handlerInterceptor.preHandle(request2, null, null))
-          .describedAs("preHandle() result in " + threadName)
-          .isTrue();
-
-      // Verify that preHandle() populated this thread's environment
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment after preHandle() in " + threadName)
-          .doesNotContainKeys("STAGE")
-          .hasSize(2)
-          .containsEntry("HOST", "request2 HOST")
-          .containsEntry("GEODE_HOME", "request2 GEODE_HOME");
-
-      waitForTick(3);
-      // The other thread has cleared its environment by calling afterCompletion()
-
-      handlerInterceptor.afterCompletion(request2, null, null, null);
-
-      // Verify that afterCompletion() cleared this thread's environment
-      assertThat(LoginHandlerInterceptor.getEnvironment())
-          .describedAs("environment after afterCompletion() in " + threadName)
-          .isEmpty();
-    }
-
-    @Override
-    public void finish() {
-      super.finish();
-      handlerInterceptor = null;
+    private static Runnable generatePrimes(Set<BigInteger> primes) {
+      return () -> {
+        Random random = new Random();
+        while (true) {
+          if (Thread.currentThread().isInterrupted()) {
+            return;
+          }
+          primes.add(BigInteger.probablePrime(1000, random));
+        }
+      };
     }
   }
 }
