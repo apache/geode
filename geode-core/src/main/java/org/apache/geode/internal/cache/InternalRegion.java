@@ -126,6 +126,14 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   IndexManager getIndexManager();
 
+  /**
+   * Removing the existing indexed value requires the current value in the cache, that is the one
+   * prior to applying the operation.
+   *
+   * @param entry the RegionEntry that contains the value prior to applying the op
+   */
+  void removeOldIndexEntry(Operation op, RegionEntry entry);
+
   boolean isThisRegionBeingClosedOrDestroyed();
 
   CancelCriterion getCancelCriterion();

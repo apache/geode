@@ -196,7 +196,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
     final int oldSize = isPutOpCreate() ? 0 : owner.calculateRegionEntryValueSize(regionEntry);
     callbackEvent.setRegionEntry(regionEntry);
-    regionMap.txRemoveOldIndexEntry(getPutOp(), regionEntry);
+    owner.removeOldIndexEntry(getPutOp(), regionEntry);
     setLastModifiedTime(owner.cacheTimeMillis());
     if (didDestroy) {
       regionEntry.txDidDestroy(getLastModifiedTime());

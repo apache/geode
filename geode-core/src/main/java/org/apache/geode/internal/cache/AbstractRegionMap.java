@@ -34,7 +34,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
-import org.apache.geode.cache.query.IndexMaintenanceException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
@@ -1037,7 +1036,7 @@ public abstract class AbstractRegionMap
                   logger.debug("txApplyDestroy callbackEvent={}", callbackEvent);
                 }
 
-                txRemoveOldIndexEntry(Operation.DESTROY, re);
+                owner.removeOldIndexEntry(Operation.DESTROY, re);
                 if (txEvent != null) {
                   txEvent.addDestroy(owner, re, re.getKey(), aCallbackArgument);
                 }
@@ -1832,7 +1831,7 @@ public abstract class AbstractRegionMap
                       logger.debug("txApplyInvalidate callbackEvent={}", callbackEvent);
                     }
 
-                    txRemoveOldIndexEntry(Operation.INVALIDATE, oldRe);
+                    owner.removeOldIndexEntry(Operation.INVALIDATE, oldRe);
                     if (didDestroy) {
                       oldRe.txDidDestroy(owner.cacheTimeMillis());
                     }
@@ -1883,7 +1882,7 @@ public abstract class AbstractRegionMap
                   txEntryState, versionTag, tailKey);
               try {
                 callbackEvent.setRegionEntry(newRe);
-                txRemoveOldIndexEntry(Operation.INVALIDATE, newRe);
+                owner.removeOldIndexEntry(Operation.INVALIDATE, newRe);
                 newRe.setValueResultOfSearch(false);
                 boolean clearOccured = false;
                 try {
@@ -1942,7 +1941,7 @@ public abstract class AbstractRegionMap
               try {
                 callbackEvent.setRegionEntry(re);
                 callbackEvent.setOldValue(oldValue);
-                txRemoveOldIndexEntry(Operation.INVALIDATE, re);
+                owner.removeOldIndexEntry(Operation.INVALIDATE, re);
                 if (didDestroy) {
                   re.txDidDestroy(owner.cacheTimeMillis());
                 }
@@ -2149,27 +2148,6 @@ public abstract class AbstractRegionMap
     }
     event.setOriginRemote(originRemote);
     return event;
-  }
-
-  /**
-   * Removing the existing indexed value requires the current value in the cache, that is the one
-   * prior to applying the operation.
-   *
-   * @param entry the RegionEntry that contains the value prior to applying the op
-   */
-  @Override
-  public void txRemoveOldIndexEntry(Operation op, RegionEntry entry) {
-    if ((op.isUpdate() && !entry.isInvalid()) || op.isInvalidate() || op.isDestroy()) {
-      IndexManager idxManager = _getOwner().getIndexManager();
-      if (idxManager != null) {
-        try {
-          idxManager.updateIndexes(entry, IndexManager.REMOVE_ENTRY,
-              op.isUpdate() ? IndexProtocol.BEFORE_UPDATE_OP : IndexProtocol.OTHER_OP);
-        } catch (QueryException e) {
-          throw new IndexMaintenanceException(e);
-        }
-      }
-    }
   }
 
   public void dumpMap() {

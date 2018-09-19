@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.map;
 
-import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -46,8 +45,6 @@ public interface FocusedRegionMap {
   void lruUpdateCallback();
 
   void resetThreadLocals();
-
-  void txRemoveOldIndexEntry(Operation putOp, RegionEntry regionEntry);
 
   void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry regionEntry,
       TXEntryState txEntryState);

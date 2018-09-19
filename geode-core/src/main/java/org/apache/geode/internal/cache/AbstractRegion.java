@@ -70,11 +70,14 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.IndexMaintenanceException;
 import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.compression.Compressor;
@@ -901,6 +904,21 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     IndexManager oldIdxManager = this.indexManager;
     this.indexManager = indexManager;
     return oldIdxManager;
+  }
+
+  @Override
+  public void removeOldIndexEntry(Operation op, RegionEntry entry) {
+    if ((op.isUpdate() && !entry.isInvalid()) || op.isInvalidate() || op.isDestroy()) {
+      IndexManager idxManager = getIndexManager();
+      if (idxManager != null) {
+        try {
+          idxManager.updateIndexes(entry, IndexManager.REMOVE_ENTRY,
+              op.isUpdate() ? IndexProtocol.BEFORE_UPDATE_OP : IndexProtocol.OTHER_OP);
+        } catch (QueryException e) {
+          throw new IndexMaintenanceException(e);
+        }
+      }
+    }
   }
 
   /**
