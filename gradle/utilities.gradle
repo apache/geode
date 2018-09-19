@@ -41,8 +41,6 @@ allprojects {
     disableMavenPublishing = {
       // Use this closure when a project should not publish anything to maven.
       afterEvaluate {
-        install.enabled = false
-        uploadArchives.enabled = false
         tasks.withType(PublishToMavenRepository) {
           it.enabled = false
         }
@@ -54,7 +52,9 @@ allprojects {
     disableSigning = {
       // Use this closure when a project should not publish anything to maven.
       afterEvaluate {
-        signArchives.enabled = false
+        tasks.withType(Sign) {
+          onlyIf({false})
+        }
       }
     }
 

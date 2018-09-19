@@ -27,11 +27,6 @@ dependencies {
 }
 
 jar.enabled = true
-extraArchive {
-  sources = false
-  javadoc = false
-  tests = false
-}
 
 disableMavenPublishing()
 disableSigning()
@@ -215,9 +210,6 @@ task distTcServer30(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
 task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distAppServer'])
 
 build.dependsOn dist
-
-install.dependsOn dist
-uploadArchives.dependsOn dist
 
 artifacts {
   archives distTcServer
