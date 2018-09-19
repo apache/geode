@@ -1862,8 +1862,7 @@ public abstract class AbstractRegionMap
                     if (!clearOccured) {
                       lruEntryUpdate(oldRe);
                     }
-                    if (shouldPerformConcurrencyChecks(owner, callbackEvent)
-                        && txEntryState != null) {
+                    if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
                       txEntryState.setVersionTag(callbackEvent.getVersionTag());
                     }
                   } finally {
@@ -1906,7 +1905,7 @@ public abstract class AbstractRegionMap
                   lruEntryCreate(newRe);
                   incEntryCount(1);
                 }
-                if (shouldPerformConcurrencyChecks(owner, callbackEvent) && txEntryState != null) {
+                if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
@@ -1968,7 +1967,7 @@ public abstract class AbstractRegionMap
                 if (!clearOccured) {
                   lruEntryUpdate(re);
                 }
-                if (shouldPerformConcurrencyChecks(owner, callbackEvent) && txEntryState != null) {
+                if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
                   txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
@@ -2099,7 +2098,7 @@ public abstract class AbstractRegionMap
   public void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry re,
       TXEntryState txEntryState) {
     final LocalRegion owner = _getOwner();
-    if (shouldPerformConcurrencyChecks(owner, callbackEvent)) {
+    if (owner.getConcurrencyChecksEnabled()) {
       try {
         if (txEntryState != null && txEntryState.getRemoteVersionTag() != null) {
           // to generate a version based on a remote VersionTag, we will
@@ -2126,13 +2125,6 @@ public abstract class AbstractRegionMap
       // callbackEvent.setNextRegionVersion(txEntryState.getNextRegionVersion());
       owner.generateAndSetVersionTag(callbackEvent, re);
     }
-  }
-
-  /**
-   * Checks for concurrency checks enabled on Region and that callbackEvent is not null.
-   */
-  private boolean shouldPerformConcurrencyChecks(LocalRegion owner, EntryEventImpl callbackEvent) {
-    return owner.getConcurrencyChecksEnabled() && callbackEvent != null;
   }
 
   /**
