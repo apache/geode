@@ -230,36 +230,6 @@ public class StartLocatorCommandDUnitTest {
   }
 
   @Test
-  public void testInMissingRelativeDirectoryWithoutCreatePermissions() {
-    // path to a missing dir that cannot be created due to insufficient permissions
-    String readOnlyPathname = "readOnlyDir";
-    File readOnlyDir = new File(readOnlyPathname);
-    final String missingDirPath =
-        Paths.get(readOnlyPathname, "missing", "path", "to", "start", "in").toString();
-
-    final String expectedMessage = "Could not create directory .*" + missingDirPath
-        + ". Please verify directory path or user permissions.";
-    final String memberName = "testInMissingRelativeDirectoryWithoutCreatePermissions-locator";
-
-    try {
-      assertThat(readOnlyDir.mkdir()).isTrue();
-      assertThat(readOnlyDir.setReadOnly()).isTrue();
-
-      CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-          .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-          .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-          .addOption(START_LOCATOR__DIR, missingDirPath);
-
-      CommandResult result = gfsh.executeCommand(command.getCommandString());
-
-      assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-      assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
-    } finally {
-      FileUtils.deleteQuietly(readOnlyDir);
-    }
-  }
-
-  @Test
   public void testInMissingRelativeDirectoryThatCanBeCreated() {
     final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 

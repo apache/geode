@@ -239,40 +239,6 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithMissingStartDirectoryThatCannotBeCreated() {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-
-    // path to a missing dir that cannot be created due to insufficient permissions
-    String readOnlyPathname = "readOnlyDir";
-    final File readOnlyDir = new File(readOnlyPathname);
-    final String missingDirPath =
-        Paths.get(readOnlyPathname, "missing", "dir", "to", "start", "in").toString();
-
-    final String memberName = "testWithMissingStartDirectoryThatCannotBeCreated-server";
-    final String expectedError = "Could not create directory .*" + missingDirPath
-        + ". Please verify directory path or user permissions.";
-
-    try {
-      assertThat(readOnlyDir.mkdir()).isTrue();
-      assertThat(readOnlyDir.setReadOnly()).isTrue();
-
-      String command = new CommandStringBuilder(START_SERVER)
-          .addOption(START_SERVER__NAME, memberName)
-          .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-          .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
-          .addOption(START_SERVER__DIR, missingDirPath)
-          .getCommandString();
-
-      CommandResult result = gfsh.executeCommand(command);
-
-      assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-      assertThat(result.getMessageFromContent()).containsPattern(expectedError);
-    } finally {
-      FileUtils.deleteQuietly(readOnlyDir);
-    }
-  }
-
-  @Test
   public void testWithMissingStartDirectoryThatCanBeCreated() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
