@@ -24,6 +24,7 @@ buildscript {
   }
 
   dependencies {
+    classpath "org.ajoberstar:gradle-git:1.3.2"
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
@@ -96,6 +97,51 @@ task devBuild(dependsOn: [":assemble"]) {
   subprojects {
     afterEvaluate {
       this.devBuild.dependsOn(project.spotlessApply)
+    }
+  }
+}
+
+
+
+def readScmInfo() {
+  // Attempt to read git information, or else return UNKNOWN
+  try {
+    def git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
+    try {
+      return [
+          'Source-Repository': git.branch.getCurrent().name,
+          'Source-Revision'  : git.head().id,
+          'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+      ] as Properties
+    } finally {
+      git.close()
+    }
+  } catch (IllegalArgumentException ignoredDistributionBuild) {
+    // If we're building from the source distribution, we don't have git.
+    // Instead, we use the .buildinfo copied to the root directory during the distribution build
+    // from the writeBuildInfo task below (from build/.buildinfo)
+    def buildInfo = file "$rootDir/.buildinfo"
+    if (buildInfo.exists()) {
+      def props = new Properties()
+      new FileInputStream(buildInfo).withStream { fis ->
+        props.load(fis)
+      }
+      return props
+    }
+    throw new GradleException("Cannot get SCM information when neither git nor source distribution is available")
+  }
+}
+
+task writeBuildInfo {
+  def buildInfo = file "$buildDir/.buildinfo"
+  def scmInfo = rootProject.readScmInfo()
+
+  inputs.property("Source-Revision", scmInfo.getProperty("Source-Revision"))
+  outputs.file buildInfo
+  doLast {
+    buildInfo.getParentFile().mkdirs()
+    new FileOutputStream(buildInfo).withStream { fos ->
+      scmInfo.store(fos, '')
     }
   }
 }
