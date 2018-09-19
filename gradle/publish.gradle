@@ -130,6 +130,8 @@ subprojects {
     sign publishing.publications.maven
   }
 
+  task install(dependsOn: publishToMavenLocal) {}
+
   task('checkPom') {
     dependsOn('generatePomFileForMavenPublication')
     description 'Checks the generated POM against an expected POM for dependency changes.'
