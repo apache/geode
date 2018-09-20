@@ -34,7 +34,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -400,7 +399,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createReplicate(VM vm) {
-    LogService.getLogger().info("START SETUP createReplicate in vm " + vm.getId() + " for test "
+    System.out.println("START SETUP createReplicate in vm " + vm.getId() + " for test "
         + getTestClass().getSimpleName() + "." + getTestMethodName());
 
     vm.invoke(new SerializableRunnable() {
@@ -415,7 +414,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    LogService.getLogger().info("END SETUP createReplicate in vm " + vm.getId() + " for test "
+    System.out.println("END SETUP createReplicate in vm " + vm.getId() + " for test "
         + getTestClass().getSimpleName() + "." + getTestMethodName());
 
   }
