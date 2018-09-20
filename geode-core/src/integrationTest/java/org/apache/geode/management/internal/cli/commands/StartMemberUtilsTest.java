@@ -15,9 +15,12 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -47,8 +50,19 @@ public class StartMemberUtilsTest {
   public RestoreSystemProperties restorer = new RestoreSystemProperties();
 
   @Test
+  public void workingDirCantBeCreatedThrowsException() {
+    File userSpecifiedDir = spy(new File("cantCreateDir"));
+    when(userSpecifiedDir.exists()).thenReturn(false);
+    when(userSpecifiedDir.mkdirs()).thenReturn(false);
+    assertThatThrownBy(
+        () -> StartMemberUtils.resolveWorkingDir(userSpecifiedDir, new File("server1")))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("Could not create directory");
+  }
+
+  @Test
   public void workingDirDefaultsToMemberName() {
-    String workingDir = StartMemberUtils.resolveWorkingDir(null, "server1");
+    String workingDir = StartMemberUtils.resolveWorkingDir(null, new File("server1"));
     assertThat(new File(workingDir)).exists();
     assertThat(workingDir).endsWith("server1");
   }
@@ -58,7 +72,8 @@ public class StartMemberUtilsTest {
     File workingDir = temporaryFolder.newFolder("foo");
     FileUtils.deleteQuietly(workingDir);
     String workingDirString = workingDir.getAbsolutePath();
-    String resolvedWorkingDir = StartMemberUtils.resolveWorkingDir(workingDirString, "server1");
+    String resolvedWorkingDir =
+        StartMemberUtils.resolveWorkingDir(new File(workingDirString), new File("server1"));
     assertThat(new File(resolvedWorkingDir)).exists();
     assertThat(workingDirString).endsWith("foo");
   }
@@ -68,7 +83,7 @@ public class StartMemberUtilsTest {
     Path relativePath = Paths.get("some").resolve("relative").resolve("path");
     assertThat(relativePath.isAbsolute()).isFalse();
     String resolvedWorkingDir =
-        StartMemberUtils.resolveWorkingDir(relativePath.toString(), "server1");
+        StartMemberUtils.resolveWorkingDir(new File(relativePath.toString()), new File("server1"));
     assertThat(resolvedWorkingDir).isEqualTo(relativePath.toAbsolutePath().toString());
   }
 
