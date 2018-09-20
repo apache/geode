@@ -35,7 +35,6 @@ import java.util.concurrent.Semaphore;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,13 +43,11 @@ import org.junit.rules.TestName;
 import org.mockito.Mock;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
 public class LoginHandlerInterceptorJUnitTest {
-  private static Logger log = LogService.getLogger();
   @Mock
   private SecurityService securityService;
   private HandlerInterceptor interceptor;
@@ -147,7 +144,7 @@ public class LoginHandlerInterceptorJUnitTest {
     Callable<Void> request1Task = () -> processRequest("thread 1", thread1Permit, thread2Permit);
     Callable<Void> request2Task = () -> processRequest("thread 2", thread2Permit, thread1Permit);
 
-    runConcurrently.setTimeout(Duration.ofSeconds(1));
+    runConcurrently.setTimeout(Duration.ofSeconds(10));
     runConcurrently.add(request1Task);
     runConcurrently.add(request2Task);
     thread1Permit.release();
@@ -157,22 +154,30 @@ public class LoginHandlerInterceptorJUnitTest {
   private Void processRequest(String taskName, Semaphore thisTaskPermit,
       Semaphore otherTaskPermit) throws Exception {
     currentThread().setName(taskName);
-    log.info(taskName + " started");
+    System.out.println(taskName + " started");
 
     // sync up threads to allow both to start before proceeding
     thisTaskPermit.acquire();
 
-    log.info(taskName + " handing off");
+    System.out.println(taskName + " handing off");
     otherTaskPermit.release();
     thisTaskPermit.acquire();
-    log.info(taskName + " running preHandle()");
+    System.out.println(taskName + " running preHandle()");
 
+    // Define the request parameters that preHandle() will copy into the task's environment.
     Map<String, String> requestParameters = new HashMap<>();
-    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "COMMON",
-        "COMMON value for " + taskName);
+
+    // Each task has a unique value for this common parameter. If the interceptor is threadsafe,
+    // neither task's unique value will appear in the other task's environment.
+    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "COMMON-PARAMETER",
+        "COMMON-PARAMETER value for " + taskName);
+
+    // Each task has a parameter with a name and value unique to the task. If the interceptor is
+    // threadsafe, neither task's unique parameter name or value will appear in the other task's
+    // environment.
     requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX
-        + "REQUEST-SPECIFIC " + taskName,
-        "REQUEST-SPECIFIC value for " + taskName);
+        + "REQUEST-SPECIFIC-PARAMETER " + taskName,
+        "REQUEST-SPECIFIC-PARAMETER value for " + taskName);
 
     HttpServletRequest request = request(taskName, requestParameters);
 
@@ -184,27 +189,27 @@ public class LoginHandlerInterceptorJUnitTest {
 
     Map<String, String> requestEnvironment = LoginHandlerInterceptor.getEnvironment();
 
-    log.info(taskName + " handing off");
+    System.out.println(taskName + " handing off");
     otherTaskPermit.release();
     thisTaskPermit.acquire();
-    log.info(taskName + " checking for pollution of request environment");
+    System.out.println(taskName + " checking for pollution of request environment");
 
     assertThat(LoginHandlerInterceptor.getEnvironment())
         .describedAs("environment remains unchanged in " + taskName)
         .containsAllEntriesOf(requestEnvironment)
         .hasSameSizeAs(requestEnvironment);
 
-    log.info(taskName + " handing off");
+    System.out.println(taskName + " handing off");
     otherTaskPermit.release();
     thisTaskPermit.acquire();
-    log.info(taskName + " checking for pollution of request environment");
+    System.out.println(taskName + " checking for pollution of request environment");
 
     assertThat(LoginHandlerInterceptor.getEnvironment())
         .describedAs("environment before afterCompletion() in " + taskName)
         .containsAllEntriesOf(requestEnvironment)
         .hasSameSizeAs(requestEnvironment);
 
-    log.info(taskName + " running afterCompletion()");
+    System.out.println(taskName + " running afterCompletion()");
 
     interceptor.afterCompletion(request, null, null, null);
 
@@ -212,7 +217,7 @@ public class LoginHandlerInterceptorJUnitTest {
         .describedAs("environment after afterCompletion() in " + taskName)
         .isEmpty();
 
-    log.info(taskName + " handing off and terminating");
+    System.out.println(taskName + " handing off and terminating");
     otherTaskPermit.release();
 
     return null;
