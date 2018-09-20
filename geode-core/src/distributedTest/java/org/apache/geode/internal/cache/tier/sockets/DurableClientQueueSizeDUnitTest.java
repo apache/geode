@@ -342,7 +342,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
   public static void createClientCache(Host host, Integer[] ports, String timeoutSeconds,
       Boolean durable, Boolean multiPool, CacheListener cacheListener) throws Exception {
     if (multiPool) {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
+      setSpecialDurable(true);
     }
     Properties props = new Properties();
     if (durable) {

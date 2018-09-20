@@ -21,9 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.io.File;
@@ -31,7 +29,6 @@ import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -60,7 +57,6 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl.PoolAttributes;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -317,41 +313,15 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
   public static Integer createCacheServer(String regionName, Boolean notifyBySubscription)
       throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    new CacheServerTestUtil().createCache(props);
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setEnableBridgeConflation(true);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attrs = factory.create();
-    cache.createRegion(regionName, attrs);
-    CacheServer server1 = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server1.setPort(port);
-    server1.setNotifyBySubscription(notifyBySubscription.booleanValue());
-    server1.start();
-    return new Integer(server1.getPort());
+    createCacheServer(regionName, notifyBySubscription, port);
+
+    return port;
   }
 
   public static Integer[] createCacheServerReturnPorts(String regionName,
       Boolean notifyBySubscription) throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    new CacheServerTestUtil().createCache(props);
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setEnableBridgeConflation(true);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attrs = factory.create();
-    cache.createRegion(regionName, attrs);
-    CacheServer server1 = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server1.setPort(port);
-    server1.setNotifyBySubscription(notifyBySubscription.booleanValue());
-    server1.start();
+    int port = createCacheServer(regionName, notifyBySubscription);
     return new Integer[] {port, 0};
   }
 
@@ -445,38 +415,6 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
   public static void setClientCrash(boolean crashOnClose) {
     org.apache.geode.cache.client.internal.ConnectionImpl
         .setTEST_DURABLE_CLIENT_CRASH(crashOnClose);
-  }
-
-  public static void disconnectClient() {
-    pool.endpointsNetDownForDUnitTest();
-  }
-
-  public static void reconnectClient() {
-    if (pool != null) {
-      pool.endpointsNetUpForDUnitTest();
-    }
-  }
-
-  public static void stopCacheServers() {
-    Iterator iter = getCache().getCacheServers().iterator();
-    if (iter.hasNext()) {
-      CacheServer server = (CacheServer) iter.next();
-      server.stop();
-      assertFalse(server.isRunning());
-    }
-  }
-
-  public static void restartCacheServers() {
-    Iterator iter = getCache().getCacheServers().iterator();
-    if (iter.hasNext()) {
-      CacheServer server = (CacheServer) iter.next();
-      try {
-        server.start();
-      } catch (Exception e) {
-        Assert.fail("Unexpected exception", e);
-      }
-      assertTrue(server.isRunning());
-    }
   }
 
   public static Cache getCache() {
