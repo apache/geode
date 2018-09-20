@@ -42,6 +42,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -238,12 +239,17 @@ public class StartServerCommandDUnitTest {
   }
 
   @Test
-  public void testWithMissingStartDirectoryThatCannotBeCreated() {
+  public void testWithMissingStartDirectoryThatCanBeCreated() throws IOException {
     final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingDirPath = "/missing/dir/to/start/in";
-    final String memberName = "testWithMissingStartDirectoryThatCannotBeCreated-server";
-    final String expectedError = "Could not create directory " + missingDirPath
-        + ". Please verify directory path or user permissions.";
+
+    // path to a missing dir that can be created
+    String readWritePathname = "readWriteDir";
+    File readWriteDir = new File(readWritePathname);
+    final String missingDirPath =
+        Paths.get(readWritePathname, "missing", "dir", "to", "start", "in").toString();
+
+    final String memberName = "testWithMissingStartDirectoryThatCanBeCreated-server";
+    final String expectedMessage = "Server in .*" + missingDirPath;
 
     String command = new CommandStringBuilder(START_SERVER)
         .addOption(START_SERVER__NAME, memberName)
@@ -252,34 +258,13 @@ public class StartServerCommandDUnitTest {
         .addOption(START_SERVER__DIR, missingDirPath)
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
-  }
-
-  @Test
-  public void testWithMissingStartDirectoryThatCanBeCreated() throws IOException {
-    final Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    final String missingDirPath = workingDir.getCanonicalPath() + "/missing/dir/to/start/in";
-    final String memberName = "testWithMissingStartDirectoryThatCanBeCreated-server";
-    final String expectedMessage = "Server in " + missingDirPath;
-
     try {
-      String command = new CommandStringBuilder(START_SERVER)
-          .addOption(START_SERVER__NAME, memberName)
-          .addOption(START_SERVER__LOCATORS, locatorConnectionString)
-          .addOption(START_SERVER__SERVER_PORT, serverPort.toString())
-          .addOption(START_SERVER__DIR, missingDirPath)
-          .getCommandString();
-
       CommandResult result = gfsh.executeCommand(command);
 
       assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-      assertThat(result.getMessageFromContent()).contains(expectedMessage);
+      assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
     } finally {
-      File toDelete = new File(missingDirPath);
-      deleteServerFiles(toDelete);
+      FileUtils.deleteQuietly(readWriteDir);
     }
   }
 
@@ -373,8 +358,7 @@ public class StartServerCommandDUnitTest {
     assertThat(result.getMessageFromContent()).contains(expectedMessage);
 
     // verify GEODE-2138 (Geode commands do not contain GemFire in output)
-    assertThat(result.getMessageFromContent()).doesNotContain("Gemfire")
-        .doesNotContain("GemFire");
+    assertThat(result.getMessageFromContent()).doesNotContainPattern("Gem[Ff]ire Version");
     assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
   }
 
@@ -440,18 +424,6 @@ public class StartServerCommandDUnitTest {
     server.stop(Boolean.TRUE);
 
     assertThat(ProcessUtils.isProcessAlive(serverPid)).isFalse();
-  }
-
-  private void deleteServerFiles(File toDelete) {
-    File[] nestedToDelete = toDelete.listFiles();
-
-    if (nestedToDelete != null && nestedToDelete.length > 0) {
-      for (File file : nestedToDelete) {
-        deleteServerFiles(file);
-      }
-    }
-
-    toDelete.delete();
   }
 
   /**
