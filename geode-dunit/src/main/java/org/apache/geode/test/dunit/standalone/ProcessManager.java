@@ -261,6 +261,7 @@ public class ProcessManager {
         + ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS + "=true");
     cmds.add("-ea");
     cmds.add("-XX:MetaspaceSize=512m");
+    cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
