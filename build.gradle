@@ -103,10 +103,10 @@ task devBuild(dependsOn: [":assemble"]) {
 
 
 
-def readScmInfo() {
+ext.readScmInfo = { proj ->
   // Attempt to read git information, or else return UNKNOWN
   try {
-    def git = org.ajoberstar.grgit.Grgit.open(currentDir: projectDir)
+    def git = org.ajoberstar.grgit.Grgit.open(currentDir: project(proj).projectDir)
     try {
       return [
           'Source-Repository': git.branch.getCurrent().name,
@@ -134,7 +134,7 @@ def readScmInfo() {
 
 task writeBuildInfo {
   def buildInfo = file "$buildDir/.buildinfo"
-  def scmInfo = rootProject.readScmInfo()
+  def scmInfo = this.readScmInfo("geode-core")
 
   inputs.property("Source-Revision", scmInfo.getProperty("Source-Revision"))
   outputs.file buildInfo
