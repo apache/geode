@@ -102,23 +102,45 @@ public class StartMemberUtilsTest {
     assertEquals(expectedPid, actualPid);
   }
 
+  /**
+   * Verify that the classpath for Geode always has the geode-core jar first in the list of paths.
+   * On entry to the test there may (depending test platform) be a version of geode-core-*.jar on
+   * the system classpath, but at an unknown position in the list. To make the test deterministic, a
+   * dummy geode-core-*.jar path is inserted in the system classpath at a known, but not the first,
+   * position.
+   */
   @Test
   public void testGeodeOnClasspathIsFirst() {
     String currentClasspath = System.getProperty("java.class.path");
-    String customGeodeCore = FileSystems
-        .getDefault().getPath("/custom/geode-core-" + GemFireVersion.getGemFireVersion() + ".jar")
+    final Path customGeodeJarPATH =
+        Paths.get("/custom", "geode-core-" + GemFireVersion.getGemFireVersion() + ".jar");
+    final Path prependJar1 = Paths.get("/prepend", "pre1.jar");
+    final Path prependJar2 = Paths.get("/prepend", "pre2.jar");
+    final Path otherJar1 = Paths.get("/other", "one.jar");
+    final Path otherJar2 = Paths.get("/other", "two.jar");
+    final String customGeodeCore = FileSystems.getDefault().getPath(customGeodeJarPATH.toString())
         .toAbsolutePath().toString();
-    System.setProperty("java.class.path", currentClasspath + File.pathSeparator + customGeodeCore);
+
+    currentClasspath = prependToClasspath("java.class.path", customGeodeCore, currentClasspath);
+    currentClasspath =
+        prependToClasspath("java.class.path", prependJar2.toString(), currentClasspath);
+    prependToClasspath("java.class.path", prependJar1.toString(), currentClasspath);
 
     String[] otherJars = new String[] {
-        FileSystems.getDefault().getPath("/other/one.jar").toAbsolutePath().toString(),
-        FileSystems.getDefault().getPath("/other/two.jar").toAbsolutePath().toString()};
+        FileSystems.getDefault().getPath(otherJar1.toString()).toAbsolutePath().toString(),
+        FileSystems.getDefault().getPath(otherJar2.toString()).toAbsolutePath().toString()};
 
     String gemfireClasspath = StartMemberUtils.toClasspath(true, otherJars);
     assertThat(gemfireClasspath).startsWith(customGeodeCore);
 
     gemfireClasspath = StartMemberUtils.toClasspath(false, otherJars);
     assertThat(gemfireClasspath).startsWith(customGeodeCore);
+  }
+
+  private String prependToClasspath(String systemPropertyKey, String prependJarPath,
+      String currentClasspath) {
+    System.setProperty(systemPropertyKey, prependJarPath + File.pathSeparator + currentClasspath);
+    return System.getProperty(systemPropertyKey);
   }
 
   @Test

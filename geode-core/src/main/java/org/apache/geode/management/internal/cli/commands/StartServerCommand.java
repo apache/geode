@@ -198,7 +198,6 @@ public class StartServerCommand extends InternalGfshCommand {
       }
     }
 
-    // workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
     workingDirectory = StartMemberUtils.resolveWorkingDir(
         workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
 
