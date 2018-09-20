@@ -66,6 +66,7 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
     --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var geode-fork=${GEODE_FORK} \
     --var pipeline-prefix=${PIPELINE_PREFIX} \
+    --var concourse-team=main \
     --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
 
 popd 2>&1 > /dev/null
