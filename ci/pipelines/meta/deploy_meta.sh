@@ -79,28 +79,88 @@ fi
 if [[ "${GEODE_FORK}" != "apache" ]]; then
   echo "Disabling unnecessary jobs for forks."
   for job in set set-images set-reaper; do
-    set -x
-    fly -t ${TARGET} pause-job \
-        -j ${META_PIPELINE}/${job}-pipeline
-    set +x
+    (set -x ; fly -t ${TARGET} pause-job -j ${META_PIPELINE}/${job}-pipeline)
   done
 else
   echo "Disabling unnecessary jobs for release branches."
   echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
   for job in set set-pr set-images set-reaper set-metrics set-examples; do
-    set -x
-    fly -t ${TARGET} pause-job \
-        -j ${META_PIPELINE}/${job}-pipeline
-    set +x
+    (set -x ; fly -t ${TARGET} pause-job -j ${META_PIPELINE}/${job}-pipeline)
   done
 fi
 
-set -x
-fly -t ${TARGET} trigger-job \
-    -j ${META_PIPELINE}/build-meta-mini-docker-image
-fly -t ${TARGET} unpause-pipeline \
-    -p ${META_PIPELINE}
+# bootstrap all precursors of the actual Build job 
 
-set +x
+function jobStatus {
+  PIPELINE=$1
+  JOB=$2
+  fly jobs -t $TARGET -p $PIPELINE|awk "/$JOB/"'{if($2=="yes")print "paused"; else print $3}'
+}
 
-echo "When 'build-meta-mini-docker-image' job is complete, manually unpause and trigger 'set-pipeline'."
+function triggerJob {
+  PIPELINE=$1
+  JOB=$2
+  (set -x ; fly trigger-job -t $TARGET -j $PIPELINE/$JOB)
+}
+
+function unpauseJob {
+  PIPELINE=$1
+  JOB=$2
+  (set -x ; fly unpause-job -t $TARGET -j $PIPELINE/$JOB)
+}
+
+function unpausePipeline {
+  PIPELINE=$1
+  (set -x ; fly -t ${TARGET} unpause-pipeline -p $PIPELINE)
+}
+
+function awaitJob {
+  PIPELINE=$1
+  JOB=$2
+  echo -n "Waiting for $JOB..."
+  status="n/a"
+  while [ "$status" = "n/a" ] || [ "$status" = "started" ] ; do
+    echo -n .
+    sleep 5
+    status=$(jobStatus $PIPELINE $JOB)
+  done
+  echo $status
+}
+
+function driveToGreen {
+  PIPELINE=$1
+  [ "$2" = "--to" ] && FINAL_ONLY=true || FINAL_ONLY=false
+  [ "$2" = "--to" ] && shift
+  JOB=$2
+  status=$(jobStatus $PIPELINE $JOB)
+  if [ "paused" = "$status" ] ; then
+    unpauseJob $PIPELINE $JOB
+    status=$(jobStatus $PIPELINE $JOB)
+  fi
+  if [ "n/a" = "$status" ] ; then
+    [ "$FINAL_ONLY" = "true" ] || triggerJob $PIPELINE $JOB
+    awaitJob $PIPELINE $JOB
+  elif [ "failed" = "$status" ] ; then
+    echo "Unexpected $PIPELINE pipeline status: $JOB $status"
+    exit 1
+  elif [ "started" = "$status" ] ; then
+    awaitJob $PIPELINE $JOB
+  elif [ "succeeded" = "$status" ] ; then
+    echo "$JOB $status"
+    return 0
+  else
+    echo "Unrecognized job status for $PIPELINE/$JOB: $status"
+    exit 1
+  fi
+}
+
+set -e
+
+unpausePipeline ${META_PIPELINE}
+driveToGreen $META_PIPELINE build-meta-mini-docker-image
+driveToGreen $META_PIPELINE set-images-pipeline
+unpausePipeline ${PIPELINE_PREFIX}images
+driveToGreen ${PIPELINE_PREFIX}images --to build-google-geode-builder 
+driveToGreen $META_PIPELINE set-pipeline
+unpausePipeline ${PIPELINE_PREFIX%-}
+echo "Successfully deployed https://concourse.apachegeode-ci.info/teams/main/pipelines/${PIPELINE_PREFIX%-}"
