@@ -60,48 +60,41 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     createEmpty(vm3);
 
     // Test with a null value
-    {
-      long vm0Count = getReceivedMessages(vm0);
-      long vm1Count = getReceivedMessages(vm1);
-      long vm2Count = getReceivedMessages(vm2);
-      long vm3Count = getReceivedMessages(vm3);
+    long vm0Count = getReceivedMessages(vm0);
+    long vm1Count = getReceivedMessages(vm1);
+    long vm2Count = getReceivedMessages(vm2);
+    long vm3Count = getReceivedMessages(vm3);
 
-      assertEquals(null, get(vm3, "a"));
+    assertEquals(null, get(vm3, "a"));
 
-      // Make sure we only processed one message
-      assertEquals(vm3Count + 1, getReceivedMessages(vm3));
+    // Make sure we only processed one message
+    assertEquals(vm3Count + 1, getReceivedMessages(vm3));
 
-      // Make sure the replicates only saw one message between them
+    // Make sure the replicates only saw one message between them
+    assertEquals(vm0Count + vm1Count + 1, getReceivedMessages(vm0) + getReceivedMessages(vm1));
 
-      assertEquals(vm0Count + vm1Count + 1, getReceivedMessages(vm0) + getReceivedMessages(vm1));
-
-      // Make sure the normal vm didn't see any messages
-      assertEquals(vm2Count, getReceivedMessages(vm2));
-    }
+    // Make sure the normal vm didn't see any messages
+    assertEquals(vm2Count, getReceivedMessages(vm2));
 
     // Test with a real value value
-    {
+    put(vm3, "a", "b");
 
-      put(vm3, "a", "b");
+    vm0Count = getReceivedMessages(vm0);
+    vm1Count = getReceivedMessages(vm1);
+    vm2Count = getReceivedMessages(vm2);
+    vm3Count = getReceivedMessages(vm3);
 
-      long vm0Count = getReceivedMessages(vm0);
-      long vm1Count = getReceivedMessages(vm1);
-      long vm2Count = getReceivedMessages(vm2);
-      long vm3Count = getReceivedMessages(vm3);
+    assertEquals("b", get(vm3, "a"));
 
-      assertEquals("b", get(vm3, "a"));
+    // Make sure we only processed one message
+    assertEquals(vm3Count + 1, getReceivedMessages(vm3));
 
-      // Make sure we only processed one message
-      assertEquals(vm3Count + 1, getReceivedMessages(vm3));
+    // Make sure the replicates only saw one message between them
 
-      // Make sure the replicates only saw one message between them
+    assertEquals(vm0Count + vm1Count + 1, getReceivedMessages(vm0) + getReceivedMessages(vm1));
 
-      assertEquals(vm0Count + vm1Count + 1, getReceivedMessages(vm0) + getReceivedMessages(vm1));
-
-      // Make sure the normal vm didn't see any messages
-      assertEquals(vm2Count, getReceivedMessages(vm2));
-    }
-
+    // Make sure the normal vm didn't see any messages
+    assertEquals(vm2Count, getReceivedMessages(vm2));
   }
 
   @Test
@@ -118,44 +111,38 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     createEmpty(vm3);
 
     // Test with a null value
-    {
-      long vm0Count = getReceivedMessages(vm0);
-      long vm1Count = getReceivedMessages(vm1);
-      long vm2Count = getReceivedMessages(vm2);
-      long vm3Count = getReceivedMessages(vm3);
+    long vm0Count = getReceivedMessages(vm0);
+    long vm1Count = getReceivedMessages(vm1);
+    long vm2Count = getReceivedMessages(vm2);
+    long vm3Count = getReceivedMessages(vm3);
 
-      assertEquals(null, get(vm3, "a"));
+    assertEquals(null, get(vm3, "a"));
 
-      // Make sure we only processed one message
-      waitForReceivedMessages(vm3, vm3Count + 3);
+    // Make sure we only processed one message
+    waitForReceivedMessages(vm3, vm3Count + 3);
 
-      // Make sure the normal vms each saw 1 query message.
-      assertEquals(vm0Count + vm1Count + vm2Count + 3,
-          getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
-    }
+    // Make sure the normal vms each saw 1 query message.
+    assertEquals(vm0Count + vm1Count + vm2Count + 3,
+        getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
 
     // Test with a real value value
-    {
+    put(vm3, "a", "b");
 
-      put(vm3, "a", "b");
+    vm0Count = getReceivedMessages(vm0);
+    vm1Count = getReceivedMessages(vm1);
+    vm2Count = getReceivedMessages(vm2);
+    vm3Count = getReceivedMessages(vm3);
 
-      long vm0Count = getReceivedMessages(vm0);
-      long vm1Count = getReceivedMessages(vm1);
-      long vm2Count = getReceivedMessages(vm2);
-      final long vm3Count = getReceivedMessages(vm3);
+    assertEquals("b", get(vm3, "a"));
 
-      assertEquals("b", get(vm3, "a"));
+    // Make sure we only processed one message
+    waitForReceivedMessages(vm2, vm2Count + 1);
 
-      // Make sure we only processed one message
-      waitForReceivedMessages(vm2, vm2Count + 1);
+    waitForReceivedMessages(vm3, vm3Count + 3);
 
-      waitForReceivedMessages(vm3, vm3Count + 3);
-
-      // Make sure the normal vms each saw 1 query message.
-      assertEquals(vm0Count + vm1Count + vm2Count + 3,
-          getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
-    }
-
+    // Make sure the normal vms each saw 1 query message.
+    assertEquals(vm0Count + vm1Count + vm2Count + 3,
+        getReceivedMessages(vm0) + getReceivedMessages(vm1) + getReceivedMessages(vm2));
   }
 
   /**
@@ -172,53 +159,49 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     createOverflow(vm2, 5);
     createEmpty(vm1);
 
-
-
     // Test with a null value
-    {
-      put(vm2, "a", "1");
-      put(vm2, "b", "2");
-      put(vm2, "c", "3");
-      put(vm2, "d", "4");
-      put(vm2, "e", "5");
-      // the cache in vm0 is now full and LRU will occur on this next put()
-      put(vm2, "f", "6");
+    put(vm2, "a", "1");
+    put(vm2, "b", "2");
+    put(vm2, "c", "3");
+    put(vm2, "d", "4");
+    put(vm2, "e", "5");
+    // the cache in vm0 is now full and LRU will occur on this next put()
+    put(vm2, "f", "6");
 
-      SerializableCallable verifyEvicted = new SerializableCallable("verify eviction of 'a'") {
-        public Object call() {
-          Cache cache = getCache();
-          LocalRegion region = (LocalRegion) cache.getRegion("region");
-          RegionEntry re = region.getRegionEntry("a");
+    SerializableCallable verifyEvicted = new SerializableCallable("verify eviction of 'a'") {
+      public Object call() {
+        Cache cache = getCache();
+        LocalRegion region = (LocalRegion) cache.getRegion("region");
+        RegionEntry re = region.getRegionEntry("a");
+        Object o = re.getValueInVM(region);
+        LogWriterUtils.getLogWriter().info("key a=" + o);;
+        return o == null || o == Token.NOT_AVAILABLE;
+      }
+    };
+
+    boolean evicted = (Boolean) vm2.invoke(verifyEvicted);
+    assertTrue("expected 'a' to be evicted", evicted);
+
+    // now netsearch for 'a' from the other VM and verify again
+    Object value = get(vm1, "a");
+    assertEquals("expected to find '1' result from netSearch", "1", value);
+
+    evicted = (Boolean) vm2.invoke(verifyEvicted);
+    assertTrue("expected 'a' to still be evicted", evicted);
+    vm2.invoke(new SerializableRunnable("verify other entries are not evicted") {
+      public void run() {
+        Cache cache = getCache();
+        LocalRegion region = (LocalRegion) cache.getRegion("region");
+        String[] keys = new String[] {"b", "c", "d", "e", "f"};
+        for (String key : keys) {
+          RegionEntry re = region.getRegionEntry(key);
           Object o = re.getValueInVM(region);
-          LogWriterUtils.getLogWriter().info("key a=" + o);;
-          return o == null || o == Token.NOT_AVAILABLE;
+          LogWriterUtils.getLogWriter().info("key " + key + "=" + o);
+          assertTrue("expected key " + key + " to not be evicted",
+              (o != null) && (o != Token.NOT_AVAILABLE));
         }
-      };
-
-      boolean evicted = (Boolean) vm2.invoke(verifyEvicted);
-      assertTrue("expected 'a' to be evicted", evicted);
-
-      // now netsearch for 'a' from the other VM and verify again
-      Object value = get(vm1, "a");
-      assertEquals("expected to find '1' result from netSearch", "1", value);
-
-      evicted = (Boolean) vm2.invoke(verifyEvicted);
-      assertTrue("expected 'a' to still be evicted", evicted);
-      vm2.invoke(new SerializableRunnable("verify other entries are not evicted") {
-        public void run() {
-          Cache cache = getCache();
-          LocalRegion region = (LocalRegion) cache.getRegion("region");
-          String[] keys = new String[] {"b", "c", "d", "e", "f"};
-          for (String key : keys) {
-            RegionEntry re = region.getRegionEntry(key);
-            Object o = re.getValueInVM(region);
-            LogWriterUtils.getLogWriter().info("key " + key + "=" + o);
-            assertTrue("expected key " + key + " to not be evicted",
-                (o != null) && (o != Token.NOT_AVAILABLE));
-          }
-        }
-      });
-    }
+      }
+    });
   }
 
   /**
@@ -256,25 +239,22 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     createEmpty(vm3);
 
     // Test with a real value value
-    {
-      put(vm3, "a", "b");
+    put(vm3, "a", "b");
 
-      long vm0Count = getReceivedMessages(vm0);
-      long vm1Count = getReceivedMessages(vm1);
-      long vm2Count = getReceivedMessages(vm2);
-      long vm3Count = getReceivedMessages(vm3);
+    long vm0Count = getReceivedMessages(vm0);
+    long vm1Count = getReceivedMessages(vm1);
+    long vm2Count = getReceivedMessages(vm2);
+    long vm3Count = getReceivedMessages(vm3);
 
-      assertEquals("b", get(vm3, "a"));
+    assertEquals("b", get(vm3, "a"));
 
-      // Make sure we were disconnected in vm0
-      vm0.invoke(new SerializableRunnable("check disconnected") {
+    // Make sure we were disconnected in vm0
+    vm0.invoke(new SerializableRunnable("check disconnected") {
 
-        public void run() {
-          assertNull(GemFireCacheImpl.getInstance());
-        }
-      });
-    }
-
+      public void run() {
+        assertNull(GemFireCacheImpl.getInstance());
+      }
+    });
   }
 
   @Test
@@ -307,23 +287,20 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     createEmpty(vm3);
 
     // Test with a real value value
-    {
-      put(vm3, "a", "b");
+    put(vm3, "a", "b");
 
-      boolean disconnected = false;
-      while (!disconnected) {
-        assertEquals("b", get(vm3, "a"));
+    boolean disconnected = false;
+    while (!disconnected) {
+      assertEquals("b", get(vm3, "a"));
 
-        // Make sure we were disconnected in vm0
-        disconnected = (Boolean) vm0.invoke(new SerializableCallable("check disconnected") {
+      // Make sure we were disconnected in vm0
+      disconnected = (Boolean) vm0.invoke(new SerializableCallable("check disconnected") {
 
-          public Object call() {
-            return GemFireCacheImpl.getInstance() == null;
-          }
-        });
-      }
+        public Object call() {
+          return GemFireCacheImpl.getInstance() == null;
+        }
+      });
     }
-
   }
 
   private Object put(VM vm, final String key, final String value) {
@@ -422,6 +399,9 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createReplicate(VM vm) {
+    System.out.println("START SETUP createReplicate in vm " + vm.getId() + " for test "
+        + getTestClass().getSimpleName() + "." + getTestMethodName());
+
     vm.invoke(new SerializableRunnable() {
 
       public void run() {
@@ -433,6 +413,9 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
         rf.create("region");
       }
     });
+
+    System.out.println("END SETUP createReplicate in vm " + vm.getId() + " for test "
+        + getTestClass().getSimpleName() + "." + getTestMethodName());
 
   }
 
