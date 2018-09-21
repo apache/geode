@@ -39,6 +39,7 @@ import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -2480,7 +2481,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           ((DataSerializable) ds).fromData(in);
         }
       }
-    } catch (EOFException | ClassNotFoundException | CacheClosedException ex) {
+    } catch (EOFException | ClassNotFoundException | CacheClosedException | SocketException ex) {
       // client went away - ignore
       throw ex;
     } catch (Exception ex) {
