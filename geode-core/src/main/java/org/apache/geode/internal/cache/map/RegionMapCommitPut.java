@@ -135,8 +135,15 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
   @Override
   protected void runWhileLockedForCacheModification(Runnable r) {
-    // commit has already done the locking
-    r.run();
+    // no need to hold lockForCacheModification
+    final boolean locked = getOwner().lockWhenRegionIsInitializing();
+    try {
+      r.run();
+    } finally {
+      if (locked) {
+        getOwner().unlockWhenRegionIsInitializing();
+      }
+    }
   }
 
   @Override

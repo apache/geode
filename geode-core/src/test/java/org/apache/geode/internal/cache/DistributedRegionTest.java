@@ -44,7 +44,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void cleanUpAfterFailedGIIHoldsLockForClear() {
+  public void cleanUpAfterFailedInitialImageHoldsLockForClear() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class, RETURNS_DEEP_STUBS);
     RegionMap regionMap = mock(RegionMap.class);
 
@@ -54,13 +54,13 @@ public class DistributedRegionTest {
 
     distributedRegion.cleanUpAfterFailedGII(false);
 
-    verify(distributedRegion).lockFailedGIIClearWriteLock();
+    verify(distributedRegion).lockFailedInitialImageWriteLock();
     verify(distributedRegion).closeEntries();
-    verify(distributedRegion).unlockFailedGIIClearWriteLock();
+    verify(distributedRegion).unlockFailedInitialImageWriteLock();
   }
 
   @Test
-  public void cleanUpAfterFailedGIIDoesNotCloseEntriesIfIsPersistentRegionAndRecoveredFromDisk() {
+  public void cleanUpAfterFailedInitialImageDoesNotCloseEntriesIfIsPersistentRegionAndRecoveredFromDisk() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     DiskRegion diskRegion = mock(DiskRegion.class);
 
@@ -81,7 +81,7 @@ public class DistributedRegionTest {
     when(distributedRegion.isInitialized()).thenReturn(false);
 
     assertThat(distributedRegion.lockWhenRegionIsInitializing()).isTrue();
-    verify(distributedRegion).lockFailedGIIClearReadLock();
+    verify(distributedRegion).lockFailedInitialImageReadLock();
   }
 
   @Test
@@ -91,6 +91,6 @@ public class DistributedRegionTest {
     when(distributedRegion.isInitialized()).thenReturn(true);
 
     assertThat(distributedRegion.lockWhenRegionIsInitializing()).isFalse();
-    verify(distributedRegion, never()).lockFailedGIIClearReadLock();
+    verify(distributedRegion, never()).lockFailedInitialImageReadLock();
   }
 }
