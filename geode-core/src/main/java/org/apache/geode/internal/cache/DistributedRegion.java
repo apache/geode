@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
@@ -181,6 +182,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * Lock to prevent multiple threads on this member from performing a clear at the same time.
    */
   private final Object clearLock = new Object();
+  private final ReentrantReadWriteLock failedGIIClearLock = new ReentrantReadWriteLock(true);
 
   private static final AtomicBoolean loggedNetworkPartitionWarning = new AtomicBoolean(false);
 
@@ -1332,10 +1334,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     if (!getRegionMap().isEmpty()) {
-      RegionVersionVector rvv = getVersionVector();
-      if (rvv != null) {
-        rvv.lockForClear(getFullPath(), getDistributionManager(), getMyId());
-      }
+      lockFailedGIIClearWriteLock();
       try {
         closeEntries();
         if (getDiskRegion() != null) {
@@ -1355,11 +1354,39 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           }
         }
       } finally {
-        if (rvv != null) {
-          rvv.unlockForClear(getMyId());
-        }
+        unlockFailedGIIClearWriteLock();
       }
     }
+  }
+
+  void lockFailedGIIClearWriteLock() {
+    failedGIIClearLock.writeLock().lock();
+  }
+
+  void unlockFailedGIIClearWriteLock() {
+    failedGIIClearLock.writeLock().unlock();
+  }
+
+  void lockFailedGIIClearReadLock() {
+    failedGIIClearLock.readLock().lock();
+  }
+
+  void unlockFailedGIIClearReadLock() {
+    failedGIIClearLock.readLock().unlock();
+  }
+
+  @Override
+  public boolean lockWhenRegionIsInitializing() {
+    if (!isInitialized()) {
+      lockFailedGIIClearReadLock();
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public void unlockWhenRegionIsInitializing() {
+    unlockFailedGIIClearReadLock();
   }
 
   private void initMembershipRoles() {
@@ -1853,8 +1880,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   void basicUpdateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
     InternalRegion internalRegion = event.getRegion();
     AbstractRegionMap regionMap = (AbstractRegionMap) internalRegion.getRegionMap();
+    boolean locked = false;
     try {
       regionMap.lockForCacheModification(internalRegion, event);
+      locked = internalRegion.lockWhenRegionIsInitializing();
       try {
         if (!hasSeenEvent(event)) {
           super.basicUpdateEntryVersion(event);
@@ -1866,6 +1895,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
     } finally {
       regionMap.releaseCacheModificationLock(internalRegion, event);
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
     }
   }
 

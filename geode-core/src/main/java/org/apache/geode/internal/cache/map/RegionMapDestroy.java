@@ -105,6 +105,7 @@ public class RegionMapDestroy {
     }
 
     cacheModificationLock.lockForCacheModification(internalRegion, event);
+    boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
 
       while (retry) {
@@ -173,6 +174,9 @@ public class RegionMapDestroy {
 
     } finally {
       cacheModificationLock.releaseCacheModificationLock(internalRegion, event);
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
     }
     return false;
   }
