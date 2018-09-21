@@ -144,7 +144,7 @@ public class LoginHandlerInterceptorJUnitTest {
     Callable<Void> request1Task = () -> processRequest("thread 1", thread1Permit, thread2Permit);
     Callable<Void> request2Task = () -> processRequest("thread 2", thread2Permit, thread1Permit);
 
-    runConcurrently.setTimeout(Duration.ofSeconds(10));
+    runConcurrently.setTimeout(Duration.ofMinutes(1));
     runConcurrently.add(request1Task);
     runConcurrently.add(request2Task);
     thread1Permit.release();
