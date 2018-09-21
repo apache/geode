@@ -220,13 +220,17 @@ dependencies {
 }
 
 // Creates the version properties file and writes it to the classes dir
-task createVersionPropertiesFile {
+task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
 
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties")
   def scmInfoFile = rootProject.tasks.writeBuildInfo.outputs.files
 
-  inputs.file scmInfoFile
-  outputs.file propertiesFile
+  inputs.files {
+    scmInfoFile
+  }
+  outputs.files {
+    propertiesFile
+  }
 
 
   doLast {
