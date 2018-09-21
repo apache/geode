@@ -124,6 +124,12 @@
       <artifactId>jsonassert</artifactId>
       <version>1.5.0</version>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>android-json</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
