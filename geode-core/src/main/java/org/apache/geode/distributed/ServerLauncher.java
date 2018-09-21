@@ -347,6 +347,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
     return this.cache;
   }
 
+  public void setCache(Cache cache) {
+    this.cache = cache;
+  }
+
   /**
    * Gets the CacheConfig object used to configure additional GemFire Cache components and features
    * (e.g. PDX).

@@ -251,6 +251,8 @@ public class LonerDistributionManager implements DistributionManager {
 
   public void removeMembershipListener(MembershipListener l) {}
 
+  public void clearMembershipListeners() {}
+
   public void removeAllMembershipListener(MembershipListener l) {}
 
   public void addAdminConsole(InternalDistributedMember p_id) {}

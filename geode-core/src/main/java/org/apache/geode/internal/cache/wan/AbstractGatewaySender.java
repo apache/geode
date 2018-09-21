@@ -278,6 +278,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return senderAdvisor;
   }
 
+  public void resetCache() {
+    logger.info("Cache reference is reset for GatewaySender " + this.getId());
+    this.cache = null;
+  }
+
   @Override
   public GatewaySenderStats getStatistics() {
     return statistics;

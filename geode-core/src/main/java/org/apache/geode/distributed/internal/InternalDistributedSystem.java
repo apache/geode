@@ -67,6 +67,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
@@ -2693,6 +2694,11 @@ public class InternalDistributedSystem extends DistributedSystem
           logger.warn("Exception disconnecting for reconnect", ee);
         }
 
+        if (ServerLauncher.getInstance() != null) {
+          ServerLauncher.getInstance().setCache(null);
+        }
+        getDM().clearMembershipListeners();
+
         try {
           reconnectLock.wait(timeOut);
         } catch (InterruptedException e) {
@@ -2797,6 +2803,10 @@ public class InternalDistributedSystem extends DistributedSystem
                 config.setCacheXMLDescription(cacheXML);
               }
               cache = GemFireCacheImpl.create(this.reconnectDS, config);
+
+              if (ServerLauncher.getInstance() != null) {
+                ServerLauncher.getInstance().setCache(cache);
+              }
 
               createAndStartCacheServers(cacheServerCreation, cache);
 

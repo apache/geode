@@ -288,7 +288,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     // still, it is safer approach to synchronize it
     synchronized (ParallelGatewaySenderQueue.class) {
       if (removalThread == null) {
-        removalThread = new BatchRemovalThread(this.sender.getCache(), this);
+        removalThread = new BatchRemovalThread(this);
         removalThread.start();
       }
     }
@@ -310,9 +310,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (this.userRegionNameToshadowPRMap.containsKey(regionName))
         return;
 
-      InternalCache cache = sender.getCache();
       final String prQName = getQueueName(sender.getId(), userRegion.getFullPath());
-      prQ = (PartitionedRegion) cache.getRegion(prQName);
+      prQ = (PartitionedRegion) sender.getCache().getRegion(prQName);
       if (prQ == null) {
         // TODO:REF:Avoid deprecated apis
         AttributesFactory fact = new AttributesFactory();
@@ -356,10 +355,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
         ParallelGatewaySenderQueueMetaRegion meta =
-            new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender);
+            new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, sender.getCache(), sender);
 
         try {
-          prQ = (PartitionedRegion) cache.createVMRegion(prQName, ra,
+          prQ = (PartitionedRegion) sender.getCache().createVMRegion(prQName, ra,
               new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
                   .setSnapshotInputStream(null).setImageTarget(null));
 
@@ -399,7 +398,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // in case shadowPR exists already (can be possible when sender is
         // started from stop operation)
         if (this.index == 0) // HItesh: for first processor only
-          handleShadowPRExistsScenario(cache, prQ);
+          handleShadowPRExistsScenario(sender.getCache(), prQ);
       }
       /*
        * Here, enqueueTempEvents need to be invoked when a sender is already running and userPR is
@@ -455,11 +454,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                 .toLocalizedString(new Object[] {this.sender.getId(), userPR.getFullPath()}));
       }
 
-      InternalCache cache = sender.getCache();
       boolean isAccessor = (userPR.getLocalMaxMemory() == 0);
 
       final String prQName = sender.getId() + QSTRING + convertPathToName(userPR.getFullPath());
-      prQ = (PartitionedRegion) cache.getRegion(prQName);
+      prQ = (PartitionedRegion) sender.getCache().getRegion(prQName);
       if (prQ == null) {
         // TODO:REF:Avoid deprecated apis
 
@@ -506,10 +504,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
         ParallelGatewaySenderQueueMetaRegion meta =
-            metaRegionFactory.newMetataRegion(cache, prQName, ra, sender);
+            metaRegionFactory.newMetataRegion(sender.getCache(), prQName, ra, sender);
 
         try {
-          prQ = (PartitionedRegion) cache.createVMRegion(prQName, ra,
+          prQ = (PartitionedRegion) sender.getCache().createVMRegion(prQName, ra,
               new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
                   .setInternalRegion(true).setSnapshotInputStream(null).setImageTarget(null));
           // at this point we should be able to assert prQ == meta;
@@ -520,7 +518,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             return; // return from here if accessor node
 
           // Add the overflow statistics to the mbean
-          addOverflowStatisticsToMBean(cache, prQ);
+          addOverflowStatisticsToMBean(sender.getCache(), prQ);
 
           // Wait for buckets to be recovered.
           prQ.shadowPRWaitForBucketRecovery();
@@ -539,7 +537,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // in case shadowPR exists already (can be possible when sender is
         // started from stop operation)
         if (this.index == 0) // HItesh:for first parallelGatewaySenderQueue only
-          handleShadowPRExistsScenario(cache, prQ);
+          handleShadowPRExistsScenario(sender.getCache(), prQ);
       }
 
     } finally {
@@ -1014,8 +1012,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           }
         } else {
           String regionPath = event.getRegionPath();
-          InternalCache cache = this.sender.getCache();
-          Region region = (PartitionedRegion) cache.getRegion(regionPath);
+          Region region = (PartitionedRegion) sender.getCache().getRegion(regionPath);
           if (region != null && !region.isDestroyed()) {
             // TODO: We have to get colocated parent region for this region
             if (region instanceof DistributedRegion) {
@@ -1600,17 +1597,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
      */
     private volatile boolean shutdown = false;
 
-    private final InternalCache cache;
-
     private final ParallelGatewaySenderQueue parallelQueue;
 
     /**
      * Constructor : Creates and initializes the thread
      */
-    public BatchRemovalThread(InternalCache c, ParallelGatewaySenderQueue queue) {
+    public BatchRemovalThread(ParallelGatewaySenderQueue queue) {
       super("BatchRemovalThread for GatewaySender_" + queue.sender.getId() + "_" + queue.index);
       this.setDaemon(true);
-      this.cache = c;
       this.parallelQueue = queue;
     }
 
@@ -1618,7 +1612,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().isCancelInProgress()) {
+      if (parallelQueue.sender.getCache().getCancelCriterion().isCancelInProgress()) {
         return true;
       }
       return false;
@@ -1627,7 +1621,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     @Override
     public void run() {
       try {
-        InternalDistributedSystem ids = cache.getInternalDistributedSystem();
+        InternalDistributedSystem ids =
+            parallelQueue.sender.getCache().getInternalDistributedSystem();
         DistributionManager dm = ids.getDistributionManager();
         for (;;) {
           try { // be somewhat tolerant of failures
@@ -1684,7 +1679,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               buckToDispatchLock.unlock();
             }
             // Get all the data-stores wherever userPRs are present
-            Set<InternalDistributedMember> recipients = getAllRecipients(cache, temp);
+            Set<InternalDistributedMember> recipients =
+                getAllRecipients(parallelQueue.sender.getCache(), temp);
             if (!recipients.isEmpty()) {
               ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(temp);
               pqrm.setRecipients(recipients);

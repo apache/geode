@@ -198,6 +198,8 @@ public interface DistributionManager extends ReplySender {
    */
   void removeMembershipListener(MembershipListener l);
 
+  void clearMembershipListeners();
+
   /**
    * Removes a <code>MembershipListener</code> listening for all members from this distribution
    * manager.

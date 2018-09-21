@@ -92,7 +92,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   private final AtomicInteger uniqId;
 
   private final DistributionManager dm;
-  private final InternalCache cache;
+  private InternalCache cache;
 
   // The DistributionMemberID used to construct TXId's
   private final InternalDistributedMember distributionMgrId;
@@ -649,6 +649,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     if (isClosed()) {
       return;
     }
+    this.cache = null;
+    this.currentInstance = null;
     TXStateProxy[] proxies = null;
     synchronized (this.hostedTXStates) {
       // After this, newly added TXStateProxy would not operate on the TXState.
@@ -1916,6 +1918,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     Boolean value = isTXDistributed.get();
     // This can be null if not set in setDistributed().
     if (value == null) {
+      if (cache == null) {
+        return false;
+      }
       InternalDistributedSystem ids = (InternalDistributedSystem) cache.getDistributedSystem();
       return ids.getOriginalConfig().getDistributedTransactions();
     } else {

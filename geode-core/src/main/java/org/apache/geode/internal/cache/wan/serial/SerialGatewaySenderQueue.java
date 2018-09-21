@@ -213,7 +213,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     initializeRegion(abstractSender, listener);
     // Increment queue size. Fix for bug 51988.
     this.stats.incQueueSize(this.region.size());
-    this.removalThread = new BatchRemovalThread(abstractSender.getCache());
+    this.removalThread = new BatchRemovalThread();
     this.removalThread.start();
     this.sender = abstractSender;
     if (logger.isDebugEnabled()) {
@@ -1042,22 +1042,19 @@ public class SerialGatewaySenderQueue implements RegionQueue {
      */
     private volatile boolean shutdown = false;
 
-    private final InternalCache cache;
-
     /**
      * Constructor : Creates and initializes the thread
      *
      */
-    public BatchRemovalThread(InternalCache c) {
+    public BatchRemovalThread() {
       this.setDaemon(true);
-      this.cache = c;
     }
 
     private boolean checkCancelled() {
       if (shutdown) {
         return true;
       }
-      if (cache.getCancelCriterion().isCancelInProgress()) {
+      if (sender.getCache().getCancelCriterion().isCancelInProgress()) {
         return true;
       }
       return false;
@@ -1065,7 +1062,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     @Override
     public void run() {
-      InternalDistributedSystem ids = cache.getInternalDistributedSystem();
+      InternalDistributedSystem ids = sender.getCache().getInternalDistributedSystem();
 
       try { // ensure exit message is printed
         // Long waitTime = Long.getLong(QUEUE_REMOVAL_WAIT_TIME, 1000);
@@ -1113,7 +1110,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             }
             // release not needed since disallowOffHeapValues called
             EntryEventImpl event = EntryEventImpl.create((LocalRegion) region, Operation.DESTROY,
-                (lastDestroyedKey + 1), null/* newValue */, null, false, cache.getMyId());
+                (lastDestroyedKey + 1), null/* newValue */, null, false,
+                sender.getCache().getMyId());
             event.disallowOffHeapValues();
             event.setTailKey(temp);
 

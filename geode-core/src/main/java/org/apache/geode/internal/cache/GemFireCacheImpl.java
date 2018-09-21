@@ -2202,6 +2202,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             }
           } catch (CancelException ignore) {
           }
+          ((AbstractGatewaySender) sender).resetCache();
         }
 
         destroyGatewaySenderLockService();

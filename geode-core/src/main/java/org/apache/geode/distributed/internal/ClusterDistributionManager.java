@@ -2111,6 +2111,10 @@ public class ClusterDistributionManager implements DistributionManager {
     this.membershipListeners.remove(l);
   }
 
+  public void clearMembershipListeners() {
+    this.membershipListeners.clear();
+  }
+
   /**
    * Adds a <code>MembershipListener</code> to this distribution manager.
    */
@@ -2280,6 +2284,7 @@ public class ClusterDistributionManager implements DistributionManager {
           this.localAddress));
       MembershipLogger.logShutdown(this.localAddress);
       closed = true;
+      this.cache = null;
     }
   }
 

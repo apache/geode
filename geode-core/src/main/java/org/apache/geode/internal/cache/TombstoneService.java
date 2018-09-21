@@ -570,6 +570,10 @@ public class TombstoneService {
               try {
                 // this thread should not reference other sweeper state, which is not synchronized
                 for (Map.Entry<DistributedRegion, Set<Object>> mapEntry : reapedKeys.entrySet()) {
+                  if (isStopped) {
+                    logger.info("expireBatch is stopped due to close");
+                    break;
+                  }
                   DistributedRegion r = mapEntry.getKey();
                   Set<Object> rKeysReaped = mapEntry.getValue();
                   r.distributeTombstoneGC(rKeysReaped);
@@ -775,7 +779,7 @@ public class TombstoneService {
     protected final CachePerfStats stats;
     private final CancelCriterion cancelCriterion;
 
-    private volatile boolean isStopped;
+    protected volatile boolean isStopped;
 
     TombstoneSweeper(CacheTime cacheTime, CachePerfStats stats, CancelCriterion cancelCriterion,
         long expiryTime, String threadName) {
@@ -923,13 +927,16 @@ public class TombstoneService {
       if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
         logger.trace(LogMarker.TOMBSTONE_VERBOSE, "sleeping for {}", sleepTime);
       }
-      synchronized (this) {
-        if (isStopped) {
-          return;
-        }
-        try {
-          this.wait(sleepTime);
-        } catch (InterruptedException ignore) {
+      long then = getNow();
+      while ((getNow() - then) <= sleepTime) {
+        synchronized (this) {
+          if (isStopped) {
+            return;
+          }
+          try {
+            this.wait(500);
+          } catch (InterruptedException ignore) {
+          }
         }
       }
     }

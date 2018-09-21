@@ -1596,7 +1596,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         for (final Object o : cache.getCacheServers()) {
           CacheServerImpl cs = (CacheServerImpl) o;
           if (cs.isDefaultServer()) {
-            CacheServerCreation bsc = new CacheServerCreation(cache, cs);
+            CacheServerCreation bsc = new CacheServerCreation(cache, cs, false);
             list.add(bsc);
           }
         }

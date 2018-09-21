@@ -54,8 +54,8 @@ public class CacheServerCreation extends AbstractCacheServer {
    * Constructor for retaining bridge server information during auto-reconnect
    *
    */
-  public CacheServerCreation(InternalCache cache, CacheServer other) {
-    super(cache);
+  public CacheServerCreation(InternalCache cache, CacheServer other, boolean attachListener) {
+    super(cache, attachListener);
     setPort(other.getPort());
     setBindAddress(other.getBindAddress());
     setHostnameForClients(other.getHostnameForClients());
