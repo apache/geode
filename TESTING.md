@@ -19,7 +19,7 @@ Tests are broken up into five types - unit, integration, distributed, acceptance
 ## Running Individual Tests
 To run an individual test, you can either
 1. Run the test in your [IDE](https://github.com/apache/geode/blob/develop/BUILDING.md#setting-up-intellij)
-2. Run the from terminal by specifying the sub-project and test type:  
+2. Run from terminal by specifying the sub-project and test type:  
 `./gradlew project:testType --tests testName`  
 For example:  
     `./gradlew geode-core:test --tests ArrayUtilsTest`  
