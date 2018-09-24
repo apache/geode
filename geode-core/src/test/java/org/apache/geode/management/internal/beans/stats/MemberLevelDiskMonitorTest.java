@@ -22,6 +22,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -84,13 +87,13 @@ public class MemberLevelDiskMonitorTest {
 
   @Test
   public void computeDeltaShouldReturnZeroForUnknownStatistics() {
-    assertThat(memberLevelDiskMonitor.computeDelta(new MBeanStatsMonitor.DefaultHashMap(),
-        "unknownStatistic", 6)).isEqualTo(0);
+    assertThat(memberLevelDiskMonitor.computeDelta(Collections.emptyMap(), "unknownStatistic", 6))
+        .isEqualTo(0);
   }
 
   @Test
   public void computeDeltaShouldOperateForHandledStatistics() {
-    MBeanStatsMonitor.DefaultHashMap statsMap = new MBeanStatsMonitor.DefaultHashMap();
+    Map<String, Number> statsMap = new HashMap<>();
     statsMap.put(StatsKey.NUM_FLUSHES, 10);
     statsMap.put(StatsKey.DISK_QUEUE_SIZE, 148);
     statsMap.put(StatsKey.TOTAL_FLUSH_TIME, 10000);
