@@ -306,7 +306,7 @@ public class GMSLocator implements Locator, NetLocator {
       if (isCoordinator) {
         coordinator = localAddress;
 
-        if (v != null && !v.getCoordinator().equals(localAddress)) {
+        if (v != null && localAddress != null && !localAddress.equals(v.getCoordinator())) {
           logger.info("This member is becoming coordinator since view {}", v);
           v = null;
         }
