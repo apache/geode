@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -92,7 +93,7 @@ public class ExportLogsWithMemberGroupDUnitTest {
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
-    Set<String> expectedFiles = Sets.newHashSet("server-1/server-1.log");
+    Set<String> expectedFiles = Sets.newHashSet(Paths.get("server-1", "server-1.log").toString());
     assertThat(actualZipEntries).isEqualTo(expectedFiles);
   }
 
@@ -103,7 +104,8 @@ public class ExportLogsWithMemberGroupDUnitTest {
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
-    Set<String> expectedFiles = Sets.newHashSet("server-1/server-1.log", "server-2/server-2.log");
+    Set<String> expectedFiles = Sets.newHashSet(Paths.get("server-1", "server-1.log").toString(),
+        Paths.get("server-2", "server-2.log").toString());
     assertThat(actualZipEntries).isEqualTo(expectedFiles);
 
     connector.executeAndAssertThat("export logs --group=group2").statusIsSuccess();
