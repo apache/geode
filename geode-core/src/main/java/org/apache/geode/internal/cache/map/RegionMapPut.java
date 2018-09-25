@@ -146,13 +146,9 @@ public class RegionMapPut extends AbstractRegionMapPut {
   @Override
   protected void runWhileLockedForCacheModification(Runnable r) {
     cacheModificationLock.lockForCacheModification(getOwner(), getEvent());
-    final boolean locked = getOwner().lockWhenRegionIsInitializing();
     try {
-      r.run();
+      super.runWhileLockedForCacheModification(r);
     } finally {
-      if (locked) {
-        getOwner().unlockWhenRegionIsInitializing();
-      }
       cacheModificationLock.releaseCacheModificationLock(getOwner(), getEvent());
     }
   }

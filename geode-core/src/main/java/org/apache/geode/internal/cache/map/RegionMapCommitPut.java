@@ -134,19 +134,6 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
   }
 
   @Override
-  protected void runWhileLockedForCacheModification(Runnable r) {
-    // no need to hold lockForCacheModification
-    final boolean locked = getOwner().lockWhenRegionIsInitializing();
-    try {
-      r.run();
-    } finally {
-      if (locked) {
-        getOwner().unlockWhenRegionIsInitializing();
-      }
-    }
-  }
-
-  @Override
   protected void setOldValueForDelta() {
     // nothing needed
   }
