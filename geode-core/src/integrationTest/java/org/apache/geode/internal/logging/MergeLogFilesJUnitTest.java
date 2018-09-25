@@ -28,8 +28,10 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,20 +83,18 @@ public class MergeLogFilesJUnitTest {
     }
 
     // Merge the log files together
-    InputStream[] streams = new InputStream[workers.size()];
-    String[] names = new String[workers.size()];
+    Map<String, InputStream> logs = new HashMap<>();
     for (int i = 0; i < workers.size(); i++) {
       Worker worker = (Worker) workers.get(i);
-      streams[i] = worker.getInputStream();
-      names[i] = worker.getName();
+      logs.put(worker.getName(), worker.getInputStream());
     }
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw, true);
-    MergeLogFiles.mergeLogFiles(streams, names, pw);
+    MergeLogFiles.mergeLogFiles(logs, pw);
 
     // System.out.println(sw.toString());
 
-    // Verfiy that the entries are sorted
+    // Verify that the entries are sorted
     BufferedReader br = new BufferedReader(new StringReader(sw.toString()));
     Pattern pattern = Pattern.compile("^Worker \\d+: .* VALUE: (\\d+)");
     int lastValue = -1;
