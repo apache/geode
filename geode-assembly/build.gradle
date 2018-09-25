@@ -18,10 +18,6 @@
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
-afterEvaluate {
-  project.tasks.remove(srcDistZip)
-  project.tasks.remove(distZip)
-}
 
 // disable artifact generation for this project
 jar.enabled = false
@@ -64,6 +60,9 @@ gradle.taskGraph.whenReady( { graph ->
   tasks.withType(Jar).each { jarTasks ->
     distTar.dependsOn(jarTasks)
   }
+
+  tasks.distZip.enabled = false
+  tasks.srcDistZip.enabled = false
 
   tasks.withType(AbstractArchiveTask).findAll {
     it.name.toLowerCase().contains("dist")
