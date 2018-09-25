@@ -129,7 +129,8 @@ public class StartLocatorCommand extends InternalGfshCommand {
       memberName = StartMemberUtils.getNameGenerator().generate('-');
     }
 
-    workingDirectory = StartMemberUtils.resolveWorkingDir(workingDirectory, memberName);
+    workingDirectory = StartMemberUtils.resolveWorkingDir(
+        workingDirectory == null ? null : new File(workingDirectory), new File(memberName));
 
     if (gemfirePropertiesFile != null && !gemfirePropertiesFile.exists()) {
       return ResultBuilder.createUserErrorResult(
