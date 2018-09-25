@@ -172,52 +172,40 @@ subprojects {
     }
   }
 
-  task repeatTest(type: RepeatTest) {
+  task repeatDistributedTest(type: RepeatTest) {
+    classpath = project.sourceSets.distributedTest.runtimeClasspath
+    testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
+  }
+
+  task repeatIntegrationTest(type: RepeatTest) {
+    classpath = project.sourceSets.integrationTest.runtimeClasspath
+    testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+  }
+
+  task repeatAcceptanceTest(type: RepeatTest) {
+    classpath = project.sourceSets.acceptanceTest.runtimeClasspath
+    testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
+  }
+
+  task repeatUpgradeTest(type: RepeatTest) {
+    classpath = project.sourceSets.upgradeTest.runtimeClasspath
+    testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
+  }
+
+  task repeatUnitTest(type: RepeatTest) {
+    // default classpath works for this one.
+  }
+
+  configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
     times = Integer.parseInt(repeat)
-
     useJUnit {}
-
     outputs.upToDateWhen { false }
-
-    classpath += project.sourceSets.distributedTest.runtimeClasspath
-    testClassesDirs += project.sourceSets.distributedTest.output.classesDirs
-    classpath += project.sourceSets.integrationTest.runtimeClasspath
-    testClassesDirs += project.sourceSets.integrationTest.output.classesDirs
-    classpath += project.sourceSets.upgradeTest.runtimeClasspath
-    testClassesDirs += project.sourceSets.upgradeTest.output.classesDirs
-    classpath += project.sourceSets.acceptanceTest.runtimeClasspath
-    testClassesDirs += project.sourceSets.acceptanceTest.output.classesDirs
 
     if (project.hasProperty("failOnNoMatchingTests")) {
       filter {
         setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
       }
     }
-  }
-
-  /*
-   * Don't add tasks for running specific category tests, instead use this
-   * property `testCategory` and set a FQCN of the required category.
-   * Eg: ./gradlew :geode-core:distributedTest -PtestCategory=org.apache.geode.test.junit.categories.GfshTest
-   *
-   * This provides developers a way to choose specific test source and test category.
-   *
-  */
-
-  // By proving a file with an arbitrary list of test classes, we can select only those
-  // tests to run. Activated using -Dcustom.tests=<file> customTest
-  def customTestList = []
-  def customTestFile = System.getProperty('custom.tests')
-  if (customTestFile != null) {
-    new File(customTestFile).eachLine { customTestList << it }
-  }
-
-  task customTest(type: Test) {
-    include { x ->
-      (x.isDirectory() || customTestList.any { y -> x.getName().contains(y) }) ? true : false
-    }
-
-    forkEvery 30
   }
 
   // apply common test configuration
@@ -236,7 +224,6 @@ subprojects {
         }
 
         maxHeapSize '768m'
-//        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea',"-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps"]
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
         if (!testJVM.trim().isEmpty()) {
           executable = "${testJVM}/bin/java"
@@ -284,9 +271,9 @@ subprojects {
     description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
   }
 
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, acceptanceTest, repeatTest, upgradeTest
-  [build, check, test, integrationTest, distributedTest, acceptanceTest, repeatTest, upgradeTest].each {
+  tasks.withType(Test).plus([build,check]).each {
     it.finalizedBy combineReports
+    combineReports.mustRunAfter it
   }
 }
 

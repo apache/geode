@@ -114,12 +114,20 @@ subprojects {
   apply plugin: 'com.github.pedjak.dockerized-test'
 
   if (project.hasProperty('parallelDunit')) {
-    distributedTest.configure(dockerConfig)
-    upgradeTest.configure(dockerConfig)
-    repeatTest.configure(dockerConfig)
-    integrationTest.configure(dockerConfig)
-//    ACCEPTANCE TEST NEEDS DOCKER-COMPOSE TO WORK WITHIN DOCKER FIRST
-//    acceptanceTest.configure(dockerConfig)
     uiTest.configure(dockerConfig)
+    repeatUnitTest.configure(dockerConfig)
+
+    integrationTest.configure(dockerConfig)
+    repeatIntegrationTest.configure(dockerConfig)
+
+    distributedTest.configure(dockerConfig)
+    repeatDistributedTest.configure(dockerConfig)
+
+    upgradeTest.configure(dockerConfig)
+    repeatUpgradeTest.configure(dockerConfig)
+
+    // ACCEPTANCE TEST NEEDS DOCKER-COMPOSE TO WORK WITHIN DOCKER FIRST
+    // acceptanceTest.configure(dockerConfig)
+    // repeatAcceptanceTest.configure(dockerConfig)
   }
 }
