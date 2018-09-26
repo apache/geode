@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
@@ -31,9 +30,12 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.util.test.TestUtil;
@@ -46,7 +48,9 @@ import org.apache.geode.util.test.TestUtil;
  *
  * Each password shares the string below for easier log scanning.
  */
+@Category({SecurityTest.class, LoggingTest.class})
 public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
+
   private static String sharedPasswordString = "abcdefg";
 
   private File propertyFile;
