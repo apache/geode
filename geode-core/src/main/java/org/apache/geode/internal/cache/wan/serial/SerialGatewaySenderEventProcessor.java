@@ -384,9 +384,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (m != null) {
         for (EventWrapper ew : m.values()) {
           GatewaySenderEventImpl gatewayEvent = ew.event;
-          if (logger.isDebugEnabled()) {
-            logger.debug("releaseUnprocessedEvents:" + gatewayEvent);
-          }
           gatewayEvent.release();
         }
         this.unprocessedEvents = null;
@@ -431,14 +428,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         } else {
           // If it is not, create an uninitialized GatewayEventImpl and
           // put it into the map of unprocessed events.
-          // 2 Special cases:
-          // 1) UPDATE_VERSION_STAMP: only enqueue to primary
-          // 2) CME && !originRemote: only enqueue to primary
-          if (!(event.getOperation().equals(Operation.UPDATE_VERSION_STAMP)
-              || ((EntryEventImpl) event).isConcurrencyConflict() && !event.isOriginRemote())) {
-            senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false); // OFFHEAP
-            handleSecondaryEvent(senderEvent);
-          }
+          senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false); // OFFHEAP
+                                                                                              // ok
+          handleSecondaryEvent(senderEvent);
         }
       }
     }
