@@ -20,30 +20,30 @@ import org.apache.logging.log4j.core.pattern.ConverterKeys;
 import org.apache.logging.log4j.core.pattern.LogEventPatternConverter;
 
 /**
- * Formats the event thread id.
+ * Formats the event thread id in hex format.
  */
-@Plugin(name = "ThreadIdPatternConverter", category = "Converter")
-@ConverterKeys({"tid", "threadId"})
-public class ThreadIdPatternConverter extends LogEventPatternConverter {
+@Plugin(name = "HexThreadIdPatternConverter", category = "Converter")
+@ConverterKeys({"hexTid", "hexThreadId"})
+public class HexThreadIdPatternConverter extends LogEventPatternConverter {
   /**
    * Singleton.
    */
-  private static final ThreadIdPatternConverter INSTANCE = new ThreadIdPatternConverter();
+  static final HexThreadIdPatternConverter INSTANCE = new HexThreadIdPatternConverter();
 
   /**
    * Private constructor.
    */
-  private ThreadIdPatternConverter() {
-    super("ThreadId", "threadId");
+  private HexThreadIdPatternConverter() {
+    super("HexThreadId", "hexThreadId");
   }
 
   /**
-   * Obtains an instance of ThreadPatternConverter.
+   * Obtains an instance of HexThreadIdPatternConverter.
    *
    * @param options options, currently ignored, may be null.
-   * @return instance of ThreadPatternConverter.
+   * @return instance of HexThreadIdPatternConverter.
    */
-  public static ThreadIdPatternConverter newInstance(final String[] options) {
+  public static HexThreadIdPatternConverter newInstance(final String[] options) {
     return INSTANCE;
   }
 
