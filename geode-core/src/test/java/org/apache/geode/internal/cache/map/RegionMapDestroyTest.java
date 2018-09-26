@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -42,6 +43,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
@@ -1402,6 +1404,40 @@ public class RegionMapDestroyTest {
         same(owner));
     verifyEntryDestroyed(newRegionEntry, true);
     verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyDoesNotLockGIIClearLockWhenRegionIsInitialized()
+      throws Exception {
+    DistributedRegion region = mock(DistributedRegion.class, RETURNS_DEEP_STUBS);
+    when(region.isInitialized()).thenReturn(true);
+    when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
+    RegionMapDestroy mapDestroy =
+        new RegionMapDestroy(region, regionMap, mock(CacheModificationLock.class));
+
+    mapDestroy.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
+        expectedOldValue, removeRecoveredEntry);
+
+    verify(region).lockWhenRegionIsInitializing();
+    assertThat(region.lockWhenRegionIsInitializing()).isFalse();
+    verify(region, never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void destroyLockGIIClearLockWhenRegionIsInitializing()
+      throws Exception {
+    DistributedRegion region = mock(DistributedRegion.class, RETURNS_DEEP_STUBS);
+    when(region.isInitialized()).thenReturn(false);
+    when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
+    RegionMapDestroy mapDestroy =
+        new RegionMapDestroy(region, regionMap, mock(CacheModificationLock.class));
+
+    mapDestroy.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction,
+        expectedOldValue, removeRecoveredEntry);
+
+    verify(region).lockWhenRegionIsInitializing();
+    assertThat(region.lockWhenRegionIsInitializing()).isTrue();
+    verify(region).unlockWhenRegionIsInitializing();
   }
 
   ///////////////////// given methods /////////////////////////////
