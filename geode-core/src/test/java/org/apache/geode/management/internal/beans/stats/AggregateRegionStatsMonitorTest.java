@@ -22,6 +22,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -83,13 +86,14 @@ public class AggregateRegionStatsMonitorTest {
 
   @Test
   public void computeDeltaShouldReturnZeroForUnknownStatistics() {
-    assertThat(aggregateRegionStatsMonitor.computeDelta(new MBeanStatsMonitor.DefaultHashMap(),
-        "unknownStatistic", 6)).isEqualTo(0);
+    assertThat(
+        aggregateRegionStatsMonitor.computeDelta(Collections.emptyMap(), "unknownStatistic", 6))
+            .isEqualTo(0);
   }
 
   @Test
   public void computeDeltaShouldOperateForHandledStatistics() {
-    MBeanStatsMonitor.DefaultHashMap statsMap = new MBeanStatsMonitor.DefaultHashMap();
+    Map<String, Number> statsMap = new HashMap<>();
     statsMap.put(StatsKey.PRIMARY_BUCKET_COUNT, 5);
     statsMap.put(StatsKey.BUCKET_COUNT, 13);
     statsMap.put(StatsKey.TOTAL_BUCKET_SIZE, 1024);

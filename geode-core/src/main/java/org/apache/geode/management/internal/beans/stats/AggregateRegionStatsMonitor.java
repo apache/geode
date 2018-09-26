@@ -60,11 +60,11 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
     return bucketCount;
   }
 
-  public long getLruDestroys() {
+  long getLruDestroys() {
     return lruDestroys;
   }
 
-  public long getLruEvictions() {
+  long getLruEvictions() {
     return lruEvictions;
   }
 
@@ -90,34 +90,34 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
     listeners = new HashMap<>();
   }
 
-  Number computeDelta(DefaultHashMap statsMap, String name, Number currentValue) {
+  Number computeDelta(Map<String, Number> statsMap, String name, Number currentValue) {
     if (name.equals(StatsKey.PRIMARY_BUCKET_COUNT)) {
-      Number prevValue = statsMap.get(StatsKey.PRIMARY_BUCKET_COUNT);
+      Number prevValue = statsMap.getOrDefault(StatsKey.PRIMARY_BUCKET_COUNT, 0);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.BUCKET_COUNT)) {
-      Number prevValue = statsMap.get(StatsKey.BUCKET_COUNT);
+      Number prevValue = statsMap.getOrDefault(StatsKey.BUCKET_COUNT, 0);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.TOTAL_BUCKET_SIZE)) {
-      Number prevValue = statsMap.get(StatsKey.TOTAL_BUCKET_SIZE);
+      Number prevValue = statsMap.getOrDefault(StatsKey.TOTAL_BUCKET_SIZE, 0);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.LRU_EVICTIONS)) {
-      Number prevValue = statsMap.get(StatsKey.LRU_EVICTIONS);
+      Number prevValue = statsMap.getOrDefault(StatsKey.LRU_EVICTIONS, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.LRU_DESTROYS)) {
-      Number prevValue = statsMap.get(StatsKey.LRU_DESTROYS);
+      Number prevValue = statsMap.getOrDefault(StatsKey.LRU_DESTROYS, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_SPACE)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_SPACE);
+      Number prevValue = statsMap.getOrDefault(StatsKey.DISK_SPACE, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
@@ -242,7 +242,7 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
   public void removeStatisticsFromMonitor(Statistics stats) {}
 
   class MemberLevelRegionStatisticsListener implements StatisticsListener {
-    final DefaultHashMap statsMap = new DefaultHashMap();
+    final Map<String, Number> statsMap = new HashMap<>();
     private boolean removed = false;
 
     @Override
