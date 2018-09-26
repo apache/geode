@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -53,7 +54,8 @@ public class ExportLogsOnServerManagerDUnit {
 
     String zipPath = getZipPathFromCommandResult(message);
 
-    Set<String> expectedZipEntries = Sets.newHashSet("server-0/server-0.log");
+    Set<String> expectedZipEntries =
+        Sets.newHashSet(Paths.get("server-0", "server-0.log").toString());
     Set<String> actualZipEnries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
     assertThat(actualZipEnries).containsAll(expectedZipEntries);
@@ -72,7 +74,8 @@ public class ExportLogsOnServerManagerDUnit {
     String zipPath = getZipPathFromCommandResult(message);
 
     Set<String> expectedZipEntries =
-        Sets.newHashSet("server-0/server-0.log", "server-1/server-1.log");
+        Sets.newHashSet(Paths.get("server-0", "server-0.log").toString(),
+            Paths.get("server-1", "server-1.log").toString());
     Set<String> actualZipEnries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
     assertThat(actualZipEnries).containsAll(expectedZipEntries);
