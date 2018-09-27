@@ -320,6 +320,9 @@ distributions {
     contents {
       from rootProject.tasks.writeBuildInfo
       from (rootDir) {
+        include 'ci/**'
+      }
+      from (rootDir) {
         exclude 'KEYS'
         exclude '**/gradlew'
         exclude '**/gradlew.bat'
