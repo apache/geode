@@ -151,11 +151,6 @@ dependencies {
   }
 }
 
-tasks.withType(Test){
-  dependsOn installDist
-  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
-}
-
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/gemfire.properties")
   main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
@@ -437,6 +432,10 @@ distributions {
   }
 }
 
+tasks.withType(Test){
+  dependsOn installDist
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
+}
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
