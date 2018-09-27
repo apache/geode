@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.BreakIterator;
@@ -975,6 +977,9 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   public abstract void put(int messageLevel, StringId messageId, Object[] parameters,
       Throwable throwable);
 
+  /**
+   * formatText manipulates \n and \r chars but supports Windows and Linux/Unix/Mac
+   */
   static void formatText(PrintWriter writer, String target, int initialLength) {
     BreakIterator boundary = BreakIterator.getLineInstance();
     boundary.setText(target);
@@ -1102,13 +1107,13 @@ public abstract class LogWriterImpl implements InternalLogWriter {
               sb.append("[trace ").append(getTimeStamp()).append("] ");
             }
             StackTraceElement[] els = targetThread.getStackTrace();
-            sb.append("Stack trace for '").append(targetThread).append("'\n");
+            sb.append("Stack trace for '").append(targetThread).append("'").append(LINE_SEPARATOR);
             if (els.length > 0) {
               for (int i = 0; i < els.length; i++) {
-                sb.append("\tat ").append(els[i]).append("\n");
+                sb.append("\tat ").append(els[i]).append(LINE_SEPARATOR);
               }
             } else {
-              sb.append("    no stack\n");
+              sb.append("    no stack").append(LINE_SEPARATOR);
             }
             if (toStdout) {
               System.out.println(sb);
@@ -1126,13 +1131,13 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   public static StringBuilder getStackTrace(Thread targetThread) {
     StringBuilder sb = new StringBuilder(500);
     StackTraceElement[] els = targetThread.getStackTrace();
-    sb.append("Stack trace for '").append(targetThread).append("'\n");
+    sb.append("Stack trace for '").append(targetThread).append("'").append(LINE_SEPARATOR);
     if (els.length > 0) {
       for (int i = 0; i < els.length; i++) {
-        sb.append("\tat ").append(els[i]).append("\n");
+        sb.append("\tat ").append(els[i]).append(LINE_SEPARATOR);
       }
     } else {
-      sb.append("    no stack\n");
+      sb.append("    no stack").append(LINE_SEPARATOR);
     }
     return sb;
   }
