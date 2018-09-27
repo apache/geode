@@ -386,22 +386,6 @@ public class VM implements Serializable {
   }
 
   /**
-   * Invokes the {@code run} method of a {@link Runnable} in this {@code VM}. If the invocation
-   * throws AssertionError, and repeatTimeoutMs is >0, the {@code run} method is invoked repeatedly
-   * until it either succeeds, or repeatTimeoutMs has passed. The AssertionError is thrown back to
-   * the sender of this method if {@code run} has not completed successfully before repeatTimeoutMs
-   * has passed.
-   *
-   * @deprecated Please use {@link Awaitility} to await condition and then
-   *             {@link #invoke(SerializableCallableIF)} instead.
-   */
-  @Deprecated
-  public void invokeRepeatingIfNecessary(final RepeatableRunnable runnable,
-      final long repeatTimeoutMs) {
-    invoke(runnable, "runRepeatingIfNecessary", new Object[] {repeatTimeoutMs});
-  }
-
-  /**
    * Invokes an instance method with no arguments on an object that is serialized into this
    * {@code VM}. The return type of the method can be either {@link Object} or {@code void}. If the
    * return type of the method is {@code void}, {@code null} is returned.
