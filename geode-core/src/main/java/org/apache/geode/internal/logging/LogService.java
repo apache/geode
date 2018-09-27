@@ -123,7 +123,7 @@ public class LogService extends LogManager {
     return "true".equals(value);
   }
 
-  public static String getConfigInformation() {
+  public static String getConfigurationInfo() {
     return getConfiguration().getConfigurationSource().toString();
   }
 
