@@ -97,26 +97,32 @@ subprojects {
     integrationTest {
       testTaskName = 'integrationTest'
       includeInCheckLifecycle = false
+      parentSourceSet = 'test'
     }
     distributedTest {
       testTaskName = 'distributedTest'
       includeInCheckLifecycle = false
+      parentSourceSet = 'integrationTest'
     }
     performanceTest {
       testTaskName = 'performanceTest'
       includeInCheckLifecycle = false
+      parentSourceSet = 'test'
     }
     acceptanceTest {
       testTaskName = 'acceptanceTest'
       includeInCheckLifecycle = false
+      parentSourceSet = 'test'
     }
     uiTest {
       testTaskName = 'uiTest'
       includeInCheckLifecycle = false
+      parentSourceSet = 'test'
     }
     upgradeTest {
       testTaskName = 'upgradeTest'
       includeInCheckLifecycle = false
+      parentSourceSet = 'distributedTest'
     }
   }
 
@@ -128,23 +134,6 @@ subprojects {
     acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
     uiTestAnnotationProcessor.extendsFrom annotationProcessor
     upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
-    // Facets does not extend the new runtimeOnly configurations
-    integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
-    distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
-    performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-    acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-    uiTestRuntimeOnly.extendsFrom(runtimeOnly)
-    upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
-  }
-
-  dependencies {
-    integrationTestCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-
-    integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
-
-    distributedTestCompile project(":geode-dunit")
   }
 
   configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
@@ -236,7 +225,6 @@ subprojects {
         }
 
         maxHeapSize '768m'
-//        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea',"-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps"]
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
         if (!testJVM.trim().isEmpty()) {
           executable = "${testJVM}/bin/java"
