@@ -280,6 +280,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
+
       InternalLocator.locator = locator;
     }
   }
@@ -301,18 +302,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logger,
       InternalLogWriter securityLogger, InetAddress bindAddress, boolean startDistributedSystem,
       Properties dsProperties, String hostnameForClients) throws IOException {
-
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator newLocator = null;
 
     boolean startedLocator = false;
     try {
-
-      // if startDistributedSystem is true then Locator uses a NullLoggingSession (does nothing)
-      LoggingSession loggingSession =
-          startDistributedSystem ? NullLoggingSession.create() : LoggingSession.create();
-
-      newLocator = createLocator(port, loggingSession, logFile, logger, securityLogger, bindAddress,
+      newLocator = createLocator(port, logFile, logger, securityLogger, bindAddress,
           hostnameForClients, dsProperties, startDistributedSystem);
 
       loggingSession.createSession(newLocator);
@@ -322,23 +317,24 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         newLocator.startPeerLocation();
 
         if (startDistributedSystem) {
+
           try {
             newLocator.startDistributedSystem();
           } catch (RuntimeException e) {
             newLocator.stop();
             throw e;
           }
-          // fix bug #46324
+
           final InternalDistributedSystem ids = newLocator.myDs;
           if (ids != null) {
             ids.getDistributionManager().addHostedLocators(ids.getDistributedMember(),
                 getLocatorStrings(), newLocator.isSharedConfigurationEnabled());
           }
         }
-      } catch (final LocatorCancelException ignored) {
+      } catch (final LocatorCancelException lce) {
         newLocator.stop();
+        throw lce;
       }
-
       InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
       if (sys != null) {
         try {
@@ -355,11 +351,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     } finally {
       System.getProperties().remove(FORCE_LOCATOR_DM_TYPE);
+
       if (!startedLocator) {
-        // fix for bug 46314
         removeLocator(newLocator);
       }
     }
+
   }
 
   /***
@@ -816,7 +813,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     removeLocator(this);
 
     handleShutdown();
-
     logger.info("{} is stopped", this);
 
     if (this.stoppedForReconnect) {
@@ -1014,6 +1010,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
   private void restartWithDS(InternalDistributedSystem newSystem, InternalCache newCache)
       throws IOException {
+
     synchronized (locatorLock) {
       if (locator != this && hasLocator()) {
         throw new IllegalStateException(

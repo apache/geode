@@ -101,10 +101,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(LOCATORS, locators);
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    // props.setProperty(LOG_LEVEL, "finest");
 
-    // Start locator0 with props.
-    // props.setProperty(DistributionConfig.START_LOCATOR_NAME, host.getHostName() + "["+port0+"]");
     locator0.invoke(new CacheSerializableRunnable("Starting first locator on port " + port0) {
 
       @Override
@@ -134,38 +131,11 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
     });
 
     // Start locator1 with props.
-    // props.setProperty(DistributionConfig.START_LOCATOR_NAME, host.getHostName() + "["+port1+"]");
     locator1.invoke(new CacheSerializableRunnable("Starting second locator on port " + port1) {
 
       @Override
       public void run2() throws CacheException {
-        try {
-          TcpServer.TESTVERSION -= 100;
-          TcpServer.OLDTESTVERSION -= 100;
-          TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION,
-              Version.CURRENT_ORDINAL);
-          TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION,
-              Version.GFE_57.ordinal());
-          // assertIndexDetailsEquals("Gossip Version and Test version are not same",
-          // TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
-          // assertIndexDetailsEquals("Previous Gossip Version and Test version are not same",
-          // TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
-
-          Locator.startLocatorAndDS(port1, logFile1, props);
-
-          // Start a gossip client to connect to first locator "locator0".
-          FindCoordinatorRequest req = new FindCoordinatorRequest(
-              new InternalDistributedMember(SocketCreator.getLocalHost(), 1234));
-          FindCoordinatorResponse response = null;
-
-          response = (FindCoordinatorResponse) new TcpClient()
-              .requestToServer(SocketCreator.getLocalHost(), port1, req, 5000);
-          assertNotNull(response);
-
-        } catch (Exception e) {
-          org.apache.geode.test.dunit.Assert.fail(
-              "Locator1 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
-        }
+        restartLocator(port1, logFile1, props);
       }
     });
 
@@ -180,40 +150,43 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
     });
 
     // Restart first locator in new VM.
-    // props.setProperty(DistributionConfig.START_LOCATOR_NAME, host.getHostName() + "["+port0+"]");
     locatorRestart0
         .invoke(new CacheSerializableRunnable("Restarting first locator on port " + port0) {
 
           @Override
           public void run2() throws CacheException {
-            try {
-              TcpServer.TESTVERSION -= 100;
-              TcpServer.OLDTESTVERSION -= 100;
-              TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION,
-                  Version.CURRENT_ORDINAL);
-              TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION,
-                  Version.GFE_57.ordinal());
-              // assertIndexDetailsEquals("Gossip Version and Test version are not same",
-              // TcpServer.GOSSIPVERSION, TcpServer.TESTVERSION);
-              // assertIndexDetailsEquals("Previous Gossip Version and Test version are not same",
-              // TcpServer.OLDGOSSIPVERSION, TcpServer.OLDTESTVERSION);
-
-              Locator.startLocatorAndDS(port0, logFile0, props);
-
-              // Start a gossip client to connect to first locator "locator0".
-              FindCoordinatorRequest req = new FindCoordinatorRequest(
-                  new InternalDistributedMember(SocketCreator.getLocalHost(), 1234));
-              FindCoordinatorResponse response = null;
-
-              response = (FindCoordinatorResponse) new TcpClient()
-                  .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
-              assertNotNull(response);
-
-            } catch (Exception e) {
-              org.apache.geode.test.dunit.Assert.fail(
-                  "Locator0 start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
-            }
+            restartLocator(port0, logFile0, props);
           }
         });
+  }
+
+  protected void restartLocator(int port0, File logFile0, Properties props) {
+    try {
+      TcpServer.TESTVERSION -= 100;
+      TcpServer.OLDTESTVERSION -= 100;
+      TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION,
+          Version.CURRENT_ORDINAL);
+      TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION,
+          Version.GFE_57.ordinal());
+
+
+      Locator.startLocatorAndDS(port0, logFile0, props);
+
+      // Start a gossip client to connect to first locator "locator0".
+      FindCoordinatorRequest req = new FindCoordinatorRequest(
+          new InternalDistributedMember(SocketCreator.getLocalHost(), 1234));
+      FindCoordinatorResponse response = null;
+
+      response = (FindCoordinatorResponse) new TcpClient()
+          .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
+      assertNotNull(response);
+
+    } catch (LocatorCancelException e) {
+      org.apache.geode.test.dunit.Assert.fail(
+          "a Locator start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
+    } catch (Exception e) {
+      org.apache.geode.test.dunit.Assert.fail(
+          "b Locator start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
+    }
   }
 }
