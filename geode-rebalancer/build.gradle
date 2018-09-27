@@ -16,8 +16,11 @@
  */
 
 dependencies {
+    compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+    integrationTestCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+    integrationTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
   compileOnly project(':geode-common')
-  compileOnly project(':geode-core')
+  compile project(':geode-core')
 
   compile ('org.springframework:spring-context:' + project.'springframework.version') {
     exclude module: 'spring-beans'
@@ -29,5 +32,5 @@ dependencies {
 
   integrationTestCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
   // Only needed for category Flaky by Gradle
-  integrationTestRuntime project(':geode-junit')
+  integrationTestRuntime( project(':geode-junit')) { exclude module: 'geode-core' }
 }

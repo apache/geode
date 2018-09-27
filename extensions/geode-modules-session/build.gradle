@@ -18,15 +18,26 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
-  compile project(':extensions:geode-modules-session-internal')
+  compile(project(':extensions:geode-modules-session-internal')) { exclude module: 'geode-modules' }
   compile project(':geode-core')
+  compile 'javax.servlet:servlet-api:2.4'
+  compile 'xerces:xmlParserAPIs:2.6.1'
+  compile 'org.apache.tomcat:servlet-api:' + project.'tomcat6.version'
+  compile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
-  integrationTestCompile project(":geode-dunit")
-  integrationTestCompile ('org.httpunit:httpunit:' + project.'httpunit.version') {
+
+  integrationTestCompile(project(':extensions:geode-modules'))
+  integrationTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
+  integrationTestCompile('org.httpunit:httpunit:' + project.'httpunit.version') {
     exclude group: 'javax.servlet'
   }
-  integrationTestCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')
-  integrationTestCompile(group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.'jetty.version', classifier: 'tests')
+  integrationTestCompile 'commons-io:commons-io:' + project.'commons-io.version'
+  integrationTestCompile 'org.eclipse.jetty:jetty-server:' + project.'jetty.version'
+  integrationTestCompile 'org.eclipse.jetty:jetty-util:' + project.'jetty.version'
+  integrationTestCompile 'org.apache.tomcat:jasper:' + project.'tomcat6.version'
+  integrationTestCompile 'org.eclipse.jetty:jetty-http:' + project.'jetty.version' + ':tests'
+  integrationTestCompile 'org.eclipse.jetty:jetty-servlet:' + project.'jetty.version' + ':tests'
   integrationTestCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   integrationTestCompile 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   integrationTestCompile('com.mockrunner:mockrunner-servlet:' + project.'mockrunner.version') {

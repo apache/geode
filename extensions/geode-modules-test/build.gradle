@@ -16,7 +16,13 @@
  */
 
 dependencies {
-  compileOnly ('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
+  compile 'javax.servlet:servlet-api:2.4'
+  compile 'commons-io:commons-io:' + project.'commons-io.version'
+  compile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compile 'junit:junit:' + project.'junit.version'
+  compile(project(':geode-core'))
+
+  compileOnly('org.apache.tomcat:catalina-ha:' + project.'tomcat6.version') {
     exclude module: 'annotations-api'
     exclude module: 'coyote'
     exclude module: 'tribes'
@@ -26,7 +32,7 @@ dependencies {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'
   }
-  compile project(':geode-junit')
+  compile(project(':geode-junit')) { exclude module: 'geode-core' }
   compile 'org.httpunit:httpunit:' + project.'httpunit.version'
 }
 

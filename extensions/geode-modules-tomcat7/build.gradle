@@ -18,21 +18,27 @@
 evaluationDependsOn(":geode-core")
 
 dependencies {
+  compile 'javax.servlet:servlet-api:2.4'
+  compile 'mx4j:mx4j:' + project.'mx4j.version'
+  compile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  integrationTestCompile 'org.httpunit:httpunit:' + project.'httpunit.version'
+  compile(project(':geode-core'))
+
   compile(project(':extensions:geode-modules')) {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'
   }
 
-  compile ('org.apache.tomcat:tomcat-catalina:' + project.'tomcat7.version') {
+  compile('org.apache.tomcat:tomcat-catalina:' + project.'tomcat7.version') {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile ('org.apache.tomcat:tomcat-coyote:' + project.'tomcat7.version') {
+  compile('org.apache.tomcat:tomcat-coyote:' + project.'tomcat7.version') {
     exclude module: 'tomcat-servlet-api'
   }
   compile 'org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version'
 
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
   integrationTestCompile project(":extensions:geode-modules-test")
 
   integrationTestRuntime 'javax.annotation:jsr250-api:' + project.'javax.jsr250-api.version'
@@ -42,7 +48,7 @@ dependencies {
 
   eclipse.classpath.file {
     whenMerged { classpath ->
-      classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}
+      classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build') }
     }
   }
 }

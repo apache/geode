@@ -17,6 +17,7 @@
 
 
 dependencies {
+  compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
   compileOnly project(':geode-lucene')
 
   compile 'junit:junit:' + project.'junit.version'

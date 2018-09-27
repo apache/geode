@@ -16,8 +16,18 @@
  */
 
 dependencies {
+    compile 'org.springframework.shell:spring-shell:' + project.'spring-shell.version'
+    compile 'org.apache.lucene:lucene-core:' + project.'lucene.version'
+    compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+    compile 'mx4j:mx4j:' + project.'mx4j.version'
+    compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+    testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
+    testCompile 'com.carrotsearch.randomizedtesting:randomizedtesting-runner:2.5.0'
+    integrationTestCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+    integrationTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
+    upgradeTestCompile 'commons-io:commons-io:' + project.'commons-io.version'
   compile project(':geode-core')
-  compile project(':geode-common')
+  compileOnly project(':geode-common')
   compile 'org.apache.lucene:lucene-analyzers-common:' + project.'lucene.version'
   compile ('org.apache.lucene:lucene-queryparser:' + project.'lucene.version') {
     exclude module: 'lucene-sandbox'
@@ -25,13 +35,14 @@ dependencies {
 
   runtimeOnly 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
 
-  testCompile project(':geode-junit')
+  testCompile( project(':geode-junit')) { exclude module: 'geode-core' }
   testCompile project(':geode-lucene:geode-lucene-test')
+  testCompile(project(':geode-common'))
   testCompile 'org.apache.lucene:lucene-test-framework:' + project.'lucene.version'
   testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile( project(":geode-dunit")) { exclude module: 'geode-core' }
   integrationTestCompile project(':geode-lucene:geode-lucene-test')
   integrationTestCompile 'org.apache.lucene:lucene-analyzers-phonetic:' + project.'lucene.version'
   integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
@@ -46,7 +57,7 @@ dependencies {
   }
 
 
-  performanceTestCompile project(":geode-junit")
+  performanceTestCompile( project(":geode-junit")) { exclude module: 'geode-core' }
   performanceTestCompile project(':geode-lucene:geode-lucene-test')
 }
 

@@ -26,22 +26,28 @@ repositories {
 
 dependencies {
   compile project(':geode-core')
-  compile project(':geode-common')
-  compile group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version'
+  compileOnly project(':geode-common')
+  compile 'org.springframework.shell:spring-shell:' + project.'spring-shell.version'
+  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  compile 'javax.xml.bind:jaxb-api:' + project.'jaxb.version'
+  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compile 'com.zaxxer:HikariCP:' + project.'HikariCP.version'
+
+  runtime 'mysql:mysql-connector-java:' + project.'mysql-connector.version'
 
 
-  testCompile project(':geode-junit')
+  testCompile(project(':geode-junit')) { exclude module: 'geode-core' }
 
 
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
 
 
-  acceptanceTestCompile project(":geode-dunit")
-  acceptanceTestCompile group: 'mysql', name: 'mysql-connector-java', version: '5.1.46'
-  acceptanceTestCompile group: 'com.palantir.docker.compose', name: 'docker-compose-rule-junit4', version: '0.31.1'
+  acceptanceTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
+  acceptanceTestCompile 'com.palantir.docker.compose:docker-compose-rule-core:' +  project.'docker-compose.version'
+  acceptanceTestCompile 'com.palantir.docker.compose:docker-compose-rule-junit4:' + project.'docker-compose.version'
 
   acceptanceTestRuntime group: 'org.apache.derby', name: 'derby', version: project.'derby.version'
-  acceptanceTestRuntime group: 'org.postgresql', name: 'postgresql', version: '42.2.2'
+  acceptanceTestRuntime group: 'org.postgresql', name: 'postgresql', version: project.'postgresql.version'
 }
 
 integrationTest.forkEvery 0
