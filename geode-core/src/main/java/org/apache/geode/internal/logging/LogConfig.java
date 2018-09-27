@@ -15,7 +15,6 @@
 package org.apache.geode.internal.logging;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 
@@ -61,39 +60,4 @@ public interface LogConfig {
   String getName();
 
   String toLoggerString();
-
-  LogConfig DEFAULT = new LogConfig() {
-
-    @Override
-    public int getLogLevel() {
-      return 0;
-    }
-
-    @Override
-    public File getLogFile() {
-      return null;
-    }
-
-    @Override
-    public int getLogFileSizeLimit() {
-      return 0;
-    }
-
-    @Override
-    public int getLogDiskSpaceLimit() {
-      return 0;
-    }
-
-    @Override
-    public String getName() {
-      return "";
-    }
-
-    @Override
-    public String toLoggerString() {
-      return "Default LogConfig";
-    }
-  };
-
-  AtomicReference<LogConfig> CURRENT = new AtomicReference<>(DEFAULT);
 }
