@@ -12,10 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -24,17 +24,18 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * application's configuration. The snapshot can be taken, given to others, modified, and then
  * applied to a currently running application.
  * <p>
- * Settors will fail if called on attributes that can not be modified when a system is running.
+ * Setters will fail if called on attributes that can not be modified when a system is running.
  * <p>
  * Instances should be obtained by calling {@link RuntimeDistributionConfigImpl#takeSnapshot}.
- * <p/>
+ * <p>
  * Removed implementations of hashCode() and equals() that were throwing
  * UnsupportedOperationException. See bug #50939 if you need to override those.
  */
 public class DistributionConfigSnapshot extends DistributionConfigImpl {
+
   private static final long serialVersionUID = 7445728132965092798L;
 
-  private HashSet modifiable;
+  private final Set modifiable;
 
   /**
    * Constructs an internal system config given an existing one.
@@ -43,25 +44,25 @@ public class DistributionConfigSnapshot extends DistributionConfigImpl {
    */
   public DistributionConfigSnapshot(DistributionConfig dc) {
     super(dc);
-    this.modifiable = new HashSet(20);
+    modifiable = new HashSet(20);
     String[] attNames = dc.getAttributeNames();
     for (int i = 0; i < attNames.length; i++) {
       if (dc.isAttributeModifiable(attNames[i])) {
-        this.modifiable.add(attNames[i]);
+        modifiable.add(attNames[i]);
       }
     }
   }
 
   @Override
-  protected String _getUnmodifiableMsg(String attName) {
+  protected String _getUnmodifiableMsg(String name) {
     return LocalizedStrings.DistributionConfigSnapshot_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_MODIFIED_WHILE_THE_SYSTEM_IS_RUNNING
-        .toLocalizedString(attName);
+        .toLocalizedString(name);
   }
 
   @Override
-  public boolean isAttributeModifiable(String attName) {
-    checkAttributeName(attName);
-    return modifiable.contains(attName);
+  public boolean isAttributeModifiable(String name) {
+    checkAttributeName(name);
+    return modifiable.contains(name);
   }
 
   @Override
