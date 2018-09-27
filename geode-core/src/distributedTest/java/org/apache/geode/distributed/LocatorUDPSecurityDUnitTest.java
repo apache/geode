@@ -49,7 +49,7 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
     startLocatorWithSomeBasicProperties(vm, port);
 
     try {
-      Properties props =  getBasicProperties(locators);
+      Properties props = getBasicProperties(locators);
       props.setProperty(MEMBER_TIMEOUT, "1000");
       system = getConnectedDistributedSystem(props);
 
