@@ -109,7 +109,7 @@ public class ExportLogsWithMemberGroupDistributedTest {
     zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     actualZipEntries = getZipEntries(zipPath);
 
-    expectedFiles = Sets.newHashSet("server-3/server-3.log");
+    expectedFiles = Sets.newHashSet(Paths.get("server-3", "server-3.log").toString());
     assertThat(actualZipEntries).isEqualTo(expectedFiles);
   }
 
