@@ -16,6 +16,9 @@ package org.apache.geode.management.internal.beans.stats;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -73,7 +76,7 @@ public class GCStatsMonitorTest {
     gcStatsMonitor.increaseStats(StatsKey.VM_GC_STATS_COLLECTION_TIME, 10000);
     assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTIONS)).isEqualTo(10L);
     assertThat(gcStatsMonitor.getStatistic(StatsKey.VM_GC_STATS_COLLECTION_TIME)).isEqualTo(10000L);
-    MBeanStatsMonitor.DefaultHashMap statsMap = new MBeanStatsMonitor.DefaultHashMap();
+    Map<String, Number> statsMap = new HashMap<>();
     statsMap.put(StatsKey.VM_GC_STATS_COLLECTIONS, 5);
     statsMap.put(StatsKey.VM_GC_STATS_COLLECTION_TIME, 5000);
 

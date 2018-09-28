@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,7 +45,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * @since GemFire 3.0
  */
 public class SortLogFile {
-
   private static PrintStream out = System.out;
   private static PrintStream err = System.err;
 
@@ -91,7 +91,7 @@ public class SortLogFile {
    * Prints usage information about this program
    */
   private static void usage(String s) {
-    err.println("\n** " + s + "\n");
+    err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
     err.println(
         LocalizedStrings.SortLogFile_USAGE.toLocalizedString() + ": java SortLogFile logFile");
     err.println("-sortedFile file "

@@ -93,7 +93,7 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
    */
   synchronized void refreshStats() {
     if (processCPUTimeAvailable) {
-      Number processCpuTime = statsMap.get(StatsKey.VM_PROCESS_CPU_TIME);
+      Number processCpuTime = statsMap.getOrDefault(StatsKey.VM_PROCESS_CPU_TIME, 0);
 
       // Some JVM like IBM is not handled by Stats layer properly. Ignoring the attribute for such
       // cases

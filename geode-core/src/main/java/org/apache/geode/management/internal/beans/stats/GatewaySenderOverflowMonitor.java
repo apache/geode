@@ -50,7 +50,7 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
   private final Map<Statistics, ValueMonitor> monitors;
   private final Map<Statistics, StatisticsListener> listeners;
 
-  public long getLruEvictions() {
+  long getLruEvictions() {
     return lruEvictions;
   }
 
@@ -76,19 +76,20 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
     listeners = new HashMap<>();
   }
 
-  Number computeDelta(DefaultHashMap statsMap, String name, Number currentValue) {
+  Number computeDelta(Map<String, Number> statsMap, String name, Number currentValue) {
     if (name.equals(StatsKey.GATEWAYSENDER_LRU_EVICTIONS)) {
-      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_LRU_EVICTIONS);
+      Number prevValue = statsMap.getOrDefault(StatsKey.GATEWAYSENDER_LRU_EVICTIONS, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)) {
-      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK);
+      Number prevValue =
+          statsMap.getOrDefault(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK)) {
-      Number prevValue = statsMap.get(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK);
+      Number prevValue = statsMap.getOrDefault(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
@@ -156,7 +157,7 @@ public class GatewaySenderOverflowMonitor extends MBeanStatsMonitor {
   public void removeStatisticsFromMonitor(Statistics stats) {}
 
   class GatewaySenderOverflowStatisticsListener implements StatisticsListener {
-    DefaultHashMap statsMap = new DefaultHashMap();
+    Map<String, Number> statsMap = new HashMap<>();
 
     @Override
     public void handleNotification(StatisticsNotification notification) {

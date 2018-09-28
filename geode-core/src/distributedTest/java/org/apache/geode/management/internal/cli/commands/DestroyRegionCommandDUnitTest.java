@@ -115,11 +115,13 @@ public class DestroyRegionCommandDUnitTest {
       InternalConfigurationPersistenceService service =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration group1Config = service.getConfiguration("group1");
-      assertThat(group1Config.getCacheXmlContent()).contains("<region name=\"region1\">\n"
+      assertThat(group1Config.getCacheXmlContent()).contains("<region name=\"region1\">"
+          + System.getProperty("line.separator")
           + "    <region-attributes data-policy=\"empty\" scope=\"distributed-ack\"/>");
 
       Configuration clusterConfig = service.getConfiguration("group2");
-      assertThat(clusterConfig.getCacheXmlContent()).contains("<region name=\"region1\">\n"
+      assertThat(clusterConfig.getCacheXmlContent()).contains("<region name=\"region1\">"
+          + System.getProperty("line.separator")
           + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>");
     });
 

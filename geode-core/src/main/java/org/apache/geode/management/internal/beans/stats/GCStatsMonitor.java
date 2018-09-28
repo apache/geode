@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.beans.stats;
 
+import java.util.Map;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.statistics.StatisticId;
@@ -52,9 +54,9 @@ public class GCStatsMonitor extends MBeanStatsMonitor {
     super(name);
   }
 
-  void decreasePrevValues(DefaultHashMap statsMap) {
-    collections -= statsMap.get(StatsKey.VM_GC_STATS_COLLECTIONS).longValue();
-    collectionTime -= statsMap.get(StatsKey.VM_GC_STATS_COLLECTION_TIME).longValue();
+  void decreasePrevValues(Map<String, Number> statsMap) {
+    collections -= statsMap.getOrDefault(StatsKey.VM_GC_STATS_COLLECTIONS, 0).longValue();
+    collectionTime -= statsMap.getOrDefault(StatsKey.VM_GC_STATS_COLLECTION_TIME, 0).longValue();
   }
 
   void increaseStats(String name, Number value) {

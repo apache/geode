@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
@@ -182,6 +183,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * Lock to prevent multiple threads on this member from performing a clear at the same time.
    */
   private final Object clearLock = new Object();
+  private final ReentrantReadWriteLock failedInitialImageLock = new ReentrantReadWriteLock(true);
 
   private static final AtomicBoolean loggedNetworkPartitionWarning = new AtomicBoolean(false);
 
@@ -1328,10 +1330,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     if (!getRegionMap().isEmpty()) {
-      RegionVersionVector rvv = getVersionVector();
-      if (rvv != null) {
-        rvv.lockForClear(getFullPath(), getDistributionManager(), getMyId());
-      }
+      lockFailedInitialImageWriteLock();
       try {
         closeEntries();
         if (getDiskRegion() != null) {
@@ -1351,11 +1350,39 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           }
         }
       } finally {
-        if (rvv != null) {
-          rvv.unlockForClear(getMyId());
-        }
+        unlockFailedInitialImageWriteLock();
       }
     }
+  }
+
+  void lockFailedInitialImageWriteLock() {
+    failedInitialImageLock.writeLock().lock();
+  }
+
+  void unlockFailedInitialImageWriteLock() {
+    failedInitialImageLock.writeLock().unlock();
+  }
+
+  void lockFailedInitialImageReadLock() {
+    failedInitialImageLock.readLock().lock();
+  }
+
+  void unlockFailedInitialImageReadLock() {
+    failedInitialImageLock.readLock().unlock();
+  }
+
+  @Override
+  public boolean lockWhenRegionIsInitializing() {
+    if (!isInitialized()) {
+      lockFailedInitialImageReadLock();
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public void unlockWhenRegionIsInitializing() {
+    unlockFailedInitialImageReadLock();
   }
 
   private void initMembershipRoles() {
@@ -1849,8 +1876,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   void basicUpdateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
     InternalRegion internalRegion = event.getRegion();
     AbstractRegionMap regionMap = (AbstractRegionMap) internalRegion.getRegionMap();
+    regionMap.lockForCacheModification(internalRegion, event);
+    final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
-      regionMap.lockForCacheModification(internalRegion, event);
       try {
         if (!hasSeenEvent(event)) {
           super.basicUpdateEntryVersion(event);
@@ -1861,6 +1889,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         }
       }
     } finally {
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
       regionMap.releaseCacheModificationLock(internalRegion, event);
     }
   }

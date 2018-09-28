@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -1186,15 +1187,22 @@ public class AbstractRegionMapTest {
 
     protected TestableAbstractRegionMap(boolean withConcurrencyChecks,
         ConcurrentMapWithReusableEntries map, RegionEntryFactory factory) {
-      this(withConcurrencyChecks, map, factory, null);
+      this(withConcurrencyChecks, false, map, factory, null);
     }
 
     protected TestableAbstractRegionMap(boolean withConcurrencyChecks,
         ConcurrentMapWithReusableEntries map, RegionEntryFactory factory,
         RegionEntry regionEntryForGetEntry) {
+      this(withConcurrencyChecks, false, map, factory, regionEntryForGetEntry);
+    }
+
+    protected TestableAbstractRegionMap(boolean withConcurrencyChecks, boolean isDistributedRegion,
+        ConcurrentMapWithReusableEntries map, RegionEntryFactory factory,
+        RegionEntry regionEntryForGetEntry) {
       super(null);
       this.regionEntryForGetEntry = regionEntryForGetEntry;
-      LocalRegion owner = mock(LocalRegion.class);
+      LocalRegion owner = isDistributedRegion ? mock(DistributedRegion.class, RETURNS_DEEP_STUBS)
+          : mock(LocalRegion.class);
       CachePerfStats cachePerfStats = mock(CachePerfStats.class);
       when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
       when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
@@ -1268,18 +1276,29 @@ public class AbstractRegionMapTest {
    */
   private static class TxTestableAbstractRegionMap extends AbstractRegionMap {
 
-    protected TxTestableAbstractRegionMap() {
+    protected TxTestableAbstractRegionMap(boolean isInitialized) {
       super(null);
-      LocalRegion owner = mock(LocalRegion.class);
+      InternalRegion owner;
+      if (isInitialized) {
+        owner = mock(LocalRegion.class);
+        when(owner.isInitialized()).thenReturn(true);
+      } else {
+        owner = mock(DistributedRegion.class);
+        when(owner.isInitialized()).thenReturn(false);
+      }
       KeyInfo keyInfo = mock(KeyInfo.class);
       when(keyInfo.getKey()).thenReturn(KEY);
       when(owner.getKeyInfo(eq(KEY), any(), any())).thenReturn(keyInfo);
       when(owner.getMyId()).thenReturn(mock(InternalDistributedMember.class));
       when(owner.getCache()).thenReturn(mock(InternalCache.class));
       when(owner.isAllEvents()).thenReturn(true);
-      when(owner.isInitialized()).thenReturn(true);
       when(owner.shouldNotifyBridgeClients()).thenReturn(true);
+      when(owner.lockWhenRegionIsInitializing()).thenCallRealMethod();
       initialize(owner, new Attributes(), null, false);
+    }
+
+    protected TxTestableAbstractRegionMap() {
+      this(true);
     }
   }
 
@@ -1359,6 +1378,120 @@ public class AbstractRegionMapTest {
         anyBoolean(), anyBoolean());
     verify(arm._getOwner(), times(1)).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, UPDATEEVENT,
         false);
+  }
+
+  @Test
+  public void txApplyPutDoesNotLockWhenRegionIsInitialized() {
+    AbstractRegionMap arm = new TxTestableAbstractRegionMap();
+    TXId txId = mock(TXId.class, RETURNS_DEEP_STUBS);
+    EventID eventId = mock(EventID.class);
+    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
+
+    arm.txApplyPut(Operation.UPDATE, KEY, "", false, txId, txRmtEvent, eventId, null,
+        new ArrayList<>(), null, null, null, null, 1);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isFalse();
+    verify(arm._getOwner(), never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void txApplyPutLockWhenRegionIsInitializing() {
+    AbstractRegionMap arm = new TxTestableAbstractRegionMap(false);
+    TXId txId = mock(TXId.class, RETURNS_DEEP_STUBS);
+    EventID eventId = mock(EventID.class);
+    TXRmtEvent txRmtEvent = mock(TXRmtEvent.class);
+
+    arm.txApplyPut(Operation.UPDATE, KEY, "", false, txId, txRmtEvent, eventId, null,
+        new ArrayList<>(), null, null, null, null, 1);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isTrue();
+    verify(arm._getOwner()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void txApplyDestroyDoesNotLockWhenRegionIsInitialized() {
+    AbstractRegionMap arm = new TxTestableAbstractRegionMap();
+    TXId txId = mock(TXId.class, RETURNS_DEEP_STUBS);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, true, null, null, 0);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isFalse();
+    verify(arm._getOwner(), never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void txApplyDestroyLockWhenRegionIsInitializing() {
+    AbstractRegionMap arm = new TxTestableAbstractRegionMap(false);
+    TXId txId = mock(TXId.class, RETURNS_DEEP_STUBS);
+
+    arm.txApplyDestroy(KEY, txId, null, false, false, null, null, null, new ArrayList<>(), null,
+        null, true, null, null, 0);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isTrue();
+    verify(arm._getOwner()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void txApplyInvalidateDoesNotLockWhenRegionIsInitialized() {
+    AbstractRegionMap arm = new TxTestableAbstractRegionMap();
+    TXId txId = mock(TXId.class, RETURNS_DEEP_STUBS);
+
+    arm.txApplyInvalidate(new Object(), Token.INVALID, false,
+        txId, mock(TXRmtEvent.class), false,
+        mock(EventID.class), null, new ArrayList<EntryEventImpl>(), null, null, null, null, 1);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isFalse();
+    verify(arm._getOwner(), never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void txApplyInvalidateLockWhenRegionIsInitializing() {
+    AbstractRegionMap arm = new TxTestableAbstractRegionMap(false);
+    TXId txId = mock(TXId.class, RETURNS_DEEP_STUBS);
+
+    arm.txApplyInvalidate(new Object(), Token.INVALID, false,
+        txId, mock(TXRmtEvent.class), false,
+        mock(EventID.class), null, new ArrayList<EntryEventImpl>(), null, null, null, null, 1);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isTrue();
+    verify(arm._getOwner()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void invalidateDoesNotLockWhenRegionIsInitialized() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+    EntryEventImpl event = createEventForInvalidate(arm._getOwner());
+    when(arm._getOwner().isInitialized()).thenReturn(true);
+    when(arm._getOwner().lockWhenRegionIsInitializing()).thenCallRealMethod();
+    arm.invalidate(event, false, false, false);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isFalse();
+    verify(arm._getOwner(), never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void invalidateLocksWhenRegionIsInitializing() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, true,
+        mock(ConcurrentMapWithReusableEntries.class), mock(RegionEntryFactory.class),
+        mock(RegionEntry.class));
+    EntryEventImpl event = createEventForInvalidate(arm._getOwner());
+    when(arm._getOwner().isInitialized()).thenReturn(false);
+    when(arm._getOwner().lockWhenRegionIsInitializing()).thenCallRealMethod();
+    arm.invalidate(event, false, false, false);
+
+    verify(arm._getOwner()).lockWhenRegionIsInitializing();
+    assertThat(arm._getOwner().lockWhenRegionIsInitializing()).isTrue();
+    verify(arm._getOwner()).unlockWhenRegionIsInitializing();
   }
 
   private static class TxNoRegionEntryTestableAbstractRegionMap

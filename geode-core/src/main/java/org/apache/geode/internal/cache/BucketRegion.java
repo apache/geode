@@ -1341,8 +1341,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
     InternalRegion internalRegion = event.getRegion();
     AbstractRegionMap arm = ((AbstractRegionMap) internalRegion.getRegionMap());
+
+    arm.lockForCacheModification(internalRegion, event);
+    final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
-      arm.lockForCacheModification(internalRegion, event);
       beginLocalWrite(event);
       try {
         if (!hasSeenEvent(event)) {
@@ -1365,6 +1367,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         endLocalWrite(event);
       }
     } finally {
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
       arm.releaseCacheModificationLock(event.getRegion(), event);
     }
   }

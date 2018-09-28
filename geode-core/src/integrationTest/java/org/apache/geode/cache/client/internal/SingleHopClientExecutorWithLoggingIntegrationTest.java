@@ -28,12 +28,13 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Test if exceptions are logged when thread is submitted using
  * {@code SingleHopClientExecutor#submitTask} method.
  */
-@Category(ClientServerTest.class)
+@Category({ClientServerTest.class, LoggingTest.class})
 public class SingleHopClientExecutorWithLoggingIntegrationTest {
 
   @Rule
@@ -62,5 +63,4 @@ public class SingleHopClientExecutorWithLoggingIntegrationTest {
     await().atMost(2, MINUTES)
         .untilAsserted(() -> assertThat(systemErrRule.getLog()).contains(message));
   }
-
 }

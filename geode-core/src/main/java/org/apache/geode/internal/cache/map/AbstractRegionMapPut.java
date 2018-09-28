@@ -113,7 +113,16 @@ public abstract class AbstractRegionMapPut {
 
   protected abstract void serializeNewValueIfNeeded();
 
-  protected abstract void runWhileLockedForCacheModification(Runnable r);
+  protected void runWhileLockedForCacheModification(Runnable r) {
+    final boolean locked = getOwner().lockWhenRegionIsInitializing();
+    try {
+      r.run();
+    } finally {
+      if (locked) {
+        getOwner().unlockWhenRegionIsInitializing();
+      }
+    }
+  }
 
   protected abstract void setOldValueForDelta();
 

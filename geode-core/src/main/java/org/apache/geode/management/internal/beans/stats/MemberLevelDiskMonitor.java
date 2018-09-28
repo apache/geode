@@ -62,15 +62,15 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
     return queueSize;
   }
 
-  public long getFlushTime() {
+  long getFlushTime() {
     return flushTime;
   }
 
-  public long getFlushedBytes() {
+  long getFlushedBytes() {
     return flushedBytes;
   }
 
-  public long getDiskReadBytes() {
+  long getDiskReadBytes() {
     return diskReadBytes;
   }
 
@@ -78,7 +78,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
     return backupsCompleted;
   }
 
-  public long getDiskWrittenBytes() {
+  long getDiskWrittenBytes() {
     return diskWrittenBytes;
   }
 
@@ -100,51 +100,51 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
     listeners = new HashMap<>();
   }
 
-  Number computeDelta(DefaultHashMap statsMap, String name, Number currentValue) {
+  Number computeDelta(Map<String, Number> statsMap, String name, Number currentValue) {
     if (name.equals(StatsKey.DISK_READ_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_READ_BYTES);
+      Number prevValue = statsMap.getOrDefault(StatsKey.DISK_READ_BYTES, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_RECOVERED_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_RECOVERED_BYTES);
+      Number prevValue = statsMap.getOrDefault(StatsKey.DISK_RECOVERED_BYTES, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_WRITEN_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_WRITEN_BYTES);
+      Number prevValue = statsMap.getOrDefault(StatsKey.DISK_WRITEN_BYTES, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.BACKUPS_IN_PROGRESS)) {
       // A negative value is also OK. previous backup_in_progress = 5 curr_backup_in_progress = 2
       // delta = -3 delta should be added to aggregate backup in progress
-      Number prevValue = statsMap.get(StatsKey.BACKUPS_IN_PROGRESS);
+      Number prevValue = statsMap.getOrDefault(StatsKey.BACKUPS_IN_PROGRESS, 0);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.BACKUPS_COMPLETED)) {
-      Number prevValue = statsMap.get(StatsKey.BACKUPS_COMPLETED);
+      Number prevValue = statsMap.getOrDefault(StatsKey.BACKUPS_COMPLETED, 0);
       return currentValue.intValue() - prevValue.intValue();
     }
 
     if (name.equals(StatsKey.FLUSHED_BYTES)) {
-      Number prevValue = statsMap.get(StatsKey.FLUSHED_BYTES);
+      Number prevValue = statsMap.getOrDefault(StatsKey.FLUSHED_BYTES, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.NUM_FLUSHES)) {
-      Number prevValue = statsMap.get(StatsKey.NUM_FLUSHES);
+      Number prevValue = statsMap.getOrDefault(StatsKey.NUM_FLUSHES, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.TOTAL_FLUSH_TIME)) {
-      Number prevValue = statsMap.get(StatsKey.TOTAL_FLUSH_TIME);
+      Number prevValue = statsMap.getOrDefault(StatsKey.TOTAL_FLUSH_TIME, 0);
       return currentValue.longValue() - prevValue.longValue();
     }
 
     if (name.equals(StatsKey.DISK_QUEUE_SIZE)) {
-      Number prevValue = statsMap.get(StatsKey.DISK_QUEUE_SIZE);
+      Number prevValue = statsMap.getOrDefault(StatsKey.DISK_QUEUE_SIZE, 0);
       return currentValue.intValue() - prevValue.intValue();
     }
 
@@ -271,7 +271,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
   }
 
   class MemberLevelDiskStatisticsListener implements StatisticsListener {
-    DefaultHashMap statsMap = new DefaultHashMap();
+    Map<String, Number> statsMap = new HashMap<>();
     private boolean removed = false;
 
     @Override

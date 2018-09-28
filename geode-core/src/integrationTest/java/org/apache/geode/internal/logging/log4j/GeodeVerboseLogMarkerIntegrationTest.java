@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static org.apache.logging.log4j.core.config.ConfigurationFactory.CONFIGURATION_FILE_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -22,7 +23,6 @@ import java.net.URISyntaxException;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.status.StatusLogger;
 import org.junit.After;
 import org.junit.Before;
@@ -30,15 +30,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.custom.BasicAppender;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Integration tests with accept and deny of GEODE_VERBOSE and GEMFIRE_VERBOSE.
  */
+@Category(LoggingTest.class)
 public class GeodeVerboseLogMarkerIntegrationTest {
 
   private static final String RESOURCE_PACKAGE = "/org/apache/geode/internal/logging/log4j/marker/";
@@ -66,7 +69,7 @@ public class GeodeVerboseLogMarkerIntegrationTest {
   public TestName testName = new TestName();
 
   @Before
-  public void preAssertions() throws Exception {
+  public void preAssertions() {
     assertThat(getClass().getResource(RESOURCE_PACKAGE + FILE_NAME_GEMFIRE_VERBOSE_ACCEPT))
         .isNotNull();
     assertThat(getClass().getResource(RESOURCE_PACKAGE + FILE_NAME_GEMFIRE_VERBOSE_DENY))
@@ -81,78 +84,76 @@ public class GeodeVerboseLogMarkerIntegrationTest {
     Configurator.shutdown();
     BasicAppender.clearInstance();
 
-    this.beforeConfigFileProp =
-        System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-    this.beforeLevel = StatusLogger.getLogger().getLevel();
+    beforeConfigFileProp = System.getProperty(CONFIGURATION_FILE_PROPERTY);
+    beforeLevel = StatusLogger.getLogger().getLevel();
 
-    this.configFileGemfireVerboseAccept = createConfigFile(FILE_NAME_GEMFIRE_VERBOSE_ACCEPT);
-    this.configFileGemfireVerboseDeny = createConfigFile(FILE_NAME_GEMFIRE_VERBOSE_DENY);
-    this.configFileGeodeVerboseAccept = createConfigFile(FILE_NAME_GEODE_VERBOSE_ACCEPT);
-    this.configFileGeodeVerboseDeny = createConfigFile(FILE_NAME_GEODE_VERBOSE_DENY);
+    configFileGemfireVerboseAccept = createConfigFile(FILE_NAME_GEMFIRE_VERBOSE_ACCEPT);
+    configFileGemfireVerboseDeny = createConfigFile(FILE_NAME_GEMFIRE_VERBOSE_DENY);
+    configFileGeodeVerboseAccept = createConfigFile(FILE_NAME_GEODE_VERBOSE_ACCEPT);
+    configFileGeodeVerboseDeny = createConfigFile(FILE_NAME_GEODE_VERBOSE_DENY);
   }
 
   @After
   public void tearDown() throws Exception {
     Configurator.shutdown();
 
-    System.clearProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY);
-    if (this.beforeConfigFileProp != null) {
-      System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY,
-          this.beforeConfigFileProp);
+    System.clearProperty(CONFIGURATION_FILE_PROPERTY);
+    if (beforeConfigFileProp != null) {
+      System.setProperty(CONFIGURATION_FILE_PROPERTY, beforeConfigFileProp);
     }
-    StatusLogger.getLogger().setLevel(this.beforeLevel);
+    StatusLogger.getLogger().setLevel(beforeLevel);
 
     LogService.reconfigure();
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
 
     BasicAppender.clearInstance();
 
-    assertThat(this.systemErrRule.getLog()).isEmpty();
+    assertThat(systemErrRule.getLog()).isEmpty();
   }
 
   @Test
   public void geodeVerboseShouldLogIfGeodeVerboseIsAccept() {
-    configureLogging(this.configFileGeodeVerboseAccept);
+    configureLogging(configFileGeodeVerboseAccept);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEODE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).contains(msg);
+    assertThat(systemOutRule.getLog()).contains(msg);
   }
 
   @Test
   public void geodeVerboseShouldNotLogIfGeodeVerboseIsDeny() {
-    configureLogging(this.configFileGeodeVerboseDeny);
+    configureLogging(configFileGeodeVerboseDeny);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEODE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).doesNotContain(msg);
+    assertThat(systemOutRule.getLog()).doesNotContain(msg);
   }
 
   @Test
   public void geodeVerboseShouldLogIfGemfireVerboseIsAccept() {
-    configureLogging(this.configFileGemfireVerboseAccept);
+    configureLogging(configFileGemfireVerboseAccept);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEODE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).contains(msg);
+    assertThat(systemOutRule.getLog()).contains(msg);
   }
 
   @Test
   public void geodeVerboseShouldNotLogIfGemfireVerboseIsDeny() {
-    configureLogging(this.configFileGemfireVerboseDeny);
+    configureLogging(configFileGemfireVerboseDeny);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEODE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).doesNotContain(msg);
+    assertThat(systemOutRule.getLog()).doesNotContain(msg);
   }
 
   /**
@@ -161,13 +162,13 @@ public class GeodeVerboseLogMarkerIntegrationTest {
    */
   @Test
   public void gemfireVerboseShouldNotLogIfGeodeVerboseIsAccept() {
-    configureLogging(this.configFileGeodeVerboseAccept);
+    configureLogging(configFileGeodeVerboseAccept);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEMFIRE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).doesNotContain(msg);
+    assertThat(systemOutRule.getLog()).doesNotContain(msg);
   }
 
   /**
@@ -176,46 +177,45 @@ public class GeodeVerboseLogMarkerIntegrationTest {
    */
   @Test
   public void gemfireVerboseShouldLogIfGeodeVerboseIsDeny() {
-    configureLogging(this.configFileGeodeVerboseDeny);
+    configureLogging(configFileGeodeVerboseDeny);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEMFIRE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).contains(msg);
+    assertThat(systemOutRule.getLog()).contains(msg);
   }
 
   @Test
   public void gemfireVerboseShouldLogIfGemfireVerboseIsAccept() {
-    configureLogging(this.configFileGemfireVerboseAccept);
+    configureLogging(configFileGemfireVerboseAccept);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEMFIRE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).contains(msg);
+    assertThat(systemOutRule.getLog()).contains(msg);
   }
 
   @Test
   public void gemfireVerboseShouldNotLogIfGemfireVerboseIsDeny() {
-    configureLogging(this.configFileGemfireVerboseDeny);
+    configureLogging(configFileGemfireVerboseDeny);
     Logger logger = LogService.getLogger();
 
-    String msg = this.testName.getMethodName();
+    String msg = testName.getMethodName();
     logger.info(LogMarker.GEMFIRE_VERBOSE, msg);
 
-    assertThat(this.systemOutRule.getLog()).doesNotContain(msg);
+    assertThat(systemOutRule.getLog()).doesNotContain(msg);
   }
 
   private File createConfigFile(final String name) throws IOException, URISyntaxException {
     assertThat(getClass().getResource(RESOURCE_PACKAGE + name)).isNotNull();
     return new Configuration(getClass().getResource(RESOURCE_PACKAGE + name), name)
-        .createConfigFileIn(this.temporaryFolder.getRoot());
+        .createConfigFileIn(temporaryFolder.getRoot());
   }
 
   private void configureLogging(final File configFile) {
-    System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY,
-        configFile.getAbsolutePath());
+    System.setProperty(CONFIGURATION_FILE_PROPERTY, configFile.getAbsolutePath());
     LogService.reconfigure();
   }
 }

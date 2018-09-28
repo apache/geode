@@ -21,43 +21,44 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 /**
  * LogConfig implementation for Security logging configuration that delegates to a
  * DistributionConfig.
- *
  */
-public class SecurityLogConfig implements LogConfig {
+class SecurityLogConfig implements LogConfig {
 
   private final DistributionConfig config;
 
-  public SecurityLogConfig(final DistributionConfig config) {
+  SecurityLogConfig(final DistributionConfig config) {
     this.config = config;
   }
 
   @Override
   public int getLogLevel() {
-    return this.config.getSecurityLogLevel();
+    // missing from LogConfig
+    return config.getSecurityLogLevel();
   }
 
   @Override
   public File getLogFile() {
-    return this.config.getSecurityLogFile();
+    // missing from LogConfig
+    return config.getSecurityLogFile();
   }
 
   @Override
   public int getLogFileSizeLimit() {
-    return this.config.getLogFileSizeLimit();
+    return config.getLogFileSizeLimit();
   }
 
   @Override
   public int getLogDiskSpaceLimit() {
-    return this.config.getLogDiskSpaceLimit();
+    return config.getLogDiskSpaceLimit();
   }
 
   @Override
   public String toLoggerString() {
-    return this.config.toLoggerString();
+    return config.toLoggerString();
   }
 
   @Override
   public String getName() {
-    return this.config.getName();
+    return config.getName();
   }
 }

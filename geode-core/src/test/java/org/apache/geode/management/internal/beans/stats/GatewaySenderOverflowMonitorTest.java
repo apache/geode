@@ -22,6 +22,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -80,13 +83,14 @@ public class GatewaySenderOverflowMonitorTest {
 
   @Test
   public void computeDeltaShouldReturnZeroForUnknownStatistics() {
-    assertThat(gatewaySenderOverflowMonitor.computeDelta(new MBeanStatsMonitor.DefaultHashMap(),
-        "unknownStatistic", 6)).isEqualTo(0);
+    assertThat(
+        gatewaySenderOverflowMonitor.computeDelta(Collections.emptyMap(), "unknownStatistic", 6))
+            .isEqualTo(0);
   }
 
   @Test
   public void computeDeltaShouldOperateForHandledStatistics() {
-    MBeanStatsMonitor.DefaultHashMap statsMap = new MBeanStatsMonitor.DefaultHashMap();
+    Map<String, Number> statsMap = new HashMap<>();
     statsMap.put(StatsKey.GATEWAYSENDER_LRU_EVICTIONS, 50);
     statsMap.put(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK, 2048);
     statsMap.put(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK, 100);

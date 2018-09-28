@@ -14,5 +14,5 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-public class ShowLogCommandDUnitTest extends ShowLogCommandDUnitTestBase {
+public class ShowLogCommandDUnitTest extends ShowLogCommandDistributedTestBase {
 }
