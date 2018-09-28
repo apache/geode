@@ -48,6 +48,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 
 /**
  * Provides access to a remote gemfire VM for purposes of gathering statistics and other info
@@ -798,7 +799,8 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     private volatile boolean stopped = false;
 
     protected StatDispatcher() {
-      super(RemoteGemFireVM.this.agent.getThreadGroup(), "StatDispatcher");
+      super("StatDispatcher");
+      LoggingUncaughtExceptionHandler.setOnThread(this);
       setDaemon(true);
     }
 

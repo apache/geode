@@ -57,7 +57,6 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.StopWatch;
@@ -2710,10 +2709,6 @@ public class DLockService extends DistributedLockService {
     synchronized (creationLock) {
       synchronized (services) { // disconnectListener syncs on this
         ds.getCancelCriterion().checkCancelInProgress(null);
-
-        // make sure thread group is ready...
-        readyThreadGroup(ds);
-
         if (services.get(serviceName) != null) {
           throw new IllegalArgumentException(
               LocalizedStrings.DLockService_SERVICE_NAMED_0_ALREADY_CREATED
@@ -2957,7 +2952,6 @@ public class DLockService extends DistributedLockService {
       ((DLockStats) stats).close();
       stats = DUMMY_STATS;
     }
-    threadGroup = null;
   }
 
   /** Provide way to peek at current lock grantor id when dls does not exist */
@@ -2969,21 +2963,6 @@ public class DLockService extends DistributedLockService {
     return gi;
   }
 
-  // -------------------------------------------------------------------------
-  // Internal
-  // -------------------------------------------------------------------------
-
-  protected static synchronized void readyThreadGroup(InternalDistributedSystem ds) {
-    if (threadGroup == null) {
-      Assert.assertTrue(ds != null, "Cannot find any instance of InternalDistributedSystem");
-      String threadGroupName =
-          LocalizedStrings.DLockService_DISTRIBUTED_LOCKING_THREADS.toLocalizedString();
-      final ThreadGroup group = LoggingThreadGroup.createThreadGroup(threadGroupName);
-      threadGroup = group;
-    }
-  }
-
-  // -------------------------------------------------------------------------
   // SuspendLockingToken inner class
   // -------------------------------------------------------------------------
 

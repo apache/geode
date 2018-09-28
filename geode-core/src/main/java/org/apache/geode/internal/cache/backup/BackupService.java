@@ -22,8 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -32,11 +30,11 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 public class BackupService {
   private static final Logger logger = LogService.getLogger();
@@ -136,20 +134,7 @@ public class BackupService {
   }
 
   private ExecutorService createExecutor() {
-    LoggingThreadGroup group = LoggingThreadGroup.createThreadGroup("BackupService Thread", logger);
-    ThreadFactory threadFactory = new ThreadFactory() {
-
-      private final AtomicInteger threadId = new AtomicInteger();
-
-      @Override
-      public Thread newThread(final Runnable command) {
-        Thread thread =
-            new Thread(group, command, "BackupServiceThread" + threadId.incrementAndGet());
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    return Executors.newSingleThreadExecutor(threadFactory);
+    return Executors.newSingleThreadExecutor(new NamedThreadFactory("BackupServiceThread"));
   }
 
   private void cleanup() {

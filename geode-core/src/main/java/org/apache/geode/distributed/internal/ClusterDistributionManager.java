@@ -67,9 +67,11 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.SetUtils;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
@@ -78,7 +80,7 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -376,9 +378,6 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private volatile Set<InternalDistributedMember> adminConsoles = Collections.emptySet();
 
-  /** The group of distribution manager threads */
-  protected LoggingThreadGroup threadGroup;
-
   /** Message processing thread pool */
   private ThreadPoolExecutor threadPool;
 
@@ -649,11 +648,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
     this.exceptionInThreads = false;
 
-    // Start the processing threads
-    final LoggingThreadGroup group =
-        LoggingThreadGroup.createThreadGroup("DistributionManager Threads", logger);
-    this.threadGroup = group;
-
     {
       Properties nonDefault = new Properties();
       DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
@@ -685,8 +679,7 @@ public class ClusterDistributionManager implements DistributionManager {
         // distributed deadlock when we block the UDP reader thread
         boolean throttlingDisabled = system.getConfig().getDisableTcp();
         this.serialQueuedExecutorPool =
-            new SerialQueuedExecutorPool(this.threadGroup, this.stats, throttlingDisabled,
-                this.threadMonitor);
+            new SerialQueuedExecutorPool(this.stats, throttlingDisabled, this.threadMonitor);
       }
 
       {
@@ -700,61 +693,17 @@ public class ClusterDistributionManager implements DistributionManager {
                   this.stats.getSerialQueueHelper());
           poolQueue = this.serialQueue;
         }
-        ThreadFactory tf = new ThreadFactory() {
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incSerialThreadStarts();
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                ClusterDistributionManager.this.stats.incNumSerialThreads(1);
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                  // command.run();
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  ClusterDistributionManager.this.stats.incNumSerialThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_SERIAL_MESSAGE_PROCESSOR.toLocalizedString());
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
-
+        ThreadFactory tf = new NamedThreadFactory("Serial Message Processor",
+            thread -> stats.incSerialThreadStarts(),
+            this::doSerialThread);
         this.serialThread = new SerialQueuedExecutorWithDMStats(poolQueue,
             this.stats.getSerialProcessorHelper(), tf, threadMonitor);
       }
       {
         BlockingQueue q = new LinkedBlockingQueue();
-        ThreadFactory tf = new ThreadFactory() {
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incViewThreadStarts();
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                ClusterDistributionManager.this.stats.incNumViewThreads(1);
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  ClusterDistributionManager.this.stats.incNumViewThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_VIEW_MESSAGE_PROCESSOR.toLocalizedString());
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
+        ThreadFactory tf = new NamedThreadFactory("View Message Processor",
+            thread -> stats.incViewThreadStarts(),
+            this::doViewThread);
         this.viewThread = new SerialQueuedExecutorWithDMStats(q,
             this.stats.getViewProcessorHelper(), tf, threadMonitor);
       }
@@ -767,33 +716,9 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getOverflowQueueHelper());
         }
-        ThreadFactory tf = new ThreadFactory() {
-          private int next = 0;
-
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incProcessingThreadStarts();
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                ClusterDistributionManager.this.stats.incNumProcessingThreads(1);
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  ClusterDistributionManager.this.stats.incNumProcessingThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_POOLED_MESSAGE_PROCESSOR.toLocalizedString()
-                    + (next++));
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
+        ThreadFactory tf = new NamedThreadFactory("Pooled Message Processor ",
+            thread -> stats.incProcessingThreadStarts(),
+            this::doProcessingThread);
         this.threadPool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
             this.stats.getNormalPoolHelper(), tf, threadMonitor);
       }
@@ -807,66 +732,18 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getHighPriorityQueueHelper());
         }
-        ThreadFactory tf = new ThreadFactory() {
-          private int next = 0;
-
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incHighPriorityThreadStarts();
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                ClusterDistributionManager.this.stats.incHighPriorityThreads(1);
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  ClusterDistributionManager.this.stats.incHighPriorityThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_POOLED_HIGH_PRIORITY_MESSAGE_PROCESSOR
-                    .toLocalizedString() + (next++));
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
+        ThreadFactory tf = new NamedThreadFactory("Pooled High Priority Message Processor ",
+            thread -> stats.incHighPriorityThreadStarts(),
+            this::doHighPriorityThread);
         this.highPriorityPool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
             this.stats.getHighPriorityPoolHelper(), tf, threadMonitor);
       }
 
 
       {
-        ThreadFactory tf = new ThreadFactory() {
-          private int next = 0;
-
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incWaitingThreadStarts();
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                ClusterDistributionManager.this.stats.incWaitingThreads(1);
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  ClusterDistributionManager.this.stats.incWaitingThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_POOLED_WAITING_MESSAGE_PROCESSOR
-                    .toLocalizedString() + (next++));
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
+        ThreadFactory tf = new NamedThreadFactory("Pooled Waiting Message Processor ",
+            thread -> stats.incWaitingThreadStarts(),
+            this::doWaitingThread);
         BlockingQueue<Runnable> poolQueue;
         if (MAX_WAITING_THREADS == Integer.MAX_VALUE) {
           // no need for a queue since we have infinite threads
@@ -879,33 +756,9 @@ public class ClusterDistributionManager implements DistributionManager {
       }
 
       {
-        ThreadFactory tf = new ThreadFactory() {
-          private int next = 0;
-
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incWaitingThreadStarts();// will it be ok?
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                ClusterDistributionManager.this.stats.incWaitingThreads(1);// will it be ok
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  ClusterDistributionManager.this.stats.incWaitingThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_PR_META_DATA_CLEANUP_MESSAGE_PROCESSOR
-                    .toLocalizedString() + (next++));
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
+        ThreadFactory tf = new NamedThreadFactory("PrMetaData cleanup Message Processor ",
+            thread -> stats.incWaitingThreadStarts(),
+            this::doWaitingThread); // should this pool using the waiting pool stats?
         BlockingQueue<Runnable> poolQueue;
         poolQueue = new OverflowQueueWithDMStats<>(this.stats.getWaitingQueueHelper());
         this.prMetaDataCleanupThreadPool = new PooledExecutorWithDMStats(poolQueue,
@@ -920,31 +773,9 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getPartitionedRegionQueueHelper());
         }
-        ThreadFactory tf = new ThreadFactory() {
-          private int next = 0;
-
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incPartitionedRegionThreadStarts();
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                stats.incPartitionedRegionThreads(1);
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  stats.incPartitionedRegionThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r, "PartitionedRegion Message Processor" + (next++));
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
+        ThreadFactory tf = new NamedThreadFactory("PartitionedRegion Message Processor",
+            thread -> stats.incPartitionedRegionThreadStarts(),
+            this::doPartitionRegionThread);
         if (MAX_PR_THREADS > 1) {
           this.partitionedRegionPool = new PooledExecutorWithDMStats(poolQueue, MAX_PR_THREADS,
               this.stats.getPartitionedRegionPoolHelper(), tf, threadMonitor);
@@ -963,32 +794,9 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getFunctionExecutionQueueHelper());
         }
-        ThreadFactory tf = new ThreadFactory() {
-          private int next = 0;
-
-          @Override
-          public Thread newThread(final Runnable command) {
-            ClusterDistributionManager.this.stats.incFunctionExecutionThreadStarts();
-            final Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                stats.incFunctionExecutionThreads(1);
-                isFunctionExecutionThread.set(Boolean.TRUE);
-                try {
-                  ConnectionTable.threadWantsSharedResources();
-                  Connection.makeReaderThread();
-                  runUntilShutdown(command);
-                } finally {
-                  ConnectionTable.releaseThreadsSockets();
-                  stats.incFunctionExecutionThreads(-1);
-                }
-              }
-            };
-            Thread thread = new Thread(group, r, "Function Execution Processor" + (next++));
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
+        ThreadFactory tf = new NamedThreadFactory("Function Execution Processor",
+            thread -> stats.incFunctionExecutionThreadStarts(),
+            this::doFunctionExecutionThread);
 
         if (MAX_FE_THREADS > 1) {
           this.functionExecutionPool = new FunctionExecutionPooledExecutor(poolQueue,
@@ -998,13 +806,11 @@ public class ClusterDistributionManager implements DistributionManager {
           this.functionExecutionThread = new SerialQueuedExecutorWithDMStats(poolQueue,
               this.stats.getFunctionExecutionPoolHelper(), tf, threadMonitor);
         }
-
       }
 
       if (!SYNC_EVENTS) {
         this.memberEventThread =
-            new Thread(group, new MemberEventInvoker(), "DM-MemberEventInvoker");
-        this.memberEventThread.setDaemon(true);
+            ThreadHelper.createDaemon("DM-MemberEventInvoker", new MemberEventInvoker());
       }
 
       StringBuffer sb = new StringBuffer(" (took ");
@@ -1037,6 +843,91 @@ public class ClusterDistributionManager implements DistributionManager {
       if (!finishedConstructor) {
         askThreadsToStop(); // fix for bug 42039
       }
+    }
+  }
+
+  private void doFunctionExecutionThread(Runnable command) {
+    stats.incFunctionExecutionThreads(1);
+    isFunctionExecutionThread.set(Boolean.TRUE);
+    try {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      runUntilShutdown(command);
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
+      stats.incFunctionExecutionThreads(-1);
+    }
+  }
+
+  private void doProcessingThread(Runnable command) {
+    stats.incNumProcessingThreads(1);
+    try {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      runUntilShutdown(command);
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
+      stats.incNumProcessingThreads(-1);
+    }
+  }
+
+  private void doHighPriorityThread(Runnable command) {
+    stats.incHighPriorityThreads(1);
+    try {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      runUntilShutdown(command);
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
+      stats.incHighPriorityThreads(-1);
+    }
+  }
+
+  private void doWaitingThread(Runnable command) {
+    stats.incWaitingThreads(1);
+    try {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      runUntilShutdown(command);
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
+      stats.incWaitingThreads(-1);
+    }
+  }
+
+  private void doPartitionRegionThread(Runnable command) {
+    stats.incPartitionedRegionThreads(1);
+    try {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      runUntilShutdown(command);
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
+      stats.incPartitionedRegionThreads(-1);
+    }
+  }
+
+  private void doViewThread(Runnable command) {
+    stats.incNumViewThreads(1);
+    try {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      runUntilShutdown(command);
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
+      stats.incNumViewThreads(-1);
+    }
+  }
+
+  private void doSerialThread(Runnable command) {
+    stats.incNumSerialThreads(1);
+    try {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      runUntilShutdown(command);
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
+      stats.incNumSerialThreads(-1);
     }
   }
 
@@ -1396,7 +1287,8 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   @Override
   public boolean exceptionInThreads() {
-    return this.exceptionInThreads || this.threadGroup.getUncaughtExceptionsCount() > 0;
+    return this.exceptionInThreads
+        || LoggingUncaughtExceptionHandler.getUncaughtExceptionsCount() > 0;
   }
 
   /**
@@ -1406,7 +1298,7 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public void clearExceptionInThreads() {
     this.exceptionInThreads = false;
-    this.threadGroup.clearUncaughtExceptionsCount();
+    LoggingUncaughtExceptionHandler.clearUncaughtExceptionsCount();
   }
 
   /**
@@ -1739,9 +1631,10 @@ public class ClusterDistributionManager implements DistributionManager {
             }
           }
         };
-        final Thread t = new Thread(threadGroup, r,
+        final Thread t = new Thread(r,
             LocalizedStrings.DistributionManager_SHUTDOWN_MESSAGE_THREAD_FOR_0
                 .toLocalizedString(this.localAddress));
+        LoggingUncaughtExceptionHandler.setOnThread(t);
         t.start();
         boolean interrupted = Thread.interrupted();
         try {
@@ -3361,20 +3254,13 @@ public class ClusterDistributionManager implements DistributionManager {
     final ArrayList<Integer> threadMarkedForUse = new ArrayList<>();
 
     final DistributionStats stats;
-    final ThreadGroup threadGroup;
 
     final boolean throttlingDisabled;
 
     final ThreadsMonitoring threadMonitoring;
 
-    /**
-     * Constructor.
-     *
-     * @param group thread group to which the threads will belog to.
-     */
-    SerialQueuedExecutorPool(ThreadGroup group, DistributionStats stats,
+    SerialQueuedExecutorPool(DistributionStats stats,
         boolean throttlingDisabled, ThreadsMonitoring tMonitoring) {
-      this.threadGroup = group;
       this.stats = stats;
       this.throttlingDisabled = throttlingDisabled;
       this.threadMonitoring = tMonitoring;
@@ -3507,30 +3393,21 @@ public class ClusterDistributionManager implements DistributionManager {
 
       serialQueuedMap.put(id, poolQueue);
 
-      ThreadFactory tf = new ThreadFactory() {
-        @Override
-        public Thread newThread(final Runnable command) {
-          SerialQueuedExecutorPool.this.stats.incSerialPooledThreadStarts();
-          final Runnable r = new Runnable() {
-            @Override
-            public void run() {
-              ConnectionTable.threadWantsSharedResources();
-              Connection.makeReaderThread();
-              try {
-                command.run();
-              } finally {
-                ConnectionTable.releaseThreadsSockets();
-              }
-            }
-          };
-
-          Thread thread = new Thread(threadGroup, r, "Pooled Serial Message Processor " + id);
-          thread.setDaemon(true);
-          return thread;
-        }
-      };
+      ThreadFactory tf = new NamedThreadFactory("Pooled Serial Message Processor" + id + "-",
+          thread -> stats.incSerialPooledThreadStarts(),
+          this::doSerialPooledThread);
       return new SerialQueuedExecutorWithDMStats(poolQueue,
           this.stats.getSerialPooledProcessorHelper(), tf, this.threadMonitoring);
+    }
+
+    private void doSerialPooledThread(Runnable command) {
+      ConnectionTable.threadWantsSharedResources();
+      Connection.makeReaderThread();
+      try {
+        command.run();
+      } finally {
+        ConnectionTable.releaseThreadsSockets();
+      }
     }
 
     /*

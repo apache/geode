@@ -87,6 +87,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.NamedThreadFactory;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -115,7 +117,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -484,20 +485,14 @@ public class DiskStoreImpl implements DiskStore {
     }
 
     int MAXT = DiskStoreImpl.MAX_CONCURRENT_COMPACTIONS;
-    final ThreadGroup compactThreadGroup =
-        LoggingThreadGroup.createThreadGroup("Oplog Compactor Thread Group", logger);
     final ThreadFactory compactThreadFactory =
-        GemfireCacheHelper.CreateThreadFactory(compactThreadGroup, "Idle OplogCompactor");
+        new NamedThreadFactory("Idle OplogCompactor");
     this.diskStoreTaskPool = new ThreadPoolExecutor(MAXT, MAXT, 10, TimeUnit.SECONDS,
         new LinkedBlockingQueue(), compactThreadFactory);
     this.diskStoreTaskPool.allowCoreThreadTimeOut(true);
 
-
-    final ThreadGroup deleteThreadGroup =
-        LoggingThreadGroup.createThreadGroup("Oplog Delete Thread Group", logger);
-
     final ThreadFactory deleteThreadFactory =
-        GemfireCacheHelper.CreateThreadFactory(deleteThreadGroup, "Oplog Delete Task");
+        new NamedThreadFactory("Oplog Delete Task");
     this.delayedWritePool = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
         new LinkedBlockingQueue(MAX_PENDING_TASKS), deleteThreadFactory,
         new ThreadPoolExecutor.CallerRunsPolicy());
@@ -1461,11 +1456,7 @@ public class DiskStoreImpl implements DiskStore {
   private void startAsyncFlusher() {
     final String thName =
         LocalizedStrings.DiskRegion_ASYNCHRONOUS_DISK_WRITER_0.toLocalizedString(getName());
-    this.flusherThread = new Thread(
-        LoggingThreadGroup.createThreadGroup(
-            LocalizedStrings.DiskRegion_DISK_WRITERS.toLocalizedString(), logger),
-        new FlusherThread(this), thName);
-    this.flusherThread.setDaemon(true);
+    this.flusherThread = ThreadHelper.createDaemon(thName, new FlusherThread(this));
     this.flusherThread.start();
   }
 
@@ -3346,22 +3337,17 @@ public class DiskStoreImpl implements DiskStore {
         LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED;
     logger.error(LocalizedMessage.create(sid, DiskStoreImpl.this.getName()), dae);
 
-    final ThreadGroup exceptionHandlingGroup =
-        LoggingThreadGroup.createThreadGroup("Disk Store Exception Handling Group", logger);
+    Thread thread = ThreadHelper.create("Disk store exception handler", () -> {
+      try {
+        // now close the cache
+        getCache().close(sid.toLocalizedString(DiskStoreImpl.this.getName(), dae), dae);
+        _testHandleDiskAccessException.countDown();
 
-    Thread thread = new Thread(exceptionHandlingGroup, "Disk store exception handler") {
-      public void run() {
-        try {
-          // now close the cache
-          getCache().close(sid.toLocalizedString(DiskStoreImpl.this.getName(), dae), dae);
-          _testHandleDiskAccessException.countDown();
-
-        } catch (Exception e) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.LocalRegion_AN_EXCEPTION_OCCURRED_WHILE_CLOSING_THE_CACHE), e);
-        }
+      } catch (Exception e) {
+        logger.error(LocalizedMessage.create(
+            LocalizedStrings.LocalRegion_AN_EXCEPTION_OCCURRED_WHILE_CLOSING_THE_CACHE), e);
       }
-    };
+    });
     thread.start();
   }
 

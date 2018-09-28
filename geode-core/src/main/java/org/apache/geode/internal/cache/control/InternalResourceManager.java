@@ -27,7 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -45,6 +44,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
@@ -52,7 +52,6 @@ import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -118,21 +117,7 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor that other classes may use for handling resource
     // related tasks
-    final ThreadGroup threadGroup =
-        LoggingThreadGroup.createThreadGroup("ResourceManagerThreadGroup", logger);
-
-    ThreadFactory tf = new ThreadFactory() {
-      AtomicInteger ai = new AtomicInteger();
-
-      @Override
-      public Thread newThread(Runnable r) {
-        int tId = ai.getAndIncrement();
-        Thread thread = new Thread(threadGroup, r, "ResourceManagerRecoveryThread " + tId);
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
+    ThreadFactory tf = new NamedThreadFactory("ResourceManagerRecoveryThread ");
     this.scheduledExecutor = new ScheduledThreadPoolExecutor(MAX_RESOURCE_MANAGER_EXE_THREADS, tf);
 
     // Initialize the load probe
@@ -145,18 +130,8 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor the resource manager and the monitors it creates
     // can use to handle dispatching of notifications.
-    final ThreadGroup listenerInvokerthrdGrp =
-        LoggingThreadGroup.createThreadGroup("ResourceListenerInvokerThreadGroup", logger);
-
-    ThreadFactory eventProcessorFactory = new ThreadFactory() {
-      @Override
-      public Thread newThread(Runnable r) {
-        Thread thread = new Thread(listenerInvokerthrdGrp, r, "Notification Handler");
-        thread.setDaemon(true);
-        thread.setPriority(Thread.MAX_PRIORITY);
-        return thread;
-      }
-    };
+    ThreadFactory eventProcessorFactory = new NamedThreadFactory("Notification Handler",
+        thread -> thread.setPriority(Thread.MAX_PRIORITY), null);
     BlockingQueue<Runnable> threadQ =
         new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());
     this.notifyExecutor = new SerialQueuedExecutorWithDMStats(threadQ,

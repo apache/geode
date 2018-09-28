@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.IdentityArrayList;
 import org.apache.geode.internal.cache.TXReservationMgr;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
@@ -3290,8 +3291,9 @@ public class DLockGrantor {
     private long nextExpire = DLockGrantorThread.MAX_WAIT;
 
     DLockGrantorThread(DLockGrantor grantor, CancelCriterion stopper) {
-      super(DLockService.getThreadGroup(), "Lock Grantor for " + grantor.dlock.getName());
+      super("Lock Grantor for " + grantor.dlock.getName());
       setDaemon(true);
+      LoggingUncaughtExceptionHandler.setOnThread(this);
       this.grantor = grantor;
       this.stopper = stopper;
     }

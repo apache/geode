@@ -40,7 +40,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
@@ -726,9 +726,9 @@ public class ClientHealthMonitor {
      *        client has died and interrupting its sockets
      */
     protected ClientHealthMonitorThread(int maximumTimeBetweenPings) {
-      super(LoggingThreadGroup.createThreadGroup("ClientHealthMonitor Thread Group", logger),
-          "ClientHealthMonitor Thread");
+      super("ClientHealthMonitor Thread");
       setDaemon(true);
+      LoggingUncaughtExceptionHandler.setOnThread(this);
 
       // Set the client connection timeout
       this._maximumTimeBetweenPings = maximumTimeBetweenPings;

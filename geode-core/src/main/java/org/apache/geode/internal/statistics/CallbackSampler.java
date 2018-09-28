@@ -24,6 +24,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 
 public class CallbackSampler {
   private static final Logger logger = LogService.getLogger();
@@ -39,11 +40,11 @@ public class CallbackSampler {
     this.statSamplerStats = statSamplerStats;
   }
 
-  public void start(StatisticsManager statisticsManager, ThreadGroup threadGroup,
-      int sampleInterval, TimeUnit timeUnit) {
+  public void start(StatisticsManager statisticsManager, int sampleInterval, TimeUnit timeUnit) {
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(runnable -> {
-      Thread thread = new Thread(threadGroup, runnable, "CallbackSampler");
+      Thread thread = new Thread(runnable, "CallbackSampler");
       thread.setDaemon(true);
+      LoggingUncaughtExceptionHandler.setOnThread(thread);
       return thread;
     });
     start(executor, statisticsManager, sampleInterval, timeUnit);

@@ -46,8 +46,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -80,8 +78,10 @@ import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPart
 import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -815,11 +815,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void createAndStartViewCreator(NetView newView) {
     if (viewCreator == null || viewCreator.isShutdown()) {
       services.getMessenger().initClusterKey();
-      viewCreator = new ViewCreator("Geode Membership View Creator", Services.getThreadGroup());
+      viewCreator = new ViewCreator("Geode Membership View Creator");
       if (newView != null) {
         viewCreator.setInitialView(newView, newView.getNewMembers(), newView.getShutdownMembers(),
             newView.getCrashedMembers());
       }
+      LoggingUncaughtExceptionHandler.setOnThread(viewCreator);
       viewCreator.setDaemon(true);
       logger.info("ViewCreator starting on:" + localAddress);
       viewCreator.start();
@@ -2071,8 +2072,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      */
     Set<InternalDistributedMember> initialRemovals;
 
-    ViewCreator(String name, ThreadGroup tg) {
-      super(tg, name);
+    ViewCreator(String name) {
+      super(name);
     }
 
     void shutdown() {
@@ -2692,16 +2693,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       logger.debug("checking availability of these members: {}", checkers);
-      ExecutorService svc = Executors.newFixedThreadPool(suspects.size(), new ThreadFactory() {
-        AtomicInteger i = new AtomicInteger();
-
-        @Override
-        public Thread newThread(Runnable r) {
-          return new Thread(Services.getThreadGroup(), r,
-              "Geode View Creator verification thread " + i.incrementAndGet());
-        }
-      });
-
+      ExecutorService svc = Executors.newFixedThreadPool(suspects.size(),
+          new NamedThreadFactory("Geode View Creator verification thread "));
       try {
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
         // submit the tasks that will remove dead members from the suspects collection

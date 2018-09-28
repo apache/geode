@@ -65,8 +65,6 @@ class DisconnectingOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListe
       // invoking disconnect is async because caller may be a DM pool thread which will block until
       // DM shutdown times out
 
-      // LogWriterImpl.LoggingThreadGroup group = LogWriterImpl.createThreadGroup("MemScale
-      // Threads", ids.getLogWriterI18n());
       String name = this.getClass().getSimpleName() + "@" + this.hashCode()
           + " Handle OutOfOffHeapMemoryException Thread";
       // Thread thread = new Thread(group, runnable, name);

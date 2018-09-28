@@ -63,7 +63,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -157,9 +157,6 @@ class RemoteGfManagerAgent implements GfManagerAgent {
    * True if the currentJoin needs to be aborted because the member has left
    */
   protected volatile boolean abortCurrentJoin = false;
-
-  /** A thread group for threads created by this manager agent */
-  protected ThreadGroup threadGroup;
 
   /**
    * Has this <code>RemoteGfManagerAgent</code> been initialized? That is, after it has been
@@ -281,7 +278,6 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
     this.disconnectListener = cfg.getDisconnectListener();
 
-    this.threadGroup = LoggingThreadGroup.createThreadGroup("ConsoleDMDaemon", logger);
     this.joinProcessor = new JoinProcessor();
     this.joinProcessor.start();
 
@@ -902,16 +898,6 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     } // sync
   }
 
-  /**
-   * Returns the thread group in which admin threads should run. This thread group handles uncaught
-   * exceptions nicely.
-   *
-   * @since GemFire 4.0
-   */
-  public ThreadGroup getThreadGroup() {
-    return this.threadGroup;
-  }
-
   //////////// inner classes ///////////////////////////
 
   /**
@@ -925,7 +911,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     private volatile boolean shutDown = false;
 
     protected DSConnectionDaemon() {
-      super(RemoteGfManagerAgent.this.threadGroup, "DSConnectionDaemon");
+      super("DSConnectionDaemon");
+      LoggingUncaughtExceptionHandler.setOnThread(this);
       setDaemon(true);
     }
 
@@ -999,7 +986,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     private volatile boolean shutDown = false;
 
     public SnapshotResultDispatcher() {
-      super(RemoteGfManagerAgent.this.threadGroup, "SnapshotResultDispatcher");
+      super("SnapshotResultDispatcher");
+      LoggingUncaughtExceptionHandler.setOnThread(this);
       setDaemon(true);
     }
 
@@ -1195,7 +1183,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     private final Object lock = new Object();
 
     public JoinProcessor() {
-      super(RemoteGfManagerAgent.this.threadGroup, "JoinProcessor");
+      super("JoinProcessor");
+      LoggingUncaughtExceptionHandler.setOnThread(this);
       setDaemon(true);
     }
 

@@ -76,7 +76,9 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
@@ -89,7 +91,6 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
@@ -561,30 +562,19 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   private ThreadPoolExecutor initializeHandshakerThreadPool() throws IOException {
-    String gName = "Handshaker " + serverSock.getInetAddress() + ":" + this.localPort;
-    final ThreadGroup socketThreadGroup = LoggingThreadGroup.createThreadGroup(gName, logger);
-
-    ThreadFactory socketThreadFactory = new ThreadFactory() {
-      AtomicInteger connNum = new AtomicInteger(-1);
-
-      @Override
-      public Thread newThread(Runnable command) {
-        String threadName = socketThreadGroup.getName() + " Thread " + connNum.incrementAndGet();
-        getStats().incAcceptThreadsCreated();
-        return new Thread(socketThreadGroup, command, threadName);
-      }
-    };
+    String threadName =
+        "Handshaker " + serverSock.getInetAddress() + ":" + this.localPort + " Thread ";
+    ThreadFactory socketThreadFactory = new NamedThreadFactory(threadName,
+        thread -> getStats().incAcceptThreadsCreated(), null);
     try {
       final BlockingQueue blockingQueue = new SynchronousQueue();
-      final RejectedExecutionHandler rejectedExecutionHandler = new RejectedExecutionHandler() {
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor pool) {
-          try {
-            blockingQueue.put(r);
-          } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt(); // preserve the state
-            throw new RejectedExecutionException(
-                LocalizedStrings.AcceptorImpl_INTERRUPTED.toLocalizedString(), ex);
-          }
+      final RejectedExecutionHandler rejectedExecutionHandler = (r, pool) -> {
+        try {
+          blockingQueue.put(r);
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt(); // preserve the state
+          throw new RejectedExecutionException(
+              LocalizedStrings.AcceptorImpl_INTERRUPTED.toLocalizedString(), ex);
         }
       };
       logger.warn("Handshaker max Pool size: " + HANDSHAKE_POOL_SIZE);
@@ -599,60 +589,34 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   private ThreadPoolExecutor initializeClientQueueInitializerThreadPool() throws IOException {
-    final ThreadGroup clientQueueThreadGroup =
-        LoggingThreadGroup.createThreadGroup("Client Queue Initialization ", logger);
-
-    ThreadFactory clientQueueThreadFactory = new ThreadFactory() {
-      AtomicInteger connNum = new AtomicInteger(-1);
-
-      @Override
-      public Thread newThread(final Runnable command) {
-        String threadName =
-            clientQueueThreadGroup.getName() + " Thread " + connNum.incrementAndGet();
-        Runnable runnable = new Runnable() {
-          public void run() {
-            try {
-              command.run();
-            } catch (CancelException e) {
-              logger.debug("Client Queue Initialization was canceled.", e);
-            }
-          }
-        };
-        return new Thread(clientQueueThreadGroup, runnable, threadName);
-      }
-    };
+    ThreadFactory clientQueueThreadFactory =
+        new NamedThreadFactory("Client Queue Initialization Thread ",
+            command -> {
+              try {
+                command.run();
+              } catch (CancelException e) {
+                logger.debug("Client Queue Initialization was canceled.", e);
+              }
+            });
     return new PooledExecutorWithDMStats(new SynchronousQueue(),
         CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(),
         clientQueueThreadFactory, 60000, getThreadMonitorObj());
   }
 
   private ThreadPoolExecutor initializeServerConnectionThreadPool() throws IOException {
-    String gName = "ServerConnection "
-        // + serverSock.getInetAddress()
-        + "on port " + this.localPort;
-    final ThreadGroup socketThreadGroup = LoggingThreadGroup.createThreadGroup(gName, logger);
-
-    ThreadFactory socketThreadFactory = new ThreadFactory() {
-      AtomicInteger connNum = new AtomicInteger(-1);
-
-      @Override
-      public Thread newThread(final Runnable command) {
-        String tName = socketThreadGroup.getName() + " Thread " + connNum.incrementAndGet();
-        getStats().incConnectionThreadsCreated();
-        Runnable r = new Runnable() {
-          public void run() {
-            try {
-              command.run();
-            } catch (CancelException e) { // bug 39463
-              // ignore
-            } finally {
-              ConnectionTable.releaseThreadsSockets();
-            }
+    String threadName = "ServerConnection on port " + this.localPort + " Thread ";
+    ThreadFactory socketThreadFactory = new NamedThreadFactory(threadName,
+        thread -> getStats().incConnectionThreadsCreated(),
+        command -> {
+          try {
+            command.run();
+          } catch (CancelException e) { // bug 39463
+            // ignore
+          } finally {
+            ConnectionTable.releaseThreadsSockets();
           }
-        };
-        return new Thread(socketThreadGroup, r, tName);
-      }
-    };
+
+        });
     try {
       if (isSelector()) {
         return new PooledExecutorWithDMStats(new LinkedBlockingQueue(), this.maxThreads,
@@ -716,26 +680,18 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   @Override
   public void start() throws IOException {
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup(
-        "Acceptor " + this.serverSock.getInetAddress() + ":" + this.localPort, logger);
-    thread = new Thread(tg, this, "Cache Server Acceptor " + this.serverSock.getInetAddress() + ":"
-        + this.localPort + " local port: " + this.serverSock.getLocalPort());
-
-    this.acceptorId = thread.getId();
-
     // This thread should not be a daemon to keep BridgeServers created
     // in code from exiting immediately.
+    thread = ThreadHelper.create("Cache Server Acceptor " + this.serverSock.getInetAddress() + ":"
+        + this.localPort + " local port: " + this.serverSock.getLocalPort(), this);
+    this.acceptorId = thread.getId();
     thread.start();
 
     if (isSelector()) {
-      Runnable r = new Runnable() {
-        public void run() {
-          AcceptorImpl.this.runSelectorLoop();
-        }
-      };
       this.selectorThread =
-          new Thread(tg, r, "Cache Server Selector " + this.serverSock.getInetAddress() + ":"
-              + this.localPort + " local port: " + this.serverSock.getLocalPort());
+          ThreadHelper.create("Cache Server Selector " + this.serverSock.getInetAddress() + ":"
+              + this.localPort + " local port: " + this.serverSock.getLocalPort(),
+              this::runSelectorLoop);
       this.selectorThread.start();
     }
     Set<PartitionedRegion> prs = this.cache.getPartitionedRegions();

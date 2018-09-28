@@ -80,6 +80,7 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -94,7 +95,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
@@ -261,9 +262,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
 
   /**
-   * A Constant that matches the ThreadGroup name of the shutdown hook. This constant is used to
-   * insure consistency with LoggingThreadGroup. Due to Bug 38407, be careful about moving this to
-   * another class.
+   * Due to Bug 38407, be careful about moving this to another class.
    */
   public static final String SHUTDOWN_HOOK_NAME = "Distributed system shutdown hook";
   /**
@@ -359,8 +358,6 @@ public class InternalDistributedSystem extends DistributedSystem
       return newSystem;
     } finally {
       if (!success) {
-        // bug44365 - logwriters accumulate, causing mem leak
-        LoggingThreadGroup.cleanUpThreadGroups();
         SystemFailure.stopThreads();
       }
     }
@@ -1058,7 +1055,7 @@ public class InternalDistributedSystem extends DistributedSystem
    *
    * @param dc the listener to run
    */
-  private void runDisconnect(final DisconnectListener dc, ThreadGroup tg) {
+  private void runDisconnect(final DisconnectListener dc) {
     // Create a general handler for running the disconnect
     Runnable r = new Runnable() {
       public void run() {
@@ -1075,7 +1072,8 @@ public class InternalDistributedSystem extends DistributedSystem
     };
 
     // Launch it and wait a little bit
-    Thread t = new Thread(tg, r, dc.toString());
+    Thread t = new Thread(r, dc.toString());
+    LoggingUncaughtExceptionHandler.setOnThread(t);
     try {
       t.start();
       t.join(MAX_DISCONNECT_WAIT);
@@ -1119,10 +1117,9 @@ public class InternalDistributedSystem extends DistributedSystem
    * Run a disconnect listener in the same thread sequence as the reconnect.
    *
    * @param dc the listener to run
-   * @param tg the thread group to run the listener in
    */
 
-  private void runDisconnectForReconnect(final DisconnectListener dc, ThreadGroup tg) {
+  private void runDisconnectForReconnect(final DisconnectListener dc) {
     try {
       dc.onDisconnect(InternalDistributedSystem.this);
     } catch (DistributedSystemDisconnectedException e) {
@@ -1132,12 +1129,6 @@ public class InternalDistributedSystem extends DistributedSystem
       }
     }
   }
-
-  /**
-   * A logging thread group for the disconnect and shutdown listeners
-   */
-  private final ThreadGroup disconnectListenerThreadGroup =
-      LoggingThreadGroup.createThreadGroup("Disconnect Listeners");
 
   /**
    * Disconnect cache, run disconnect listeners.
@@ -1166,9 +1157,9 @@ public class InternalDistributedSystem extends DistributedSystem
       } // synchronized
 
       if (doReconnect) {
-        runDisconnectForReconnect(listener, disconnectListenerThreadGroup);
+        runDisconnectForReconnect(listener);
       } else {
-        runDisconnect(listener, disconnectListenerThreadGroup);
+        runDisconnect(listener);
       }
     } // for
     return shutdownListeners;
@@ -1229,8 +1220,7 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       }
 
-      // Run the disconnect
-      runDisconnect(dcListener, disconnectListenerThreadGroup);
+      runDisconnect(dcListener);
 
       // Run the shutdown, if any
       if (sdListener != null) {
@@ -1476,10 +1466,6 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       }
 
-      // NOTE: no logging after this point :-)
-
-      LoggingThreadGroup.cleanUpThreadGroups(); // bug35388 - logwriters accumulate, causing mem
-                                                // leak
       EventID.unsetDS();
 
     } finally {
@@ -2315,40 +2301,36 @@ public class InternalDistributedSystem extends DistributedSystem
   static {
     // Create a shutdown hook to cleanly close connection if
     // VM shuts down with an open connection.
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup(SHUTDOWN_HOOK_NAME);
     Thread tmp_shutdownHook = null;
     try {
       // Added for bug 38407
       if (!Boolean.getBoolean(DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
-        tmp_shutdownHook = new Thread(tg, new Runnable() {
-          public void run() {
-            DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-            setThreadsSocketPolicy(true /* conserve sockets */);
-            if (ds != null && ds.isConnected()) {
-              LogWriterI18n log = ((InternalDistributedSystem) ds).getInternalLogWriter();
-              log.info(LocalizedStrings.InternalDistributedSystem_shutdownHook_shuttingdown);
-              DurableClientAttributes dca = ((InternalDistributedSystem) ds).getDistributedMember()
-                  .getDurableClientAttributes();
-              boolean isDurableClient = false;
+        tmp_shutdownHook = ThreadHelper.create(SHUTDOWN_HOOK_NAME, () -> {
+          DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+          setThreadsSocketPolicy(true /* conserve sockets */);
+          if (ds != null && ds.isConnected()) {
+            logger.info(LocalizedStrings.InternalDistributedSystem_shutdownHook_shuttingdown);
+            DurableClientAttributes dca = ((InternalDistributedSystem) ds).getDistributedMember()
+                .getDurableClientAttributes();
+            boolean isDurableClient = false;
 
-              if (dca != null) {
-                isDurableClient = (!(dca.getId() == null || dca.getId().isEmpty()));
-              }
-
-              ((InternalDistributedSystem) ds).disconnect(false,
-                  LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(),
-                  isDurableClient/* keep alive drive from this */);
-              // this was how we wanted to do it for 5.7, but there were shutdown
-              // issues in PR/dlock (see bug 39287)
-              // InternalDistributedSystem ids = (InternalDistributedSystem)ds;
-              // if (ids.getDistributionManager() != null &&
-              // ids.getDistributionManager().getMembershipManager() != null) {
-              // ids.getDistributionManager().getMembershipManager()
-              // .uncleanShutdown("VM is exiting", null);
-              // }
+            if (dca != null) {
+              isDurableClient = (!(dca.getId() == null || dca.getId().isEmpty()));
             }
+
+            ((InternalDistributedSystem) ds).disconnect(false,
+                LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(),
+                isDurableClient/* keep alive drive from this */);
+            // this was how we wanted to do it for 5.7, but there were shutdown
+            // issues in PR/dlock (see bug 39287)
+            // InternalDistributedSystem ids = (InternalDistributedSystem)ds;
+            // if (ids.getDistributionManager() != null &&
+            // ids.getDistributionManager().getMembershipManager() != null) {
+            // ids.getDistributionManager().getMembershipManager()
+            // .uncleanShutdown("VM is exiting", null);
+            // }
           }
-        }, SHUTDOWN_HOOK_NAME);
+        });
         Runtime.getRuntime().addShutdownHook(tmp_shutdownHook);
       }
     } finally {

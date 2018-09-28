@@ -102,7 +102,7 @@ public class TCPClientSSLIntegrationTest {
 
     server = new FakeTcpServer(port, localhost, sslProperties, null,
         tcpHandler, Mockito.mock(PoolStatHelper.class),
-        Thread.currentThread().getThreadGroup(), "server thread");
+        "server thread");
     server.start();
   }
 
@@ -176,9 +176,8 @@ public class TCPClientSSLIntegrationTest {
 
     public FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
         DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-        ThreadGroup threadGroup, String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadGroup, threadName, null,
-          null);
+        String threadName) {
+      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName, null, null);
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
       }

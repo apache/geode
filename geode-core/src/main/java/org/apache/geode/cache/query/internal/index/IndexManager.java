@@ -73,7 +73,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 
 public class IndexManager {
   private static final Logger logger = LogService.getLogger();
@@ -167,9 +167,7 @@ public class IndexManager {
         region.getAttributes().getEvictionAttributes().getAction().isOverflowToDisk();
     this.offHeap = region.getAttributes().getOffHeap();
     if (!indexMaintenanceSynchronous) {
-      final LoggingThreadGroup group =
-          LoggingThreadGroup.createThreadGroup("QueryMonitor Thread Group", logger);
-      updater = new IndexUpdaterThread(group, this.INDEX_MAINTENANCE_BUFFER,
+      updater = new IndexUpdaterThread(this.INDEX_MAINTENANCE_BUFFER,
           "OqlIndexUpdater:" + region.getFullPath());
       updater.start();
     }
@@ -1402,8 +1400,8 @@ public class IndexManager {
     /**
      * Creates instance of IndexUpdaterThread
      */
-    IndexUpdaterThread(ThreadGroup group, int updateThreshold, String threadName) {
-      super(group, threadName);
+    IndexUpdaterThread(int updateThreshold, String threadName) {
+      super(threadName);
       // Check if threshold is set.
       if (updateThreshold > 0) {
         // Create a bounded queue.
@@ -1413,6 +1411,7 @@ public class IndexManager {
         pendingTasks = new LinkedBlockingQueue();
       }
       this.setDaemon(true);
+      LoggingUncaughtExceptionHandler.setOnThread(this);
     }
 
     public void addTask(int action, RegionEntry entry, int opCode) {

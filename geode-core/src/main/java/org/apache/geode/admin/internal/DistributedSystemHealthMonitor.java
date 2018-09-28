@@ -32,6 +32,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Config;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.DLockInfo;
@@ -44,7 +45,6 @@ import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -107,13 +107,9 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     this.okayDiagnoses = new ArrayList();
     this.poorDiagnoses = new ArrayList();
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup(
-        LocalizedStrings.DistributedSystemHealthMonitor_HEALTH_MONITORS.toLocalizedString(),
-        logger);
     String name = LocalizedStrings.DistributedSystemHealthMonitor_HEALTH_MONITOR_FOR_0
         .toLocalizedString(eval.getDescription());
-    this.thread = new Thread(group, this, name);
-    this.thread.setDaemon(true);
+    this.thread = ThreadHelper.createDaemon(name, this);
   }
 
   /**

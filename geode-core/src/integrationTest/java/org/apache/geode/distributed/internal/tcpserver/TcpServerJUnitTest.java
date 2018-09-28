@@ -70,7 +70,7 @@ public class TcpServerJUnitTest {
 
     stats = new SimpleStats();
     server = new TcpServerFactory().makeTcpServer(port, localhost, new Properties(), null, handler,
-        stats, Thread.currentThread().getThreadGroup(), "server thread", null);
+        stats, "server thread", null);
     server.start();
   }
 

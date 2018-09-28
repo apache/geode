@@ -37,6 +37,7 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
@@ -49,7 +50,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -70,9 +70,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring) {
-    super(LoggingThreadGroup
-        .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
+    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.sender = sender;
 
     initializeMessageQueue(sender.getId());
@@ -284,18 +282,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
     setIsStopped(true);
 
-    final LoggingThreadGroup loggingThreadGroup = LoggingThreadGroup
-        .createThreadGroup("ConcurrentSerialGatewaySenderEventProcessor Logger Group", logger);
-
-    ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable task) {
-        final Thread thread = new Thread(loggingThreadGroup, task,
-            "ConcurrentSerialGatewaySenderEventProcessor Stopper Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
+    ThreadFactory threadFactory =
+        new NamedThreadFactory("ConcurrentSerialGatewaySenderEventProcessor Stopper Thread");
     List<SenderStopperCallable> stopperCallables = new ArrayList<SenderStopperCallable>();
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       stopperCallables.add(new SenderStopperCallable(serialProcessor));

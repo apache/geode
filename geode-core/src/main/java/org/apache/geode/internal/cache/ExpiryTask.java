@@ -32,10 +32,10 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.tcp.ConnectionTable;
 
@@ -54,32 +54,22 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     // default to inline expiry to fix bug 37115
     int nThreads = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
-      ThreadFactory tf = new ThreadFactory() {
-        private int nextId = 0;
-
-        public Thread newThread(final Runnable command) {
-          String name = "Expiration threads";
-          final ThreadGroup group = LoggingThreadGroup.createThreadGroup(name);
-          final Runnable r = new Runnable() {
-            public void run() {
-              ConnectionTable.threadWantsSharedResources();
-              try {
-                command.run();
-              } finally {
-                ConnectionTable.releaseThreadsSockets();
-              }
-            }
-          };
-          Thread thread = new Thread(group, r, "Expiry " + nextId++);
-          thread.setDaemon(true);
-          return thread;
-        }
-      };
+      ThreadFactory tf =
+          new NamedThreadFactory("Expiry ", (Runnable command) -> doExpiryThread(command));
       // LinkedBlockingQueue q = new LinkedBlockingQueue();
       SynchronousQueue q = new SynchronousQueue();
       executor = new PooledExecutorWithDMStats(q, nThreads, tf, null);
     } else {
       executor = null;
+    }
+  }
+
+  private static void doExpiryThread(Runnable command) {
+    ConnectionTable.threadWantsSharedResources();
+    try {
+      command.run();
+    } finally {
+      ConnectionTable.releaseThreadsSockets();
     }
   }
 

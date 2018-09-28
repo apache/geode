@@ -52,9 +52,10 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.internal.NamedThreadFactory;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -373,32 +374,17 @@ public class TCPConduit implements Runnable {
 
     {
       ThreadPoolExecutor tmp_hsPool = null;
-      String gName = "P2P-Handshaker " + ba + ":" + p;
-      final ThreadGroup socketThreadGroup = LoggingThreadGroup.createThreadGroup(gName, logger);
-
-      ThreadFactory socketThreadFactory = new ThreadFactory() {
-        int connNum = -1;
-
-        public Thread newThread(Runnable command) {
-          int tnum;
-          synchronized (this) {
-            tnum = ++connNum;
-          }
-          String tName = socketThreadGroup.getName() + " Thread " + tnum;
-          return new Thread(socketThreadGroup, command, tName);
-        }
-      };
+      String threadName = "P2P-Handshaker " + ba + ":" + p + " Thread ";
+      ThreadFactory socketThreadFactory = new NamedThreadFactory(threadName);
       try {
         final BlockingQueue bq = new SynchronousQueue();
-        final RejectedExecutionHandler reh = new RejectedExecutionHandler() {
-          public void rejectedExecution(Runnable r, ThreadPoolExecutor pool) {
-            try {
-              bq.put(r);
-            } catch (InterruptedException ex) {
-              Thread.currentThread().interrupt(); // preserve the state
-              throw new RejectedExecutionException(
-                  LocalizedStrings.TCPConduit_INTERRUPTED.toLocalizedString(), ex);
-            }
+        final RejectedExecutionHandler reh = (r, pool) -> {
+          try {
+            bq.put(r);
+          } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt(); // preserve the state
+            throw new RejectedExecutionException(
+                LocalizedStrings.TCPConduit_INTERRUPTED.toLocalizedString(), ex);
           }
         };
         tmp_hsPool = new ThreadPoolExecutor(1, HANDSHAKE_POOL_SIZE, HANDSHAKE_POOL_KEEP_ALIVE_TIME,
@@ -416,11 +402,9 @@ public class TCPConduit implements Runnable {
 
       id = new InetSocketAddress(socket.getInetAddress(), localPort);
       stopped = false;
-      ThreadGroup group = LoggingThreadGroup.createThreadGroup("P2P Listener Threads", logger);
-      thread = new Thread(group, this, "P2P Listener Thread " + id);
-      thread.setDaemon(true);
+      thread = ThreadHelper.createDaemon("P2P Listener Thread " + id, this);
       try {
-        thread.setPriority(thread.getThreadGroup().getMaxPriority());
+        thread.setPriority(Thread.MAX_PRIORITY);
       } catch (Exception e) {
         logger.info(LocalizedMessage.create(
             LocalizedStrings.TCPConduit_UNABLE_TO_SET_LISTENER_PRIORITY__0, e.getMessage()));

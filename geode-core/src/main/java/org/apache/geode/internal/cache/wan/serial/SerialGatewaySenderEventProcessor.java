@@ -43,6 +43,7 @@ import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
@@ -57,7 +58,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
@@ -113,8 +113,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
       ThreadsMonitoring tMonitoring) {
-    super(LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + id, logger),
-        "Event Processor for GatewaySender_" + id, sender, tMonitoring);
+    super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
@@ -828,18 +827,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Initialize the Executor that handles listener events. Only used by non-primary gateway senders
    */
   private void initializeListenerExecutor() {
-    // Create the ThreadGroups
-    final ThreadGroup loggerGroup =
-        LoggingThreadGroup.createThreadGroup("Gateway Listener Group", logger);
-
-    // Create the Executor
-    ThreadFactory tf = new ThreadFactory() {
-      public Thread newThread(Runnable command) {
-        Thread thread = new Thread(loggerGroup, command, "Queued Gateway Listener Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
+    ThreadFactory tf = new NamedThreadFactory("Queued Gateway Listener Thread");
     LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
     this.executor = new ThreadPoolExecutor(1, 1/* max unused */, 120, TimeUnit.SECONDS, q, tf);
   }

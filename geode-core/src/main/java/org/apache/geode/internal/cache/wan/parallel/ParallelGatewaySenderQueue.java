@@ -56,6 +56,7 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -81,7 +82,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
@@ -614,17 +614,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    * processors available to the JVM.
    */
   private void initializeConflationThreadPool() {
-    final LoggingThreadGroup loggingThreadGroup =
-        LoggingThreadGroup.createThreadGroup("WAN Queue Conflation Logger Group", logger);
-
-    final ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable task) {
-        final Thread thread = new Thread(loggingThreadGroup, task, "WAN Queue Conflation Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
+    final ThreadFactory threadFactory = new NamedThreadFactory("WAN Queue Conflation Thread");
     conflationExecutor =
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), threadFactory);
   }

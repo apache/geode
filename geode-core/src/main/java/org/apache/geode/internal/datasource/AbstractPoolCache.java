@@ -30,9 +30,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 /**
  * AbstractPoolCache implements the ConnectionPoolCache interface. This is base class for the all
@@ -87,9 +87,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     INIT_LIMIT = Math.min(configs.getInitialPoolSize(), MAX_LIMIT);
     configProps = configs;
     cleaner = this.new ConnectionCleanUpThread();
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("Cleaner threads");
-    th = new Thread(group, cleaner);
-    th.setDaemon(true);
+    th = ThreadHelper.createDaemon("ConnectionCleanUpThread", cleaner);
     th.start();
   }
 

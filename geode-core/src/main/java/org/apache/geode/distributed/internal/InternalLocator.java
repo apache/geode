@@ -60,6 +60,7 @@ import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -69,7 +70,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreator;
@@ -475,11 +475,10 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     this.handler = new PrimaryHandler(this, locatorListener);
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
     this.stats = new LocatorStats();
 
     this.server = new TcpServerFactory().makeTcpServer(port, this.bindAddress, null, this.config,
-        this.handler, new DelayedPoolStatHelper(), group, this.toString(), this);
+        this.handler, new DelayedPoolStatHelper(), this.toString(), this);
   }
 
   private void startTcpServer() throws IOException {
@@ -920,30 +919,24 @@ public class InternalLocator extends Locator implements ConnectListener {
    * launch a thread that will restart location services
    */
   private void launchRestartThread() {
-    // create a thread group having a last-chance exception-handler
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("Locator restart thread group");
-    // TODO: non-atomic operation on volatile field restartThread
-    this.restartThread = new Thread(group, "Location services restart thread") {
-      @Override
-      public void run() {
-        boolean restarted = false;
-        try {
-          restarted = attemptReconnect();
-          logger.info("attemptReconnect returned {}", restarted);
-        } catch (InterruptedException e) {
-          logger.info("attempt to restart location services was interrupted", e);
-        } catch (IOException e) {
-          logger.info("attempt to restart location services terminated", e);
-        } finally {
-          if (!restarted) {
-            stoppedForReconnect = false;
-          }
-          reconnected = restarted;
+    String threadName = "Location services restart thread";
+    this.restartThread = ThreadHelper.createDaemon(threadName, () -> {
+      boolean restarted = false;
+      try {
+        restarted = attemptReconnect();
+        logger.info("attemptReconnect returned {}", restarted);
+      } catch (InterruptedException e) {
+        logger.info("attempt to restart location services was interrupted", e);
+      } catch (IOException e) {
+        logger.info("attempt to restart location services terminated", e);
+      } finally {
+        if (!restarted) {
+          stoppedForReconnect = false;
         }
-        InternalLocator.this.restartThread = null;
+        reconnected = restarted;
       }
-    };
-    this.restartThread.setDaemon(true);
+      InternalLocator.this.restartThread = null;
+    });
     this.restartThread.start();
   }
 

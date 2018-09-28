@@ -32,9 +32,9 @@ import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ProcessOutputReader;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
@@ -65,11 +65,6 @@ class EnabledManagedEntityController implements ManagedEntityController {
 
   ////////////////////// Instance Fields //////////////////////
 
-  /**
-   * The thread group in which threads launched by this system controller reside.
-   */
-  private final ThreadGroup threadGroup;
-
   /** System to which the managed entities belong */
   private final AdminDistributedSystem system;
 
@@ -81,8 +76,6 @@ class EnabledManagedEntityController implements ManagedEntityController {
    */
   EnabledManagedEntityController(AdminDistributedSystem system) {
     this.system = system;
-    this.threadGroup =
-        LoggingThreadGroup.createThreadGroup("ManagedEntityController threads", logger);
   }
 
   ///////////////////// Instance Methods /////////////////////
@@ -313,11 +306,8 @@ class EnabledManagedEntityController implements ManagedEntityController {
    */
   public void start(final InternalManagedEntity entity) {
     final String command = arrangeRemoteCommand(entity, entity.getStartCommand());
-    Thread start = new Thread(this.threadGroup, new Runnable() {
-      public void run() {
-        execute(command, entity);
-      }
-    }, "Start " + entity.getEntityType());
+    Thread start = ThreadHelper.create("Start " + entity.getEntityType(),
+        () -> execute(command, entity));
     start.start();
   }
 
@@ -326,11 +316,8 @@ class EnabledManagedEntityController implements ManagedEntityController {
    */
   public void stop(final InternalManagedEntity entity) {
     final String command = arrangeRemoteCommand(entity, entity.getStopCommand());
-    Thread stop = new Thread(this.threadGroup, new Runnable() {
-      public void run() {
-        execute(command, entity);
-      }
-    }, "Stop " + entity.getEntityType());
+    Thread stop = ThreadHelper.create("Stop " + entity.getEntityType(),
+        () -> execute(command, entity));
     stop.start();
   }
 

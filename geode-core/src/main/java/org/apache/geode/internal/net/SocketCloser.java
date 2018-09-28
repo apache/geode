@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -128,12 +128,11 @@ public class SocketCloser {
    */
   @Deprecated
   private ExecutorService createThreadPoolExecutor() {
-    final ThreadGroup threadGroup =
-        LoggingThreadGroup.createThreadGroup("Socket asyncClose", logger);
     ThreadFactory threadFactory = new ThreadFactory() {
       public Thread newThread(final Runnable command) {
-        Thread thread = new Thread(threadGroup, command);
+        Thread thread = new Thread(command);
         thread.setDaemon(true);
+        LoggingUncaughtExceptionHandler.setOnThread(thread);
         return thread;
       }
     };

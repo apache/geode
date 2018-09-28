@@ -58,6 +58,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.locks.TXLockId;
 import org.apache.geode.internal.cache.locks.TXLockIdImpl;
@@ -69,7 +70,6 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -1972,6 +1972,77 @@ public class TXCommitMessage extends PooledDistributionMessage
     return departureNoticed;
   }
 
+  private void doCommitProcessQuery(final InternalDistributedMember id) {
+    Object trackerKey = getTrackerKey();
+    DistributedMember member = getMemberFromTrackerKey(trackerKey);
+    if (!getSender().equals(member)) {
+      /*
+       * Do not send a CommitProcessQueryMessage when the sender of CommitMessage is not the
+       * member in the tracker key. (If this happens we are the redundant node for PR, and the
+       * primary just crashed).
+       */
+      txTracker.removeMessage(this);
+      return;
+    }
+    CommitProcessQueryReplyProcessor replProc =
+        new CommitProcessQueryReplyProcessor(dm, farSiders);
+    CommitProcessQueryMessage query =
+        new CommitProcessQueryMessage(getTrackerKey(), replProc.getProcessorId());
+    query.setRecipients(farSiders);
+    dm.putOutgoing(query);
+    // Wait for any one positive response or all negative responses.
+    // (while() loop removed for bug 36983 - you can't loop on waitForReplies()
+    dm.getCancelCriterion().checkCancelInProgress(null);
+    try {
+      replProc.waitForRepliesUninterruptibly();
+    } catch (ReplyException e) {
+      e.handleCause();
+    }
+    if (replProc.receivedACommitProcessMessage()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Transaction associated with lockID: {} from orign {} is processing due to a received \"commit process\" message",
+            lockId, id);
+      }
+
+      try {
+        // Set processor to zero to avoid the ack to the now departed origin
+        processorId = 0;
+        basicProcess();
+      } finally {
+        txTracker.processed(this);
+      }
+    } else {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Transaction associated with lockID: {} from origin {} ignored.  No other recipients received \"commit process\" message",
+            lockId, id);
+      }
+      txTracker.removeMessage(this);
+    }
+  }
+
+  private DistributedMember getMemberFromTrackerKey(Object trackerKey) {
+    if (trackerKey instanceof TXId) {
+      TXId id1 = (TXId) trackerKey;
+      return id1.getMemberId();
+    } else if (trackerKey instanceof TXLockId) {
+      TXLockId id2 = (TXLockId) trackerKey;
+      return id2.getMemberId();
+    }
+    return null;
+  }
+
+  private void doOriginDepartedCommit() {
+    try {
+      // Set processor to zero to avoid the ack to the now departed origin
+      processorId = 0;
+      basicProcess();
+    } finally {
+      txTracker.processed(this);
+    }
+  }
+
   @Override
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, boolean crashed) {
@@ -1992,8 +2063,6 @@ public class TXCommitMessage extends PooledDistributionMessage
       this.departureNoticed = true;
     }
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("TXCommitMessage Threads", logger);
-
     // Send message to fellow FarSiders (aka recipients), if any, to
     // determine if any one of them have received a CommitProcessMessage
     if (this.farSiders != null && !this.farSiders.isEmpty()) {
@@ -2004,74 +2073,10 @@ public class TXCommitMessage extends PooledDistributionMessage
 
       // Create a new thread, send the CommitProcessQuery, wait for a response and potentially
       // process
-      Thread fellowFarSidersQuery = new Thread(group, "CommitProcessQuery Thread") {
-        // Should I use a thread pool?, Darrel suggests look in DM somewhere or introduce a zero
-        // sized thread pool
-        @Override
-        public void run() {
-          final TXCommitMessage mess = TXCommitMessage.this;
-          Object trackerKey = mess.getTrackerKey();
-          DistributedMember member = getMemberFromTrackerKey(trackerKey);
-          if (!mess.getSender().equals(member)) {
-            /*
-             * Do not send a CommitProcessQueryMessage when the sender of CommitMessage is not the
-             * member in the tracker key. (If this happens we are the redundant node for PR, and the
-             * primary just crashed).
-             */
-            txTracker.removeMessage(mess);
-            return;
-          }
-          CommitProcessQueryReplyProcessor replProc =
-              new CommitProcessQueryReplyProcessor(mess.dm, mess.farSiders);
-          CommitProcessQueryMessage query =
-              new CommitProcessQueryMessage(mess.getTrackerKey(), replProc.getProcessorId());
-          query.setRecipients(mess.farSiders);
-          mess.dm.putOutgoing(query);
-          // Wait for any one positive response or all negative responses.
-          // (while() loop removed for bug 36983 - you can't loop on waitForReplies()
-          TXCommitMessage.this.dm.getCancelCriterion().checkCancelInProgress(null);
-          try {
-            replProc.waitForRepliesUninterruptibly();
-          } catch (ReplyException e) {
-            e.handleCause();
-          }
-          if (replProc.receivedACommitProcessMessage()) {
-            if (logger.isDebugEnabled()) {
-              logger.debug(
-                  "Transaction associated with lockID: {} from orign {} is processing due to a received \"commit process\" message",
-                  mess.lockId, id);
-            }
-
-            try {
-              // Set processor to zero to avoid the ack to the now departed origin
-              mess.processorId = 0;
-              mess.basicProcess();
-            } finally {
-              txTracker.processed(mess);
-            }
-          } else {
-            if (logger.isDebugEnabled()) {
-              logger.debug(
-                  "Transaction associated with lockID: {} from origin {} ignored.  No other recipients received \"commit process\" message",
-                  mess.lockId, id);
-            }
-            txTracker.removeMessage(mess);
-          }
-
-        }
-
-        private DistributedMember getMemberFromTrackerKey(Object trackerKey) {
-          if (trackerKey instanceof TXId) {
-            TXId id1 = (TXId) trackerKey;
-            return id1.getMemberId();
-          } else if (trackerKey instanceof TXLockId) {
-            TXLockId id2 = (TXLockId) trackerKey;
-            return id2.getMemberId();
-          }
-          return null;
-        }
-      };
-      fellowFarSidersQuery.setDaemon(true);
+      // Should I use a thread pool?, Darrel suggests look in DM somewhere or introduce a zero
+      // sized thread pool
+      Thread fellowFarSidersQuery = ThreadHelper.createDaemon("CommitProcessQuery Thread",
+          () -> doCommitProcessQuery(id));
       fellowFarSidersQuery.start();
     } else {
       if (logger.isDebugEnabled()) {
@@ -2082,20 +2087,8 @@ public class TXCommitMessage extends PooledDistributionMessage
       // will never get the CommitProcess message, but it
       // doesn't matter since we can commit anyway.
       // Start a new thread to process the commit
-      Thread originDepartedCommit = new Thread(group, "Origin Departed Commit") {
-        @Override
-        public void run() {
-          final TXCommitMessage mess = TXCommitMessage.this;
-          try {
-            // Set processor to zero to avoid the ack to the now departed origin
-            mess.processorId = 0;
-            mess.basicProcess();
-          } finally {
-            txTracker.processed(mess);
-          }
-        }
-      };
-      originDepartedCommit.setDaemon(true);
+      Thread originDepartedCommit = ThreadHelper.createDaemon("Origin Departed Commit",
+          this::doOriginDepartedCommit);
       originDepartedCommit.start();
     }
   }

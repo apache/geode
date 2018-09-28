@@ -33,7 +33,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLException;
 
@@ -54,6 +53,8 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.NamedThreadFactory;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
@@ -135,7 +136,6 @@ public class TcpServer {
 
 
   private PooledExecutorWithDMStats executor;
-  private final ThreadGroup threadGroup;
   private final String threadName;
   private volatile Thread serverThread;
 
@@ -153,7 +153,7 @@ public class TcpServer {
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-      ThreadGroup threadGroup, String threadName, InternalLocator internalLocator,
+      String threadName, InternalLocator internalLocator,
       ClientProtocolServiceLoader clientProtocolServiceLoader) {
     this.port = port;
     this.bind_address = bind_address;
@@ -166,8 +166,7 @@ public class TcpServer {
     // "precious" thread
     DSFIDFactory.registerTypes();
 
-    this.executor = createExecutor(poolHelper, threadGroup);
-    this.threadGroup = threadGroup;
+    this.executor = createExecutor(poolHelper);
     this.threadName = threadName;
 
     if (cfg == null) {
@@ -186,19 +185,8 @@ public class TcpServer {
     return socketCreator;
   }
 
-  private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper,
-      final ThreadGroup threadGroup) {
-    ThreadFactory factory = new ThreadFactory() {
-      private final AtomicInteger threadNum = new AtomicInteger();
-
-      public Thread newThread(Runnable r) {
-        Thread thread = new Thread(threadGroup, r,
-            "locator request thread[" + threadNum.incrementAndGet() + "]");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
+  private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper) {
+    ThreadFactory factory = new NamedThreadFactory("locator request thread ");
     return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
         factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(), null);
   }
@@ -208,7 +196,7 @@ public class TcpServer {
     this.shuttingDown = false;
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();
-    this.executor = createExecutor(this.poolHelper, this.threadGroup);
+    this.executor = createExecutor(this.poolHelper);
     log.info("TcpServer@" + System.identityHashCode(this)
         + " restarting: completed.  Server thread=" + this.serverThread + '@'
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
@@ -223,13 +211,7 @@ public class TcpServer {
   private void startServerThread() throws IOException {
     initializeServerSocket();
     if (serverThread == null || !serverThread.isAlive()) {
-      serverThread = new Thread(threadGroup, threadName) {
-        @Override
-        public void run() {
-          TcpServer.this.run();
-        }
-      };
-      serverThread.setDaemon(true);
+      serverThread = ThreadHelper.createDaemon(threadName, this::run);
       serverThread.start();
     }
   }

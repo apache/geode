@@ -48,10 +48,11 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCloser;
@@ -215,26 +216,17 @@ public class ConnectionTable {
 
   private Executor createThreadPoolForIO(boolean conserveSockets) {
     Executor executor = null;
-    final ThreadGroup connectionRWGroup =
-        LoggingThreadGroup.createThreadGroup("P2P Reader Threads", logger);
     if (conserveSockets) {
       executor = new Executor() {
         @Override
         public void execute(Runnable command) {
-          Thread th = new Thread(connectionRWGroup, command);
-          th.setDaemon(true);
+          Thread th = ThreadHelper.createDaemon("SharedP2PReader", command);
           th.start();
         }
       };
     } else {
       BlockingQueue synchronousQueue = new SynchronousQueue();
-      ThreadFactory tf = new ThreadFactory() {
-        public Thread newThread(final Runnable command) {
-          Thread thread = new Thread(connectionRWGroup, command);
-          thread.setDaemon(true);
-          return thread;
-        }
-      };
+      ThreadFactory tf = new NamedThreadFactory("UnsharedP2PReader");
       executor = new ThreadPoolExecutor(1, Integer.MAX_VALUE, READER_POOL_KEEP_ALIVE_TIME,
           TimeUnit.SECONDS, synchronousQueue, tf);
     }

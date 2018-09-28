@@ -82,7 +82,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
@@ -277,9 +277,9 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       EndpointManager eManager, Endpoint endpoint, int handshakeTimeout,
       SocketCreator socketCreator) throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
-
-    super(LoggingThreadGroup.createThreadGroup("Client update thread"), name);
-    this.setDaemon(true);
+    super(name);
+    setDaemon(true);
+    LoggingUncaughtExceptionHandler.setOnThread(this);
     this.system = (InternalDistributedSystem) ids;
     this.isDurableClient = handshake.getMembershipId().isDurable();
     this.isPrimary = primary;

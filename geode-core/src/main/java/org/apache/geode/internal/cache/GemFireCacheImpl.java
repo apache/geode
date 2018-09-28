@@ -175,7 +175,9 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -215,7 +217,6 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
@@ -903,17 +904,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.persistentMemberManager = new PersistentMemberManager();
 
       if (asyncEventListeners) {
-        final ThreadGroup threadGroup =
-            LoggingThreadGroup.createThreadGroup("Message Event Threads", logger);
-        ThreadFactory threadFactory = (Runnable command) -> {
-          final Runnable runnable = () -> {
-            ConnectionTable.threadWantsSharedResources();
-            command.run();
-          };
-          Thread thread = new Thread(threadGroup, runnable, "Message Event Thread");
-          thread.setDaemon(true);
-          return thread;
-        };
+        ThreadFactory threadFactory = new NamedThreadFactory("Message Event Thread",
+            command -> {
+              ConnectionTable.threadWantsSharedResources();
+              command.run();
+            });
         ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(EVENT_QUEUE_LIMIT);
         this.eventThreadPool = new PooledExecutorWithDMStats(queue, EVENT_THREAD_LIMIT,
             this.cachePerfStats.getEventPoolHelper(), threadFactory, 1000, getThreadMonitorObj());
@@ -1806,21 +1801,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private ExecutorService getShutdownAllExecutorService(int size) {
-    final ThreadGroup threadGroup =
-        LoggingThreadGroup.createThreadGroup("ShutdownAllGroup", logger);
-    ThreadFactory threadFactory = new ThreadFactory() {
-      private final AtomicInteger threadCount = new AtomicInteger(1);
-
-      @Override
-      public Thread newThread(Runnable runnable) {
-        Thread thread =
-            new Thread(threadGroup, runnable, "ShutdownAll-" + this.threadCount.getAndIncrement());
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
     return Executors.newFixedThreadPool(shutdownAllPoolSize == -1 ? size : shutdownAllPoolSize,
-        threadFactory);
+        new NamedThreadFactory("ShutdownAll-"));
   }
 
   private void shutDownOnePRGracefully(PartitionedRegion partitionedRegion) {
@@ -4499,10 +4481,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           }
 
           this.queryMonitor = new QueryMonitor(this, maxTime);
-          final LoggingThreadGroup group =
-              LoggingThreadGroup.createThreadGroup("QueryMonitor Thread Group", logger);
-          Thread qmThread = new Thread(group, this.queryMonitor, "QueryMonitor Thread");
-          qmThread.setDaemon(true);
+          Thread qmThread = ThreadHelper.createDaemon("QueryMonitor Thread", this.queryMonitor);
           qmThread.start();
           if (logger.isDebugEnabled()) {
             logger.debug("QueryMonitor thread started.");
