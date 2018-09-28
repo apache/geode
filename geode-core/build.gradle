@@ -90,6 +90,7 @@ dependencies {
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+
   runtimeOnly ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
@@ -171,6 +172,8 @@ dependencies {
   integrationTestCompile project(':geode-concurrency-test')
   integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
+  integrationTestCompile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':tests'
+  integrationTestCompile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':test-sources'
   integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
   integrationTestCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
   integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'

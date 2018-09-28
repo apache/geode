@@ -17,6 +17,10 @@ package org.apache.geode.management.internal.cli;
 import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -255,7 +259,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompleteLogLevel() {
     buffer = "change loglevel --loglevel";
     candidate = parser.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(8);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(8);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "=ALL");
   }
 
@@ -263,7 +267,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompleteLogLevelWithEqualSign() {
     buffer = "change loglevel --loglevel=";
     candidate = parser.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(8);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(8);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "ALL");
   }
 
@@ -288,5 +292,20 @@ public class GfshParserAutoCompletionTest {
     candidate = parser.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(IndexType.values().length);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "hash");
+  }
+
+  /**
+   * The log4j-core:tests jar contains {@code ExtendedLevels} which adds 2 levels when that jar
+   * is on the classpath for integrationTest target.
+   */
+  private List<Completion> removeExtendedLevels(List<Completion> candidates) {
+    Collection<Completion> toRemove = new HashSet<>();
+    for (Completion completion : candidates) {
+      if (completion.getValue().contains("DETAIL") || completion.getValue().contains("NOTE")) {
+        toRemove.add(completion);
+      }
+    }
+    candidates.removeAll(toRemove);
+    return candidates;
   }
 }

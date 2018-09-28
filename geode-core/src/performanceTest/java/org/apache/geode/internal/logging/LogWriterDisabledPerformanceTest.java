@@ -18,10 +18,11 @@ import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
-@Category(PerformanceTest.class)
-@Ignore("Tests have no assertions")
+@Category({PerformanceTest.class, LoggingTest.class})
+@Ignore("TODO: repackage as jmh benchmark")
 public class LogWriterDisabledPerformanceTest extends LogWriterPerformanceTest {
 
   @Override

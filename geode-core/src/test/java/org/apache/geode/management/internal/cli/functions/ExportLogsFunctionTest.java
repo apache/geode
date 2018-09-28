@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,19 +21,24 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
+@Category({GfshTest.class, LoggingTest.class})
 public class ExportLogsFunctionTest {
+
   @Test
-  public void defaultExportLogLevelShouldBeAll() throws Exception {
+  public void defaultExportLogLevelShouldBeAll() {
     assertTrue(ExportLogsCommand.DEFAULT_EXPORT_LOG_LEVEL.equals("ALL"));
     assertEquals(LogLevel.getLevel(ExportLogsCommand.DEFAULT_EXPORT_LOG_LEVEL), Level.ALL);
   }
 
   @Test
-  public void defaultExportLogLevelShouldBeAllViaArgs() throws Exception {
+  public void defaultExportLogLevelShouldBeAllViaArgs() {
     ExportLogsFunction.Args args = new ExportLogsFunction.Args("", "", "", false, false, false);
     assertEquals(args.getLogLevel(), Level.ALL);
     ExportLogsFunction.Args args2 = new ExportLogsFunction.Args("", "", null, false, false, false);
@@ -70,5 +74,4 @@ public class ExportLogsFunctionTest {
     assertThat(args.isIncludeLogs()).isTrue();
     assertThat(args.isIncludeStats()).isFalse();
   }
-
 }

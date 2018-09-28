@@ -44,6 +44,7 @@ dependencies {
   testCompile project(':geode-junit')
   // have to use output since we exclude the dependent classes from jar :(
   testCompile project(path: ':geode-core', configuration: 'classesOutput')
+  testCompile project(':geode-junit')
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'
   testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
     exclude module: 'aopalliance'
