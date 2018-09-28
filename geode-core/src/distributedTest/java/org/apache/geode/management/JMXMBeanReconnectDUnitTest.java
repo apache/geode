@@ -100,8 +100,8 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Test
   public void testLocalBeans_MaintainServerAndCrashLocator() {
-    //TODO: Currently failing on windows and causing CI job to hang.
-    //TODO: Ignoring these until they are fixed.
+    // TODO: Currently failing on windows and causing CI job to hang.
+    // TODO: Ignoring these until they are fixed.
     assumeFalse(isWindows());
 
     List<String> initialServerBeans = canonicalBeanNamesFor(server1);
@@ -123,8 +123,8 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Test
   public void testLocalBeans_MaintainLocatorAndCrashServer() {
-    //TODO: Currently failing on windows and causing CI job to hang.
-    //TODO: Ignoring these until they are fixed.
+    // TODO: Currently failing on windows and causing CI job to hang.
+    // TODO: Ignoring these until they are fixed.
     assumeFalse(isWindows());
 
     List<String> initialLocatorBeans = canonicalBeanNamesFor(locator1);
@@ -147,8 +147,8 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Test
   public void testRemoteBeanKnowledge_MaintainServerAndCrashLocator() throws IOException {
-    //TODO: Currently failing on windows and causing CI job to hang.
-    //TODO: Ignoring these until they are fixed.
+    // TODO: Currently failing on windows and causing CI job to hang.
+    // TODO: Ignoring these until they are fixed.
     assumeFalse(isWindows());
 
     List<ObjectName> initialLocator1GemfireBeans =
@@ -189,8 +189,8 @@ public class JMXMBeanReconnectDUnitTest {
   @Test
   public void testRemoteBeanKnowledge_MaintainLocatorAndCrashServer()
       throws IOException {
-    //TODO: Currently failing on windows and causing CI job to hang.
-    //TODO: Ignoring these until they are fixed.
+    // TODO: Currently failing on windows and causing CI job to hang.
+    // TODO: Ignoring these until they are fixed.
     assumeFalse(isWindows());
 
     List<ObjectName> initialLocator1GemfireBeans =
