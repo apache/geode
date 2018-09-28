@@ -17,7 +17,7 @@
   -->
 <Configuration status="WARN" shutdownHook="disable" packages="org.apache.geode.internal.logging.log4j,org.apache.logging.log4j.test.appender">
     <Properties>
-        <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%tid] %message%n%throwable%n</Property>
+        <Property name="geode-pattern">[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} &lt;%thread&gt; tid=%hexTid] %message%n%throwable%n</Property>
     </Properties>
     <Appenders>
         <Console name="STDOUT" target="SYSTEM_OUT">
