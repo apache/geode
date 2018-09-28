@@ -22,11 +22,11 @@ dependencies {
 
 
     testCompile project(':geode-core')
-    testCompile project(':geode-junit')
+    testCompile(project(':geode-junit')) { exclude module: 'geode-core' }
     testCompile project(':geode-protobuf')
 
 
-    integrationTestCompile project(':geode-core')
-    integrationTestCompile project(":geode-dunit")
-    integrationTestCompile project(':geode-protobuf')
+    integrationTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
+    integrationTestCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+    integrationTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
 }

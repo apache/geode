@@ -90,19 +90,19 @@ dependencies {
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  runtimeOnly ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+  runtimeOnly('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
   runtimeOnly 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
 
-  runtimeOnly ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
-  runtimeOnly ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
     ext.optional = true
   }
-  runtimeOnly ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
     ext.optional = true
   }
   compile('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
@@ -140,7 +140,8 @@ dependencies {
 
   compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
-  compile project(':geode-common')
+  compileOnly project(':geode-common')
+  testCompileOnly project(':geode-common')
   compile project(':geode-json')
 
 
@@ -150,7 +151,7 @@ dependencies {
   jcaCompile sourceSets.main.output
 
 
-  testCompile project(':geode-junit')
+  testCompile(project(':geode-junit')) { exclude module: 'geode-core' }
   testCompile project(':geode-concurrency-test')
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
@@ -165,9 +166,7 @@ dependencies {
   testRuntime 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
 
 
-  integrationTestCompile(project(":geode-dunit")) {
-    exclude module: 'geode-core'
-  }
+  integrationTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
   integrationTestCompile project(':geode-concurrency-test')
   integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
@@ -178,8 +177,7 @@ dependencies {
   integrationTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
   integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 
-
-  distributedTestCompile project(":geode-dunit")
+  distributedTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
   distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
   distributedTestCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
@@ -187,12 +185,10 @@ dependencies {
   distributedTestRuntime 'org.apache.derby:derby:' + project.'derby.version'
 
 
-  upgradeTestCompile(project(":geode-dunit")) {
-    exclude module: 'geode-core'
-  }
+  upgradeTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
 
 
-  performanceTestCompile project(":geode-junit")
+  performanceTestCompile(project(":geode-junit")) { exclude module: 'geode-core' }
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -210,13 +206,8 @@ jmh {
   include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
   duplicateClassesStrategy = 'warn'
 }
-
-dependencies {
-  // Integration Tests
-  integrationTestCompile sourceSets.test.output
-
-  // Distributed Tests
-  distributedTestCompile sourceSets.integrationTest.output
+configurations {
+  jmhAnnotationProcessor.extendsFrom annotationProcessor
 }
 
 // Creates the version properties file and writes it to the classes dir
@@ -298,6 +289,42 @@ configurations {
 }
 
 dependencies {
+  gradleLint.ignore {
+    // If not ignored, the nebula linter toggles from adding a compile dependency,
+    // then converting that compile to runtime, then adding an additional compile, and repeating.
+    runtime 'xml-apis:xml-apis:1.4.01'
+  }
+  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
+  compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
+  compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
+  compile 'commons-logging:commons-logging:' + project.'commons-logging.version'
+  compile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compile 'javax.transaction:javax.transaction-api:' + project.'javax.transaction-api.version'
+  compile 'jline:jline:2.12'
+  compile 'org.apache.shiro:shiro-cache:' + project.'shiro.version'
+  compile 'org.apache.shiro:shiro-config-core:' + project.'shiro.version'
+  compile 'org.apache.shiro:shiro-config-ogdl:' + project.'shiro.version'
+  compile 'org.apache.shiro:shiro-lang:' + project.'shiro.version'
+  compile 'org.eclipse.jetty:jetty-http:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-server:' + project.'jetty.version'
+  compile 'org.eclipse.jetty:jetty-util:' + project.'jetty.version'
+  compile 'org.springframework:spring-beans:' + project.'springframework.version'
+  compile 'org.springframework:spring-context:' + project.'springframework.version'
+  compile 'org.springframework:spring-web:' + project.'springframework.version'
+  compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
+
+
+  integrationTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
+
+
+  jmhCompile 'junit:junit:' + project.'junit.version'
+
+
+  testCompile 'com.google.code.findbugs:jsr305:3.0.2'
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
+  testCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+
+
   classesOutput sourceSets.main.output
 }
 

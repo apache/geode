@@ -17,6 +17,16 @@
 apply plugin: 'war'
 
 dependencies {
+  compile 'org.springframework.security:spring-security-core:' + project.'spring-security.version'
+  compile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compile 'mx4j:mx4j:' + project.'mx4j.version'
+  compile 'mx4j:mx4j-remote:' + project.'mx4j-remote.version'
+  integrationTestCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+  integrationTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
+  uiTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
+  uiTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
+  uiTestCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
 
   // Needed to fully use log4j instead of commons-logging.
@@ -66,18 +76,18 @@ dependencies {
   compileOnly 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
 
 
-  testCompile project(':geode-junit')
+  testCompile( project(':geode-junit')) { exclude module: 'geode-core' }
   testCompile project(':geode-core')
   testCompile 'org.springframework:spring-test:' + project.'springframework.version'
 
 
-  integrationTestCompile project(':geode-junit')
+  integrationTestCompile( project(':geode-junit')) { exclude module: 'geode-core' }
   integrationTestCompile project(':geode-core')
   integrationTestCompile project(':geode-pulse:geode-pulse-test')
   integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
 
 
-  uiTestCompile project(':geode-junit')
+  uiTestCompile( project(':geode-junit')) { exclude module: 'geode-core' }
   uiTestCompile project(':geode-json')
   uiTestCompile project(':geode-pulse:geode-pulse-test')
   uiTestCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'

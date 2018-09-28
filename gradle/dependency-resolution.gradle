@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 subprojects {
-  //Task to dump all depencies of all projects, in a way
+  //Task to dump all dependencies of all projects, in a way
   //that can be diffed before and after dependency changes
   task dumpDependencies() {
     doLast {

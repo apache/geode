@@ -163,12 +163,15 @@ subprojects {
 
           def message =
               "The ".concat(project.name).concat(" pom-default.xml has changed. Verify dependencies.")
-                  .concat("\nWhen fixed, copy ").concat(actualPomFile as String)
-                  .concat("\nto ").concat(expectedPomFile as String)
+                  .concat("\nWhen changes have been approved, copy :\n")
+                  .concat(" cp ").concat(actualPomFile as String)
+                  .concat(" ").concat(expectedPomFile as String)
                   .concat("\nRemoved Dependencies\n--------------\n")
-                  .concat(String.join("\n", removedDependencies.toString()))
+                  .concat(String.join("\n", removedDependencies.each { dep -> dep.toString() }))
                   .concat("\n\nNew Dependencies\n--------------\n")
-                  .concat(String.join("\n", newDependencies.toString()) + "\n\n")
+                  .concat(String.join("\n", newDependencies.each { dep -> dep.toString() }))
+                  .concat("\n\n")
+
 
           throw new RuntimeException(message)
         }
@@ -178,6 +181,17 @@ subprojects {
   }
   check.dependsOn('checkPom')
 
+  task updateExpectedPom(dependsOn: generatePomFileForMavenPublication, type: Copy) {
+    description 'After having verified changes with checkPom, this task will perform the copy.'
+
+    def expectedPomFile = sourceSets.test.resources.find() { it.name == "expected-pom.xml" }
+    def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+    if (tasks.getByName("generatePomFileForMavenPublication").enabled && expectedPomFile && actualPomFile) {
+      from actualPomFile
+      into expectedPomFile.parent
+      rename '.*xml', "expected-pom.xml"
+    }
+  }
 } // subprojects
 
 

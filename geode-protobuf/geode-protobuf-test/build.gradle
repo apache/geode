@@ -20,7 +20,7 @@ dependencies {
   compileOnly project(':geode-protobuf')
   compileOnly project(':geode-core')
 
-  compile project(':geode-common')
+  compileOnly project(':geode-common')
   compile 'junit:junit:' + project.'junit.version'
   compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
 

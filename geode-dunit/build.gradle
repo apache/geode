@@ -17,11 +17,15 @@
 
 dependencies {
   compile project(':geode-core')
-  //compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
-
-  compile project(':geode-junit')
+  compile(project(':geode-junit')) { exclude module: 'geode-core' }
   compile project(':geode-json')
-
+  compile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+  compile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
+  compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
+  compile 'jline:jline:2.12'
+  compile 'mx4j:mx4j:' + project.'mx4j.version'
+  compile 'mx4j:mx4j-remote:' + project.'mx4j-remote.version'
+  compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
   compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'

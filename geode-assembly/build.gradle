@@ -81,6 +81,24 @@ configurations {
 }
 
 dependencies {
+  integrationTestCompile 'commons-io:commons-io:' + project.'commons-io.version'
+  acceptanceTestCompile 'com.google.guava:guava:' + project.'guava.version'
+  acceptanceTestCompile 'commons-io:commons-io:' + project.'commons-io.version'
+  integrationTestCompile 'org.apache.httpcomponents:httpcore:' + project.'httpcore.version'
+  integrationTestCompile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
+  integrationTestCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+  integrationTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
+  integrationTestCompile 'org.springframework:spring-beans:' + project.'springframework.version'
+  integrationTestCompile 'org.springframework:spring-core:' + project.'springframework.version'
+  integrationTestCompile 'org.springframework:spring-web:' + project.'springframework.version'
+  integrationTestCompile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
+  integrationTestCompile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+  distributedTestCompile 'javax.servlet:servlet-api:2.4'
+  distributedTestCompile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  distributedTestCompile 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  distributedTestCompile 'mx4j:mx4j:' + project.'mx4j.version'
+  distributedTestCompile 'mx4j:mx4j-remote:' + project.'mx4j-remote.version'
+  distributedTestCompile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   archives project(':geode-common')
   archives project(':geode-json')
   archives project(':geode-core')
@@ -97,12 +115,12 @@ dependencies {
 
 
   testCompile project(':geode-core')
-  testCompile project(':geode-junit')
+  testCompile(project(':geode-junit')) { exclude module: 'geode-core' }
 
 
   integrationTestCompile project(':geode-core')
-  integrationTestCompile project(":geode-junit")
-  integrationTestCompile project(":geode-dunit")
+  integrationTestCompile(project(":geode-junit")) { exclude module: 'geode-core' }
+  integrationTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
   integrationTestCompile project(":geode-pulse")
   integrationTestCompile project(':geode-assembly:geode-assembly-test')
   integrationTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
@@ -113,18 +131,18 @@ dependencies {
   distributedTestCompile project(':geode-assembly:geode-assembly-test')
   distributedTestCompile 'org.apache.httpcomponents:httpclient:' + project.'httpclient.version'
 
-  distributedTestRuntime (project(':extensions:geode-modules-session-internal')) {
+  distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
   distributedTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
 
 
   acceptanceTestCompile project(':geode-core')
-  acceptanceTestCompile project(":geode-dunit")
+  acceptanceTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
 
 
   uiTestCompile project(':geode-core')
-  uiTestCompile project(":geode-dunit")
+  uiTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
   uiTestCompile project(":geode-pulse")
   uiTestCompile project(":geode-pulse:geode-pulse-test")
   uiTestCompile project(':geode-assembly:geode-assembly-test')
@@ -137,7 +155,7 @@ dependencies {
 
 
   upgradeTestCompile project(':geode-core')
-  upgradeTestCompile project(":geode-dunit")
+  upgradeTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
   upgradeTestCompile project(':geode-assembly:geode-assembly-test')
 
   upgradeTestRuntime group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.3'
@@ -145,13 +163,13 @@ dependencies {
   upgradeTestRuntime project(':extensions:session-testing-war')
 
 
-  gfshDependencies ('org.springframework:spring-web:' + project.'springframework.version'){
+  gfshDependencies('org.springframework:spring-web:' + project.'springframework.version') {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
 }
 
-tasks.withType(Test){
+tasks.withType(Test) {
   dependsOn installDist
   environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }

@@ -17,6 +17,8 @@
 
 
 dependencies {
+  compile 'org.assertj:assertj-core:' + project.'assertj-core.version'
+  compile 'junit:junit:' + project.'junit.version'
 
   compileOnly project(':geode-core')
   compileOnly project(':geode-pulse')

@@ -24,14 +24,26 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.ajoberstar:gradle-git:1.3.2"
+    // Both of these nebula plugins require nebula-project-info 4.0.2 or higher.
+    // Unfortunately, that leaks its dependency on JGit 5.0
+    // Conversely, our consumption of gradle-git relies of JGit 4.0, which it also leaks.
+    // This results in a dirty classpath and an attempt to use a method not present in 5.0+
+    // Do not bump the nebula plugins until the gradle-git plugin arrives at version 3.0.0+
+    classpath "com.netflix.nebula:nebula-project-plugin:5.1.0"
+    classpath "com.netflix.nebula:gradle-lint-plugin:10.1.0"
+    classpath "org.ajoberstar:gradle-git:1.7.2"
+
+    // Alternatively, if we are willing to use the beta version, 3.0.0-beta.1,
+    // classpath "com.netflix.nebula:nebula-project-plugin:5.1.2"
+    // classpath "com.netflix.nebula:gradle-lint-plugin:10.1.2"
+    // classpath "org.ajoberstar.grgit:grgit-gradle:3.0.0-beta.1"
+
     classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.7"
     classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.6.2-SNAPSHOT"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
-    classpath "com.netflix.nebula:nebula-project-plugin:4.0.1"
   }
 }
 
@@ -73,6 +85,7 @@ if (name == 'geode') {
   ext.scriptDir = 'gradle'
 }
 
+apply from: "${scriptDir}/lint.gradle"
 // utilities.gradle MUST be read before publish.gradle for reasons
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
@@ -109,9 +122,9 @@ ext.readScmInfo = { proj ->
     def git = org.ajoberstar.grgit.Grgit.open(currentDir: project(proj).projectDir)
     try {
       return [
-          'Source-Repository': git.branch.getCurrent().name,
+          'Source-Repository': git.branch.current.name,
           'Source-Revision'  : git.head().id,
-          'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+          'Source-Date'      : git.head().date.format('yyyy-MM-dd HH:mm:ss Z')
       ] as Properties
     } finally {
       git.close()

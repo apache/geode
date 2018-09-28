@@ -15,22 +15,15 @@
  * limitations under the License.
  */
 
-dependencies {
-    compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-    integrationTestCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
-    integrationTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
-  compileOnly project(':geode-common')
-  compile project(':geode-core')
+allprojects {
+  apply plugin: 'nebula.lint'
+  gradleLint.rules = []
+  gradleLint.rules += 'overridden-dependency-version'
+  gradleLint.rules += 'unused-dependency'
+  gradleLint.rules += 'unused-exclude-by-dep'
+  gradleLint.rules += 'unused-exclude-by-conf'
 
-  compile ('org.springframework:spring-context:' + project.'springframework.version') {
-    exclude module: 'spring-beans'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-aop'
-  }
-
-  testCompile project(':geode-core')
-
-  integrationTestCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
-  // Only needed for category Flaky by Gradle
-  integrationTestRuntime( project(':geode-junit')) { exclude module: 'geode-core' }
+  gradleLint.alwaysRun = false
+  fixGradleLint.mustRunAfter(':combineReports')
+  lintGradle.mustRunAfter(':combineReports')
 }

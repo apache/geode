@@ -16,14 +16,22 @@
  */
 
 dependencies {
-  compileOnly project(':geode-core')
-
-  testCompile project(':geode-core')
-  testCompile project(':geode-junit')
-
-  integrationTestCompile project(":geode-dunit")
+  compile project(':geode-core')
+  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
 
 
+  testCompile(project(':geode-junit')) { exclude module: 'geode-core' }
+
+
+  integrationTestCompile(project(":geode-dunit")) { exclude module: 'geode-core' }
+
+
+  distributedTestCompile 'commons-lang:commons-lang:' + project.'commons-lang.version'
+  distributedTestCompile 'org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version'
+  distributedTestCompile 'org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version'
+  distributedTestCompile 'mx4j:mx4j:' + project.'mx4j.version'
+
+  
   upgradeTestCompile (project(":geode-dunit")) {
     exclude module: 'geode-core'
   }
