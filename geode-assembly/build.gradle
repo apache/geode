@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+import java.nio.file.Paths
+import java.nio.file.Path
+
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
@@ -320,8 +323,6 @@ distributions {
         exclude '**/gradlew.bat'
         exclude '**/gradle/wrapper/gradle-wrapper.jar'
         exclude '**/.gradle'
-        exclude '**/build/**'
-        exclude '**/out/**'
         exclude '**/.project'
         exclude '**/.classpath'
         exclude '**/.settings/**'
@@ -338,6 +339,17 @@ distributions {
         exclude 'daemon'
         exclude 'native'
         exclude 'wrapper'
+
+        // These exclude the 'build' and 'out' artifact directories from Gradle and IntelliJ for each project
+        exclude 'buildSrc/build'
+        exclude 'buildSrc/out'
+        rootProject.allprojects.each {
+          def relPath = Paths.get(rootDir.getPath()).relativize(Paths.get(it.projectDir.getPath()))
+          def relOut = relPath.resolve("out").toString()
+          def relBuild = relPath.resolve("build").toString()
+          exclude relOut
+          exclude relBuild
+        }
       }
 
     }
