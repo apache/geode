@@ -91,7 +91,7 @@ public class ConsoleAppenderWithSystemOutRuleIntegrationTest {
     System.setProperty(CONFIGURATION_FILE_PROPERTY, configFile.getAbsolutePath());
     LogService.reconfigure();
 
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isFalse();
 
     systemOutRule.clearLog();
@@ -112,7 +112,7 @@ public class ConsoleAppenderWithSystemOutRuleIntegrationTest {
     StatusLogger.getLogger().setLevel(beforeLevel);
 
     LogService.reconfigure();
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
   }
 
