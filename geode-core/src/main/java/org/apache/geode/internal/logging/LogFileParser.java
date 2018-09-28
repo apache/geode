@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -287,7 +289,7 @@ public class LogFileParser {
             if (idx > 0) {
               idx = line.indexOf("]", idx + 4);
               if (idx + 1 < line.length()) {
-                line.insert(idx + 1, "\n ");
+                line.insert(idx + 1, LINE_SEPARATOR + " ");
               }
             }
           }
@@ -335,7 +337,7 @@ public class LogFileParser {
           }
           sb.append("[dump ");
           sb.append(timestamp);
-          sb.append("]\n\n");
+          sb.append("]").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
 
         } catch (ParseException ex) {
           // Oh well...
@@ -346,7 +348,7 @@ public class LogFileParser {
       }
 
       sb.append(line);
-      sb.append("\n");
+      sb.append(LINE_SEPARATOR);
 
       if (entry != null) {
         return entry;
@@ -366,7 +368,7 @@ public class LogFileParser {
       LocalLogWriter tempLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, pw);
       tempLogger.info(LocalizedStrings.LogFileParser_MISSING_TIME_STAMP);
       pw.flush();
-      sb.insert(0, "\n\n");
+      sb.insert(0, LINE_SEPARATOR + LINE_SEPARATOR);
       sb.insert(0, sw.toString().trim());
       sb.insert(0, this.extLogFileName);
     }

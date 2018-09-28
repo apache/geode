@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -145,7 +147,7 @@ public class MergeLogFiles {
   private static void usage(String s) {
     // note that we don't document the -pids switch because it is tailored
     // to how hydra works and would not be useful for customers
-    err.println("\n** " + s + "\n");
+    err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
     err.println(LocalizedStrings.MergeLogFiles_USAGE.toLocalizedString()
         + ": java MergeLogFiles [(directory | logFile)]+");
     err.println("-dirCount n      "
