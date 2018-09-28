@@ -30,11 +30,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
@@ -75,14 +75,7 @@ public class LocatorLoadSnapshot {
   private boolean rebalancing;
 
   private final ScheduledThreadPoolExecutor estimateTimeoutProcessor =
-      new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-        public Thread newThread(final Runnable r) {
-          Thread result = new Thread(r, "loadEstimateTimeoutProcessor");
-          result.setDaemon(true);
-          return result;
-        }
-      });
-
+      new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("loadEstimateTimeoutProcessor"));
 
   public LocatorLoadSnapshot() {
     connectionLoadMap.put(null, new HashMap());

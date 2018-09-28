@@ -28,7 +28,6 @@ import java.util.SplittableRandom;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -55,6 +54,7 @@ import org.apache.geode.cache.client.internal.QueueConnectionImpl;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -591,14 +591,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
    */
   public void start(ScheduledExecutorService backgroundProcessor) {
     this.backgroundProcessor = backgroundProcessor;
+    String name = "poolLoadConditioningMonitor-" + getPoolName();
     this.loadConditioningProcessor =
-        new ScheduledThreadPoolExecutor(1/* why not 0? */, new ThreadFactory() {
-          public Thread newThread(final Runnable r) {
-            Thread result = new Thread(r, "poolLoadConditioningMonitor-" + getPoolName());
-            result.setDaemon(true);
-            return result;
-          }
-        });
+        new ScheduledThreadPoolExecutor(1/* why not 0? */, new NamedThreadFactory(name));
     this.loadConditioningProcessor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
     endpointManager.addListener(endpointListener);

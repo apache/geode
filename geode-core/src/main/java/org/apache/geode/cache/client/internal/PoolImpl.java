@@ -54,6 +54,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
@@ -320,16 +321,10 @@ public class PoolImpl implements InternalPool {
     }
 
     final String timerName = "poolTimer-" + getName() + "-";
+    ThreadFactory threadFactory = new NamedThreadFactory(timerName);
     backgroundProcessor = new ScheduledThreadPoolExecutorWithKeepAlive(BACKGROUND_TASK_POOL_SIZE,
-        BACKGROUND_TASK_POOL_KEEP_ALIVE, TimeUnit.MILLISECONDS, new ThreadFactory() {
-          AtomicInteger threadNum = new AtomicInteger();
-
-          public Thread newThread(final Runnable r) {
-            Thread result = new Thread(r, timerName + threadNum.incrementAndGet());
-            result.setDaemon(true);
-            return result;
-          }
-        }, this.threadMonitoring);
+        BACKGROUND_TASK_POOL_KEEP_ALIVE, TimeUnit.MILLISECONDS, threadFactory,
+        this.threadMonitoring);
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
         .setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
     ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)

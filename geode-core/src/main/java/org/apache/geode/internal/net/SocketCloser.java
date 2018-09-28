@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -30,8 +29,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -128,18 +127,9 @@ public class SocketCloser {
    */
   @Deprecated
   private ExecutorService createThreadPoolExecutor() {
-    ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable command) {
-        Thread thread = new Thread(command);
-        thread.setDaemon(true);
-        LoggingUncaughtExceptionHandler.setOnThread(thread);
-        return thread;
-      }
-    };
-
     return new ThreadPoolExecutor(asyncClosePoolMaxThreads, asyncClosePoolMaxThreads,
         asyncClosePoolKeepAliveSeconds, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
-        threadFactory);
+        new NamedThreadFactory("SocketCloser"));
   }
 
   /**
