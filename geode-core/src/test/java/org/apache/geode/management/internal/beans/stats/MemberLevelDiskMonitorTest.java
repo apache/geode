@@ -230,4 +230,12 @@ public class MemberLevelDiskMonitorTest {
     verify(regionMonitor, times(1)).removeListener(listener);
     verify(regionMonitor, times(1)).removeStatistics(statistics);
   }
+
+  @Test
+  public void decreaseDiskStoreStatsShouldNotThrowNPE() {
+    Statistics statistics = mock(Statistics.class);
+    memberLevelDiskMonitor.addStatisticsToMonitor(statistics);
+    memberLevelDiskMonitor.getListeners().values().forEach((l) -> l.decreaseDiskStoreStats());
+
+  }
 }
