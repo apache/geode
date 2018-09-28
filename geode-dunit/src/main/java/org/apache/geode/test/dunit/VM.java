@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import hydra.MethExecutorResult;
-import org.awaitility.Awaitility;
 
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.dunit.standalone.BounceResult;
