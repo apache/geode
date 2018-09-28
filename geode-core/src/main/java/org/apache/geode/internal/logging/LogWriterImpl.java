@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.StartupStatusListener;
 
@@ -1020,38 +1021,36 @@ public abstract class LogWriterImpl implements InternalLogWriter {
     if (targetThread == null) {
       return;
     }
-    Thread watcherThread = new Thread("Stack Tracer for '" + targetThread.getName() + "'") {
-      @Override
-      public void run() {
-        while (!done.get()) {
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e) {
-            return;
-          }
-          if (!done.get() && targetThread.isAlive()) {
-            StringBuffer sb = new StringBuffer(500);
-            if (toStdout) {
-              sb.append("[trace ").append(getTimeStamp()).append("] ");
+    Thread watcherThread =
+        ThreadHelper.create("Stack Tracer for '" + targetThread.getName() + "'", () -> {
+          while (!done.get()) {
+            try {
+              Thread.sleep(500);
+            } catch (InterruptedException e) {
+              return;
             }
-            StackTraceElement[] els = targetThread.getStackTrace();
-            sb.append("Stack trace for '").append(targetThread.toString()).append("'\n");
-            if (els.length > 0) {
-              for (int i = 0; i < els.length; i++) {
-                sb.append("\tat ").append(els[i].toString()).append("\n");
+            if (!done.get() && targetThread.isAlive()) {
+              StringBuffer sb = new StringBuffer(500);
+              if (toStdout) {
+                sb.append("[trace ").append(getTimeStamp()).append("] ");
               }
-            } else {
-              sb.append("    no stack\n");
-            }
-            if (toStdout) {
-              System.out.println(sb.toString());
-            } else {
-              info(LocalizedStrings.DEBUG, sb.toString());
+              StackTraceElement[] els = targetThread.getStackTrace();
+              sb.append("Stack trace for '").append(targetThread.toString()).append("'\n");
+              if (els.length > 0) {
+                for (int i = 0; i < els.length; i++) {
+                  sb.append("\tat ").append(els[i].toString()).append("\n");
+                }
+              } else {
+                sb.append("    no stack\n");
+              }
+              if (toStdout) {
+                System.out.println(sb.toString());
+              } else {
+                info(LocalizedStrings.DEBUG, sb.toString());
+              }
             }
           }
-        }
-      }
-    };
+        });
     watcherThread.start();
   }
 

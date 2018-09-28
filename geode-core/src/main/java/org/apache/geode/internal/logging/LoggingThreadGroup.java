@@ -36,6 +36,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * @see LoggingThreadGroup#createThreadGroup
  *
  * @since GemFire 4.0
+ * @deprecated use LoggingUncaughtExceptionHandler instead
  */
 public class LoggingThreadGroup extends ThreadGroup {
 

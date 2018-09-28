@@ -60,6 +60,7 @@ import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -1179,16 +1180,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       // Another case of needing to use a non-daemon thread to keep the JVM alive until a clean
       // shutdown can be performed. If not, the JVM may exit too early causing the member to be
       // seen as having crashed and not cleanly departed.
-      final ServerLauncher shadow = this;
-      Thread t = new Thread(() -> {
-        shadow.cache.close();
-        shadow.cache = null;
-        if (shadow.process != null) {
-          shadow.process.stop(shadow.deletePidFileOnStop);
-          shadow.process = null;
-        }
-      });
-      t.setDaemon(false);
+      Thread t = ThreadHelper.create("ServerLauncherStopper", this::doStopInProcess);
       t.start();
 
       try {
@@ -1202,6 +1194,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return new ServerState(this, Status.STOPPED);
     } else {
       return new ServerState(this, Status.NOT_RESPONDING);
+    }
+  }
+
+  private void doStopInProcess() {
+    cache.close();
+    cache = null;
+    if (process != null) {
+      process.stop(deletePidFileOnStop);
+      process = null;
     }
   }
 

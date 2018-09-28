@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -51,7 +52,7 @@ public class ColocationLogger implements Runnable {
    */
   public ColocationLogger(PartitionedRegion region) {
     this.region = region;
-    loggerThread = new Thread(this, "ColocationLogger for " + region.getName());
+    loggerThread = ThreadHelper.create("ColocationLogger for " + region.getName(), this);
     loggerThread.start();
   }
 

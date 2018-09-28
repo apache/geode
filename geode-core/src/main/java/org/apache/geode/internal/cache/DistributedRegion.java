@@ -83,6 +83,7 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
@@ -875,35 +876,30 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     try {
       if (!isInitializing) {
         // moved code to a new thread.
-        Thread thread = new Thread(
-            LocalizedStrings.DistributedRegion_RECONNECT_DISTRIBUTED_SYSTEM.toLocalizedString()) {
-          @Override
-          public void run() {
-            try {
-              logger.debug(
-                  "Reliability loss with policy of reconnect and membership thread doing reconnect");
+        Thread thread = ThreadHelper.createDaemon("Reconnect Distributed System", () -> {
+          try {
+            logger.debug(
+                "Reliability loss with policy of reconnect and membership thread doing reconnect");
 
-              initializationLatchAfterMemberTimeout.await();
-              getSystem().tryReconnect(false, "Role Loss", getCache());
+            initializationLatchAfterMemberTimeout.await();
+            getSystem().tryReconnect(false, "Role Loss", getCache());
 
-              synchronized (missingRequiredRoles) {
-                // any number of threads may be waiting on missingRequiredRoles
-                missingRequiredRoles.notifyAll();
-                // need to fire an event if id is not null
-                if (hasListener() && id != null) {
-                  RoleEventImpl relEvent = new RoleEventImpl(DistributedRegion.this,
-                      Operation.CACHE_RECONNECT, null, true, id, newlyMissingRoles);
-                  dispatchListenerEvent(EnumListenerEvent.AFTER_ROLE_LOSS, relEvent);
-                }
+            synchronized (missingRequiredRoles) {
+              // any number of threads may be waiting on missingRequiredRoles
+              missingRequiredRoles.notifyAll();
+              // need to fire an event if id is not null
+              if (hasListener() && id != null) {
+                RoleEventImpl relEvent = new RoleEventImpl(DistributedRegion.this,
+                    Operation.CACHE_RECONNECT, null, true, id, newlyMissingRoles);
+                dispatchListenerEvent(EnumListenerEvent.AFTER_ROLE_LOSS, relEvent);
               }
-            } catch (Exception e) {
-              logger.fatal(
-                  LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
-                  e);
             }
+          } catch (Exception e) {
+            logger.fatal(
+                LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
+                e);
           }
-        };
-        thread.setDaemon(true);
+        });
         thread.start();
 
       } else {

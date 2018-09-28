@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -106,8 +107,7 @@ class ControlFileWatchdog implements Runnable {
   void start() {
     synchronized (this) {
       if (thread == null) {
-        thread = new Thread(this, createThreadName());
-        thread.setDaemon(true);
+        thread = ThreadHelper.createDaemon(createThreadName(), this);
         alive = true;
         thread.start();
       }

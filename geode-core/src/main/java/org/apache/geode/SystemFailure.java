@@ -17,6 +17,7 @@ package org.apache.geode;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
+import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -120,29 +121,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
           ...
  * </pre>
  *
- * <h2>Create Logging ThreadGroups</h2> If you create any Thread, a best practice is to catch severe
- * errors and signal failure appropriately. One trick to do this is to create a ThreadGroup that
- * handles uncaught exceptions by overriding
- * {@link ThreadGroup#uncaughtException(Thread, Throwable)} and to declare your thread as a member
- * of that {@link ThreadGroup}. This also has a significant side-benefit in that most uncaught
- * exceptions can be detected:
- * <p>
- *
- * <pre>
-    ThreadGroup tg = new ThreadGroup("Worker Threads") {
-        public void uncaughtException(Thread t, Throwable e) {
-          // Do this *before* any object allocation in case of
-          // OutOfMemoryError (for instance)
-          if (e instanceof VirtualMachineError) {
-            SystemFailure.{@link #setFailure(Error) setFailure}((VirtualMachineError)e); // don't throw
-          }
-          String s = "Uncaught exception in thread " + t;
-          system.getLogWriter().severe(s, e);
-        }
-        Thread t = new Thread(myRunnable, tg, "My Thread");
-        t.start();
-      }; *
- * </pre>
  * <p>
  * <h2>Catches of Error and Throwable Should Check for Failure</h2> Keep in mind that peculiar or
  * flat-out<em>impossible</em> exceptions may ensue after a VirtualMachineError has been thrown
@@ -276,20 +254,6 @@ public final class SystemFailure {
   private static volatile boolean failureActionCompleted = false;
 
   /**
-   * This is a logging ThreadGroup, created only once.
-   */
-  private static final ThreadGroup tg;
-  static {
-    tg = new ThreadGroup("SystemFailure Watchdog Threads") {
-      @Override
-      public void uncaughtException(Thread t, Throwable e) {
-        System.err.println("Internal error in SystemFailure watchdog:" + e);
-        e.printStackTrace();
-      }
-    };
-  }
-
-  /**
    * This is the amount of time, in seconds, the watchdog periodically awakens to see if the system
    * has been corrupted.
    * <p>
@@ -343,8 +307,7 @@ public final class SystemFailure {
       if (watchDog != null && watchDog.isAlive()) {
         return;
       }
-      watchDog = new Thread(tg, SystemFailure::runWatchDog, "SystemFailure WatchDog");
-      watchDog.setDaemon(true);
+      watchDog = ThreadHelper.createDaemon("SystemFailure WatchDog", SystemFailure::runWatchDog);
       watchDog.start();
     }
   }
@@ -568,8 +531,7 @@ public final class SystemFailure {
       if (proctor != null && proctor.isAlive()) {
         return;
       }
-      proctor = new Thread(tg, SystemFailure::runProctor, "SystemFailure Proctor");
-      proctor.setDaemon(true);
+      proctor = ThreadHelper.createDaemon("SystemFailure Proctor", SystemFailure::runProctor);
       proctor.start();
     }
   }

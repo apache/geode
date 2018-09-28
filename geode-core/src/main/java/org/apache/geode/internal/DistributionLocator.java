@@ -151,13 +151,11 @@ public class DistributionLocator {
 
       if (!Boolean.getBoolean(InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
         final InetAddress faddress = address;
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-          public void run() {
-            try {
-              DistributionLocator.shutdown(port, faddress);
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
+        Runtime.getRuntime().addShutdownHook(ThreadHelper.create("LocatorShutdownThread", () -> {
+          try {
+            DistributionLocator.shutdown(port, faddress);
+          } catch (IOException e) {
+            e.printStackTrace();
           }
         }));
       }

@@ -21,6 +21,8 @@ import java.io.InputStream;
 
 import org.apache.commons.lang.SystemUtils;
 
+import org.apache.geode.internal.ThreadHelper;
+
 /**
  * Reads the output stream of a Process.
  *
@@ -62,8 +64,7 @@ public abstract class ProcessStreamReader implements Runnable {
   public ProcessStreamReader start() {
     synchronized (this) {
       if (thread == null) {
-        thread = new Thread(this, createThreadName());
-        thread.setDaemon(true);
+        thread = ThreadHelper.createDaemon(createThreadName(), this);
         thread.start();
       } else if (thread.isAlive()) {
         throw new IllegalStateException(this + " has already started");
@@ -95,8 +96,7 @@ public abstract class ProcessStreamReader implements Runnable {
 
     String threadName =
         getClass().getSimpleName() + " stopAfterDelay Thread @" + Integer.toHexString(hashCode());
-    Thread thread = new Thread(delayedStop, threadName);
-    thread.setDaemon(true);
+    Thread thread = ThreadHelper.createDaemon(threadName, delayedStop);
     thread.start();
     return this;
   }
