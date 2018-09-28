@@ -1631,10 +1631,9 @@ public class ClusterDistributionManager implements DistributionManager {
             }
           }
         };
-        final Thread t = new Thread(r,
-            LocalizedStrings.DistributionManager_SHUTDOWN_MESSAGE_THREAD_FOR_0
-                .toLocalizedString(this.localAddress));
-        LoggingUncaughtExceptionHandler.setOnThread(t);
+        final Thread t =
+            ThreadHelper.create(LocalizedStrings.DistributionManager_SHUTDOWN_MESSAGE_THREAD_FOR_0
+                .toLocalizedString(this.localAddress), r);
         t.start();
         boolean interrupted = Thread.interrupted();
         try {

@@ -820,8 +820,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         viewCreator.setInitialView(newView, newView.getNewMembers(), newView.getShutdownMembers(),
             newView.getCrashedMembers());
       }
-      LoggingUncaughtExceptionHandler.setOnThread(viewCreator);
-      viewCreator.setDaemon(true);
       logger.info("ViewCreator starting on:" + localAddress);
       viewCreator.start();
     }
@@ -2074,6 +2072,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     ViewCreator(String name) {
       super(name);
+      LoggingUncaughtExceptionHandler.setOnThread(this);
+      setDaemon(true);
     }
 
     void shutdown() {

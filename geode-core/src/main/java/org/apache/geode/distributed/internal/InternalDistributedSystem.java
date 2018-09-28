@@ -95,7 +95,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
@@ -1072,8 +1071,7 @@ public class InternalDistributedSystem extends DistributedSystem
     };
 
     // Launch it and wait a little bit
-    Thread t = new Thread(r, dc.toString());
-    LoggingUncaughtExceptionHandler.setOnThread(t);
+    Thread t = ThreadHelper.create(dc.toString(), r);
     try {
       t.start();
       t.join(MAX_DISCONNECT_WAIT);
