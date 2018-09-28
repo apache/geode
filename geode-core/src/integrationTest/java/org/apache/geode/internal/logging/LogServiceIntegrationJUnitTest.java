@@ -81,7 +81,7 @@ public class LogServiceIntegrationJUnitTest {
       StatusLogger.getLogger().setLevel(beforeLevel);
 
       LogService.reconfigure();
-      assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+      assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
           .isTrue();
     }
   };
@@ -114,7 +114,7 @@ public class LogServiceIntegrationJUnitTest {
 
     LogService.reconfigure();
 
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isFalse();
     assertThat(System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY))
         .isEqualTo(configFileName);
@@ -125,7 +125,7 @@ public class LogServiceIntegrationJUnitTest {
   public void shouldUseDefaultConfigIfNotConfigured() throws Exception {
     LogService.reconfigure();
 
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
     assertThat(System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY))
         .isNullOrEmpty();
@@ -136,7 +136,7 @@ public class LogServiceIntegrationJUnitTest {
     LogService.reconfigure();
     final Logger rootLogger = (Logger) LogService.getRootLogger();
 
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
     assertThat(rootLogger.getAppenders().get(LogService.STDOUT)).isNotNull();
   }
@@ -169,7 +169,7 @@ public class LogServiceIntegrationJUnitTest {
   public void removeAndRestoreConsoleAppenderShouldAffectRootLogger() {
     LogService.reconfigure();
 
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
 
     final Logger rootLogger = (Logger) LogService.getRootLogger();
@@ -198,7 +198,7 @@ public class LogServiceIntegrationJUnitTest {
 
     LogService.reconfigure();
 
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isFalse();
     assertThat(System.getProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY))
         .isEqualTo(this.cliConfigUrl.toString());

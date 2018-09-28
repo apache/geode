@@ -104,7 +104,7 @@ public class CustomConfigWithCacheIntegrationTest {
     StatusLogger.getLogger().setLevel(this.beforeLevel);
 
     LogService.reconfigure();
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
 
     BasicAppender.clearInstance();
@@ -119,7 +119,7 @@ public class CustomConfigWithCacheIntegrationTest {
     String logMessage = "this is a log statement from " + testName.getMethodName();
 
     LogWriter logger = this.cache.getLogger();
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isFalse();
 
     BasicAppender.clearEvents();

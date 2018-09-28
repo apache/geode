@@ -103,7 +103,7 @@ public class GeodeVerboseLogMarkerIntegrationTest {
     StatusLogger.getLogger().setLevel(this.beforeLevel);
 
     LogService.reconfigure();
-    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigInformation())
+    assertThat(LogService.isUsingGemFireDefaultConfig()).as(LogService.getConfigurationInfo())
         .isTrue();
 
     BasicAppender.clearInstance();
