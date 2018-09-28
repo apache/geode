@@ -31,42 +31,77 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
  * So all interactions with it are done with static methods.
  */
 public class LoggingUncaughtExceptionHandler {
-  private static final Logger logger = LogService.getLogger();
-  private static final AtomicInteger uncaughtExceptionsCount = new AtomicInteger();
-  private static final UncaughtExceptionHandler handler = (t, ex) -> {
-    if (ex instanceof VirtualMachineError) {
-      SystemFailure.setFailure((VirtualMachineError) ex); // don't throw
-    }
-    // Solution to treat the shutdown hook error as a special case.
-    // Do not change the hook's thread name without also changing it here.
-    if ((ex instanceof NoClassDefFoundError)
-        && (t.getName().equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
-      logger.info(
-          "Uncaught exception in thread {0} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {1}",
-          t, ex);
-    } else {
-      String message = MessageFormat.format("Uncaught exception in thread {0}", t);
-      logger.fatal(message, ex);
-    }
-    uncaughtExceptionsCount.incrementAndGet();
-  };
+  private static final Implementation handler =
+      new Implementation(LogService.getLogger(), error -> SystemFailure.setFailure(error));
+
+  public static UncaughtExceptionHandler getInstance() {
+    return handler;
+  }
 
   /**
    * Sets the logging uncaught exception handler on the given thread.
    */
   public static void setOnThread(Thread thread) {
-    thread.setUncaughtExceptionHandler(handler);
+    handler.setOnThread(thread);
   }
 
   public static int getUncaughtExceptionsCount() {
-    return uncaughtExceptionsCount.get();
+    return handler.getUncaughtExceptionsCount();
   }
 
   public static void clearUncaughtExceptionsCount() {
-    uncaughtExceptionsCount.set(0);
+    handler.clearUncaughtExceptionsCount();
   }
 
-  private LoggingUncaughtExceptionHandler() {
+  LoggingUncaughtExceptionHandler() {
     // no instances allowed
+  }
+
+  // non-private for unit testing
+  interface FailureSettor {
+    void setFailure(VirtualMachineError error);
+  }
+
+  // non-private for unit testing
+  static class Implementation implements UncaughtExceptionHandler {
+    private final Logger logger;
+    private final FailureSettor failureSettor;
+    private final AtomicInteger uncaughtExceptionsCount = new AtomicInteger();
+
+    Implementation(Logger logger, FailureSettor failureSettor) {
+      this.logger = logger;
+      this.failureSettor = failureSettor;
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable ex) {
+      if (ex instanceof VirtualMachineError) {
+        this.failureSettor.setFailure((VirtualMachineError) ex);
+      }
+      // Solution to treat the shutdown hook error as a special case.
+      // Do not change the hook's thread name without also changing it here.
+      if ((ex instanceof NoClassDefFoundError)
+          && (t.getName().equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
+        logger.info(
+            "Uncaught exception in thread {0} this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: {1}",
+            t, ex);
+      } else {
+        String message = MessageFormat.format("Uncaught exception in thread {0}", t);
+        logger.fatal(message, ex);
+      }
+      uncaughtExceptionsCount.incrementAndGet();
+    }
+
+    void setOnThread(Thread thread) {
+      thread.setUncaughtExceptionHandler(this);
+    }
+
+    int getUncaughtExceptionsCount() {
+      return uncaughtExceptionsCount.get();
+    }
+
+    void clearUncaughtExceptionsCount() {
+      uncaughtExceptionsCount.set(0);
+    }
   }
 }
