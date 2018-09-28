@@ -281,9 +281,9 @@ public class AggregateRegionStatsMonitor extends MBeanStatsMonitor {
      */
     void decreaseParStats() {
       synchronized (statsMap) {
-        bucketCount -= statsMap.get(StatsKey.BUCKET_COUNT).intValue();
-        totalBucketSize -= statsMap.get(StatsKey.TOTAL_BUCKET_SIZE).intValue();
-        primaryBucketCount -= statsMap.get(StatsKey.PRIMARY_BUCKET_COUNT).intValue();
+        bucketCount -= statsMap.getOrDefault(StatsKey.BUCKET_COUNT, 0).intValue();
+        totalBucketSize -= statsMap.getOrDefault(StatsKey.TOTAL_BUCKET_SIZE, 0).intValue();
+        primaryBucketCount -= statsMap.getOrDefault(StatsKey.PRIMARY_BUCKET_COUNT, 0).intValue();
         removed = true;
       }
     }

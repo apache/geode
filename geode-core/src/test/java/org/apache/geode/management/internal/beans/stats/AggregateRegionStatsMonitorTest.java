@@ -245,4 +245,11 @@ public class AggregateRegionStatsMonitorTest {
     assertThat(aggregateRegionStatsMonitor.getMonitors()).isEmpty();
     assertThat(aggregateRegionStatsMonitor.getListeners()).isEmpty();
   }
+
+  @Test
+  public void decreaseDiskStoreStatsShouldNotThrowNPE() {
+    Statistics statistics = mock(Statistics.class);
+    aggregateRegionStatsMonitor.addStatisticsToMonitor(statistics);
+    aggregateRegionStatsMonitor.getListeners().values().forEach((l) -> l.decreaseParStats());
+  }
 }

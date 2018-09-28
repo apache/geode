@@ -126,49 +126,4 @@ public class Invoke {
   public static void invokeInLocator(final SerializableRunnableIF runnable) {
     Host.getLocator().invoke(runnable);
   }
-
-  /**
-   * @deprecated Please use {@link org.awaitility.Awaitility} with
-   *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
-   */
-  public static void invokeRepeatingIfNecessary(final VM vm, final RepeatableRunnable runnable) {
-    vm.invokeRepeatingIfNecessary(runnable, 0);
-  }
-
-  /**
-   * @deprecated Please use {@link org.awaitility.Awaitility} with
-   *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
-   */
-  public static void invokeRepeatingIfNecessary(final VM vm, final RepeatableRunnable runnable,
-      final long repeatTimeoutMs) {
-    vm.invokeRepeatingIfNecessary(runnable, repeatTimeoutMs);
-  }
-
-  /**
-   * @deprecated Please use {@link org.awaitility.Awaitility} with
-   *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
-   */
-  public static void invokeInEveryVMRepeatingIfNecessary(final RepeatableRunnable runnable) {
-    Invoke.invokeInEveryVMRepeatingIfNecessary(runnable, 0);
-  }
-
-  /**
-   * Invokes a <code>SerializableRunnable</code> in every VM that DUnit knows about. If
-   * <code>run()</code> throws an assertion failure, its execution is repeated, until no assertion
-   * failure occurs or <code>repeatTimeoutMs</code> milliseconds have passed.
-   *
-   * @deprecated Please use {@link org.awaitility.Awaitility} with
-   *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
-   */
-  public static void invokeInEveryVMRepeatingIfNecessary(final RepeatableRunnable runnable,
-      final long repeatTimeoutMs) {
-    for (int h = 0; h < Host.getHostCount(); h++) {
-      Host host = Host.getHost(h);
-
-      for (int v = 0; v < host.getVMCount(); v++) {
-        VM vm = host.getVM(v);
-        vm.invokeRepeatingIfNecessary(runnable, repeatTimeoutMs);
-      }
-    }
-  }
 }

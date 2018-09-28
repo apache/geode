@@ -21,10 +21,11 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
-@Category(PerformanceTest.class)
-@Ignore("Tests have no assertions")
+@Category({PerformanceTest.class, LoggingTest.class})
+@Ignore("TODO: repackage as jmh benchmark")
 public class Log4J2DisabledPerformanceTest extends Log4J2PerformanceTest {
 
   @Override

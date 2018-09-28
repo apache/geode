@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.logging.log4j;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,10 +19,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
+@Category(LoggingTest.class)
 public class LogLevelTest {
+
   @Test
   public void testGetLevel() {
     assertThat(LogLevel.getLevel("all")).isEqualTo(Level.ALL);
@@ -67,7 +70,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void testGetLog4jLevel() throws Exception {
+  public void testGetLog4jLevel() {
     assertThat(LogLevel.getLog4jLevel(InternalLogWriter.SEVERE_LEVEL)).isEqualTo(Level.FATAL);
     assertThat(LogLevel.getLog4jLevel(InternalLogWriter.ERROR_LEVEL)).isEqualTo(Level.ERROR);
     assertThat(LogLevel.getLog4jLevel(InternalLogWriter.WARNING_LEVEL)).isEqualTo(Level.WARN);
@@ -83,7 +86,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void testGetLogWriterLevel() throws Exception {
+  public void testGetLogWriterLevel() {
     assertThat(LogLevel.getLogWriterLevel(Level.FATAL)).isEqualTo(InternalLogWriter.SEVERE_LEVEL);
     assertThat(LogLevel.getLogWriterLevel(Level.ERROR)).isEqualTo(InternalLogWriter.ERROR_LEVEL);
     assertThat(LogLevel.getLogWriterLevel(Level.WARN)).isEqualTo(InternalLogWriter.WARNING_LEVEL);
@@ -95,7 +98,7 @@ public class LogLevelTest {
   }
 
   @Test
-  public void testGetLogWriterLevelWithString() throws Exception {
+  public void testGetLogWriterLevelWithString() {
     assertThat(LogLevel.getLogWriterLevel("FATAL")).isEqualTo(InternalLogWriter.SEVERE_LEVEL);
     assertThat(LogLevel.getLogWriterLevel("error")).isEqualTo(InternalLogWriter.ERROR_LEVEL);
     assertThat(LogLevel.getLogWriterLevel("WARN")).isEqualTo(InternalLogWriter.WARNING_LEVEL);

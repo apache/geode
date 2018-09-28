@@ -333,7 +333,7 @@ declarative caching XML file elements unless indicated otherwise.
         <xsd:element maxOccurs="1" minOccurs="0" name="dynamic-region-factory" type="gf:dynamic-region-factory-type" />
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="pool" type="gf:pool-type" />
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="disk-store" type="gf:disk-store-type" />
-        <xsd:element maxOccurs="1" minOccurs="0" name="pdx" type="gf:pdx-type" />
+        <xsd:element maxOccurs="1" minOccurs="0" name="pdx" type="gf:client-pdx-type" />
         <xsd:element maxOccurs="unbounded" minOccurs="0" name="region-attributes" type="gf:region-attributes-type" />
         <xsd:choice maxOccurs="unbounded" minOccurs="0">
           <xsd:element name="jndi-bindings" type="gf:jndi-bindings-type" />
@@ -1164,6 +1164,51 @@ As of 6.5 disk-dirs is deprecated on region-attributes. Use disk-store-name inst
     <xsd:attribute name="ignore-unread-fields" type="xsd:boolean" use="optional" />
     <xsd:attribute name="persistent" type="xsd:boolean" use="optional" />
     <xsd:attribute name="disk-store-name" type="xsd:string" use="optional" />
+  </xsd:complexType>
+
+  <xsd:complexType name="client-pdx-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        A "pdx" element specifies the configuration for the portable data exchange (PDX) method of
+        serialization. The "read-serialized" attribute is "early access".
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element maxOccurs="1" minOccurs="0" name="pdx-serializer">
+        <xsd:annotation>
+          <xsd:documentation>
+            A "pdx-serializer" element describes a serializer used to serialize objects in the
+            portable data exchange format.
+          </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="class-name" type="gf:class-name-type" />
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="parameter" type="gf:parameter-type" />
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="read-serialized" type="xsd:boolean"/>
+    <xsd:attribute name="ignore-unread-fields" type="xsd:boolean"/>
+    <xsd:attribute name="persistent" type="xsd:boolean">
+      <xsd:annotation>
+        <xsd:appinfo>deprecated</xsd:appinfo>
+        <xsd:documentation>
+          Pdx Persistence is not supported on client side; even when set, it's internally ignored.
+          The attribute will be removed in a later release.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="disk-store-name" type="xsd:string">
+      <xsd:annotation>
+        <xsd:appinfo>deprecated</xsd:appinfo>
+        <xsd:documentation>
+          Pdx Persistence is not supported on client side; even when set, it's internally ignored.
+          The attribute will be removed in a later release.
+        </xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
   </xsd:complexType>
 
   <xsd:complexType name="pool-type">

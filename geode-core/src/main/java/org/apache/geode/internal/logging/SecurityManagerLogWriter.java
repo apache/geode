@@ -24,6 +24,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * places where security related logging (authentication, authorization success and failure of
  * clients and peers) as well as for security callbacks.
  *
+ * <p>
  * This class extends the {@link ManagerLogWriter} to add the security prefix feature mentioned
  * above.
  *
@@ -31,20 +32,17 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  */
 public class SecurityManagerLogWriter extends ManagerLogWriter {
 
-  public SecurityManagerLogWriter(int level, PrintStream stream) {
-
-    super(level, stream);
+  public SecurityManagerLogWriter(final int level, final PrintStream printStream) {
+    this(level, printStream, null);
   }
 
-  public SecurityManagerLogWriter(int level, PrintStream stream, String connectionName) {
-
-    super(level, stream, connectionName);
+  public SecurityManagerLogWriter(final int level, final PrintStream printStream,
+      final String connectionName) {
+    super(level, printStream, connectionName);
   }
-
 
   @Override
   public void setConfig(LogConfig config) {
-
     if (config instanceof DistributionConfig) {
       config = new SecurityLogConfig((DistributionConfig) config);
     }
@@ -61,8 +59,8 @@ public class SecurityManagerLogWriter extends ManagerLogWriter {
    * security related log-lines.
    */
   @Override
-  public void put(int msgLevel, String msg, Throwable exception) {
-    super.put(msgLevel, new StringBuilder(SecurityLogWriter.SECURITY_PREFIX)
-        .append(levelToString(msgLevel)).append(" ").append(msg).toString(), exception);
+  public void put(final int messageLevel, final String message, final Throwable throwable) {
+    super.put(messageLevel, new StringBuilder(SecurityLogWriter.SECURITY_PREFIX)
+        .append(levelToString(messageLevel)).append(" ").append(message).toString(), throwable);
   }
 }

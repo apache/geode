@@ -138,6 +138,7 @@ public class RuntimeDistributionConfigImpl extends DistributionConfigImpl {
     return new DistributionConfigSnapshot(this);
   }
 
+  @Override
   public List<String> getModifiableAttributes() {
     String[] modifiables = {HTTP_SERVICE_PORT, JMX_MANAGER_HTTP_PORT, ARCHIVE_DISK_SPACE_LIMIT,
         ARCHIVE_FILE_SIZE_LIMIT, LOG_DISK_SPACE_LIMIT, LOG_FILE_SIZE_LIMIT, LOG_LEVEL,
