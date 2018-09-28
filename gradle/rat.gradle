@@ -60,6 +60,7 @@ rat {
     '.idea/**',
     '**/tags',
     '**/out/**',
+    '**/bin/**',
 
     // text files
     '**/*.fig',
