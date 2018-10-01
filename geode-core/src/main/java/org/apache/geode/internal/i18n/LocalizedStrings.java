@@ -1888,9 +1888,6 @@ public class LocalizedStrings {
   public static final StringId AbstractConfig_0_VALUE_1_MUST_HAVE_THREE_ELEMENTS_SEPARATED_BY_COMMAS =
       new StringId(2155, "{0}  value \"{1}\" must have three elements separated by commas");
 
-  public static final StringId AbstractConfig_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_SET_FROM_THE_COMMAND_LINE_SET_1_FOR_EACH_INDIVIDUAL_PARAMETER_INSTEAD =
-      new StringId(2157,
-          "The \"{0}\" configuration attribute can not be set from the command line. Set \"{1}\" for each individual parameter instead.");
   public static final StringId AbstractConfig_UNHANDLED_ATTRIBUTE_NAME_0 =
       new StringId(2158, "unhandled attribute name \"{0}\".");
   public static final StringId AbstractConfig_UNHANDLED_ATTRIBUTE_TYPE_0_FOR_1 =
