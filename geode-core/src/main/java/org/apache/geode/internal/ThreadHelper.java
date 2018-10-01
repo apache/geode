@@ -16,7 +16,7 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * A utility class that consolidates in one place
@@ -33,10 +33,7 @@ public class ThreadHelper {
   }
 
   private static Thread create(String name, boolean isDeamon, Runnable runnable) {
-    Thread thread = new Thread(runnable, name);
-    LoggingUncaughtExceptionHandler.setOnThread(thread);
-    thread.setDaemon(isDeamon);
-    return thread;
+    return new LoggingThread(runnable, name, isDeamon);
   }
 
   private ThreadHelper() {

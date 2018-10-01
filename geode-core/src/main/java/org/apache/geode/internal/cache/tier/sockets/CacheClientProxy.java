@@ -98,7 +98,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
@@ -2234,7 +2234,7 @@ public class CacheClientProxy implements ClientSession {
    * the client by taking messsages from the message queue and sending them to the client over the
    * socket.
    */
-  static class MessageDispatcher extends Thread {
+  static class MessageDispatcher extends LoggingThread {
 
     /**
      * The queue of messages to be sent to the client
@@ -2296,8 +2296,6 @@ public class CacheClientProxy implements ClientSession {
      */
     protected MessageDispatcher(CacheClientProxy proxy, String name) throws CacheException {
       super(name);
-      LoggingUncaughtExceptionHandler.setOnThread(this);
-      setDaemon(true);
 
       this._proxy = proxy;
 

@@ -52,7 +52,6 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     this.index = 0;
     this.nDispatcher = 1;
     initializeMessageQueue(sender.getId());
-    setDaemon(true);
   }
 
   /**
@@ -64,7 +63,6 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     this.index = id;
     this.nDispatcher = nDispatcher;
     initializeMessageQueue(sender.getId());
-    setDaemon(true);
   }
 
   @Override

@@ -82,7 +82,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
@@ -100,7 +100,7 @@ import org.apache.geode.security.GemFireSecurityException;
  *
  * @since GemFire 3.5
  */
-public class CacheClientUpdater extends Thread implements ClientUpdater, DisconnectListener {
+public class CacheClientUpdater extends LoggingThread implements ClientUpdater, DisconnectListener {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -278,8 +278,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
       SocketCreator socketCreator) throws AuthenticationRequiredException,
       AuthenticationFailedException, ServerRefusedConnectionException {
     super(name);
-    setDaemon(true);
-    LoggingUncaughtExceptionHandler.setOnThread(this);
     this.system = (InternalDistributedSystem) ids;
     this.isDurableClient = handshake.getMembershipId().isDurable();
     this.isPrimary = primary;

@@ -109,7 +109,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
     // this.queue = parallelQueue;
     this.queue = new ConcurrentParallelGatewaySenderQueue(sender, this.processors);
-    setDaemon(true);
   }
 
   protected void createProcessors(int dispatcherThreads, Set<Region> targetRs) {

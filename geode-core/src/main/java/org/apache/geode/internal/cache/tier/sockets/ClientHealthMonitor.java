@@ -40,7 +40,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
@@ -700,7 +700,7 @@ public class ClientHealthMonitor {
    * Class <code>ClientHealthMonitorThread</code> is a <code>Thread</code> that verifies all clients
    * are still alive.
    */
-  class ClientHealthMonitorThread extends Thread {
+  class ClientHealthMonitorThread extends LoggingThread {
     private HeartbeatTimeoutCheck checkHeartbeat = (long currentTime, long lastHeartbeat,
         long allowedInterval) -> currentTime - lastHeartbeat > allowedInterval;
 
@@ -727,8 +727,6 @@ public class ClientHealthMonitor {
      */
     protected ClientHealthMonitorThread(int maximumTimeBetweenPings) {
       super("ClientHealthMonitor Thread");
-      setDaemon(true);
-      LoggingUncaughtExceptionHandler.setOnThread(this);
 
       // Set the client connection timeout
       this._maximumTimeBetweenPings = maximumTimeBetweenPings;

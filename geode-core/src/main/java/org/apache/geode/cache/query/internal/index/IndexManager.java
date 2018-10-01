@@ -73,7 +73,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingThread;
 
 public class IndexManager {
   private static final Logger logger = LogService.getLogger();
@@ -1389,7 +1389,7 @@ public class IndexManager {
 
   ////////////////////// Inner Classes //////////////////////
 
-  public class IndexUpdaterThread extends Thread {
+  public class IndexUpdaterThread extends LoggingThread {
 
     private volatile boolean running = true;
 
@@ -1410,8 +1410,6 @@ public class IndexManager {
         // Create non-bounded queue.
         pendingTasks = new LinkedBlockingQueue();
       }
-      this.setDaemon(true);
-      LoggingUncaughtExceptionHandler.setOnThread(this);
     }
 
     public void addTask(int action, RegionEntry entry, int opCode) {

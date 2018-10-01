@@ -78,7 +78,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     for (SerialGatewaySenderEventProcessor processor : processors) {
       queues.add(processor.getQueue());
     }
-    setDaemon(true);
   }
 
   @Override

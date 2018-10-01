@@ -81,7 +81,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -2044,7 +2044,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
-  class ViewCreator extends Thread {
+  class ViewCreator extends LoggingThread {
     volatile boolean shutdown = false;
     volatile boolean waiting = false;
     volatile boolean testFlagForRemovalRequest = false;
@@ -2072,8 +2072,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     ViewCreator(String name) {
       super(name);
-      LoggingUncaughtExceptionHandler.setOnThread(this);
-      setDaemon(true);
     }
 
     void shutdown() {

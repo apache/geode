@@ -63,7 +63,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -906,14 +906,12 @@ class RemoteGfManagerAgent implements GfManagerAgent {
    * members or attempts to connect to a distributed system whose member run a different version of
    * GemFire.
    */
-  private class DSConnectionDaemon extends Thread {
+  private class DSConnectionDaemon extends LoggingThread {
     /** Has this thread been told to stop? */
     private volatile boolean shutDown = false;
 
     protected DSConnectionDaemon() {
       super("DSConnectionDaemon");
-      LoggingUncaughtExceptionHandler.setOnThread(this);
-      setDaemon(true);
     }
 
     public void shutDown() {
@@ -982,13 +980,11 @@ class RemoteGfManagerAgent implements GfManagerAgent {
    * A daemon thread that reads {@link SnapshotResultMessage}s from a queue and invokes the
    * <code>CacheCollector</code> accordingly.
    */
-  private class SnapshotResultDispatcher extends Thread {
+  private class SnapshotResultDispatcher extends LoggingThread {
     private volatile boolean shutDown = false;
 
     public SnapshotResultDispatcher() {
       super("SnapshotResultDispatcher");
-      LoggingUncaughtExceptionHandler.setOnThread(this);
-      setDaemon(true);
     }
 
     public void shutDown() {
@@ -1176,7 +1172,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
    * thread as the membership handler, then we run the risk of getting deadlocks and such.
    */
   // FIXME: Revisit/redesign this code
-  private class JoinProcessor extends Thread {
+  private class JoinProcessor extends LoggingThread {
     private volatile boolean paused = false;
     private volatile boolean shutDown = false;
     private volatile InternalDistributedMember id;
@@ -1184,8 +1180,6 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
     public JoinProcessor() {
       super("JoinProcessor");
-      LoggingUncaughtExceptionHandler.setOnThread(this);
-      setDaemon(true);
     }
 
     public void shutDown() {

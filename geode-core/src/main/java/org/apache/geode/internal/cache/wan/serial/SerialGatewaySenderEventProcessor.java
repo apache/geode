@@ -119,7 +119,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
 
     initializeMessageQueue(id);
-    setDaemon(true);
   }
 
   @Override
