@@ -39,13 +39,13 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
@@ -530,7 +530,7 @@ public class InternalClientMembership {
   private static void ensureExecutorIsRunning() {
     // protected by calling method synchronized on systems
     if (executor == null) {
-      ThreadFactory tf = new NamedThreadFactory("ClientMembership Event Invoker");
+      ThreadFactory tf = new LoggingThreadFactory("ClientMembership Event Invoker");
       LinkedBlockingQueue q = new LinkedBlockingQueue();
       executor = new ThreadPoolExecutor(1, 1/* max unused */, 15, TimeUnit.SECONDS, q, tf);
     }

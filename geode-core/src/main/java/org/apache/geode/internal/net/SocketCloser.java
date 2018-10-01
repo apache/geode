@@ -31,8 +31,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 
 /**
@@ -138,7 +138,7 @@ public class SocketCloser {
   private ExecutorService createThreadPoolExecutor() {
     return new ThreadPoolExecutor(asyncClosePoolMaxThreads, asyncClosePoolMaxThreads,
         asyncClosePoolKeepAliveSeconds, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
-        new NamedThreadFactory("SocketCloser"));
+        new LoggingThreadFactory("SocketCloser"));
   }
 
   /**

@@ -53,7 +53,6 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
@@ -67,6 +66,7 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionN
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -187,7 +187,7 @@ public class TcpServer {
   }
 
   private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper) {
-    ThreadFactory factory = new NamedThreadFactory("locator request thread ");
+    ThreadFactory factory = new LoggingThreadFactory("locator request thread ");
     return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
         factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(), null);
   }

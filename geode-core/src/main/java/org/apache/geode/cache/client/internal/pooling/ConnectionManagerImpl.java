@@ -54,12 +54,12 @@ import org.apache.geode.cache.client.internal.QueueConnectionImpl;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -593,7 +593,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.backgroundProcessor = backgroundProcessor;
     String name = "poolLoadConditioningMonitor-" + getPoolName();
     this.loadConditioningProcessor =
-        new ScheduledThreadPoolExecutor(1/* why not 0? */, new NamedThreadFactory(name));
+        new ScheduledThreadPoolExecutor(1/* why not 0? */, new LoggingThreadFactory(name));
     this.loadConditioningProcessor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
     endpointManager.addListener(endpointListener);

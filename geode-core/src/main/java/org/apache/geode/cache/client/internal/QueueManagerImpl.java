@@ -55,7 +55,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -67,6 +66,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -278,7 +278,7 @@ public class QueueManagerImpl implements QueueManager {
       // We don't want primary recovery (and therefore user threads) to wait for
       // things like pinging connections for health checks.
       final String name = "queueTimer-" + this.pool.getName();
-      this.recoveryThread = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory(name));
+      this.recoveryThread = new ScheduledThreadPoolExecutor(1, new LoggingThreadFactory(name));
       recoveryThread.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
       getState().start(background, getPool().getSubscriptionAckInterval());

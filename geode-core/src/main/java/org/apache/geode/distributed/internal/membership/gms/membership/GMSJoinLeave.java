@@ -78,10 +78,10 @@ import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPart
 import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -2692,7 +2692,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
       logger.debug("checking availability of these members: {}", checkers);
       ExecutorService svc = Executors.newFixedThreadPool(suspects.size(),
-          new NamedThreadFactory("Geode View Creator verification thread "));
+          new LoggingThreadFactory("Geode View Creator verification thread "));
       try {
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
         // submit the tasks that will remove dead members from the suspects collection

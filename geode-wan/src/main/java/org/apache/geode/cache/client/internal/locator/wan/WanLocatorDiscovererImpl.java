@@ -24,9 +24,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 
 public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
 
@@ -43,7 +43,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
   @Override
   public void discover(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener, final String hostnameForClients) {
-    final ThreadFactory threadFactory = new NamedThreadFactory("WAN Locator Discovery Thread");
+    final ThreadFactory threadFactory = new LoggingThreadFactory("WAN Locator Discovery Thread");
     this._executor = Executors.newCachedThreadPool(threadFactory);
     exchangeLocalLocators(port, config, locatorListener, hostnameForClients);
     exchangeRemoteLocators(port, config, locatorListener, hostnameForClients);

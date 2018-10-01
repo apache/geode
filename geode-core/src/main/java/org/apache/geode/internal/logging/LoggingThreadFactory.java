@@ -14,12 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.logging;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class NamedThreadFactory implements ThreadFactory {
+import org.apache.geode.internal.ThreadHelper;
+
+/**
+ * Threads produced by instances of this class will always
+ * log uncaught exceptions. They will also always be daemon
+ * and have unique names that contain the "baseName" passed
+ * to the constructor.
+ * <p>
+ * What happens each time a thread is created can be customized
+ * using the optional "threadInitializer".
+ * <p>
+ * What happens each time a thread is run can be customized
+ * using the optional "commandWrapper".
+ */
+public class LoggingThreadFactory implements ThreadFactory {
 
   private final String baseName;
   private final CommandWrapper commandWrapper;
@@ -39,14 +53,14 @@ public class NamedThreadFactory implements ThreadFactory {
   }
 
   /**
-   * Create a factory that produces daemon threads
+   * Create a factory that produces daemon threads that log uncaught exceptions
    *
    * @param baseName the base name will be included in every thread name
    * @param threadInitializer if not null, will be invoked with the thread each time a thread is
    *        created
    * @param commandWrapper if not null, will be invoked by each thread created by this factory
    */
-  public NamedThreadFactory(String baseName, ThreadInitializer threadInitializer,
+  public LoggingThreadFactory(String baseName, ThreadInitializer threadInitializer,
       CommandWrapper commandWrapper) {
     this.baseName = baseName;
     this.threadInitializer = threadInitializer;
@@ -54,21 +68,21 @@ public class NamedThreadFactory implements ThreadFactory {
   }
 
   /**
-   * Create a factory that produces daemon threads
+   * Create a factory that produces daemon threads that log uncaught exceptions
    *
    * @param baseName the base name will be included in every thread name
    */
-  public NamedThreadFactory(String baseName) {
+  public LoggingThreadFactory(String baseName) {
     this(baseName, null, null);
   }
 
   /**
-   * Create a factory that produces daemon threads
+   * Create a factory that produces daemon threads that log uncaught exceptions
    *
    * @param baseName the base name will be included in every thread name
    * @param commandWrapper if not null, will be invoked by each thread created by this factory
    */
-  public NamedThreadFactory(String baseName, CommandWrapper commandWrapper) {
+  public LoggingThreadFactory(String baseName, CommandWrapper commandWrapper) {
     this(baseName, null, commandWrapper);
   }
 

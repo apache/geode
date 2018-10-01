@@ -32,10 +32,10 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.tcp.ConnectionTable;
 
@@ -55,7 +55,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     int nThreads = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
       ThreadFactory tf =
-          new NamedThreadFactory("Expiry ", (Runnable command) -> doExpiryThread(command));
+          new LoggingThreadFactory("Expiry ", (Runnable command) -> doExpiryThread(command));
       // LinkedBlockingQueue q = new LinkedBlockingQueue();
       SynchronousQueue q = new SynchronousQueue();
       executor = new PooledExecutorWithDMStats(q, nThreads, tf, null);

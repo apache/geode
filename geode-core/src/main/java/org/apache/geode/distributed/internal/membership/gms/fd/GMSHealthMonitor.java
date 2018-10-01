@@ -75,8 +75,8 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
@@ -611,14 +611,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
   public void start() {
     scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("Geode Failure Detection Scheduler"));
+        new LoggingThreadFactory("Geode Failure Detection Scheduler"));
     checkExecutor =
-        Executors.newCachedThreadPool(new NamedThreadFactory("Geode Failure Detection thread "));
+        Executors.newCachedThreadPool(new LoggingThreadFactory("Geode Failure Detection thread "));
     Monitor m = this.new Monitor(memberTimeout);
     long delay = memberTimeout / LOGICAL_INTERVAL;
     monitorFuture = scheduler.scheduleAtFixedRate(m, delay, delay, TimeUnit.MILLISECONDS);
     serverSocketExecutor = Executors
-        .newCachedThreadPool(new NamedThreadFactory("Geode Failure Detection Server thread "));
+        .newCachedThreadPool(new LoggingThreadFactory("Geode Failure Detection Server thread "));
   }
 
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {

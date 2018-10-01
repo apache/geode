@@ -153,7 +153,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
@@ -239,6 +238,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -812,7 +812,7 @@ public class PartitionedRegion extends LocalRegion
     if (this.getEvictionAttributes() != null
         && this.getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       this.sortedBuckets = new ArrayList<BucketRegion>();
-      ThreadFactory tf = new NamedThreadFactory("BucketSorterThread");
+      ThreadFactory tf = new LoggingThreadFactory("BucketSorterThread");
       this.bucketSorter = Executors.newScheduledThreadPool(1, tf);
     }
     // If eviction is on, Create an instance of PartitionedRegionLRUStatistics

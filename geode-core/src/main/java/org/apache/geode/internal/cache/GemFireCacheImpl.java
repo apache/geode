@@ -175,7 +175,6 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
@@ -217,6 +216,7 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
@@ -904,7 +904,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.persistentMemberManager = new PersistentMemberManager();
 
       if (asyncEventListeners) {
-        ThreadFactory threadFactory = new NamedThreadFactory("Message Event Thread",
+        ThreadFactory threadFactory = new LoggingThreadFactory("Message Event Thread",
             command -> {
               ConnectionTable.threadWantsSharedResources();
               command.run();
@@ -1802,7 +1802,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private ExecutorService getShutdownAllExecutorService(int size) {
     return Executors.newFixedThreadPool(shutdownAllPoolSize == -1 ? size : shutdownAllPoolSize,
-        new NamedThreadFactory("ShutdownAll-"));
+        new LoggingThreadFactory("ShutdownAll-"));
   }
 
   private void shutDownOnePRGracefully(PartitionedRegion partitionedRegion) {

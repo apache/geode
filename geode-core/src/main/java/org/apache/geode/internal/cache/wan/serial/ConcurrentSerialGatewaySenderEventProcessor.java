@@ -37,7 +37,6 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
@@ -50,6 +49,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -282,7 +282,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     setIsStopped(true);
 
     ThreadFactory threadFactory =
-        new NamedThreadFactory("ConcurrentSerialGatewaySenderEventProcessor Stopper Thread");
+        new LoggingThreadFactory("ConcurrentSerialGatewaySenderEventProcessor Stopper Thread");
     List<SenderStopperCallable> stopperCallables = new ArrayList<SenderStopperCallable>();
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       stopperCallables.add(new SenderStopperCallable(serialProcessor));

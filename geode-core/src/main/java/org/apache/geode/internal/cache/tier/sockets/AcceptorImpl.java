@@ -76,7 +76,6 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
@@ -91,6 +90,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
@@ -564,7 +564,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private ThreadPoolExecutor initializeHandshakerThreadPool() throws IOException {
     String threadName =
         "Handshaker " + serverSock.getInetAddress() + ":" + this.localPort + " Thread ";
-    ThreadFactory socketThreadFactory = new NamedThreadFactory(threadName,
+    ThreadFactory socketThreadFactory = new LoggingThreadFactory(threadName,
         thread -> getStats().incAcceptThreadsCreated(), null);
     try {
       final BlockingQueue blockingQueue = new SynchronousQueue();
@@ -590,7 +590,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   private ThreadPoolExecutor initializeClientQueueInitializerThreadPool() throws IOException {
     ThreadFactory clientQueueThreadFactory =
-        new NamedThreadFactory("Client Queue Initialization Thread ",
+        new LoggingThreadFactory("Client Queue Initialization Thread ",
             command -> {
               try {
                 command.run();
@@ -605,7 +605,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   private ThreadPoolExecutor initializeServerConnectionThreadPool() throws IOException {
     String threadName = "ServerConnection on port " + this.localPort + " Thread ";
-    ThreadFactory socketThreadFactory = new NamedThreadFactory(threadName,
+    ThreadFactory socketThreadFactory = new LoggingThreadFactory(threadName,
         thread -> getStats().incConnectionThreadsCreated(),
         command -> {
           try {

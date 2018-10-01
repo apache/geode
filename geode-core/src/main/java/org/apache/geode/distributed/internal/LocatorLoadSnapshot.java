@@ -34,8 +34,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 
 /**
  * A data structure used to hold load information for a locator
@@ -75,7 +75,7 @@ public class LocatorLoadSnapshot {
   private boolean rebalancing;
 
   private final ScheduledThreadPoolExecutor estimateTimeoutProcessor =
-      new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("loadEstimateTimeoutProcessor"));
+      new ScheduledThreadPoolExecutor(1, new LoggingThreadFactory("loadEstimateTimeoutProcessor"));
 
   public LocatorLoadSnapshot() {
     connectionLoadMap.put(null, new HashMap());

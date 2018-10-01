@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -45,6 +44,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event
@@ -113,7 +113,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     this.cache = cache;
 
     if (!DISABLE_HEAP_EVICTOR_THREAD_POOL) {
-      ThreadFactory evictorThreadFactory = new NamedThreadFactory(threadName);
+      ThreadFactory evictorThreadFactory = new LoggingThreadFactory(threadName);
       BlockingQueue<Runnable> poolQueue =
           new OverflowQueueWithDMStats(this.cache.getCachePerfStats().getEvictionQueueStatHelper());
       this.evictorThreadPool = new ThreadPoolExecutor(MAX_EVICTOR_THREADS, MAX_EVICTOR_THREADS, 15,

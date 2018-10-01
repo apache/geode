@@ -67,7 +67,6 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.SetUtils;
@@ -80,6 +79,7 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -693,7 +693,7 @@ public class ClusterDistributionManager implements DistributionManager {
                   this.stats.getSerialQueueHelper());
           poolQueue = this.serialQueue;
         }
-        ThreadFactory tf = new NamedThreadFactory("Serial Message Processor",
+        ThreadFactory tf = new LoggingThreadFactory("Serial Message Processor",
             thread -> stats.incSerialThreadStarts(),
             this::doSerialThread);
         this.serialThread = new SerialQueuedExecutorWithDMStats(poolQueue,
@@ -701,7 +701,7 @@ public class ClusterDistributionManager implements DistributionManager {
       }
       {
         BlockingQueue q = new LinkedBlockingQueue();
-        ThreadFactory tf = new NamedThreadFactory("View Message Processor",
+        ThreadFactory tf = new LoggingThreadFactory("View Message Processor",
             thread -> stats.incViewThreadStarts(),
             this::doViewThread);
         this.viewThread = new SerialQueuedExecutorWithDMStats(q,
@@ -716,7 +716,7 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getOverflowQueueHelper());
         }
-        ThreadFactory tf = new NamedThreadFactory("Pooled Message Processor ",
+        ThreadFactory tf = new LoggingThreadFactory("Pooled Message Processor ",
             thread -> stats.incProcessingThreadStarts(),
             this::doProcessingThread);
         this.threadPool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
@@ -732,7 +732,7 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getHighPriorityQueueHelper());
         }
-        ThreadFactory tf = new NamedThreadFactory("Pooled High Priority Message Processor ",
+        ThreadFactory tf = new LoggingThreadFactory("Pooled High Priority Message Processor ",
             thread -> stats.incHighPriorityThreadStarts(),
             this::doHighPriorityThread);
         this.highPriorityPool = new PooledExecutorWithDMStats(poolQueue, MAX_THREADS,
@@ -741,7 +741,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
 
       {
-        ThreadFactory tf = new NamedThreadFactory("Pooled Waiting Message Processor ",
+        ThreadFactory tf = new LoggingThreadFactory("Pooled Waiting Message Processor ",
             thread -> stats.incWaitingThreadStarts(),
             this::doWaitingThread);
         BlockingQueue<Runnable> poolQueue;
@@ -756,7 +756,7 @@ public class ClusterDistributionManager implements DistributionManager {
       }
 
       {
-        ThreadFactory tf = new NamedThreadFactory("PrMetaData cleanup Message Processor ",
+        ThreadFactory tf = new LoggingThreadFactory("PrMetaData cleanup Message Processor ",
             thread -> stats.incWaitingThreadStarts(),
             this::doWaitingThread); // should this pool using the waiting pool stats?
         BlockingQueue<Runnable> poolQueue;
@@ -773,7 +773,7 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getPartitionedRegionQueueHelper());
         }
-        ThreadFactory tf = new NamedThreadFactory("PartitionedRegion Message Processor",
+        ThreadFactory tf = new LoggingThreadFactory("PartitionedRegion Message Processor",
             thread -> stats.incPartitionedRegionThreadStarts(),
             this::doPartitionRegionThread);
         if (MAX_PR_THREADS > 1) {
@@ -794,7 +794,7 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = new OverflowQueueWithDMStats<>(INCOMING_QUEUE_LIMIT,
               this.stats.getFunctionExecutionQueueHelper());
         }
-        ThreadFactory tf = new NamedThreadFactory("Function Execution Processor",
+        ThreadFactory tf = new LoggingThreadFactory("Function Execution Processor",
             thread -> stats.incFunctionExecutionThreadStarts(),
             this::doFunctionExecutionThread);
 
@@ -3392,7 +3392,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
       serialQueuedMap.put(id, poolQueue);
 
-      ThreadFactory tf = new NamedThreadFactory("Pooled Serial Message Processor" + id + "-",
+      ThreadFactory tf = new LoggingThreadFactory("Pooled Serial Message Processor" + id + "-",
           thread -> stats.incSerialPooledThreadStarts(),
           this::doSerialPooledThread);
       return new SerialQueuedExecutorWithDMStats(poolQueue,

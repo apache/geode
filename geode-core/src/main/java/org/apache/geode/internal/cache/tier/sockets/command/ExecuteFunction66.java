@@ -28,7 +28,6 @@ import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -50,6 +49,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
@@ -64,7 +64,7 @@ public class ExecuteFunction66 extends BaseCommand {
   protected static volatile boolean ASYNC_TX_WARNING_ISSUED = false;
 
   static final ExecutorService execService =
-      Executors.newCachedThreadPool(new NamedThreadFactory("Function Execution Thread-"));
+      Executors.newCachedThreadPool(new LoggingThreadFactory("Function Execution Thread-"));
 
   public static Command getCommand() {
     return singleton;

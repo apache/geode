@@ -37,7 +37,6 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
@@ -45,6 +44,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetE
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class SingleHopClientExecutor {
@@ -52,7 +52,7 @@ public class SingleHopClientExecutor {
   private static final Logger logger = LogService.getLogger();
 
   static final ExecutorService execService =
-      Executors.newCachedThreadPool(new NamedThreadFactory("Function Execution Thread-"));
+      Executors.newCachedThreadPool(new LoggingThreadFactory("Function Execution Thread-"));
 
   static void submitAll(List callableTasks) {
     if (callableTasks != null && !callableTasks.isEmpty()) {

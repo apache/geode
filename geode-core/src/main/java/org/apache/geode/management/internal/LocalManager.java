@@ -41,12 +41,12 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -103,7 +103,7 @@ public class LocalManager extends Manager {
       if (repo.getLocalMonitoringRegion() != null) {
         return;
       } else {
-        ThreadFactory tf = new NamedThreadFactory("Management Task");
+        ThreadFactory tf = new LoggingThreadFactory("Management Task");
         singleThreadFederationScheduler = Executors.newSingleThreadScheduledExecutor(tf);
 
         if (logger.isDebugEnabled()) {

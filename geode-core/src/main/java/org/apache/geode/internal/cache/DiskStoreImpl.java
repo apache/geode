@@ -87,7 +87,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
@@ -117,6 +116,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -486,13 +486,13 @@ public class DiskStoreImpl implements DiskStore {
 
     int MAXT = DiskStoreImpl.MAX_CONCURRENT_COMPACTIONS;
     final ThreadFactory compactThreadFactory =
-        new NamedThreadFactory("Idle OplogCompactor");
+        new LoggingThreadFactory("Idle OplogCompactor");
     this.diskStoreTaskPool = new ThreadPoolExecutor(MAXT, MAXT, 10, TimeUnit.SECONDS,
         new LinkedBlockingQueue(), compactThreadFactory);
     this.diskStoreTaskPool.allowCoreThreadTimeOut(true);
 
     final ThreadFactory deleteThreadFactory =
-        new NamedThreadFactory("Oplog Delete Task");
+        new LoggingThreadFactory("Oplog Delete Task");
     this.delayedWritePool = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
         new LinkedBlockingQueue(MAX_PENDING_TASKS), deleteThreadFactory,
         new ThreadPoolExecutor.CallerRunsPolicy());

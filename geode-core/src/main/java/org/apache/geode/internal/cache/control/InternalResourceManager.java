@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
@@ -52,6 +51,7 @@ import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -117,7 +117,7 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor that other classes may use for handling resource
     // related tasks
-    ThreadFactory tf = new NamedThreadFactory("ResourceManagerRecoveryThread ");
+    ThreadFactory tf = new LoggingThreadFactory("ResourceManagerRecoveryThread ");
     this.scheduledExecutor = new ScheduledThreadPoolExecutor(MAX_RESOURCE_MANAGER_EXE_THREADS, tf);
 
     // Initialize the load probe
@@ -130,7 +130,7 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor the resource manager and the monitors it creates
     // can use to handle dispatching of notifications.
-    ThreadFactory eventProcessorFactory = new NamedThreadFactory("Notification Handler",
+    ThreadFactory eventProcessorFactory = new LoggingThreadFactory("Notification Handler",
         thread -> thread.setPriority(Thread.MAX_PRIORITY), null);
     BlockingQueue<Runnable> threadQ =
         new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());

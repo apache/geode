@@ -29,9 +29,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -117,7 +117,7 @@ public class DiskStoreMonitor {
     if (disableMonitor) {
       exec = null;
     } else {
-      exec = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DiskStoreMonitor"));
+      exec = Executors.newScheduledThreadPool(1, new LoggingThreadFactory("DiskStoreMonitor"));
       // always monitor the log dir, even if there are no disk stores
       exec.scheduleWithFixedDelay(() -> {
         try {

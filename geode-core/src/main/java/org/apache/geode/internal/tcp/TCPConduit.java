@@ -52,10 +52,10 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.NamedThreadFactory;
 import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -375,7 +375,7 @@ public class TCPConduit implements Runnable {
     {
       ThreadPoolExecutor tmp_hsPool = null;
       String threadName = "P2P-Handshaker " + ba + ":" + p + " Thread ";
-      ThreadFactory socketThreadFactory = new NamedThreadFactory(threadName);
+      ThreadFactory socketThreadFactory = new LoggingThreadFactory(threadName);
       try {
         final BlockingQueue bq = new SynchronousQueue();
         final RejectedExecutionHandler reh = (r, pool) -> {

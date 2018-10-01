@@ -32,7 +32,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.NamedThreadFactory;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -77,7 +77,7 @@ public class StartGatewaySenderCommand extends InternalGfshCommand {
     }
 
     ExecutorService execService =
-        Executors.newCachedThreadPool(new NamedThreadFactory("Start Sender Command Thread "));
+        Executors.newCachedThreadPool(new LoggingThreadFactory("Start Sender Command Thread "));
 
     List<Callable<List>> callables = new ArrayList<>();
 
