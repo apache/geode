@@ -16,6 +16,9 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+import static org.apache.geode.admin.GemFireHealth.Health;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -71,7 +74,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     int i = in.readInt();
-    GemFireHealth.Health oHC = (GemFireHealth.Health) DataSerializer.readObject(in);
+    Health oHC = readObject(in);
     init_(i, oHC);
   }
 

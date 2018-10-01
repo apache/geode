@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -82,7 +84,7 @@ public class DateMessage extends SerialDistributionMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     super.fromData(in);
-    this.date = (Date) DataSerializer.readObject(in);
+    this.date = readObject(in);
   }
 
   public String toString() {

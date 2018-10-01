@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -155,7 +157,7 @@ public class DestroyOperation extends DistributedCacheOperation {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.eventId = (EventID) DataSerializer.readObject(in);
+      this.eventId = readObject(in);
       this.key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
       if (hasTailKey.booleanValue()) {

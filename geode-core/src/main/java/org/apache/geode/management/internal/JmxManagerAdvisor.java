@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -214,7 +216,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.processorId = in.readInt();
-      this.profile = (JmxManagerProfile) DataSerializer.readObject(in);
+      this.profile = readObject(in);
     }
 
     @Override

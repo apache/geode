@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -75,7 +77,7 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.listenerId = in.readInt();
-    this.status = (GemFireHealth.Health) DataSerializer.readObject(in);
+    this.status = readObject(in);
   }
 
   @Override

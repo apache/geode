@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -214,7 +216,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.eventId = readObject(in);
     this.regionName = DataSerializer.readString(in);
     this.keyOfInterest = DataSerializer.readObject(in);
     this.isDurable = DataSerializer.readPrimitiveBoolean(in);

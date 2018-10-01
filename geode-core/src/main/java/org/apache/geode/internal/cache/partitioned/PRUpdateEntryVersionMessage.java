@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -171,7 +173,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
     super.fromData(in);
     this.key = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.eventId = readObject(in);
     this.versionTag = DataSerializer.readObject(in);
   }
 

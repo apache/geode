@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -279,7 +281,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       this.processorId = in.readInt();
       this.grantorSerialNumber = in.readInt();
       this.grantorVersion = in.readLong();
-      this.elder = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.elder = readObject(in);
     }
 
     @Override

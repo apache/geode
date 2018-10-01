@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -151,8 +153,8 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
-    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
-    this.attributes = (RemoteRegionAttributes) DataSerializer.readObject(in);
+    this.stats = readObject(in);
+    this.attributes = readObject(in);
     this.entryCount = in.readInt();
     this.subregionCount = in.readInt();
     this.userAttribute = DataSerializer.readObject(in);

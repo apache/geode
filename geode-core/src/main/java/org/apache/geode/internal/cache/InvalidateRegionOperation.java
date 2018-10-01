@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -87,7 +89,7 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.eventID = (EventID) DataSerializer.readObject(in);
+      this.eventID = readObject(in);
     }
 
     @Override

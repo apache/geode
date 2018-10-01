@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -105,7 +107,7 @@ public class InterestEventMessage extends PartitionMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.event = (InterestRegistrationEvent) DataSerializer.readObject(in);
+    this.event = readObject(in);
   }
 
   @Override

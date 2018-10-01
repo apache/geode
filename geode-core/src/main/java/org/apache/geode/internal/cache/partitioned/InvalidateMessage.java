@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -317,7 +319,7 @@ public class InvalidateMessage extends DestroyMessage {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.versionTag = (VersionTag) DataSerializer.readObject(in);
+      this.versionTag = readObject(in);
     }
 
     @Override

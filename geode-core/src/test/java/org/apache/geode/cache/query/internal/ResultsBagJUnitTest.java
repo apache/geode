@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -105,7 +106,7 @@ public class ResultsBagJUnitTest {
     HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(w, hdos);
     DataInputStream in = new DataInputStream(hdos.getInputStream());
-    SelectResults setCopy = (SelectResults) DataSerializer.readObject(in);
+    SelectResults setCopy = readObject(in);
 
     assertEquals(4, setCopy.size());
     assertTrue(setCopy.contains(new Integer(4)));

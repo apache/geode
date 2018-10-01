@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -92,7 +94,7 @@ public class ObjectNamesResponse extends AdminResponse implements Cancellable {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.objectNames = (HashSet) DataSerializer.readObject(in);
+    this.objectNames = readObject(in);
   }
 
   @Override

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -64,7 +66,7 @@ public class FinalCheckPassedMessage extends HighPriorityDistributionMessage {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    suspect = (InternalDistributedMember) DataSerializer.readObject(in);
+    suspect = readObject(in);
   }
 
   public InternalDistributedMember getSuspect() {

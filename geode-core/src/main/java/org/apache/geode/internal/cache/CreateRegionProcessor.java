@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -741,7 +743,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.regionPath = DataSerializer.readString(in);
-      this.profile = (CacheProfile) DataSerializer.readObject(in);
+      this.profile = readObject(in);
       this.processorId = in.readInt();
       this.concurrencyChecksEnabled = in.readBoolean();
     }
@@ -801,7 +803,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       if (in.readBoolean()) {
-        this.profile = (CacheProfile) DataSerializer.readObject(in);
+        this.profile = readObject(in);
       }
       int size = in.readInt();
       if (size == 0) {

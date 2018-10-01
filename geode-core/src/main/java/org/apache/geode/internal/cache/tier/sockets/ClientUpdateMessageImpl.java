@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -1280,7 +1282,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
     this._clientInterestListInv = ids;
 
-    this.versionTag = (VersionTag) DataSerializer.readObject(in);
+    this.versionTag = readObject(in);
   }
 
   private Object getOriginalCallbackArgument() {

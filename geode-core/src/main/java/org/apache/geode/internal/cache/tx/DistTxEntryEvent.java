@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -30,7 +32,6 @@ import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryDat
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
@@ -98,7 +99,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.eventID = (EventID) DataSerializer.readObject(in);
+    this.eventID = readObject(in);
     this.regionName = DataSerializer.readString(in);
     this.op = Operation.fromOrdinal(in.readByte());
     Object key = DataSerializer.readObject(in);

@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -115,7 +117,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
     super.fromData(in);
     this.objectValue = DataSerializer.readObject(in);
     this.userAttribute = DataSerializer.readObject(in);
-    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
+    this.stats = readObject(in);
   }
 
   @Override

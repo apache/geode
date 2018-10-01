@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -211,6 +213,6 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this._id = DataSerializer.readPrimitiveInt(in);
-    this.statisticInfo = (StatisticInfo) DataSerializer.readObject(in);
+    this.statisticInfo = readObject(in);
   }
 }

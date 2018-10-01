@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -136,7 +138,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     this.searchTimeout = in.readInt();
     this.upTime = in.readInt();
     this.rootRegionNames = DataSerializer.readStringArray(in);
-    this.perfStats = (RemoteStatResource) DataSerializer.readObject(in);
+    this.perfStats = readObject(in);
     this.bridgeServerIds = DataSerializer.readIntArray(in);
     this.isServer = in.readBoolean();
   }

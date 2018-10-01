@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -182,7 +184,7 @@ public class BridgeServerRequest extends AdminRequest {
     super.fromData(in);
     this.cacheId = in.readInt();
     this.operation = in.readInt();
-    this.bridgeInfo = (RemoteBridgeServer) DataSerializer.readObject(in);
+    this.bridgeInfo = readObject(in);
     this.bridgeId = in.readInt();
   }
 

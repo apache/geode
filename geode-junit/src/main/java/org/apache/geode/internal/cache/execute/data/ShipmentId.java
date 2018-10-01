@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute.data;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -37,7 +39,7 @@ public class ShipmentId implements DataSerializable {
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.shipmentId = DataSerializer.readInteger(in);
-    this.orderId = (OrderId) DataSerializer.readObject(in);
+    this.orderId = readObject(in);
   }
 
   public void toData(DataOutput out) throws IOException {

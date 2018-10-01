@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -127,7 +129,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
     this.setRegionName(DataSerializer.readString(in));
     this.removalInformation = DataSerializer.readObject(in);
     this._membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    this._eventIdentifier = (EventID) DataSerializer.readObject(in);
+    this._eventIdentifier = readObject(in);
   }
 
   @Override

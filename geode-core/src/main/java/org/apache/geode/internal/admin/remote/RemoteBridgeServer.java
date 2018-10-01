@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -205,7 +207,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
     setBindAddress(DataSerializer.readString(in));
     setGroups(DataSerializer.readStringArray(in));
     setHostnameForClients(DataSerializer.readString(in));
-    setLoadProbe((ServerLoadProbe) DataSerializer.readObject(in));
+    setLoadProbe(readObject(in));
     setLoadPollInterval(DataSerializer.readPrimitiveLong(in));
     this.socketBufferSize = in.readInt();
     this.tcpNoDelay = in.readBoolean();

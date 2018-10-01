@@ -20,6 +20,7 @@
 
 package org.apache.geode.cache.query.functional;
 
+import static org.apache.geode.DataSerializer.readObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -123,7 +124,7 @@ public class ResultsDataSerializabilityJUnitTest {
     out.close();
 
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
-    SelectResults res2 = (SelectResults) DataSerializer.readObject(in);
+    SelectResults res2 = readObject(in);
     in.close();
 
     assertEquals(res2.size(), res1.size());

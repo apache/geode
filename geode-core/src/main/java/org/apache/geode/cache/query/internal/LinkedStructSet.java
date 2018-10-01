@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -172,7 +174,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.modifiable = in.readBoolean();
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = readObject(in);
     for (int j = size; j > 0; j--) {
       Object[] fieldValues = DataSerializer.readObject(in);
       this.add(new StructImpl(this.structType, fieldValues));

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -82,7 +83,7 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
     DataSerializer.writeObject(o1, out);
     out.flush();
     DataInput in = getDataInput();
-    assertEquals(o1, DataSerializer.<Object>readObject(in));
+    assertEquals(o1, readObject(in));
     this.baos = new ByteArrayOutputStream();
   }
 
@@ -109,13 +110,7 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
     ResultsBag rbWithData = new ResultsBag(data, (CachePerfStats) null);
     rbWithData.setElementType(elementType); // avoid NPE in equals
     checkRoundTrip(rbWithData);
-    /*
-     * Set rbWithoutDataAsSet = new ResultsBag().asSet(); ResultsCollectionWrapper rcw = new
-     * ResultsCollectionWrapper(elementType, rbWithoutDataAsSet, -1); checkRoundTrip(rcw); Set
-     * rbWithDataAsSet = new ResultsBag(data, (CachePerfStats)null).asSet();
-     * ResultsCollectionWrapper rcwWithData = new ResultsCollectionWrapper(elementType,
-     * rbWithDataAsSet, -1); checkRoundTrip(rcwWithData);
-     */
+
     // SortedResultSet
     SortedResultSet srsWithoutData = new SortedResultSet();
     srsWithoutData.setElementType(elementType); // avoid NPE in equals
@@ -124,9 +119,6 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
     srsWithData.setElementType(elementType); // avoid NPE in equals
     checkRoundTrip(srsWithData);
 
-    // SortedStructSet
-    // SortedStructSet sssWithoutData = new SortedStructSet();
-    // checkRoundTrip(sssWithoutData);
   }
 
   private static class SimpleObjectType implements ObjectType {

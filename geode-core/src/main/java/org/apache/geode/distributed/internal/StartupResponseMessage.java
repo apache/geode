@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -259,7 +261,7 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage
       instantiatorIds[i] = in.readInt();
     } // for
 
-    interfaces = (Set) DataSerializer.readObject(in);
+    interfaces = readObject(in);
     distributedSystemId = in.readInt();
     redundancyZone = DataSerializer.readString(in);
   }

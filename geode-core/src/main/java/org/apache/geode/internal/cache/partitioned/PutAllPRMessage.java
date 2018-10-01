@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -793,7 +795,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.result = in.readBoolean();
-      this.versions = (VersionedObjectList) DataSerializer.readObject(in);
+      this.versions = readObject(in);
     }
 
     @Override

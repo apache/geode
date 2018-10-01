@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -135,7 +137,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+    this.elementType = readObject(in);
     this.size = in.readInt();
     assert this.size >= 0 : this.size;
     this.map = createMapForFromData();

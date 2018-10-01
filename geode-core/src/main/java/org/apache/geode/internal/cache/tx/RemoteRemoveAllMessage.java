@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -218,7 +220,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.eventId = readObject(in);
     this.callbackArg = DataSerializer.readObject(in);
     this.posDup = (flags & POS_DUP) != 0;
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
@@ -465,7 +467,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.versions = (VersionedObjectList) DataSerializer.readObject(in);
+      this.versions = readObject(in);
     }
 
     @Override

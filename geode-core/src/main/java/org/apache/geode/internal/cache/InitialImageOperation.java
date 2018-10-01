@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -2067,10 +2069,10 @@ public class InitialImageOperation {
       this.keysOnly = in.readBoolean();
       this.targetReinitialized = in.readBoolean();
       this.checkTombstoneVersions = in.readBoolean();
-      this.lostMemberVersionID = (VersionSource) DataSerializer.readObject(in);
-      this.versionVector = (RegionVersionVector) DataSerializer.readObject(in);
-      this.lostMemberID = (InternalDistributedMember) DataSerializer.readObject(in);
-      this.unfinishedKeys = (Set) DataSerializer.readObject(in);
+      this.lostMemberVersionID = readObject(in);
+      this.versionVector = readObject(in);
+      this.lostMemberID = readObject(in);
+      this.unfinishedKeys = readObject(in);
     }
 
     @Override
@@ -3291,7 +3293,7 @@ public class InitialImageOperation {
           logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "reading {} keys", size);
         }
         for (int i = 0; i < size; i++) {
-          super.add((Entry) DataSerializer.readObject(in));
+          super.add(readObject(in));
         }
       }
 

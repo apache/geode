@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -127,7 +129,7 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readObject(in);
     this.value = DataSerializer.readObject(in);
-    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
+    this.stats = readObject(in);
     this.userAttribute = DataSerializer.readObject(in);
   }
 }

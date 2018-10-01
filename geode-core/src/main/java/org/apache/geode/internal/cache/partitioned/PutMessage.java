@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
@@ -494,7 +495,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       this.bridgeContext = ClientProxyMembershipID.readCanonicalized(in);
     }
     if ((extraFlags & HAS_ORIGINAL_SENDER) != 0) {
-      this.originalSender = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.originalSender = readObject(in);
     }
     this.eventId = new EventID();
     InternalDataSerializer.invokeFromData(this.eventId, in);
@@ -931,7 +932,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       this.result = in.readBoolean();
       this.op = Operation.fromOrdinal(in.readByte());
       this.oldValue = DataSerializer.readObject(in);
-      this.versionTag = (VersionTag) DataSerializer.readObject(in);
+      this.versionTag = readObject(in);
     }
 
     @Override

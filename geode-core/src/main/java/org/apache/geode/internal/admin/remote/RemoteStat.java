@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -113,7 +115,7 @@ public class RemoteStat implements Stat, DataSerializable {
     this.id = in.readInt();
     this.units = DataSerializer.readString(in);
     this.desc = DataSerializer.readString(in);
-    this.value = (Number) DataSerializer.readObject(in);
+    this.value = readObject(in);
     this.isCounter = in.readBoolean();
   }
 

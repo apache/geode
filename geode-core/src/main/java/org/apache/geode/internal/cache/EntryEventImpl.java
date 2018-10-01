@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
@@ -193,14 +194,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Reads the contents of this message from the given input.
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.eventID = (EventID) DataSerializer.readObject(in);
+    this.eventID = readObject(in);
     Object key = DataSerializer.readObject(in);
     Object value = DataSerializer.readObject(in);
     this.keyInfo = new KeyInfo(key, value, null);
     this.op = Operation.fromOrdinal(in.readByte());
     this.eventFlags = in.readShort();
     this.keyInfo.setCallbackArg(DataSerializer.readObject(in));
-    this.txId = (TXId) DataSerializer.readObject(in);
+    this.txId = readObject(in);
 
     if (in.readBoolean()) { // isDelta
       assert false : "isDelta should never be true";

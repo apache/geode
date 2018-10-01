@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -163,7 +165,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.type = (StructTypeImpl) DataSerializer.readObject(in);
+    this.type = readObject(in);
     this.values = DataSerializer.readObjectArray(in);
     if (this.values != null) {
       for (Object o : values) {

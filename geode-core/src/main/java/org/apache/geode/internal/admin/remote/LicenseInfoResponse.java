@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -63,7 +65,7 @@ public class LicenseInfoResponse extends AdminResponse {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.p = (Properties) DataSerializer.readObject(in);
+    this.p = readObject(in);
   }
 
   @Override

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -131,8 +133,8 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.lowerLimit = (Number) DataSerializer.readObject(in);
-    this.upperLimit = (Number) DataSerializer.readObject(in);
+    this.lowerLimit = readObject(in);
+    this.upperLimit = readObject(in);
   }
 
   public static final String ID = "GaugeThreshold";

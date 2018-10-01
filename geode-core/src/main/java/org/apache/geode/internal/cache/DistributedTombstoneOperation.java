@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -195,7 +197,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
         }
         this.regionGCVersions.put(mbr, Long.valueOf(in.readLong()));
       }
-      this.eventID = (EventID) DataSerializer.readObject(in);
+      this.eventID = readObject(in);
     }
 
     @Override

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -931,7 +933,7 @@ public class InternalInstantiator {
       }
 
       this.id = in.readInt();
-      this.eventId = (EventID) DataSerializer.readObject(in);
+      this.eventId = readObject(in);
     }
 
     @Override

@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -75,7 +77,7 @@ public class AddHealthListenerRequest extends AdminRequest {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.cfg = (GemFireHealthConfig) DataSerializer.readObject(in);
+    this.cfg = readObject(in);
   }
 
   @Override

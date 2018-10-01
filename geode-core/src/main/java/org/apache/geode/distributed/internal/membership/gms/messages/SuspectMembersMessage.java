@@ -14,6 +14,9 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
+import static org.apache.geode.DataSerializer.readObject;
+import static org.apache.geode.DataSerializer.readString;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -82,7 +85,7 @@ public class SuspectMembersMessage extends HighPriorityDistributionMessage {
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
       SuspectRequest sr = new SuspectRequest(
-          (InternalDistributedMember) DataSerializer.readObject(in), DataSerializer.readString(in));
+          readObject(in), readString(in));
       suspectRequests.add(sr);
     }
   }

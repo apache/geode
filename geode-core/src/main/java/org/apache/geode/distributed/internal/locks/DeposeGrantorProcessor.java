@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -155,7 +157,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
       super.fromData(in);
       this.processorId = in.readInt();
       this.serviceName = DataSerializer.readString(in);
-      this.newGrantor = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.newGrantor = readObject(in);
       this.newGrantorVersion = in.readLong();
       this.newGrantorSerialNumber = in.readInt();
     }

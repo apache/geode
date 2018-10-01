@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,7 +31,6 @@ import java.util.StringTokenizer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ByteArrayData;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.net.SocketCreator;
@@ -132,7 +132,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = readObject(in);
     assertNull(props);
   }
 
@@ -150,7 +150,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = readObject(in);
     assertNull(props);
   }
 
@@ -172,7 +172,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = readObject(in);
     assertNotNull(props);
 
     String hostedLocatorsString = props.getProperty(StartupMessageData.HOSTED_LOCATORS);
@@ -199,7 +199,7 @@ public class StartupMessageDataJUnitTest {
     assertTrue(testStream.size() > 0);
 
     DataInput in = testStream.getDataInput();
-    Properties props = (Properties) DataSerializer.readObject(in);
+    Properties props = readObject(in);
     assertNotNull(props);
 
     String hostedLocatorsString = props.getProperty(StartupMessageData.HOSTED_LOCATORS);

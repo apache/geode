@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -134,7 +136,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     super.fromData(in);
     this.internal = in.readBoolean();
     this.fetchOfflineMembers = in.readBoolean();
-    this.loadProbe = (LoadProbe) DataSerializer.readObject(in);
+    this.loadProbe = readObject(in);
   }
 
   @Override

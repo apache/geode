@@ -14,6 +14,8 @@
  */
 package com.examples.ds;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -47,6 +49,6 @@ public class Employee implements DataSerializable {
     this.id = in.readInt();
     this.name = in.readUTF();
     this.birthday = DataSerializer.readDate(in);
-    this.employer = (Company) DataSerializer.readObject(in);
+    this.employer = readObject(in);
   }
 }

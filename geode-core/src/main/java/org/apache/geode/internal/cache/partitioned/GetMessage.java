@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -455,7 +457,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         this.remoteVersion = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       }
       if (hasVersionTag) {
-        this.versionTag = (VersionTag) DataSerializer.readObject(in);
+        this.versionTag = readObject(in);
       }
     }
 

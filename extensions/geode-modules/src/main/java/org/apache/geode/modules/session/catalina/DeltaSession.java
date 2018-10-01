@@ -567,7 +567,7 @@ public class DeltaSession extends StandardSession
   }
 
   private void readInAttributes(DataInput in) throws IOException, ClassNotFoundException {
-    ConcurrentHashMap map = (ConcurrentHashMap) DataSerializer.readObject(in);
+    ConcurrentHashMap map = DataSerializer.readObject(in);
     try {
       Field field = getAttributesFieldObject();
       field.set(this, map);

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.BufferedReader;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -276,7 +278,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * Instantiator}s are registered. Note: copy-on-write access used for this set
    */
   private static volatile Set listeners = new HashSet();
-  private static DataSerializer dvddeserializer;
 
   static {
     initializeWellKnownSerializers();
@@ -373,7 +374,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * {@link DistributedSystemService#getSerializationAcceptlist}
    */
   public static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
-    Collection<String> result = new ArrayList(1000);
+    Collection<String> result = new ArrayList<>(1000);
     InputStream inputStream = sanctionedSerializables.openStream();
     InputStreamReader reader = new InputStreamReader(inputStream);
     BufferedReader in = new BufferedReader(reader);
@@ -1372,69 +1373,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Persist this class's map to out TODO: saveRegistrations is unused
-   */
-  public static void saveRegistrations(DataOutput out) throws IOException {
-    for (Object v : idsToSerializers.values()) {
-      if (v instanceof InitMarker) {
-        v = ((Marker) v).getSerializer();
-      }
-      if (v instanceof DataSerializer) {
-        DataSerializer ds = (DataSerializer) v;
-        out.writeInt(ds.getId()); // since 5.7 an int instead of a byte
-        DataSerializer.writeClass(ds.getClass(), out);
-      }
-    }
-    if (!dsClassesToHolders.isEmpty()) {
-      Iterator<Entry<String, SerializerAttributesHolder>> iterator =
-          dsClassesToHolders.entrySet().iterator();
-      Class dsClass = null;
-      while (iterator.hasNext()) {
-        try {
-          dsClass = getCachedClass(iterator.next().getKey());
-        } catch (ClassNotFoundException ignored) {
-          logger.info(LogMarker.SERIALIZER_MARKER, "Could not load DataSerializer class: {}",
-              dsClass);
-          continue;
-        }
-        DataSerializer ds = register(dsClass, false);
-        iterator.remove();
-        idsToHolders.remove(ds.getId());
-        for (Class clazz : ds.getSupportedClasses()) {
-          supportedClassesToHolders.remove(clazz.getName());
-        }
-
-        out.writeInt(ds.getId()); // since 5.7 an int instead of a byte
-        DataSerializer.writeClass(ds.getClass(), out);
-      }
-    }
-    // We know that DataSerializer's id must be > 0 so write a zero
-    // to mark the end of the ds list.
-    out.writeInt(0); // since 5.7 an int instead of a byte
-  }
-
-  /**
-   * Read the data from in and register it with this class. TODO: loadRegistrations is unused
-   *
-   * @throws IllegalArgumentException if a registration fails
-   */
-  public static void loadRegistrations(DataInput in) throws IOException {
-    while (in.readInt() != 0) {
-      Class dsClass = null;
-      boolean skip = false;
-      try {
-        dsClass = DataSerializer.readClass(in);
-      } catch (ClassNotFoundException ignored) {
-        skip = true;
-      }
-      if (skip) {
-        continue;
-      }
-      register(dsClass, /* dsId, */ true);
-    }
-  }
-
-  /**
    * Adds a {@code RegistrationListener} that will receive callbacks when {@code DataSerializer}s
    * and {@code Instantiator}s are registered.
    */
@@ -1837,34 +1775,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Reads a {@code Set} from a {@code DataInput} into the given non-null collection. Returns true
-   * if collection read is non-null else returns false. TODO: readCollection is unused
-   *
-   * @throws IOException A problem occurs while reading from {@code in}
-   * @throws ClassNotFoundException The class of one of the {@code Set}'s elements cannot be found.
-   * @see #writeSet
-   */
-  public static <E> boolean readCollection(DataInput in, Collection<E> c)
-      throws IOException, ClassNotFoundException {
-
-    checkIn(in);
-
-    final int size = readArrayLength(in);
-    if (size >= 0) {
-      for (int index = 0; index < size; ++index) {
-        E element = DataSerializer.readObject(in);
-        c.add(element);
-      }
-
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Collection with {} elements: {}", size, c);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * write a set of Long objects
    *
    * @param set the set of Long objects
@@ -1898,49 +1808,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
       return null;
     } else {
       Set result = new HashSet(size);
-      boolean longIDs = in.readBoolean();
-      for (int i = 0; i < size; i++) {
-        long l = longIDs ? in.readLong() : in.readInt();
-        result.add(l);
-      }
-      return result;
-    }
-  }
-
-  /**
-   * write a set of Long objects TODO: writeListOfLongs is unused
-   *
-   * @param list the set of Long objects
-   * @param hasLongIDs if false, write only ints, not longs
-   * @param out the output stream
-   */
-  public static void writeListOfLongs(List list, boolean hasLongIDs, DataOutput out)
-      throws IOException {
-    if (list == null) {
-      out.writeInt(-1);
-    } else {
-      out.writeInt(list.size());
-      out.writeBoolean(hasLongIDs);
-      for (Object aList : list) {
-        Long l = (Long) aList;
-        if (hasLongIDs) {
-          out.writeLong(l);
-        } else {
-          out.writeInt((int) l.longValue());
-        }
-      }
-    }
-  }
-
-  /**
-   * read a set of Long objects
-   */
-  public static List<Long> readListOfLongs(DataInput in) throws IOException {
-    int size = in.readInt();
-    if (size < 0) {
-      return null;
-    } else {
-      List result = new LinkedList();
       boolean longIDs = in.readBoolean();
       for (int i = 0; i < size; i++) {
         long l = longIDs ? in.readLong() : in.readInt();
@@ -2725,11 +2592,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return readString(in, DscodeHelper.toDSCODE(header));
   }
 
-  // TODO: registerDVDDeserializer is unused
-  public static void registerDVDDeserializer(DataSerializer dvddeslzr) {
-    dvddeserializer = dvddeslzr;
-  }
-
   /**
    * Just like readObject but make sure and pdx deserialized is not a PdxInstance.
    *
@@ -3410,23 +3272,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Serializes a list of Integers. The argument may be null. Deserialize with
-   * readListOfIntegers().
-   *
-   * TODO: writeListOfIntegers is unused
-   */
-  public void writeListOfIntegers(List<Integer> list, DataOutput out) throws IOException {
-    if (list != null) {
-      InternalDataSerializer.writeArrayLength(list.size(), out);
-      for (Integer entry : list) {
-        out.writeInt(entry);
-      }
-    } else {
-      InternalDataSerializer.writeArrayLength(-1, out);
-    }
-  }
-
-  /**
    * Any time new serialization format is added then a new enum needs to be added here.
    *
    * @since GemFire 6.6.2
@@ -3754,7 +3599,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       InternalDataSerializer.checkIn(in);
       this.className = DataSerializer.readNonPrimitiveClassName(in);
       this.id = in.readInt();
-      this.eventId = (EventID) DataSerializer.readObject(in);
+      this.eventId = readObject(in);
     }
 
     @Override

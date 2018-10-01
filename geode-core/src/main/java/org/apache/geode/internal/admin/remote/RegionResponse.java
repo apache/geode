@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -138,7 +140,7 @@ public class RegionResponse extends AdminResponse {
     super.fromData(in);
     this.name = DataSerializer.readString(in);
     this.userAttribute = DataSerializer.readString(in);
-    this.exception = (Exception) DataSerializer.readObject(in);
+    this.exception = readObject(in);
   }
 
   @Override

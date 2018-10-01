@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -174,7 +176,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
       this.serializedInstantiators[i] = DataSerializer.readByteArray(in);
     }
     _membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    _eventIdentifier = (EventID) DataSerializer.readObject(in);
+    _eventIdentifier = readObject(in);
   }
 
   @Override

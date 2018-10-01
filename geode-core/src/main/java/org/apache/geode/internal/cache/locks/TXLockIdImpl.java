@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.locks;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -114,7 +116,7 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.memberId = (InternalDistributedMember) DataSerializer.readObject(in);
+    this.memberId = readObject(in);
     this.id = in.readInt();
   }
 

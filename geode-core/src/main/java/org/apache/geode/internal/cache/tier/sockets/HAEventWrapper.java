@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -294,7 +296,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     if (DataSerializer.readPrimitiveBoolean(in)) {
       // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
-      this.eventIdentifier = (EventID) DataSerializer.readObject(in);
+      this.eventIdentifier = readObject(in);
       this.clientUpdateMessage = new ClientUpdateMessageImpl();
       InternalDataSerializer.invokeFromData(this.clientUpdateMessage, in);
       ((ClientUpdateMessageImpl) this.clientUpdateMessage).setEventIdentifier(this.eventIdentifier);
@@ -307,7 +309,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
           } else {
             cqMap = new ClientCqConcurrentMap(size, 1.0f, 1);
             for (int i = 0; i < size; i++) {
-              ClientProxyMembershipID key = DataSerializer.<ClientProxyMembershipID>readObject(in);
+              ClientProxyMembershipID key = readObject(in);
               CqNameToOp value;
               {
                 byte typeByte = in.readByte();
@@ -317,16 +319,16 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                     throw new IllegalStateException(
                         "The value of a ConcurrentHashMap is not allowed to be null.");
                   } else if (cqNamesSize == 1) {
-                    String cqNamesKey = DataSerializer.<String>readObject(in);
-                    Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
+                    String cqNamesKey = readObject(in);
+                    Integer cqNamesValue = readObject(in);
                     value = new CqNameToOpSingleEntry(cqNamesKey, cqNamesValue);
                   } else if (cqNamesSize == 0) {
                     value = new CqNameToOpSingleEntry(null, 0);
                   } else {
                     value = new CqNameToOpHashMap(cqNamesSize);
                     for (int j = 0; j < cqNamesSize; j++) {
-                      String cqNamesKey = DataSerializer.<String>readObject(in);
-                      Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
+                      String cqNamesKey = readObject(in);
+                      Integer cqNamesValue = readObject(in);
                       value.add(cqNamesKey, cqNamesValue);
                     }
                   }

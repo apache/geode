@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -108,7 +110,7 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
 
     super.fromData(in);
     processorId = in.readInt();
-    this.id = (InternalDistributedMember) DataSerializer.readObject(in);
+    this.id = readObject(in);
   }
 
   @Override

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -320,7 +322,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       this.op = Operation.fromOrdinal(in.readByte());
       this.flags = in.readByte();
       if ((this.flags & FILTER_ROUTING) != 0) {
-        this.filterRouting = (FilterRoutingInfo) DataSerializer.readObject(in);
+        this.filterRouting = readObject(in);
       }
       if ((this.flags & VERSION_TAG) != 0) {
         boolean persistentTag = (this.flags & PERSISTENT_TAG) != 0;
@@ -977,7 +979,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
       super.fromData(in);
-      this.eventId = (EventID) DataSerializer.readObject(in);
+      this.eventId = readObject(in);
       this.removeAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
       this.removeAllData = new RemoveAllEntryData[this.removeAllDataSize];
       if (this.removeAllDataSize > 0) {

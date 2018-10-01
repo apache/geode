@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -135,7 +137,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     for (int i = 0; i < numKeys; i++) {
       this.keys.add(DataSerializer.readObject(in));
     }
-    this.eventID = (EventID) DataSerializer.readObject(in);
+    this.eventID = readObject(in);
   }
 
   @Override

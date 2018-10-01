@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -438,7 +440,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = readObject(in);
     for (int j = size; j > 0; j--) {
       this.add(DataSerializer.readObject(in));
     }

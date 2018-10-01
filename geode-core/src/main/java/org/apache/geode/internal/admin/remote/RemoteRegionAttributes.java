@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -414,16 +416,16 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     this.cacheWriterDesc = DataSerializer.readString(in);
     this.cacheListenerDescs = DataSerializer.readStringArray(in);
     this.capacityControllerDesc = DataSerializer.readString(in);
-    this.keyConstraint = (Class) DataSerializer.readObject(in);
-    this.valueConstraint = (Class) DataSerializer.readObject(in);
-    this.rTtl = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.rIdleTimeout = (ExpirationAttributes) DataSerializer.readObject(in);
-    this.eTtl = (ExpirationAttributes) DataSerializer.readObject(in);
+    this.keyConstraint = readObject(in);
+    this.valueConstraint = readObject(in);
+    this.rTtl = readObject(in);
+    this.rIdleTimeout = readObject(in);
+    this.eTtl = readObject(in);
     this.customEttlDesc = DataSerializer.readString(in);
-    this.eIdleTimeout = (ExpirationAttributes) DataSerializer.readObject(in);
+    this.eIdleTimeout = readObject(in);
     this.customEIdleDesc = DataSerializer.readString(in);
-    this.dataPolicy = (DataPolicy) DataSerializer.readObject(in);
-    this.scope = (Scope) DataSerializer.readObject(in);
+    this.dataPolicy = readObject(in);
+    this.scope = readObject(in);
     this.statsEnabled = in.readBoolean();
     this.ignoreJTA = in.readBoolean();
     this.concurrencyLevel = in.readInt();
@@ -435,14 +437,14 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     this.publisher = in.readBoolean();
     this.enableAsyncConflation = in.readBoolean();
 
-    this.diskWriteAttributes = (DiskWriteAttributes) DataSerializer.readObject(in);
-    this.diskDirs = (File[]) DataSerializer.readObject(in);
-    this.diskSizes = (int[]) DataSerializer.readObject(in);
+    this.diskWriteAttributes = readObject(in);
+    this.diskDirs = readObject(in);
+    this.diskSizes = readObject(in);
     this.indexMaintenanceSynchronous = in.readBoolean();
-    this.partitionAttributes = (PartitionAttributes) DataSerializer.readObject(in);
-    this.membershipAttributes = (MembershipAttributes) DataSerializer.readObject(in);
-    this.subscriptionAttributes = (SubscriptionAttributes) DataSerializer.readObject(in);
-    this.evictionAttributes = (EvictionAttributesImpl) DataSerializer.readObject(in);
+    this.partitionAttributes = readObject(in);
+    this.membershipAttributes = readObject(in);
+    this.subscriptionAttributes = readObject(in);
+    this.evictionAttributes = readObject(in);
     this.cloningEnable = in.readBoolean();
     this.diskStoreName = DataSerializer.readString(in);
     this.isDiskSynchronous = in.readBoolean();

@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -76,7 +78,7 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.results = (CacheSnapshot) DataSerializer.readObject(in);
+    this.results = readObject(in);
     this.snapshotId = in.readInt();
   }
 

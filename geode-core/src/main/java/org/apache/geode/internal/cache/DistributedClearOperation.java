@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -229,9 +231,9 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.clearOp = OperationType.values()[in.readByte()];
-      this.eventID = (EventID) DataSerializer.readObject(in);
-      this.rvv = (RegionVersionVector) DataSerializer.readObject(in);
-      this.operationTag = (VersionTag<?>) DataSerializer.readObject(in);
+      this.eventID = readObject(in);
+      this.rvv = readObject(in);
+      this.operationTag = readObject(in);
     }
 
     @Override

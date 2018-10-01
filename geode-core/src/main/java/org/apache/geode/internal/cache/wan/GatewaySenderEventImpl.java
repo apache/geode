@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -707,7 +709,7 @@ public class GatewaySenderEventImpl
         && InternalDataSerializer.getVersionForDataStream(in) == Version.CURRENT) {
       in = new VersionedDataInputStream((InputStream) in, Version.GFE_701);
     }
-    this.id = (EventID) DataSerializer.readObject(in);
+    this.id = readObject(in);
     // TODO:Asif ; Check if this violates Barry's logic of not assiging VM
     // specific Token.FROM_GATEWAY
     // and retain the serialized Token.FROM_GATEWAY
@@ -716,7 +718,7 @@ public class GatewaySenderEventImpl
     this.valueIsObject = in.readByte();
     deserializeKey(in);
     this.value = DataSerializer.readByteArray(in);
-    this.callbackArgument = (GatewaySenderEventCallbackArgument) DataSerializer.readObject(in);
+    this.callbackArgument = readObject(in);
     this.possibleDuplicate = in.readBoolean();
     this.creationTime = in.readLong();
     this.bucketId = in.readInt();

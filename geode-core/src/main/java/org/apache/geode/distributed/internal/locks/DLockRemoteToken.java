@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -81,7 +83,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
       throws IOException, ClassNotFoundException {
     Object name = DataSerializer.readObject(in);
     RemoteThread lesseeThread = null;
-    InternalDistributedMember lessee = (InternalDistributedMember) DataSerializer.readObject(in);
+    InternalDistributedMember lessee = readObject(in);
     lesseeThread = new RemoteThread(lessee, in.readInt());
     int leaseId = in.readInt();
     long leaseExpireTime = in.readLong();

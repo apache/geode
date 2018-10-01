@@ -14,6 +14,8 @@
  */
 package org.apache.geode.pdx;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -47,7 +49,7 @@ class PdxInsideDS implements DataSerializable {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.myString1 = DataSerializer.readString(in);
     this.myLong = DataSerializer.readPrimitiveLong(in);
-    this.myPdx = (PdxSerializable) DataSerializer.readObject(in);
+    this.myPdx = readObject(in);
     this.myString2 = DataSerializer.readString(in);
   }
 

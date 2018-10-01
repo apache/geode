@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -201,6 +203,6 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this._def = (StatAlertDefinition) DataSerializer.readObject(in);
+    this._def = readObject(in);
   }
 }

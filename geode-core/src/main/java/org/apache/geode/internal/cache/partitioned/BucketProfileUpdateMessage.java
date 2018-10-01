@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -151,7 +153,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
     this.prId = in.readInt();
     this.bucketId = in.readInt();
     this.processorId = in.readInt();
-    this.profile = (BucketAdvisor.BucketProfile) DataSerializer.readObject(in);
+    this.profile = readObject(in);
   }
 
   @Override

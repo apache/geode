@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -217,7 +219,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     processorId = in.readInt();
     this.op = operationType.values()[in.readInt()];
     this.useNative = in.readBoolean();
-    this.id = (InternalDistributedMember) DataSerializer.readObject(in);
+    this.id = readObject(in);
   }
 
   @Override

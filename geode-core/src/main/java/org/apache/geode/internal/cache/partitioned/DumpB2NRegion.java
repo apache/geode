@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -221,7 +223,7 @@ public class DumpB2NRegion extends PartitionMessage {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.primaryInfo = (PrimaryInfo) DataSerializer.readObject(in);
+      this.primaryInfo = readObject(in);
     }
 
     @Override

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -346,7 +348,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       this.op = Operation.fromOrdinal(in.readByte());
       this.flags = in.readByte();
       if ((this.flags & FILTER_ROUTING) != 0) {
-        this.filterRouting = (FilterRoutingInfo) DataSerializer.readObject(in);
+        this.filterRouting = readObject(in);
       }
       if ((this.flags & VERSION_TAG) != 0) {
         boolean persistentTag = (this.flags & PERSISTENT_TAG) != 0;
@@ -1194,7 +1196,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
       super.fromData(in);
-      this.eventId = (EventID) DataSerializer.readObject(in);
+      this.eventId = readObject(in);
       this.putAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
       this.putAllData = new PutAllEntryData[this.putAllDataSize];
       if (this.putAllDataSize > 0) {

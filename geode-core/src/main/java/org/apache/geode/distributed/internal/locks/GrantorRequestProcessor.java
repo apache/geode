@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -529,7 +531,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       this.processorId = in.readInt();
       this.opCode = in.readByte();
       if (this.opCode == BECOME_OP) {
-        this.oldTurk = (InternalDistributedMember) DataSerializer.readObject(in);
+        this.oldTurk = readObject(in);
       }
     }
 
@@ -614,7 +616,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.grantor = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.grantor = readObject(in);
       this.elderVersionId = in.readLong();
       this.grantorSerialNumber = in.readInt();
       this.needsRecovery = in.readBoolean();

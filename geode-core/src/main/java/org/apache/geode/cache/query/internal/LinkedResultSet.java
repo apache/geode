@@ -16,6 +16,8 @@ package org.apache.geode.cache.query.internal;
 
 
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -106,7 +108,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int size = in.readInt();
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+    this.elementType = readObject(in);
     for (int j = size; j > 0; j--) {
       this.add(DataSerializer.readObject(in));
     }

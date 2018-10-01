@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -544,7 +546,7 @@ public abstract class PartitionMessage extends DistributionMessage
     if ((s & HAS_TX_ID) != 0)
       this.txUniqId = in.readInt();
     if ((s & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.txMemberId = readObject(in);
     }
   }
 

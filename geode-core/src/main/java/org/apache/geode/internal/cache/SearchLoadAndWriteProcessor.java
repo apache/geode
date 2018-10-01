@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -1704,7 +1706,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       this.isPresent = in.readBoolean();
       this.isSerialized = in.readBoolean();
       this.requestorTimedOut = in.readBoolean();
-      this.versionTag = (VersionTag) DataSerializer.readObject(in);
+      this.versionTag = readObject(in);
     }
 
     @Override
@@ -2362,7 +2364,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       this.processorId = in.readInt();
       this.result = DataSerializer.readByteArray(in);
       this.aCallbackArgument = DataSerializer.readObject(in);
-      this.e = (Exception) DataSerializer.readObject(in);
+      this.e = readObject(in);
       this.isSerialized = in.readBoolean();
       this.requestorTimedOut = in.readBoolean();
 
@@ -2443,7 +2445,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       this.processorId = in.readInt();
       this.regionName = in.readUTF();
       this.timeoutMs = in.readInt();
-      this.event = (CacheEvent) DataSerializer.readObject(in);
+      this.event = readObject(in);
       this.action = in.readInt();
     }
 
@@ -2653,7 +2655,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       super.fromData(in);
       this.processorId = in.readInt();
       this.netWriteSucceeded = in.readBoolean();
-      this.e = (Exception) DataSerializer.readObject(in);
+      this.e = readObject(in);
       this.cacheWriterException = in.readBoolean();
     }
 

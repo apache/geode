@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -156,7 +158,7 @@ public class NonLocalRegionEntry implements RegionEntry, VersionStamp {
     this.value = DataSerializer.readObject(in);
     this.lastModified = in.readLong();
     this.isRemoved = in.readBoolean();
-    this.versionTag = (VersionTag) DataSerializer.readObject(in);
+    this.versionTag = readObject(in);
   }
 
   @Override

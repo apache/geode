@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -157,9 +159,9 @@ public class FetchHostResponse extends AdminResponse {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.name = DataSerializer.readString(in);
-    this.host = (InetAddress) DataSerializer.readObject(in);
-    this.geodeHomeDir = (File) DataSerializer.readObject(in);
-    this.workingDir = (File) DataSerializer.readObject(in);
+    this.host = readObject(in);
+    this.geodeHomeDir = readObject(in);
+    this.workingDir = readObject(in);
     this.birthDate = in.readLong();
     this.isDedicatedCacheServer = in.readBoolean();
   }

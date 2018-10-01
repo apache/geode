@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.query.internal.types;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -120,7 +122,7 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+    this.elementType = readObject(in);
   }
 
   @Override

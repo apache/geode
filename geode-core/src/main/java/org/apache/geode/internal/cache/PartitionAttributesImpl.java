@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -397,8 +399,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     this.localMaxMemory = in.readInt();
     this.totalNumBuckets = in.readInt();
     this.colocatedRegionName = DataSerializer.readString(in);
-    this.localProperties = (Properties) DataSerializer.readObject(in);
-    this.globalProperties = (Properties) DataSerializer.readObject(in);
+    this.localProperties = readObject(in);
+    this.globalProperties = readObject(in);
     this.recoveryDelay = in.readLong();
     this.startupRecoveryDelay = in.readLong();
     this.fixedPAttrs = DataSerializer.readObject(in);

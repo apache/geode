@@ -16,6 +16,8 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -141,7 +143,7 @@ public class RegionRequest extends AdminRequest {
     this.cacheId = in.readInt();
     this.path = DataSerializer.readString(in);
     this.newRegionName = DataSerializer.readString(in);
-    this.newRegionAttributes = (RegionAttributes) DataSerializer.readObject(in);
+    this.newRegionAttributes = readObject(in);
     RegionRequest.setFriendlyName(this);
   }
 

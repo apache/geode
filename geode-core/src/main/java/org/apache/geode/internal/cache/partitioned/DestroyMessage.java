@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -333,8 +335,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     this.op = Operation.fromOrdinal(in.readByte());
     this.notificationOnly = in.readBoolean();
     this.bridgeContext = ClientProxyMembershipID.readCanonicalized(in);
-    this.originalSender = (InternalDistributedMember) DataSerializer.readObject(in);
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.originalSender = readObject(in);
+    this.eventId = readObject(in);
     this.expectedOldValue = DataSerializer.readObject(in);
 
     final boolean hasFilterInfo = ((flags & HAS_FILTER_INFO) != 0);

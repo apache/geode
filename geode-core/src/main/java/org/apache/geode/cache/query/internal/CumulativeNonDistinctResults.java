@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -278,7 +280,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    ObjectType elementType = (ObjectType) DataSerializer.readObject(in);
+    ObjectType elementType = readObject(in);
     this.collectionType = new CollectionTypeImpl(CumulativeNonDistinctResults.class, elementType);
     boolean isStruct = elementType.isStructType();
 

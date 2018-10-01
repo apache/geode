@@ -94,7 +94,7 @@ import org.apache.geode.pdx.PdxInstance;
  *     this.id = in.readInt();
  *     this.name = in.readUTF();
  *     this.birthday = DataSerializer.readDate(in);
- *     this.employer = (Company) DataSerializer.readObject(in);
+ *     this.employer = DataSerializer.readObject(in);
  *   }
  * }
  *
@@ -158,7 +158,7 @@ public class CompanySerializer extends DataSerializer {
     throws IOException, ClassNotFoundException {
 
     String name = in.readUTF();
-    Address address = (Address) readObject(in);
+    Address address = readObject(in);
     return new Company(name, address);
   }
 }
@@ -194,7 +194,7 @@ public abstract class DataSerializer {
 
   /* Used to prevent standard Java serialization when sending data to a non-Java client */
   protected static final ThreadLocal<Boolean> DISALLOW_JAVA_SERIALIZATION =
-      new ThreadLocal<Boolean>();
+      new ThreadLocal<>();
 
   /**
    * Writes an instance of <code>Class</code> to a <code>DataOutput</code>. This method will handle
@@ -596,7 +596,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Boolean {}", value);
     }
 
-    out.writeBoolean(value.booleanValue());
+    out.writeBoolean(value);
   }
 
   /**
@@ -607,7 +607,7 @@ public abstract class DataSerializer {
   public static Boolean readBoolean(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
 
-    Boolean value = Boolean.valueOf(in.readBoolean());
+    Boolean value = in.readBoolean();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Boolean {}", value);
     }
@@ -630,7 +630,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Character {}", value);
     }
 
-    out.writeChar(value.charValue());
+    out.writeChar(value);
   }
 
   /**
@@ -642,7 +642,7 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    Character value = Character.valueOf(in.readChar());
+    Character value = in.readChar();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Character {}", value);
     }
@@ -665,7 +665,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Byte {}", value);
     }
 
-    out.writeByte(value.byteValue());
+    out.writeByte(value);
   }
 
   /**
@@ -676,7 +676,7 @@ public abstract class DataSerializer {
   public static Byte readByte(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
 
-    Byte value = Byte.valueOf(in.readByte());
+    Byte value = in.readByte();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Byte {}", value);
     }
@@ -699,7 +699,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Short {}", value);
     }
 
-    out.writeShort(value.shortValue());
+    out.writeShort(value);
   }
 
   /**
@@ -710,7 +710,7 @@ public abstract class DataSerializer {
   public static Short readShort(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
 
-    Short value = Short.valueOf(in.readShort());
+    Short value = in.readShort();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Short {}", value);
     }
@@ -733,7 +733,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Integer {}", value);
     }
 
-    out.writeInt(value.intValue());
+    out.writeInt(value);
   }
 
   /**
@@ -744,7 +744,7 @@ public abstract class DataSerializer {
   public static Integer readInteger(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
 
-    Integer value = Integer.valueOf(in.readInt());
+    Integer value = in.readInt();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Integer {}", value);
     }
@@ -767,7 +767,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Long {}", value);
     }
 
-    out.writeLong(value.longValue());
+    out.writeLong(value);
   }
 
   /**
@@ -778,7 +778,7 @@ public abstract class DataSerializer {
   public static Long readLong(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
 
-    Long value = Long.valueOf(in.readLong());
+    Long value = in.readLong();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Long {}", value);
     }
@@ -801,7 +801,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Float {}", value);
     }
 
-    out.writeFloat(value.floatValue());
+    out.writeFloat(value);
   }
 
   /**
@@ -812,7 +812,7 @@ public abstract class DataSerializer {
   public static Float readFloat(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
 
-    Float value = Float.valueOf(in.readFloat());
+    Float value = in.readFloat();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Float {}", value);
     }
@@ -835,7 +835,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing Double {}", value);
     }
 
-    out.writeDouble(value.doubleValue());
+    out.writeDouble(value);
   }
 
   /**
@@ -846,7 +846,7 @@ public abstract class DataSerializer {
   public static Double readDouble(DataInput in) throws IOException {
     InternalDataSerializer.checkIn(in);
 
-    Double value = Double.valueOf(in.readDouble());
+    Double value = in.readDouble();
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read Double {}", value);
     }
@@ -2005,9 +2005,9 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      ArrayList<E> list = new ArrayList<E>(size);
+      ArrayList<E> list = new ArrayList<>(size);
       for (int i = 0; i < size; i++) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = readObject(in);
         list.add(element);
       }
 
@@ -2071,9 +2071,9 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      Vector<E> list = new Vector<E>(size);
+      Vector<E> list = new Vector<>(size);
       for (int i = 0; i < size; i++) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = readObject(in);
         list.add(element);
       }
 
@@ -2136,9 +2136,9 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      Stack<E> list = new Stack<E>();
+      Stack<E> list = new Stack<>();
       for (int i = 0; i < size; i++) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = readObject(in);
         list.add(element);
       }
 
@@ -2202,9 +2202,9 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      LinkedList<E> list = new LinkedList<E>();
+      LinkedList<E> list = new LinkedList<>();
       for (int i = 0; i < size; i++) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = readObject(in);
         list.add(element);
       }
 
@@ -2251,9 +2251,9 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      HashSet<E> set = new HashSet<E>(size);
+      HashSet<E> set = new HashSet<>(size);
       for (int i = 0; i < size; i++) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = readObject(in);
         set.add(element);
       }
 
@@ -2300,9 +2300,9 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      LinkedHashSet<E> set = new LinkedHashSet<E>(size);
+      LinkedHashSet<E> set = new LinkedHashSet<>(size);
       for (int i = 0; i < size; i++) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = readObject(in);
         set.add(element);
       }
 
@@ -2367,10 +2367,10 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      HashMap<K, V> map = new HashMap<K, V>(size);
+      HashMap<K, V> map = new HashMap<>(size);
       for (int i = 0; i < size; i++) {
-        K key = DataSerializer.<K>readObject(in);
-        V value = DataSerializer.<V>readObject(in);
+        K key = readObject(in);
+        V value = readObject(in);
         map.put(key, value);
       }
 
@@ -2437,10 +2437,10 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      IdentityHashMap<K, V> map = new IdentityHashMap<K, V>(size);
+      IdentityHashMap<K, V> map = new IdentityHashMap<>(size);
       for (int i = 0; i < size; i++) {
-        K key = DataSerializer.<K>readObject(in);
-        V value = DataSerializer.<V>readObject(in);
+        K key = readObject(in);
+        V value = readObject(in);
         map.put(key, value);
       }
 
@@ -2482,7 +2482,7 @@ public abstract class DataSerializer {
       size = -1;
     } else {
       // take a snapshot to fix bug 44562
-      entrySnapshot = new ArrayList<Map.Entry<?, ?>>(map.entrySet());
+      entrySnapshot = new ArrayList<>(map.entrySet());
       size = entrySnapshot.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
@@ -2517,10 +2517,10 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      ConcurrentHashMap<K, V> map = new ConcurrentHashMap<K, V>(size);
+      ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>(size);
       for (int i = 0; i < size; i++) {
-        K key = DataSerializer.<K>readObject(in);
-        V value = DataSerializer.<V>readObject(in);
+        K key = readObject(in);
+        V value = readObject(in);
         map.put(key, value);
       }
 
@@ -2587,10 +2587,10 @@ public abstract class DataSerializer {
     if (size == -1) {
       return null;
     } else {
-      Hashtable<K, V> map = new Hashtable<K, V>(size);
+      Hashtable<K, V> map = new Hashtable<>(size);
       for (int i = 0; i < size; i++) {
-        K key = DataSerializer.<K>readObject(in);
-        V value = DataSerializer.<V>readObject(in);
+        K key = readObject(in);
+        V value = readObject(in);
         map.put(key, value);
       }
 
@@ -2660,11 +2660,11 @@ public abstract class DataSerializer {
       return null;
     } else {
       Comparator<? super K> c =
-          InternalDataSerializer.<Comparator<? super K>>readNonPdxInstanceObject(in);
-      TreeMap<K, V> map = new TreeMap<K, V>(c);
+          InternalDataSerializer.readNonPdxInstanceObject(in);
+      TreeMap<K, V> map = new TreeMap<>(c);
       for (int i = 0; i < size; i++) {
-        K key = DataSerializer.<K>readObject(in);
-        V value = DataSerializer.<V>readObject(in);
+        K key = readObject(in);
+        V value = readObject(in);
         map.put(key, value);
       }
 
@@ -2730,8 +2730,8 @@ public abstract class DataSerializer {
     } else {
       LinkedHashMap<K, V> map = new LinkedHashMap<>(size);
       for (int i = 0; i < size; i++) {
-        K key = DataSerializer.<K>readObject(in);
-        V value = DataSerializer.<V>readObject(in);
+        K key = readObject(in);
+        V value = readObject(in);
         map.put(key, value);
       }
 
@@ -2800,10 +2800,10 @@ public abstract class DataSerializer {
       return null;
     } else {
       Comparator<? super E> c =
-          InternalDataSerializer.<Comparator<? super E>>readNonPdxInstanceObject(in);
-      TreeSet<E> set = new TreeSet<E>(c);
+          InternalDataSerializer.readNonPdxInstanceObject(in);
+      TreeSet<E> set = new TreeSet<>(c);
       for (int i = 0; i < size; i++) {
-        E element = DataSerializer.<E>readObject(in);
+        E element = readObject(in);
         set.add(element);
       }
 

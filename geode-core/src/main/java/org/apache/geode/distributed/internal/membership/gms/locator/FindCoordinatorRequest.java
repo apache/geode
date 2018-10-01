@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -124,7 +126,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     int size = in.readInt();
     this.rejectedCoordinators = new ArrayList<InternalDistributedMember>(size);
     for (int i = 0; i < size; i++) {
-      this.rejectedCoordinators.add((InternalDistributedMember) DataSerializer.readObject(in));
+      this.rejectedCoordinators.add(readObject(in));
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();

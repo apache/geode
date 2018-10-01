@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.event;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -97,7 +99,7 @@ public class EventSequenceNumberHolder implements DataSerializable {
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     lastSequenceNumber = in.readLong();
-    versionTag = (VersionTag) DataSerializer.readObject(in);
+    versionTag = readObject(in);
   }
 
   public void toData(DataOutput out) throws IOException {

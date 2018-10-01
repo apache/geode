@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
+import static org.apache.geode.DataSerializer.readObject;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -131,7 +133,7 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.threshold = (Number) DataSerializer.readObject(in);
+    this.threshold = readObject(in);
     this.evalForGtThan = DataSerializer.readPrimitiveBoolean(in);
   }
 
