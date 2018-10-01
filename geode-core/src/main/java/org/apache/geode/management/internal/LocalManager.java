@@ -363,13 +363,7 @@ public class LocalManager extends Manager {
         throw e;
       } catch (Throwable th) {
         SystemFailure.checkFailure();
-        // Catching all run time exception and Errors to
-        // pass to Thread group logger
-        // why is this invoking uncaughtException directly??
-        Thread currentThread = Thread.currentThread();
-        ThreadGroup tg = currentThread.getThreadGroup();
-        tg.uncaughtException(currentThread, th);
-        return;
+        throw th;
       }
       if (logger.isTraceEnabled()) {
         logger.trace("Federation completed at managed node : ");
