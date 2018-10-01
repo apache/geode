@@ -3497,6 +3497,9 @@ public class DLockGrantor {
             stats.endGrantorThread(statStart);
           }
 
+        } catch (LockGrantorDestroyedException ex) {
+          this.shutdown = true;
+          return;
         } catch (InterruptedException e) {
           // shutdown probably interrupted us
 
