@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -86,6 +87,39 @@ public class MemberVM extends VMProvider implements Member {
    */
   public void forceDisconnect() {
     vm.invoke("force disconnect", () -> ClusterStartupRule.memberStarter.forceDisconnectMember());
+  }
+
+  /**
+   * This disconnects the distributed system of the member. The reconnect thread will wait for at
+   * least the given delay before completing the attempt.
+   *
+   * @param delayReconnecting minimum delay in milliseconds before reconnect can complete.
+   */
+  public void forceDisconnect(final long delayReconnecting) {
+    vm.invoke(() -> {
+      // The reconnect thread can yield the CPU before allowing the listeners to be invoked. The
+      // latch ensures that the listener is guaranteed to be called before this method returns thus
+      // ensuring that reconnection has started but not yet completed.
+      CountDownLatch latch = new CountDownLatch(1);
+      InternalDistributedSystem.addReconnectListener(
+          new InternalDistributedSystem.ReconnectListener() {
+            @Override
+            public void reconnecting(InternalDistributedSystem oldSystem) {
+              try {
+                Thread.sleep(delayReconnecting);
+                latch.countDown();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+            }
+
+            @Override
+            public void onReconnect(InternalDistributedSystem oldSystem,
+                InternalDistributedSystem newSystem) {}
+          });
+      ClusterStartupRule.memberStarter.forceDisconnectMember();
+      latch.await();
+    });
   }
 
   public void waitTilLocatorFullyReconnected() {

@@ -18,11 +18,9 @@ package org.apache.geode.management;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
-import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.awaitility.Awaitility.waitAtMost;
-import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
 import java.util.List;
@@ -100,10 +98,6 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Test
   public void testLocalBeans_MaintainServerAndCrashLocator() {
-    // TODO: Currently failing on windows and causing CI job to hang.
-    // TODO: Ignoring these until they are fixed.
-    assumeFalse(isWindows());
-
     List<String> initialServerBeans = canonicalBeanNamesFor(server1);
 
     locator1.forceDisconnect();
@@ -123,10 +117,6 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Test
   public void testLocalBeans_MaintainLocatorAndCrashServer() {
-    // TODO: Currently failing on windows and causing CI job to hang.
-    // TODO: Ignoring these until they are fixed.
-    assumeFalse(isWindows());
-
     List<String> initialLocatorBeans = canonicalBeanNamesFor(locator1);
 
     server1.forceDisconnect();
@@ -147,10 +137,6 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Test
   public void testRemoteBeanKnowledge_MaintainServerAndCrashLocator() throws IOException {
-    // TODO: Currently failing on windows and causing CI job to hang.
-    // TODO: Ignoring these until they are fixed.
-    assumeFalse(isWindows());
-
     List<ObjectName> initialLocator1GemfireBeans =
         getFederatedGemfireBeansFrom(locator1);
     List<ObjectName> initialLocator2GemfireBeans =
@@ -189,10 +175,6 @@ public class JMXMBeanReconnectDUnitTest {
   @Test
   public void testRemoteBeanKnowledge_MaintainLocatorAndCrashServer()
       throws IOException {
-    // TODO: Currently failing on windows and causing CI job to hang.
-    // TODO: Ignoring these until they are fixed.
-    assumeFalse(isWindows());
-
     List<ObjectName> initialLocator1GemfireBeans =
         getFederatedGemfireBeansFrom(locator1);
     List<ObjectName> initialLocator2GemfireBeans =
@@ -201,7 +183,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    server1.forceDisconnect();
+    server1.forceDisconnect(2000);
 
     List<ObjectName> intermediateLocator1GemfireBeans =
         getFederatedGemfireBeansFrom(locator1);
