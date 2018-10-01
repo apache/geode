@@ -35,6 +35,47 @@ gradle.taskGraph.whenReady({ graph ->
 
 
 subprojects {
+  apply plugin: 'nebula.facet'
+  facets {
+    // We declare each test type to have parent source "test" so that test all test configurations
+    // (gradle parallelization thread count, core classpath, etc) are inherited.
+    
+    // TODO: During review, please comment on whether, for instance, we might consider
+    // performanceTest to be a child of distributedTest, or if a flat structure is preferable.
+    // Otherwise, each will implicitly inherit "main" 
+    integrationTest {
+      testTaskName = 'integrationTest'
+      includeInCheckLifecycle = false
+      parentSourceSet = 'test'
+    }
+    distributedTest {
+      testTaskName = 'distributedTest'
+      includeInCheckLifecycle = false
+      parentSourceSet = 'test'
+    }
+    performanceTest {
+      testTaskName = 'performanceTest'
+      includeInCheckLifecycle = false
+      parentSourceSet = 'test'
+    }
+    acceptanceTest {
+      testTaskName = 'acceptanceTest'
+      includeInCheckLifecycle = false
+      parentSourceSet = 'test'
+    }
+    uiTest {
+      testTaskName = 'uiTest'
+      includeInCheckLifecycle = false
+      parentSourceSet = 'test'
+    }
+    upgradeTest {
+      testTaskName = 'upgradeTest'
+      includeInCheckLifecycle = false
+      parentSourceSet = 'test'
+    }
+  }
+
+
   dependencies {
     testCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
       exclude module: 'junit-dep'
@@ -56,29 +97,9 @@ subprojects {
     testRuntime('cglib:cglib:' + project.'cglib.version') {
       exclude module: 'org.apache.ant'
     }
-  }
 
-  // This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
-  // and associated classes are themselves removed, per GEODE-5606
-  configurations {
-    apt
-  }
+    distributedTestCompile project(":geode-dunit")
 
-  dependencies {
-    apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
-    apt(group: 'junit', name: 'junit', version: project.'junit.version') {
-      transitive = false
-    }
-    // Because EnsureCorrectRunsWithProcessor needs access to
-    // CategoryWithParameterizedRunnerFactory.
-    // buildSrc uses version 1.3.0, so we use it here instead of the local geode-junit project
-    apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
-      transitive = false
-    }
-  }
-
-  compileTestJava {
-    options.annotationProcessorPath = files(configurations['apt'])
   }
 
   test {
@@ -92,60 +113,6 @@ subprojects {
     }
   }
 
-  apply plugin: 'nebula.facet'
-  facets {
-    integrationTest {
-      testTaskName = 'integrationTest'
-      includeInCheckLifecycle = false
-    }
-    distributedTest {
-      testTaskName = 'distributedTest'
-      includeInCheckLifecycle = false
-    }
-    performanceTest {
-      testTaskName = 'performanceTest'
-      includeInCheckLifecycle = false
-    }
-    acceptanceTest {
-      testTaskName = 'acceptanceTest'
-      includeInCheckLifecycle = false
-    }
-    uiTest {
-      testTaskName = 'uiTest'
-      includeInCheckLifecycle = false
-    }
-    upgradeTest {
-      testTaskName = 'upgradeTest'
-      includeInCheckLifecycle = false
-    }
-  }
-
-  configurations {
-    testAnnotationProcessor.extendsFrom annotationProcessor
-    integrationTestAnnotationProcessor.extendsFrom annotationProcessor
-    distributedTestAnnotationProcessor.extendsFrom annotationProcessor
-    performanceTestAnnotationProcessor.extendsFrom annotationProcessor
-    acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
-    uiTestAnnotationProcessor.extendsFrom annotationProcessor
-    upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
-    // Facets does not extend the new runtimeOnly configurations
-    integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
-    distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
-    performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-    acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
-    uiTestRuntimeOnly.extendsFrom(runtimeOnly)
-    upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
-  }
-
-  dependencies {
-    integrationTestCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-
-    integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
-
-    distributedTestCompile project(":geode-dunit")
-  }
 
   configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
              upgradeTest]) {
@@ -277,6 +244,7 @@ subprojects {
   }
 }
 
+// We want to include test class compilation during the standard 'classes' compile / assembly.
 classes.dependsOn subprojects.compileTestJava
 classes.dependsOn subprojects.compileIntegrationTestJava
 classes.dependsOn subprojects.compileDistributedTestJava

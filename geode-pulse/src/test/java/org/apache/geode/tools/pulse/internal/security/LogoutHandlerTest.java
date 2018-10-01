@@ -31,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -44,7 +43,6 @@ import org.springframework.security.core.Authentication;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
@@ -52,7 +50,6 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 @PrepareForTest(Repository.class)
 @PowerMockRunnerDelegate(Parameterized.class)
 @PowerMockIgnore({"javax.management.*", "javax.security.*", "*.UnitTest"})
-@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category({PulseTest.class, SecurityTest.class, LoggingTest.class})
 public class LogoutHandlerTest {
 

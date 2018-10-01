@@ -15,11 +15,8 @@
 package org.apache.geode.session.tests;
 
 import org.junit.Test;
-import org.junit.runners.Parameterized;
 
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class TomcatSessionBackwardsCompatibilityTomcat8WithOldModulesMixedWithCurrentCanDoPutFromCurrentModuleTest
     extends TomcatSessionBackwardsCompatibilityTestBase {
 

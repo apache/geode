@@ -100,7 +100,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * This test will not run properly in eclipse at this point due to having to bounce vms Currently,
@@ -115,7 +114,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * @author jhuynh
  */
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {
 
   @Parameterized.Parameters(name = "from_v{0}")

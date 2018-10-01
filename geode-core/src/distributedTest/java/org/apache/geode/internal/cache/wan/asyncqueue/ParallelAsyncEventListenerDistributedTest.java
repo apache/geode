@@ -55,7 +55,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
@@ -97,14 +96,12 @@ import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Extracted from {@link AsyncEventListenerDistributedTest}.
  */
 @Category(AEQTest.class)
 @RunWith(Parameterized.class)
-@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
 public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 

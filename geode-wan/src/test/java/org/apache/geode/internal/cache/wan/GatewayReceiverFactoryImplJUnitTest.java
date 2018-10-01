@@ -38,10 +38,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GatewayReceiverFactoryImplJUnitTest {
   @Parameterized.Parameter
   public static InternalCache cache;

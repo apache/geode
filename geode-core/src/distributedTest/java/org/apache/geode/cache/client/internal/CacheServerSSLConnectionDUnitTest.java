@@ -87,7 +87,6 @@ import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -96,7 +95,6 @@ import org.apache.geode.util.test.TestUtil;
  */
 @Category({ClientServerTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
 
   private static boolean useOldSSLSettings;
