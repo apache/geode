@@ -39,11 +39,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.InOrder;
 
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RegionExpirationIntegrationTest {
 
   @Parameterized.Parameter(0)

@@ -58,29 +58,6 @@ subprojects {
     }
   }
 
-  // This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
-  // and associated classes are themselves removed, per GEODE-5606
-  configurations {
-    apt
-  }
-
-  dependencies {
-    apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
-    apt(group: 'junit', name: 'junit', version: project.'junit.version') {
-      transitive = false
-    }
-    // Because EnsureCorrectRunsWithProcessor needs access to
-    // CategoryWithParameterizedRunnerFactory.
-    // buildSrc uses version 1.3.0, so we use it here instead of the local geode-junit project
-    apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
-      transitive = false
-    }
-  }
-
-  compileTestJava {
-    options.annotationProcessorPath = files(configurations['apt'])
-  }
-
   test {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
@@ -121,13 +98,6 @@ subprojects {
   }
 
   configurations {
-    testAnnotationProcessor.extendsFrom annotationProcessor
-    integrationTestAnnotationProcessor.extendsFrom annotationProcessor
-    distributedTestAnnotationProcessor.extendsFrom annotationProcessor
-    performanceTestAnnotationProcessor.extendsFrom annotationProcessor
-    acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
-    uiTestAnnotationProcessor.extendsFrom annotationProcessor
-    upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
     // Facets does not extend the new runtimeOnly configurations
     integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
     distributedTestRuntimeOnly.extendsFrom(runtimeOnly)

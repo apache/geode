@@ -30,11 +30,9 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
   @Parameterized.Parameter
   public String version;

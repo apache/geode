@@ -28,7 +28,6 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Tests for authorization from client to server. This tests for authorization of all operations
@@ -42,7 +41,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthorizationCQDUnitTest extends ClientAuthorizationTestCase {
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {

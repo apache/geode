@@ -53,7 +53,6 @@ import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Dunit Test to validate OnRegion function execution with REST APIs
@@ -63,7 +62,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 
 @Category({RestAPITest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
   private final String REPLICATE_REGION_NAME = "sampleRRegion";

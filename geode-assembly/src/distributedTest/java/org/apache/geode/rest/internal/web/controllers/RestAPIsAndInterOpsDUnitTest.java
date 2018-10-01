@@ -75,7 +75,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Dunit Test containing inter - operations between REST Client and Gemfire cache client
@@ -84,7 +83,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @Category({RestAPITest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
   private static final String PEOPLE_REGION_NAME = "People";

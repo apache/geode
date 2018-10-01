@@ -23,18 +23,15 @@ import java.util.Properties;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Extracted from {@link AsyncEventListenerDistributedTest}.
  */
 @Category(AEQTest.class)
 @RunWith(Parameterized.class)
-@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
 public class AsyncEventListenerWithCacheLoaderAndOffHeapDistributedTest
     extends AsyncEventListenerWithCacheLoaderDistributedTest {
