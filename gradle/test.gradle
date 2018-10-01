@@ -98,12 +98,6 @@ subprojects {
       exclude module: 'org.apache.ant'
     }
 
-    integrationTestCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-
-    integrationTestCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    integrationTestCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
-
     distributedTestCompile project(":geode-dunit")
 
   }
