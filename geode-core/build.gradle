@@ -185,7 +185,13 @@ dependencies {
   integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 
 
-  distributedTestCompile project(":geode-dunit")
+  distributedTestCompile(project(":geode-dunit")) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(":geode-junit")) {
+    exclude module: 'geode-core'
+  }
+
   distributedTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   distributedTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
   distributedTestCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
@@ -215,11 +221,6 @@ sourceSets {
 jmh {
   include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
   duplicateClassesStrategy = 'warn'
-}
-
-dependencies {
-  // Distributed Tests
-  distributedTestCompile sourceSets.integrationTest.output
 }
 
 // Creates the version properties file and writes it to the classes dir
