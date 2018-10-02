@@ -2480,6 +2480,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
         } else {
           ((DataSerializable) ds).fromData(in);
         }
+
+        if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+          logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read {} {}",
+              ds instanceof DataSerializableFixedID ? "DataSerializableFixedID"
+                  : "DataSerializable",
+              ds);
+        }
       }
     } catch (EOFException | ClassNotFoundException | CacheClosedException | SocketException ex) {
       // client went away - ignore
@@ -2499,42 +2506,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
       Constructor init = c.getConstructor(new Class[0]);
       init.setAccessible(true);
       Object o = init.newInstance(new Object[0]);
-      Assert.assertTrue(o instanceof DataSerializable);
+
       invokeFromData(o, in);
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read DataSerializable {}", o);
-      }
-
       return o;
-
-    } catch (EOFException ex) {
+    } catch (EOFException | SocketException ex) {
       // client went away - ignore
       throw ex;
-    } catch (Exception ex) {
-      throw new SerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
-              .toLocalizedString(c.getName()),
-          ex);
-    }
-  }
-
-  private static Object readDataSerializableFixedID(final DataInput in)
-      throws IOException, ClassNotFoundException {
-    Class c = readClass(in);
-    try {
-      Constructor init = c.getConstructor(new Class[0]);
-      init.setAccessible(true);
-      Object o = init.newInstance(new Object[0]);
-
-      invokeFromData(o, in);
-
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read DataSerializableFixedID {}", o);
-      }
-
-      return o;
-
     } catch (Exception ex) {
       throw new SerializationException(
           LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
@@ -2643,7 +2621,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       case DS_FIXED_ID_SHORT:
         return DSFIDFactory.create(in.readShort(), in);
       case DS_NO_FIXED_ID:
-        return readDataSerializableFixedID(in);
+        return readDataSerializable(in);
       case DS_FIXED_ID_INT:
         return DSFIDFactory.create(in.readInt(), in);
       default:
@@ -2784,7 +2762,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       case DS_FIXED_ID_INT:
         return DSFIDFactory.create(in.readInt(), in);
       case DS_NO_FIXED_ID:
-        return readDataSerializableFixedID(in);
+        return readDataSerializable(in);
       case NULL:
         return null;
       case NULL_STRING:

@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -386,7 +387,7 @@ public class TcpServer {
         } else {
           rejectUnknownProtocolConnection(socket, firstByte);
         }
-      } catch (EOFException ignore) {
+      } catch (EOFException | SocketException ignore) {
         // client went away - ignore
       } catch (CancelException ignore) {
         // ignore
