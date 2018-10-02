@@ -19,7 +19,9 @@ import static java.util.Collections.enumeration;
 import static org.apache.geode.management.internal.security.ResourceConstants.PASSWORD;
 import static org.apache.geode.management.internal.security.ResourceConstants.USER_NAME;
 import static org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX;
+import static org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptorTest.RequestBuilder.request;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,7 +37,6 @@ import java.util.concurrent.Semaphore;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +48,6 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
 public class LoginHandlerInterceptorTest {
-
   @Mock
   private SecurityService securityService;
   private HandlerInterceptor interceptor;
@@ -65,79 +65,87 @@ public class LoginHandlerInterceptorTest {
     interceptor = new LoginHandlerInterceptor(securityService);
   }
 
-  @After
-  public void tearDown() {
-    LoginHandlerInterceptor.getEnvironment().clear();
+  @Test
+  public void beforeFirstCallToPreHandle_environmentIsEmpty() {
+    assertThat(LoginHandlerInterceptor.getEnvironment()).isEmpty();
   }
 
   @Test
-  public void preHandleSetsEnvironmentVariablesFromPrefixedRequestParameters()
-      throws Exception {
-    final Map<String, String> requestParameters = new HashMap<>(2);
-    requestParameters.put("parameter", "one");
-    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable", "two");
-    final HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class, name.getMethodName());
-    when(mockHttpRequest.getParameterNames()).thenReturn(enumeration(requestParameters.keySet()));
-    when(mockHttpRequest.getHeader(USER_NAME)).thenReturn("admin");
-    when(mockHttpRequest.getHeader(PASSWORD)).thenReturn("password");
-    when(mockHttpRequest.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable"))
-        .thenReturn("two");
+  public void preHandle_createsNewEnvironmentInstance() throws Exception {
+    HttpServletRequest request = request().build();
 
     Map<String, String> environmentBeforePreHandle = LoginHandlerInterceptor.getEnvironment();
-    assertThat(environmentBeforePreHandle)
-        .describedAs("environment before preHandle()")
-        .isEmpty();
 
-    assertThat(interceptor.preHandle(mockHttpRequest, null, null))
-        .describedAs("preHandle() result")
-        .isTrue();
+    interceptor.preHandle(request, null, null);
+
     assertThat(LoginHandlerInterceptor.getEnvironment())
-        .describedAs("environment after preHandle()")
-        .isNotSameAs(environmentBeforePreHandle)
-        .hasSize(1)
-        .containsEntry("variable", "two");
+        .isNotSameAs(environmentBeforePreHandle);
+  }
+
+  @Test
+  public void preHandle_copiesPrefixedRequestParametersIntoEnvironment() throws Exception {
+    HttpServletRequest request = request()
+        .withParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "prefixed", "prefixed value")
+        .withParameter("not-prefixed", "not-prefixed value")
+        .build();
+
+    interceptor.preHandle(request, null, null);
+
+    assertThat(LoginHandlerInterceptor.getEnvironment())
+        .containsOnly(entry("prefixed", "prefixed value"))
+        .doesNotContain(entry("not-prefixed", "not-prefixed value"));
+  }
+
+  @Test
+  public void preHandle_returnsTrue() throws Exception {
+    HttpServletRequest request = request().build();
+
+    assertThat(interceptor.preHandle(request, null, null))
+        .isTrue();
+  }
+
+  @Test
+  public void preHandle_logsInWithUserNameAndPasswordFromRequestHeaders() throws Exception {
+    HttpServletRequest request = request()
+        .withHeader(USER_NAME, "expected user-name")
+        .withHeader(PASSWORD, "expected password")
+        .build();
+
+    interceptor.preHandle(request, null, null);
 
     Properties expectedLoginProperties = new Properties();
-    expectedLoginProperties.put(USER_NAME, "admin");
-    expectedLoginProperties.put(PASSWORD, "password");
+    expectedLoginProperties.setProperty(USER_NAME, "expected user-name");
+    expectedLoginProperties.setProperty(PASSWORD, "expected password");
+
     verify(securityService, times(1)).login(expectedLoginProperties);
   }
 
   @Test
-  public void afterCompletionCleansTheEnvironment() throws Exception {
-    Map<String, String> requestParameters = new HashMap<>(2);
-    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable", "two");
-    HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class, name.getMethodName());
-    when(mockHttpRequest.getParameterNames()).thenReturn(enumeration(requestParameters.keySet()));
-    when(mockHttpRequest.getHeader(USER_NAME)).thenReturn("admin");
-    when(mockHttpRequest.getHeader(PASSWORD)).thenReturn("password");
-    when(mockHttpRequest.getParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable"))
-        .thenReturn("two");
+  public void afterCompletion_clearsTheEnvironment() throws Exception {
+    HttpServletRequest request = request()
+        .withParameter(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "variable", "value")
+        .build();
 
-    assertThat(interceptor.preHandle(mockHttpRequest, null, null))
-        .describedAs("preHandle() result")
-        .isTrue();
+    // Call preHandle() to put values into the environment
+    interceptor.preHandle(request, null, null);
+
+    interceptor.afterCompletion(request, null, null, null);
 
     assertThat(LoginHandlerInterceptor.getEnvironment())
-        .describedAs("environment after preHandle()")
-        .hasSize(1)
-        .containsEntry("variable", "two");
-
-    Properties expectedLoginProperties = new Properties();
-    expectedLoginProperties.put(USER_NAME, "admin");
-    expectedLoginProperties.put(PASSWORD, "password");
-    verify(securityService, times(1)).login(expectedLoginProperties);
-
-    interceptor.afterCompletion(mockHttpRequest, null, null, null);
-
-    assertThat(LoginHandlerInterceptor.getEnvironment())
-        .describedAs("environment after afterCompletion()")
         .isEmpty();
+  }
+
+  @Test
+  public void afterCompletion_logsOut() throws Exception {
+    HttpServletRequest request = request().build();
+
+    interceptor.afterCompletion(request, null, null, null);
+
     verify(securityService, times(1)).logout();
   }
 
   @Test
-  public void eachRequestThreadsEnvironmentIsConfinedToItsThread() {
+  public void eachRequestThreadEnvironmentIsConfinedToItsThread() {
     Semaphore thread1Permit = new Semaphore(0);
     Semaphore thread2Permit = new Semaphore(0);
 
@@ -151,8 +159,8 @@ public class LoginHandlerInterceptorTest {
     runConcurrently.executeInParallel();
   }
 
-  private Void processRequest(String taskName, Semaphore thisTaskPermit,
-      Semaphore otherTaskPermit) throws Exception {
+  private Void processRequest(String taskName, Semaphore thisTaskPermit, Semaphore otherTaskPermit)
+      throws Exception {
     currentThread().setName(taskName);
     System.out.println(taskName + " started");
 
@@ -164,22 +172,23 @@ public class LoginHandlerInterceptorTest {
     thisTaskPermit.acquire();
     System.out.println(taskName + " running preHandle()");
 
-    // Define the request parameters that preHandle() will copy into the task's environment.
-    Map<String, String> requestParameters = new HashMap<>();
-
     // Each task has a unique value for this common parameter. If the interceptor is threadsafe,
     // neither task's unique value will appear in the other task's environment.
-    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "COMMON-PARAMETER",
-        "COMMON-PARAMETER value for " + taskName);
+    String commonParameterName = ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "COMMON-PARAMETER";
+    String commonParameterValue = "COMMON-PARAMETER value for " + taskName;
 
     // Each task has a parameter with a name and value unique to the task. If the interceptor is
     // threadsafe, neither task's unique parameter name or value will appear in the other task's
     // environment.
-    requestParameters.put(ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX
-        + "REQUEST-SPECIFIC-PARAMETER " + taskName,
-        "REQUEST-SPECIFIC-PARAMETER value for " + taskName);
+    String uniqueParameterName = ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX
+        + "REQUEST-SPECIFIC-PARAMETER " + taskName;
+    String uniqueParameterValue = "REQUEST-SPECIFIC-PARAMETER value for " + taskName;
 
-    HttpServletRequest request = request(taskName, requestParameters);
+    HttpServletRequest request = request()
+        .named(taskName + " request")
+        .withParameter(commonParameterName, commonParameterValue)
+        .withParameter(uniqueParameterName, uniqueParameterValue)
+        .build();
 
     assertThat(LoginHandlerInterceptor.getEnvironment())
         .describedAs("environment before preHandle() in " + taskName)
@@ -223,16 +232,39 @@ public class LoginHandlerInterceptorTest {
     return null;
   }
 
-  private static HttpServletRequest request(String taskName, Map<String, String> parameters) {
-    HttpServletRequest request = mock(HttpServletRequest.class, taskName + " request");
+  static class RequestBuilder {
+    private final Map<String, String> parameters = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
+    private String name = "request";
 
-    when(request.getParameterNames()).thenReturn(enumeration(parameters.keySet()));
-    parameters.keySet()
-        .forEach(name -> when(request.getParameter(name)).thenReturn(parameters.get(name)));
+    static RequestBuilder request() {
+      return new RequestBuilder();
+    }
 
-    when(request.getHeader(USER_NAME)).thenReturn(taskName + " admin");
-    when(request.getHeader(PASSWORD)).thenReturn(taskName + " password");
+    HttpServletRequest build() {
+      HttpServletRequest request = mock(HttpServletRequest.class, name);
 
-    return request;
+      headers.keySet().forEach(k -> when(request.getHeader(k)).thenReturn(headers.get(k)));
+
+      when(request.getParameterNames()).thenReturn(enumeration(parameters.keySet()));
+      parameters.keySet().forEach(k -> when(request.getParameter(k)).thenReturn(parameters.get(k)));
+
+      return request;
+    }
+
+    RequestBuilder named(String name) {
+      this.name = name;
+      return this;
+    }
+
+    RequestBuilder withHeader(String name, String value) {
+      headers.put(name, value);
+      return this;
+    }
+
+    RequestBuilder withParameter(String name, String value) {
+      parameters.put(name, value);
+      return this;
+    }
   }
 }
