@@ -16,11 +16,10 @@ package org.apache.geode.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +34,7 @@ public class AbstractConfigTest {
   @Before
   public void setUp() {
     source = mock(ConfigSource.class);
-    abstractConfig = mock(AbstractConfig.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
+    abstractConfig = spy(AbstractConfig.class);
 
     stringArrayAttributeName = "stringArray";
 
