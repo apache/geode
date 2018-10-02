@@ -18,6 +18,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.test.dunit.standalone.ChildVMLauncher;
+import org.apache.geode.test.dunit.standalone.ProcessHolder;
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 
@@ -162,8 +164,9 @@ public abstract class Host implements Serializable {
   /**
    * Adds a VM to this {@code Host} with the given process id and client record.
    */
-  protected void addVM(int vmid, RemoteDUnitVMIF client) {
-    VM vm = new VM(this, vmid, client);
+  protected void addVM(int vmid, RemoteDUnitVMIF client, ProcessHolder processHolder,
+      ChildVMLauncher childVMLauncher) {
+    VM vm = new VM(this, vmid, client, processHolder, childVMLauncher);
     vms.add(vm);
   }
 
@@ -175,8 +178,9 @@ public abstract class Host implements Serializable {
     locator = l;
   }
 
-  protected void addLocator(int vmid, RemoteDUnitVMIF client) {
-    setLocator(new VM(this, vmid, client));
+  protected void addLocator(int vmid, RemoteDUnitVMIF client, ProcessHolder processHolder,
+      ChildVMLauncher childVMLauncher) {
+    setLocator(new VM(this, vmid, client, processHolder, childVMLauncher));
   }
 
   @Override

@@ -18,13 +18,11 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.TimeUnit;
 
-import hydra.MethExecutor;
-import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
 
-public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
+class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
   private static final Logger logger = LogService.getLogger();
 
   RemoteDUnitVM() throws RemoteException {

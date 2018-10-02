@@ -14,19 +14,14 @@
  */
 package org.apache.geode.test.dunit.standalone;
 
-import java.rmi.Remote;
+import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-public interface RemoteDUnitVMIF extends Remote {
+public interface ChildVMLauncher {
 
-  MethExecutorResult executeMethodOnObject(Object target, String methodName) throws RemoteException;
+  void launchVM(String version, int vmNum, boolean bouncedVM)
+      throws IOException;
 
-  MethExecutorResult executeMethodOnObject(Object target, String methodName, Object[] args)
-      throws RemoteException;
-
-  MethExecutorResult executeMethodOnClass(String className, String methodName, Object[] args)
-      throws RemoteException;
-
-  void shutDownVM() throws RemoteException;
-
+  RemoteDUnitVMIF getStub(int i) throws RemoteException, NotBoundException, InterruptedException;
 }

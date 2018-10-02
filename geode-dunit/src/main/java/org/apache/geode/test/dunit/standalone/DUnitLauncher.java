@@ -35,20 +35,15 @@ import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
 
 import batterytest.greplogs.ExpectedStrings;
 import batterytest.greplogs.LogConsumer;
-import hydra.MethExecutorResult;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -66,7 +61,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
@@ -103,15 +97,15 @@ public class DUnitLauncher {
   /**
    * VM ID for the VM to use for the debugger.
    */
-  private static final int DEBUGGING_VM_NUM = -1;
+  static final int DEBUGGING_VM_NUM = -1;
 
   /**
    * VM ID for the VM to use for the locator.
    */
-  private static final int LOCATOR_VM_NUM = -2;
+  static final int LOCATOR_VM_NUM = -2;
 
   static final long STARTUP_TIMEOUT = 120 * 1000;
-  private static final String STARTUP_TIMEOUT_MESSAGE =
+  static final String STARTUP_TIMEOUT_MESSAGE =
       "VMs did not start up within " + (STARTUP_TIMEOUT / 1000) + " seconds";
 
   private static final String SUSPECT_FILENAME = "dunit_suspect.log";
@@ -417,152 +411,4 @@ public class DUnitLauncher {
   }
 
 
-  public interface MasterRemote extends Remote {
-    public int getLocatorPort() throws RemoteException;
-
-    public void signalVMReady() throws RemoteException;
-
-    public void ping() throws RemoteException;
-
-    public BounceResult bounce(int pid) throws RemoteException;
-
-    public BounceResult bounce(String version, int pid, boolean force) throws RemoteException;
-  }
-
-  public static class Master extends UnicastRemoteObject implements MasterRemote {
-    private static final long serialVersionUID = 1178600200232603119L;
-
-    private final Registry registry;
-    private final ProcessManager processManager;
-
-
-    public Master(Registry registry, ProcessManager processManager) throws RemoteException {
-      this.processManager = processManager;
-      this.registry = registry;
-    }
-
-    public int getLocatorPort() throws RemoteException {
-      return locatorPort;
-    }
-
-    public synchronized void signalVMReady() {
-      processManager.signalVMReady();
-    }
-
-    public void ping() {
-      // do nothing
-    }
-
-    @Override
-    public BounceResult bounce(int pid) {
-      return bounce(VersionManager.CURRENT_VERSION, pid, false);
-    }
-
-    @Override
-    public BounceResult bounce(String version, int pid, boolean force) {
-      processManager.bounce(version, pid, force);
-
-      try {
-        if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
-          throw new RuntimeException(STARTUP_TIMEOUT_MESSAGE);
-        }
-        RemoteDUnitVMIF remote =
-            (RemoteDUnitVMIF) registry.lookup(VM.getVMName(VersionManager.CURRENT_VERSION, pid));
-        return new BounceResult(pid, remote);
-      } catch (RemoteException | NotBoundException e) {
-        throw new RuntimeException("could not lookup name", e);
-      } catch (InterruptedException e) {
-        throw new RuntimeException("Failed waiting for VM", e);
-      }
-    }
-  }
-
-  private static class DUnitHost extends Host {
-    private static final long serialVersionUID = -8034165624503666383L;
-
-    private final transient VM debuggingVM;
-
-    private transient ProcessManager processManager;
-
-    public DUnitHost(String hostName, ProcessManager processManager) throws RemoteException {
-      super(hostName);
-      this.debuggingVM = new VM(this, -1, new RemoteDUnitVM());
-      this.processManager = processManager;
-    }
-
-    public void init(Registry registry, int numVMs)
-        throws AccessException, RemoteException, NotBoundException, InterruptedException {
-      for (int i = 0; i < numVMs; i++) {
-        RemoteDUnitVMIF remote = processManager.getStub(i);
-        addVM(i, remote);
-      }
-
-      addLocator(LOCATOR_VM_NUM, processManager.getStub(LOCATOR_VM_NUM));
-
-      addHost(this);
-    }
-
-    /**
-     * Retrieves one of this host's VMs based on the specified VM ID. This will not bounce VM to a
-     * different version. It will only get the current running VM or launch a new one if not already
-     * launched.
-     *
-     * @param n ID of the requested VM; a value of <code>-1</code> will return the controller VM,
-     *        which may be useful for debugging.
-     * @return VM for the requested VM ID.
-     */
-    @Override
-    public VM getVM(int n) {
-      if (n < getVMCount() && n != DEBUGGING_VM_NUM) {
-        VM current = super.getVM(n);
-        return getVM(current.getVersion(), n);
-      } else {
-        return getVM(VersionManager.CURRENT_VERSION, n);
-      }
-    }
-
-    @Override
-    public VM getVM(String version, int n) {
-      if (n == DEBUGGING_VM_NUM) {
-        // for ease of debugging, pass -1 to get the local VM
-        return debuggingVM;
-      }
-
-      if (n < getVMCount()) {
-        VM current = super.getVM(n);
-        if (!current.getVersion().equals(version)) {
-          System.out.println(
-              "Bouncing VM" + n + " from version " + current.getVersion() + " to " + version);
-          current.bounce(version);
-        }
-        return current;
-      }
-
-      int oldVMCount = getVMCount();
-      if (n >= oldVMCount) {
-        // If we don't have a VM with that number, dynamically create it.
-        try {
-          // first fill in any gaps, to keep the superclass, Host, happy
-          for (int i = oldVMCount; i < n; i++) {
-            processManager.launchVM(i);
-          }
-          processManager.waitForVMs(STARTUP_TIMEOUT);
-
-          for (int i = oldVMCount; i < n; i++) {
-            addVM(i, processManager.getStub(i));
-          }
-
-          // now create the one we really want
-          processManager.launchVM(version, n, false);
-          processManager.waitForVMs(STARTUP_TIMEOUT);
-          addVM(n, processManager.getStub(n));
-
-        } catch (IOException | InterruptedException | NotBoundException e) {
-          throw new RuntimeException("Could not dynamically launch vm + " + n, e);
-        }
-      }
-
-      return super.getVM(n);
-    }
-  }
 }

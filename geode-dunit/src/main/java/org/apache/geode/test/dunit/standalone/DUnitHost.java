@@ -1,0 +1,101 @@
+package org.apache.geode.test.dunit.standalone;
+
+import java.io.IOException;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
+
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+
+class DUnitHost extends Host {
+  private static final long serialVersionUID = -8034165624503666383L;
+
+  private final transient VM debuggingVM;
+
+  private transient ProcessManager processManager;
+
+  public DUnitHost(String hostName, ProcessManager processManager) throws RemoteException {
+    super(hostName);
+    this.debuggingVM = new VM(this, -1, new RemoteDUnitVM(), null, null);
+    this.processManager = processManager;
+  }
+
+  public void init(Registry registry, int numVMs)
+      throws AccessException, RemoteException, NotBoundException, InterruptedException {
+    for (int i = 0; i < numVMs; i++) {
+      RemoteDUnitVMIF remote = processManager.getStub(i);
+      ProcessHolder processHolder = processManager.getProcessHolder(i);
+      addVM(i, remote, processHolder, processManager);
+    }
+
+    addLocator(DUnitLauncher.LOCATOR_VM_NUM, processManager.getStub(DUnitLauncher.LOCATOR_VM_NUM),
+        processManager.getProcessHolder(DUnitLauncher.LOCATOR_VM_NUM), processManager);
+
+    addHost(this);
+  }
+
+  /**
+   * Retrieves one of this host's VMs based on the specified VM ID. This will not bounce VM to a
+   * different version. It will only get the current running VM or launch a new one if not already
+   * launched.
+   *
+   * @param n ID of the requested VM; a value of <code>-1</code> will return the controller VM,
+   *        which may be useful for debugging.
+   * @return VM for the requested VM ID.
+   */
+  @Override
+  public VM getVM(int n) {
+    if (n < getVMCount() && n != DUnitLauncher.DEBUGGING_VM_NUM) {
+      VM current = super.getVM(n);
+      return getVM(current.getVersion(), n);
+    } else {
+      return getVM(VersionManager.CURRENT_VERSION, n);
+    }
+  }
+
+  @Override
+  public VM getVM(String version, int n) {
+    if (n == DUnitLauncher.DEBUGGING_VM_NUM) {
+      // for ease of debugging, pass -1 to get the local VM
+      return debuggingVM;
+    }
+
+    if (n < getVMCount()) {
+      VM current = super.getVM(n);
+      if (!current.getVersion().equals(version)) {
+        System.out.println(
+            "Bouncing VM" + n + " from version " + current.getVersion() + " to " + version);
+        current.bounce(version);
+      }
+      return current;
+    }
+
+    int oldVMCount = getVMCount();
+    if (n >= oldVMCount) {
+      // If we don't have a VM with that number, dynamically create it.
+      try {
+        // first fill in any gaps, to keep the superclass, Host, happy
+        for (int i = oldVMCount; i < n; i++) {
+          processManager.launchVM(i);
+        }
+        processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
+
+        for (int i = oldVMCount; i < n; i++) {
+          addVM(i, processManager.getStub(i), processManager.getProcessHolder(i), processManager);
+        }
+
+        // now create the one we really want
+        processManager.launchVM(version, n, false);
+        processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
+        addVM(n, processManager.getStub(n), processManager.getProcessHolder(n), processManager);
+
+      } catch (IOException | InterruptedException | NotBoundException e) {
+        throw new RuntimeException("Could not dynamically launch vm + " + n, e);
+      }
+    }
+
+    return super.getVM(n);
+  }
+}

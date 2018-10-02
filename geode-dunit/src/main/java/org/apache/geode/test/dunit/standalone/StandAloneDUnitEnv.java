@@ -19,7 +19,6 @@ import java.rmi.RemoteException;
 import java.util.Properties;
 
 import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher.MasterRemote;
 
 public class StandAloneDUnitEnv extends DUnitEnv {
 

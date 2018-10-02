@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.standalone;
 
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 public class ProcessHolder {
   private final Process process;
@@ -36,6 +37,10 @@ public class ProcessHolder {
 
   public void waitFor() throws InterruptedException {
     process.waitFor();
+  }
+
+  public void waitFor(long timeout, TimeUnit unit) throws InterruptedException {
+    process.waitFor(timeout, unit);
   }
 
   public InputStream getErrorStream() {
