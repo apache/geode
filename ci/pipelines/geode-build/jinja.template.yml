@@ -49,13 +49,39 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-  {% for test in (tests) if not test.name == "StressNew" -%}
-  - {{test.name}}Test
-  {% endfor -%}
-  {% if repository.sanitized_fork == "apache" %}
+  {%- for test in (tests) if not test.name=="StressNew" -%}
+    {%- for java_test_version in (java_test_versions) %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
+  {%- endfor -%}
+  {%- if repository.sanitized_fork == "apache" -%}
   - UpdatePassingRef
   - PublishArtifacts
-  {% endif %}
+  {%- endif %}
+- name: linux
+  jobs:
+  - {{ build_test.name }}
+  {%- for test in (tests) if not test.name.startswith("Windows") and not test.name=="StressNew" -%}
+    {% for java_test_version in (java_test_versions) %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
+  {%- endfor %}
+- name: windows
+  jobs:
+  - {{ build_test.name }}
+  {%- for test in (tests) if test.name.startswith("Windows") -%}
+    {% for java_test_version in (java_test_versions) %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
+  {%- endfor %}
+{%- for java_test_version in (java_test_versions) %}
+- name: {{java_test_version.name}}
+  jobs:
+  - {{ build_test.name }}
+  {%- for test in (tests) if not test.name=="StressNew" %}
+  - {{test.name}}Test{{java_test_version.name}}
+  {%- endfor -%}
+{%- endfor %}
 
 resources:
 - name: send-notification-email
@@ -153,7 +179,7 @@ jobs:
           outputs:
           - name: instance-data
         timeout: 15m
-        attempts: 100
+        attempts: 10
   - task: rsync_code_up
     {{ alpine_tools_config()|indent(4) }}
       run:
@@ -166,6 +192,7 @@ jobs:
   - task: build
     {{ alpine_tools_config()|indent(4) }}
       params:
+        JAVA_BUILD_VERSION: {{ java_build_version.version }}
         GRADLE_TASK: {{ build_test.GRADLE_TASK }}
         {{ common_test_params(build_test) | indent(8) }}
       run:
@@ -188,6 +215,8 @@ jobs:
       do:
       - task: rsync_code_down
         {{ alpine_tools_config()|indent(8) }}
+          params:
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
@@ -236,7 +265,7 @@ jobs:
   - get: geode
     passed:
     {% for test in tests if not (test.name=="StressNew" or test.name.startswith("Windows")) -%}
-    - {{test.name}}Test
+    - {{test.name}}TestOpenJDK8
     {% endfor %}
     trigger: true
   - get: geode-ci
@@ -262,7 +291,7 @@ jobs:
   - get: geode
     passed:
     {% for test in tests if not (test.name=="StressNew" or test.name.startswith("Windows"))-%}
-    - {{test.name}}Test
+    - {{test.name}}TestOpenJDK8
     {% endfor %}
     trigger: true
   - get: geode-ci
@@ -292,7 +321,8 @@ jobs:
 {% endif %}
 
 {% for test in tests if not test.name=="StressNew" %}
-- name: {{test.name}}Test
+{% for java_test_version in (java_test_versions) -%}
+- name: {{test.name}}Test{{java_test_version.name}}
   public: true
   plan:
   - do:
@@ -314,7 +344,7 @@ jobs:
             outputs:
             - name: instance-data
           timeout: 15m
-          attempts: 100
+          attempts: 10
     - task: rsync_code_up
       {{ alpine_tools_config()|indent(6) }}
         run:
@@ -324,11 +354,13 @@ jobs:
         - name: geode
         - name: instance-data
       timeout: 15m
-      attempts: 100
+      attempts: 10
     - task: execute_tests
       {{ alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+          JAVA_BUILD_VERSION: {{ java_build_version.version }}
+          JAVA_TEST_VERSION: {{ java_test_version.version }}
           GRADLE_TASK: {{test.GRADLE_TASK}}
           {{ common_test_params(test) | indent(10) }}
         run:
@@ -342,6 +374,9 @@ jobs:
       do:
       - task: rsync_code_down
         {{ alpine_tools_config()|indent(8) }}
+          params:
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
+            ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           run:
             path: geode-ci/ci/scripts/rsync_code_down.sh
           inputs:
@@ -350,7 +385,7 @@ jobs:
           outputs:
           - name: geode-results
         timeout: 15m
-        attempts: 100
+        attempts: 10
       ensure:
         do:
         - aggregate:
@@ -378,4 +413,5 @@ jobs:
               - name: geode-ci
               - name: instance-data
             timeout: 1h
+{% endfor -%}
 {% endfor -%}

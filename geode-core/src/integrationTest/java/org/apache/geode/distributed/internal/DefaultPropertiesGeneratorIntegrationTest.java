@@ -85,7 +85,10 @@ public class DefaultPropertiesGeneratorIntegrationTest {
 
   @Test
   public void shouldGeneratePropertiesFile() throws Exception {
-    String[] command = {"java", "-cp", getClassPath(), DefaultPropertiesGenerator.class.getName()};
+    String javaHome = System.getProperty("java.home");
+    assertThat(javaHome).isNotEmpty();
+    String[] command =
+        {javaHome + "/bin/java", "-cp", getClassPath(), DefaultPropertiesGenerator.class.getName()};
     ProcessBuilder launcher = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot());
     this.process = launcher.start();
     this.process.waitFor(2, MINUTES);
@@ -101,8 +104,10 @@ public class DefaultPropertiesGeneratorIntegrationTest {
   @Test
   public void shouldUseSpecifiedPropertiesFile() throws Exception {
     String targetFileName = "gf" + this.testName.getMethodName() + ".properties";
-    String[] command =
-        {"java", "-cp", getClassPath(), DefaultPropertiesGenerator.class.getName(), targetFileName};
+    String javaHome = System.getProperty("java.home");
+    assertThat(javaHome).isNotEmpty();
+    String[] command = {javaHome + "/bin/java", "-cp", getClassPath(),
+        DefaultPropertiesGenerator.class.getName(), targetFileName};
     ProcessBuilder launcher = new ProcessBuilder(command).directory(this.temporaryFolder.getRoot());
     this.process = launcher.start();
     this.process.waitFor(2, MINUTES);

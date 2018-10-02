@@ -49,4 +49,5 @@ echo "Running packer"
 packer build \
   --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
   --var "image_family_prefix=${IMAGE_FAMILY_PREFIX}" \
+  --var "java_build_version=${JAVA_BUILD_VERSION}" \
   packer.json

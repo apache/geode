@@ -1,7 +1,8 @@
 {
   "variables": {
     "image_family_prefix": "local-testing-",
-    "geode_docker_image": "gcr.io/apachegeode-ci/test-container"
+    "geode_docker_image": "gcr.io/apachegeode-ci/test-container",
+    "java_build_version": "8"
   },
   "provisioners": [
     {
@@ -18,6 +19,9 @@
     },
     {
       "type": "shell",
+      "environment_vars": [
+        "JAVA_BUILD_VERSION={{user `java_build_version`}}"
+      ],
       "execute_command": "sudo -u geode -S sh -c '{{ .Vars }} {{ .Path }}'",
       "script": "scripts/cache_dependencies.sh"
     }
