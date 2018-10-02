@@ -32,9 +32,9 @@ import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ProcessOutputReader;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
@@ -306,8 +306,8 @@ class EnabledManagedEntityController implements ManagedEntityController {
    */
   public void start(final InternalManagedEntity entity) {
     final String command = arrangeRemoteCommand(entity, entity.getStartCommand());
-    Thread start = ThreadHelper.create("Start " + entity.getEntityType(),
-        () -> execute(command, entity));
+    Thread start = new LoggingThread("Start " + entity.getEntityType(),
+        false, () -> execute(command, entity));
     start.start();
   }
 
@@ -316,8 +316,8 @@ class EnabledManagedEntityController implements ManagedEntityController {
    */
   public void stop(final InternalManagedEntity entity) {
     final String command = arrangeRemoteCommand(entity, entity.getStopCommand());
-    Thread stop = ThreadHelper.create("Stop " + entity.getEntityType(),
-        () -> execute(command, entity));
+    Thread stop = new LoggingThread("Stop " + entity.getEntityType(),
+        false, () -> execute(command, entity));
     stop.start();
   }
 

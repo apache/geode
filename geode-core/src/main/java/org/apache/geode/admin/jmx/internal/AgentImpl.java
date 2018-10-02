@@ -59,13 +59,13 @@ import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -185,7 +185,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @throws IllegalArgumentException if agentConfig is null
    */
   public AgentImpl(AgentConfigImpl agentConfig) throws AdminException, IllegalArgumentException {
-    shutdownHook = ThreadHelper.create("Shutdown", () -> disconnectFromSystem());
+    shutdownHook = new LoggingThread("Shutdown", false, () -> disconnectFromSystem());
     addShutdownHook();
     if (agentConfig == null) {
       throw new IllegalArgumentException(

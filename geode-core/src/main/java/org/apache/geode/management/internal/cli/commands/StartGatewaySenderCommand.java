@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.management.ObjectName;
@@ -32,7 +31,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -77,7 +76,7 @@ public class StartGatewaySenderCommand extends InternalGfshCommand {
     }
 
     ExecutorService execService =
-        Executors.newCachedThreadPool(new LoggingThreadFactory("Start Sender Command Thread "));
+        LoggingExecutors.newCachedThreadPool("Start Sender Command Thread ", true);
 
     List<Callable<List>> callables = new ArrayList<>();
 

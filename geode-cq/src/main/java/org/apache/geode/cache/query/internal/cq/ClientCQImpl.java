@@ -34,11 +34,11 @@ import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.CqStatusListener;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.CqStateImpl;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -315,7 +315,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       try {
         if (!this.queuedEvents.isEmpty()) {
           try {
-            Thread thread = ThreadHelper.createDaemon("CQEventHandler For " + cqName, () -> {
+            Thread thread = new LoggingThread("CQEventHandler For " + cqName, () -> {
               Object[] eventArray = null;
               if (CqQueryImpl.testHook != null) {
                 testHook.setEventCount(queuedEvents.size());

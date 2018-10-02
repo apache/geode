@@ -29,8 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -50,10 +49,8 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
@@ -66,7 +63,8 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionN
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -136,7 +134,7 @@ public class TcpServer {
   private final ClientProtocolServiceLoader clientProtocolServiceLoader;
 
 
-  private PooledExecutorWithDMStats executor;
+  private ExecutorService executor;
   private final String threadName;
   private volatile Thread serverThread;
 
@@ -186,10 +184,9 @@ public class TcpServer {
     return socketCreator;
   }
 
-  private static PooledExecutorWithDMStats createExecutor(PoolStatHelper poolHelper) {
-    ThreadFactory factory = new LoggingThreadFactory("locator request thread ");
-    return new PooledExecutorWithDMStats(new SynchronousQueue(), MAX_POOL_SIZE, poolHelper,
-        factory, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy(), null);
+  private static ExecutorService createExecutor(PoolStatHelper poolHelper) {
+    return LoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
+        MAX_POOL_SIZE, poolHelper, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   public void restarting(InternalDistributedSystem ds, InternalCache cache,
@@ -212,7 +209,7 @@ public class TcpServer {
   private void startServerThread() throws IOException {
     initializeServerSocket();
     if (serverThread == null || !serverThread.isAlive()) {
-      serverThread = ThreadHelper.createDaemon(threadName, this::run);
+      serverThread = new LoggingThread(threadName, this::run);
       serverThread.start();
     }
   }

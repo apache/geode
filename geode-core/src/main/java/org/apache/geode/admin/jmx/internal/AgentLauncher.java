@@ -48,9 +48,9 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.JavaCommandBuilder;
@@ -405,7 +405,7 @@ public class AgentLauncher {
   }
 
   private Thread createAgentProcessThread(final Agent agent) {
-    Thread thread = ThreadHelper.createDaemon("Start agent", createAgentProcessRunnable(agent));
+    Thread thread = new LoggingThread("Start agent", createAgentProcessRunnable(agent));
     thread.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
     return thread;
   }

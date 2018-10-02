@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +30,7 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -117,7 +116,7 @@ public class DiskStoreMonitor {
     if (disableMonitor) {
       exec = null;
     } else {
-      exec = Executors.newScheduledThreadPool(1, new LoggingThreadFactory("DiskStoreMonitor"));
+      exec = LoggingExecutors.newScheduledThreadPool("DiskStoreMonitor", 1);
       // always monitor the log dir, even if there are no disk stores
       exec.scheduleWithFixedDelay(() -> {
         try {

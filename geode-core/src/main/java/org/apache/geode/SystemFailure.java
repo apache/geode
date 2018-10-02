@@ -17,10 +17,10 @@ package org.apache.geode;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Catches and responds to JVM failure
@@ -307,7 +307,7 @@ public final class SystemFailure {
       if (watchDog != null && watchDog.isAlive()) {
         return;
       }
-      watchDog = ThreadHelper.createDaemon("SystemFailure WatchDog", SystemFailure::runWatchDog);
+      watchDog = new LoggingThread("SystemFailure WatchDog", SystemFailure::runWatchDog);
       watchDog.start();
     }
   }
@@ -531,7 +531,7 @@ public final class SystemFailure {
       if (proctor != null && proctor.isAlive()) {
         return;
       }
-      proctor = ThreadHelper.createDaemon("SystemFailure Proctor", SystemFailure::runProctor);
+      proctor = new LoggingThread("SystemFailure Proctor", SystemFailure::runProctor);
       proctor.start();
     }
   }

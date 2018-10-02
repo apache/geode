@@ -26,15 +26,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -49,10 +44,9 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCloser;
@@ -215,22 +209,12 @@ public class ConnectionTable {
   }
 
   private Executor createThreadPoolForIO(boolean conserveSockets) {
-    Executor executor = null;
     if (conserveSockets) {
-      executor = new Executor() {
-        @Override
-        public void execute(Runnable command) {
-          Thread th = ThreadHelper.createDaemon("SharedP2PReader", command);
-          th.start();
-        }
-      };
+      return LoggingExecutors.newThreadOnEachExecute("SharedP2PReader");
     } else {
-      BlockingQueue synchronousQueue = new SynchronousQueue();
-      ThreadFactory tf = new LoggingThreadFactory("UnsharedP2PReader");
-      executor = new ThreadPoolExecutor(1, Integer.MAX_VALUE, READER_POOL_KEEP_ALIVE_TIME,
-          TimeUnit.SECONDS, synchronousQueue, tf);
+      return LoggingExecutors.newThreadPoolWithSynchronousFeed("UnsharedP2PReader", 1,
+          Integer.MAX_VALUE, READER_POOL_KEEP_ALIVE_TIME);
     }
-    return executor;
   }
 
   /** conduit sends connected() after establishing the server socket */

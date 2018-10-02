@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,7 +53,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
@@ -65,7 +63,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
@@ -321,15 +319,8 @@ public class PoolImpl implements InternalPool {
     }
 
     final String timerName = "poolTimer-" + getName() + "-";
-    ThreadFactory threadFactory = new LoggingThreadFactory(timerName);
-    backgroundProcessor = new ScheduledThreadPoolExecutorWithKeepAlive(BACKGROUND_TASK_POOL_SIZE,
-        BACKGROUND_TASK_POOL_KEEP_ALIVE, TimeUnit.MILLISECONDS, threadFactory,
-        this.threadMonitoring);
-    ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
-        .setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
-    ((ScheduledThreadPoolExecutorWithKeepAlive) backgroundProcessor)
-        .setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-
+    backgroundProcessor = LoggingExecutors.newScheduledThreadPool(timerName,
+        BACKGROUND_TASK_POOL_SIZE, BACKGROUND_TASK_POOL_KEEP_ALIVE, threadMonitoring);
     source.start(this);
     connectionFactory.start(backgroundProcessor);
     endpointManager.addListener(new InstantiatorRecoveryListener(backgroundProcessor, this));

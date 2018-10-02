@@ -47,11 +47,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -87,7 +85,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -116,7 +113,8 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -358,9 +356,9 @@ public class DiskStoreImpl implements DiskStore {
 
   private final CountDownLatch _testHandleDiskAccessException = new CountDownLatch(1);
 
-  private final ThreadPoolExecutor diskStoreTaskPool;
+  private final ExecutorService diskStoreTaskPool;
 
-  private final ThreadPoolExecutor delayedWritePool;
+  private final ExecutorService delayedWritePool;
 
   private volatile Future lastDelayedWrite;
 
@@ -484,19 +482,10 @@ public class DiskStoreImpl implements DiskStore {
       this.oplogCompactor = null;
     }
 
-    int MAXT = DiskStoreImpl.MAX_CONCURRENT_COMPACTIONS;
-    final ThreadFactory compactThreadFactory =
-        new LoggingThreadFactory("Idle OplogCompactor");
-    this.diskStoreTaskPool = new ThreadPoolExecutor(MAXT, MAXT, 10, TimeUnit.SECONDS,
-        new LinkedBlockingQueue(), compactThreadFactory);
-    this.diskStoreTaskPool.allowCoreThreadTimeOut(true);
-
-    final ThreadFactory deleteThreadFactory =
-        new LoggingThreadFactory("Oplog Delete Task");
-    this.delayedWritePool = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
-        new LinkedBlockingQueue(MAX_PENDING_TASKS), deleteThreadFactory,
-        new ThreadPoolExecutor.CallerRunsPolicy());
-    this.delayedWritePool.allowCoreThreadTimeOut(true);
+    this.diskStoreTaskPool = LoggingExecutors.newFixedThreadPoolWithFeedSize("Idle OplogCompactor",
+        MAX_CONCURRENT_COMPACTIONS, Integer.MAX_VALUE);
+    this.delayedWritePool =
+        LoggingExecutors.newFixedThreadPoolWithFeedSize("Oplog Delete Task", 1, MAX_PENDING_TASKS);
   }
 
   // //////////////////// Instance Methods //////////////////////
@@ -1456,7 +1445,7 @@ public class DiskStoreImpl implements DiskStore {
   private void startAsyncFlusher() {
     final String thName =
         LocalizedStrings.DiskRegion_ASYNCHRONOUS_DISK_WRITER_0.toLocalizedString(getName());
-    this.flusherThread = ThreadHelper.createDaemon(thName, new FlusherThread(this));
+    this.flusherThread = new LoggingThread(thName, new FlusherThread(this));
     this.flusherThread.start();
   }
 
@@ -3337,7 +3326,7 @@ public class DiskStoreImpl implements DiskStore {
         LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED;
     logger.error(LocalizedMessage.create(sid, DiskStoreImpl.this.getName()), dae);
 
-    Thread thread = ThreadHelper.create("Disk store exception handler", () -> {
+    Thread thread = new LoggingThread("Disk store exception handler", false, () -> {
       try {
         // now close the cache
         getCache().close(sid.toLocalizedString(DiskStoreImpl.this.getName(), dae), dae);
@@ -4354,7 +4343,7 @@ public class DiskStoreImpl implements DiskStore {
    * tasks may take a while.
    */
   public boolean executeDiskStoreTask(final Runnable runnable) {
-    return executeDiskStoreAsyncTask(runnable, this.diskStoreTaskPool);
+    return executeAsyncTask(runnable, this.diskStoreTaskPool);
   }
 
   /**
@@ -4364,7 +4353,7 @@ public class DiskStoreImpl implements DiskStore {
    * close, etc.
    */
   public boolean executeDelayedExpensiveWrite(Runnable task) {
-    Future<?> f = executeDiskStoreTask(task, this.delayedWritePool);
+    Future<?> f = executeTask(task, this.delayedWritePool);
     lastDelayedWrite = f;
     return f != null;
   }
@@ -4386,7 +4375,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  private Future<?> executeDiskStoreTask(final Runnable runnable, ThreadPoolExecutor executor) {
+  private Future<?> executeTask(final Runnable runnable, ExecutorService executor) {
     // schedule another thread to do it
     incBackgroundTasks();
     Future<?> result = executeDiskStoreTask(new DiskStoreTask() {
@@ -4412,7 +4401,7 @@ public class DiskStoreImpl implements DiskStore {
     return result;
   }
 
-  private boolean executeDiskStoreAsyncTask(final Runnable runnable, ThreadPoolExecutor executor) {
+  private boolean executeAsyncTask(final Runnable runnable, ExecutorService executor) {
     // schedule another thread to do it
     incBackgroundTasks();
     boolean isTaskAccepted = executeDiskStoreAsyncTask(new DiskStoreTask() {
@@ -4438,7 +4427,7 @@ public class DiskStoreImpl implements DiskStore {
     return isTaskAccepted;
   }
 
-  private Future<?> executeDiskStoreTask(DiskStoreTask r, ThreadPoolExecutor executor) {
+  private Future<?> executeDiskStoreTask(DiskStoreTask r, ExecutorService executor) {
     try {
       return executor.submit(r);
     } catch (RejectedExecutionException ex) {
@@ -4449,7 +4438,7 @@ public class DiskStoreImpl implements DiskStore {
     return null;
   }
 
-  private boolean executeDiskStoreAsyncTask(DiskStoreTask r, ThreadPoolExecutor executor) {
+  private boolean executeDiskStoreAsyncTask(DiskStoreTask r, ExecutorService executor) {
     try {
       executor.execute(r);
       return true;

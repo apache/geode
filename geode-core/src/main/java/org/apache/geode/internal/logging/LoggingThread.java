@@ -28,29 +28,29 @@ public class LoggingThread extends Thread {
    * @param name the name of the thread
    */
   public LoggingThread(String name) {
-    this(null, name);
+    this(name, null);
   }
 
   /**
    * Creates a daemon thread with the given name and runnable
    * that logs uncaught exceptions.
    *
-   * @param runnable what the thread will run
    * @param name the name of the thread
+   * @param runnable what the thread will run
    */
-  public LoggingThread(Runnable runnable, String name) {
-    this(runnable, name, true);
+  public LoggingThread(String name, Runnable runnable) {
+    this(name, true, runnable);
   }
 
   /**
    * Creates a thread with the given name and runnable
    * that logs uncaught exceptions.
    *
-   * @param runnable what the thread will run
    * @param name the name of the thread
    * @param isDaemon true if thread will be marked as a daemon
+   * @param runnable what the thread will run
    */
-  public LoggingThread(Runnable runnable, String name, boolean isDaemon) {
+  public LoggingThread(String name, boolean isDaemon, Runnable runnable) {
     super(runnable, name);
     setDaemon(isDaemon);
     LoggingUncaughtExceptionHandler.setOnThread(this);

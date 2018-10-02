@@ -60,7 +60,6 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskDirectoryStats;
@@ -76,6 +75,7 @@ import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
@@ -963,7 +963,7 @@ public class MemberMBeanBridge {
   public void shutDownMember() {
     final InternalDistributedSystem ids = dm.getSystem();
     if (ids.isConnected()) {
-      Thread t = ThreadHelper.create("Shutdown member", () -> {
+      Thread t = new LoggingThread("Shutdown member", false, () -> {
         try {
           // Allow the Function call to exit
           Thread.sleep(1000);

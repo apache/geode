@@ -20,9 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
@@ -46,7 +44,7 @@ import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -103,8 +101,8 @@ public class LocalManager extends Manager {
       if (repo.getLocalMonitoringRegion() != null) {
         return;
       } else {
-        ThreadFactory tf = new LoggingThreadFactory("Management Task");
-        singleThreadFederationScheduler = Executors.newSingleThreadScheduledExecutor(tf);
+        singleThreadFederationScheduler =
+            LoggingExecutors.newSingleThreadScheduledExecutor("Management Task");
 
         if (logger.isDebugEnabled()) {
           logger.debug("Creating  Management Region :");
@@ -285,7 +283,7 @@ public class LocalManager extends Manager {
 
   /**
    * This task is responsible for pushing data to the hidden region. It is executed in a single
-   * thread from Executors.newSingleThreadScheduledExecutor(); Only one thread will be responsible
+   * thread from newSingleThreadScheduledExecutor; Only one thread will be responsible
    * for pushing the data to the hidden region.
    *
    * (Note however that if this single thread terminates due to a failure during execution prior to

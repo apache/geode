@@ -19,13 +19,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -41,8 +38,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
-import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -51,7 +46,7 @@ import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -117,8 +112,8 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor that other classes may use for handling resource
     // related tasks
-    ThreadFactory tf = new LoggingThreadFactory("ResourceManagerRecoveryThread ");
-    this.scheduledExecutor = new ScheduledThreadPoolExecutor(MAX_RESOURCE_MANAGER_EXE_THREADS, tf);
+    this.scheduledExecutor = LoggingExecutors
+        .newScheduledThreadPool("ResourceManagerRecoveryThread ", MAX_RESOURCE_MANAGER_EXE_THREADS);
 
     // Initialize the load probe
     try {
@@ -130,12 +125,11 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor the resource manager and the monitors it creates
     // can use to handle dispatching of notifications.
-    ThreadFactory eventProcessorFactory = new LoggingThreadFactory("Notification Handler",
-        thread -> thread.setPriority(Thread.MAX_PRIORITY), null);
-    BlockingQueue<Runnable> threadQ =
-        new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());
-    this.notifyExecutor = new SerialQueuedExecutorWithDMStats(threadQ,
-        this.stats.getResourceEventPoolStatHelper(), eventProcessorFactory, getThreadMonitorObj());
+    this.notifyExecutor =
+        LoggingExecutors.newSerialThreadPoolWithFeedStatistics("Notification Handler",
+            thread -> thread.setPriority(Thread.MAX_PRIORITY), null,
+            this.stats.getResourceEventPoolStatHelper(), getThreadMonitorObj(),
+            0, this.stats.getResourceEventQueueStatHelper());
 
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<ResourceType, ResourceMonitor>();

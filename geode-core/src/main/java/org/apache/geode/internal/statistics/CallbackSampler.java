@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +23,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 public class CallbackSampler {
   private static final Logger logger = LogService.getLogger();
@@ -42,7 +41,7 @@ public class CallbackSampler {
 
   public void start(StatisticsManager statisticsManager, int sampleInterval, TimeUnit timeUnit) {
     ScheduledExecutorService executor =
-        Executors.newSingleThreadScheduledExecutor(new LoggingThreadFactory("CallbackSampler"));
+        LoggingExecutors.newSingleThreadScheduledExecutor("CallbackSampler");
     start(executor, statisticsManager, sampleInterval, timeUnit);
   }
 

@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.TeePrintStream;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Used to interact with operating system processes. Use <code>exec</code> to create a new process
@@ -666,7 +667,7 @@ public class OSProcess {
     } else {
       if (reapPid(-1)) {
         pids = Collections.synchronizedSet(new HashSet());
-        reaperThread = ThreadHelper.createDaemon("osprocess reaper", () -> {
+        reaperThread = new LoggingThread("osprocess reaper", () -> {
           synchronized (myPid) {
             myPid[0] = getProcessId();
             reaperStarted = true;

@@ -48,12 +48,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -73,11 +70,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
@@ -90,7 +85,10 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
+import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
@@ -118,16 +116,16 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private final int maxConnections;
   private final int maxThreads;
 
-  private final ThreadPoolExecutor pool;
+  private final ExecutorService pool;
   /**
    * A pool used to process handshakes.
    */
-  private final ThreadPoolExecutor hsPool;
+  private final ExecutorService hsPool;
 
   /**
    * A pool used to process client-queue-initializations.
    */
-  private final ThreadPoolExecutor clientQueueInitPool;
+  private final ExecutorService clientQueueInitPool;
 
   /**
    * The port on which this acceptor listens for client connections
@@ -561,25 +559,13 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) ? true : false;
   }
 
-  private ThreadPoolExecutor initializeHandshakerThreadPool() throws IOException {
+  private ExecutorService initializeHandshakerThreadPool() throws IOException {
     String threadName =
         "Handshaker " + serverSock.getInetAddress() + ":" + this.localPort + " Thread ";
-    ThreadFactory socketThreadFactory = new LoggingThreadFactory(threadName,
-        thread -> getStats().incAcceptThreadsCreated(), null);
     try {
-      final BlockingQueue blockingQueue = new SynchronousQueue();
-      final RejectedExecutionHandler rejectedExecutionHandler = (r, pool) -> {
-        try {
-          blockingQueue.put(r);
-        } catch (InterruptedException ex) {
-          Thread.currentThread().interrupt(); // preserve the state
-          throw new RejectedExecutionException(
-              LocalizedStrings.AcceptorImpl_INTERRUPTED.toLocalizedString(), ex);
-        }
-      };
       logger.warn("Handshaker max Pool size: " + HANDSHAKE_POOL_SIZE);
-      return new ThreadPoolExecutor(1, HANDSHAKE_POOL_SIZE, 60, TimeUnit.SECONDS, blockingQueue,
-          socketThreadFactory, rejectedExecutionHandler);
+      return LoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName,
+          thread -> getStats().incAcceptThreadsCreated(), null, 1, HANDSHAKE_POOL_SIZE, 60);
     } catch (IllegalArgumentException poolInitException) {
       this.stats.close();
       this.serverSock.close();
@@ -588,43 +574,39 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  private ThreadPoolExecutor initializeClientQueueInitializerThreadPool() throws IOException {
-    ThreadFactory clientQueueThreadFactory =
-        new LoggingThreadFactory("Client Queue Initialization Thread ",
-            command -> {
-              try {
-                command.run();
-              } catch (CancelException e) {
-                logger.debug("Client Queue Initialization was canceled.", e);
-              }
-            });
-    return new PooledExecutorWithDMStats(new SynchronousQueue(),
-        CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(),
-        clientQueueThreadFactory, 60000, getThreadMonitorObj());
-  }
-
-  private ThreadPoolExecutor initializeServerConnectionThreadPool() throws IOException {
-    String threadName = "ServerConnection on port " + this.localPort + " Thread ";
-    ThreadFactory socketThreadFactory = new LoggingThreadFactory(threadName,
-        thread -> getStats().incConnectionThreadsCreated(),
+  private ExecutorService initializeClientQueueInitializerThreadPool() throws IOException {
+    return LoggingExecutors.newThreadPoolWithSynchronousFeed("Client Queue Initialization Thread ",
         command -> {
           try {
             command.run();
-          } catch (CancelException e) { // bug 39463
-            // ignore
-          } finally {
-            ConnectionTable.releaseThreadsSockets();
+          } catch (CancelException e) {
+            logger.debug("Client Queue Initialization was canceled.", e);
           }
+        }, CLIENT_QUEUE_INITIALIZATION_POOL_SIZE, getStats().getCnxPoolHelper(), 60000,
+        getThreadMonitorObj());
+  }
 
-        });
+  private ExecutorService initializeServerConnectionThreadPool() throws IOException {
+    String threadName = "ServerConnection on port " + this.localPort + " Thread ";
+    ThreadInitializer threadInitializer = thread -> getStats().incConnectionThreadsCreated();
+    CommandWrapper commandWrapper = command -> {
+      try {
+        command.run();
+      } catch (CancelException e) { // bug 39463
+        // ignore
+      } finally {
+        ConnectionTable.releaseThreadsSockets();
+      }
+    };
     try {
       if (isSelector()) {
-        return new PooledExecutorWithDMStats(new LinkedBlockingQueue(), this.maxThreads,
-            getStats().getCnxPoolHelper(), socketThreadFactory, Integer.MAX_VALUE,
-            getThreadMonitorObj());
+        return LoggingExecutors.newThreadPoolWithUnlimitedFeed(threadName, threadInitializer,
+            commandWrapper, this.maxThreads,
+            getStats().getCnxPoolHelper(), Integer.MAX_VALUE, getThreadMonitorObj());
       } else {
-        return new ThreadPoolExecutor(MINIMUM_MAX_CONNECTIONS, this.maxConnections, 0L,
-            TimeUnit.MILLISECONDS, new SynchronousQueue(), socketThreadFactory);
+        return LoggingExecutors.newThreadPoolWithSynchronousFeed(threadName, threadInitializer,
+            commandWrapper,
+            MINIMUM_MAX_CONNECTIONS, this.maxConnections, 0L);
       }
     } catch (IllegalArgumentException poolInitException) {
       this.stats.close();
@@ -682,15 +664,17 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   public void start() throws IOException {
     // This thread should not be a daemon to keep BridgeServers created
     // in code from exiting immediately.
-    thread = ThreadHelper.create("Cache Server Acceptor " + this.serverSock.getInetAddress() + ":"
-        + this.localPort + " local port: " + this.serverSock.getLocalPort(), this);
+    thread =
+        new LoggingThread("Cache Server Acceptor " + this.serverSock.getInetAddress() + ":"
+            + this.localPort + " local port: " + this.serverSock.getLocalPort(), false, this);
     this.acceptorId = thread.getId();
     thread.start();
 
     if (isSelector()) {
       this.selectorThread =
-          ThreadHelper.create("Cache Server Selector " + this.serverSock.getInetAddress() + ":"
+          new LoggingThread("Cache Server Selector " + this.serverSock.getInetAddress() + ":"
               + this.localPort + " local port: " + this.serverSock.getLocalPort(),
+              false,
               this::runSelectorLoop);
       this.selectorThread.start();
     }

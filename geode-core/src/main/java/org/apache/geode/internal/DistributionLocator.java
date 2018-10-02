@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
@@ -151,13 +152,14 @@ public class DistributionLocator {
 
       if (!Boolean.getBoolean(InternalDistributedSystem.DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
         final InetAddress faddress = address;
-        Runtime.getRuntime().addShutdownHook(ThreadHelper.create("LocatorShutdownThread", () -> {
-          try {
-            DistributionLocator.shutdown(port, faddress);
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-        }));
+        Runtime.getRuntime()
+            .addShutdownHook(new LoggingThread("LocatorShutdownThread", false, () -> {
+              try {
+                DistributionLocator.shutdown(port, faddress);
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }));
       }
 
       lockFile = ManagerInfo.setLocatorStarting(directory, port, address);

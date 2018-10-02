@@ -19,12 +19,7 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
-import java.util.concurrent.ForkJoinWorkerThread;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -32,8 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -122,23 +116,7 @@ public class SocketCloser {
   }
 
   private ExecutorService getWorkStealingPool(int maxParallelThreads) {
-    final ForkJoinWorkerThreadFactory factory = pool -> {
-      ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
-      LoggingUncaughtExceptionHandler.setOnThread(worker);
-      worker.setName("SocketCloser-" + worker.getPoolIndex());
-      return worker;
-    };
-    return new ForkJoinPool(maxParallelThreads, factory, null, true);
-  }
-
-  /**
-   * @deprecated since GEODE 1.3.0. Use @link{getWorkStealingPool}
-   */
-  @Deprecated
-  private ExecutorService createThreadPoolExecutor() {
-    return new ThreadPoolExecutor(asyncClosePoolMaxThreads, asyncClosePoolMaxThreads,
-        asyncClosePoolKeepAliveSeconds, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
-        new LoggingThreadFactory("SocketCloser"));
+    return LoggingExecutors.newWorkStealingPool("SocketCloser-", maxParallelThreads);
   }
 
   /**

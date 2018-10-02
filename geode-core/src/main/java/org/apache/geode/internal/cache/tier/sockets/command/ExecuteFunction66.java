@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.internal.ConnectionImpl;
@@ -49,7 +48,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
@@ -64,7 +63,7 @@ public class ExecuteFunction66 extends BaseCommand {
   protected static volatile boolean ASYNC_TX_WARNING_ISSUED = false;
 
   static final ExecutorService execService =
-      Executors.newCachedThreadPool(new LoggingThreadFactory("Function Execution Thread-"));
+      LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
 
   public static Command getCommand() {
     return singleton;

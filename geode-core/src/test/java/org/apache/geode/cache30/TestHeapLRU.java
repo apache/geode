@@ -21,7 +21,7 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.ThreadHelper;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Tests populating a region with data that is ever-increasing in size. It is used for testing the
@@ -42,7 +42,7 @@ public class TestHeapLRU {
         .create("TestHeapLRU").getName());
     Region region = cache.createRegion("TestDiskRegion", factory.create());
 
-    Thread thread = ThreadHelper.createDaemon("Annoying thread", () -> {
+    Thread thread = new LoggingThread("Annoying thread", () -> {
       try {
         while (true) {
           System.out.println("Annoy...");

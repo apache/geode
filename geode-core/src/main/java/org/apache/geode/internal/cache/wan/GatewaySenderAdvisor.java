@@ -42,12 +42,12 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class GatewaySenderAdvisor extends DistributionAdvisor {
@@ -421,7 +421,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
 
   public void launchLockObtainingVolunteerThread() {
     String threadName = "Gateway Sender Primary Lock Acquisition Thread Volunteer";
-    this.lockObtainingThread = ThreadHelper.createDaemon(threadName, () -> {
+    this.lockObtainingThread = new LoggingThread(threadName, () -> {
       GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().lock();
       try {
         // Attempt to obtain the lock

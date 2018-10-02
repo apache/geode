@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,20 +22,18 @@ import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
-
-public class ThreadHelperTest {
+public class LoggingThreadTest {
 
   @Test
   public void verifyCreateSetsNameOnThread() {
-    Thread thread = ThreadHelper.create("ThreadHelperName", null);
+    Thread thread = new LoggingThread("loggingThreadName", false, null);
 
-    assertThat(thread.getName()).isEqualTo("ThreadHelperName");
+    assertThat(thread.getName()).isEqualTo("loggingThreadName");
   }
 
   @Test
   public void verifyCreateReturnsNonDaemon() {
-    Thread thread = ThreadHelper.create("ThreadHelperName", null);
+    Thread thread = new LoggingThread("loggingThreadName", false, null);
 
     assertThat(thread.isDaemon()).isFalse();
   }
@@ -44,21 +42,21 @@ public class ThreadHelperTest {
   public void verifyCreateSetExpectedHandler() {
     UncaughtExceptionHandler handler = LoggingUncaughtExceptionHandler.getInstance();
 
-    Thread thread = ThreadHelper.create("ThreadHelperName", null);
+    Thread thread = new LoggingThread("loggingThreadName", false, null);
 
     assertThat(thread.getUncaughtExceptionHandler()).isSameAs(handler);
   }
 
   @Test
   public void verifyCreateDaemonSetsNameOnThread() {
-    Thread thread = ThreadHelper.createDaemon("ThreadHelperName", null);
+    Thread thread = new LoggingThread("loggingThreadName", null);
 
-    assertThat(thread.getName()).isEqualTo("ThreadHelperName");
+    assertThat(thread.getName()).isEqualTo("loggingThreadName");
   }
 
   @Test
   public void verifyCreateDaemonReturnsDaemon() {
-    Thread thread = ThreadHelper.createDaemon("ThreadHelperName", null);
+    Thread thread = new LoggingThread("loggingThreadName", null);
 
     assertThat(thread.isDaemon()).isTrue();
   }
@@ -67,7 +65,7 @@ public class ThreadHelperTest {
   public void verifyCreateDaemonSetExpectedHandler() {
     UncaughtExceptionHandler handler = LoggingUncaughtExceptionHandler.getInstance();
 
-    Thread thread = ThreadHelper.createDaemon("ThreadHelperName", null);
+    Thread thread = new LoggingThread("loggingThreadName", null);
 
     assertThat(thread.getUncaughtExceptionHandler()).isSameAs(handler);
   }

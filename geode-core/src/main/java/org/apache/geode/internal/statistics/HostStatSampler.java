@@ -27,10 +27,10 @@ import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
@@ -290,7 +290,7 @@ public abstract class HostStatSampler
         }
       }
       this.callbackSampler.start(getStatisticsManager(), getSampleRate(), TimeUnit.MILLISECONDS);
-      statThread = ThreadHelper.createDaemon("StatSampler", this);
+      statThread = new LoggingThread("StatSampler", this);
       statThread.setPriority(Thread.MAX_PRIORITY);
       statThread.start();
       // fix #46310 (race between management and sampler init) by waiting for init here

@@ -66,7 +66,6 @@ import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NullDataOutputStream;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
 import org.apache.geode.internal.cache.entries.DiskEntry;
@@ -88,6 +87,7 @@ import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
@@ -2053,7 +2053,7 @@ public class InitialImageOperation {
         // can't disconnect the distributed system in a thread owned by the ds,
         // so start a new thread to do the work
         Thread disconnectThread =
-            ThreadHelper.createDaemon("InitialImageOperation abortTest Thread",
+            new LoggingThread("InitialImageOperation abortTest Thread",
                 () -> dm.getSystem().disconnect());
         disconnectThread.start();
       } // !isDisconnecting

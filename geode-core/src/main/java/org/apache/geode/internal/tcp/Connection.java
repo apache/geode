@@ -75,10 +75,10 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
@@ -2865,7 +2865,7 @@ public class Connection implements Runnable {
       }
       this.asyncQueuingInProgress = true;
       this.pusherThread =
-          ThreadHelper.createDaemon("P2P async pusher to " + this.remoteAddr, this::runNioPusher);
+          new LoggingThread("P2P async pusher to " + this.remoteAddr, this::runNioPusher);
     } // synchronized
     this.pusherThread.start();
   }

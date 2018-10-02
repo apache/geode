@@ -52,7 +52,6 @@ import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OneTaskOnlyExecutor;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.CreateBucketResult;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -87,6 +86,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -1711,8 +1711,8 @@ public class PRHARedundancyProvider {
     try {
       if (proxyBucketArray.length > 0) {
         this.redundancyLogger = new RedundancyLogger(this);
-        Thread loggingThread = ThreadHelper.create(
-            "RedundancyLogger for region " + this.prRegion.getName(), this.redundancyLogger);
+        Thread loggingThread = new LoggingThread(
+            "RedundancyLogger for region " + this.prRegion.getName(), false, this.redundancyLogger);
         loggingThread.start();
       }
     } catch (RuntimeException e) {
@@ -1757,8 +1757,9 @@ public class PRHARedundancyProvider {
             proxyBucket.recoverFromDiskRecursively();
           }
         };
-        Thread recoveryThread = ThreadHelper
-            .create("Recovery thread for bucket " + proxyBucket.getName(), recoveryRunnable);
+        Thread recoveryThread =
+            new LoggingThread("Recovery thread for bucket " + proxyBucket.getName(),
+                false, recoveryRunnable);
         recoveryThread.start();
         bucketsHostedLocally.add(proxyBucket);
       } else {

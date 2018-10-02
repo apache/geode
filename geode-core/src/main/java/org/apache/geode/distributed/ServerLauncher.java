@@ -60,7 +60,6 @@ import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -69,6 +68,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -1180,7 +1180,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       // Another case of needing to use a non-daemon thread to keep the JVM alive until a clean
       // shutdown can be performed. If not, the JVM may exit too early causing the member to be
       // seen as having crashed and not cleanly departed.
-      Thread t = ThreadHelper.create("ServerLauncherStopper", this::doStopInProcess);
+      Thread t = new LoggingThread("ServerLauncherStopper", false, this::doStopInProcess);
       t.start();
 
       try {

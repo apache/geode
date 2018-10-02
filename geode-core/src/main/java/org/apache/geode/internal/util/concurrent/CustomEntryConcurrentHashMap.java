@@ -58,11 +58,11 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.command.KeySet;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -1833,7 +1833,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
         }
         if (!submitted) {
           String name = this.getClass().getSimpleName() + "@" + this.hashCode() + " Clear Thread";
-          Thread thread = ThreadHelper.createDaemon(name, runnable);
+          Thread thread = new LoggingThread(name, runnable);
           thread.start();
         }
       }

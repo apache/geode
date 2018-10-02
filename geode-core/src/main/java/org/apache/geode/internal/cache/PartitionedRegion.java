@@ -40,10 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -238,7 +236,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -812,8 +810,7 @@ public class PartitionedRegion extends LocalRegion
     if (this.getEvictionAttributes() != null
         && this.getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       this.sortedBuckets = new ArrayList<BucketRegion>();
-      ThreadFactory tf = new LoggingThreadFactory("BucketSorterThread");
-      this.bucketSorter = Executors.newScheduledThreadPool(1, tf);
+      this.bucketSorter = LoggingExecutors.newScheduledThreadPool("BucketSorterThread", 1);
     }
     // If eviction is on, Create an instance of PartitionedRegionLRUStatistics
     if ((this.getEvictionAttributes() != null

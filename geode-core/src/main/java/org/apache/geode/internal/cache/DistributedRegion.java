@@ -84,7 +84,6 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
@@ -122,6 +121,7 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -878,7 +878,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     try {
       if (!isInitializing) {
         // moved code to a new thread.
-        Thread thread = ThreadHelper.createDaemon("Reconnect Distributed System", () -> {
+        Thread thread = new LoggingThread("Reconnect Distributed System", () -> {
           try {
             logger.debug(
                 "Reliability loss with policy of reconnect and membership thread doing reconnect");

@@ -32,7 +32,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.StartupStatusListener;
 
@@ -1094,7 +1093,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
       return;
     }
     Thread watcherThread =
-        ThreadHelper.create("Stack Tracer for '" + targetThread.getName() + "'", () -> {
+        new LoggingThread("Stack Tracer for '" + targetThread.getName() + "'", false, () -> {
           while (!done.get()) {
             try {
               Thread.sleep(500);

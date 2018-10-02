@@ -38,12 +38,12 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.CacheTime;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.versions.CompactVersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
@@ -787,7 +787,7 @@ public class TombstoneService {
       this.tombstones = new ConcurrentLinkedQueue<Tombstone>();
       this.memoryUsedEstimate = new AtomicLong();
       this.queueHeadLock = new StoppableReentrantLock(cancelCriterion);
-      this.sweeperThread = ThreadHelper.createDaemon(threadName, this);
+      this.sweeperThread = new LoggingThread(threadName, this);
       this.lastPurgeTimestamp = getNow();
     }
 

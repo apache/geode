@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.eviction;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,7 +28,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -70,8 +69,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     if (threads < 1) {
       threads = Math.max((Runtime.getRuntime().availableProcessors() / 4), 1);
     }
-    return Executors.newFixedThreadPool(threads,
-        new LoggingThreadFactory("LRUListWithAsyncSortingThread"));
+    return LoggingExecutors.newFixedThreadPool("LRUListWithAsyncSortingThread", true, threads);
   }
 
   LRUListWithAsyncSorting(EvictionController controller) {

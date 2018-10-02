@@ -80,7 +80,6 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -95,6 +94,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
@@ -1071,7 +1071,7 @@ public class InternalDistributedSystem extends DistributedSystem
     };
 
     // Launch it and wait a little bit
-    Thread t = ThreadHelper.create(dc.toString(), r);
+    Thread t = new LoggingThread(dc.toString(), false, r);
     try {
       t.start();
       t.join(MAX_DISCONNECT_WAIT);
@@ -2303,7 +2303,7 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       // Added for bug 38407
       if (!Boolean.getBoolean(DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
-        tmp_shutdownHook = ThreadHelper.create(SHUTDOWN_HOOK_NAME, () -> {
+        tmp_shutdownHook = new LoggingThread(SHUTDOWN_HOOK_NAME, false, () -> {
           DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
           setThreadsSocketPolicy(true /* conserve sockets */);
           if (ds != null && ds.isConnected()) {

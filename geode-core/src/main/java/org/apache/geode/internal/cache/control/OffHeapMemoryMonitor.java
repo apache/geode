@@ -19,13 +19,13 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.MemoryUsageListener;
@@ -90,7 +90,7 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
       }
 
       Thread t =
-          ThreadHelper.createDaemon("OffHeapMemoryListener", this.offHeapMemoryUsageListener);
+          new LoggingThread("OffHeapMemoryListener", this.offHeapMemoryUsageListener);
       t.setPriority(Thread.MAX_PRIORITY);
       t.start();
       this.memoryListenerThread = t;

@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -49,7 +47,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -281,14 +279,14 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
     setIsStopped(true);
 
-    ThreadFactory threadFactory =
-        new LoggingThreadFactory("ConcurrentSerialGatewaySenderEventProcessor Stopper Thread");
     List<SenderStopperCallable> stopperCallables = new ArrayList<SenderStopperCallable>();
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
       stopperCallables.add(new SenderStopperCallable(serialProcessor));
     }
 
-    ExecutorService stopperService = Executors.newFixedThreadPool(processors.size(), threadFactory);
+    ExecutorService stopperService = LoggingExecutors.newFixedThreadPool(
+        "ConcurrentSerialGatewaySenderEventProcessor Stopper Thread",
+        true, processors.size());
     try {
       List<Future<Boolean>> futures = stopperService.invokeAll(stopperCallables);
       for (Future<Boolean> f : futures) {

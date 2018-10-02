@@ -16,7 +16,7 @@ package org.apache.geode.internal.offheap;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ThreadHelper;
+import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Used to asynchronously disconnect an InternalDistributedSystem when we run out of off-heap
@@ -68,7 +68,7 @@ class DisconnectingOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListe
 
       String name = this.getClass().getSimpleName() + "@" + this.hashCode()
           + " Handle OutOfOffHeapMemoryException Thread";
-      Thread thread = ThreadHelper.createDaemon(name, runnable);
+      Thread thread = new LoggingThread(name, runnable);
       thread.start();
     }
   }

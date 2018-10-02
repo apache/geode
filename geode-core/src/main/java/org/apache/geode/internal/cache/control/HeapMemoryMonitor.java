@@ -22,10 +22,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.ListenerNotFoundException;
@@ -50,7 +48,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
@@ -348,8 +346,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       return;
     }
 
-    final ThreadFactory threadFactory = new LoggingThreadFactory("GemfireHeapPoller");
-    this.pollerExecutor = Executors.newScheduledThreadPool(1, threadFactory);
+    this.pollerExecutor = LoggingExecutors.newScheduledThreadPool("GemfireHeapPoller", 1);
     this.pollerExecutor.scheduleAtFixedRate(new HeapPoller(), POLLER_INTERVAL, POLLER_INTERVAL,
         TimeUnit.MILLISECONDS);
 

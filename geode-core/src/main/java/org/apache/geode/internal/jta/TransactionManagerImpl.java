@@ -49,9 +49,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 
 @Deprecated
 public class TransactionManagerImpl implements TransactionManager, Serializable {
@@ -115,7 +115,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    */
   private TransactionManagerImpl() {
     cleaner = new TransactionTimeOutThread();
-    cleanUpThread = ThreadHelper.createDaemon("GlobalTXTimeoutMonitor", cleaner);
+    cleanUpThread = new LoggingThread("GlobalTXTimeoutMonitor", cleaner);
     cleanUpThread.start();
   }
 

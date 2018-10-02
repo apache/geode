@@ -27,13 +27,9 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 
@@ -52,10 +48,10 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -343,7 +339,7 @@ public class TCPConduit implements Runnable {
     }
   }
 
-  private ThreadPoolExecutor hsPool;
+  private ExecutorService hsPool;
 
   /**
    * the reason for a shutdown, if abnormal
@@ -359,8 +355,11 @@ public class TCPConduit implements Runnable {
    * added to fix bug 40436
    */
   public void setMaximumHandshakePoolSize(int maxSize) {
-    if (this.hsPool != null && maxSize > HANDSHAKE_POOL_SIZE) {
-      this.hsPool.setMaximumPoolSize(maxSize);
+    if (this.hsPool != null) {
+      ThreadPoolExecutor handshakePool = (ThreadPoolExecutor) this.hsPool;
+      if (maxSize > handshakePool.getMaximumPoolSize()) {
+        handshakePool.setMaximumPoolSize(maxSize);
+      }
     }
   }
 
@@ -373,22 +372,12 @@ public class TCPConduit implements Runnable {
     InetAddress ba = this.address;
 
     {
-      ThreadPoolExecutor tmp_hsPool = null;
+      ExecutorService tmp_hsPool = null;
       String threadName = "P2P-Handshaker " + ba + ":" + p + " Thread ";
-      ThreadFactory socketThreadFactory = new LoggingThreadFactory(threadName);
       try {
-        final BlockingQueue bq = new SynchronousQueue();
-        final RejectedExecutionHandler reh = (r, pool) -> {
-          try {
-            bq.put(r);
-          } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt(); // preserve the state
-            throw new RejectedExecutionException(
-                LocalizedStrings.TCPConduit_INTERRUPTED.toLocalizedString(), ex);
-          }
-        };
-        tmp_hsPool = new ThreadPoolExecutor(1, HANDSHAKE_POOL_SIZE, HANDSHAKE_POOL_KEEP_ALIVE_TIME,
-            TimeUnit.SECONDS, bq, socketThreadFactory, reh);
+        tmp_hsPool =
+            LoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName, null,
+                null, 1, HANDSHAKE_POOL_SIZE, HANDSHAKE_POOL_KEEP_ALIVE_TIME);
       } catch (IllegalArgumentException poolInitException) {
         throw new ConnectionException(
             LocalizedStrings.TCPConduit_WHILE_CREATING_HANDSHAKE_POOL.toLocalizedString(),
@@ -402,7 +391,7 @@ public class TCPConduit implements Runnable {
 
       id = new InetSocketAddress(socket.getInetAddress(), localPort);
       stopped = false;
-      thread = ThreadHelper.createDaemon("P2P Listener Thread " + id, this);
+      thread = new LoggingThread("P2P Listener Thread " + id, this);
       try {
         thread.setPriority(Thread.MAX_PRIORITY);
       } catch (Exception e) {

@@ -78,7 +78,6 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -88,6 +87,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectRep
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -903,7 +903,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       if (latestView.getViewId() > member.getVmViewId()) {
         // tell the process that it should shut down distribution.
         // Run in a separate thread so we don't hold the view lock during the request. Bug #44995
-        ThreadHelper.create("Removing shunned GemFire node " + member, () -> {
+        new LoggingThread("Removing shunned GemFire node " + member, false, () -> {
           // fix for bug #42548
           // this is an old member that shouldn't be added
           logger.warn(LocalizedMessage.create(
@@ -1971,7 +1971,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       // Bug 37944: make sure this is always done in a separate thread,
       // so that shutdown conditions don't wedge the view lock
       // fix for bug 34010
-      ThreadHelper.createDaemon("disconnect thread for " + member, () -> {
+      new LoggingThread("disconnect thread for " + member, () -> {
         try {
           Thread.sleep(Integer.getInteger("p2p.disconnectDelay", 3000).intValue());
         } catch (InterruptedException ie) {
@@ -2537,7 +2537,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     }
 
 
-    Thread reconnectThread = ThreadHelper.create("DisconnectThread", () -> {
+    Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
       // stop server locators immediately since they may not have correct
       // information. This has caused client failures in bridge/wan
       // network-down testing

@@ -58,7 +58,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.ThreadHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.locks.TXLockId;
 import org.apache.geode.internal.cache.locks.TXLockIdImpl;
@@ -70,6 +69,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -2075,7 +2075,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       // process
       // Should I use a thread pool?, Darrel suggests look in DM somewhere or introduce a zero
       // sized thread pool
-      Thread fellowFarSidersQuery = ThreadHelper.createDaemon("CommitProcessQuery Thread",
+      Thread fellowFarSidersQuery = new LoggingThread("CommitProcessQuery Thread",
           () -> doCommitProcessQuery(id));
       fellowFarSidersQuery.start();
     } else {
@@ -2087,7 +2087,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       // will never get the CommitProcess message, but it
       // doesn't matter since we can commit anyway.
       // Start a new thread to process the commit
-      Thread originDepartedCommit = ThreadHelper.createDaemon("Origin Departed Commit",
+      Thread originDepartedCommit = new LoggingThread("Origin Departed Commit",
           this::doOriginDepartedCommit);
       originDepartedCommit.start();
     }

@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.logging.log4j.Logger;
@@ -44,7 +43,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetE
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class SingleHopClientExecutor {
@@ -52,7 +51,7 @@ public class SingleHopClientExecutor {
   private static final Logger logger = LogService.getLogger();
 
   static final ExecutorService execService =
-      Executors.newCachedThreadPool(new LoggingThreadFactory("Function Execution Thread-"));
+      LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
 
   static void submitAll(List callableTasks) {
     if (callableTasks != null && !callableTasks.isEmpty()) {

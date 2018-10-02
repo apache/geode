@@ -19,8 +19,6 @@ package org.apache.geode.internal.logging;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.internal.ThreadHelper;
-
 /**
  * Threads produced by instances of this class will always
  * log uncaught exceptions. They will also always be daemon
@@ -38,6 +36,7 @@ public class LoggingThreadFactory implements ThreadFactory {
   private final String baseName;
   private final CommandWrapper commandWrapper;
   private final ThreadInitializer threadInitializer;
+  private final boolean isDaemon;
   private final AtomicInteger threadCount = new AtomicInteger(1);
 
   public interface ThreadInitializer {
@@ -59,12 +58,27 @@ public class LoggingThreadFactory implements ThreadFactory {
    * @param threadInitializer if not null, will be invoked with the thread each time a thread is
    *        created
    * @param commandWrapper if not null, will be invoked by each thread created by this factory
+   * @param isDaemon true if threads will be daemons
    */
   public LoggingThreadFactory(String baseName, ThreadInitializer threadInitializer,
-      CommandWrapper commandWrapper) {
+      CommandWrapper commandWrapper, boolean isDaemon) {
     this.baseName = baseName;
     this.threadInitializer = threadInitializer;
     this.commandWrapper = commandWrapper;
+    this.isDaemon = isDaemon;
+  }
+
+  /**
+   * Create a factory that produces daemon threads that log uncaught exceptions
+   *
+   * @param baseName the base name will be included in every thread name
+   * @param threadInitializer if not null, will be invoked with the thread each time a thread is
+   *        created
+   * @param commandWrapper if not null, will be invoked by each thread created by this factory
+   */
+  public LoggingThreadFactory(String baseName, ThreadInitializer threadInitializer,
+      CommandWrapper commandWrapper) {
+    this(baseName, threadInitializer, commandWrapper, true);
   }
 
   /**
@@ -73,7 +87,17 @@ public class LoggingThreadFactory implements ThreadFactory {
    * @param baseName the base name will be included in every thread name
    */
   public LoggingThreadFactory(String baseName) {
-    this(baseName, null, null);
+    this(baseName, null, null, true);
+  }
+
+  /**
+   * Create a factory that produces threads that log uncaught exceptions
+   *
+   * @param baseName the base name will be included in every thread name
+   * @param isDaemon true if threads will be daemons
+   */
+  public LoggingThreadFactory(String baseName, boolean isDaemon) {
+    this(baseName, null, null, isDaemon);
   }
 
   /**
@@ -83,7 +107,7 @@ public class LoggingThreadFactory implements ThreadFactory {
    * @param commandWrapper if not null, will be invoked by each thread created by this factory
    */
   public LoggingThreadFactory(String baseName, CommandWrapper commandWrapper) {
-    this(baseName, null, commandWrapper);
+    this(baseName, null, commandWrapper, true);
   }
 
   private String getUniqueName() {
@@ -98,7 +122,7 @@ public class LoggingThreadFactory implements ThreadFactory {
     } else {
       commandToRun = runnable;
     }
-    Thread thread = ThreadHelper.createDaemon(getUniqueName(), commandToRun);
+    Thread thread = new LoggingThread(getUniqueName(), isDaemon, commandToRun);
     if (this.threadInitializer != null) {
       this.threadInitializer.initialize(thread);
     }

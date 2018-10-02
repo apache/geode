@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,7 +33,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 public class BackupService {
   private static final Logger logger = LogService.getLogger();
@@ -134,7 +133,7 @@ public class BackupService {
   }
 
   private ExecutorService createExecutor() {
-    return Executors.newSingleThreadExecutor(new LoggingThreadFactory("BackupServiceThread"));
+    return LoggingExecutors.newSingleThreadExecutor("BackupServiceThread", true);
   }
 
   private void cleanup() {
