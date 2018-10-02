@@ -2273,6 +2273,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throw new Error(
           "TimeoutException should not be thrown in localDestroyRegion",
           e);
+    } finally {
+      // close this region's tombstone sweeper
+      this.getCache().getTombstoneService().closeSweeperByRegion(this);
     }
   }
 
@@ -6374,6 +6377,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   public static final float DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE = 80.0f;
 
+  // TODO: Use this method to change the timeout setting after region level tombstone sweeper is
+  // created. This will simplified the coding for now.
+  // Maybe in the long run, we need to introduce a new region attribute, such as tombstone-timeout
+  public void setTombstoneTimeout(long timeout) {
+    this.getCache().getTombstoneService().setReplicateTombstoneTimeout(this, timeout);
+  }
+
   /**
    * Called after this region has been completely created
    *
@@ -6383,6 +6393,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public void postCreateRegion() {
+    // add region level tombstone sweeper
+    this.cache.getTombstoneService().addRegionTombstoneSweeper(this);
+
     if (getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       final LogWriter logWriter = this.cache.getLogger();
       float evictionPercentage = DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE;

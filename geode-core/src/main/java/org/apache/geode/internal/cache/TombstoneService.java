@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.CacheTime;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -117,11 +118,21 @@ public class TombstoneService {
   private final ReplicateTombstoneSweeper replicatedTombstoneSweeper;
   private final NonReplicateTombstoneSweeper nonReplicatedTombstoneSweeper;
 
+  // TODO: since we will have region level tombstone sweeper, we might not need
+  // NonReplicateTombstoneSweeper any more
+  private Map<Region, ReplicateTombstoneSweeper> regionTombstoneSweepers =
+      Collections.synchronizedMap(new HashMap<Region, ReplicateTombstoneSweeper>());
+  // private Map<Region, NonReplicateTombstoneSweeper> clientRegionSweepers =
+  // Collections.synchronizedMap(new HashMap<Region, NonReplicateTombstoneSweeper>());
+
   public static TombstoneService initialize(InternalCache cache) {
     return new TombstoneService(cache);
   }
 
   private TombstoneService(InternalCache cache) {
+
+    // Keep the existing replicatedTombstoneSweeper to be shared by server side regions
+    // Keep the existing nonReplicatedTombstoneSweeper to be shared by client side regions
     this.replicatedTombstoneSweeper =
         new ReplicateTombstoneSweeper(cache, cache.getCachePerfStats(), cache.getCancelCriterion(),
             cache.getDistributionManager().getWaitingThreadPool());
@@ -131,12 +142,50 @@ public class TombstoneService {
     this.nonReplicatedTombstoneSweeper.start();
   }
 
+  public void addRegionTombstoneSweeper(Region region) {
+    synchronized (regionTombstoneSweepers) {
+      if (regionTombstoneSweepers.get(region) == null) {
+        ReplicateTombstoneSweeper regionTombstoneSweeper =
+            new ReplicateTombstoneSweeper((InternalCache) region.getRegionService(),
+                ((LocalRegion) region).getCachePerfStats(),
+                region.getRegionService().getCancelCriterion(),
+                ((LocalRegion) region).getDistributionManager().getWaitingThreadPool());
+        regionTombstoneSweepers.put(region, regionTombstoneSweeper);
+      }
+    }
+  }
+
+  public void closeSweeperByRegion(Region region) {
+    synchronized (regionTombstoneSweepers) {
+      ReplicateTombstoneSweeper regionTombstoneSweeper = regionTombstoneSweepers.get(region);
+      if (regionTombstoneSweeper != null) {
+        regionTombstoneSweeper.stop();
+        regionTombstoneSweepers.remove(region);
+      }
+    }
+  }
+
+  public void setReplicateTombstoneTimeout(Region region, long timeout) {
+    synchronized (regionTombstoneSweepers) {
+      ReplicateTombstoneSweeper regionTombstoneSweeper = regionTombstoneSweepers.get(region);
+      if (regionTombstoneSweeper != null) {
+        regionTombstoneSweeper.setTOmbstoneTimeout(timeout);
+      }
+    }
+  }
+
   /**
    * this ensures that the background sweeper thread is stopped
    */
   public void stop() {
     this.replicatedTombstoneSweeper.stop();
     this.nonReplicatedTombstoneSweeper.stop();
+    synchronized (regionTombstoneSweepers) {
+      for (ReplicateTombstoneSweeper tombstoneSweeper : regionTombstoneSweepers.values()) {
+        tombstoneSweeper.stop();
+      }
+      regionTombstoneSweepers.clear();
+    }
   }
 
   /**
@@ -161,6 +210,10 @@ public class TombstoneService {
 
 
   private TombstoneSweeper getSweeper(LocalRegion r) {
+    TombstoneSweeper sweeper = this.regionTombstoneSweepers.get(r);
+    if (sweeper != null) {
+      return sweeper;
+    }
     if (r.getScope().isDistributed() && r.getServerProxy() == null
         && r.getDataPolicy().withReplication()) {
       return this.replicatedTombstoneSweeper;
@@ -731,11 +784,11 @@ public class TombstoneService {
     /**
      * the expiration time for tombstones in this sweeper
      */
-    protected final long EXPIRY_TIME;
+    protected long EXPIRY_TIME;
     /**
      * The minimum amount of elapsed time, in millis, between purges.
      */
-    private final long PURGE_INTERVAL;
+    private long PURGE_INTERVAL;
     /**
      * How long the sweeper should sleep.
      */
@@ -796,6 +849,11 @@ public class TombstoneService {
         }
         return false;
       });
+    }
+
+    public void setTOmbstoneTimeout(long expiryTime) {
+      this.EXPIRY_TIME = expiryTime;
+      this.PURGE_INTERVAL = Math.min(DEFUNCT_TOMBSTONE_SCAN_INTERVAL, expiryTime);
     }
 
     /**

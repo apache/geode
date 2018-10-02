@@ -38,17 +38,22 @@ import org.apache.geode.cache.lucene.internal.partition.BucketTargetingResolver;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   protected Region fileAndChunkRegion;
   protected final FileSystemStats fileSystemStats;
+  protected static long LUCENE_TOMBSTONE_TIMEOUT =
+      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "lucene-tombstone-timeout", 60000L);
+
 
   public static final String FILES_REGION_SUFFIX = ".files";
 
@@ -170,15 +175,32 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
 
     // Create AttributesFactory based on input RegionShortcut
+    final boolean isOverFlowToDisk = isOverFlowToDisk(regionAttributes);
     RegionAttributes baseAttributes = this.cache.getRegionAttributes(regionShortCut.toString());
     AttributesFactory factory = new AttributesFactory(baseAttributes);
     factory.setPartitionAttributes(partitionAttributesFactory.create());
     if (regionAttributes.getDataPolicy().withPersistence()) {
       factory.setDiskStoreName(regionAttributes.getDiskStoreName());
     }
+    if (isOverFlowToDisk) {
+      factory.setEvictionAttributes(regionAttributes.getEvictionAttributes());
+    }
     RegionAttributes<K, V> attributes = factory.create();
 
-    return createRegion(regionName, attributes);
+    LocalRegion lr = (LocalRegion) createRegion(regionName, attributes);
+    if (lr != null) {
+      lr.setTombstoneTimeout(LUCENE_TOMBSTONE_TIMEOUT);
+    }
+    return lr;
+  }
+
+  private boolean isOverFlowToDisk(final RegionAttributes regionAttributes) {
+    if (regionAttributes.getEvictionAttributes() != null
+        && regionAttributes.getEvictionAttributes().getAction() != null) {
+      return regionAttributes.getEvictionAttributes().getAction().isOverflowToDisk();
+    } else {
+      return false;
+    }
   }
 
   public void close() {}
