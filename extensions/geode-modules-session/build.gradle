@@ -24,6 +24,8 @@ dependencies {
   integrationTestCompile project(":geode-dunit")
   integrationTestCompile ('org.httpunit:httpunit:' + project.'httpunit.version') {
     exclude group: 'javax.servlet'
+    // this version of httpunit contains very outdated xercesImpl
+    exclude group: 'xerces'
   }
   integrationTestCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')
   integrationTestCompile(group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.'jetty.version', classifier: 'tests')
@@ -33,6 +35,8 @@ dependencies {
     exclude group: 'jboss'
     exclude group: 'xerces'
   }
+
+  integrationTestRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
 }
 
 jar {

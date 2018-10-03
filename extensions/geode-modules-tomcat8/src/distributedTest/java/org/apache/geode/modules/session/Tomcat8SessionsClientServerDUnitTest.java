@@ -19,6 +19,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.util.Properties;
 
+import javax.security.auth.message.config.AuthConfigFactory;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -80,6 +82,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     sessionManager = manager;
     sessionManager.setEnableCommitValve(true);
     server.getRootContext().setManager(sessionManager);
+    AuthConfigFactory.setFactory(null);
 
     servlet = server.addServlet("/test/*", "default", CommandServlet.class.getName());
     server.startContainer();
