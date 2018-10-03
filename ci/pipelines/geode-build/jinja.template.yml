@@ -49,13 +49,13 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-{% for test in (tests) if not test.name == "StressNew" -%}
+  {% for test in (tests) if not test.name == "StressNew" -%}
   - {{test.name}}Test
-{% endfor -%}
-{% if repository.sanitized_fork == "apache" %}
+  {% endfor -%}
+  {% if repository.sanitized_fork == "apache" %}
   - UpdatePassingRef
   - PublishArtifacts
-{% endif %}
+  {% endif %}
 
 resources:
 - name: send-notification-email
