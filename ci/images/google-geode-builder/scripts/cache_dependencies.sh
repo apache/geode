@@ -23,21 +23,8 @@ pushd ${WORK_DIR}
   git clone -b develop --depth 1 https://github.com/apache/geode.git geode
 
   pushd geode
-    cat << EOF >> build.gradle
-  subprojects {
-    task getDeps(type: Copy) {
-      from project.sourceSets.main.runtimeClasspath
-      from project.sourceSets.test.runtimeClasspath
-      from configurations.testRuntime
-      into 'runtime/'
-    }
-  }
-EOF
-
-  # Include rat to get its runtime dependencies, which are apparently not captured by the 'getDeps' task above
-  ./gradlew --no-daemon :rat getDeps
-
+    ./gradlew --no-daemon resolveDependencies
   popd
 popd
-rm -rf ${WORK_DIR}
 
+rm -rf ${WORK_DIR}
