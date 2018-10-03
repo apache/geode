@@ -2912,15 +2912,6 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        CacheServer s = getCache().addCacheServer();
-        getCache().getLogger().info("SWAP:ds1");
-        s.setPort(port2);
-        s.start();
-        return null;
-      }
-    });
     datastore1.invoke(new CreateReplicateRegion("r1"));
     datastore2.invoke(new CreateReplicateRegion("r2"));
 
@@ -2934,6 +2925,16 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         r1.put("key1", "value1");
         r2.put("key2", "value2");
         return cCache.getCacheTransactionManager().getTransactionId();
+      }
+    });
+
+    datastore1.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        CacheServer s = getCache().addCacheServer();
+        getCache().getLogger().info("SWAP:ds1");
+        s.setPort(port2);
+        s.start();
+        return null;
       }
     });
 
@@ -3012,12 +3013,6 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       return null;
     });
 
-    datastore1.invoke("create backup server", () -> {
-      CacheServer s = getCache().addCacheServer();
-      s.setPort(port2);
-      s.start();
-      return null;
-    });
     datastore1.invoke(new CreateReplicateRegion("r1"));
     datastore2.invoke(new CreateReplicateRegion("r1"));
 
@@ -3028,6 +3023,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       cCache.getCacheTransactionManager().begin();
       r1.destroy("key");
       return cCache.getCacheTransactionManager().getTransactionId();
+    });
+
+    datastore1.invoke("create backup server", () -> {
+      CacheServer s = getCache().addCacheServer();
+      s.setPort(port2);
+      s.start();
+      return null;
     });
 
     server.invoke("close cache after sending tx message to other servers", () -> {
