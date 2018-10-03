@@ -5708,6 +5708,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         logger.debug("caught concurrent modification attempt when applying {}", event);
       }
       notifyBridgeClients(event);
+      notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
+          : EnumListenerEvent.AFTER_CREATE, event);
       return false;
     }
 
@@ -6204,8 +6206,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
-    if (isPdxTypesRegion() || event.isConcurrencyConflict()) {
-      // isConcurrencyConflict is usually a concurrent cache modification problem
+    if (isPdxTypesRegion()) {
       return;
     }
 
@@ -6600,6 +6601,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Notify clients only if its NOT a gateway event.
       if (event.getVersionTag() != null && !event.getVersionTag().isGatewayTag()) {
         notifyBridgeClients(event);
+        notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
       }
       return true; // event was elided
 

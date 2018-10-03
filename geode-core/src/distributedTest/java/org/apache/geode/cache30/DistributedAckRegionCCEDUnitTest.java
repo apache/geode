@@ -471,7 +471,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
           // ARM.updateEntry will be called one more time, so there will be 2 conflicted events
           assertThat(CCRegion.getCachePerfStats().getConflatedEventsCount())
               .describedAs("conflated event count")
-              .isEqualTo(1);
+              .isEqualTo(2);
         }
       });
     } finally {

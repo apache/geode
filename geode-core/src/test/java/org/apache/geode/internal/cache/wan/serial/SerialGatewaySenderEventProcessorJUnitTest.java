@@ -16,8 +16,12 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -80,6 +84,91 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     verify(gss).incUnprocessedTokensRemovedBySecondary();
     verify(gss, never()).incUnprocessedEventsAddedBySecondary();
     assertEquals(0, this.processor.getUnprocessedTokensSize());
+  }
+
+  @Test
+  public void verifyUpdateVersionStampEventShouldNotBeAddToSecondary() throws Exception {
+    // GatewaySenderStats gss = mock(GatewaySenderStats.class);
+    // when(sender.getStatistics()).thenReturn(gss);
+    // when(sender.isPrimary()).thenReturn(false);
+
+    // // Handle primary event
+    // EventID id = handlePrimaryEvent();
+
+    // Verify the token was added by checking the correct stat methods were called and the size of
+    // the unprocessedTokensMap.
+    // verify(gss).incUnprocessedTokensAddedByPrimary();
+    // verify(gss, never()).incUnprocessedEventsRemovedByPrimary();
+    // assertEquals(1, this.processor.getUnprocessedTokensSize());
+
+    // Handle the event from the secondary. The call to enqueueEvent is necessary to synchronize the
+    // unprocessedEventsLock and prevent the assertion error in basicHandleSecondaryEvent.
+    EntryEventImpl event = mock(EntryEventImpl.class);
+    // when(event.getRegion()).thenReturn(mock(LocalRegion.class));
+    // when(event.getEventId()).thenReturn(id);
+    when(event.getOperation()).thenReturn(Operation.UPDATE_VERSION_STAMP);
+    this.processor = spy(processor);
+    this.processor.enqueueEvent(null, event, null);
+
+    // Verify the token was removed by checking the correct stat methods were called and the size of
+    // the unprocessedTokensMap.
+    // verify(gss, never()).incUnprocessedEventsAddedBySecondary();
+    // verify(gss).incUnprocessedTokensRemovedBySecondary();
+    // verify(gss, never()).incUnprocessedEventsAddedBySecondary();
+    verify(this.processor, never()).handleSecondaryEvent(any());
+    // assertEquals(0, this.processor.getUnprocessedTokensSize());
+  }
+
+  @Test
+  public void verifyCMENotOriginRemoteShouldNotBeAddToSecondary() throws Exception {
+    EntryEventImpl event = mock(EntryEventImpl.class);
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    when(event.isConcurrencyConflict()).thenReturn(true);
+    when(event.isOriginRemote()).thenReturn(false);
+    this.processor = spy(processor);
+    this.processor.enqueueEvent(null, event, null);
+    verify(this.processor, never()).handleSecondaryEvent(any());
+  }
+
+  @Test
+  public void verifyCMEButOriginRemoteShouldBeAddToSecondary() throws Exception {
+    EntryEventImpl event = mock(EntryEventImpl.class);
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    when(event.isConcurrencyConflict()).thenReturn(true);
+    when(event.isOriginRemote()).thenReturn(true);
+
+    LocalRegion region = mock(LocalRegion.class);
+    when(event.getRegion()).thenReturn(region);
+    when(region.getFullPath()).thenReturn("/testRegion");
+
+    EventID id = mock(EventID.class);
+    when(event.getEventId()).thenReturn(id);
+
+    this.processor = spy(processor);
+    doNothing().when(processor).handleSecondaryEvent(any());
+
+    this.processor.enqueueEvent(null, event, null);
+    verify(this.processor, times(1)).handleSecondaryEvent(any());
+  }
+
+  @Test
+  public void verifyNotCMENotUpdateVersionStampShouldBeAddToSecondary() throws Exception {
+    EntryEventImpl event = mock(EntryEventImpl.class);
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+    when(event.isConcurrencyConflict()).thenReturn(false);
+
+    LocalRegion region = mock(LocalRegion.class);
+    when(event.getRegion()).thenReturn(region);
+    when(region.getFullPath()).thenReturn("/testRegion");
+
+    EventID id = mock(EventID.class);
+    when(event.getEventId()).thenReturn(id);
+
+    this.processor = spy(processor);
+    doNothing().when(processor).handleSecondaryEvent(any());
+
+    this.processor.enqueueEvent(null, event, null);
+    verify(this.processor, times(1)).handleSecondaryEvent(any());
   }
 
   @Test
