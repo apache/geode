@@ -26,7 +26,6 @@ dependencies {
   }
 
   compile group: 'junit', name: 'junit', version: '4.12'
-  compile files("${System.getProperty('java.home')}/../lib/tools.jar")
 
   testAnnotationProcessor this.project
 
