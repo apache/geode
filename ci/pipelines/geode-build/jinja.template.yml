@@ -49,19 +49,13 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-  {% for test in (tests) if not (test.name=="StressNew" or test.name.startswith("Windows")) -%}
+{% for test in (tests) if not test.name == "StressNew" -%}
   - {{test.name}}Test
-  {% endfor -%}
+{% endfor -%}
 {% if repository.sanitized_fork == "apache" %}
   - UpdatePassingRef
   - PublishArtifacts
 {% endif %}
-- name: windows
-  jobs:
-  - {{ build_test.name }}
-  {% for test in (tests) if test.name.startswith("Windows") -%}
-  - {{test.name}}Test
-  {% endfor %}
 
 resources:
 - name: send-notification-email
