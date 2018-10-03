@@ -20,6 +20,7 @@ import itertools
 import json
 import logging
 import multiprocessing
+import os
 import re
 import threading
 from multiprocessing.dummy import Pool
@@ -207,13 +208,12 @@ def print_class_and_test_failures_with_links(completed, long_list_of_failures, u
         failed_tests = set(failure.method for failure in this_class_failures)
         class_build_failures_count = sum(1 for _ in {failure.build_json['name'] for failure in this_class_failures})
 
-        print("\r\n" + success_rate_string(this_class_name, class_build_failures_count, completed) + "\r\n")
+        print(os.linesep + success_rate_string(this_class_name, class_build_failures_count, completed) + os.linesep)
 
         for this_test_method_name in failed_tests:
             this_test_method_failures = [failure for failure in this_class_failures
                                          if failure.method == this_test_method_name]
 
-            # print("     " + success_rate_string("." + this_test_method_name, test_build_failures_count, completed))
             for this_failure in this_test_method_failures:
                 build = this_failure.build_json
                 failed_build_url = (f"{url}/teams/{build['team_name']}/pipelines/"
@@ -223,7 +223,7 @@ def print_class_and_test_failures_with_links(completed, long_list_of_failures, u
 
 
 def print_list_of_failures(long_list_of_failures, url):
-    print("\r\n\r\n\r\n")
+    print(os.linesep * 3)
     for this_failure in long_list_of_failures:
         build = this_failure.build_json
         failed_build_url = (f"{url}/teams/{build['team_name']}/pipelines/"
@@ -293,18 +293,11 @@ def get_builds_to_examine(builds, build_count):
         count_of_builds_to_return = build_count
 
     builds_to_analyze = completed_builds[:count_of_builds_to_return] if count_of_builds_to_return else completed_builds
+
     logging.debug(f"{len(aborted)} aborted builds in examination range: {list_and_sort_by_name(aborted)}")
     logging.debug(f"{len(errored)} errored builds in examination range: {list_and_sort_by_name(errored)}")
     logging.debug(f"{len(pending)} pending builds in examination range: {list_and_sort_by_name(pending)}")
     logging.debug(f"{len(started)} started builds in examination range: {list_and_sort_by_name(started)}")
-    del builds[0:(len(builds)-len(completed_builds))]
-
-
-    if len(builds) != len(completed_builds):
-        raise RuntimeError(
-            "The build report returned the {} most recent builds, with only {} of these completed.  "
-            "This cannot satisfy the desired target of {} jobs to analyze.".format(
-                len(builds), len(completed_builds), count_of_builds_to_return))
 
     first_build = builds_to_analyze[-1]['name']
     last_build = builds_to_analyze[0]['name']
