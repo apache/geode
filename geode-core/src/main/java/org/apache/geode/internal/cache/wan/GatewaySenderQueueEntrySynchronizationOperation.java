@@ -46,9 +46,7 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class GatewaySenderQueueEntrySynchronizationOperation {
 
@@ -139,10 +137,11 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
               if (events.isEmpty()) {
                 GatewaySenderQueueEntrySynchronizationEntry entry =
                     this.operation.entriesToSynchronize.get(i);
-                logger.info(LocalizedMessage.create(
-                    LocalizedStrings.GatewaySenderQueueEntrySynchronizationReplyProcessor_REPLY_IS_EMPTY,
-                    new Object[] {reply.getSender(), this.operation.region.getFullPath(), entry.key,
-                        entry.entryVersion}));
+                logger.info(
+                    "Synchronization event reply from member={}; regionPath={}; key={}; entryVersion={} is empty",
+                    new Object[] {reply.getSender(), this.operation.region.getFullPath(),
+                        entry.key,
+                        entry.entryVersion});
               } else {
                 putSynchronizationEvents(eventsForOneEntry);
               }

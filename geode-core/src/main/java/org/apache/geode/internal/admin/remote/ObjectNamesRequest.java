@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular app vm to request all the subregions of a given parent
@@ -41,7 +40,7 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
   }
 
   public ObjectNamesRequest() {
-    friendlyName = LocalizedStrings.ObjectNamesRequest_LIST_CACHED_OBJECTS.toLocalizedString();
+    friendlyName = "List cached objects";
   }
 
   /**

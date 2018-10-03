@@ -57,9 +57,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.util.ObjectIntProcedure;
@@ -96,7 +94,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.FetchEntriesMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -119,8 +117,7 @@ public class FetchEntriesMessage extends PartitionMessage {
             getProcessorId());
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.FetchEntriesMessage_FETCHKEYSMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER));
+      logger.warn("FetchKeysMessage: data store not configured for this member");
     }
     pr.getPrStats().endPartitionMessagesProcessing(startTime);
     FetchEntriesReplyMessage.send(getSender(), getProcessorId(), dm, this.bucketId, entries);
@@ -253,8 +250,7 @@ public class FetchEntriesMessage extends PartitionMessage {
         // This is a little odd, since we're trying to send a reply.
         // One does not normally force a reply. Is this correct?
         throw new ForceReattemptException(
-            LocalizedStrings.FetchEntriesMessage_UNABLE_TO_SEND_RESPONSE_TO_FETCHENTRIES_REQUEST
-                .toLocalizedString(),
+            "Unable to send response to fetch-entries request",
             io);
       }
     }
@@ -559,11 +555,11 @@ public class FetchEntriesMessage extends PartitionMessage {
         } catch (Exception e) {
           if (deserializingKey) {
             processException(new ReplyException(
-                LocalizedStrings.FetchEntriesMessage_ERROR_DESERIALIZING_KEYS.toLocalizedString(),
+                "Error deserializing keys",
                 e));
           } else {
             processException(new ReplyException(
-                LocalizedStrings.FetchEntriesMessage_ERROR_DESERIALIZING_VALUES.toLocalizedString(),
+                "Error deserializing values",
                 e)); // for bug 41202
           }
           checkIfDone(); // fix for hang in 41202
@@ -596,20 +592,19 @@ public class FetchEntriesMessage extends PartitionMessage {
           logger.debug("FetchKeysResponse got remote cancellation; forcing reattempt. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.FetchEntriesMessage_FETCHKEYSRESPONSE_GOT_REMOTE_CANCELLATION_FORCING_REATTEMPT
-                  .toLocalizedString(),
+              "FetchKeysResponse got remote cancellation; forcing reattempt.",
               t);
         } else if (t instanceof ForceReattemptException) {
           // Not sure this is necessary, but it is possible for
           // FetchEntriesMessage to marshal a ForceReattemptException, so...
           throw new ForceReattemptException(
-              LocalizedStrings.FetchEntriesMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
+              "Peer requests reattempt", t);
         }
         e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(
-            LocalizedStrings.FetchEntriesMessage_NO_REPLIES_RECEIVED.toLocalizedString());
+            "No replies received");
       }
       // Deserialize all CachedDeserializable here so we have access to applications thread context
       // class loader

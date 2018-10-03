@@ -51,7 +51,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.Bucket;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class QueryUtils {
@@ -431,8 +430,8 @@ public class QueryUtils {
       return (Boolean) result;
     } else if (result != null && result != QueryService.UNDEFINED) {
       throw new TypeMismatchException(
-          LocalizedStrings.QueryUtils_ANDOR_OPERANDS_MUST_BE_OF_TYPE_BOOLEAN_NOT_TYPE_0
-              .toLocalizedString(result.getClass().getName()));
+          String.format("AND/OR operands must be of type boolean, not type ' %s '",
+              result.getClass().getName()));
     } else {
       return false;
     }

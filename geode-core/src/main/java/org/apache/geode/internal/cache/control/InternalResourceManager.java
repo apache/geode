@@ -50,10 +50,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
@@ -241,13 +239,13 @@ public class InternalResourceManager implements ResourceManager {
   public void deliverEventFromRemote(final ResourceEvent event) {
     assert !event.isLocal();
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n()
+    if (this.cache.getLogger().fineEnabled()) {
+      this.cache.getLogger()
           .fine("New remote event to deliver for member " + event.getMember() + ": event=" + event);
     }
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n()
+    if (this.cache.getLogger().fineEnabled()) {
+      this.cache.getLogger()
           .fine("Remote event to deliver for member " + event.getMember() + ":" + event);
     }
 
@@ -296,8 +294,8 @@ public class InternalResourceManager implements ResourceManager {
       this.notifyExecutor.execute(runnable);
     } catch (RejectedExecutionException ignore) {
       if (!isClosed()) {
-        this.cache.getLoggerI18n()
-            .warning(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS);
+        this.cache.getLogger()
+            .warning("No memory events will be delivered because of RejectedExecutionException");
       }
     }
   }
@@ -377,9 +375,8 @@ public class InternalResourceManager implements ResourceManager {
       logger.debug("Failed in interrupting the Resource Manager Thread due to interrupt");
     }
     if (!executor.isTerminated()) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ResourceManager_FAILED_TO_STOP_RESOURCE_MANAGER_THREADS,
-          new Object[] {secToWait}));
+      logger.warn("Failed to stop resource manager threads in {} seconds",
+          secToWait);
     }
   }
 

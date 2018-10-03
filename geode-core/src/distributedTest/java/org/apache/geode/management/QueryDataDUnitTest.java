@@ -21,10 +21,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.FixedPartitionAttributes.createFixedPartition;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.management.internal.ManagementConstants.DEFAULT_QUERY_LIMIT;
-import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__INVALID_QUERY;
-import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__JOIN_OP_EX;
-import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND;
-import static org.apache.geode.management.internal.ManagementStrings.QUERY__MSG__REGIONS_NOT_FOUND_ON_MEMBERS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
@@ -304,8 +300,9 @@ public class QueryDataDUnitTest implements Serializable {
       String invalidQuery = "SELECT * FROM " + PARTITIONED_REGION_NAME1;
       String invalidQueryResult = distributedSystemMXBean.queryData(invalidQuery, null, 2);
       assertThat(invalidQueryResult,
-          isJson(withJsonPath("$.message", equalTo(QUERY__MSG__INVALID_QUERY
-              .toLocalizedString("Region mentioned in query probably missing /")))));
+          isJson(
+              withJsonPath("$.message", equalTo(String.format("Query is invalid due to error : %s",
+                  "Region mentioned in query probably missing /")))));
 
       String nonexistentRegionName = testName.getMethodName() + "_NONEXISTENT_REGION";
       String regionsNotFoundQuery = "SELECT * FROM /" + nonexistentRegionName
@@ -313,7 +310,8 @@ public class QueryDataDUnitTest implements Serializable {
       String regionsNotFoundResult =
           distributedSystemMXBean.queryData(regionsNotFoundQuery, null, 2);
       assertThat(regionsNotFoundResult, isJson(withJsonPath("$.message",
-          equalTo(QUERY__MSG__REGIONS_NOT_FOUND.toLocalizedString("/" + nonexistentRegionName)))));
+          equalTo(String.format("Cannot find regions %s in any of the members",
+              "/" + nonexistentRegionName)))));
 
       String regionName = testName.getMethodName() + "_REGION";
       String regionsNotFoundOnMembersQuery = "SELECT * FROM /" + regionName;
@@ -325,13 +323,15 @@ public class QueryDataDUnitTest implements Serializable {
       String regionsNotFoundOnMembersResult =
           distributedSystemMXBean.queryData(regionsNotFoundOnMembersQuery, member1.getId(), 2);
       assertThat(regionsNotFoundOnMembersResult, isJson(withJsonPath("$.message",
-          equalTo(QUERY__MSG__REGIONS_NOT_FOUND_ON_MEMBERS.toLocalizedString("/" + regionName)))));
+          equalTo(
+              String.format("Cannot find regions %s in specified members", "/" + regionName)))));
 
       String joinMissingMembersQuery = QUERIES[1];
       String joinMissingMembersResult =
           distributedSystemMXBean.queryData(joinMissingMembersQuery, null, 2);
       assertThat(joinMissingMembersResult,
-          isJson(withJsonPath("$.message", equalTo(QUERY__MSG__JOIN_OP_EX.toLocalizedString()))));
+          isJson(withJsonPath("$.message", equalTo(
+              "Join operation can only be executed on targeted members, please give member input"))));
     });
   }
 

@@ -29,9 +29,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A message that is sent to a particular distribution manager to make an administration request.
@@ -108,8 +106,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
       }
 
       throw new RuntimeAdminException(
-          LocalizedStrings.AdminRequest_A_REPLYEXCEPTION_WAS_THROWN_WHILE_WAITING_FOR_A_REPLY
-              .toLocalizedString(),
+          "A ReplyException was thrown while waiting for a reply.",
           ex);
     }
   }
@@ -143,8 +140,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
       response.setMsgId(this.getMsgId());
       dm.putOutgoing(response);
     } else {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AdminRequest_RESPONSE_TO__0__WAS_CANCELLED, this.getClass().getName()));
+      logger.info("Response to  {}  was cancelled.", this.getClass().getName());
     }
   }
 
@@ -182,8 +178,8 @@ public abstract class AdminRequest extends PooledDistributionMessage {
       return null;
     } else if (size > 1) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminRequest_COULD_NOT_RETURN_ONE_RECIPIENT_BECAUSE_THIS_MESSAGE_HAS_0_RECIPIENTS
-              .toLocalizedString(Integer.valueOf(size)));
+          String.format("Could not return one recipient because this message has %s recipients",
+              Integer.valueOf(size)));
     } else {
       return recipients[0];
     }

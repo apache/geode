@@ -41,7 +41,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
 
@@ -326,8 +325,8 @@ public abstract class DistributedSystem implements StatisticsFactory {
     synchronized (existingSystemsLock) {
       if (existingSystems != null && !existingSystems.isEmpty()) {
         throw new IllegalStateException(
-            LocalizedStrings.DistributedSystem_THIS_VM_ALREADY_HAS_ONE_OR_MORE_DISTRIBUTED_SYSTEM_CONNECTIONS_0
-                .toLocalizedString(existingSystems));
+            String.format("This VM already has one or more Distributed System connections %s",
+                existingSystems));
       }
       ClusterDistributionManager.setIsDedicatedAdminVM(adminOnly);
     }

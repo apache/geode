@@ -46,7 +46,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -507,8 +506,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // obligatory type check
     if ((o == null) || !(o instanceof InternalDistributedMember))
       throw new ClassCastException(
-          LocalizedStrings.InternalDistributedMember_INTERNALDISTRIBUTEDMEMBERCOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES
-              .toLocalizedString());
+          "InternalDistributedMember.compareTo(): comparison between different classes");
     InternalDistributedMember other = (InternalDistributedMember) o;
 
     int myPort = getPort();
@@ -922,8 +920,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // disabled to allow post-connect setting of the port for loner systems
     // Assert.assertTrue(getPort() > 0);
     // if (this.getPort() == 0) {
-    // InternalDistributedSystem.getLoggerI18n().warning(LocalizedStrings.DEBUG,
-    // "Serializing ID with zero port", new Exception("Stack trace"));
+    // InternalDistributedSystem.getLogger().warning(String.format("%s",
+    // "Serializing ID with zero port", new Exception("Stack trace")));
     // }
 
     // NOTE: If you change the serialized format of this class

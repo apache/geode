@@ -77,7 +77,6 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.StreamingPartitionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -239,8 +238,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         }
         if (QueryMonitor.isLowMemory()) {
           String reason =
-              LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
-                  .toLocalizedString();
+              "Query execution canceled due to low memory while gathering results from partitioned regions";
           query.setCanceled(new QueryExecutionLowMemoryException(reason));
         } else {
           if (logger.isDebugEnabled()) {
@@ -742,8 +740,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         DefaultQuery.testHook.doTestHook("Create PR Query Trace String");
       }
       StringBuilder sb = new StringBuilder();
-      sb.append(LocalizedStrings.PartitionedRegion_QUERY_TRACE_LOG
-          .toLocalizedString(this.query.getQueryString())).append("\n");
+      sb.append(String.format("Trace Info for Query: %s",
+          this.query.getQueryString())).append("\n");
       for (PRQueryTraceInfo queryTraceInfo : prQueryTraceInfoList) {
         sb.append(queryTraceInfo.createLogLine(me)).append("\n");
       }
@@ -760,8 +758,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private void checkIfQueryShouldBeCancelled() {
     if (QueryMonitor.isLowMemory()) {
       String reason =
-          LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
-              .toLocalizedString();
+          "Query execution canceled due to low memory while gathering results from partitioned regions";
       query.setCanceled(new QueryExecutionLowMemoryException(reason));
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(5);
@@ -1101,8 +1098,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
         if (m.isCanceled()) {
           String reason =
-              LocalizedStrings.QueryMonitor_LOW_MEMORY_WHILE_GATHERING_RESULTS_FROM_PARTITION_REGION
-                  .toLocalizedString();
+              "Query execution canceled due to low memory while gathering results from partitioned regions";
           query.setCanceled(new QueryExecutionLowMemoryException(reason));
           this.abort = true;
         }

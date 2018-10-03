@@ -23,7 +23,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 
 /**
@@ -58,7 +57,7 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   StoreAllCachedDeserializable(byte[] serializedValue) {
     if (serializedValue == null) {
       throw new NullPointerException(
-          LocalizedStrings.StoreAllCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
+          "value must not be null");
     }
     this.value = serializedValue;
     this.objValue = EntryEventImpl.deserialize(this.value);

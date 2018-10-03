@@ -73,9 +73,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OriginalServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ProtobufServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
@@ -165,8 +163,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private void checkRunning() {
     if (this.isRunning()) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheServerImpl_A_CACHE_SERVERS_CONFIGURATION_CANNOT_BE_CHANGED_ONCE_IT_IS_RUNNING
-              .toLocalizedString());
+          "A cache server''s configuration cannot be changed once it is running.");
     }
   }
 
@@ -329,8 +326,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       // force notifyBySubscription to be true so that meta info is pushed
       // from servers to clients instead of invalidates.
       if (!this.notifyBySubscription) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.CacheServerImpl_FORCING_NOTIFYBYSUBSCRIPTION_TO_SUPPORT_DYNAMIC_REGIONS));
+        logger.info("Forcing notifyBySubscription to support dynamic regions");
         this.notifyBySubscription = true;
       }
     }
@@ -366,8 +362,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     // Creating ClientHealthMonitoring region.
     // Force initialization on current cache
     ClientHealthMonitoringRegion.getInstance(this.cache);
-    this.cache.getLoggerI18n()
-        .config(LocalizedStrings.CacheServerImpl_CACHESERVER_CONFIGURATION___0, getConfig());
+    this.cache.getLogger()
+        .config(String.format("CacheServer Configuration:   %s", getConfig()));
 
     /*
      * If the stopped bridge server is restarted, we'll need to re-register the client membership
@@ -444,8 +440,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.loadMonitor.stop();
       }
     } catch (RuntimeException e) {
-      cache.getLoggerI18n()
-          .warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR, e);
+      cache.getLogger()
+          .warning("CacheServer - Error closing load monitor", e);
       firstException = e;
     }
 
@@ -454,8 +450,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.advisor.close();
       }
     } catch (RuntimeException e) {
-      cache.getLoggerI18n()
-          .warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR, e);
+      cache.getLogger()
+          .warning("CacheServer - Error closing advisor", e);
       firstException = e;
     }
 
@@ -464,8 +460,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.acceptor.close();
       }
     } catch (RuntimeException e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_ACCEPTOR_MONITOR), e);
+      logger.warn("CacheServer - Error closing acceptor monitor", e);
       if (firstException != null) {
         firstException = e;
       }
@@ -623,7 +618,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     } else {
       // throw invalid eviction policy exception
       throw new InvalidValueException(
-          LocalizedStrings.CacheServerImpl__0_INVALID_EVICTION_POLICY.toLocalizedString(ePolicy));
+          String.format("%s Invalid eviction policy", ePolicy));
     }
     return factory;
   }
@@ -773,7 +768,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
     if (!this.isRunning()) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheServerImpl_MUST_BE_RUNNING.toLocalizedString());
+          "The cache server must be running to use this operation");
     }
     getCacheClientNotifier().registerInterestRegistrationListener(listener);
   }

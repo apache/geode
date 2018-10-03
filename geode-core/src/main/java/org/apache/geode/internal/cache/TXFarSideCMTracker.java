@@ -31,9 +31,7 @@ import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.locks.TXLockId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * TXFarSideCMTracker tracks received and processed TXCommitMessages, for transactions that contain
@@ -176,9 +174,10 @@ public class TXFarSideCMTracker {
             commitMessage.wait(100);
           } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            logger.error(LocalizedMessage.create(
-                LocalizedStrings.TxFarSideTracker_WAITING_TO_COMPLETE_ON_MESSAGE_0_CAUGHT_AN_INTERRUPTED_EXCEPTION,
-                commitMessage), ie);
+            logger.error(
+                String.format("Waiting to complete on message %s caught an interrupted exception",
+                    commitMessage),
+                ie);
             break;
           }
         }

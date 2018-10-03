@@ -24,7 +24,7 @@ import org.apache.geode.internal.i18n.AbstractStringIdResourceBundle;
  * This class forms the basis of the i18n strategy. Its primary function is to be used as a key to
  * be passed to an instance of StringIdResourceBundle.
  *
- * @since GemFire 6.0
+ * @Deprecated localization in Geode is deprecated
  */
 public class StringId {
   /** The root name of the ResourceBundle */
@@ -51,7 +51,7 @@ public class StringId {
 
   /**
    * A StringId to allow users to log a literal String using the
-   * {@link org.apache.geode.i18n.LogWriterI18n}
+   * {@link org.apache.geode.LogWriter}
    */
   public static final StringId LITERAL = new StringId(1, "{0}");
 

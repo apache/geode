@@ -67,10 +67,8 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
@@ -510,8 +508,9 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     if (!regionDistributionExceptions.isEmpty()) {
       throw new CommitDistributionException(
-          LocalizedStrings.TXCommitMessage_THESE_REGIONS_EXPERIENCED_RELIABILITY_FAILURE_DURING_DISTRIBUTION_OF_THE_OPERATION_0
-              .toLocalizedString(failedRegionNames),
+          String.format(
+              "These regions experienced reliability failure during distribution of the operation:  %s",
+              failedRegionNames),
           regionDistributionExceptions);
     }
   }
@@ -672,9 +671,7 @@ public class TXCommitMessage extends PooledDistributionMessage
               // error condition, so you also need to check to see if the JVM
               // is still usable:
               SystemFailure.checkFailure();
-              logger.error(
-                  LocalizedMessage.create(
-                      LocalizedStrings.TXCommitMessage_EXCEPTION_OCCURRED_IN_TRANSACTIONLISTENER),
+              logger.error("Exception occurred in TransactionListener",
                   t);
             }
           }
@@ -745,9 +742,9 @@ public class TXCommitMessage extends PooledDistributionMessage
       throw problem;
     } else { // catch CacheRuntimeException
       addProcessingException(problem);
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.TXCommitMessage_TRANSACTION_MESSAGE_0_FROM_SENDER_1_FAILED_PROCESSING_UNKNOWN_TRANSACTION_STATE_2,
-          new Object[] {this, getSender(), problem}));
+      logger.error(
+          "Transaction message {} from sender {} failed processing, unknown transaction state: {}",
+          new Object[] {this, getSender(), problem});
     }
   }
 
@@ -756,8 +753,8 @@ public class TXCommitMessage extends PooledDistributionMessage
       CommitReplyException replyEx = null;
       if (!this.processingExceptions.isEmpty()) {
         replyEx = new CommitReplyException(
-            LocalizedStrings.TXCommitMessage_COMMIT_OPERATION_GENERATED_ONE_OR_MORE_EXCEPTIONS_FROM_0
-                .toLocalizedString(this.getSender()),
+            String.format("Commit operation generated one or more exceptions from  %s",
+                this.getSender()),
             this.processingExceptions);
       }
       ReplyMessage.send(getSender(), this.processorId, replyEx, this.dm);
@@ -1175,7 +1172,7 @@ public class TXCommitMessage extends PooledDistributionMessage
             logger.debug("Received unneeded commit data for region {}", this.regionPath);
           }
           this.msg.addProcessingException(new RegionDestroyedException(
-              LocalizedStrings.TXCommitMessage_REGION_NOT_FOUND.toLocalizedString(),
+              "Region not found",
               this.regionPath));
           this.internalRegion = null;
           return false;

@@ -19,7 +19,6 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Exception thrown when a DistributionMessage is processed to be propagated back to the sender of
@@ -79,8 +78,8 @@ public class ReplyException extends GemFireException {
     Throwable c = getCause();
     if (c == null) {
       throw new InternalGemFireException(
-          LocalizedStrings.ReplyException_UNEXPECTED_EXCEPTION_ON_MEMBER_0
-              .toLocalizedString(getSender()),
+          String.format("unexpected exception on member %s",
+              getSender()),
           this);
     }
     if (c instanceof RuntimeException) {
@@ -96,8 +95,8 @@ public class ReplyException extends GemFireException {
       throw new SerializationException("Class not found", c);
     }
     throw new InternalGemFireException(
-        LocalizedStrings.ReplyException_UNEXPECTED_EXCEPTION_ON_MEMBER_0
-            .toLocalizedString(getSender()),
+        String.format("unexpected exception on member %s",
+            getSender()),
         c);
   }
 

@@ -32,10 +32,8 @@ import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ProcessOutputReader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of GemFire
@@ -117,35 +115,29 @@ class EnabledManagedEntityController implements ManagedEntityController {
      */
     if (command == null || command.length() == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ManagedEntityController_EXECUTION_COMMAND_IS_EMPTY.toLocalizedString());
+          "Execution command is empty");
     }
 
     File workingDir = new File(entity.getEntityConfig().getWorkingDirectory());
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.ManagedEntityController_EXECUTING_REMOTE_COMMAND_0_IN_DIRECTORY_1,
-        new Object[] {command, workingDir}));
+    logger.info("Executing remote command: {} in directory {}",
+        command, workingDir);
     Process p = null;
     try {
       p = Runtime.getRuntime().exec(command, null /* env */, workingDir);
 
     } catch (java.io.IOException e) {
-      logger.fatal(LocalizedMessage
-          .create(LocalizedStrings.ManagedEntityController_WHILE_EXECUTING_0, command), e);
+      logger.fatal("While executing " + command, e);
       return null;
     }
 
     final ProcessOutputReader pos = new ProcessOutputReader(p);
     int retCode = pos.getExitCode();
     final String output = pos.getOutput();
-    logger.info(
-        LocalizedMessage.create(LocalizedStrings.ManagedEntityController_RESULT_OF_EXECUTING_0_IS_1,
-            new Object[] {command, Integer.valueOf(retCode)}));
-    logger.info(LocalizedMessage.create(LocalizedStrings.ManagedEntityController_OUTPUT_OF_0_IS_1,
-        new Object[] {command, output}));
+    logger.info("Result of executing {} is {}", command, Integer.valueOf(retCode));
+    logger.info("Output of {} is {}", command, output);
 
     if (retCode != 0 || outputIsError(output)) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.ManagedEntityController_REMOTE_EXECUTION_OF_0_FAILED, command));
+      logger.warn("Remote execution of {} failed.", command);
       return null;
     }
 
@@ -196,8 +188,9 @@ class EnabledManagedEntityController implements ManagedEntityController {
 
     if (prefix == null || prefix.length() <= 0) {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityController_A_REMOTE_COMMAND_MUST_BE_SPECIFIED_TO_OPERATE_ON_A_MANAGED_ENTITY_ON_HOST_0
-              .toLocalizedString(host));
+          String.format(
+              "A remote command must be specified to operate on a managed entity on host %s",
+              host));
     }
 
     int hostIdx = prefix.indexOf(HOST);
@@ -350,8 +343,8 @@ class EnabledManagedEntityController implements ManagedEntityController {
 
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityController_COULD_NOT_DETERMINE_IF_MANAGED_ENTITY_WAS_RUNNING_0
-              .toLocalizedString(output));
+          String.format("Could not determine if managed entity was running: %s",
+              output));
     }
   }
 

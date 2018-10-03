@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to get its current license info.
@@ -37,7 +36,7 @@ public class LicenseInfoRequest extends AdminRequest {
 
   public LicenseInfoRequest() {
     friendlyName =
-        LocalizedStrings.LicenseInfoRequest_FETCH_CURRENT_LICENSE_INFORMATION.toLocalizedString();
+        "Fetch current license information";
   }
 
   /**

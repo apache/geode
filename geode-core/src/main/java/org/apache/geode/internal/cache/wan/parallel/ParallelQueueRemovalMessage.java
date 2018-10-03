@@ -43,9 +43,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Removes a batch of events from the remote secondary queues
@@ -180,9 +178,10 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
           filter.afterAcknowledgement(eventForFilter);
         }
       } catch (Exception e) {
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-            new Object[] {filter.toString(), eventForFilter}), e);
+        logger.fatal(String.format(
+            "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+            new Object[] {filter.toString(), eventForFilter}),
+            e);
       }
     }
   }
@@ -222,9 +221,10 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     } catch (CancelException e) {
       return; // cache or DS is closing
     } catch (CacheException e) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.ParallelQueueRemovalMessage_QUEUEREMOVALMESSAGEPROCESSEXCEPTION_IN_PROCESSING_THE_LAST_DISPTACHED_KEY_FOR_A_SHADOWPR_THE_PROBLEM_IS_WITH_KEY__0_FOR_SHADOWPR_WITH_NAME_1,
-          new Object[] {key, prQ.getName()}), e);
+      logger.error(String.format(
+          "ParallelQueueRemovalMessage::process:Exception in processing the last disptached key for a ParallelGatewaySenderQueue''s shadowPR. The problem is with key,%s for shadowPR with name=%s",
+          new Object[] {key, prQ.getName()}),
+          e);
     }
   }
 
@@ -261,9 +261,10 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
           filter.afterAcknowledgement(eventForFilter);
         }
       } catch (Exception e) {
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-            new Object[] {filter.toString(), eventForFilter}), e);
+        logger.fatal(String.format(
+            "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+            new Object[] {filter.toString(), eventForFilter}),
+            e);
       }
     }
   }

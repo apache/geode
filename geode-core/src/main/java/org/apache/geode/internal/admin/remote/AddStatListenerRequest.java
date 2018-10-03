@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to add a statistic listener.
@@ -45,7 +44,7 @@ public class AddStatListenerRequest extends AdminRequest {
 
   public AddStatListenerRequest() {
     friendlyName =
-        LocalizedStrings.AddStatListenerRequest_ADD_STATISTIC_RESOURCE_LISTENER.toLocalizedString();
+        "Add statistic resource listener";
   }
 
   /**

@@ -44,10 +44,8 @@ import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class SingleHopClientExecutor {
 
@@ -153,8 +151,7 @@ public class SingleHopClientExecutor {
                 } else {
                   functionExecutionException =
                       new FunctionInvocationTargetException(new BucketMovedException(
-                          LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE
-                              .toLocalizedString()));
+                          "Bucket migrated to another node. Please retry."));
                 }
               }
             } else if (ee.getCause() instanceof FunctionException) {
@@ -328,9 +325,10 @@ public class SingleHopClientExecutor {
               Object value = entry.getValue();
               if (!entry.isKeyNotOnServer()) {
                 if (value instanceof Throwable) {
-                  logger.warn(LocalizedMessage.create(
-                      LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-                      new Object[] {value, key}), (Throwable) value);
+                  logger.warn(String.format(
+                      "%s: Caught the following exception attempting to get value for key=%s",
+                      new Object[] {value, key}),
+                      (Throwable) value);
                 }
               }
             }

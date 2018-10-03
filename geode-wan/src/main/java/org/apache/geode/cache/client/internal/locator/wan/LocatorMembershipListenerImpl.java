@@ -27,9 +27,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * An implementation of
@@ -109,10 +107,10 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
                   false);
             } catch (Exception e) {
               if (logger.isDebugEnabled()) {
-                logger.debug(LocalizedMessage.create(
-                    LocalizedStrings.LOCATOR_MEMBERSHIP_LISTENER_COULD_NOT_EXCHANGE_LOCATOR_INFORMATION_0_1_WIHT_2_3,
+                logger.debug(
+                    "Locator Membership listener could not exchange locator information {}:{} with {}:{}",
                     new Object[] {locator.getHostName(), locator.getPort(), value.getHostName(),
-                        value.getPort()}));
+                        value.getPort()});
               }
             }
             try {
@@ -120,10 +118,10 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
                   new LocatorJoinMessage(entry.getKey(), value, localLocatorId, ""), 1000, false);
             } catch (Exception e) {
               if (logger.isDebugEnabled()) {
-                logger.debug(LocalizedMessage.create(
-                    LocalizedStrings.LOCATOR_MEMBERSHIP_LISTENER_COULD_NOT_EXCHANGE_LOCATOR_INFORMATION_0_1_WIHT_2_3,
+                logger.debug(
+                    "Locator Membership listener could not exchange locator information {}:{} with {}:{}",
                     new Object[] {value.getHostName(), value.getPort(), locator.getHostName(),
-                        locator.getPort()}));
+                        locator.getPort()});
               }
             }
           }

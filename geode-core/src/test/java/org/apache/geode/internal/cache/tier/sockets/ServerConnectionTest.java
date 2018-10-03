@@ -17,7 +17,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 
-import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,17 +27,14 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Locale;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -47,18 +43,9 @@ import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.rules.RestoreLocaleRule;
 
 @Category({ClientServerTest.class})
 public class ServerConnectionTest {
-
-  /**
-   * This test assumes Locale is in English. Before the test, change the locale of Locale and
-   * StringId to English and restore the original locale after the test.
-   */
-  @Rule
-  public final RestoreLocaleRule restoreLocale =
-      new RestoreLocaleRule(Locale.ENGLISH, StringId::setLocale);
 
   @Mock
   private Message requestMsg;
@@ -142,6 +129,6 @@ public class ServerConnectionTest {
 
     assertThatThrownBy(serverConnection::getUniqueId)
         .isExactlyInstanceOf(AuthenticationRequiredException.class)
-        .hasMessage(HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.getRawText());
+        .hasMessage("No security credentials are provided");
   }
 }

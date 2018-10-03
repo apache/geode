@@ -23,7 +23,6 @@ import org.apache.geode.admin.SystemMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides monitoring of a statistic resource.
@@ -112,8 +111,8 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
     }
     if (stats == null || stats.length < 1) {
       throw new AdminException(
-          LocalizedStrings.StatisticResourceImpl_FAILED_TO_REFRESH_STATISTICS_0_FOR_1
-              .toLocalizedString(getType() + "-" + getName(), getOwner()));
+          String.format("Failed to refresh statistics %s for %s",
+              getType() + "-" + getName(), getOwner()));
     }
 
     if (this.statistics == null || this.statistics.length < 1) {

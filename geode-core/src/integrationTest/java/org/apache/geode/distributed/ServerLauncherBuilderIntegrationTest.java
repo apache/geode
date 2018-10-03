@@ -40,7 +40,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
@@ -257,18 +256,20 @@ public class ServerLauncherBuilderIntegrationTest {
   }
 
   private String memberNameValidationErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(
+        "The member name of the %s must be provided as an argument to the launcher, or a path to gemfire.properties must be specified, which assumes the %s member name will be set using the name property.",
+        "Server");
   }
 
   private String workingDirectoryOptionNotValidErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format(
+        "Specifying the --dir option is not valid when starting a %s with the %sLauncher.",
+        "Server");
   }
 
   private String workingDirectoryNotFoundErrorMessage() {
-    return LocalizedStrings.Launcher_Builder_WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE
-        .toLocalizedString("Server");
+    return String.format("The working directory for the %s could not be found.",
+        "Server");
   }
 
   private File getWorkingDirectory() {

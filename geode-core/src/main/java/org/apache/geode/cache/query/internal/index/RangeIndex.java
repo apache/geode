@@ -55,7 +55,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class RangeIndex extends AbstractIndex {
 
@@ -231,8 +230,8 @@ public class RangeIndex extends AbstractIndex {
           }
         }
       } catch (Exception ex) {
-        throw new IMQException(LocalizedStrings.RangeIndex_COULD_NOT_ADD_OBJECT_OF_TYPE_0
-            .toLocalizedString(oldkeys.getClass().getName()), ex);
+        throw new IMQException(String.format("Could not add object of type  %s",
+            oldkeys.getClass().getName()), ex);
       }
 
       // Perform replace of new index entries in index.
@@ -281,8 +280,8 @@ public class RangeIndex extends AbstractIndex {
             }
           } while (retry);
         } catch (TypeMismatchException ex) {
-          throw new IMQException(LocalizedStrings.RangeIndex_COULD_NOT_ADD_OBJECT_OF_TYPE_0
-              .toLocalizedString(key.getClass().getName()), ex);
+          throw new IMQException(String.format("Could not add object of type  %s",
+              key.getClass().getName()), ex);
         }
       } else {
         for (Object key : keys) {
@@ -329,8 +328,8 @@ public class RangeIndex extends AbstractIndex {
               }
             } while (retry);
           } catch (TypeMismatchException ex) {
-            throw new IMQException(LocalizedStrings.RangeIndex_COULD_NOT_ADD_OBJECT_OF_TYPE_0
-                .toLocalizedString(key.getClass().getName()), ex);
+            throw new IMQException(String.format("Could not add object of type  %s",
+                key.getClass().getName()), ex);
           }
         } // for loop for keys
       }
@@ -350,8 +349,8 @@ public class RangeIndex extends AbstractIndex {
         RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
         if (rvMap == null) {
           throw new IMQException(
-              LocalizedStrings.AbstractIndex_WRONG_COMPARETO_IMPLEMENTATION_IN_INDEXED_OBJECT_0
-                  .toLocalizedString(oldkeys.getClass().getName()));
+              String.format("Indexed object''s class %s compareTo function is errorneous.",
+                  oldkeys.getClass().getName()));
         }
         this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
         rvMap.remove(entry);
@@ -377,8 +376,8 @@ public class RangeIndex extends AbstractIndex {
       // implementation.
       if (rvMap == null) {
         throw new IMQException(
-            LocalizedStrings.AbstractIndex_WRONG_COMPARETO_IMPLEMENTATION_IN_INDEXED_OBJECT_0
-                .toLocalizedString(oldkeys.getClass().getName()));
+            String.format("Indexed object''s class %s compareTo function is errorneous.",
+                oldkeys.getClass().getName()));
       }
       this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
       rvMap.remove(entry);
@@ -427,7 +426,7 @@ public class RangeIndex extends AbstractIndex {
   //// IndexProtocol interface implementation
   public boolean clear() throws QueryException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RangeIndex_NOT_YET_IMPLEMENTED.toLocalizedString());
+        "Not yet implemented");
   }
 
   @Override
@@ -483,8 +482,8 @@ public class RangeIndex extends AbstractIndex {
         this.entryToValuesMap.add(entry, newKey);
         this.internalIndexStats.incNumValues(1);
       } catch (TypeMismatchException ex) {
-        throw new IMQException(LocalizedStrings.RangeIndex_COULD_NOT_ADD_OBJECT_OF_TYPE_0
-            .toLocalizedString(key.getClass().getName()), ex);
+        throw new IMQException(String.format("Could not add object of type  %s",
+            key.getClass().getName()), ex);
       }
     }
     this.internalIndexStats.incNumUpdates();
@@ -539,8 +538,8 @@ public class RangeIndex extends AbstractIndex {
       // null in case when "values" has wrong compareTo() implementation.
       if (rvMap == null) {
         throw new IMQException(
-            LocalizedStrings.AbstractIndex_WRONG_COMPARETO_IMPLEMENTATION_IN_INDEXED_OBJECT_0
-                .toLocalizedString(values.getClass().getName()));
+            String.format("Indexed object''s class %s compareTo function is errorneous.",
+                values.getClass().getName()));
       }
       this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
       rvMap.remove(entry);
@@ -841,7 +840,7 @@ public class RangeIndex extends AbstractIndex {
         }
         default: {
           throw new IllegalArgumentException(
-              LocalizedStrings.RangeIndex_OPERATOR_0.toLocalizedString(valueOf(operator)));
+              String.format("Operator,  %s", valueOf(operator)));
         }
       } // end switch
     } catch (ClassCastException ex) {
@@ -1028,7 +1027,7 @@ public class RangeIndex extends AbstractIndex {
       }
     } else {
       throw new RuntimeException(
-          LocalizedStrings.RangeIndex_PROBLEM_IN_INDEX_QUERY.toLocalizedString());
+          "Problem in index query");
     }
   }
 
@@ -1120,7 +1119,7 @@ public class RangeIndex extends AbstractIndex {
           intermediateResults, isIntersection, limit);
     } else {
       throw new RuntimeException(
-          LocalizedStrings.RangeIndex_PROBLEM_IN_INDEX_QUERY.toLocalizedString());
+          "Problem in index query");
     }
   }
 
@@ -1132,7 +1131,7 @@ public class RangeIndex extends AbstractIndex {
    * rvMap.removeValuesFromCollection(result); } } else if (entriesMap instanceof
    * RegionEntryToValuesMap) { RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) entriesMap;
    * rvMap.removeValuesFromCollection(result); } else { throw new
-   * RuntimeException(LocalizedStrings.RangeIndex_PROBLEM_IN_INDEX_QUERY.toLocalizedString()); } }
+   * RuntimeException("Problem in index query"); } }
    *
    * private void removeValuesFromResult(Object entriesMap, Collection result,CompiledValue iterOps,
    * RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib, SelectResults
@@ -1146,7 +1145,7 @@ public class RangeIndex extends AbstractIndex {
    * RegionEntryToValuesMap) { RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap)entriesMap;
    * rvMap.removeValuesFromCollection(result, iterOps, runtimeItr, context, projAttrib,
    * intermediateResults, isIntersection); } else { throw new
-   * RuntimeException(LocalizedStrings.RangeIndex_PROBLEM_IN_INDEX_QUERY.toLocalizedString()); } }
+   * RuntimeException("Problem in index query"); } }
    */
 
   void recreateIndexData() throws IMQException {
@@ -1309,7 +1308,7 @@ public class RangeIndex extends AbstractIndex {
         }
         default: {
           throw new IllegalArgumentException(
-              LocalizedStrings.RangeIndex_INVALID_OPERATOR.toLocalizedString());
+              "Invalid Operator");
         }
       } // end switch
     } else if (key == QueryService.UNDEFINED) { // do nothing
@@ -1329,7 +1328,7 @@ public class RangeIndex extends AbstractIndex {
         }
         default: {
           throw new IllegalArgumentException(
-              LocalizedStrings.RangeIndex_INVALID_OPERATOR.toLocalizedString());
+              "Invalid Operator");
         }
       } // end switch
     } else {

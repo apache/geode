@@ -62,10 +62,8 @@ import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -265,7 +263,7 @@ public abstract class ServerConnection implements Runnable {
     this.stats = stats;
     this.acceptor = (AcceptorImpl) acceptor;
     this.crHelper = helper;
-    this.logWriter = (InternalLogWriter) internalCache.getLoggerI18n();
+    this.logWriter = (InternalLogWriter) internalCache.getLogger();
     this.securityLogWriter = (InternalLogWriter) internalCache.getSecurityLoggerI18n();
     this.communicationMode = CommunicationMode.fromModeNumber(communicationMode);
     this.principal = null;
@@ -320,9 +318,8 @@ public abstract class ServerConnection implements Runnable {
               getCommunicationMode(), getDistributedSystem(), getSecurityService());
 
         } catch (SocketTimeoutException timeout) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ServerHandShakeProcessor_0_HANDSHAKE_REPLY_CODE_TIMEOUT_NOT_RECEIVED_WITH_IN_1_MS,
-              new Object[] {getName(), handshakeTimeout}));
+          logger.warn("{}: Handshake reply code timeout, not received with in {} ms",
+              new Object[] {getName(), handshakeTimeout});
           failConnectionAttempt();
           return false;
         } catch (EOFException | SocketException e) {
@@ -332,9 +329,8 @@ public abstract class ServerConnection implements Runnable {
           failConnectionAttempt();
           return false;
         } catch (IOException e) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ServerHandShakeProcessor_0_RECEIVED_NO_HANDSHAKE_REPLY_CODE,
-              getName()), e);
+          logger.warn(getName() + ": Received no handshake reply code",
+              e);
           failConnectionAttempt();
           return false;
         } catch (AuthenticationRequiredException | AuthenticationFailedException ex) {
@@ -374,8 +370,7 @@ public abstract class ServerConnection implements Runnable {
             return processHandShake();
           } catch (CancelException e) {
             if (!crHelper.isShutdown()) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.ServerConnection_0_UNEXPECTED_CANCELLATION, getName()), e);
+              logger.warn(getName() + ": Unexpected cancellation: ", e);
             }
             cleanup();
             return false;
@@ -383,10 +378,8 @@ public abstract class ServerConnection implements Runnable {
         } else {
           // is this branch ever taken?
           this.crHelper.checkCancelInProgress(null); // bug 37113?
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE));
-          refuseHandshake(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE
-              .toLocalizedString(), AcceptorImpl.REPLY_INVALID);
+          logger.warn("Received Unknown handshake reply code.");
+          refuseHandshake("Received Unknown handshake reply code.", AcceptorImpl.REPLY_INVALID);
           return false;
         }
       }
@@ -412,8 +405,8 @@ public abstract class ServerConnection implements Runnable {
         exStr += " : " + noauth.getCause().getLocalizedMessage();
       }
       if (securityLogWriter.warningEnabled()) {
-        securityLogWriter.warning(LocalizedStrings.ONE_ARG,
-            getName() + ": Security exception: " + exStr);
+        securityLogWriter.warning(String.format("%s",
+            getName() + ": Security exception: " + exStr));
       }
       refuseHandshake(noauth.getMessage(), Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
       failConnectionAttempt();
@@ -424,8 +417,8 @@ public abstract class ServerConnection implements Runnable {
         exStr += " : " + failed.getCause().getLocalizedMessage();
       }
       if (securityLogWriter.warningEnabled()) {
-        securityLogWriter.warning(LocalizedStrings.ONE_ARG,
-            getName() + ": Security exception: " + exStr);
+        securityLogWriter.warning(String.format("%s",
+            getName() + ": Security exception: " + exStr));
       }
       refuseHandshake(failed.getMessage(), Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
       failConnectionAttempt();
@@ -578,10 +571,10 @@ public abstract class ServerConnection implements Runnable {
             if (proxy != null && !proxy.isPaused()) {
               // The handshake refusal message must be smaller than 127 bytes.
               String handshakeRefusalMessage =
-                  LocalizedStrings.ServerConnection_DUPLICATE_DURABLE_CLIENTID_0
-                      .toLocalizedString(proxyId.getDurableId());
-              logger.warn(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
-                  new Object[] {this.name, handshakeRefusalMessage}));
+                  String.format("Duplicate durable clientId (%s)",
+                      proxyId.getDurableId());
+              logger.warn("{} : {}",
+                  new Object[] {this.name, handshakeRefusalMessage});
               refuseHandshake(handshakeRefusalMessage,
                   Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT);
               return result;
@@ -1116,8 +1109,7 @@ public abstract class ServerConnection implements Runnable {
       byte[] id = encryptId(this.connectionId);
       this.securePart.setPartState(id, false);
     } catch (Exception ex) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.ServerConnection_SERVER_FAILED_TO_ENCRYPT_DATA_0, ex));
+      logger.warn("Server failed to encrypt data " + ex);
       throw new GemFireSecurityException("Server failed to encrypt response message.");
     }
   }
@@ -1198,8 +1190,7 @@ public abstract class ServerConnection implements Runnable {
       } catch (java.nio.channels.ClosedChannelException | CancelException ignore) {
         // ok shutting down
       } catch (IOException ex) {
-        logger.warn(
-            LocalizedMessage.create(LocalizedStrings.ServerConnection_0__UNEXPECTED_EXCEPTION, ex));
+        logger.warn(ex.toString() + " : Unexpected Exception");
         setClientDisconnectedException(ex);
       } finally {
         getAcceptor().releaseTLCommBuffer();
@@ -1374,8 +1365,8 @@ public abstract class ServerConnection implements Runnable {
       return String.valueOf(theSocket.getInetAddress()) + ':' +
           theSocket.getPort() + " timeout: " + theSocket.getSoTimeout();
     } catch (Exception e) {
-      return LocalizedStrings.ServerConnection_ERROR_IN_GETSOCKETSTRING_0
-          .toLocalizedString(e.getLocalizedMessage());
+      return String.format("Error in getSocketString: %s",
+          e.getLocalizedMessage());
     }
   }
 
@@ -1387,10 +1378,9 @@ public abstract class ServerConnection implements Runnable {
     // not synchronized because it only has a single caller
     if (justProcessed - this.latestBatchIdReplied != 1) {
       this.stats.incOutOfOrderBatchIds();
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ServerConnection_BATCH_IDS_ARE_OUT_OF_ORDER_SETTING_LATESTBATCHID_TO_0_IT_WAS_1,
+      logger.warn("Batch IDs are out of order. Setting latestBatchId to: {}. It was: {}",
           new Object[] {justProcessed,
-              this.latestBatchIdReplied}));
+              this.latestBatchIdReplied});
     }
     this.latestBatchIdReplied = justProcessed;
   }
@@ -1479,8 +1469,9 @@ public abstract class ServerConnection implements Runnable {
     } catch (Exception ex) {
       if (securityLogWriter.warningEnabled()) {
         securityLogWriter.warning(
-            LocalizedStrings.ServerConnection_0_AN_EXCEPTION_WAS_THROWN_WHILE_CLOSING_CLIENT_POSTPROCESS_AUTHORIZATION_CALLBACK_1,
-            new Object[] {this.name, ex});
+            String.format(
+                "%s: An exception was thrown while closing client post-process authorization callback. %s",
+                new Object[] {this.name, ex}));
       }
     }
 
@@ -1670,8 +1661,8 @@ public abstract class ServerConnection implements Runnable {
         break;
       default:
         throw new IllegalArgumentException(
-            LocalizedStrings.ServerConnection_THE_ID_PASSED_IS_0_WHICH_DOES_NOT_CORRESPOND_WITH_ANY_TRANSIENT_DATA
-                .toLocalizedString(boolID));
+            String.format("The ID passed is  %s  which does not correspond with any transient data",
+                boolID));
     }
   }
 
@@ -1689,8 +1680,8 @@ public abstract class ServerConnection implements Runnable {
         break;
       default:
         throw new IllegalArgumentException(
-            LocalizedStrings.ServerConnection_THE_ID_PASSED_IS_0_WHICH_DOES_NOT_CORRESPOND_WITH_ANY_TRANSIENT_DATA
-                .toLocalizedString(boolID));
+            String.format("The ID passed is  %s  which does not correspond with any transient data",
+                boolID));
     }
     return retVal;
   }
@@ -1731,7 +1722,7 @@ public abstract class ServerConnection implements Runnable {
           this.handshake.getEncryptor(), this.connectionId);
     } else {
       throw new AuthenticationRequiredException(
-          LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
+          "No security credentials are provided");
     }
     return uniqueId;
   }
@@ -1859,8 +1850,9 @@ public abstract class ServerConnection implements Runnable {
       if (principal == null) {
         if (securityLogWriter.warningEnabled()) {
           securityLogWriter.warning(
-              LocalizedStrings.ServerHandShakeProcessor_0_AUTHORIZATION_ENABLED_BUT_AUTHENTICATION_CALLBACK_1_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_2,
-              new Object[] {getName(), SECURITY_CLIENT_AUTHENTICATOR, getProxyID()});
+              String.format(
+                  "%s: Authorization enabled but authentication callback (%s)  returned with null credentials for proxyID: %s",
+                  new Object[] {getName(), SECURITY_CLIENT_AUTHENTICATOR, getProxyID()}));
         }
       }
       authzRequest = new AuthorizeRequest(authzFactoryName, getProxyID(), principal, getCache());
@@ -1872,8 +1864,9 @@ public abstract class ServerConnection implements Runnable {
       if (principal == null) {
         if (securityLogWriter.warningEnabled()) {
           securityLogWriter.warning(
-              LocalizedStrings.ServerHandShakeProcessor_0_POSTPROCESS_AUTHORIZATION_ENABLED_BUT_NO_AUTHENTICATION_CALLBACK_2_IS_CONFIGURED,
-              new Object[] {getName(), SECURITY_CLIENT_AUTHENTICATOR});
+              String.format(
+                  "%s: Post-process authorization enabled, but no authentication callback (%s) is configured",
+                  new Object[] {getName(), SECURITY_CLIENT_AUTHENTICATOR}));
         }
       }
       postAuthzRequest =

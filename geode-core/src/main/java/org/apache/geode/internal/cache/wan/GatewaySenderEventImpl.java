@@ -42,7 +42,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.Releasable;
@@ -846,8 +845,7 @@ public class GatewaySenderEventImpl
     // TODO:ASIF :Once stabilized remove the check below
     if (this.id == null) {
       throw new IllegalStateException(
-          LocalizedStrings.GatewayEventImpl_NO_EVENT_ID_IS_AVAILABLE_FOR_THIS_GATEWAY_EVENT
-              .toLocalizedString());
+          "No event id is available for this gateway event.");
     }
 
   }

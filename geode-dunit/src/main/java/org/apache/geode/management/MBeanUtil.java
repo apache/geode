@@ -72,7 +72,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(memberMBeanName, MemberMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :MemberMBean Proxy Should Not be Empty for : "
                 + memberMBeanName.getCanonicalName());
       }
@@ -114,7 +114,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :CacheServer Proxy Should Not be Empty for : "
                 + cacheServerMBeanName.getCanonicalName());
       }
@@ -159,7 +159,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(lockServiceMBeanName, LockServiceMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :LockService Proxy Should Not be Empty for : "
                 + lockServiceMBeanName.getCanonicalName());
       }
@@ -203,7 +203,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(regionMBeanName, RegionMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :RegionMBean Proxy Should Not be Empty for : "
                 + regionMBeanName.getCanonicalName());
       }
@@ -251,7 +251,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(senderMBeanName, GatewaySenderMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :GatewaySender MBean Proxy Should Not be Empty for : "
                 + senderMBeanName.getCanonicalName());
       }
@@ -298,7 +298,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(queueMBeanName, AsyncEventQueueMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :Async Event Queue MBean Proxy Should Not be Empty for : "
                 + queueMBeanName.getCanonicalName());
       }
@@ -343,7 +343,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(receiverMBeanName, GatewayReceiverMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :GatewaySender MBean Proxy Should Not be Empty for : "
                 + receiverMBeanName.getCanonicalName());
       }
@@ -455,7 +455,7 @@ public class MBeanUtil {
       bean = service.getMBeanProxy(locatorMBeanName, LocatorMXBean.class);
     } catch (ManagementException mgz) {
       if (bean == null) {
-        InternalDistributedSystem.getLoggerI18n()
+        InternalDistributedSystem.getLogger()
             .fine("Undesired Result :Locator MBean Proxy Should Not be Empty for : "
                 + locatorMBeanName.getCanonicalName());
       }

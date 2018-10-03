@@ -39,9 +39,7 @@ import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
 import org.apache.geode.internal.admin.statalerts.DummyStatisticInfoImpl;
 import org.apache.geode.internal.admin.statalerts.StatisticInfo;
 import org.apache.geode.internal.admin.statalerts.StatisticInfoImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * The alert manager maintains the list of alert definitions (added by client e.g GFMon 2.0).
@@ -92,8 +90,7 @@ public class StatAlertsManager {
 
   private StatAlertsManager(ClusterDistributionManager dm) {
     this.dm = dm;
-    logger.info(
-        LocalizedMessage.create(LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATED));
+    logger.info("StatAlertsManager created");
   }
 
   /**
@@ -278,9 +275,9 @@ public class StatAlertsManager {
         // TODO If none by TextID, use StatType and getAll.
         statistics = dm.getSystem().findStatisticsByTextId(textId);
         if (statistics.length == 0) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATEMEMBERSTATALERTDEFINITION_STATISTICS_WITH_GIVEN_TEXTID_0_NOT_FOUND,
-              textId));
+          logger.error(
+              "StatAlertsManager.createMemberStatAlertDefinition :: statistics with given textId={}, NOT found.",
+              textId);
           skipDefinition = true;
           // break;
           continue; // To print all errors
@@ -382,9 +379,7 @@ public class StatAlertsManager {
           logger.debug("EvaluateAlertDefnsTask: system closed: {}", e.getMessage(), e);
           close();
         } catch (Exception e) {
-          logger.error(
-              LocalizedMessage.create(
-                  LocalizedStrings.StatAlertsManager_EVALUATEALERTDEFNSTASK_FAILED_WITH_AN_EXCEPTION),
+          logger.error("EvaluateAlertDefnsTask failed with an exception",
               e);
           close();
         }

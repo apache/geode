@@ -45,7 +45,6 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -261,7 +260,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.UpdateEntryVersionMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >.", m));
     }
     return p;
   }

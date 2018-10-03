@@ -47,10 +47,8 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -230,8 +228,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
         Exception ex = serialProcessor.getException();
         if (ex != null) {
           throw new GatewaySenderException(
-              LocalizedStrings.Sender_COULD_NOT_START_GATEWAYSENDER_0_BECAUSE_OF_EXCEPTION_1
-                  .toLocalizedString(new Object[] {this.sender.getId(), ex.getMessage()}),
+              String.format("Could not start a gateway sender %s because of exception %s",
+                  new Object[] {this.sender.getId(), ex.getMessage()}),
               ex.getCause());
         }
       }
@@ -314,9 +312,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
         } catch (ExecutionException e) {
           // we don't expect any exception but if caught then eat it and log
           // warning
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.GatewaySender_0_CAUGHT_EXCEPTION_WHILE_STOPPING_1,
-              new Object[] {sender, e.getCause()}));
+          logger.warn("GatewaySender {} caught exception while stopping: {}",
+              new Object[] {sender, e.getCause()});
         }
       }
     } catch (InterruptedException e) {

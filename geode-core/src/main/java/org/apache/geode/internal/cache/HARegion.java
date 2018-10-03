@@ -44,7 +44,6 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -140,18 +139,16 @@ public class HARegion extends DistributedRegion {
     // checkReadiness();
     if (timeToLive == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.HARegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
+          "timeToLive must not be null");
     }
     if ((timeToLive.getAction() == ExpirationAction.LOCAL_DESTROY
         && this.getDataPolicy().withReplication())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.HARegion_TIMETOLIVE_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_MIRROR_TYPE
-              .toLocalizedString());
+          "timeToLive action is incompatible with this region''s mirror type");
     }
     if (!this.statisticsEnabled) {
       throw new IllegalStateException(
-          LocalizedStrings.HARegion_CANNOT_SET_TIME_TO_LIVE_WHEN_STATISTICS_ARE_DISABLED
-              .toLocalizedString());
+          "Cannot set time to live when statistics are disabled");
     }
     ExpirationAttributes oldAttrs = getEntryTimeToLive();
     this.entryTimeToLive = timeToLive.getTimeout();

@@ -45,7 +45,6 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
 public class PrimaryKeyIndex extends AbstractIndex {
@@ -162,7 +161,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
       }
       default: {
         throw new IllegalArgumentException(
-            LocalizedStrings.PrimaryKeyIndex_INVALID_OPERATOR.toLocalizedString());
+            "Invalid Operator");
       }
     } // end switch
     numUses++;
@@ -318,8 +317,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
       int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
       throws TypeMismatchException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.PrimaryKeyIndex_FOR_A_PRIMARYKEY_INDEX_A_RANGE_HAS_NO_MEANING
-            .toLocalizedString());
+        "For a PrimaryKey Index , a range has no meaning");
 
   }
 

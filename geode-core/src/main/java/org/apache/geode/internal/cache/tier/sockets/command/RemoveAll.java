@@ -40,8 +40,6 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -90,10 +88,9 @@ public class RemoveAll extends BaseCommand {
 
       if (regionName == null) {
         String txt =
-            LocalizedStrings.RemoveAll_THE_INPUT_REGION_NAME_FOR_THE_REMOVEALL_REQUEST_IS_NULL
-                .toLocalizedString();
-        logger.warn(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
-            new Object[] {serverConnection.getName(), txt}));
+            "The input region name for the removeAll request is null";
+        logger.warn("{} : {}",
+            new Object[] {serverConnection.getName(), txt});
         errMessage.append(txt);
         writeChunkedErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
             serverConnection);
@@ -145,10 +142,9 @@ public class RemoveAll extends BaseCommand {
         key = keyPart.getStringOrObject();
         if (key == null) {
           String txt =
-              LocalizedStrings.RemoveAll_ONE_OF_THE_INPUT_KEYS_FOR_THE_REMOVEALL_REQUEST_IS_NULL
-                  .toLocalizedString();
-          logger.warn(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
-              new Object[] {serverConnection.getName(), txt}));
+              "One of the input keys for the removeAll request is null";
+          logger.warn("{} : {}",
+              new Object[] {serverConnection.getName(), txt});
           errMessage.append(txt);
           writeChunkedErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR,
               errMessage.toString(), serverConnection);
@@ -243,7 +239,7 @@ public class RemoveAll extends BaseCommand {
       writeChunkedException(clientMessage, ce, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       // if (logger.fineEnabled()) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.Generic_0_UNEXPECTED_EXCEPTION,
+      logger.warn(String.format("%s: Unexpected Exception",
           serverConnection.getName()), ce);
       // }
       return;

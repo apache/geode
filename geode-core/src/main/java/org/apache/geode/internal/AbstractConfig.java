@@ -38,7 +38,6 @@ import java.util.TreeSet;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.FlowControlParams;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -247,15 +246,15 @@ public abstract class AbstractConfig implements Config {
           attObjectValue = InetAddress.getByName(value);
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_A_VALID_HOST_NAME_2
-                  .toLocalizedString(name, value, ex.toString()));
+              String.format("%s  value %s must be a valid host name.  %s",
+                  name, value, ex.toString()));
         }
       } else if (valueType.equals(FlowControlParams.class)) {
         String[] values = value.split(",");
         if (values.length != 3) {
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_HAVE_THREE_ELEMENTS_SEPARATED_BY_COMMAS
-                  .toLocalizedString(name, value));
+              String.format("%s  value %s must have three elements separated by commas",
+                  name, value));
         }
         int allowance;
         float threshold;
@@ -266,8 +265,8 @@ public abstract class AbstractConfig implements Config {
           waitTime = Integer.parseInt(values[2].trim());
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_COMPOSED_OF_AN_INTEGER_A_FLOAT_AND_AN_INTEGER
-                  .toLocalizedString(name, value));
+              String.format("%s  value %s must be composed of an integer, a float, and an integer",
+                  name, value));
         }
         attObjectValue = new FlowControlParams(allowance, threshold, waitTime);
       } else if (valueType.isArray()
@@ -275,12 +274,12 @@ public abstract class AbstractConfig implements Config {
         attObjectValue = commaDelimitedStringToSecurableCommunicationChannels(value);
       } else {
         throw new InternalGemFireException(
-            LocalizedStrings.AbstractConfig_UNHANDLED_ATTRIBUTE_TYPE_0_FOR_1
-                .toLocalizedString(valueType, name));
+            String.format("unhandled attribute type  %s  for %s.",
+                valueType, name));
       }
     } catch (NumberFormatException ex) {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractConfig_0_VALUE_1_MUST_BE_A_NUMBER
-          .toLocalizedString(name, value));
+      throw new IllegalArgumentException(String.format("%s value %s must be a number.",
+          name, value));
     }
 
     setAttributeObject(name, attObjectValue, source);
@@ -291,7 +290,7 @@ public abstract class AbstractConfig implements Config {
     checkAttributeName(name);
     if (!getAttDescMap().containsKey(name)) {
       throw new InternalGemFireException(
-          LocalizedStrings.AbstractConfig_UNHANDLED_ATTRIBUTE_NAME_0.toLocalizedString(name));
+          String.format("unhandled attribute name %s.", name));
     }
     return (String) getAttDescMap().get(name);
   }
@@ -301,8 +300,8 @@ public abstract class AbstractConfig implements Config {
    * unmodifiable attribute.
    */
   protected String _getUnmodifiableMsg(String name) {
-    return LocalizedStrings.AbstractConfig_THE_0_CONFIGURATION_ATTRIBUTE_CAN_NOT_BE_MODIFIED
-        .toLocalizedString(name);
+    return String.format("The %s configuration attribute can not be modified.",
+        name);
   }
 
   /**
@@ -324,8 +323,8 @@ public abstract class AbstractConfig implements Config {
     String[] validAttNames = getAttributeNames();
     if (!Arrays.asList(validAttNames).contains(name.toLowerCase())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractConfig_UNKNOWN_CONFIGURATION_ATTRIBUTE_NAME_0_VALID_ATTRIBUTE_NAMES_ARE_1
-              .toLocalizedString(name, SystemAdmin.join(validAttNames)));
+          String.format("Unknown configuration attribute name %s. Valid attribute names are:  %s .",
+              name, SystemAdmin.join(validAttNames)));
     }
   }
 

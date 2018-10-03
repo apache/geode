@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -50,8 +49,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public ServerRegionFunctionExecutor(Region r, ProxyCache proxyCache) {
     if (r == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("Region"));
+          String.format("The input %s for the execute function request is null",
+              "Region"));
     }
     this.region = (LocalRegion) r;
     this.proxyCache = proxyCache;
@@ -117,8 +116,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public Execution withFilter(Set fltr) {
     if (fltr == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("filter"));
+          String.format("The input %s for the execute function request is null",
+              "filter"));
     }
     this.executeOnBucketSet = false;
     return new ServerRegionFunctionExecutor(this, fltr);
@@ -128,8 +127,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("buckets as filter"));
+          String.format("The input %s for the execute function request is null",
+              "buckets as filter"));
     }
     return new ServerRegionFunctionExecutor(this, bucketIDs, true /* execute on bucketset */);
   }
@@ -303,8 +302,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public Execution setArguments(Object args) {
     if (args == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("args"));
+          String.format("The input %s for the execute function request is null",
+              "args"));
     }
     return new ServerRegionFunctionExecutor(this, args);
   }
@@ -318,8 +317,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("Result Collector"));
+          String.format("The input %s for the execute function request is null",
+              "Result Collector"));
     }
     return new ServerRegionFunctionExecutor(this, rs);
   }
@@ -328,8 +327,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("MemberMappedArgument"));
+          String.format("The input %s for the execute function request is null",
+              "MemberMappedArgument"));
     }
     return new ServerRegionFunctionExecutor(this, argument);
   }
@@ -348,8 +347,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input function for the execute function request is null");
     }
     this.isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);

@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Presents an amalgam snapshot of all the {@linkplain org.apache.geode.cache.Region.Entry regions
@@ -61,8 +60,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
   public void addCache(GemFireVM systemEntity, EntrySnapshot snap) {
     if (!snap.getName().equals(this.name)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.CompoundEntrySnapshot_ALL_SNAPSHOTS_IN_A_COMPOUND_SNAPSHOT_MUST_HAVE_THE_SAME_NAME
-              .toLocalizedString());
+          "All snapshots in a compound snapshot must have the same name");
     }
     // individuals.put(systemEntity, snap);
 

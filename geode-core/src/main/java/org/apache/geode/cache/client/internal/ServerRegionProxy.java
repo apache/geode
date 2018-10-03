@@ -48,9 +48,7 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList.Iterator;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Used to send region operations from a client to a server
@@ -637,9 +635,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         boolean isOnServer = entry.isKeyNotOnServer();
         if (!isOnServer) {
           if (value instanceof Throwable) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-                new Object[] {value, key}), (Throwable) value);
+            logger.warn(String.format(
+                "%s: Caught the following exception attempting to get value for key=%s",
+                new Object[] {value, key}),
+                (Throwable) value);
           }
         }
       }

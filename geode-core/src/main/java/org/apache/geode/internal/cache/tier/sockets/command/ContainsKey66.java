@@ -18,7 +18,6 @@ import java.io.IOException;
 
 import org.apache.geode.cache.client.internal.ContainsKeyOp;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -27,8 +26,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -45,7 +42,6 @@ public class ContainsKey66 extends BaseCommand {
 
   private static void writeContainsKeyResponse(boolean containsKey, Message origMsg,
       ServerConnection servConn) throws IOException {
-    LogWriterI18n logger = servConn.getLogWriter();
     Message responseMsg = servConn.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setNumberOfParts(1);
@@ -91,19 +87,15 @@ public class ContainsKey66 extends BaseCommand {
     if (key == null || regionName == null) {
       String errMessage = "";
       if (key == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ContainsKey_0_THE_INPUT_KEY_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL,
-            serverConnection.getName()));
-        errMessage = LocalizedStrings.ContainsKey_THE_INPUT_KEY_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL
-            .toLocalizedString();
+        logger.warn("{}: The input key for the containsKey request is null",
+            serverConnection.getName());
+        errMessage = "The input key for the containsKey request is null";
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ContainsKey_0_THE_INPUT_REGION_NAME_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL,
-            serverConnection.getName()));
+        logger.warn("{}: The input region name for the containsKey request is null",
+            serverConnection.getName());
         errMessage =
-            LocalizedStrings.ContainsKey_THE_INPUT_REGION_NAME_FOR_THE_CONTAINSKEY_REQUEST_IS_NULL
-                .toLocalizedString();
+            "The input region name for the containsKey request is null";
       }
       writeErrorResponse(clientMessage, MessageType.CONTAINS_KEY_DATA_ERROR, errMessage,
           serverConnection);
@@ -113,7 +105,7 @@ public class ContainsKey66 extends BaseCommand {
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason =
-          LocalizedStrings.ContainsKey_WAS_NOT_FOUND_DURING_CONTAINSKEY_REQUEST.toLocalizedString();
+          "was not found during containsKey request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

@@ -29,7 +29,6 @@ import org.apache.geode.cache.query.internal.Support;
 import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.apache.geode.pdx.internal.PdxInstanceEnum;
 import org.apache.geode.pdx.internal.PdxString;
@@ -107,8 +106,8 @@ public class TypeUtils implements OQLLexerTokenTypes {
         case TOK_NE:
           return temporalResult != 0;
         default:
-          throw new IllegalArgumentException(LocalizedStrings.TypeUtils_UNKNOWN_OPERATOR_0
-              .toLocalizedString(Integer.valueOf(comparator)));
+          throw new IllegalArgumentException(String.format("Unknown operator:  %s",
+              Integer.valueOf(comparator)));
       }
     }
 
@@ -137,8 +136,9 @@ public class TypeUtils implements OQLLexerTokenTypes {
         return ARBITRARY;
       } else {
         throw new TypeMismatchException(
-            LocalizedStrings.TypeUtils_UNABLE_TO_USE_A_RELATIONAL_COMPARISON_OPERATOR_TO_COMPARE_AN_INSTANCE_OF_CLASS_0_WITH_AN_INSTANCE_OF_1
-                .toLocalizedString(new Object[] {object1Class.getName(), object2Class.getName()}));
+            String.format(
+                "Unable to use a relational comparison operator to compare an instance of class ' %s ' with an instance of ' %s '",
+                new Object[] {object1Class.getName(), object2Class.getName()}));
       }
     }
 
@@ -201,8 +201,8 @@ public class TypeUtils implements OQLLexerTokenTypes {
     }
 
     if (!castClass.isInstance(castTarget)) {
-      throw new InternalGemFireError(LocalizedStrings.TypeUtils_EXPECTED_INSTANCE_OF_0_BUT_WAS_1
-          .toLocalizedString(new Object[] {castClass.getName(), castTarget.getClass().getName()}));
+      throw new InternalGemFireError(String.format("expected instance of  %s  but was  %s",
+          new Object[] {castClass.getName(), castTarget.getClass().getName()}));
     }
 
     return castTarget;
@@ -239,8 +239,8 @@ public class TypeUtils implements OQLLexerTokenTypes {
       return obj;
     }
 
-    throw new TypeMismatchException(LocalizedStrings.TypeUtils_INDEXES_ARE_NOT_SUPPORTED_FOR_TYPE_0
-        .toLocalizedString(obj.getClass().getName()));
+    throw new TypeMismatchException(String.format("Indexes are not supported for type ' %s '",
+        obj.getClass().getName()));
   }
 
   /**
@@ -400,8 +400,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
       throws TypeMismatchException {
     if (!(obj1 instanceof Boolean) || !(obj2 instanceof Boolean)) {
       throw new TypeMismatchException(
-          LocalizedStrings.TypeUtils_BOOLEANS_CAN_ONLY_BE_COMPARED_WITH_BOOLEANS
-              .toLocalizedString());
+          "Booleans can only be compared with booleans");
     }
 
     if (compOp == TOK_EQ) {
@@ -410,8 +409,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
       return !obj1.equals(obj2);
     } else {
       throw new TypeMismatchException(
-          LocalizedStrings.TypeUtils_BOOLEAN_VALUES_CAN_ONLY_BE_COMPARED_WITH_OR
-              .toLocalizedString());
+          "Boolean values can only be compared with = or <>");
     }
   }
 
@@ -507,9 +505,9 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
       if (isAssignableFrom(e.getClass(), ClassCastException.class)) {
         throw new TypeMismatchException(
-            LocalizedStrings.TypeUtils_UNABLE_TO_COMPARE_OBJECT_OF_TYPE_0_WITH_OBJECT_OF_TYPE_1
-                .toLocalizedString(
-                    new Object[] {obj1.getClass().getName(), obj2.getClass().getName()}),
+            String.format("Unable to compare object of type ' %s ' with object of type ' %s '",
+
+                new Object[] {obj1.getClass().getName(), obj2.getClass().getName()}),
             e);
       } else {
         throw e;

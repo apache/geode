@@ -90,7 +90,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -102,10 +101,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.DscodeHelper;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -849,8 +846,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
   static DataSerializer newInstance(Class c) {
     if (!DataSerializer.class.isAssignableFrom(c)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataSerializer_0_DOES_NOT_EXTEND_DATASERIALIZER
-              .toLocalizedString(c.getName()));
+          String.format("%s  does not extend DataSerializer.",
+              c.getName()));
     }
 
     Constructor init;
@@ -858,14 +855,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
       init = c.getDeclaredConstructor(new Class[0]);
 
     } catch (NoSuchMethodException ignored) {
-      StringId s = LocalizedStrings.DataSerializer_CLASS_0_DOES_NOT_HAVE_A_ZEROARGUMENT_CONSTRUCTOR;
+      String s = "Class %s does not have a zero-argument constructor.";
       Object[] args = new Object[] {c.getName()};
       if (c.getDeclaringClass() != null) {
         s =
-            LocalizedStrings.DataSerializer_CLASS_0_DOES_NOT_HAVE_A_ZEROARGUMENT_CONSTRUCTOR_IT_IS_AN_INNER_CLASS_OF_1_SHOULD_IT_BE_A_STATIC_INNER_CLASS;
+            "Class %s does not have a zero-argument constructor. It is an inner class of %s. Should it be a static inner class?";
         args = new Object[] {c.getName(), c.getDeclaringClass()};
       }
-      throw new IllegalArgumentException(s.toLocalizedString(args));
+      throw new IllegalArgumentException(String.format(s, args));
     }
 
     DataSerializer s;
@@ -875,19 +872,19 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     } catch (IllegalAccessException ignored) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataSerializer_COULD_NOT_INSTANTIATE_AN_INSTANCE_OF_0
-              .toLocalizedString(c.getName()));
+          String.format("Could not instantiate an instance of  %s",
+              c.getName()));
 
     } catch (InstantiationException ex) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataSerializer_COULD_NOT_INSTANTIATE_AN_INSTANCE_OF_0
-              .toLocalizedString(c.getName()),
+          String.format("Could not instantiate an instance of  %s",
+              c.getName()),
           ex);
 
     } catch (InvocationTargetException ex) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataSerializer_WHILE_INSTANTIATING_AN_INSTANCE_OF_0
-              .toLocalizedString(c.getName()),
+          String.format("While instantiating an instance of  %s",
+              c.getName()),
           ex);
     }
 
@@ -920,25 +917,24 @@ public abstract class InternalDataSerializer extends DataSerializer {
     DataSerializer dsForMarkers = s;
     if (id == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.InternalDataSerializer_CANNOT_CREATE_A_DATASERIALIZER_WITH_ID_0
-              .toLocalizedString());
+          "Cannot create a DataSerializer with id 0.");
     }
     final Class[] classes = s.getSupportedClasses();
     if (classes == null || classes.length == 0) {
-      final StringId msg =
-          LocalizedStrings.InternalDataSerializer_THE_DATASERIALIZER_0_HAS_NO_SUPPORTED_CLASSES_ITS_GETSUPPORTEDCLASSES_METHOD_MUST_RETURN_AT_LEAST_ONE_CLASS;
-      throw new IllegalArgumentException(msg.toLocalizedString(s.getClass().getName()));
+      final String msg =
+          "The DataSerializer %s has no supported classes. It''s getSupportedClasses method must return at least one class";
+      throw new IllegalArgumentException(String.format(msg, s.getClass().getName()));
     }
 
     for (Class aClass : classes) {
       if (aClass == null) {
-        final StringId msg =
-            LocalizedStrings.InternalDataSerializer_THE_DATASERIALIZER_GETSUPPORTEDCLASSES_METHOD_FOR_0_RETURNED_AN_ARRAY_THAT_CONTAINED_A_NULL_ELEMENT;
-        throw new IllegalArgumentException(msg.toLocalizedString(s.getClass().getName()));
+        final String msg =
+            "The DataSerializer getSupportedClasses method for %s returned an array that contained a null element.";
+        throw new IllegalArgumentException(String.format(msg, s.getClass().getName()));
       } else if (aClass.isArray()) {
-        final StringId msg =
-            LocalizedStrings.InternalDataSerializer_THE_DATASERIALIZER_GETSUPPORTEDCLASSES_METHOD_FOR_0_RETURNED_AN_ARRAY_THAT_CONTAINED_AN_ARRAY_CLASS_WHICH_IS_NOT_ALLOWED_SINCE_ARRAYS_HAVE_BUILTIN_SUPPORT;
-        throw new IllegalArgumentException(msg.toLocalizedString(s.getClass().getName()));
+        final String msg =
+            "The DataSerializer getSupportedClasses method for %s returned an array that contained an array class which is not allowed since arrays have built-in support.";
+        throw new IllegalArgumentException(String.format(msg, s.getClass().getName()));
       }
     }
 
@@ -964,8 +960,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
         } else {
           DataSerializer other = (DataSerializer) oldSerializer;
           throw new IllegalStateException(
-              LocalizedStrings.InternalDataSerializer_A_DATASERIALIZER_OF_CLASS_0_IS_ALREADY_REGISTERED_WITH_ID_1_SO_THE_DATASERIALIZER_OF_CLASS_2_COULD_NOT_BE_REGISTERED
-                  .toLocalizedString(new Object[] {other.getClass().getName(), other.getId()}));
+              String.format(
+                  "A DataSerializer of class %s is already registered with id %s so the DataSerializer of class %s could not be registered.",
+                  new Object[] {other.getClass().getName(), other.getId()}));
         }
       }
     } while (retry);
@@ -1072,8 +1069,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (oldValue != null) {
       if (oldValue.getId() != 0 && holder.getId() != 0 && oldValue.getId() != holder.getId()) {
         throw new IllegalStateException(
-            LocalizedStrings.InternalDataSerializer_A_DATASERIALIZER_OF_CLASS_0_IS_ALREADY_REGISTERED_WITH_ID_1_SO_THE_DATASERIALIZER_OF_CLASS_2_COULD_NOT_BE_REGISTERED
-                .toLocalizedString(new Object[] {oldValue.getClass().getName(), oldValue.getId()}));
+            String.format(
+                "A DataSerializer of class %s is already registered with id %s so the DataSerializer of class %s could not be registered.",
+                new Object[] {oldValue.getClass().getName(), oldValue.getId()}));
       }
     }
 
@@ -1221,10 +1219,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
           }
           return serializer;
         } catch (ClassNotFoundException ignored) {
-          logger.info(LogMarker.SERIALIZER_MARKER,
-              LocalizedMessage.create(
-                  LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0,
-                  dsClass));
+          logger.info(LogMarker.SERIALIZER_MARKER, "Could not load DataSerializer class: {}",
+              dsClass);
         }
       }
     }
@@ -1270,9 +1266,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
           return ds;
         } catch (ClassNotFoundException ignored) {
           logger.info(LogMarker.SERIALIZER_MARKER,
-              LocalizedMessage.create(
-                  LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0,
-                  dsClass));
+              "Could not load DataSerializer class: {}",
+              dsClass);
         }
       }
     }
@@ -1315,8 +1310,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           supportedClassesToHolders.remove(clazz.getName());
         }
       } catch (ClassNotFoundException ignored) {
-        logger.info(LogMarker.SERIALIZER_MARKER, LocalizedMessage.create(
-            LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0, name));
+        logger.info(LogMarker.SERIALIZER_MARKER, "Could not load DataSerializer class: {}", name);
       }
     }
 
@@ -1376,10 +1370,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
         try {
           dsClass = getCachedClass(iterator.next().getKey());
         } catch (ClassNotFoundException ignored) {
-          logger.info(LogMarker.SERIALIZER_MARKER,
-              LocalizedMessage.create(
-                  LocalizedStrings.InternalDataSerializer_COULD_NOT_LOAD_DATASERIALIZER_CLASS_0,
-                  dsClass));
+          logger.info(LogMarker.SERIALIZER_MARKER, "Could not load DataSerializer class: {}",
+              dsClass);
           continue;
         }
         DataSerializer ds = register(dsClass, false);
@@ -1482,8 +1474,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static void writeDSFIDHeader(int dsfid, DataOutput out) throws IOException {
     if (dsfid == DataSerializableFixedID.ILLEGAL) {
       throw new IllegalStateException(
-          LocalizedStrings.InternalDataSerializer_ATTEMPTED_TO_SERIALIZE_ILLEGAL_DSFID
-              .toLocalizedString());
+          "attempted to serialize ILLEGAL dsfid");
     }
     if (dsfid <= Byte.MAX_VALUE && dsfid >= Byte.MIN_VALUE) {
       out.writeByte(DSCODE.DS_FIXED_ID_BYTE.toByte());
@@ -1626,9 +1617,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return true;
       } else {
         throw new ToDataException(
-            LocalizedStrings.DataSerializer_SERIALIZER_0_A_1_SAID_THAT_IT_COULD_SERIALIZE_AN_INSTANCE_OF_2_BUT_ITS_TODATA_METHOD_RETURNED_FALSE
-                .toLocalizedString(serializer.getId(), serializer.getClass().getName(),
-                    o.getClass().getName()));
+            String.format(
+                "Serializer  %s  (a  %s ) said that it could serialize an instance of  %s , but its toData() method returned false.",
+                serializer.getId(), serializer.getClass().getName(),
+                o.getClass().getName()));
       }
       // Do byte[][] and Object[] here to fix bug 44060
     } else if (o instanceof byte[][]) {
@@ -1747,8 +1739,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
     DataSerializer serializer = InternalDataSerializer.getSerializer(serializerId);
 
     if (serializer == null) {
-      throw new IOException(LocalizedStrings.DataSerializer_SERIALIZER_0_IS_NOT_REGISTERED
-          .toLocalizedString(new Object[] {serializerId}));
+      throw new IOException(String.format("Serializer with Id %s is not registered",
+          new Object[] {serializerId}));
     }
 
     return serializer.fromData(in);
@@ -1961,8 +1953,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       out.writeByte(DSCODE.NULL.toByte());
     } else {
       throw new InternalGemFireError(
-          LocalizedStrings.InternalDataSerializer_UNKNOWN_PRIMITIVE_TYPE_0
-              .toLocalizedString(c.getName()));
+          String.format("unknown primitive type: %s",
+              c.getName()));
     }
   }
 
@@ -1991,10 +1983,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return null;
       default:
         throw new InternalGemFireError(
-            LocalizedStrings.InternalDataSerializer_UNEXPECTED_TYPECODE_0
-                .toLocalizedString(typeCode));
+            String.format("unexpected typeCode: %s", typeCode));
     }
-
   }
 
   /**
@@ -2023,7 +2013,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         break;
       default:
         throw new IOException(
-            LocalizedStrings.DataSerializer_UNKNOWN_TIMEUNIT_TYPE_0.toLocalizedString(type));
+            String.format("Unknown TimeUnit type:  %s", type));
     }
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
@@ -2223,8 +2213,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
        */
       if (disallowJavaSerialization() && o instanceof Serializable) {
         throw new NotSerializableException(
-            LocalizedStrings.DataSerializer_0_IS_NOT_DATASERIALIZABLE_AND_JAVA_SERIALIZATION_IS_DISALLOWED
-                .toLocalizedString(o.getClass().getName()));
+            String.format("%s  is not DataSerializable and Java Serialization is disallowed",
+                o.getClass().getName()));
       }
 
       writeSerializableObject(o, out);
@@ -2493,8 +2483,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       throw ex;
     } catch (Exception ex) {
       throw new SerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
-              .toLocalizedString(ds.getClass().getName()),
+          String.format("Could not create an instance of  %s .",
+              ds.getClass().getName()),
           ex);
     }
   }
@@ -2515,8 +2505,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       throw ex;
     } catch (Exception ex) {
       throw new SerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_0
-              .toLocalizedString(c.getName()),
+          String.format("Could not create an instance of  %s .",
+              c.getName()),
           ex);
     }
   }
@@ -2957,12 +2947,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
     Instantiator instantiator = InternalInstantiator.getInstantiator(classId);
     if (instantiator == null) {
       logger.error(LogMarker.SERIALIZER_MARKER,
-          LocalizedMessage.create(
-              LocalizedStrings.DataSerializer_NO_INSTANTIATOR_HAS_BEEN_REGISTERED_FOR_CLASS_WITH_ID_0,
-              classId));
+          "No Instantiator has been registered for class with id {}",
+          classId);
       throw new IOException(
-          LocalizedStrings.DataSerializer_NO_INSTANTIATOR_HAS_BEEN_REGISTERED_FOR_CLASS_WITH_ID_0
-              .toLocalizedString(classId));
+          String.format("No Instantiator has been registered for class with id  %s",
+              classId));
 
     } else {
       try {
@@ -2978,8 +2967,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
       } catch (Exception ex) {
         throw new SerializationException(
-            LocalizedStrings.DataSerializer_COULD_NOT_DESERIALIZE_AN_INSTANCE_OF_0
-                .toLocalizedString(instantiator.getInstantiatedClass().getName()),
+            String.format("Could not deserialize an instance of  %s",
+                instantiator.getInstantiatedClass().getName()),
             ex);
       }
     }
@@ -3746,8 +3735,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     @Override
     public String toString() {
-      return LocalizedStrings.InternalDataSerializer_REGISTER_DATASERIALIZER_0_OF_CLASS_1
-          .toLocalizedString(this.id, this.className);
+      return String.format("Register DataSerializer %s of class %s",
+          this.id, this.className);
     }
 
     @Override
@@ -3848,7 +3837,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     @Override
     public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
-      throw new IllegalStateException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new IllegalStateException("Should not be invoked");
     }
     // subclasses need to implement toData
   }

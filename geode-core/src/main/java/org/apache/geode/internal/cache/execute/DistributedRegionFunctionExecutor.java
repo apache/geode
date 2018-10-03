@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.MemoryThresholdInfo;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Executes Function on Distributed Regions.
@@ -55,8 +54,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public DistributedRegionFunctionExecutor(Region r) {
     if (r == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("region"));
+          String.format("The input %s for the execute function request is null",
+              "region"));
     }
     this.region = (LocalRegion) r;
   }
@@ -153,20 +152,18 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input function for the execute function request is null");
     }
     this.isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(functionObject));
+          String.format("Function named %s is not registered to FunctionService",
+              functionObject));
     }
     if (region.getAttributes().getDataPolicy().isNormal()) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_CAN_NOT_EXECUTE_ON_NORMAL_REGION
-              .toLocalizedString());
+          "Function execution on region with DataPolicy.NORMAL is not supported");
     }
     return executeFunction(functionObject);
   }
@@ -175,22 +172,21 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public ResultCollector execute(final Function function) {
     if (function == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("function instance"));
+          String.format("The input %s for the execute function request is null",
+              "function instance"));
     }
     if (function.isHA() && !function.hasResult()) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH.toLocalizedString());
+          "For Functions with isHA true, hasResult must also be true.");
     }
     if (region.getAttributes().getDataPolicy().isNormal()) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_CAN_NOT_EXECUTE_ON_NORMAL_REGION
-              .toLocalizedString());
+          "Function execution on region with DataPolicy.NORMAL is not supported");
     }
     String id = function.getId();
     if (id == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_FUNCTION_GET_ID_RETURNED_NULL.toLocalizedString());
+          "The Function#getID() returned null");
     }
     this.isFnSerializationReqd = true;
     return executeFunction(function);
@@ -215,8 +211,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public Execution withFilter(Set filter) {
     if (filter == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("filter"));
+          String.format("The input %s for the execute function request is null",
+              "filter"));
     }
 
     return new DistributedRegionFunctionExecutor(this, filter);
@@ -226,8 +222,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     if (bucketIDs != null && !bucketIDs.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_BUCKET_FILTER_ON_NON_PR
-              .toLocalizedString(region.getName()));
+          String.format("Buckets as filter cannot be applied to a non partitioned region: %s",
+              region.getName()));
     }
     return this;
   }
@@ -246,8 +242,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public Execution setArguments(Object args) {
     if (args == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("Args"));
+          String.format("The input %s for the execute function request is null",
+              "Args"));
     }
     return new DistributedRegionFunctionExecutor(this, args);
   }
@@ -259,8 +255,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("Result Collector"));
+          String.format("The input %s for the execute function request is null",
+              "Result Collector"));
     }
     return new DistributedRegionFunctionExecutor(this, rs);
   }
@@ -268,8 +264,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString("MemberMappedArgument"));
+          String.format("The input %s for the execute function request is null",
+              "MemberMappedArgument"));
     }
     return new DistributedRegionFunctionExecutor(this, argument);
   }
@@ -304,8 +300,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     if (cache != null && cache.getTxManager().getTXState() != null) {
       if (targetMembers.size() > 1) {
         throw new TransactionException(
-            LocalizedStrings.PartitionedRegion_TX_FUNCTION_ON_MORE_THAN_ONE_NODE
-                .toLocalizedString());
+            "Function inside a transaction cannot execute on more than one node");
       } else {
         assert targetMembers.size() == 1;
         DistributedMember funcTarget = (DistributedMember) targetMembers.iterator().next();
@@ -314,8 +309,9 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
           cache.getTxManager().getTXState().setTarget(funcTarget);
         } else if (!target.equals(funcTarget)) {
           throw new TransactionDataNotColocatedException(
-              LocalizedStrings.PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1
-                  .toLocalizedString(target, funcTarget));
+              String.format(
+                  "Function execution is not colocated with transaction. The transactional data is hosted on node %s, but you are trying to target node %s",
+                  target, funcTarget));
         }
       }
     }
@@ -326,8 +322,9 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
             .updateStateAndSendEvent();
         Set<DistributedMember> criticalMembers = info.getMembersThatReachedThreshold();
         throw new LowMemoryException(
-            LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                .toLocalizedString(function.getId(), criticalMembers),
+            String.format(
+                "Function: %s cannot be executed because the members %s are running low on memory",
+                function.getId(), criticalMembers),
             criticalMembers);
       }
     }

@@ -19,7 +19,6 @@ import java.io.IOException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -33,7 +32,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
@@ -59,7 +57,7 @@ public class Request extends BaseCommand {
     Object callbackArg = null, key = null;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     CacheServerStats stats = serverConnection.getCacheServerStats();
-    StringId errMessage = null;
+    String errMessage = null;
 
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     // requiresResponse = true;
@@ -103,22 +101,21 @@ public class Request extends BaseCommand {
     if (key == null || regionName == null) {
       if ((key == null) && (regionName == null)) {
         errMessage =
-            LocalizedStrings.Request_THE_INPUT_REGION_NAME_AND_KEY_FOR_THE_GET_REQUEST_ARE_NULL;
+            "The input region name and key for the get request are null.";
       } else if (key == null) {
-        errMessage = LocalizedStrings.Request_THE_INPUT_KEY_FOR_THE_GET_REQUEST_IS_NULL;
+        errMessage = "The input key for the get request is null.";
       } else if (regionName == null) {
-        errMessage = LocalizedStrings.Request_THE_INPUT_REGION_NAME_FOR_THE_GET_REQUEST_IS_NULL;
+        errMessage = "The input region name for the get request is null.";
       }
-      String s = errMessage.toLocalizedString();
-      logger.warn("{}: {}", serverConnection.getName(), s);
-      writeErrorResponse(clientMessage, MessageType.REQUESTDATAERROR, s, serverConnection);
+      logger.warn("{}: {}", serverConnection.getName(), errMessage);
+      writeErrorResponse(clientMessage, MessageType.REQUESTDATAERROR, errMessage, serverConnection);
       // responded = true;
       serverConnection.setAsTrue(RESPONDED);
     } else {
       Region region = serverConnection.getCache().getRegion(regionName);
       if (region == null) {
-        String reason = LocalizedStrings.Request__0_WAS_NOT_FOUND_DURING_GET_REQUEST
-            .toLocalizedString(regionName);
+        String reason = String.format("%s was not found during get request",
+            regionName);
         writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
       } else {

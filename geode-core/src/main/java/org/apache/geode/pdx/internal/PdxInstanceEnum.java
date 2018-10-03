@@ -26,7 +26,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -78,8 +77,8 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
       c = InternalDataSerializer.getCachedClass(this.className);
     } catch (ClassNotFoundException ex) {
       throw new PdxSerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-              .toLocalizedString(this.className),
+          String.format("Could not create an instance of a class %s",
+              this.className),
           ex);
     }
     try {
