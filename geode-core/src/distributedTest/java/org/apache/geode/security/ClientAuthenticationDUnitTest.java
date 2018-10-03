@@ -25,7 +25,6 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Test for authentication from client to server. This tests for both valid and invalid
@@ -36,7 +35,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientAuthenticationDUnitTest extends ClientAuthenticationTestCase {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {

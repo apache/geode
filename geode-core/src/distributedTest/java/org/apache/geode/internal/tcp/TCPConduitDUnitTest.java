@@ -35,13 +35,11 @@ import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
 
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class TCPConduitDUnitTest extends DistributedTestCase {
   public static final String TEST_REGION = "testRegion";
   private final Properties properties;

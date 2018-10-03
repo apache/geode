@@ -50,7 +50,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * Tests for authorization from client to server for data puts and gets. For similar test in the
@@ -60,7 +59,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  */
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Rule
   public ClusterStartupRule csRule = new ClusterStartupRule();

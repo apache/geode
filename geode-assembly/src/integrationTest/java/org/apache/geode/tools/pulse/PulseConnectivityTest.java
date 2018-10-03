@@ -35,12 +35,10 @@ import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 
 @Category({PulseTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PulseConnectivityTest {
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withHttpService();

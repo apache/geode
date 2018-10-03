@@ -39,11 +39,9 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.security.query.QuerySecurityBase;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CqSecurityUnauthorizedUserDUnitTest extends QuerySecurityBase {
 
   @Parameterized.Parameters
