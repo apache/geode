@@ -86,6 +86,7 @@ apply from: "${scriptDir}/sonar.gradle"
 apply from: "${scriptDir}/rat.gradle"
 apply from: "${scriptDir}/docker.gradle"
 apply from: "${scriptDir}/spotless.gradle"
+apply from: "${scriptDir}/resolve-dependencies.gradle"
 
 subprojects {
   apply plugin: 'com.github.ben-manes.versions'
