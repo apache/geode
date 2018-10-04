@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -138,8 +138,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   public void validateCompiledQuery(final long compiledQueryCount) {
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
-        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(60, TimeUnit.SECONDS)
+    await().timeout(60, TimeUnit.SECONDS)
         .until(() -> CacheClientNotifier.getInstance().getStats()
             .getCompiledQueryCount() == compiledQueryCount);
   }

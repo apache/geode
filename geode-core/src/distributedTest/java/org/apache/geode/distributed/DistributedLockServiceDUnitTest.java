@@ -16,6 +16,7 @@ package org.apache.geode.distributed;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.Long.MAX_VALUE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -30,14 +31,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.Assertions;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -195,7 +194,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         DLockService localService =
             (DLockService) DistributedLockService.getServiceNamed(serviceName);
 
-        Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        await()
             .untilAsserted(() -> assertThat(localService.getStats().getLockWaitsInProgress())
                 .isEqualTo(vmThreads[vmId]));
       });
@@ -329,7 +328,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vmList.remove(originalGrantorVM);
 
-    Awaitility.await("vm0 leave has been processed").atMost(20, TimeUnit.SECONDS)
+    await("vm0 leave has been processed")
         .until(() -> vmList.parallelStream()
             .noneMatch(vm -> vm.invoke(() -> InternalDistributedSystem
                 .getAnyInstance()

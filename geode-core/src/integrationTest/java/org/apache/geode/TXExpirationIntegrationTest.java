@@ -14,15 +14,14 @@
  */
 package org.apache.geode;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.ExpirationAction.DESTROY;
 import static org.apache.geode.cache.ExpirationAction.INVALIDATE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.spy;
@@ -244,16 +243,16 @@ public class TXExpirationIntegrationTest {
         r -> assertThat(r.get(KEY)).isNull()),
     REGION_IDLE_DESTROY(m -> m.setRegionIdleTimeout(new ExpirationAttributes(1, DESTROY)),
         s -> verify(s, atLeast(1)).afterRegionDestroyName(eq(REGION_NAME)),
-        r -> await().atMost(1, MINUTES).until(() -> r.isDestroyed())),
+        r -> await().until(() -> r.isDestroyed())),
     REGION_IDLE_INVALIDATE(m -> m.setRegionIdleTimeout(new ExpirationAttributes(1, INVALIDATE)),
         s -> verify(s, atLeast(1)).afterRegionInvalidateName(eq(REGION_NAME)),
-        r -> await().atMost(1, MINUTES).until(() -> r.get(KEY) == null)),
+        r -> await().until(() -> r.get(KEY) == null)),
     REGION_TTL_DESTROY(m -> m.setRegionTimeToLive(new ExpirationAttributes(1, DESTROY)),
         s -> verify(s, atLeast(1)).afterRegionDestroyName(eq(REGION_NAME)),
-        r -> await().atMost(1, MINUTES).until(() -> r.isDestroyed())),
+        r -> await().until(() -> r.isDestroyed())),
     REGION_TTL_INVALIDATE(m -> m.setRegionTimeToLive(new ExpirationAttributes(1, INVALIDATE)),
         s -> verify(s, atLeast(1)).afterRegionInvalidateName(eq(REGION_NAME)),
-        r -> await().atMost(1, MINUTES).until(() -> r.get(KEY) == null));
+        r -> await().until(() -> r.get(KEY) == null));
 
     private final Consumer<AttributesMutator> mutatorConsumer;
     private final Consumer<KeyCacheListener> listenerConsumer;
@@ -292,7 +291,7 @@ public class TXExpirationIntegrationTest {
   }
 
   private void awaitEntryExpired(Region region, String key) {
-    await().atMost(1, MINUTES).until(() -> region.getEntry(key) == null || region.get(key) == null);
+    await().until(() -> region.getEntry(key) == null || region.get(key) == null);
   }
 
   private void awaitEntryExpiration(Region region, String key) {

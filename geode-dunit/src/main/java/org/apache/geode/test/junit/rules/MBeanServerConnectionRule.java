@@ -14,13 +14,13 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import javax.management.JMX;
@@ -34,7 +34,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.awaitility.Awaitility;
 import org.junit.runner.Description;
 
 import org.apache.geode.management.internal.security.AccessControlMXBean;
@@ -189,7 +188,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     // to retrieve RMIServer stub: javax.naming.CommunicationException [Root exception is
     // java.rmi.NoSuchObjectException: no such object in table]" Exception
     // Have to implement a wait mechanism here. We can use Awaitility here
-    Awaitility.await().atMost(2, TimeUnit.MINUTES).pollDelay(2, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       Map<String, ?> env = new HashMap<>();
       if (environment != null) {
         env = new HashMap<>(environment);

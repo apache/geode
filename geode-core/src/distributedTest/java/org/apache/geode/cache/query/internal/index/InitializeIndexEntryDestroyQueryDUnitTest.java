@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -22,12 +23,10 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -190,11 +189,11 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
         fail();
       }
       Region region = cache.getRegion(regionName);
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      await()
           .untilAsserted(
               () -> assertNotNull(cache.getQueryService().getIndex(region, "statusIndex")));
       getCache().getQueryService().removeIndex(index);
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(
+      await().untilAsserted(
           () -> assertEquals(null, getCache().getQueryService().getIndex(region, "statusIndex")));
     }
   }
@@ -208,7 +207,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
       logger.debug("Going to destroy the value" + p);
       r.destroy(j);
       final int key = j;
-      Awaitility.await().atMost(20, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals(null, r.get(key)));
 
       // Put the value back again.
@@ -261,7 +260,7 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
       fail();
     }
     Region region = getCache().getRegion(regionName);
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertNotNull(getCache().getQueryService().getIndex(region, indexName)));
   }

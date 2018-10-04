@@ -18,11 +18,10 @@ package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_MINUTES;
 
 import java.io.File;
 import java.io.IOException;
@@ -298,7 +297,7 @@ public class SerialEventListenerDistributedTest implements Serializable {
   private void validateThrowingAsyncEventListenerEventsMap(int expectedSize) {
     Map<?, AsyncEvent<?, ?>> eventsMap = getThrowingAsyncEventListener().getEventsMap();
 
-    await().atMost(TWO_MINUTES).untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
+    await().untilAsserted(() -> assertThat(eventsMap).hasSize(expectedSize));
 
     for (AsyncEvent<?, ?> event : eventsMap.values()) {
       assertThat(event.getPossibleDuplicate()).isTrue();
@@ -306,7 +305,7 @@ public class SerialEventListenerDistributedTest implements Serializable {
   }
 
   private void validateThrowingAsyncEventListenerExceptionThrown() {
-    await().atMost(TWO_MINUTES)
+    await()
         .untilAsserted(() -> assertThat(isThrowingAsyncEventListenerExceptionThrown()).isTrue());
   }
 

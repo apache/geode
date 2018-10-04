@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.cq.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -28,10 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -1070,8 +1069,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
       final CqStateImpl cqState = (CqStateImpl) cQuery.getState();
       // Wait max time, till the CQ state is as expected.
-      Awaitility.await("cqState never became " + state).atMost(MAX_TIME, TimeUnit.MILLISECONDS)
-          .pollInterval(200, TimeUnit.MILLISECONDS)
+      await("cqState never became " + state)
           .until(() -> cqState.getState(), Matchers.equalTo(state));
     });
   }

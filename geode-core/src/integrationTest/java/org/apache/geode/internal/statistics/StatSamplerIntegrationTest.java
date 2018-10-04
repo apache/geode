@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -134,7 +133,7 @@ public class StatSamplerIntegrationTest {
     st1_1.setDoubleSupplier("sampled_double", () -> 7.0);
     getOrCreateExpectedValueMap(st1_1).put("sampled_double", 7.0);
 
-    await("awaiting StatSampler readiness").atMost(30, SECONDS)
+    await("awaiting StatSampler readiness")
         .until(() -> hasSamplerStatsInstances(factory));
 
     Statistics[] samplerStatsInstances = factory.findStatisticsByTextId("statSampler");
@@ -324,7 +323,7 @@ public class StatSamplerIntegrationTest {
 
   private void waitForStatSamplerToRun(final Statistics samplerStats, final int timesToRun) {
     final int startSampleCount = samplerStats.getInt("sampleCount");
-    await("waiting for the StatSampler to run").atMost(30, SECONDS)
+    await("waiting for the StatSampler to run")
         .until(() -> samplerStats.getInt("sampleCount") >= startSampleCount + timesToRun);
   }
 

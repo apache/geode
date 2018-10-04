@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,9 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -299,7 +298,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       getFromPartitionedRegionsFor3Qs();
       // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
       // primary set to true.
-      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+      await()
           .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6)
               && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3));
 
@@ -328,7 +327,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
       putIntoPartitionedRegions();
       // Wait to make sure that the buckets have actually moved.
-      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+      await()
           .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
               && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
               && (server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6));

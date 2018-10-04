@@ -15,12 +15,11 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.awaitility.core.ConditionTimeoutException;
@@ -60,7 +59,7 @@ public class GetRegionsFunctionTest {
         lockAquired.set(true);
         lockingThreadState = GetRegionsFunctionTest.STATE.BLOCKING;
         try {
-          await().atMost(10, TimeUnit.SECONDS).untilTrue(functionExecuted);
+          await().untilTrue(functionExecuted);
         } catch (ConditionTimeoutException e) {
           e.printStackTrace();
           lockingThreadState = GetRegionsFunctionTest.STATE.FINISHED;
@@ -69,7 +68,7 @@ public class GetRegionsFunctionTest {
     }).start();
 
     // wait till the blocking thread aquired the lock on CacheFactory
-    await().atMost(1, TimeUnit.SECONDS).untilTrue(lockAquired);
+    await().untilTrue(lockAquired);
     when(functionContext.getCache()).thenReturn(mock(Cache.class));
     when(functionContext.getResultSender()).thenReturn(mock(ResultSender.class));
 

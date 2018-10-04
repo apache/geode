@@ -26,7 +26,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.ManagementConstants.OBJECTNAME__CLIENTSERVICE_MXBEAN;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -68,6 +68,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
@@ -351,7 +352,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public void waitTillClientsAreReadyOnServer(String serverName, int serverPort, int clientCount) {
     waitTillCacheServerIsReady(serverName, serverPort);
     CacheServerMXBean bean = getCacheServerMXBean(serverName, serverPort);
-    await().atMost(1, TimeUnit.MINUTES).until(() -> bean.getClientIds().length == clientCount);
+    await().until(() -> bean.getClientIds().length == clientCount);
   }
 
   /**
@@ -372,7 +373,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public void waitTillCacheServerIsReady(String serverName, int serverPort) {
-    await().atMost(1, TimeUnit.MINUTES)
+    await()
         .until(() -> getCacheServerMXBean(serverName, serverPort) != null);
   }
 
@@ -437,7 +438,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
 
   /**
-   * This method wraps an {@link org.awaitility.Awaitility#await} call for more meaningful error
+   * This method wraps an {@link GeodeAwaitility#await()} call for more meaningful error
    * reporting.
    *
    * @param supplier Method to retrieve the result to be tested, e.g.,
@@ -464,7 +465,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       throws Exception {
     try {
       await(assertionConsumerDescription)
-          .atMost(timeout, unit)
           .untilAsserted(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
     } catch (ConditionTimeoutException e) {
       // There is a very slight race condition here, where the above could conceivably time out,

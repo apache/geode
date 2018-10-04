@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.net;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +95,7 @@ public class SocketCloserIntegrationTest {
     countDownLatch.countDown();
     // now all the sockets should get closed; use a wait criteria
     // since a thread pool is doing to closes
-    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> {
+    await().until(() -> {
       boolean areAllClosed = true;
       for (Iterator<Socket> iterator = trackedSockets.iterator(); iterator.hasNext();) {
         Socket socket = iterator.next();
@@ -118,7 +119,7 @@ public class SocketCloserIntegrationTest {
     Socket s = createClosableSocket();
     s.close();
     this.socketCloser.asyncClose(s, "A", () -> runnableCalled.set(true));
-    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> !runnableCalled.get());
+    await().until(() -> !runnableCalled.get());
   }
 
   /**
@@ -131,7 +132,7 @@ public class SocketCloserIntegrationTest {
     final Socket closableSocket = createClosableSocket();
     this.socketCloser.close();
     this.socketCloser.asyncClose(closableSocket, "A", () -> runnableCalled.set(true));
-    Awaitility.await().atMost(5, TimeUnit.MINUTES)
+    await()
         .until(() -> runnableCalled.get() && closableSocket.isClosed());
   }
 }

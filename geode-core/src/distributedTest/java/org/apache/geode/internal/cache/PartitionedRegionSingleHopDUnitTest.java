@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -36,9 +37,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -392,11 +391,11 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     region.put(new Integer(2), "create2");
     region.put(new Integer(3), "create3");
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> cms.isRefreshMetadataTestOnly() == true);
 
     // make sure all fetch tasks are completed
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> cms.getRefreshTaskCount_TEST_ONLY() == 0);
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -405,7 +404,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     region.put(new Integer(2), "create2");
     region.put(new Integer(3), "create3");
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> cms.isRefreshMetadataTestOnly() == false);
   }
 
@@ -431,7 +430,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     region.destroy(new Integer(2));
     region.destroy(new Integer(3));
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> cms.isRefreshMetadataTestOnly() == true);
   }
 
@@ -457,7 +456,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     region.get(new Integer(2));
     region.get(new Integer(3));
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> cms.isRefreshMetadataTestOnly() == true);
     printMetadata();
     Wait.pause(5000);
@@ -494,7 +493,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       region.put(new Integer(i), new Integer(i + 1));
     }
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> cms.isRefreshMetadataTestOnly() == true);
 
     // kill server
@@ -704,7 +703,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> regionMetaData.size() == 1);
+    await().until(() -> regionMetaData.size() == 1);
 
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
@@ -725,7 +724,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       }
     } while (System.currentTimeMillis() - start < 60000);
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
     // assertIndexDetailsEquals(4/*numBuckets*/,
     // prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());
@@ -746,12 +745,12 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (regionMetaData.size() == 1));
+    await().until(() -> (regionMetaData.size() == 1));
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
 
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
 
@@ -909,7 +908,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap3 =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (clientMap3.size() == 4));
+    await().until(() -> (clientMap3.size() == 4));
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(2, ((List) entry.getValue()).size());
     }
@@ -951,7 +950,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (regionMetaData.size() == 1));
+    await().until(() -> (regionMetaData.size() == 1));
 
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
@@ -977,7 +976,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (clientMap.size() == 4));
+    await().until(() -> (clientMap.size() == 4));
     for (Entry entry : clientMap.entrySet()) {
       assertEquals(2, ((List) entry.getValue()).size());
     }
@@ -1001,7 +1000,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     assertEquals(1, regionMetaData.size());
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     assertEquals(4/* numBuckets */, clientMap.size());
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       int bucketId = -1;
       int size = -1;
       List globalList = new ArrayList();
@@ -1040,7 +1039,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
 
     createClient(port0, port1, port2, port3);
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> fetchAndValidateMetadata());
+    await().until(() -> fetchAndValidateMetadata());
 
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
@@ -1941,7 +1940,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   private void verifyMetadata() {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     // make sure all fetch tasks are completed
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> cms.getRefreshTaskCount_TEST_ONLY() == 0);
 
     // final Map<String, ClientPartitionAdvisor> regionMetaData = cms

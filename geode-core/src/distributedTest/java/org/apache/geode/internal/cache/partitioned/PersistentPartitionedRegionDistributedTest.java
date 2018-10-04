@@ -27,13 +27,13 @@ import static org.apache.geode.cache.RegionShortcut.PARTITION_PROXY;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -235,7 +235,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       try {
         adminDS.waitToBeConnected(MINUTES.toMillis(2));
 
-        await().atMost(2, MINUTES).until(() -> {
+        await().until(() -> {
           Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
           if (missingIds.size() != 1) {
             return false;
@@ -655,7 +655,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     // VM2 should pick up the slack
 
-    await().atMost(2, MINUTES).until(() -> {
+    await().until(() -> {
       Set<Integer> vm2Buckets = vm2.invoke(() -> getBucketList());
       return bucketsLost.equals(vm2Buckets);
     });
@@ -979,13 +979,13 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     vm0.invoke(() -> {
       Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
       // The value is initialized as a String so wait for it to be changed to an Integer.
-      await().atMost(2, MINUTES).until(() -> region.get(0) != null);
+      await().until(() -> region.get(0) != null);
       return region.get(0);
     });
     vm1.invoke(() -> {
       Region<Integer, Integer> region = getCache().getRegion(partitionedRegionName);
       // The value is initialized as a String so wait for it to be changed to an Integer.
-      await().atMost(2, MINUTES).until(() -> region.get(0) != null);
+      await().until(() -> region.get(0) != null);
       return region.get(0);
     });
 
@@ -1301,7 +1301,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     PartitionedRegion region = (PartitionedRegion) getCache().getRegion(partitionedRegionName);
     PartitionedRegionDataStore dataStore = region.getDataStore();
 
-    await().atMost(2, MINUTES).until(() -> lostBuckets.equals(dataStore.getAllLocalBucketIds()));
+    await().until(() -> lostBuckets.equals(dataStore.getAllLocalBucketIds()));
   }
 
   private void createPartitionedRegionWithPersistence(final int redundancy) {
@@ -1543,7 +1543,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     try {
       adminDS.waitToBeConnected(MINUTES.toMillis(2));
 
-      await().atMost(2, MINUTES).until(() -> {
+      await().until(() -> {
         Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
         if (missingIds.size() != numExpectedMissing) {
           return false;

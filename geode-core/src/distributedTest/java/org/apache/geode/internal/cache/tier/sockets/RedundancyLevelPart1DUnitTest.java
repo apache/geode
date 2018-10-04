@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.BeforeClass;
@@ -40,7 +39,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase {
 
   private void waitConnectedServers(final int expected) {
     await("Connected server count (" + pool.getConnectedServerCount() + ") never became "
-        + expected).atMost(60, SECONDS).pollInterval(1, SECONDS)
+        + expected)
             .until(() -> pool.getConnectedServerCount(), equalTo(expected));
   }
 
@@ -58,7 +57,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase {
     verifyConnectedAndRedundantServers(3, 0);
     verifyOrderOfEndpoints();
 
-    await("pool still contains " + SERVER3).atMost(30, SECONDS).pollInterval(1, SECONDS)
+    await("pool still contains " + SERVER3)
         .until(() -> !pool.getCurrentServerNames().contains(SERVER3));
 
   }
@@ -81,7 +80,7 @@ public class RedundancyLevelPart1DUnitTest extends RedundancyLevelTestBase {
     verifyConnectedAndRedundantServers(3, 0);
     verifyOrderOfEndpoints();
 
-    await("pool still contains " + SERVER1).atMost(30, SECONDS).pollInterval(1, SECONDS)
+    await("pool still contains " + SERVER1)
         .until(() -> !pool.getCurrentServerNames().contains(SERVER1));
 
     assertThat(pool.getPrimaryName()).isNotEqualTo(SERVER1);

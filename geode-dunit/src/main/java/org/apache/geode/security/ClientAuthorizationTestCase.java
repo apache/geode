@@ -14,8 +14,6 @@
  */
 package org.apache.geode.security;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
@@ -31,6 +29,7 @@ import static org.apache.geode.security.SecurityTestUtils.concatProperties;
 import static org.apache.geode.security.SecurityTestUtils.getCache;
 import static org.apache.geode.security.SecurityTestUtils.getLocalValue;
 import static org.apache.geode.security.SecurityTestUtils.registerExpectedExceptions;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -39,7 +38,6 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -284,7 +282,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       if ((flags & OpFlags.NO_CREATE_SUBREGION) > 0) {
         if ((flags & OpFlags.CHECK_NOREGION) > 0) {
           // Wait for some time for DRF update to come
-          waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+          await()
               .until(() -> getSubregion() == null);
           subregion = getSubregion();
           assertNull(subregion);
@@ -292,7 +290,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
         } else {
           // Wait for some time for DRF update to come
-          waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+          await()
               .until(() -> getSubregion() != null);
           subregion = getSubregion();
           assertNotNull(subregion);
@@ -307,7 +305,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
 
     } else if ((flags & OpFlags.CHECK_NOREGION) > 0) {
       // Wait for some time for region destroy update to come
-      waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+      await()
           .until(() -> getRegion() == null);
       region = getRegion();
       assertNull(region);
@@ -408,7 +406,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
                 return this;
               }
             }.init(region);
-            waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+            await()
                 .until(condition);
 
             value = getLocalValue(region, key);

@@ -16,9 +16,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -60,7 +59,7 @@ public class SingleHopClientExecutorWithLoggingIntegrationTest {
     /*
      * Sometimes need to wait for more than sec as thread execution takes time.
      */
-    await().atMost(2, MINUTES)
+    await()
         .untilAsserted(() -> assertThat(systemErrRule.getLog()).contains(message));
   }
 }

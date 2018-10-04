@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
 
@@ -31,7 +32,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.client.ClientCache;
@@ -357,7 +357,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     });
 
     // wait till member is not reachable anymore.
-    Awaitility.await().until(() -> {
+    await().until(() -> {
       try {
         member.invoke(() -> {
         });

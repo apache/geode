@@ -15,11 +15,10 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
@@ -97,7 +96,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
     });
     MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
     assertTrue(membershipFailed.get());
-    await().atMost(60000, TimeUnit.MILLISECONDS).pollInterval(5000, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> cache.getReconnectedCache() != null);
 
     Cache newCache = cache.getReconnectedCache();

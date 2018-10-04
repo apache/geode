@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertNull;
@@ -31,9 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -396,7 +395,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void ValidateRegionSizes(int port) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       Region region = cache.getRegion("/" + regionName);
       Region msgsRegion = cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
       int clientMsgRegionSize = msgsRegion.size();
@@ -1076,7 +1075,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
       Iterator iter = msgsRegion.entrySet().iterator();
       while (iter.hasNext()) {
-        Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().untilAsserted(() -> {
           Region.Entry entry = (Region.Entry) iter.next();
           HAEventWrapper wrapper = (HAEventWrapper) entry.getKey();
           ClientUpdateMessage cum = (ClientUpdateMessage) entry.getValue();

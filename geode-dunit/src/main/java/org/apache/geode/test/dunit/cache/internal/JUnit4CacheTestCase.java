@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit.cache.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -23,10 +24,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -223,7 +222,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
           && gemFireCache.getCancelCriterion().isCancelInProgress()) {
-        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
+        await("waiting for cache to close")
             .until(gemFireCache::isClosed);
       }
       if (cache == null || cache.isClosed()) {
@@ -247,7 +246,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
           && gemFireCache.getCancelCriterion().isCancelInProgress()) {
-        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
+        await("waiting for cache to close")
             .until(gemFireCache::isClosed);
       }
       if (cache == null || cache.isClosed()) {

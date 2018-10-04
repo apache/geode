@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +23,6 @@ import java.io.Serializable;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -141,9 +140,5 @@ public class TestClientIdsDUnitTest implements Serializable {
         () -> assertThat(service.getMBeanProxy(objectName, CacheServerMXBean.class)).isNotNull());
 
     return service.getMBeanProxy(objectName, CacheServerMXBean.class);
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
   }
 }

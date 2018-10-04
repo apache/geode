@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 
@@ -142,7 +141,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
 
   static void verifyDispatcherIsAlive() {
 
-    await().atMost(180, SECONDS).pollInterval(1, SECONDS)
+    await()
         .until(() -> cache.getCacheServers().size(), equalTo(1));
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
@@ -152,7 +151,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
 
     final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
 
-    await().atMost(180, SECONDS).pollInterval(1, SECONDS).until(() -> ccn.getClientProxies().size(),
+    await().until(() -> ccn.getClientProxies().size(),
         greaterThan(0));
 
     Iterator<CacheClientProxy> cacheClientProxyIterator = ccn.getClientProxies().iterator();
@@ -160,14 +159,14 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     if (ccn.getClientProxies().iterator().hasNext()) {
 
       final CacheClientProxy proxy = cacheClientProxyIterator.next();
-      await().atMost(180, SECONDS).pollInterval(1, SECONDS)
+      await()
           .until(() -> proxy._messageDispatcher != null && proxy._messageDispatcher.isAlive());
     }
   }
 
   static void verifyDispatcherIsNotAlive() {
 
-    await().atMost(180, SECONDS).pollInterval(1, SECONDS)
+    await()
         .until(() -> cache.getCacheServers().size(), equalTo(1));
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
@@ -177,7 +176,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
 
     final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
 
-    await().atMost(180, SECONDS).pollInterval(1, SECONDS).until(() -> ccn.getClientProxies().size(),
+    await().until(() -> ccn.getClientProxies().size(),
         greaterThan(0));
 
     Iterator<CacheClientProxy> cacheClientProxyIterator = ccn.getClientProxies().iterator();
@@ -191,7 +190,6 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
   static void verifyRedundantServersContain(final String server) {
 
     await()
-        .atMost(180, SECONDS).pollInterval(2, SECONDS)
         .until(() -> pool.getRedundantNames().contains(server));
   }
 
@@ -209,7 +207,6 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     }
     await(
         "Live server count didn't match expected and/or redundant server count didn't match expected in time")
-            .atMost(180, SECONDS).pollInterval(2, SECONDS)
             .until(() -> {
               try {
                 return pool.getConnectedServerCount() == connectedServers
@@ -262,7 +259,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
   }
 
   static void verifyCCP() {
-    await().atMost(180, SECONDS).pollInterval(2, SECONDS)
+    await()
         .until(() -> cache.getCacheServers().size(), equalTo(1));
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
 
@@ -272,13 +269,12 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
 
     // one client is connected to this server
     final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-    await().atMost(180, SECONDS).pollInterval(1, SECONDS).until(() -> ccn.getClientProxies().size(),
+    await().until(() -> ccn.getClientProxies().size(),
         equalTo(1));
   }
 
   static void verifyInterestRegistration() {
     await("Number of bridge servers (" + cache.getCacheServers().size() + ") never became 1")
-        .atMost(180, SECONDS).pollInterval(2, SECONDS)
         .until(() -> cache.getCacheServers().size(), equalTo(1));
 
     CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
@@ -287,7 +283,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
     assertThat(bs.getAcceptor().getCacheClientNotifier()).isNotNull();
 
     final CacheClientNotifier ccn = bs.getAcceptor().getCacheClientNotifier();
-    await("Notifier's proxies is empty").atMost(180, SECONDS).pollInterval(2, SECONDS)
+    await("Notifier's proxies is empty")
         .until(() -> ccn.getClientProxies().size(), greaterThan(0));
 
     Iterator<CacheClientProxy> cacheClientProxyIterator = ccn.getClientProxies().iterator();
@@ -296,7 +292,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
         .isTrue();
     final CacheClientProxy ccp = cacheClientProxyIterator.next();
 
-    await().atMost(180, SECONDS).pollInterval(2, SECONDS).until(() -> {
+    await().until(() -> {
       Set keysMap = ccp.cils[RegisterInterestTracker.interestListIndex]
           .getProfile(Region.SEPARATOR + REGION_NAME).getKeysOfInterestFor(ccp.getProxyID());
       if (keysMap == null) {

@@ -17,15 +17,14 @@ package org.apache.geode.internal.cache.wan.asyncqueue;
 import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -109,11 +108,11 @@ public class AsyncEventQueueValidationsJUnitTest {
     MyGatewayEventFilter filter = (MyGatewayEventFilter) filters.get(0);
 
     // Validate filter callbacks were invoked
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> filter.getBeforeEnqueueInvocations() == numPuts);
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> filter.getBeforeTransmitInvocations() == numPuts);
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+    await()
         .until(() -> filter.getAfterAcknowledgementInvocations() == numPuts);
   }
 

@@ -14,12 +14,13 @@
  */
 package org.apache.geode.tools.pulse.tests.rules;
 
+
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.internal.AvailablePort;
@@ -49,7 +50,7 @@ public class ServerRule extends ExternalResource {
   protected void before() throws Throwable {
     startServer();
     startJetty();
-    Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> jetty.isStarted());
+    await().until(() -> jetty.isStarted());
   }
 
   @Override

@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -44,10 +45,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.awaitility.Awaitility;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -502,7 +500,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   public static void waitForAsyncEventQueueSize(String senderId, int numQueueEntries,
       boolean localSize) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> checkAsyncEventQueueSize(senderId, numQueueEntries, localSize));
   }
 
@@ -729,12 +727,12 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       }
     }
     final AsyncEventQueueStats statistics = ((AsyncEventQueueImpl) queue).getStatistics();
-    Awaitility.await().atMost(120, TimeUnit.SECONDS)
+    await()
         .untilAsserted(
             () -> assertEquals("Expected queue entries: " + queueSize + " but actual entries: "
                 + statistics.getEventQueueSize(), queueSize, statistics.getEventQueueSize()));
     if (isParallel) {
-      Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         assertEquals(
             "Expected events in the secondary queue is " + secondaryQueueSize + ", but actual is "
                 + statistics.getSecondaryEventQueueSize(),

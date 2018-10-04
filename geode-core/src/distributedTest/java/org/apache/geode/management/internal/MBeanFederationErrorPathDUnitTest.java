@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -21,12 +22,10 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
 import java.rmi.RemoteException;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -118,7 +117,7 @@ public class MBeanFederationErrorPathDUnitTest {
       cache1.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
     });
 
-    Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> bb.getMailbox(bbKey) != null);
+    await().until(() -> bb.getMailbox(bbKey) != null);
     Object e = bb.getMailbox("sync1");
 
     assertThat(e).isNotInstanceOf(NullPointerException.class);
