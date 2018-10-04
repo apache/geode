@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene.internal.cli;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertArrayEquals;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +34,6 @@ import junitparams.Parameters;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -697,7 +697,7 @@ public class LuceneIndexCommandsIntegrationTest {
     region.putAll(entries);
     luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
     LuceneIndexImpl index = (LuceneIndexImpl) luceneService.getIndex(INDEX_NAME, REGION_NAME);
-    Awaitility.await().atMost(65, TimeUnit.SECONDS).until(
+    await().until(
         () -> index.getIndexStats().getDocuments() >= countOfDocuments);
   }
 

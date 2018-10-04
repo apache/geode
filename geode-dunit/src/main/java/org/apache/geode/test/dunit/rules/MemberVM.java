@@ -14,13 +14,12 @@
  */
 package org.apache.geode.test.dunit.rules;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -125,7 +124,7 @@ public class MemberVM extends VMProvider implements Member {
   public void waitTilLocatorFullyReconnected() {
     vm.invoke(() -> {
       try {
-        Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> {
+        await().until(() -> {
           InternalLocator intLocator = ClusterStartupRule.getLocator();
           InternalCache cache = ClusterStartupRule.getCache();
           return intLocator != null && cache != null && intLocator.getDistributedSystem()
@@ -148,7 +147,7 @@ public class MemberVM extends VMProvider implements Member {
   public void waitTilServerFullyReconnected() {
     vm.invoke(() -> {
       try {
-        Awaitility.waitAtMost(60, SECONDS).until(() -> {
+        await().until(() -> {
           InternalDistributedSystem internalDistributedSystem =
               InternalDistributedSystem.getConnectedInstance();
           return internalDistributedSystem != null

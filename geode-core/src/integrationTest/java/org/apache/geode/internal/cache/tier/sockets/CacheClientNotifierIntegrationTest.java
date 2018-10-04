@@ -15,8 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -151,7 +150,7 @@ public class CacheClientNotifierIntegrationTest {
     }
 
     // Verify that we do not hang in peek() for the second proxy due to the wrapper
-    await().atMost(30, SECONDS).until(() -> {
+    await().until(() -> {
       if (cacheClientProxyTwo.getHARegionQueue().peek() != null) {
         cacheClientProxyTwo.getHARegionQueue().remove();
         return true;

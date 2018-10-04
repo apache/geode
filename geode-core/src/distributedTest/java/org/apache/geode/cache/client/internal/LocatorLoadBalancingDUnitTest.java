@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -24,7 +26,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -254,15 +255,14 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   private void checkConnectionCount(final int count) {
     Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
     final CacheServerImpl server = (CacheServerImpl) cache.getCacheServers().get(0);
-    Awaitility.await().pollDelay(100, TimeUnit.MILLISECONDS)
-        .pollInterval(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
-          int sz = server.getAcceptor().getStats().getCurrentClientConnections();
-          if (Math.abs(sz - count) <= ALLOWABLE_ERROR_IN_COUNT) {
-            return true;
-          }
-          System.out.println("Found " + sz + " connections, expected " + count);
-          return false;
-        });
+    await().timeout(300, TimeUnit.SECONDS).until(() -> {
+      int sz = server.getAcceptor().getStats().getCurrentClientConnections();
+      if (Math.abs(sz - count) <= ALLOWABLE_ERROR_IN_COUNT) {
+        return true;
+      }
+      System.out.println("Found " + sz + " connections, expected " + count);
+      return false;
+    });
   }
 
   private void waitForPrefilledConnections(final int count) throws Exception {
@@ -272,8 +272,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   private void waitForPrefilledConnections(final int count, final String poolName)
       throws Exception {
     final PoolImpl pool = (PoolImpl) PoolManager.getAll().get(poolName);
-    Awaitility.await().pollDelay(100, TimeUnit.MILLISECONDS)
-        .pollInterval(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
+    await().timeout(300, TimeUnit.SECONDS)
         .until(() -> pool.getConnectionCount() >= count);
   }
 
@@ -429,8 +428,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     final ServerLocator sl = locator.getServerLocatorAdvisee();
     InternalLogWriter log = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
     sl.getDistributionAdvisor().dumpProfiles("PROFILES= ");
-    Awaitility.await().pollDelay(100, TimeUnit.MILLISECONDS)
-        .pollInterval(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
+    await().timeout(300, TimeUnit.SECONDS)
         .until(() -> expected.equals(sl.getLoadMap()));
   }
 

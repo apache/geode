@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.statistics;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,9 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -202,7 +201,7 @@ public class ValueMonitorIntegrationTest {
 
     long timeStamp = NanoTimer.getTime();
     sampleCollector.sample(timeStamp);
-    Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> notifications.size() > 0);
     assertThat(notifications.size()).isEqualTo(1);
 
@@ -215,7 +214,7 @@ public class ValueMonitorIntegrationTest {
     st1_1.incLong("long_counter_3", 3);
     timeStamp += NanoTimer.millisToNanos(1000);
     sampleCollector.sample(timeStamp);
-    Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> notifications.size() > 0);
     assertThat(notifications.size()).isEqualTo(1);
     notification = notifications.remove(0);
@@ -231,7 +230,7 @@ public class ValueMonitorIntegrationTest {
     // validate no notification occurs when no stats are updated
     timeStamp += NanoTimer.millisToNanos(1000);
     sampleCollector.sample(timeStamp);
-    Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> notifications.size() == 0);
     assertThat(notifications.isEmpty()).isTrue();
 
@@ -241,7 +240,7 @@ public class ValueMonitorIntegrationTest {
     st1_2.incLong("long_counter_3", 2);
     timeStamp += NanoTimer.millisToNanos(1000);
     sampleCollector.sample(timeStamp);
-    Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> notifications.size() == 0);
     assertThat(notifications.isEmpty()).isTrue();
 
@@ -251,7 +250,7 @@ public class ValueMonitorIntegrationTest {
     assertThat(sampleCollector.currentHandlersForTesting().size()).isEqualTo(2);
     timeStamp += NanoTimer.millisToNanos(1000);
     sampleCollector.sample(timeStamp);
-    Awaitility.await().atMost(2, TimeUnit.SECONDS).pollInterval(10, TimeUnit.MILLISECONDS)
+    await()
         .until(() -> notifications.size() > 0);
     assertThat(notifications.size()).isEqualTo(1);
     notification = notifications.remove(0);

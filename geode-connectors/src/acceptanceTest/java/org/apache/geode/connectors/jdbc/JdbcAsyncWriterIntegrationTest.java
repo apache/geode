@@ -15,15 +15,14 @@
 package org.apache.geode.connectors.jdbc;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.After;
 import org.junit.Before;
@@ -209,7 +208,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private void awaitUntil(final ThrowingRunnable supplier) {
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(supplier);
+    await().untilAsserted(supplier);
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

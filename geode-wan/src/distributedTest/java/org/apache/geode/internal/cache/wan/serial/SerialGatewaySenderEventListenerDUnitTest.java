@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -22,9 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -352,7 +351,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
     if (listeners.size() == 2) {
       final AsyncEventListener l1 = listeners.get(0);
       final AsyncEventListener l2 = listeners.get(1);
-      Awaitility.await().atMost(60000, TimeUnit.MILLISECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         Map listenerMap1 = ((MyGatewaySenderEventListener) l1).getEventsMap();
 
         Map listenerMap2 = ((MyGatewaySenderEventListener2) l2).getEventsMap();

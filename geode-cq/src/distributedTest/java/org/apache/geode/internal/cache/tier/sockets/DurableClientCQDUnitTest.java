@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
@@ -24,9 +25,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -521,7 +520,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
       this.server1VM.invoke(new CacheSerializableRunnable("verify was rejected at least once") {
         @Override
         public void run2() throws CacheException {
-          Awaitility.waitAtMost(10, TimeUnit.SECONDS).pollInterval(200, TimeUnit.MILLISECONDS)
+          await()
               .until(() -> CacheClientProxy.testHook != null
                   && (((RejectClientReconnectTestHook) CacheClientProxy.testHook)
                       .wasClientRejected()));

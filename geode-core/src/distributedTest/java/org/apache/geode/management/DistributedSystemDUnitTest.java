@@ -15,7 +15,6 @@
 package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrId;
@@ -41,8 +40,6 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,6 +56,7 @@ import org.apache.geode.management.internal.NotificationHub.NotificationHubListe
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.MemberMBean;
 import org.apache.geode.management.internal.beans.SequenceNumber;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 
@@ -240,7 +238,7 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().untilAsserted(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
@@ -284,7 +282,7 @@ public class DistributedSystemDUnitTest implements Serializable {
     }
 
     this.managerVM.invoke("checkNotificationsAndRemoveListeners", () -> {
-      await().untilAsserted(() -> assertThat(notifications).hasSize(3));
+      GeodeAwaitility.await().untilAsserted(() -> assertThat(notifications).hasSize(3));
 
       notifications.clear();
 
@@ -319,7 +317,7 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().untilAsserted(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(5));
 
       for (ObjectName objectName : distributedSystemMXBean.listMemberObjectNames()) {
@@ -406,7 +404,7 @@ public class DistributedSystemDUnitTest implements Serializable {
   private void verifyAlertAppender(final VM memberVM, final DistributedMember member,
       final int alertLevel) {
     memberVM.invoke("verifyAlertAppender",
-        () -> await().untilAsserted(
+        () -> GeodeAwaitility.await().untilAsserted(
             () -> assertThat(AlertAppender.getInstance().hasAlertListener(member, alertLevel))
                 .isTrue()));
   }
@@ -416,9 +414,9 @@ public class DistributedSystemDUnitTest implements Serializable {
     managerVM.invoke("verifyAlertCount", () -> {
       AlertNotificationListener listener = AlertNotificationListener.getInstance();
 
-      await().untilAsserted(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(listener.getSevereAlertCount()).isEqualTo(expectedSevereAlertCount));
-      await().untilAsserted(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(listener.getWarningAlertCount()).isEqualTo(expectedWarningAlertCount));
     });
   }
@@ -475,7 +473,7 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await()
+      GeodeAwaitility.await()
           .untilAsserted(() -> assertThat(distributedSystemMXBean.getMemberCount()).isEqualTo(5));
 
       Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
@@ -503,7 +501,7 @@ public class DistributedSystemDUnitTest implements Serializable {
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       distributedSystemMXBean.shutDownAllMembers();
 
-      await().untilAsserted(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(this.managementTestRule.getOtherNormalMembers()).hasSize(0));
     });
   }
@@ -513,7 +511,7 @@ public class DistributedSystemDUnitTest implements Serializable {
       ManagementService service = this.managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
 
-      await().untilAsserted(
+      GeodeAwaitility.await().untilAsserted(
           () -> assertThat(distributedSystemMXBean.listMemberObjectNames()).hasSize(memberCount));
 
       String memberId = this.managementTestRule.getDistributedMember().getId();
@@ -521,10 +519,6 @@ public class DistributedSystemDUnitTest implements Serializable {
       ObjectName memberName = distributedSystemMXBean.fetchMemberObjectName(memberId);
       assertThat(memberName).isEqualTo(thisMemberName);
     });
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
   }
 
   private static class DistributedSystemNotificationListener implements NotificationListener {

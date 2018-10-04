@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.awaitility.Awaitility;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,9 +35,9 @@ public class RedundancyLevelPart2DUnitTest extends RedundancyLevelTestBase {
   }
 
   private void waitConnectedServers(final int expected) {
-    Awaitility.await("Connected server count (" + pool.getConnectedServerCount() + ") never became "
-        + expected).atMost(120, SECONDS).pollInterval(1, SECONDS)
-        .until(() -> pool.getConnectedServerCount(), equalTo(expected));
+    await("Connected server count (" + pool.getConnectedServerCount() + ") never became "
+        + expected)
+            .until(() -> pool.getConnectedServerCount(), equalTo(expected));
   }
 
   /**

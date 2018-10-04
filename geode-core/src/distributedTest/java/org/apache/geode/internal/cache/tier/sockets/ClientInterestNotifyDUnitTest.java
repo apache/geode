@@ -17,15 +17,14 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -106,7 +105,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     public void validate(int creates, int updates, int invalidates, int destroys) {
       // Wait for the last destroy event to arrive.
       try {
-        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+        await().until(() -> {
           return (destroys == m_destroys);
         });
       } catch (Exception ex) {

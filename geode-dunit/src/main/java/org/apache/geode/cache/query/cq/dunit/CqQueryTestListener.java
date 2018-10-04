@@ -14,14 +14,13 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Operation;
@@ -385,7 +384,7 @@ public class CqQueryTestListener implements CqStatusListener {
       final int totalEvents) {
     // Wait for expected events to arrive
     try {
-      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      await().until(() -> {
         if ((creates > 0 && creates != this.getCreateEventCount())
             || (updates > 0 && updates != this.getUpdateEventCount())
             || (deletes > 0 && deletes != this.getDeleteEventCount())

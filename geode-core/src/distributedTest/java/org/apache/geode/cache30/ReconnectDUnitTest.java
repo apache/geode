@@ -27,6 +27,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOU
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -565,7 +566,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
       assertTrue("Expected the restarted member to be hosting a running locator",
           vm0.invoke("check for running locator", () -> {
-            Awaitility.await("waiting for locator to restart").atMost(30, TimeUnit.SECONDS)
+            await("waiting for locator to restart")
                 .until(Locator::getLocator, notNullValue());
             if (((InternalLocator) Locator.getLocator()).isStopped()) {
               System.err.println("found a stopped locator");

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.apache.geode.internal.lang.ThrowableUtils.getRootCause;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -28,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -214,7 +214,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void cacheCreated(InternalCache cache) {
           calledCreateCache.set(true);
-          Awaitility.await().atMost(90, TimeUnit.SECONDS).until(() -> cache.isCacheAtShutdownAll());
+          await().until(() -> cache.isCacheAtShutdownAll());
         }
 
         @Override
@@ -227,14 +227,14 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     });
     try {
       boolean vm0CalledCreateCache = vm0.invoke(() -> {
-        Awaitility.await().atMost(90, TimeUnit.SECONDS).until(() -> calledCreateCache.get());
+        await().until(() -> calledCreateCache.get());
         return calledCreateCache.get();
       });
       assertTrue(vm0CalledCreateCache);
       shutDownAllMembers(vm2, 1);
       asyncCreate.get(60, TimeUnit.SECONDS);
       boolean vm0CalledCloseCache = vm0.invoke(() -> {
-        Awaitility.await().atMost(90, TimeUnit.SECONDS).until(() -> calledCloseCache.get());
+        await().until(() -> calledCloseCache.get());
         return calledCloseCache.get();
       });
       assertTrue(vm0CalledCloseCache);

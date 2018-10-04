@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
@@ -427,7 +426,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
       }
     });
 
-    await().atMost(60, SECONDS).until(() -> getBlackboard().isGateSignaled("bounce"));
+    await().until(() -> getBlackboard().isGateSignaled("bounce"));
     server1.invoke(() -> {
       DistributionMessageObserver.setInstance(null);
     });

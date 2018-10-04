@@ -14,8 +14,6 @@
  */
 package org.apache.geode.security;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionPoolWithNameAndFactory;
 import static org.apache.geode.cache30.ClientServerTestCase.disconnectFromDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
@@ -26,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -35,7 +34,6 @@ import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
-import static org.awaitility.Awaitility.waitAtMost;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1620,7 +1618,7 @@ public class SecurityTestUtils {
     for (int index = 0; index < num; ++index) {
       final String key = KEYS[index];
       final String expectedVal = vals[index];
-      waitAtMost(5, MINUTES).pollInterval(200, MILLISECONDS)
+      await()
           .until(() -> expectedVal.equals(getLocalValue(region, key)));
     }
 

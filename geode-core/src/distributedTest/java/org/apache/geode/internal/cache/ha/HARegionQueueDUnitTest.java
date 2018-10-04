@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertNull;
@@ -28,9 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -684,13 +683,13 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
           }
         };
 
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertTrue((Boolean) vm0.invoke(guaranteeOperationsOccured)));
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertTrue((Boolean) vm1.invoke(guaranteeOperationsOccured)));
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertTrue((Boolean) vm2.invoke(guaranteeOperationsOccured)));
-    Awaitility.waitAtMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertTrue((Boolean) vm3.invoke(guaranteeOperationsOccured)));
 
     // In case of blocking HARegionQueue do some extra puts so that the

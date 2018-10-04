@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,7 +24,6 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,13 +94,5 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
     await().untilAsserted(() -> assertThat(service.getDistributedSystemMXBean()).isNotNull());
 
     return service.getDistributedSystemMXBean();
-  }
-
-  private ConditionFactory await() {
-    return Awaitility.await().atMost(2, MINUTES);
-  }
-
-  private ConditionFactory await(final String alias) {
-    return Awaitility.await(alias).atMost(2, MINUTES);
   }
 }

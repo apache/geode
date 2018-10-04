@@ -18,10 +18,10 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.commons.io.FileUtils.listFiles;
 import static org.apache.commons.io.filefilter.DirectoryFileFilter.DIRECTORY;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -263,7 +263,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
     vm0.invoke(() -> cacheRule.getCache().close());
 
-    await().atMost(2, MINUTES)
+    await()
         .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
 
     // Perform performBackupBaseline and make sure that list of offline disk stores contains our
@@ -282,7 +282,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
     vm0.invoke(() -> createCache(diskDirRule.getDiskDirFor(vm0)));
 
     // After reconnecting make sure the other members agree that the missing member is back online.
-    await().atMost(2, MINUTES)
+    await()
         .untilAsserted(
             () -> assertThat(getMissingPersistentMembers()).doesNotContain(missingMember));
 

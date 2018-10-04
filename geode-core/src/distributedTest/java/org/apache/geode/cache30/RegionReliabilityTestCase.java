@@ -15,6 +15,7 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,10 +29,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -827,7 +826,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.put("expireMe", "expireMe");
 
     waitForEntryDestroy(region, "expireMe");
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(0, region.size()));
   }
 
@@ -985,7 +984,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     mutator.setEntryTimeToLive(new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY));
 
     waitForEntryDestroy(region, "expireMe");
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(0, region.size()));
   }
 

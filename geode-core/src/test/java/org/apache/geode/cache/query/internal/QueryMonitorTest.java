@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
@@ -22,7 +23,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -72,12 +72,12 @@ public class QueryMonitorTest {
 
     for (DefaultQuery query : queries) {
       // make sure the isCancelled flag in Query is set correctly
-      Awaitility.await().until(() -> query.isCanceled());
+      await().until(() -> query.isCanceled());
     }
-    Awaitility.await().until(() -> monitor.getQueryMonitorThreadCount() == 0);
+    await().until(() -> monitor.getQueryMonitorThreadCount() == 0);
     // make sure all thread died
     for (Thread thread : threads) {
-      Awaitility.await().until(() -> !thread.isAlive());
+      await().until(() -> !thread.isAlive());
     }
   }
 
@@ -92,7 +92,7 @@ public class QueryMonitorTest {
   private Thread createQueryExecutionThread(int i) {
     Thread thread = new Thread(() -> {
       // make sure the threadlocal variable is updated
-      Awaitility.await()
+      await()
           .untilAsserted(() -> assertThatCode(() -> QueryMonitor.isQueryExecutionCanceled())
               .doesNotThrowAnyException());
     });

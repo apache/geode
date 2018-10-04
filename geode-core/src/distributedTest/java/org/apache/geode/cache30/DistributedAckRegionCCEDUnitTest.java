@@ -17,6 +17,7 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -24,9 +25,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -389,7 +388,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       }
       // now simulate a low free-memory condition
       TombstoneService.FORCE_GC_MEMORY_EVENTS = true;
-      Awaitility.waitAtMost(20, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+      await()
           .until(() -> CCRegion.getCachePerfStats().getTombstoneGCCount() > initialCount);
 
       Thread.sleep(5000);

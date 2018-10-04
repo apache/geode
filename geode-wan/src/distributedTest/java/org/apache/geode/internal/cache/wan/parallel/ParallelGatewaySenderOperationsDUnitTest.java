@@ -16,10 +16,10 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.OFF_HEAP_MEMORY_SIZE_NAME;
 import static org.apache.geode.internal.cache.tier.sockets.Message.MAX_MESSAGE_SIZE_PROPERTY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -771,7 +771,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
       userRegion.close();
 
-      await("Waiting for off-heap to be freed").atMost(10, TimeUnit.SECONDS).until(
+      await("Waiting for off-heap to be freed").until(
           () -> 0 == ((MemoryAllocatorImpl) cache.getOffHeapStore()).getOrphans(cache).size());
     });
   }

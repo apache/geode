@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TEN_SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,7 +79,7 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
     final VM server2 = Host.getHost(0).getVM(1);
 
     server1.invoke(() -> createServerCacheWithHAAndRegion());
-    await().atMost(TEN_SECONDS).until(() -> regionExists(server1, HAREGION_NAME));
+    await().until(() -> regionExists(server1, HAREGION_NAME));
     server1.invoke(() -> checkRegionQueueSize());
 
     server2.invoke(() -> createServerCacheWithHA());

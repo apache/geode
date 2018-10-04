@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
@@ -36,10 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -255,7 +254,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          () -> await()
               .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
@@ -274,7 +273,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          () -> await()
               .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
@@ -315,7 +314,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          () -> await()
               .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
@@ -333,7 +332,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          () -> await()
               .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
@@ -375,7 +374,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          () -> await()
               .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
@@ -393,7 +392,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       // Locators before 1.4 handled configuration asynchronously.
       // We must wait for configuration configuration to be ready, or confirm that it is disabled.
       oldServerAndLocator.invoke(
-          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+          () -> await()
               .untilAsserted(() -> assertTrue(
                   !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
                       || InternalLocator.getLocator().isSharedConfigurationRunning())));
@@ -1201,7 +1200,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
   String getHARegionName() {
     InternalCache internalCache = (InternalCache) cache;
-    Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+    await().untilAsserted(() -> {
       assertEquals(1, internalCache.getCacheServers().size());
       CacheServerImpl bs = (CacheServerImpl) (internalCache.getCacheServers().iterator().next());
       assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());

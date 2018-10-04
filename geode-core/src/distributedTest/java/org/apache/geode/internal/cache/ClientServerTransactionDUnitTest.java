@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.junit.Assert.assertEquals;
@@ -46,7 +47,6 @@ import javax.transaction.Synchronization;
 import javax.transaction.UserTransaction;
 
 import org.assertj.core.api.Assertions;
-import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -4023,7 +4023,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       createSubscriptionRegion(offheap, regionName, copies, totalBuckets);
       Region r = getCache().getRegion(regionName);
 
-      Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         List<Integer> ids = ((PartitionedRegion) r).getLocalBucketsListTestOnly();
         assertFalse(ids.isEmpty());
       });
@@ -4071,12 +4071,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
     client1.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
 
     client2.invoke(() -> {
-      Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      await()
           .untilAsserted(() -> assertEquals(1, getClientCacheListnerEventCount(regionName)));
     });
   }
@@ -4103,8 +4103,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   Object verifyProxyServerChanged(final TXStateProxyImpl tx, final DistributedMember newProxy) {
     try {
-      Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
-          .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+      await()
           .until(() -> !((TXState) tx.realDeal).getProxyServer().equals(newProxy));
       return null;
     } finally {
@@ -4174,8 +4173,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     // hostedTXStates map. Client finishes the JTA once it gets the reply from server.
     // There exists a race that TXState is yet to be removed when client JTA tx is finished.
     // Add the wait before checking the TXState.
-    Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(30, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> Assertions
             .assertThat(txmgr.getTransactionsForClient((InternalDistributedMember) clientId).size())
             .isEqualTo(0));

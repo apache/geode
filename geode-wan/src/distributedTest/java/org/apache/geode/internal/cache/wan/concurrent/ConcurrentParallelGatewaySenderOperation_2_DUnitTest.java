@@ -14,13 +14,11 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -96,7 +94,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     vm2.invoke(() -> {
       WANTestBase.doPuts(getTestMethodName() + "_PR", 100);
     });
-    vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    vm2.invoke(() -> await()
         .until(() -> WANTestBase.getSenderStats("ln", -1).get(3) > 0));
     vm2.invoke(() -> WANTestBase.stopSender("ln")); // Things have dispatched
     // Dispatch additional values
@@ -104,15 +102,15 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 1000, 1100);
     });
 
-    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> asyncPuts.isDone());
+    await().until(() -> asyncPuts.isDone());
 
-    vm2.invoke(() -> Awaitility.await().atMost(20, TimeUnit.SECONDS)
+    vm2.invoke(() -> await()
         .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
-    vm4.invoke(() -> Awaitility.await().atMost(20, TimeUnit.SECONDS)
+    vm4.invoke(() -> await()
         .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
 
     vm3.invoke(() -> {
-      Awaitility.await().atMost(60, TimeUnit.SECONDS)
+      await()
           .untilAsserted(
               () -> assertTrue(WANTestBase.getQueueContentSize("ln2", true) + " was the size",
                   WANTestBase.getQueueContentSize("ln2", true) == 0));
@@ -156,7 +154,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 10, isOffHeap()));
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
-      vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      vm2.invoke(() -> await()
           .untilAsserted(() -> validateRegionSize(regionName, 0)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -202,7 +200,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 10, isOffHeap()));
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
-      vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      vm2.invoke(() -> await()
           .untilAsserted(() -> validateRegionSize(regionName, 20)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -244,7 +242,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 10, isOffHeap()));
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
-      vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      vm2.invoke(() -> await()
           .untilAsserted(() -> validateRegionSize(regionName, 10)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));
@@ -397,7 +395,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 10, isOffHeap()));
       vm4.invoke(() -> doPutsFrom(regionName, 10, 20));
 
-      vm2.invoke(() -> Awaitility.await().atMost(30, TimeUnit.SECONDS)
+      vm2.invoke(() -> await()
           .untilAsserted(() -> validateRegionSize(regionName, 0)));
 
       vm4.invoke(() -> validateRegionSize(regionName, 10));

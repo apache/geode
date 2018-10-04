@@ -18,6 +18,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -32,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -255,7 +255,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         // Set the expiration time on the client entry.
         r.get(key);
 
-        Awaitility.await("waiting for object to expire").atMost(30, SECONDS).until(() -> {
+        await("waiting for object to expire").until(() -> {
           return expirationTimeMillis[0] != null;
         });
 
@@ -356,7 +356,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       vm1.invoke(() -> {
         PRTombstoneMessageObserver mo =
             (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
-        Awaitility.await().atMost(60, SECONDS).until(() -> {
+        await().until(() -> {
           return mo.tsMessageProcessed >= 1;
         });
         assertTrue("Tombstone GC message is not expected.", mo.thName.contains(
@@ -407,7 +407,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         PRTombstoneMessageObserver mo =
             (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
         // Should receive tombstone message for each bucket.
-        Awaitility.await().atMost(60, SECONDS).until(() -> {
+        await().until(() -> {
           return mo.prTsMessageProcessed >= 2;
         });
         assertEquals("Tombstone GC message is expected.", 2, mo.prTsMessageProcessed);

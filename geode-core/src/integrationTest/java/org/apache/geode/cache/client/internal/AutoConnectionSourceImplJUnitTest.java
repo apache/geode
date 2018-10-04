@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -39,11 +40,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
-import org.awaitility.Awaitility;
-import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -281,7 +279,7 @@ public class AutoConnectionSourceImplJUnitTest {
     ServerLocation location = new ServerLocation("1.1.1.1", 0);
 
     InternalClientMembership.notifyServerJoined(location);
-    Awaitility.await("wait for listener notification").atMost(10, TimeUnit.SECONDS).until(() -> {
+    await("wait for listener notification").until(() -> {
       synchronized (listenerEvents) {
         return listenerEvents[0] != null;
       }
@@ -294,7 +292,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
     listenerEvents[0] = null;
     InternalClientMembership.notifyServerJoined(location);
-    Awaitility.await("wait for listener notification").atMost(10, TimeUnit.SECONDS).until(() -> {
+    await("wait for listener notification").until(() -> {
       synchronized (listenerEvents) {
         return listenerEvents[0] != null;
       }
@@ -363,15 +361,14 @@ public class AutoConnectionSourceImplJUnitTest {
     handler.nextLocatorListResponse = new LocatorListResponse(locators, false);
 
     try {
-      Awaitility.await().pollDelay(new Duration(200, TimeUnit.MILLISECONDS))
-          .atMost(500, TimeUnit.MILLISECONDS).until(() -> {
-            return source.getOnlineLocators().isEmpty();
-          });
+      await().until(() -> {
+        return source.getOnlineLocators().isEmpty();
+      });
       startFakeLocator();
 
       server.join(1000);
 
-      Awaitility.await().atMost(5000, TimeUnit.MILLISECONDS).until(() -> {
+      await().until(() -> {
 
         return source.getOnlineLocators().size() == 1;
       });

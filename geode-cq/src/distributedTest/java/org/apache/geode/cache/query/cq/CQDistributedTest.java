@@ -15,12 +15,11 @@
 package org.apache.geode.cache.query.cq;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.io.Serializable;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -88,7 +87,7 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(4, new Portfolio(4));
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(2, testListener.onEventCalls));
   }
 
@@ -104,7 +103,7 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(4, new Portfolio(4));
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
   }
 
@@ -120,7 +119,7 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(4, new Portfolio(4));
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
   }
 
@@ -136,7 +135,7 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(4, new Portfolio(4));
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(2, testListener.onEventCalls));
   }
 
@@ -152,7 +151,7 @@ public class CQDistributedTest implements Serializable {
       regionOnServer.put(4, new Portfolio(4));
     });
 
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(3, testListener.onEventCalls));
   }
 

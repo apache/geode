@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 
@@ -210,7 +210,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
       PartitionedRegion pr = (PartitionedRegion) testRegion;
       final BucketRegion bucket = pr.getDataStore().getLocalBucketById(0);
 
-      Awaitility.await().until(() -> {
+      await().until(() -> {
         if (testRegion.getCache().getDistributionManager().isCurrentMember(crashedMember)) {
           return false;
         }

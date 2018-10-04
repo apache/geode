@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,9 +27,7 @@ import static org.junit.Assert.fail;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -327,7 +326,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyDeadAndLiveServers(final int expectedDeadServers,
       final int expectedLiveServers) {
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    await()
         .untilAsserted(() -> assertEquals(expectedLiveServers, pool.getConnectedServerCount()));
   }
 

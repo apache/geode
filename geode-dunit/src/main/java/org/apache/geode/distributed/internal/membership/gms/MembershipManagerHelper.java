@@ -14,9 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.distributed.DistributedMember;
@@ -131,7 +130,7 @@ public class MembershipManagerHelper {
     MembershipManagerHelper.playDead(msys);
     mgr.forceDisconnect("for testing");
     // wait at most 10 seconds for system to be disconnected
-    Awaitility.await().pollInterval(1, TimeUnit.SECONDS).until(() -> !msys.isConnected());
+    await().until(() -> !msys.isConnected());
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
 

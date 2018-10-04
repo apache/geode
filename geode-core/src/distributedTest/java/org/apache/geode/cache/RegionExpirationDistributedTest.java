@@ -16,9 +16,9 @@ package org.apache.geode.cache;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -162,12 +162,12 @@ public class RegionExpirationDistributedTest implements Serializable {
       if (expirationAction().isInvalidate() || expirationAction().isLocalInvalidate()) {
         // verify region was invalidated
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES)
+        await()
             .untilAsserted(() -> assertThat(region.containsValueForKey(KEY)).isFalse());
 
       } else {
         // verify region was destroyed (or is in process of being destroyed)
-        await().atMost(1, MINUTES).until(() -> isDestroyed(cache.getRegion(regionName)));
+        await().until(() -> isDestroyed(cache.getRegion(regionName)));
       }
     }
 
@@ -175,19 +175,19 @@ public class RegionExpirationDistributedTest implements Serializable {
       if (expirationAction().isInvalidate()) {
         // distributed invalidate region
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES).untilAsserted(() -> {
+        await().untilAsserted(() -> {
           assertThat(region.containsKey(KEY)).isTrue();
           assertThat(region.containsValueForKey(KEY)).isFalse();
         });
 
       } else if (expirationAction().isDestroy()) {
         // verify region was destroyed (or is in process of being destroyed)
-        await().atMost(1, MINUTES).until(() -> isDestroyed(cache.getRegion(regionName)));
+        await().until(() -> isDestroyed(cache.getRegion(regionName)));
 
       } else {
         // for LOCAL_DESTROY or LOCAL_INVALIDATE, the value should be present
         Region<String, String> region = cache.getRegion(regionName);
-        await().atMost(1, MINUTES).untilAsserted(() -> {
+        await().untilAsserted(() -> {
           assertThat(region.containsValueForKey(KEY)).isTrue();
           assertThat(region.get(KEY)).isEqualTo(VALUE);
         });

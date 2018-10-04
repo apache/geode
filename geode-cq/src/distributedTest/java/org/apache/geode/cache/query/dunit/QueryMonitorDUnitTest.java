@@ -14,12 +14,11 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -420,7 +419,7 @@ public class QueryMonitorDUnitTest {
         return;
       }
 
-      Awaitility.await().pollDelay(5, TimeUnit.MILLISECONDS).until(() -> query.isCanceled());
+      await().until(() -> query.isCanceled());
     }
   }
 
