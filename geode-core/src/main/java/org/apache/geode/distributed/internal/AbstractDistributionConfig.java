@@ -269,12 +269,14 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   private void minMaxCheck(String propName, int value, int minValue, int maxValue) {
     if (value < minValue) {
       throw new IllegalArgumentException(
-          String.format("Could not set %s to %s because its value can not be less than %s.",
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
 
               propName, value, minValue));
     } else if (value > maxValue) {
       throw new IllegalArgumentException(
-          String.format("Could not set %s to %s because its value can not be greater than %s.",
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be greater than \"%s\".",
               propName, value, maxValue));
     }
   }
@@ -369,14 +371,16 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     if (distributedSystemListener == null) {
       if (value < MIN_DISTRIBUTED_SYSTEM_ID) {
         throw new IllegalArgumentException(
-            String.format("Could not set %s to %s because its value can not be less than %s.",
+            String.format(
+                "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
                 DISTRIBUTED_SYSTEM_ID, value,
                 MIN_DISTRIBUTED_SYSTEM_ID));
       }
     }
     if (value > MAX_DISTRIBUTED_SYSTEM_ID) {
       throw new IllegalArgumentException(
-          String.format("Could not set %s to %s because its value can not be greater than %s.",
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be greater than \"%s\".",
               DISTRIBUTED_SYSTEM_ID, value,
               MAX_DISTRIBUTED_SYSTEM_ID));
     }
@@ -569,7 +573,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     // One for each, UDP, FD_SOCk protocols and Cache Server.
     if (value[1] - value[0] < 2) {
       throw new IllegalArgumentException(
-          String.format("Could not set %s to %s because its value can not be less than %s.",
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
               MEMBERSHIP_PORT_RANGE, value[0] + "-" + value[1],
               3));
     }
@@ -616,13 +621,15 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected int checkSecurityLogLevel(int value) {
     if (value < MIN_LOG_LEVEL) {
       throw new IllegalArgumentException(
-          String.format("Could not set %s to %s because its value can not be less than %s.",
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
               SECURITY_LOG_LEVEL,
               LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MIN_LOG_LEVEL)));
     }
     if (value > MAX_LOG_LEVEL) {
       throw new IllegalArgumentException(
-          String.format("Could not set %s to %s because its value can not be greater than %s.",
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be greater than \"%s\".",
               SECURITY_LOG_LEVEL,
               LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MAX_LOG_LEVEL)));
     }
