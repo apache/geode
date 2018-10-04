@@ -34,8 +34,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 /**
  * Tests the default SocketCloser.
  */
-@Category({MembershipTest.class})
-public class SocketCloserJUnitTest {
+@Category(MembershipTest.class)
+public class SocketCloserIntegrationTest {
 
   private SocketCloser socketCloser;
 
@@ -80,8 +80,9 @@ public class SocketCloserJUnitTest {
         this.socketCloser.asyncClose(aSockets[j], address, () -> {
           try {
             waitingToClose.incrementAndGet();
-            countDownLatch.await();
+            countDownLatch.await(5, TimeUnit.MINUTES);
           } catch (InterruptedException e) {
+            throw new RuntimeException(e);
           }
         });
       }
@@ -93,7 +94,7 @@ public class SocketCloserJUnitTest {
     countDownLatch.countDown();
     // now all the sockets should get closed; use a wait criteria
     // since a thread pool is doing to closes
-    Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> {
       boolean areAllClosed = true;
       for (Iterator<Socket> iterator = trackedSockets.iterator(); iterator.hasNext();) {
         Socket socket = iterator.next();
@@ -117,7 +118,7 @@ public class SocketCloserJUnitTest {
     Socket s = createClosableSocket();
     s.close();
     this.socketCloser.asyncClose(s, "A", () -> runnableCalled.set(true));
-    Awaitility.await().atMost(1, TimeUnit.SECONDS).until(() -> !runnableCalled.get());
+    Awaitility.await().atMost(5, TimeUnit.MINUTES).until(() -> !runnableCalled.get());
   }
 
   /**
@@ -130,7 +131,7 @@ public class SocketCloserJUnitTest {
     final Socket closableSocket = createClosableSocket();
     this.socketCloser.close();
     this.socketCloser.asyncClose(closableSocket, "A", () -> runnableCalled.set(true));
-    Awaitility.await().atMost(5, TimeUnit.SECONDS)
+    Awaitility.await().atMost(5, TimeUnit.MINUTES)
         .until(() -> runnableCalled.get() && closableSocket.isClosed());
   }
 }
