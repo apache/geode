@@ -13,11 +13,11 @@
       "disk_size": "100",
       "machine_type": "n1-standard-1",
       "communicator": "winrm",
-      "winrm_username": "packer_user",
+      "winrm_username": "geode",
       "winrm_insecure": true,
       "winrm_use_ssl": true,
       "metadata": {
-        "windows-startup-script-cmd": "winrm quickconfig -quiet & net user /add packer_user & net localgroup administrators packer_user /add & winrm set winrm/config/service/auth @{Basic=\"true\"}"
+        "windows-startup-script-cmd": "winrm quickconfig -quiet & net user /add geode & net localgroup administrators geode /add & winrm set winrm/config/service/auth @{Basic=\"true\"}"
       },
       "zone": "us-central1-a",
       "omit_external_ip": false,
@@ -57,7 +57,8 @@
 
         "write-output 'Cloning geode repo'",
         "& 'c:\\Program Files\\Git\\bin\\git.exe' clone -b develop --depth 1 https://github.com/apache/geode.git geode",
-        "pushd geode",        "Add-Content -Path build.gradle -Value \"subprojects {`n  task getDeps(type: Copy) {`n  from project.sourceSets.main.runtimeClasspath`n  from project.sourceSets.test.runtimeClasspath`n from configurations.testRuntime`n  into 'runtime/'`n }`n}\"",
+        "pushd geode",
+        "Add-Content -Path build.gradle -Value \"subprojects {`n  task getDeps(type: Copy) {`n  from project.sourceSets.main.runtimeClasspath`n  from project.sourceSets.test.runtimeClasspath`n from configurations.testRuntime`n  into 'runtime/'`n }`n}\"",
         "$Env:JAVA_HOME = 'C:\\Program Files\\Java\\jdk1.8.0_181'",
         ".\\gradlew.bat --no-daemon rat getDeps",
         "popd",
