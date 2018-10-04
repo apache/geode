@@ -110,13 +110,13 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
                 hrq.removeDispatchedEvents(id);
               } catch (RegionDestroyedException ignore) {
                 logger.info(
-                    "Queue found destroyed while processing the last disptached sequence ID for a HARegionQueue''s DACE. The event ID is {} for HARegion with name={}",
+                    "Queue found destroyed while processing the last disptached sequence ID for a HARegionQueue's DACE. The event ID is {} for HARegion with name={}",
                     new Object[] {id, regionName});
               } catch (CancelException ignore) {
                 return; // cache or DS is closing
               } catch (CacheException e) {
                 logger.error(String.format(
-                    "QueueRemovalMessage::process:Exception in processing the last disptached sequence ID for a HARegionQueue''s DACE. The problem is with event ID,%s for HARegion with name=%s",
+                    "QueueRemovalMessage::process:Exception in processing the last disptached sequence ID for a HARegionQueue's DACE. The problem is with event ID,%s for HARegion with name=%s",
                     new Object[] {regionName, id}),
                     e);
               } catch (InterruptedException ignore) {

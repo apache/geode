@@ -922,7 +922,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     final Class[] classes = s.getSupportedClasses();
     if (classes == null || classes.length == 0) {
       final String msg =
-          "The DataSerializer %s has no supported classes. It''s getSupportedClasses method must return at least one class";
+          "The DataSerializer %s has no supported classes. It's getSupportedClasses method must return at least one class";
       throw new IllegalArgumentException(String.format(msg, s.getClass().getName()));
     }
 

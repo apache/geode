@@ -170,7 +170,7 @@ public class ExecuteFunction66 extends BaseCommand {
           }
           if (functionStateOnServerSide != functionState) {
             String message =
-                "Function attributes at client and server don''t match for " +
+                "Function attributes at client and server don't match for " +
                     function;
             logger.warn("{}: {}", serverConnection.getName(), message);
             sendError(hasResult, clientMessage, message, serverConnection);

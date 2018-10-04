@@ -242,18 +242,18 @@ public class LocatorLauncherIntegrationTest {
 
   private String memberNameValidationErrorMessage() {
     return String.format(
-        "The member name of the %s must be provided as an argument to the launcher, or a path to gemfire.properties must be specified, which assumes the %s member name will be set using the name property.",
-        "Locator");
+        AbstractLauncher.MEMBER_NAME_ERROR_MESSAGE,
+        "Locator", "Locator");
   }
 
   private String workingDirectoryOptionNotValidErrorMessage() {
     return String.format(
-        "Specifying the --dir option is not valid when starting a %s with the %sLauncher.",
-        "Locator");
+        AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+        "Locator", "Locator");
   }
 
   private String workingDirectoryNotFoundErrorMessage() {
-    return String.format("The working directory for the %s could not be found.",
+    return String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
         "Locator");
   }
 

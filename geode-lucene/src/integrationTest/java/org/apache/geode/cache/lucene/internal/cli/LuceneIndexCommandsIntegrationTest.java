@@ -310,7 +310,7 @@ public class LuceneIndexCommandsIntegrationTest {
 
     // Test empty analyzer name
     analyzerList =
-        StandardAnalyzer.class.getCanonicalName() + "," + KeywordAnalyzer.class.getCanonicalName();
+        StandardAnalyzer.class.getCanonicalName() + ",," + KeywordAnalyzer.class.getCanonicalName();
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "empty");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);

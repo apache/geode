@@ -124,7 +124,7 @@ public final class PartitionRegionHelper {
   public static boolean isPartitionedRegion(final Region<?, ?> r) {
     if (r == null) {
       throw new IllegalArgumentException(
-          "Argument ''Region'' is null".toString());
+          "Argument 'Region' is null".toString());
     }
     return r instanceof PartitionedRegion ? true : false;
   }

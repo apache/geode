@@ -1074,11 +1074,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         Boolean.FALSE));
 
     m.put(CLUSTER_SSL_PROTOCOLS, String.format(
-        "List of available SSL protocols that are to be enabled. Defaults to %s meaning your provider''s defaults.",
+        "List of available SSL protocols that are to be enabled. Defaults to %s meaning your provider's defaults.",
         DEFAULT_SSL_PROTOCOLS));
 
     m.put(CLUSTER_SSL_CIPHERS, String.format(
-        "List of available SSL cipher suites that are to be enabled. Defaults to %s meaning your provider''s defaults.",
+        "List of available SSL cipher suites that are to be enabled. Defaults to %s meaning your provider's defaults.",
         DEFAULT_SSL_CIPHERS));
 
     m.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION,
@@ -1245,7 +1245,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(JMX_MANAGER_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for JMX Manager. Defaults to \""
-            + DEFAULT_JMX_MANAGER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_JMX_MANAGER_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(JMX_MANAGER_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for JMX Manager. Defaults to \""
             + DEFAULT_JMX_MANAGER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1312,7 +1312,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "If true then the cache server will only allow SSL clients to connect. Defaults to false.");
     m.put(SERVER_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for CacheServer. Defaults to \""
-            + DEFAULT_SERVER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_SERVER_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(SERVER_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for CacheServer. Defaults to \""
             + DEFAULT_SERVER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1342,7 +1342,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "If true then the gateway receiver will only allow SSL gateway sender to connect. Defaults to false.");
     m.put(GATEWAY_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for Gateway Receiver. Defaults to \""
-            + DEFAULT_GATEWAY_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_GATEWAY_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(GATEWAY_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for Gateway Receiver. Defaults to \""
             + DEFAULT_GATEWAY_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1377,7 +1377,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "If true then the http service like REST dev api and Pulse will only allow SSL enabled clients to connect. Defaults to false.");
     m.put(HTTP_SERVICE_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for Http Service. Defaults to \""
-            + DEFAULT_HTTP_SERVICE_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_HTTP_SERVICE_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(HTTP_SERVICE_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for Http Service. Defaults to \""
             + DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1429,7 +1429,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "A comma delimited list of components that require SSL communications");
 
     m.put(SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled. Defaults to \""
-        + DEFAULT_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+        + DEFAULT_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled. Defaults to \""
         + DEFAULT_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
     m.put(SSL_REQUIRE_AUTHENTICATION,

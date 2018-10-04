@@ -839,7 +839,7 @@ public interface DiskEntry extends RegionEntry {
         EntryEventImpl event) throws RegionClearedException {
       if (newValue == null) {
         throw new NullPointerException(
-            "Entry''s value should not be null.");
+            "Entry's value should not be null.");
       }
       boolean basicUpdateCalled = false;
       try {

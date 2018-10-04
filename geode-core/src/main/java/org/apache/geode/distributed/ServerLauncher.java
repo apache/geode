@@ -105,7 +105,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   static {
     helpMap.put("launcher",
-        "A GemFire launcher used to start, stop and determine a Server''s status.");
+        "A GemFire launcher used to start, stop and determine a Server's status.");
     helpMap.put(Command.START.getName(), String.format(
         "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the GemFire cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultServerPort())));
@@ -131,7 +131,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     helpMap.put("member", "Identifies the Server by member name or ID in the GemFire cluster.");
     helpMap.put("pid", "Indicates the OS process ID of the running Server.");
     helpMap.put("rebalance",
-        "An option to cause the GemFire cache''s partitioned regions to be rebalanced on start.");
+        "An option to cause the GemFire cache's partitioned regions to be rebalanced on start.");
     helpMap.put("redirect-output",
         "An option to cause the Server to redirect standard out and standard error to the GemFire log file.");
     helpMap.put(SERVER_BIND_ADDRESS,
@@ -2148,7 +2148,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public Builder setWorkingDirectory(final String workingDirectory) {
       if (!new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)).isDirectory()) {
         throw new IllegalArgumentException(
-            String.format("The working directory for the %s could not be found.",
+            String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
                 "Server"),
             new FileNotFoundException(workingDirectory));
       }
@@ -2404,15 +2404,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(
               String.format(
-                  "The member name of the %s must be provided as an argument to the launcher, or a path to gemfire.properties must be specified, which assumes the %s member name will be set using the name property.",
-                  "Server"));
+                  MEMBER_NAME_ERROR_MESSAGE,
+                  "Server", "Server"));
         }
 
         if (!CURRENT_DIRECTORY.equalsIgnoreCase(getWorkingDirectory())) {
           throw new IllegalStateException(
               String.format(
-                  "Specifying the --dir option is not valid when starting a %s with the %sLauncher.",
-                  "Server"));
+                  AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+                  "Server", "Server"));
         }
       }
     }

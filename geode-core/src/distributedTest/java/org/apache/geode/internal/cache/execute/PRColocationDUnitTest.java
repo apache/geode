@@ -1442,7 +1442,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
               fail("Expected different redundancy levels to throw.");
             } catch (IllegalStateException expected) {
               assertEquals(
-                  "Current PartitionedRegion''s redundancy should be same as the redundancy of colocated PartitionedRegion",
+                  "Current PartitionedRegion's redundancy should be same as the redundancy of colocated PartitionedRegion",
                   expected.getMessage());
             }
           }

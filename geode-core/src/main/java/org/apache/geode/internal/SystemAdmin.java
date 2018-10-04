@@ -1492,7 +1492,7 @@ public class SystemAdmin {
 
   protected void initHelpMap() {
     helpMap.put("gemfire", String.format(
-        "gemfire requires one of the following command strings:%sFor additional help on a command specify it along with the %s option.The %s option causes gemfire to print out extra information when it fails.The %s and %s are synonyms that cause gemfire to print out help information instead of performing a task.The %s option quiets gemfire down by suppressing extra messages.The %s option passes <vmOpt> to the java vm''s command line.",
+        "gemfire requires one of the following command strings:%sFor additional help on a command specify it along with the %s option.The %s option causes gemfire to print out extra information when it fails.The %s and %s are synonyms that cause gemfire to print out help information instead of performing a task.The %s option quiets gemfire down by suppressing extra messages.The %s option passes <vmOpt> to the java vm's command line.",
         join(validCommands), "-h", "-debug", "-help", "-q", "-J<vmOpt>"));
     helpMap.put("version", "Prints GemFire product version information.");
     helpMap.put("help",
@@ -1508,12 +1508,12 @@ public class SystemAdmin {
                 "-archive=", DateFormatter.FORMAT_STRING, "-endtime"));
     helpMap.put(START_LOCATOR,
         String.format(
-            "Starts a locator.The %s option specifies the port the locator will listen on. It defaults to %sThe %s option specifies the address the locator will listen on. It defaults to listening on all local addresses.The %s option can be used to specify the directory the locator will run in.The %s option can be used to specify the gemfire.properties file for configuring the locator''s distributed system.  The file''s path should be absolute, or relative to the locator''s directory (%s)The %s option can be used to specify whether peer locator service should be enabled. True (the default) will enable the service.The %s option can be used to specify whether server locator service should be enabled. True (the default) will enable the service.The %s option can be used to specify a host name or ip address that will be sent to clients so they can connect to this locator. The default is to use the address the locator is listening on.The %s option can be used to set system properties for the locator VMThe %s option can be used to set vendor-specific VM options and is usually used to increase the size of the locator VM when using multicast.",
+            "Starts a locator.The %s option specifies the port the locator will listen on. It defaults to %sThe %s option specifies the address the locator will listen on. It defaults to listening on all local addresses.The %s option can be used to specify the directory the locator will run in.The %s option can be used to specify the gemfire.properties file for configuring the locator's distributed system.  The file's path should be absolute, or relative to the locator's directory (%s)The %s option can be used to specify whether peer locator service should be enabled. True (the default) will enable the service.The %s option can be used to specify whether server locator service should be enabled. True (the default) will enable the service.The %s option can be used to specify a host name or ip address that will be sent to clients so they can connect to this locator. The default is to use the address the locator is listening on.The %s option can be used to set system properties for the locator VMThe %s option can be used to set vendor-specific VM options and is usually used to increase the size of the locator VM when using multicast.",
             "-port=",
             Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir=",
             "-properties=", "-peer=", "-server=", "-hostname-for-clients=", "-D", "-X"));
     helpMap.put("stop-locator", String.format(
-        "Stops a locator.The %s option specifies the port the locator is listening on. It defaults to %sThe %s option specifies the address the locator is listening on. It defaults to the local host''s address.The %s option can be used to specify the directory the locator is running in.",
+        "Stops a locator.The %s option specifies the port the locator is listening on. It defaults to %sThe %s option specifies the address the locator is listening on. It defaults to the local host's address.The %s option can be used to specify the directory the locator is running in.",
         "-port=", Integer.valueOf(DistributionLocator.DEFAULT_LOCATOR_PORT), "-address=", "-dir="));
     helpMap.put("status-locator", String.format(
         "Prints the status of a locator. The status string will one of the following:%sThe %s option can be used to specify the directory of the locator whose status is desired.",
@@ -1524,7 +1524,7 @@ public class SystemAdmin {
             "-dir="));
     helpMap.put("tail-locator-log",
         String.format(
-            "Prints the last 64K bytes of the locator''s log file.The %s option can be used to specify the directory of the locator whose information is desired.",
+            "Prints the last 64K bytes of the locator's log file.The %s option can be used to specify the directory of the locator whose information is desired.",
             "-dir="));
     helpMap.put("merge-logs",
         String.format(
@@ -1544,7 +1544,7 @@ public class SystemAdmin {
             + "set to true in order for this command to work.\n"
             + "This command will use the gemfire.properties file to determine what distributed system to connect to.");
     helpMap.put("modify-disk-store",
-        "Modifies the contents stored in a disk store. Note that this operation writes to the disk store files so use it with care. Requires that a region name by specified using -region=<regionName> Options:   -remove will remove the region from the disk store causing any data stored in the disk store for this region to no longer exist. Subregions of the removed region will not be removed.   -lru=<type> Sets region''s lru algorithm. Valid types are: none, lru-entry-count, lru-heap-percentage, or lru-memory-size   -lruAction=<action> Sets the region''s lru action. Valid actions are: none, overflow-to-disk, local-destroy   -lruLimit=<int> Sets the region''s lru limit. Valid values are >= 0   -concurrencyLevel=<int> Sets the region''s concurrency level. Valid values are >= 0   -initialCapacity=<int> Sets the region''s initial capacity. Valid values are >= 0.   -loadFactor=<float> Sets the region''s load factory. Valid values are >= 0.0   -statisticsEnabled=<boolean> Sets the region''s statistics enabled. Value values are true or false. The name of the disk store and the directories its files are stored in and the region to target are all required arguments.");
+        "Modifies the contents stored in a disk store. Note that this operation writes to the disk store files so use it with care. Requires that a region name by specified using -region=<regionName> Options:   -remove will remove the region from the disk store causing any data stored in the disk store for this region to no longer exist. Subregions of the removed region will not be removed.   -lru=<type> Sets region's lru algorithm. Valid types are: none, lru-entry-count, lru-heap-percentage, or lru-memory-size   -lruAction=<action> Sets the region's lru action. Valid actions are: none, overflow-to-disk, local-destroy   -lruLimit=<int> Sets the region's lru limit. Valid values are >= 0   -concurrencyLevel=<int> Sets the region's concurrency level. Valid values are >= 0   -initialCapacity=<int> Sets the region's initial capacity. Valid values are >= 0.   -loadFactor=<float> Sets the region's load factory. Valid values are >= 0.0   -statisticsEnabled=<boolean> Sets the region's statistics enabled. Value values are true or false. The name of the disk store and the directories its files are stored in and the region to target are all required arguments.");
     helpMap.put("revoke-missing-disk-store",
         "Connects to a running system and tells its members to stop waiting for the "
             + "specified disk store to be available. Only revoke a disk store if its files "
@@ -1608,7 +1608,7 @@ public class SystemAdmin {
         "Used to specify a host name or IP address to give to clients so they can connect to a locator.");
     helpMap.put("-properties=",
         String.format(
-            "Used to specify the %s file to be used in configuring the locator''s DistributedSystem.",
+            "Used to specify the %s file to be used in configuring the locator's DistributedSystem.",
             DistributionConfig.GEMFIRE_PREFIX + "properties"));
     helpMap.put("-archive=",
         String.format("The argument is the statistic archive file the %s command should read.",
@@ -1628,7 +1628,7 @@ public class SystemAdmin {
             "stats", DateFormatter.FORMAT_STRING));
     helpMap.put("-dir=",
         String.format(
-            "The argument is the system directory the command should operate on.If the argument is empty then a default system directory will be search for.However the search will not include the %s file.By default if a command needs a system directory, and one is not specified, then a search is done. If a %s file can be located then %s property from that file is used. Otherwise if the %s environment variable is set to a directory that contains a subdirectory named %s then that directory is used.The property file is search for in the following locations:1. The current working directory.2. The user''s home directory.3. The class path.All commands except %s, and %s use the system directory.",
+            "The argument is the system directory the command should operate on.If the argument is empty then a default system directory will be search for.However the search will not include the %s file.By default if a command needs a system directory, and one is not specified, then a search is done. If a %s file can be located then %s property from that file is used. Otherwise if the %s environment variable is set to a directory that contains a subdirectory named %s then that directory is used.The property file is search for in the following locations:1. The current working directory.2. The user's home directory.3. The class path.All commands except %s, and %s use the system directory.",
             DistributionConfig.GEMFIRE_PREFIX + "properties",
             DistributionConfig.GEMFIRE_PREFIX + "systemDirectory", "GEMFIRE", "defaultSystem",
             "version"));
@@ -1641,19 +1641,19 @@ public class SystemAdmin {
     helpMap.put("-maxOplogSize=",
         "Limits the size of any oplogs that are created to the specified size in megabytes.");
     helpMap.put("-lru=",
-        "-lru=<type> Sets region''s lru algorithm. Valid types are: none, lru-entry-count, lru-heap-percentage, or lru-memory-size");
+        "-lru=<type> Sets region's lru algorithm. Valid types are: none, lru-entry-count, lru-heap-percentage, or lru-memory-size");
     helpMap.put("-lruAction=",
-        "-lruAction=<action> Sets the region''s lru action. Valid actions are: none, overflow-to-disk, local-destroy");
+        "-lruAction=<action> Sets the region's lru action. Valid actions are: none, overflow-to-disk, local-destroy");
     helpMap.put("-lruLimit=",
-        "-lruLimit=<int> Sets the region''s lru limit. Valid values are >= 0");
+        "-lruLimit=<int> Sets the region's lru limit. Valid values are >= 0");
     helpMap.put("-concurrencyLevel=",
-        "-concurrencyLevel=<int> Sets the region''s concurrency level. Valid values are >= 0");
+        "-concurrencyLevel=<int> Sets the region's concurrency level. Valid values are >= 0");
     helpMap.put("-initialCapacity=",
-        "-initialCapacity=<int> Sets the region''s initial capacity. Valid values are >= 0");
+        "-initialCapacity=<int> Sets the region's initial capacity. Valid values are >= 0");
     helpMap.put("-loadFactor=",
-        "-loadFactor=<float> Sets the region''s load factory. Valid values are >= 0.0");
+        "-loadFactor=<float> Sets the region's load factory. Valid values are >= 0.0");
     helpMap.put("-statisticsEnabled=",
-        "-statisticsEnabled=<boolean> Sets the region''s statistics enabled. Value values are true or false");
+        "-statisticsEnabled=<boolean> Sets the region's statistics enabled. Value values are true or false");
     helpMap.put("-region=", "Used to specify what region an operation is to be done on.");
     helpMap.put("-monitor",
         "-monitor Causes the stats command to keep periodically checking its statistic archives for updates.");

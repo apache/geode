@@ -222,7 +222,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       return; // cache or DS is closing
     } catch (CacheException e) {
       logger.error(String.format(
-          "ParallelQueueRemovalMessage::process:Exception in processing the last disptached key for a ParallelGatewaySenderQueue''s shadowPR. The problem is with key,%s for shadowPR with name=%s",
+          "ParallelQueueRemovalMessage::process:Exception in processing the last disptached key for a ParallelGatewaySenderQueue's shadowPR. The problem is with key,%s for shadowPR with name=%s",
           new Object[] {key, prQ.getName()}),
           e);
     }

@@ -163,7 +163,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private void checkRunning() {
     if (this.isRunning()) {
       throw new IllegalStateException(
-          "A cache server''s configuration cannot be changed once it is running.");
+          "A cache server's configuration cannot be changed once it is running.");
     }
   }
 

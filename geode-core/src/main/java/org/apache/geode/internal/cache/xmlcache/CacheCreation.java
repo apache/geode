@@ -402,7 +402,7 @@ public class CacheCreation implements InternalCache {
   public void setMessageSyncInterval(int seconds) {
     if (seconds < 0) {
       throw new IllegalArgumentException(
-          "The ''message-sync-interval'' property for cache cannot be negative");
+          "The 'message-sync-interval' property for cache cannot be negative");
     }
     HARegionQueue.setMessageSyncInterval(seconds);
     this.hasMessageSyncInterval = true;

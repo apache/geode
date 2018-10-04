@@ -116,7 +116,7 @@ public class Functions {
     Class clazz = arg.getClass();
     if (!clazz.isArray())
       throw new TypeMismatchException(
-          String.format("The ''element'' function cannot be applied to an object of type ' %s '",
+          String.format("The 'element' function cannot be applied to an object of type ' %s '",
               clazz.getName()));
 
     // handle arrays
@@ -185,7 +185,7 @@ public class Functions {
 
     // did I miss something?
     throw new TypeMismatchException(
-        String.format("The ''element'' function cannot be applied to an object of type ' %s '",
+        String.format("The 'element' function cannot be applied to an object of type ' %s '",
             clazz.getName()));
   }
 

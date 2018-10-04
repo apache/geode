@@ -888,7 +888,7 @@ public class AgentLauncher {
         buffer.append(msg);
       } else {
         buffer.append(
-            String.format("%s pid: {1,number,#} status: ", this.baseName, pid));
+            String.format("%s pid: %d status: ", this.baseName, pid));
 
         switch (state) {
           case SHUTDOWN:

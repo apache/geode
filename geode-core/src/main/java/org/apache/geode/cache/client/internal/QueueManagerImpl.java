@@ -634,7 +634,7 @@ public class QueueManagerImpl implements QueueManager {
       List servers = findQueueServers(excludedServers,
           redundancyLevel == -1 ? -1 : additionalBackups, false,
           (redundancyLevel == -1 ? false : printRedundancyNotSatisfiedError),
-          "Could not find any server to host a redundant client queue");
+          "Could not find any server to host redundant client queue. Number of excluded servers is %s and exception is %s");
 
       if (servers == null || servers.isEmpty()) {
         if (redundancyLevel != -1) {
@@ -777,7 +777,7 @@ public class QueueManagerImpl implements QueueManager {
     QueueConnectionImpl primary = null;
     while (primary == null && pool.getPoolOrCacheCancelInProgress() == null) {
       List servers = findQueueServers(excludedServers, 1, false, printPrimaryNotFoundError,
-          "Could not find any server to host primary client queue.");
+          "Could not find any server to host primary client queue. Number of excluded servers is %s and exception is %s");
       printPrimaryNotFoundError = false; // printed above
       if (servers == null || servers.isEmpty()) {
         break;

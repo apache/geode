@@ -212,7 +212,7 @@ public class DefaultQuery implements Query {
     // Local Query.
     if (params == null) {
       throw new IllegalArgumentException(
-          "''parameters'' cannot be null");
+          "'parameters' cannot be null");
     }
 
     // If pool is associated with the Query; execute the query on pool. ServerSide query.
@@ -854,13 +854,13 @@ public class DefaultQuery implements Query {
     // Supported only with RegionFunctionContext
     if (context == null) {
       throw new IllegalArgumentException(
-          "''Function Context'' cannot be null");
+          "'Function Context' cannot be null");
     }
     this.isQueryWithFunctionContext = true;
 
     if (params == null) {
       throw new IllegalArgumentException(
-          "''parameters'' cannot be null");
+          "'parameters' cannot be null");
     }
 
     long startTime = 0L;

@@ -1169,7 +1169,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if ((this.getDataPolicy().withReplication() || this.getDataPolicy().withPartitioning())
         && (ea == ExpirationAction.LOCAL_DESTROY || ea == ExpirationAction.LOCAL_INVALIDATE)) {
       throw new IllegalArgumentException(
-          String.format("%s action is incompatible with this region''s data policy.",
+          String.format("%s action is incompatible with this region's data policy.",
               mode));
     }
   }
@@ -1272,7 +1272,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
-          String.format("%s action is incompatible with this region''s data policy.",
+          String.format("%s action is incompatible with this region's data policy.",
               "idleTimeout"));
     }
     if (!this.statisticsEnabled) {
@@ -1300,7 +1300,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
         && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
-          String.format("%s action is incompatible with this region''s data policy.",
+          String.format("%s action is incompatible with this region's data policy.",
               "timeToLive"));
     }
     if (!this.statisticsEnabled) {

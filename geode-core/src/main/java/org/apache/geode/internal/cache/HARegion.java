@@ -144,7 +144,7 @@ public class HARegion extends DistributedRegion {
     if ((timeToLive.getAction() == ExpirationAction.LOCAL_DESTROY
         && this.getDataPolicy().withReplication())) {
       throw new IllegalArgumentException(
-          "timeToLive action is incompatible with this region''s mirror type");
+          "timeToLive action is incompatible with this region's mirror type");
     }
     if (!this.statisticsEnabled) {
       throw new IllegalStateException(

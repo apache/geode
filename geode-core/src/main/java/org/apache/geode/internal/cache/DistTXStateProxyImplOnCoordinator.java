@@ -327,7 +327,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
           if (r.getScope().isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
               logger.warn(
-                  "Distributed region {} is being used in a client-initiated transaction.  The transaction will only affect servers and this client.  To keep from seeing this message use ''local'' scope in client regions used in transactions.",
+                  "Distributed region {} is being used in a client-initiated transaction.  The transaction will only affect servers and this client.  To keep from seeing this message use 'local' scope in client regions used in transactions.",
                   r.getFullPath());
             }
           }

@@ -3466,7 +3466,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.stopper.checkCancelInProgress(null);
     if (seconds < 0) {
       throw new IllegalArgumentException(
-          "The ''messageSyncInterval'' property for cache cannot be negative");
+          "The 'messageSyncInterval' property for cache cannot be negative");
     }
     HARegionQueue.setMessageSyncInterval(seconds);
   }

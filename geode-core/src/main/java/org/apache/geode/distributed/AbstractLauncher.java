@@ -64,6 +64,13 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
  */
 public abstract class AbstractLauncher<T extends Comparable<T>> implements Runnable {
 
+  public static final String MEMBER_NAME_ERROR_MESSAGE =
+      "The member name of the %s must be provided as an argument to the launcher, or a path to gemfire.properties must be specified, which assumes the %s member name will be set using the name property.";
+  public static final String WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE =
+      "Specifying the --dir option is not valid when starting a %s with the %sLauncher.";
+  public static final String WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE =
+      "The working directory for the %s could not be found.";
+
   protected static final Boolean DEFAULT_FORCE = Boolean.FALSE;
 
   /**

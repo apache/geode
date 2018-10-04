@@ -669,11 +669,11 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
       if (this.getTotalNumBuckets() != colocatedRegion.getPartitionAttributes()
           .getTotalNumBuckets()) {
         throw new IllegalStateException(
-            "Current PartitionedRegion''s TotalNumBuckets should be same as TotalNumBuckets of colocated PartitionedRegion");
+            "Current PartitionedRegion's TotalNumBuckets should be same as TotalNumBuckets of colocated PartitionedRegion");
       }
       if (this.getRedundancy() != colocatedRegion.getPartitionAttributes().getRedundantCopies()) {
         throw new IllegalStateException(
-            "Current PartitionedRegion''s redundancy should be same as the redundancy of colocated PartitionedRegion");
+            "Current PartitionedRegion's redundancy should be same as the redundancy of colocated PartitionedRegion");
       }
     }
   }

@@ -96,7 +96,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   static {
     helpMap.put("launcher",
-        "A GemFire launcher used to start, stop and determine a Locator''s status.");
+        "A GemFire launcher used to start, stop and determine a Locator's status.");
     helpMap.put(Command.START.getName(), String.format(
         "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the GemFire cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultLocatorPort())));
@@ -1730,7 +1730,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     public Builder setWorkingDirectory(final String workingDirectory) {
       if (!new File(defaultIfBlank(workingDirectory, DEFAULT_WORKING_DIRECTORY)).isDirectory()) {
         throw new IllegalArgumentException(
-            String.format("The working directory for the %s could not be found.",
+            String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
                 "Locator"),
             new FileNotFoundException(workingDirectory));
       }
@@ -1785,15 +1785,15 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(
               String.format(
-                  "The member name of the %s must be provided as an argument to the launcher, or a path to gemfire.properties must be specified, which assumes the %s member name will be set using the name property.",
-                  "Locator"));
+                  AbstractLauncher.MEMBER_NAME_ERROR_MESSAGE,
+                  "Locator", "Locator"));
         }
 
         if (!CURRENT_DIRECTORY.equalsIgnoreCase(getWorkingDirectory())) {
           throw new IllegalStateException(
               String.format(
-                  "Specifying the --dir option is not valid when starting a %s with the %sLauncher.",
-                  "Locator"));
+                  AbstractLauncher.WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE,
+                  "Locator", "Locator"));
         }
       }
     }

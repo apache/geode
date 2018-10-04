@@ -349,7 +349,7 @@ public class RangeIndex extends AbstractIndex {
         RegionEntryToValuesMap rvMap = (RegionEntryToValuesMap) this.valueToEntriesMap.get(key);
         if (rvMap == null) {
           throw new IMQException(
-              String.format("Indexed object''s class %s compareTo function is errorneous.",
+              String.format("Indexed object's class %s compareTo function is errorneous.",
                   oldkeys.getClass().getName()));
         }
         this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
@@ -376,7 +376,7 @@ public class RangeIndex extends AbstractIndex {
       // implementation.
       if (rvMap == null) {
         throw new IMQException(
-            String.format("Indexed object''s class %s compareTo function is errorneous.",
+            String.format("Indexed object's class %s compareTo function is errorneous.",
                 oldkeys.getClass().getName()));
       }
       this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));
@@ -538,7 +538,7 @@ public class RangeIndex extends AbstractIndex {
       // null in case when "values" has wrong compareTo() implementation.
       if (rvMap == null) {
         throw new IMQException(
-            String.format("Indexed object''s class %s compareTo function is errorneous.",
+            String.format("Indexed object's class %s compareTo function is errorneous.",
                 values.getClass().getName()));
       }
       this.internalIndexStats.incNumValues(-rvMap.getNumValues(entry));

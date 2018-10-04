@@ -261,7 +261,7 @@ public class DLockToken {
     if (this.expiredLeases.containsKey(Thread.currentThread())) {
       this.expiredLeases.remove(Thread.currentThread());
       throw new LeaseExpiredException(
-          "This thread''s lease expired for this lock");
+          "This thread's lease expired for this lock");
     }
   }
 
