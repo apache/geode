@@ -14,10 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Duration.ONE_MINUTE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.awaitility.Awaitility;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
@@ -33,6 +37,7 @@ import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -45,6 +50,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 
 public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
+  private static final AtomicBoolean listenerHasFinished = new AtomicBoolean();
 
   @Test
   public void testOneMessageWithReplicates() {
@@ -216,22 +222,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    // Install a listener to kill this member
-    // when we get the netsearch request
-    vm0.invoke(new SerializableRunnable("Install listener") {
-
-      public void run() {
-        DistributionMessageObserver ob = new DistributionMessageObserver() {
-          public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof NetSearchRequestMessage) {
-              disconnectFromDS();
-            }
-          }
-        };
-        DistributionMessageObserver.setInstance(ob);
-      }
-    });
+    installListenerToDisconnectOnNetSearchRequest(vm0);
 
     createReplicate(vm0);
     createNormal(vm1);
@@ -248,13 +239,17 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
     assertEquals("b", get(vm3, "a"));
 
-    // Make sure we were disconnected in vm0
-    vm0.invoke(new SerializableRunnable("check disconnected") {
+    boolean disconnected = false;
+    while (!disconnected) {
+      // Make sure we were disconnected in vm0
+      disconnected = (Boolean) vm0.invoke(new SerializableCallable("check disconnected") {
+        public Object call() {
+          return InternalDistributedSystem.getConnectedInstance() == null;
+        }
+      });
+    }
 
-      public void run() {
-        assertNull(GemFireCacheImpl.getInstance());
-      }
-    });
+    vm0.invoke(this::waitForListenerToFinish);
   }
 
   @Test
@@ -265,22 +260,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    // Install a listener to kill this member
-    // when we get the netsearch request
-    vm0.invoke(new SerializableRunnable("Install listener") {
-
-      public void run() {
-        DistributionMessageObserver ob = new DistributionMessageObserver() {
-          public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof NetSearchRequestMessage) {
-              disconnectFromDS();
-            }
-          }
-        };
-        DistributionMessageObserver.setInstance(ob);
-      }
-    });
+    installListenerToDisconnectOnNetSearchRequest(vm0);
 
     createReplicate(vm0);
     createReplicate(vm1);
@@ -295,12 +275,13 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       // Make sure we were disconnected in vm0
       disconnected = (Boolean) vm0.invoke(new SerializableCallable("check disconnected") {
-
         public Object call() {
-          return GemFireCacheImpl.getInstance() == null;
+          return InternalDistributedSystem.getConnectedInstance() == null;
         }
       });
     }
+
+    vm0.invoke(this::waitForListenerToFinish);
   }
 
   private Object put(VM vm, final String key, final String value) {
@@ -419,4 +400,38 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
   }
 
+  private void installListenerToDisconnectOnNetSearchRequest(VM vm) {
+    String installerMethodName = getTestMethodName();
+    vm.invoke(new SerializableRunnable("Install listener") {
+      public void run() {
+        listenerHasFinished.set(false);
+        DistributionMessageObserver ob = new DistributionMessageObserver() {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
+            if (message instanceof NetSearchRequestMessage) {
+              DistributionMessageObserver.setInstance(null);
+              assertThat(getTestMethodName())
+                  .describedAs("test method when listener invoked")
+                  .isEqualTo(installerMethodName);
+              disconnectFromDS();
+              listenerHasFinished.set(true);
+            }
+          }
+        };
+        DistributionMessageObserver.setInstance(ob);
+      }
+    });
+  }
+
+  private void waitForListenerToFinish() {
+    try {
+      assertThat(DistributionMessageObserver.getInstance())
+          .withFailMessage("listener was not invoked")
+          .isNull();
+    } finally {
+      DistributionMessageObserver.setInstance(null);
+    }
+    Awaitility.await("listener to finish").atMost(ONE_MINUTE)
+        .untilAsserted(() -> assertThat(listenerHasFinished).isTrue());
+  }
 }

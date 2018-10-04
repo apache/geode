@@ -34,14 +34,16 @@ public class Disconnect {
   public static void disconnectFromDS() {
     GemFireCacheImpl.testCacheXml = null;
 
-    for (;;) {
-      DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
-      if (ds == null) {
-        break;
-      }
-      try {
-        ds.disconnect();
-      } catch (Exception ignore) {
+    DistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+    if (ds != null) {
+      for (;;) {
+        try {
+          ds.disconnect();
+          if (InternalDistributedSystem.getConnectedInstance() == null) {
+            break;
+          }
+        } catch (Exception ignore) {
+        }
       }
     }
 
