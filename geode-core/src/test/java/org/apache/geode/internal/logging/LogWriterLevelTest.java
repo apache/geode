@@ -12,32 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging.log4j;
+package org.apache.geode.internal.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.Serializable;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.SerializationUtils;
+import org.junit.Test;
 
-public class Configuration {
+public class LogWriterLevelTest {
 
-  private URL resource;
-  private String configFileName;
-
-  public Configuration(final URL resource, final String configFileName) {
-    this.resource = resource;
-    this.configFileName = configFileName;
+  @Test
+  public void isSerializable() {
+    assertThat(LogWriterLevel.ALL).isInstanceOf(Serializable.class);
   }
 
-  public File createConfigFileIn(final File targetFolder) throws IOException, URISyntaxException {
-    File targetFile = new File(targetFolder, this.configFileName);
-    IOUtils.copy(this.resource.openStream(), new FileOutputStream(targetFile));
-    assertThat(targetFile).hasSameContentAs(new File(this.resource.toURI()));
-    return targetFile;
+  @Test
+  public void serializes() {
+    LogWriterLevel logLevel = (LogWriterLevel) SerializationUtils.clone(LogWriterLevel.ALL);
+
+    assertThat(logLevel).isEqualTo(LogWriterLevel.ALL).isSameAs(LogWriterLevel.ALL);
   }
+
 }
