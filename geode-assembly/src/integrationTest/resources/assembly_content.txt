@@ -1156,7 +1156,7 @@ javadoc/script.js
 javadoc/serialized-form.html
 javadoc/stylesheet.css
 lib/HikariCP-3.2.0.jar
-lib/activation-1.1.jar
+lib/activation-1.1.1.jar
 lib/antlr-2.7.7.jar
 lib/classgraph-4.0.6.jar
 lib/commons-beanutils-1.9.3.jar
@@ -1193,6 +1193,9 @@ lib/javax.mail-api-1.6.1.jar
 lib/javax.resource-api-1.7.jar
 lib/javax.servlet-api-3.1.0.jar
 lib/javax.transaction-api-1.2.jar
+lib/jaxb-api-2.2.11.jar
+lib/jaxb-core-2.2.11.jar
+lib/jaxb-impl-2.2.11.jar
 lib/jetty-http-9.4.8.v20171121.jar
 lib/jetty-io-9.4.8.v20171121.jar
 lib/jetty-security-9.4.8.v20171121.jar

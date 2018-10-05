@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,9 +29,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
@@ -102,7 +106,6 @@ public class MergeLogFiles {
    * <code>PrinWriter</code>.
    *
    * @param logFiles The log files to be merged
-   * @param logFileNames The names of the log files to be printed in the merged log
    * @param mergedFile Where the merged logs are printed to
    *
    * @return Whether or not problems occurred while merging the log files.
@@ -110,9 +113,8 @@ public class MergeLogFiles {
    * @throws IllegalArgumentException If the length of <code>logFiles</code> is not the same as the
    *         length of <code>logFileNames</code>
    */
-  public static boolean mergeLogFiles(InputStream[] logFiles, String[] logFileNames,
-      PrintWriter mergedFile) {
-    return mergeLogFiles(logFiles, logFileNames, mergedFile, false, false, false, new LinkedList());
+  public static boolean mergeLogFiles(Map<String, InputStream> logFiles, PrintWriter mergedFile) {
+    return mergeLogFiles(logFiles, mergedFile, false, false, false, new LinkedList());
   }
 
   /**
@@ -120,7 +122,6 @@ public class MergeLogFiles {
    * <code>PrinWriter</code>.
    *
    * @param logFiles The log files to be merged
-   * @param logFileNames The names of the log files to be printed in the merged log
    * @param mergedFile Where the merged logs are printed to
    * @param tabOut Whether to align non-timestamped lines with timestamped lines
    * @param suppressBlanks Whether to omit blank lines
@@ -130,10 +131,10 @@ public class MergeLogFiles {
    * @throws IllegalArgumentException If the length of <code>logFiles</code> is not the same as the
    *         length of <code>logFileNames</code>
    */
-  public static boolean mergeLogFiles(InputStream[] logFiles, String[] logFileNames,
+  public static boolean mergeLogFiles(Map<String, InputStream> logFiles,
       PrintWriter mergedFile, boolean tabOut, boolean suppressBlanks, boolean multithreaded,
       List<String> patterns) {
-    return Sorter.mergeLogFiles(logFiles, logFileNames, mergedFile, tabOut, suppressBlanks,
+    return Sorter.mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks,
         multithreaded, patterns);
   }
 
@@ -146,7 +147,7 @@ public class MergeLogFiles {
   private static void usage(String s) {
     // note that we don't document the -pids switch because it is tailored
     // to how hydra works and would not be useful for customers
-    err.println("\n** " + s + "\n");
+    err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
     err.println(LocalizedStrings.MergeLogFiles_USAGE.toLocalizedString()
         + ": java MergeLogFiles [(directory | logFile)]+");
     err.println("-dirCount n      "
@@ -307,17 +308,16 @@ public class MergeLogFiles {
       nickNames = findPIDs(files, mergedFile);
     }
 
-    InputStream[] logFiles = new InputStream[files.size()];
-    String[] logFileNames = new String[files.size()];
+    Map<String, InputStream> logFiles = new HashMap<>();
     for (int i = 0; i < files.size(); i++) {
       File file = (File) files.get(i);
-      logFiles[i] = new FileInputStream(file);
 
+      String logFileName;
       if (findPIDs && (nickNames.get(i) != null)) {
         if (file.getCanonicalPath().toLowerCase().endsWith("gz")) {
-          logFileNames[i] = (String) nickNames.get(i) + ".gz";
+          logFileName = nickNames.get(i) + ".gz";
         } else {
-          logFileNames[i] = (String) nickNames.get(i);
+          logFileName = (String) nickNames.get(i);
         }
       } else {
         StringBuffer sb = new StringBuffer();
@@ -334,11 +334,12 @@ public class MergeLogFiles {
         }
         sb.append(file.getName());
 
-        logFileNames[i] = sb.toString();
+        logFileName = sb.toString();
       }
+      logFiles.put(logFileName, new FileInputStream(file));
     }
 
-    mergeLogFiles(logFiles, logFileNames, mergedFile, tabOut, suppressBlanks, multithreaded,
+    mergeLogFiles(logFiles, mergedFile, tabOut, suppressBlanks, multithreaded,
         patterns);
 
     ExitCode.NORMAL.doSystemExit();
@@ -650,7 +651,8 @@ public class MergeLogFiles {
 
     /**
      * Creates a new <code>Reader</code> that reads from the given log file with the given name.
-     * Invoking this constructor will start this reader thread.
+     * Invoking this constructor will start this reader thread. The InputStream is closed at the
+     * end of processing.
      *
      * @param patterns TODO
      *
@@ -729,6 +731,12 @@ public class MergeLogFiles {
 
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
+      } finally {
+        try {
+          logFile.close();
+        } catch (IOException e) {
+          e.printStackTrace(System.err);
+        }
       }
     }
 
@@ -824,7 +832,6 @@ public class MergeLogFiles {
      * <code>PrintWriter</code>.
      *
      * @param logFiles The log files to be merged
-     * @param logFileNames The names of the log files to be printed in the merged log
      * @param mergedFile Where the merged logs are printed to
      * @param tabOut Whether to align non-timestamped lines with others
      * @param suppressBlanks Whether to suppress output of blank lines
@@ -834,16 +841,9 @@ public class MergeLogFiles {
      * @throws IllegalArgumentException If the length of <code>logFiles</code> is not the same as
      *         the length of <code>logFileNames</code>
      */
-    public static boolean mergeLogFiles(InputStream[] logFiles, String[] logFileNames,
+    public static boolean mergeLogFiles(Map<String, InputStream> logFiles,
         PrintWriter mergedFile, boolean tabOut, boolean suppressBlanks, boolean multithreaded,
         List<String> patterns) {
-      if (logFiles.length != logFileNames.length) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.MergeLogFiles_NUMBER_OF_LOG_FILES_0_IS_NOT_THE_SAME_AS_THE_NUMBER_OF_LOG_FILE_NAMES_1
-                .toLocalizedString(new Object[] {Integer.valueOf(logFiles.length),
-                    Integer.valueOf(logFileNames.length)}));
-      }
-
       List<Pattern> compiledPatterns = new LinkedList<Pattern>();
       for (String pattern : patterns) {
         compiledPatterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
@@ -852,13 +852,13 @@ public class MergeLogFiles {
       // First start the Reader threads
       ReaderGroup group =
           new ReaderGroup(LocalizedStrings.MergeLogFiles_READER_THREADS.toLocalizedString());
-      Collection readers = new ArrayList(logFiles.length);
-      for (int i = 0; i < logFiles.length; i++) {
+      Collection readers = new ArrayList(logFiles.size());
+      for (Map.Entry<String, InputStream> e : logFiles.entrySet()) {
         if (multithreaded) {
-          readers.add(new ThreadedReader(logFiles[i], logFileNames[i], group, tabOut,
+          readers.add(new ThreadedReader(e.getValue(), e.getKey(), group, tabOut,
               suppressBlanks, compiledPatterns));
         } else {
-          readers.add(new NonThreadedReader(logFiles[i], logFileNames[i], group, tabOut,
+          readers.add(new NonThreadedReader(e.getValue(), e.getKey(), group, tabOut,
               suppressBlanks, compiledPatterns));
         }
       }
@@ -870,7 +870,6 @@ public class MergeLogFiles {
       Set sorted = sortReaders(readers);
 
       while (!readers.isEmpty()) {
-
         Reader oldest = null;
         Iterator sortedIt = sorted.iterator();
         if (!sortedIt.hasNext()) {
@@ -885,7 +884,6 @@ public class MergeLogFiles {
           nextInLine = (Reader) sortedIt.next();
           nextReaderTimestamp = nextInLine.peek().getTimestamp();
         }
-
 
         // if we've switched to a different reader, emit a blank line
         // for readability

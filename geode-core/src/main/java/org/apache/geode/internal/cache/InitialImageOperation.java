@@ -87,7 +87,7 @@ import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
@@ -2052,15 +2052,9 @@ public class InitialImageOperation {
         }
         // can't disconnect the distributed system in a thread owned by the ds,
         // so start a new thread to do the work
-        ThreadGroup group =
-            LoggingThreadGroup.createThreadGroup("InitialImageOperation abortTest Threads", logger);
-        Thread disconnectThread = new Thread(group, "InitialImageOperation abortTest Thread") {
-          @Override
-          public void run() {
-            dm.getSystem().disconnect();
-          }
-        };
-        disconnectThread.setDaemon(true);
+        Thread disconnectThread =
+            new LoggingThread("InitialImageOperation abortTest Thread",
+                () -> dm.getSystem().disconnect());
         disconnectThread.start();
       } // !isDisconnecting
       // ...end of abortTest code

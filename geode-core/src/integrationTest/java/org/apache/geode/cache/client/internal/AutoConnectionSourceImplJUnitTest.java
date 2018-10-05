@@ -328,7 +328,7 @@ public class AutoConnectionSourceImplJUnitTest {
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
     TcpServer server2 =
         new TcpServerFactory().makeTcpServer(secondPort, InetAddress.getLocalHost(), null, null,
-            handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "tcp server", null);
+            handler, new FakeHelper(), "tcp server", null);
     server2.start();
 
     try {
@@ -412,7 +412,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
   private void startFakeLocator() throws UnknownHostException, IOException, InterruptedException {
     server = new TcpServerFactory().makeTcpServer(port, InetAddress.getLocalHost(), null, null,
-        handler, new FakeHelper(), Thread.currentThread().getThreadGroup(), "Tcp Server", null);
+        handler, new FakeHelper(), "Tcp Server", null);
     server.start();
     Thread.sleep(500);
   }

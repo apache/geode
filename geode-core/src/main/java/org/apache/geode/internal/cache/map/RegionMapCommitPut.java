@@ -136,12 +136,6 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
   }
 
   @Override
-  protected void runWhileLockedForCacheModification(Runnable r) {
-    // commit has already done the locking
-    r.run();
-  }
-
-  @Override
   protected void setOldValueForDelta() {
     // nothing needed
   }

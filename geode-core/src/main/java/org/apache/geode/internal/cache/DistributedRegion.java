@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
@@ -120,6 +121,7 @@ import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -181,6 +183,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * Lock to prevent multiple threads on this member from performing a clear at the same time.
    */
   private final Object clearLock = new Object();
+  private final ReentrantReadWriteLock failedInitialImageLock = new ReentrantReadWriteLock(true);
 
   private static final AtomicBoolean loggedNetworkPartitionWarning = new AtomicBoolean(false);
 
@@ -875,35 +878,30 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     try {
       if (!isInitializing) {
         // moved code to a new thread.
-        Thread thread = new Thread(
-            LocalizedStrings.DistributedRegion_RECONNECT_DISTRIBUTED_SYSTEM.toLocalizedString()) {
-          @Override
-          public void run() {
-            try {
-              logger.debug(
-                  "Reliability loss with policy of reconnect and membership thread doing reconnect");
+        Thread thread = new LoggingThread("Reconnect Distributed System", () -> {
+          try {
+            logger.debug(
+                "Reliability loss with policy of reconnect and membership thread doing reconnect");
 
-              initializationLatchAfterMemberTimeout.await();
-              getSystem().tryReconnect(false, "Role Loss", getCache());
+            initializationLatchAfterMemberTimeout.await();
+            getSystem().tryReconnect(false, "Role Loss", getCache());
 
-              synchronized (missingRequiredRoles) {
-                // any number of threads may be waiting on missingRequiredRoles
-                missingRequiredRoles.notifyAll();
-                // need to fire an event if id is not null
-                if (hasListener() && id != null) {
-                  RoleEventImpl relEvent = new RoleEventImpl(DistributedRegion.this,
-                      Operation.CACHE_RECONNECT, null, true, id, newlyMissingRoles);
-                  dispatchListenerEvent(EnumListenerEvent.AFTER_ROLE_LOSS, relEvent);
-                }
+            synchronized (missingRequiredRoles) {
+              // any number of threads may be waiting on missingRequiredRoles
+              missingRequiredRoles.notifyAll();
+              // need to fire an event if id is not null
+              if (hasListener() && id != null) {
+                RoleEventImpl relEvent = new RoleEventImpl(DistributedRegion.this,
+                    Operation.CACHE_RECONNECT, null, true, id, newlyMissingRoles);
+                dispatchListenerEvent(EnumListenerEvent.AFTER_ROLE_LOSS, relEvent);
               }
-            } catch (Exception e) {
-              logger.fatal(
-                  LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
-                  e);
             }
+          } catch (Exception e) {
+            logger.fatal(
+                LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
+                e);
           }
-        };
-        thread.setDaemon(true);
+        });
         thread.start();
 
       } else {
@@ -1331,25 +1329,60 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       return;
     }
 
-    if (!this.entries.isEmpty()) {
-      closeEntries();
-      if (getDiskRegion() != null) {
-        getDiskRegion().clear(this, null);
-      }
-      // clear the left-members and version-tags sets in imageState
-      getImageState().getLeftMembers();
-      getImageState().getVersionTags();
-      // Clear OQL indexes
-      if (this.indexManager != null) {
-        try {
-          this.indexManager.rerunIndexCreationQuery();
-        } catch (Exception ex) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Exception while clearing indexes after GII failure.", ex);
+    if (!getRegionMap().isEmpty()) {
+      lockFailedInitialImageWriteLock();
+      try {
+        closeEntries();
+        if (getDiskRegion() != null) {
+          getDiskRegion().clear(this, null);
+        }
+        // clear the left-members and version-tags sets in imageState
+        getImageState().getLeftMembers();
+        getImageState().getVersionTags();
+        // Clear OQL indexes
+        if (this.indexManager != null) {
+          try {
+            this.indexManager.rerunIndexCreationQuery();
+          } catch (Exception ex) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Exception while clearing indexes after GII failure.", ex);
+            }
           }
         }
+      } finally {
+        unlockFailedInitialImageWriteLock();
       }
     }
+  }
+
+  void lockFailedInitialImageWriteLock() {
+    failedInitialImageLock.writeLock().lock();
+  }
+
+  void unlockFailedInitialImageWriteLock() {
+    failedInitialImageLock.writeLock().unlock();
+  }
+
+  void lockFailedInitialImageReadLock() {
+    failedInitialImageLock.readLock().lock();
+  }
+
+  void unlockFailedInitialImageReadLock() {
+    failedInitialImageLock.readLock().unlock();
+  }
+
+  @Override
+  public boolean lockWhenRegionIsInitializing() {
+    if (!isInitialized()) {
+      lockFailedInitialImageReadLock();
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public void unlockWhenRegionIsInitializing() {
+    unlockFailedInitialImageReadLock();
   }
 
   private void initMembershipRoles() {
@@ -1843,8 +1876,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   void basicUpdateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
     InternalRegion internalRegion = event.getRegion();
     AbstractRegionMap regionMap = (AbstractRegionMap) internalRegion.getRegionMap();
+    regionMap.lockForCacheModification(internalRegion, event);
+    final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
-      regionMap.lockForCacheModification(internalRegion, event);
       try {
         if (!hasSeenEvent(event)) {
           super.basicUpdateEntryVersion(event);
@@ -1855,6 +1889,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         }
       }
     } finally {
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
       regionMap.releaseCacheModificationLock(internalRegion, event);
     }
   }
@@ -2477,6 +2514,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             this.getFullPath()), ex);
       }
     }
+    waitForCurrentOperations();
+  }
+
+  protected void waitForCurrentOperations() {
     // Fix for #48066 - make sure that region operations are completely
     // distributed to peers before destroying the region.
     Boolean flushOnClose =

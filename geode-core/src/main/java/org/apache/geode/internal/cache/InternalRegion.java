@@ -423,4 +423,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void addVersionTagToImageState(Object key, VersionTag tag);
 
+  InternalCache getInternalCache();
+
+  default boolean lockWhenRegionIsInitializing() {
+    return false;
+  };
+
+  default void unlockWhenRegionIsInitializing() {};
 }

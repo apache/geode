@@ -38,6 +38,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalCache;
@@ -694,6 +695,29 @@ public class RegionMapCommitPutTest {
     boolean result = instance.entryExists(regionEntry);
 
     assertThat(result).isTrue();
+  }
+
+  @Test
+  public void runWileLockedForCacheModificationDoesNotLockGIIClearLockWhenRegionIsInitialized()
+      throws Exception {
+    when(internalRegion.lockWhenRegionIsInitializing()).thenReturn(false);
+    createInstance(Operation.UPDATE, false, txRmtEvent, null);
+
+    instance.runWhileLockedForCacheModification(() -> {});
+
+    verify(internalRegion).lockWhenRegionIsInitializing();
+    verify(internalRegion, never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void runWileLockedForCacheModificationLockGIIClearLockWhenRegionIsInitializing() {
+    when(internalRegion.lockWhenRegionIsInitializing()).thenReturn(true);
+    createInstance(Operation.UPDATE, false, txRmtEvent, null);
+
+    instance.runWhileLockedForCacheModification(() -> {});
+
+    verify(internalRegion).lockWhenRegionIsInitializing();
+    verify(internalRegion).unlockWhenRegionIsInitializing();
   }
 
 }

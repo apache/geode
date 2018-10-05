@@ -54,6 +54,10 @@ dependencies {
   compile 'commons-io:commons-io:' + project.'commons-io.version'
   compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
+  compile 'javax.activation:activation:' + project.'javax-activation.version'
+  compile 'javax.xml.bind:jaxb-api:' + project.'jaxb.version'
+  compile 'com.sun.xml.bind:jaxb-core:' + project.'jaxb.version'
+  compile 'com.sun.xml.bind:jaxb-impl:' + project.'jaxb.version'
 
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
   compile('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
@@ -86,6 +90,7 @@ dependencies {
 
   compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
   compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+
   runtimeOnly ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
@@ -167,6 +172,8 @@ dependencies {
   integrationTestCompile project(':geode-concurrency-test')
   integrationTestCompile 'redis.clients:jedis:' + project.'jedis.version'
   integrationTestCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
+  integrationTestCompile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':tests'
+  integrationTestCompile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':test-sources'
   integrationTestCompile 'org.springframework:spring-test:' + project.'springframework.version'
   integrationTestCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
   integrationTestCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
@@ -216,33 +223,35 @@ dependencies {
 }
 
 // Creates the version properties file and writes it to the classes dir
-task createVersionPropertiesFile {
+task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
 
-  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
-  // Allow this step to be skipped.
-  onlyIf {
-    // Project properties are parsed as strings.
-    // Use boolean comparison, not the value itself, to determine truth.
-    !propertiesFile.exists() || sourceRevision != "unknown"
+  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties")
+  def scmInfoFile = rootProject.tasks.writeBuildInfo.outputs.files
+
+  inputs.files {
+    scmInfoFile
   }
-  // onlyIf takes precedence, but we should generate the file whenever the revision is specified.
-  outputs.upToDateWhen { false }
   outputs.files {
     propertiesFile
   }
 
+
   doLast {
+    def scmInfo = new Properties()
+    new FileInputStream(scmInfoFile.singleFile).withStream { fis ->
+      scmInfo.load(fis)
+    }
+
     def props = [
         "Product-Name"      : productName,
         "Product-Version"   : version,
         "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
         "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
         "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
-        "Build-Java-Version": System.properties['java.version'],
-        'Source-Repository' : sourceRepository,
-        'Source-Revision'   : sourceRevision,
-        'Source-Date'       : new Date().format('yyyy-MM-dd HH:mm:ss Z')
+        "Build-Java-Version": System.properties['java.version']
     ] as Properties
+    props.putAll(scmInfo)
+
     propertiesFile.getParentFile().mkdirs()
     new FileOutputStream(propertiesFile).withStream { fos ->
       props.store(fos, '')
@@ -301,3 +310,5 @@ distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
 }
+
+rootProject.generate.dependsOn(generateGrammarSource)

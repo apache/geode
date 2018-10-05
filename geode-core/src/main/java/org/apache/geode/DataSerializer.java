@@ -1481,8 +1481,7 @@ public abstract class DataSerializer {
    * @since GemFire 5.7
    */
   public static void writeCharArray(char[] array, DataOutput out) throws IOException {
-
-    InternalDataSerializer.writeCharArray(array, array != null ? array.length : -1, out);
+    InternalDataSerializer.writeCharArray(array, out);
   }
 
   /**

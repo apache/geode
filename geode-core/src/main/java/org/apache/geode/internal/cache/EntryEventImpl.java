@@ -1713,7 +1713,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       success = true;
     } finally {
       if (!success && reentry instanceof OffHeapRegionEntry && v instanceof StoredObject) {
-        OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry) reentry, (StoredObject) v);
+        if (!calledSetValue) {
+          OffHeapHelper.release(v);
+        } else {
+          OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry) reentry, (StoredObject) v);
+        }
       }
     }
     if (logger.isTraceEnabled()) {

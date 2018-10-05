@@ -183,7 +183,7 @@ public class JMXMBeanReconnectDUnitTest {
     assertThat(initialLocator1GemfireBeans)
         .containsExactlyElementsOf(initialLocator2GemfireBeans);
 
-    server1.forceDisconnect();
+    server1.forceDisconnect(2000);
 
     List<ObjectName> intermediateLocator1GemfireBeans =
         getFederatedGemfireBeansFrom(locator1);

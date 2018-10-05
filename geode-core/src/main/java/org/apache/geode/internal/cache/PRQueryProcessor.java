@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -59,6 +58,7 @@ import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator.PRQueryRe
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 
 /**
  * This class takes the responsibility of executing the query on a data store for the buckets
@@ -461,7 +461,7 @@ public class PRQueryProcessor {
     static synchronized void initializeExecutorService() {
       if (execService == null || execService.isShutdown() || execService.isTerminated()) {
         int numThreads = (TEST_NUM_THREADS > 1 ? TEST_NUM_THREADS : NUM_THREADS);
-        execService = Executors.newFixedThreadPool(numThreads);
+        execService = LoggingExecutors.newFixedThreadPool("PRQueryProcessor", false, numThreads);
       }
     }
   }

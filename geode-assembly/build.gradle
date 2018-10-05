@@ -21,21 +21,17 @@ apply plugin: 'distribution'
 
 // disable artifact generation for this project
 jar.enabled = false
-extraArchive {
-  sources = false
-  javadoc = false
-  tests = false
-}
 
 publishing {
   publications {
     maven(MavenPublication) {
-      artifactId = 'apache-geode'
+      afterEvaluate {
+        artifactId = 'apache-geode'
 
-      artifacts = []
+        artifacts = []
 
-      artifact distTar
-      artifact distZip
+        artifact distTar
+      }
     }
   }
 }
@@ -58,15 +54,22 @@ gradle.taskGraph.whenReady( { graph ->
     tar.compression = Compression.GZIP
     tar.extension = 'tgz'
   }
-  tasks.srcDistZip {
-    classifier 'src'
-  }
   tasks.srcDistTar {
     classifier 'src'
   }
   tasks.withType(Jar).each { jarTasks ->
     distTar.dependsOn(jarTasks)
-    distZip.dependsOn(jarTasks)
+  }
+
+  tasks.distZip.enabled = false
+  tasks.srcDistZip.enabled = false
+
+  tasks.withType(AbstractArchiveTask).findAll {
+    it.name.toLowerCase().contains("dist")
+  }.each { archive ->
+    archive.doLast {
+      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
+    }
   }
 })
 
@@ -148,11 +151,6 @@ dependencies {
   }
 }
 
-tasks.withType(Test){
-  dependsOn installDist
-  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
-}
-
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/gemfire.properties")
   main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
@@ -189,6 +187,7 @@ def cp = {
     it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
       .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll {
         // depedencies from geode-core
+        it.contains('activation') ||
         it.contains('antlr') ||
         it.contains('commons-io') ||
         it.contains('classgraph') ||
@@ -206,6 +205,7 @@ def cp = {
         it.contains('javax.resource-api') ||
         it.contains('javax.servlet-api') ||
         it.contains('javax.transaction-api') ||
+        it.contains('jaxb') ||
         it.contains('jetty-http') ||
         it.contains('jetty-io') ||
         it.contains('jetty-security') ||
@@ -309,32 +309,11 @@ task docs(type: Javadoc) {
    }
 }
 
-task writeBuildInfo {
-  def buildInfo = file "$buildDir/.buildinfo"
-  outputs.file buildInfo
-  doLast {
-    buildInfo.getParentFile().mkdirs();
-    new FileOutputStream(buildInfo).withStream { fos ->
-      project(':geode-core').readScmInfo().store(fos, '')
-    }
-  }
-}
-
-gradle.taskGraph.whenReady( { graph ->
-  tasks.withType(AbstractArchiveTask).findAll {
-    it.name.toLowerCase().contains("dist")
-  }.each { archive ->
-    archive.doLast {
-      ant.checksum file:"${archive.archivePath}", algorithm:"sha-256", format: 'MD5SUM', fileext: '.sha256'
-    }
-  }
-})
-
 distributions {
   src {
     baseName = 'apache-geode'
     contents {
-      from writeBuildInfo
+      from rootProject.tasks.writeBuildInfo
       from (rootDir) {
         exclude 'KEYS'
         exclude '**/gradlew'
@@ -453,21 +432,10 @@ distributions {
   }
 }
 
-// Create a configuration closure to configure test targets with the install directory
-def dependOnInstalledProduct = {
+tasks.withType(Test){
   dependsOn installDist
-  def install = file("$buildDir/install/${distributions.main.baseName}")
-  environment ('GEODE_HOME', install)
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }
-
-// Add the configuration closure to the test targets so they depend on the install directory
-test dependOnInstalledProduct
-acceptanceTest dependOnInstalledProduct
-distributedTest dependOnInstalledProduct
-upgradeTest dependOnInstalledProduct
-integrationTest dependOnInstalledProduct
-uiTest dependOnInstalledProduct
-repeatTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist

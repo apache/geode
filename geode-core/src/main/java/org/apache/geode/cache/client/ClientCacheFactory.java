@@ -705,7 +705,10 @@ public class ClientCacheFactory {
    * @param diskStoreName the name of the disk store to use for the PDX metadata.
    * @return this ClientCacheFactory
    * @since GemFire 6.6
+   * @deprecated Pdx Persistence is not supported on client side. Even when set, it's internally
+   *             ignored.
    */
+  @Deprecated
   public ClientCacheFactory setPdxDiskStore(String diskStoreName) {
     this.cacheConfig.setPdxDiskStore(diskStoreName);
     return this;
@@ -719,7 +722,10 @@ public class ClientCacheFactory {
    * @param isPersistent true if the metadata should be persistent
    * @return this ClientCacheFactory
    * @since GemFire 6.6
+   * @deprecated Pdx Persistence is not supported on client side. Even when set, it's internally
+   *             ignored.
    */
+  @Deprecated
   public ClientCacheFactory setPdxPersistent(boolean isPersistent) {
     this.cacheConfig.setPdxPersistent(isPersistent);
     return this;
@@ -743,5 +749,4 @@ public class ClientCacheFactory {
     this.cacheConfig.setPdxIgnoreUnreadFields(ignore);
     return this;
   }
-
 }

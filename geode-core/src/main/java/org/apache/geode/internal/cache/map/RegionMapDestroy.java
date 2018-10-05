@@ -142,9 +142,13 @@ public class RegionMapDestroy {
 
   private void runWithCacheModificationLock(Runnable r) {
     cacheModificationLock.lockForCacheModification(internalRegion, event);
+    final boolean locked = internalRegion.lockWhenRegionIsInitializing();
     try {
       r.run();
     } finally {
+      if (locked) {
+        internalRegion.unlockWhenRegionIsInitializing();
+      }
       cacheModificationLock.releaseCacheModificationLock(internalRegion, event);
     }
   }

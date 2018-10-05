@@ -18,12 +18,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +40,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.GemFireCache;
@@ -70,7 +78,7 @@ public class TcpServerJUnitTest {
 
     stats = new SimpleStats();
     server = new TcpServerFactory().makeTcpServer(port, localhost, new Properties(), null, handler,
-        stats, Thread.currentThread().getThreadGroup(), "server thread", null);
+        stats, "server thread", null);
     server.start();
   }
 
@@ -79,18 +87,20 @@ public class TcpServerJUnitTest {
     EchoHandler handler = new EchoHandler();
     start(handler);
 
+    TcpClient tcpClient = new TcpClient();
+
     TestObject test = new TestObject();
     test.id = 5;
     TestObject result =
-        (TestObject) new TcpClient().requestToServer(localhost, port, test, 60 * 1000);
+        (TestObject) tcpClient.requestToServer(localhost, port, test, 60 * 1000);
     assertEquals(test.id, result.id);
 
-    String[] info = new TcpClient().getInfo(localhost, port);
+    String[] info = tcpClient.getInfo(localhost, port);
     assertNotNull(info);
     assertTrue(info.length > 1);
 
     try {
-      new TcpClient().stop(localhost, port);
+      tcpClient.stop(localhost, port);
     } catch (ConnectException ignore) {
       // must not be running
     }
@@ -109,12 +119,14 @@ public class TcpServerJUnitTest {
     DelayHandler handler = new DelayHandler(latch);
     start(handler);
 
+    TcpClient tcpClient = new TcpClient();
+
     final AtomicBoolean done = new AtomicBoolean();
     Thread delayedThread = new Thread() {
       public void run() {
         Boolean delay = Boolean.valueOf(true);
         try {
-          new TcpClient().requestToServer(localhost, port, delay, 60 * 1000);
+          tcpClient.requestToServer(localhost, port, delay, 60 * 1000);
         } catch (IOException e) {
           e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -127,7 +139,7 @@ public class TcpServerJUnitTest {
     try {
       Thread.sleep(500);
       assertFalse(done.get());
-      new TcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 60 * 1000);
+      tcpClient.requestToServer(localhost, port, Boolean.valueOf(false), 60 * 1000);
       assertFalse(done.get());
 
       latch.countDown();
@@ -138,12 +150,61 @@ public class TcpServerJUnitTest {
       delayedThread.join(60 * 1000);
       assertTrue(!delayedThread.isAlive()); // GemStoneAddition
       try {
-        new TcpClient().stop(localhost, port);
+        tcpClient.stop(localhost, port);
       } catch (ConnectException ignore) {
         // must not be running
       }
       server.join(60 * 1000);
     }
+  }
+
+  @Test
+  public void testNewConnectionsAcceptedAfterSocketException() throws IOException,
+      ClassNotFoundException, InterruptedException {
+    // Initially mock the handler to throw a SocketException. We want to verify that the server
+    // can recover and serve new client requests after a SocketException is thrown.
+    TcpHandler mockTcpHandler = mock(TcpHandler.class);
+    doThrow(SocketException.class).when(mockTcpHandler).processRequest(any(Object.class));
+    start(mockTcpHandler);
+
+    TcpClient tcpClient = new TcpClient();
+
+    // Due to the mocked handler, an EOFException will be thrown on the client. This is expected,
+    // so we just catch it.
+    try {
+      tcpClient.requestToServer(localhost, port, new TestObject(), 60 * 1000);
+    } catch (EOFException eofEx) {
+    }
+
+    // Change the mock handler behavior to echo the request back
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        return invocation.getArgument(0);
+      }
+    }).when(mockTcpHandler).processRequest(any(Object.class));
+
+    // Perform another request and validate that it was served successfully
+    TestObject test = new TestObject();
+    test.id = 5;
+    TestObject result =
+        (TestObject) tcpClient.requestToServer(localhost, port, test, 60 * 1000);
+
+    assertEquals(test.id, result.id);
+    String[] info = tcpClient.getInfo(localhost, port);
+    assertNotNull(info);
+    assertTrue(info.length > 1);
+
+    try {
+      tcpClient.stop(localhost, port);
+    } catch (ConnectException ignore) {
+      // must not be running
+    }
+    server.join(60 * 1000);
+    assertFalse(server.isAlive());
+
+    assertEquals(5, stats.started.get());
+    assertEquals(5, stats.ended.get());
   }
 
   private static class TestObject implements DataSerializable {

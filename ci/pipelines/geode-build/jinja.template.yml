@@ -31,7 +31,12 @@
 {% endmacro %}
 
 {% macro common_test_params(test) %}
+  {% if test.CALL_STACK_TIMEOUT %}
 CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
+  {% endif %}
+  {% if test.GRADLE_TASK_OPTIONS %}
+GRADLE_TASK_OPTIONS: {{test.GRADLE_TASK_OPTIONS}}
+  {% endif %}
 DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
 MAINTENANCE_VERSION: {{repository.branch}}
 PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
@@ -44,19 +49,13 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-  {% for test in (tests) if not test.name=="StressNew" -%}
+  {% for test in (tests) if not test.name == "StressNew" -%}
   - {{test.name}}Test
   {% endfor -%}
-{% if repository.sanitized_fork == "apache" %}
+  {% if repository.sanitized_fork == "apache" %}
   - UpdatePassingRef
   - PublishArtifacts
-{% endif %}
-- name: windows
-  jobs:
-  - {{ build_test.name }}
-  {% for test in (windowstests) if not test.name=="StressNew" -%}
-  - {{test.name}}Test
-  {% endfor %}
+  {% endif %}
 
 resources:
 - name: send-notification-email
@@ -236,7 +235,7 @@ jobs:
   plan:
   - get: geode
     passed:
-    {% for test in tests if not test.name=="StressNew" -%}
+    {% for test in tests if not (test.name=="StressNew" or test.name.startswith("Windows")) -%}
     - {{test.name}}Test
     {% endfor %}
     trigger: true
@@ -262,7 +261,7 @@ jobs:
   plan:
   - get: geode
     passed:
-    {% for test in tests if not test.name=="StressNew" -%}
+    {% for test in tests if not (test.name=="StressNew" or test.name.startswith("Windows"))-%}
     - {{test.name}}Test
     {% endfor %}
     trigger: true
@@ -324,14 +323,13 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-      timeout: 5m
+      timeout: 15m
+      attempts: 100
     - task: execute_tests
       {{ alpine_tools_config()|indent(6) }}
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           GRADLE_TASK: {{test.GRADLE_TASK}}
-          SOURCE_REPOSITORY: {{repository.branch}}
-          GRADLE_TASK_OPTIONS: ""
           {{ common_test_params(test) | indent(10) }}
         run:
           path: geode-ci/ci/scripts/execute_tests.sh
@@ -351,7 +349,8 @@ jobs:
           - name: instance-data
           outputs:
           - name: geode-results
-        timeout: 5m
+        timeout: 15m
+        attempts: 100
       ensure:
         do:
         - aggregate:
@@ -380,67 +379,3 @@ jobs:
               - name: instance-data
             timeout: 1h
 {% endfor -%}
-{% for test in windowstests %}
-- name: {{test.name}}Test
-  public: true
-  serial: true
-  plan:
-  {{ plan_resource_gets() |indent(2) }}
-  - task: cleanup-java-processes
-    config:
-      platform: windows
-      run:
-        path: powershell
-        args:
-        - -command
-        - |
-          gwmi win32_process -filter 'name = "java.exe"' | select commandline | format-list
-          kill -name java -force
-          exit 0
-    tags:
-    - windows-{{test.tags}}-tests
-  - task: execute_tests
-    config:
-      platform: windows
-      params:
-        JAVA_HOME: C:\progra~1\java\jdk1.8.0_181
-        SOURCE_REPOSITORY: {{repository.branch}}
-        {{ common_test_params(test) | indent(8) }}
-      run:
-        path: bash
-        args:
-        - geode-ci/ci/scripts/windows/test-run.sh
-        - {{test.target_arg}}
-        - {{test.dir_arg}}
-        - {{test.package_arg}}
-      inputs:
-      - name: geode-ci
-      - name: geode
-      outputs:
-      - name: built-geode
-    tags:
-    - windows-{{test.tags}}-tests
-    ensure:
-      aggregate:
-      - task: archive_results
-        config:
-          platform: windows
-          params:
-            MAINTENANCE_VERSION: {{repository.branch}}
-            PUBLIC_BUCKET: ((!public-bucket))
-            SERVICE_ACCOUNT: ((!concourse-gcp-account))
-          run:
-            path: bash
-            args:
-            - geode-ci/ci/scripts/windows/test-archive.sh
-            - {{test.target_arg}}
-            - {{test.dir_arg}}
-          inputs:
-          - name: geode-ci
-          - name: geode-build-version
-          - name: built-geode
-        tags:
-        - windows-{{test.tags}}-tests
-        timeout: 1h
-    timeout: 6h
-{% endfor %}

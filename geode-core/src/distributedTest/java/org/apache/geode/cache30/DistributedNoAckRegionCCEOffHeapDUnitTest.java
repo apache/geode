@@ -36,7 +36,6 @@ public class DistributedNoAckRegionCCEOffHeapDUnitTest extends DistributedNoAckR
   @Override
   public final void preTearDownAssertions() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
-
       @Override
       public void run() {
         if (hasCache()) {
@@ -44,6 +43,7 @@ public class DistributedNoAckRegionCCEOffHeapDUnitTest extends DistributedNoAckR
         }
       }
     };
+
     Invoke.invokeInEveryVM(checkOrphans);
     checkOrphans.run();
   }

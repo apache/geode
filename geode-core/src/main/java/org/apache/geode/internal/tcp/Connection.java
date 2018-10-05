@@ -78,7 +78,7 @@ import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreator;
@@ -2864,13 +2864,8 @@ public class Connection implements Runnable {
         }
       }
       this.asyncQueuingInProgress = true;
-      ThreadGroup group = LoggingThreadGroup.createThreadGroup("P2P Writer Threads", logger);
-      this.pusherThread = new Thread(group, new Runnable() {
-        public void run() {
-          Connection.this.runNioPusher();
-        }
-      }, "P2P async pusher to " + this.remoteAddr);
-      this.pusherThread.setDaemon(true);
+      this.pusherThread =
+          new LoggingThread("P2P async pusher to " + this.remoteAddr, this::runNioPusher);
     } // synchronized
     this.pusherThread.start();
   }

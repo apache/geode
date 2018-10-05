@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode;
 
 import java.util.logging.Handler;
@@ -73,6 +72,7 @@ import org.apache.geode.i18n.LogWriterI18n;
  * currently be logged. The names of these methods are of the form:
  * <em>level</em><code>Enabled</code>.
  *
+ * @deprecated Please use Log4J2 instead.
  */
 @Deprecated
 public interface LogWriter {
@@ -86,17 +86,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
    */
-  void severe(String msg, Throwable ex);
+  void severe(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "severe".
    */
-  void severe(String msg);
+  void severe(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "severe".
    */
-  void severe(Throwable ex);
+  void severe(Throwable throwable);
 
   /**
    * Returns true if "error" log messages are enabled. Returns false if "error" log messages are
@@ -107,17 +107,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "error".
    */
-  void error(String msg, Throwable ex);
+  void error(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "error".
    */
-  void error(String msg);
+  void error(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "error".
    */
-  void error(Throwable ex);
+  void error(Throwable throwable);
 
   /**
    * Returns true if "warning" log messages are enabled. Returns false if "warning" log messages are
@@ -128,17 +128,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
    */
-  void warning(String msg, Throwable ex);
+  void warning(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "warning".
    */
-  void warning(String msg);
+  void warning(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "warning".
    */
-  void warning(Throwable ex);
+  void warning(Throwable throwable);
 
   /**
    * Returns true if "info" log messages are enabled. Returns false if "info" log messages are
@@ -149,17 +149,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "information".
    */
-  void info(String msg, Throwable ex);
+  void info(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "information".
    */
-  void info(String msg);
+  void info(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "information".
    */
-  void info(Throwable ex);
+  void info(Throwable throwable);
 
   /**
    * Returns true if "config" log messages are enabled. Returns false if "config" log messages are
@@ -170,17 +170,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "config".
    */
-  void config(String msg, Throwable ex);
+  void config(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "config".
    */
-  void config(String msg);
+  void config(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "config".
    */
-  void config(Throwable ex);
+  void config(Throwable throwable);
 
   /**
    * Returns true if "fine" log messages are enabled. Returns false if "fine" log messages are
@@ -191,17 +191,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "fine".
    */
-  void fine(String msg, Throwable ex);
+  void fine(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "fine".
    */
-  void fine(String msg);
+  void fine(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "fine".
    */
-  void fine(Throwable ex);
+  void fine(Throwable throwable);
 
   /**
    * Returns true if "finer" log messages are enabled. Returns false if "finer" log messages are
@@ -212,17 +212,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "finer".
    */
-  void finer(String msg, Throwable ex);
+  void finer(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "finer".
    */
-  void finer(String msg);
+  void finer(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "finer".
    */
-  void finer(Throwable ex);
+  void finer(Throwable throwable);
 
   /**
    * Log a method entry.
@@ -271,17 +271,17 @@ public interface LogWriter {
   /**
    * Writes both a message and exception to this writer. The message level is "finest".
    */
-  void finest(String msg, Throwable ex);
+  void finest(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "finest".
    */
-  void finest(String msg);
+  void finest(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "finest".
    */
-  void finest(Throwable ex);
+  void finest(Throwable throwable);
 
   /**
    * Returns a 1.4 logging handler that can be used to direct application output to this GemFire
@@ -292,7 +292,6 @@ public interface LogWriter {
 
   /**
    * A mechanism for accessing the abstraction layer used for internationalization.
-   *
    */
   LogWriterI18n convertToLogWriterI18n();
 }

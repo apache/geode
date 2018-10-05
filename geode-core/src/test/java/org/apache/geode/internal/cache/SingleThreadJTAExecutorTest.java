@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -61,6 +62,22 @@ public class SingleThreadJTAExecutorTest {
         .untilAsserted(() -> inOrder.verify(beforeCompletion, times(1)).doOp(eq(txState)));
     Awaitility.await().atMost(30, TimeUnit.SECONDS).untilAsserted(
         () -> inOrder.verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion)));
+  }
+
+  @Test
+  public void cleanupInvokesCancel() {
+    singleThreadJTAExecutor.cleanup();
+
+    verify(afterCompletion, times(1)).cancel();
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void doOpsInvokesAfterCompletionDoOpWhenBeforeCompletionThrows() {
+    doThrow(RuntimeException.class).when(beforeCompletion).doOp(txState);
+
+    singleThreadJTAExecutor.doOps(txState, cancelCriterion);
+
+    verify(afterCompletion, times(1)).doOp(eq(txState), eq(cancelCriterion));
   }
 
 }

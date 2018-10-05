@@ -16,6 +16,7 @@
  */
 
 import org.apache.tools.ant.filters.ReplaceTokens
+apply plugin: 'maven-publish'
 
 configurations {
   slf4jDeps
@@ -27,14 +28,8 @@ dependencies {
 }
 
 jar.enabled = true
-extraArchive {
-  sources = false
-  javadoc = false
-  tests = false
-}
 
 disableMavenPublishing()
-disableSigning()
 
 def getJarArtifact(module) {
   project(module).configurations.archives.artifacts.findAll {
@@ -146,7 +141,9 @@ def configureTcServer30Assembly = {
   }
 }
 
-task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar', ':extensions:geode-modules-tomcat7:jar', ':extensions:geode-modules-tomcat8:jar']) {
+task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar',
+                                       ':extensions:geode-modules-tomcat7:jar',
+                                       ':extensions:geode-modules-tomcat8:jar']) {
   baseName = moduleBaseName
   classifier = "Tomcat"
 
@@ -170,7 +167,10 @@ task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar', ':extens
   }
 }
 
-task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar', ':extensions:geode-modules-session-internal:jar', ':extensions:geode-modules-tomcat7:jar', ':extensions:geode-modules-tomcat8:jar']) {
+task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar',
+                                          ':extensions:geode-modules-session-internal:jar',
+                                          ':extensions:geode-modules-tomcat7:jar',
+                                          ':extensions:geode-modules-tomcat8:jar']) {
   baseName = moduleBaseName
   classifier = "AppServer"
 
@@ -203,11 +203,15 @@ task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar
   }
 }
 
-task distTcServer(type: Zip, dependsOn: [':extensions:geode-modules:assemble', ':extensions:geode-modules-tomcat7:assemble', ':extensions:geode-modules-tomcat8:assemble'] ) {
+task distTcServer(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
+                                         ':extensions:geode-modules-tomcat7:assemble',
+                                         ':extensions:geode-modules-tomcat8:assemble'] ) {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: [':extensions:geode-modules:assemble', ':extensions:geode-modules-tomcat7:assemble', ':extensions:geode-modules-tomcat8:assemble']) {
+task distTcServer30(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
+                                           ':extensions:geode-modules-tomcat7:assemble',
+                                           ':extensions:geode-modules-tomcat8:assemble']) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }
@@ -216,13 +220,14 @@ task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat'
 
 build.dependsOn dist
 
-install.dependsOn dist
-uploadArchives.dependsOn dist
-
-artifacts {
-  archives distTcServer
-  archives distTcServer30
-  archives distAppServer
-  archives distTomcat
+publishing {
+  publications {
+    maven(MavenPublication) {
+      artifact distTcServer
+      artifact distTcServer30
+      artifact distAppServer
+      artifact distTomcat
+    }
+  }
 }
 

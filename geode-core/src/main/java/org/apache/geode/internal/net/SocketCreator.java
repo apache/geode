@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.net;
 
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.BindException;
@@ -390,6 +391,10 @@ public class SocketCreator {
    */
   private SSLContext createAndConfigureSSLContext() throws GeneralSecurityException, IOException {
 
+    if (sslConfig.useDefaultSSLContext()) {
+      return SSLContext.getDefault();
+    }
+
     SSLContext newSSLContext = getSSLContextInstance();
     KeyManager[] keyManagers = getKeyManagers();
     TrustManager[] trustManagers = getTrustManagers();
@@ -750,7 +755,8 @@ public class SocketCreator {
       } catch (BindException e) {
         BindException throwMe =
             new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
-                .toLocalizedString(bindAddr, Integer.valueOf(nport)));
+                .toLocalizedString(bindAddr == null ? InetAddress.getLocalHost() : bindAddr,
+                    String.valueOf(nport)));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -1035,6 +1041,9 @@ public class SocketCreator {
         SSLParameters sslParameters = sslSocket.getSSLParameters();
         sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
         sslSocket.setSSLParameters(sslParameters);
+      } else {
+        logger.warn("Your SSL configuration disables hostname validation. "
+            + "Future releases will mandate hostname validation.");
       }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();

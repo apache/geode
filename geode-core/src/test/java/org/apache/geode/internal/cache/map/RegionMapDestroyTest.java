@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -40,6 +41,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
@@ -1363,6 +1365,28 @@ public class RegionMapDestroyTest {
         same(owner));
     verifyEntryDestroyed(newRegionEntry, true);
     verifyInvokedDestroyMethodsOnRegion(false);
+  }
+
+  @Test
+  public void destroyDoesNotLockGIIClearLockWhenRegionIsInitialized()
+      throws Exception {
+    when(owner.lockWhenRegionIsInitializing()).thenReturn(false);
+
+    doDestroy();
+
+    verify(owner).lockWhenRegionIsInitializing();
+    verify(owner, never()).unlockWhenRegionIsInitializing();
+  }
+
+  @Test
+  public void destroyLockGIIClearLockWhenRegionIsInitializing()
+      throws Exception {
+    when(owner.lockWhenRegionIsInitializing()).thenReturn(true);
+
+    doDestroy();
+
+    verify(owner).lockWhenRegionIsInitializing();
+    verify(owner).unlockWhenRegionIsInitializing();
   }
 
   ///////////////////// given methods /////////////////////////////

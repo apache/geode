@@ -16,9 +16,7 @@ package org.apache.geode.internal.cache.eviction;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
@@ -30,7 +28,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -71,19 +69,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     if (threads < 1) {
       threads = Math.max((Runtime.getRuntime().availableProcessors() / 4), 1);
     }
-    final LoggingThreadGroup group =
-        LoggingThreadGroup.createThreadGroup("LRUListWithAsyncSorting Threads", logger);
-    ThreadFactory threadFactory = new ThreadFactory() {
-      private final AtomicInteger threadId = new AtomicInteger();
-
-      public Thread newThread(final Runnable command) {
-        Thread thread = new Thread(group, command,
-            "LRUListWithAsyncSortingThread" + this.threadId.incrementAndGet());
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    return Executors.newFixedThreadPool(threads, threadFactory);
+    return LoggingExecutors.newFixedThreadPool("LRUListWithAsyncSortingThread", true, threads);
   }
 
   LRUListWithAsyncSorting(EvictionController controller) {

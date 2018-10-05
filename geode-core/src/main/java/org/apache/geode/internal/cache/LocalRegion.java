@@ -185,7 +185,6 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
-import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.query.IndexMap;
@@ -233,7 +232,7 @@ import org.apache.geode.pdx.PdxInstance;
  */
 @SuppressWarnings("deprecation")
 public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
-    ResourceListener<MemoryEvent>, DiskExceptionHandler, DiskRecoveryStore {
+    ResourceListener<MemoryEvent>, DiskExceptionHandler, InternalPersistentRegion {
 
   // package-private to avoid synthetic accessor
   static final Logger logger = LogService.getLogger();
@@ -5693,8 +5692,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         logger.debug("caught concurrent modification attempt when applying {}", event);
       }
       notifyBridgeClients(event);
-      notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
-          : EnumListenerEvent.AFTER_CREATE, event);
       return false;
     }
 
@@ -6193,7 +6190,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
-    if (isPdxTypesRegion()) {
+    if (isPdxTypesRegion() || event.isConcurrencyConflict()) {
+      // isConcurrencyConflict is usually a concurrent cache modification problem
       return;
     }
 
@@ -6586,7 +6584,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Notify clients only if its NOT a gateway event.
       if (event.getVersionTag() != null && !event.getVersionTag().isGatewayTag()) {
         notifyBridgeClients(event);
-        notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
       }
       return true; // event was elided
 

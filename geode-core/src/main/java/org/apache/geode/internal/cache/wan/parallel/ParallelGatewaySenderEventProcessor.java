@@ -37,7 +37,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEventProcessor {
@@ -49,13 +48,10 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring) {
-    super(LoggingThreadGroup
-        .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
+    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.index = 0;
     this.nDispatcher = 1;
     initializeMessageQueue(sender.getId());
-    setDaemon(true);
   }
 
   /**
@@ -63,14 +59,10 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
    */
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring) {
-    super(
-        LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + sender.getId(),
-            logger),
-        "Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender, tMonitoring);
+    super("Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender, tMonitoring);
     this.index = id;
     this.nDispatcher = nDispatcher;
     initializeMessageQueue(sender.getId());
-    setDaemon(true);
   }
 
   @Override

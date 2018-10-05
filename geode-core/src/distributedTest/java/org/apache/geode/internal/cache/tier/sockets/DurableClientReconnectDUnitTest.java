@@ -104,21 +104,20 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    server1 = host.getVM(0);
-    server2 = host.getVM(1);
-    server3 = host.getVM(2);
-    server4 = host.getVM(3);
+    server1 = VM.getVM(0);
+    server2 = VM.getVM(1);
+    server3 = VM.getVM(2);
+    server4 = VM.getVM(3);
 
     // start servers first
-    PORT1 = ((Integer) server1.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
-    PORT2 = ((Integer) server2.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
-    PORT3 = ((Integer) server3.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
-    PORT4 = ((Integer) server4.invoke(() -> DurableClientReconnectDUnitTest.createServerCache()));
-    SERVER1 = NetworkUtils.getServerHostName(host) + PORT1;
-    SERVER2 = NetworkUtils.getServerHostName(host) + PORT2;
-    SERVER3 = NetworkUtils.getServerHostName(host) + PORT3;
-    SERVER4 = NetworkUtils.getServerHostName(host) + PORT4;
+    PORT1 = server1.invoke(DurableClientReconnectDUnitTest::createServerCache);
+    PORT2 = server2.invoke(DurableClientReconnectDUnitTest::createServerCache);
+    PORT3 = server3.invoke(DurableClientReconnectDUnitTest::createServerCache);
+    PORT4 = server4.invoke(DurableClientReconnectDUnitTest::createServerCache);
+    SERVER1 = NetworkUtils.getServerHostName() + PORT1;
+    SERVER2 = NetworkUtils.getServerHostName() + PORT2;
+    SERVER3 = NetworkUtils.getServerHostName() + PORT3;
+    SERVER4 = NetworkUtils.getServerHostName() + PORT4;
 
     // CacheServerTestUtil.disableShufflingOfEndpoints();
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",

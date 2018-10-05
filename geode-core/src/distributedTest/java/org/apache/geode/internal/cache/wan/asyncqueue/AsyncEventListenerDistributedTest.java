@@ -290,6 +290,8 @@ public class AsyncEventListenerDistributedTest implements Serializable {
 
       // pause async channel and then do the puts
       getInternalGatewaySender().pause();
+      waitForDispatcherToPause();
+
       doPuts(replicateRegionName, 1000);
 
       // kill vm0 and rebuild

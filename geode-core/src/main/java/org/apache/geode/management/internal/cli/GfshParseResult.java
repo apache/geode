@@ -95,6 +95,10 @@ public class GfshParseResult extends ParseResult {
     return userInput;
   }
 
+  public void setUserInput(String userText) {
+    userInput = userText;
+  }
+
   public Object getParamValue(String param) {
     return paramValueMap.get(param);
   }

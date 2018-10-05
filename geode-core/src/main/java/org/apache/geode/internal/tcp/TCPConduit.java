@@ -27,13 +27,9 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
 
@@ -54,7 +50,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -342,7 +339,7 @@ public class TCPConduit implements Runnable {
     }
   }
 
-  private ThreadPoolExecutor hsPool;
+  private ExecutorService hsPool;
 
   /**
    * the reason for a shutdown, if abnormal
@@ -358,8 +355,11 @@ public class TCPConduit implements Runnable {
    * added to fix bug 40436
    */
   public void setMaximumHandshakePoolSize(int maxSize) {
-    if (this.hsPool != null && maxSize > HANDSHAKE_POOL_SIZE) {
-      this.hsPool.setMaximumPoolSize(maxSize);
+    if (this.hsPool != null) {
+      ThreadPoolExecutor handshakePool = (ThreadPoolExecutor) this.hsPool;
+      if (maxSize > handshakePool.getMaximumPoolSize()) {
+        handshakePool.setMaximumPoolSize(maxSize);
+      }
     }
   }
 
@@ -372,37 +372,12 @@ public class TCPConduit implements Runnable {
     InetAddress ba = this.address;
 
     {
-      ThreadPoolExecutor tmp_hsPool = null;
-      String gName = "P2P-Handshaker " + ba + ":" + p;
-      final ThreadGroup socketThreadGroup = LoggingThreadGroup.createThreadGroup(gName, logger);
-
-      ThreadFactory socketThreadFactory = new ThreadFactory() {
-        int connNum = -1;
-
-        public Thread newThread(Runnable command) {
-          int tnum;
-          synchronized (this) {
-            tnum = ++connNum;
-          }
-          String tName = socketThreadGroup.getName() + " Thread " + tnum;
-          return new Thread(socketThreadGroup, command, tName);
-        }
-      };
+      ExecutorService tmp_hsPool = null;
+      String threadName = "P2P-Handshaker " + ba + ":" + p + " Thread ";
       try {
-        final BlockingQueue bq = new SynchronousQueue();
-        final RejectedExecutionHandler reh = new RejectedExecutionHandler() {
-          public void rejectedExecution(Runnable r, ThreadPoolExecutor pool) {
-            try {
-              bq.put(r);
-            } catch (InterruptedException ex) {
-              Thread.currentThread().interrupt(); // preserve the state
-              throw new RejectedExecutionException(
-                  LocalizedStrings.TCPConduit_INTERRUPTED.toLocalizedString(), ex);
-            }
-          }
-        };
-        tmp_hsPool = new ThreadPoolExecutor(1, HANDSHAKE_POOL_SIZE, HANDSHAKE_POOL_KEEP_ALIVE_TIME,
-            TimeUnit.SECONDS, bq, socketThreadFactory, reh);
+        tmp_hsPool =
+            LoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName, null,
+                null, 1, HANDSHAKE_POOL_SIZE, HANDSHAKE_POOL_KEEP_ALIVE_TIME);
       } catch (IllegalArgumentException poolInitException) {
         throw new ConnectionException(
             LocalizedStrings.TCPConduit_WHILE_CREATING_HANDSHAKE_POOL.toLocalizedString(),
@@ -416,11 +391,9 @@ public class TCPConduit implements Runnable {
 
       id = new InetSocketAddress(socket.getInetAddress(), localPort);
       stopped = false;
-      ThreadGroup group = LoggingThreadGroup.createThreadGroup("P2P Listener Threads", logger);
-      thread = new Thread(group, this, "P2P Listener Thread " + id);
-      thread.setDaemon(true);
+      thread = new LoggingThread("P2P Listener Thread " + id, this);
       try {
-        thread.setPriority(thread.getThreadGroup().getMaxPriority());
+        thread.setPriority(Thread.MAX_PRIORITY);
       } catch (Exception e) {
         logger.info(LocalizedMessage.create(
             LocalizedStrings.TCPConduit_UNABLE_TO_SET_LISTENER_PRIORITY__0, e.getMessage()));

@@ -51,7 +51,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 
 @Deprecated
 public class TransactionManagerImpl implements TransactionManager, Serializable {
@@ -114,11 +114,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    * Constructs a new TransactionManagerImpl
    */
   private TransactionManagerImpl() {
-    cleaner = this.new TransactionTimeOutThread();
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup(
-        LocalizedStrings.TransactionManagerImpl_CLEAN_UP_THREADS.toLocalizedString());
-    cleanUpThread = new Thread(group, cleaner, "GlobalTXTimeoutMonitor");
-    cleanUpThread.setDaemon(true);
+    cleaner = new TransactionTimeOutThread();
+    cleanUpThread = new LoggingThread("GlobalTXTimeoutMonitor", cleaner);
     cleanUpThread.start();
   }
 

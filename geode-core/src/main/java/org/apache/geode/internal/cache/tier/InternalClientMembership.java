@@ -21,11 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -45,7 +42,7 @@ import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
@@ -81,10 +78,7 @@ public class InternalClientMembership {
    *
    * Access synchronized via {@link #systems}
    */
-  private static ThreadPoolExecutor executor;
-
-  private static final ThreadGroup threadGroup =
-      LoggingThreadGroup.createThreadGroup("ClientMembership Event Invoker Group", logger);
+  private static ExecutorService executor;
 
   /** List of connected <code>DistributedSystem</code>s */
   private static final List systems = new ArrayList(1);
@@ -420,7 +414,7 @@ public class InternalClientMembership {
   private static void notifyListeners(final DistributedMember member, final boolean client,
       final EventType typeOfEvent) {
     startMonitoring();
-    ThreadPoolExecutor queuedExecutor = executor;
+    ExecutorService queuedExecutor = executor;
     if (queuedExecutor == null) {
       return;
     }
@@ -533,16 +527,8 @@ public class InternalClientMembership {
   private static void ensureExecutorIsRunning() {
     // protected by calling method synchronized on systems
     if (executor == null) {
-      final ThreadGroup group = threadGroup;
-      ThreadFactory tf = new ThreadFactory() {
-        public Thread newThread(Runnable command) {
-          Thread thread = new Thread(group, command, "ClientMembership Event Invoker");
-          thread.setDaemon(true);
-          return thread;
-        }
-      };
-      LinkedBlockingQueue q = new LinkedBlockingQueue();
-      executor = new ThreadPoolExecutor(1, 1/* max unused */, 15, TimeUnit.SECONDS, q, tf);
+      executor =
+          LoggingExecutors.newFixedThreadPoolWithTimeout("ClientMembership Event Invoker", 1, 15);
     }
   }
 

@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -315,36 +315,29 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       try {
         if (!this.queuedEvents.isEmpty()) {
           try {
-            Runnable r = new Runnable() {
-              @Override
-              public void run() {
-                Object[] eventArray = null;
-                if (CqQueryImpl.testHook != null) {
-                  testHook.setEventCount(queuedEvents.size());
-                }
-                // Synchronization for the executer thread.
-                synchronized (queuedEventsSynchObject) {
-                  try {
-                    eventArray = queuedEvents.toArray();
+            Thread thread = new LoggingThread("CQEventHandler For " + cqName, () -> {
+              Object[] eventArray = null;
+              if (CqQueryImpl.testHook != null) {
+                testHook.setEventCount(queuedEvents.size());
+              }
+              // Synchronization for the executer thread.
+              synchronized (queuedEventsSynchObject) {
+                try {
+                  eventArray = queuedEvents.toArray();
 
-                    // Process through the events
-                    for (Object cqEvent : eventArray) {
-                      cqService.invokeListeners(cqName, ClientCQImpl.this, (CqEventImpl) cqEvent);
-                      stats.decQueuedCqListenerEvents();
-                    }
-                  } finally {
-                    // Make sure that we notify waiting threads or else possible dead lock
-                    queuedEvents.clear();
-                    queuedEvents = null;
-                    queuedEventsSynchObject.notify();
+                  // Process through the events
+                  for (Object cqEvent : eventArray) {
+                    cqService.invokeListeners(cqName, ClientCQImpl.this, (CqEventImpl) cqEvent);
+                    stats.decQueuedCqListenerEvents();
                   }
+                } finally {
+                  // Make sure that we notify waiting threads or else possible dead lock
+                  queuedEvents.clear();
+                  queuedEvents = null;
+                  queuedEventsSynchObject.notify();
                 }
               }
-            };
-            final LoggingThreadGroup group =
-                LoggingThreadGroup.createThreadGroup("CQEventHandler", logger);
-            Thread thread = new Thread(group, r, "CQEventHandler For " + cqName);
-            thread.setDaemon(true);
+            });
             thread.start();
           } catch (Exception ex) {
             if (logger.isDebugEnabled()) {

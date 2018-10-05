@@ -142,12 +142,6 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
               }
               doUpdate = false;
             }
-            if (ev.isConcurrencyConflict()) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("basicUpdate failed with CME, not to retry:" + ev);
-              }
-              doUpdate = false;
-            }
           }
         } finally {
           if (isBucket) {
@@ -181,7 +175,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
                   || (rgn.getDataPolicy().withReplication() && rgn.getConcurrencyChecksEnabled())) {
                 overwriteDestroyed = true;
                 ev.makeCreate();
-                rgn.basicUpdate(ev, false /* ifNew */, false/* ifOld */, lastMod,
+                rgn.basicUpdate(ev, true /* ifNew */, false/* ifOld */, lastMod,
                     overwriteDestroyed);
                 rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
                 updated = true;

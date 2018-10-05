@@ -990,6 +990,7 @@ public abstract class AbstractRegionMap
     final boolean hasRemoteOrigin = !txId.getMemberId().equals(owner.getMyId());
     boolean callbackEventAddedToPending = false;
     IndexManager oqlIndexManager = owner.getIndexManager();
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
       RegionEntry re = getEntry(key);
       if (re != null) {
@@ -1243,6 +1244,10 @@ public abstract class AbstractRegionMap
     } catch (DiskAccessException dae) {
       owner.handleDiskAccessException(dae);
       throw dae;
+    } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
     }
   }
 
@@ -1289,15 +1294,17 @@ public abstract class AbstractRegionMap
     boolean clearOccured = false;
     DiskRegion dr = owner.getDiskRegion();
     boolean ownerIsInitialized = owner.isInitialized();
+
+    // Fix for Bug #44431. We do NOT want to update the region and wait
+    // later for index INIT as region.clear() can cause inconsistency if
+    // happened in parallel as it also does index INIT.
+    IndexManager oqlIndexManager = owner.getIndexManager();
+    if (oqlIndexManager != null) {
+      oqlIndexManager.waitForIndexInit();
+    }
+    lockForCacheModification(owner, event);
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
-      // Fix for Bug #44431. We do NOT want to update the region and wait
-      // later for index INIT as region.clear() can cause inconsistency if
-      // happened in parallel as it also does index INIT.
-      IndexManager oqlIndexManager = owner.getIndexManager();
-      if (oqlIndexManager != null) {
-        oqlIndexManager.waitForIndexInit();
-      }
-      lockForCacheModification(owner, event);
       try {
         try {
           if (forceNewEntry || forceCallbacks) {
@@ -1661,6 +1668,9 @@ public abstract class AbstractRegionMap
         }
       }
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       releaseCacheModificationLock(owner, event);
     }
 
@@ -1722,6 +1732,7 @@ public abstract class AbstractRegionMap
     }
 
     lockForCacheModification(owner, event);
+    final boolean locked = owner.lockWhenRegionIsInitializing();
 
     try {
       RegionEntry re = getEntry(event.getKey());
@@ -1753,6 +1764,9 @@ public abstract class AbstractRegionMap
       this._getOwner().handleDiskAccessException(dae);
       throw dae;
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       releaseCacheModificationLock(owner, event);
       if (dr != null) {
         dr.removeClearCountReference();
@@ -1783,6 +1797,7 @@ public abstract class AbstractRegionMap
     if (oqlIndexManager != null) {
       oqlIndexManager.waitForIndexInit();
     }
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
       if (forceNewEntry) {
         boolean opCompleted = false;
@@ -1990,6 +2005,9 @@ public abstract class AbstractRegionMap
       owner.handleDiskAccessException(dae);
       throw dae;
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       if (oqlIndexManager != null) {
         oqlIndexManager.countDownIndexUpdaters();
       }

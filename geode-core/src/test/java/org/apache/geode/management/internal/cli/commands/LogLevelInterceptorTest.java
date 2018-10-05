@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,14 +22,19 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
+@Category({GfshTest.class, LoggingTest.class})
 public class LogLevelInterceptorTest {
-  private List<AbstractCliAroundInterceptor> interceptors = new ArrayList<>();
+
+  private final List<AbstractCliAroundInterceptor> interceptors = new ArrayList<>();
   private GfshParseResult parseResult;
   private Result result;
 
@@ -42,7 +46,6 @@ public class LogLevelInterceptorTest {
     parseResult = Mockito.mock(GfshParseResult.class);
     when(parseResult.getParamValue("logs-only")).thenReturn(true);
     when(parseResult.getParamValue("stats-only")).thenReturn(false);
-
   }
 
   @Test

@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -38,6 +39,7 @@ import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -55,7 +57,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
@@ -783,9 +788,8 @@ public class SystemAdmin {
     }
   }
 
-  public void mergeLogs(String outOption, List args) {
-    FileInputStream[] input = new FileInputStream[args.size()];
-    String[] inputNames = new String[args.size()]; // note we don't want any extra names printed.
+  public void mergeLogs(String outOption, List<String> args) {
+    Map<String, InputStream> inputs = new HashMap<>();
 
     PrintStream ps;
     if (outOption != null) {
@@ -801,17 +805,20 @@ public class SystemAdmin {
     }
     PrintWriter mergedFile = new PrintWriter(ps, true);
 
-    Iterator it = args.iterator();
-    int idx = 0;
+    List<String> normalizedFiles =
+        args.stream().map(f -> Paths.get(f).toAbsolutePath().toString()).collect(
+            Collectors.toList());
+    int prefixLength =
+        StringUtils.getCommonPrefix(normalizedFiles.toArray(new String[] {})).length();
+
     if (!quiet) {
       ps.println(LocalizedStrings.SystemAdmin_MERGING_THE_FOLLOWING_LOG_FILES.toLocalizedString());
     }
-    while (it.hasNext()) {
-      String fileName = (String) it.next();
+
+    for (String fileName : normalizedFiles) {
       try {
-        input[idx] = new FileInputStream(fileName);
-        inputNames[idx] = (new File(fileName)).getAbsolutePath();
-        idx++;
+        String shortName = fileName.substring(prefixLength);
+        inputs.put(shortName, new FileInputStream(fileName));
       } catch (FileNotFoundException ex) {
         throw new GemFireIOException(
             LocalizedStrings.SystemAdmin_COULD_NOT_OPEN_TO_0_FOR_READING_BECAUSE_1
@@ -822,31 +829,7 @@ public class SystemAdmin {
       }
     }
 
-    if (idx > 0) {
-      // strip off any common filename prefix
-      boolean strip = true;
-      do {
-        if (inputNames[0].length() == 0) {
-          break;
-        }
-        if (inputNames[0].indexOf('/') == -1 && inputNames[0].indexOf('\\') == -1) {
-          // no more directories to strip off
-          break;
-        }
-        char c = inputNames[0].charAt(0);
-        for (int i = 1; i < idx; i++) {
-          if (inputNames[i].charAt(0) != c) {
-            strip = false;
-            break;
-          }
-        }
-        for (int i = 0; i < idx; i++) {
-          inputNames[i] = inputNames[i].substring(1);
-        }
-      } while (strip);
-    }
-
-    if (MergeLogFiles.mergeLogFiles(input, inputNames, mergedFile)) {
+    if (MergeLogFiles.mergeLogFiles(inputs, mergedFile)) {
       throw new GemFireIOException(
           LocalizedStrings.SystemAdmin_TROUBLE_MERGING_LOG_FILES.toLocalizedString());
     }
@@ -857,7 +840,8 @@ public class SystemAdmin {
     if (!quiet) {
       System.out
           .println(LocalizedStrings.SystemAdmin_COMPLETED_MERGE_OF_0_LOGS_TO_1.toLocalizedString(
-              new Object[] {Integer.valueOf(idx), ((outOption != null) ? outOption : "stdout")}));
+              new Object[] {Integer.valueOf(args.size()),
+                  ((outOption != null) ? outOption : "stdout")}));
     }
   }
 

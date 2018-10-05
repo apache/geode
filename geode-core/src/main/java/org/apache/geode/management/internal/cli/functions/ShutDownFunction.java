@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.logging.log4j.Logger;
@@ -25,6 +24,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.tcp.ConnectionTable;
 
 /**
@@ -65,7 +65,7 @@ public class ShutDownFunction implements InternalFunction {
    */
   private void disconnectInNonDaemonThread(final InternalDistributedSystem ids)
       throws InterruptedException, ExecutionException {
-    ExecutorService exec = Executors.newSingleThreadExecutor();
+    ExecutorService exec = LoggingExecutors.newSingleThreadExecutor("Shutdown Disconnector", false);
     Future future = exec.submit(() -> {
       try {
         // Allow the function call to exit so we don't get disconnect exceptions in the client

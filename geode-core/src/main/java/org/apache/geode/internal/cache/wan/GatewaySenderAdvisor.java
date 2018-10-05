@@ -47,7 +47,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class GatewaySenderAdvisor extends DistributionAdvisor {
@@ -62,9 +62,6 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
   private final String lockToken;
 
   private Thread lockObtainingThread;
-
-  private final ThreadGroup threadGroup =
-      LoggingThreadGroup.createThreadGroup("GatewaySenderAdvisor Threads");
 
   private AbstractGatewaySender sender;
 
@@ -423,46 +420,42 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
   }
 
   public void launchLockObtainingVolunteerThread() {
-    this.lockObtainingThread = new Thread(threadGroup, new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      public void run() {
-        GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().lock();
-        try {
-          // Attempt to obtain the lock
-          if (!(GatewaySenderAdvisor.this.sender.isRunning())) {
-            return;
-          }
-          if (logger.isDebugEnabled()) {
-            logger.debug("{}: Obtaining the lock on {}", this, GatewaySenderAdvisor.this.lockToken);
-          }
-
-          if (volunteerForPrimary()) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("{}: Obtained the lock on {}", this,
-                  GatewaySenderAdvisor.this.lockToken);
-            }
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.GatewaySender_0_IS_BECOMING_PRIMARY_GATEWAY_Sender,
-                GatewaySenderAdvisor.this));
-
-            // As soon as the lock is obtained, set primary
-            GatewaySenderAdvisor.this.makePrimary();
-          }
-        } catch (CancelException e) {
-          // no action necessary
-        } catch (Exception e) {
-          if (!sender.getStopper().isCancelInProgress()) {
-            logger.fatal(LocalizedMessage.create(
-                LocalizedStrings.GatewaySenderAdvisor_0_THE_THREAD_TO_OBTAIN_THE_FAILOVER_LOCK_WAS_INTERRUPTED__THIS_GATEWAY_SENDER_WILL_NEVER_BECOME_THE_PRIMARY,
-                GatewaySenderAdvisor.this), e);
-          }
-        } finally {
-          GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().unlock();
+    String threadName = "Gateway Sender Primary Lock Acquisition Thread Volunteer";
+    this.lockObtainingThread = new LoggingThread(threadName, () -> {
+      GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().lock();
+      try {
+        // Attempt to obtain the lock
+        if (!(GatewaySenderAdvisor.this.sender.isRunning())) {
+          return;
         }
-      }
-    }, "Gateway Sender Primary Lock Acquisition Thread Volunteer");
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Obtaining the lock on {}", this, GatewaySenderAdvisor.this.lockToken);
+        }
 
-    this.lockObtainingThread.setDaemon(true);
+        if (volunteerForPrimary()) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("{}: Obtained the lock on {}", this,
+                GatewaySenderAdvisor.this.lockToken);
+          }
+          logger.info(LocalizedMessage.create(
+              LocalizedStrings.GatewaySender_0_IS_BECOMING_PRIMARY_GATEWAY_Sender,
+              GatewaySenderAdvisor.this));
+
+          // As soon as the lock is obtained, set primary
+          GatewaySenderAdvisor.this.makePrimary();
+        }
+      } catch (CancelException e) {
+        // no action necessary
+      } catch (Exception e) {
+        if (!sender.getStopper().isCancelInProgress()) {
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.GatewaySenderAdvisor_0_THE_THREAD_TO_OBTAIN_THE_FAILOVER_LOCK_WAS_INTERRUPTED__THIS_GATEWAY_SENDER_WILL_NEVER_BECOME_THE_PRIMARY,
+              GatewaySenderAdvisor.this), e);
+        }
+      } finally {
+        GatewaySenderAdvisor.this.sender.getLifeCycleLock().readLock().unlock();
+      }
+    });
     this.lockObtainingThread.start();
   }
 

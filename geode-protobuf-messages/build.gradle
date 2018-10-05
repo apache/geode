@@ -61,3 +61,7 @@ task zip(type: Zip) {
 }
 
 assemble.dependsOn 'zip'
+
+afterEvaluate {
+  rootProject.generate.dependsOn(generateProto)
+}

@@ -20,25 +20,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.categories.LoggingTest;
 
+@Category({GfshTest.class, LoggingTest.class})
 public class LogSizerTest {
+
   private LogFilter logFilter;
   private SizeExportLogsFunction.Args nonFilteringArgs;
 
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule
   public TestName testName = new TestName();
 
@@ -48,20 +47,14 @@ public class LogSizerTest {
     nonFilteringArgs = new ExportLogsFunction.Args(null, null, null, false, false, false);
   }
 
-  @After
-  public void tearDown() throws Exception {
-
-  }
-
   @Test
-  public void nullFileArgs_returnsZeroSize() throws ParseException, IOException {
+  public void nullFileArgs_returnsZeroSize() throws Exception {
     LogExporter sizer = new LogExporter(logFilter, null, null);
     assertThat(sizer.estimateFilteredSize()).isEqualTo(0L);
   }
 
   @Test
-  public void noFiles_returnsZeroSize() throws ParseException, IOException {
-
+  public void noFiles_returnsZeroSize() throws Exception {
     File mockStatFile = mock(File.class);
     File mockLogFile = mock(File.class);
     when(mockLogFile.toPath()).thenReturn(
@@ -73,8 +66,7 @@ public class LogSizerTest {
   }
 
   @Test
-  public void emptyFiles_returnsZeroSize() throws ParseException, IOException {
-
+  public void emptyFiles_returnsZeroSize() throws Exception {
     File mockStatFile = mock(File.class);
     File mockLogFile = mock(File.class);
     when(mockLogFile.toPath()).thenReturn(
@@ -88,5 +80,4 @@ public class LogSizerTest {
     LogExporter sizer = new LogExporter(logFilter, mockLogFile, mockStatFile);
     assertThat(sizer.estimateFilteredSize()).isEqualTo(0L);
   }
-
 }

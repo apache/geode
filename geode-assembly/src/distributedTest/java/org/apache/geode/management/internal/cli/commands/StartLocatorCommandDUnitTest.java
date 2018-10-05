@@ -30,8 +30,10 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -117,7 +119,8 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithMissingGemFirePropertiesFile() throws IOException {
-    final String missingPropertiesPath = "/path/to/missing/gemfire.properties";
+    final String missingPropertiesPath =
+        Paths.get("missing", "gemfire.properties").toAbsolutePath().toString();
     final String memberName = "testWithMissingGemFirePropertiesFile-locator";
     final String expectedError =
         MessageFormat.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE, "", missingPropertiesPath);
@@ -137,7 +140,8 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithMissingGemFireSecurityPropertiesFile() throws IOException {
-    final String missingSecurityPropertiesPath = "/path/to/missing/gemfire-security.properties";
+    final String missingSecurityPropertiesPath = Paths
+        .get("missing", "gemfire-security.properties").toAbsolutePath().toString();
     final String memberName = "testWithMissingGemFireSecurityPropertiesFile-locator";
     final String expectedError = MessageFormat.format(GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE,
         "Security ", missingSecurityPropertiesPath);
@@ -226,44 +230,31 @@ public class StartLocatorCommandDUnitTest {
   }
 
   @Test
-  public void testInMissingRelativeDirectoryWithoutCreatePermissions() {
-    // path to a missing dir that cannot be created due to insufficient permissions
-    final String missingDirPath = "/missing/path/to/start/in";
-    final String expectedMessage = "Could not create directory " + missingDirPath
-        + ". Please verify directory path or user permissions.";
-    final String memberName = "testInMissingRelativeDirectoryWithoutCreatePermissions-locator";
-
-    CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
-        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
-        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, missingDirPath);
-
-    CommandResult result = gfsh.executeCommand(command.getCommandString());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage);
-  }
-
-  @Test
   public void testInMissingRelativeDirectoryThatCanBeCreated() {
+    final Integer locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+
     // path to a missing dir that can be created
-    final String missingDirPath = System.getProperty("user.dir") + "/missing/path/to/start/in";
+    String readWritePathname = "readWriteDir";
+    File readWriteDir = new File(readWritePathname);
+    final String missingDirPath =
+        Paths.get(readWritePathname, "missing", "path", "to", "start", "in").toString();
+
     final String memberName = "testInMissingRelativeDirectoryThatCanBeCreated-locator";
-    final String expectedMessage = "Locator in " + missingDirPath;
+    final String expectedMessage = "Locator in .*" + missingDirPath;
 
     CommandStringBuilder command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__DIR, missingDirPath);
+        .addOption(START_LOCATOR__DIR, missingDirPath)
+        .addOption(START_LOCATOR__PORT, locatorPort.toString());
 
     try {
       CommandResult result = gfsh.executeCommand(command.getCommandString());
 
       assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-      assertThat(result.getMessageFromContent()).contains(expectedMessage);
+      assertThat(result.getMessageFromContent()).containsPattern(expectedMessage);
     } finally {
-      File toDelete = new File(missingDirPath);
-      deleteLocatorFiles(toDelete);
+      FileUtils.deleteQuietly(readWriteDir);
     }
   }
 
@@ -306,11 +297,10 @@ public class StartLocatorCommandDUnitTest {
       assertThat(result.getMessageFromContent()).contains(expectedMessage);
 
       // Verify GEODE-2138 (Geode commands do not contain GemFire in output)
-      assertThat(result.getMessageFromContent()).doesNotContain("Gemfire")
-          .doesNotContain("GemFire");
+      assertThat(result.getMessageFromContent()).doesNotContainPattern("Gem[Ff]ire Version");
       assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
     } finally {
-      String pathToFile = System.getProperty("user.dir") + "/" + memberName;
+      String pathToFile = Paths.get(System.getProperty("user.dir"), memberName).toString();
       File toDelete = new File(pathToFile);
       deleteLocatorFiles(toDelete);
     }

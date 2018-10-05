@@ -70,6 +70,7 @@ import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.ExpiryTask.ExpiryTaskListener;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -1776,7 +1777,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testValues() throws CacheException {
     String name = this.getUniqueName();
-    System.err.println("testValues region name is " + name);
+    LogService.getLogger().info("testValues region name is " + name);
     Region region = createRegion(name);
     assertEquals(0, region.values().size());
 

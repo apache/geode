@@ -1815,6 +1815,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
+  public InternalCache getInternalCache() {
+    return cache;
+  }
+
+  @Override
   public RegionSnapshotService getSnapshotService() {
     return new RegionSnapshotServiceImpl(this);
   }

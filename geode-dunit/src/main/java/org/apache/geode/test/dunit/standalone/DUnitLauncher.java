@@ -124,8 +124,9 @@ public class DUnitLauncher {
   static final String MASTER_PARAM = "DUNIT_MASTER";
 
   public static final String RMI_PORT_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.RMI_PORT";
+  public static final String RMI_HOST_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.RMI_HOST";
   public static final String VM_NUM_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_NUM";
-  static final String VM_VERSION_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_VERSION";
+  public static final String VM_VERSION_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_VERSION";
 
   private static final String LAUNCHED_PROPERTY = GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
 
@@ -291,7 +292,7 @@ public class DUnitLauncher {
             .getContext();
 
     final PatternLayout layout = PatternLayout.createLayout(
-        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n",
+        "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%hexTid] %message%n%throwable%n",
         null, null, null, Charset.defaultCharset(), true, false, "", "");
 
     final FileAppender fileAppender = FileAppender.createAppender(suspectFilename, "true", "false",

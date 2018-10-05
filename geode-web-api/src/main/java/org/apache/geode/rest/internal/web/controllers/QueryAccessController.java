@@ -66,7 +66,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final String PARAMETERIZED_QUERIES_REGION = "__ParameterizedQueries__";
+  static final String PARAMETERIZED_QUERIES_REGION = "__ParameterizedQueries__";
 
   private final ConcurrentHashMap<String, DefaultQuery> compiledQueries = new ConcurrentHashMap<>();
 
@@ -204,8 +204,8 @@ public class QueryAccessController extends AbstractBaseController {
       throw new GemfireRestException(
           "Query execution gets canceled due to low memory conditions and the resource manager critical heap percentage has been set!",
           qelme);
-    } catch (Exception e) {
-      throw new GemfireRestException("Server has encountered while executing Adhoc query!", e);
+    } catch (Exception ex) {
+      throw new GemfireRestException(ex.getMessage(), ex);
     }
   }
 

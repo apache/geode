@@ -30,14 +30,12 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
  */
 public class OffHeapEvictor extends HeapEvictor {
 
-  private static final String EVICTOR_THREAD_GROUP_NAME = "OffHeapEvictorThreadGroup";
-
   private static final String EVICTOR_THREAD_NAME = "OffHeapEvictorThread";
 
   private long bytesToEvictWithEachBurst;
 
   public OffHeapEvictor(final InternalCache cache) {
-    super(cache, EVICTOR_THREAD_GROUP_NAME, EVICTOR_THREAD_NAME);
+    super(cache, EVICTOR_THREAD_NAME);
     calculateEvictionBurst();
   }
 

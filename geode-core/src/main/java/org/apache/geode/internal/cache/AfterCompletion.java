@@ -26,9 +26,13 @@ public class AfterCompletion {
 
   private boolean started;
   private boolean finished;
-  private int status = -1;
-  private boolean cancelled;
   private RuntimeException exception;
+
+  private enum Action {
+    COMMIT, ROLLBACK, CANCEL
+  };
+
+  private Action action;
 
   public synchronized void doOp(TXState txState, CancelCriterion cancelCriterion) {
     // there should be a transaction timeout that keeps this thread
@@ -36,15 +40,24 @@ public class AfterCompletion {
     // The above was done by setting afterCompletionCancelled in txState
     // during cleanup. When client departed, the transaction/JTA
     // will be timed out and cleanup code will be executed.
-    waitForExecuteOrCancel(cancelCriterion);
+    try {
+      waitForExecuteOrCancel(cancelCriterion);
+    } catch (RuntimeException | Error ignore) {
+      action = Action.CANCEL;
+    }
     started = true;
     logger.debug("executing afterCompletion notification");
-
     try {
-      if (cancelled) {
-        txState.doCleanup();
-      } else {
-        txState.doAfterCompletion(status);
+      switch (action) {
+        case CANCEL:
+          txState.doCleanup();
+          break;
+        case COMMIT:
+          txState.doAfterCompletionCommit();
+          break;
+        case ROLLBACK:
+          txState.doAfterCompletionRollback();
+          break;
       }
     } catch (RuntimeException exception) {
       this.exception = exception;
@@ -56,13 +69,15 @@ public class AfterCompletion {
   }
 
   private void waitForExecuteOrCancel(CancelCriterion cancelCriterion) {
-    waitForCondition(cancelCriterion, () -> status != -1 || cancelled);
+    waitForCondition(cancelCriterion, () -> action != null);
   }
 
   private synchronized void waitForCondition(CancelCriterion cancelCriterion,
       BooleanSupplier condition) {
     while (!condition.getAsBoolean()) {
-      cancelCriterion.checkCancelInProgress(null);
+      if (cancelCriterion != null) {
+        cancelCriterion.checkCancelInProgress(null);
+      }
       try {
         logger.debug("waiting for notification");
         wait(1000);
@@ -72,26 +87,35 @@ public class AfterCompletion {
     }
   }
 
-  public synchronized void execute(CancelCriterion cancelCriterion, int status) {
-    this.status = status;
-    signalAndWaitForDoOp(cancelCriterion);
+  public void executeCommit() {
+    executeAction(Action.COMMIT);
   }
 
-  private void signalAndWaitForDoOp(CancelCriterion cancelCriterion) {
-    notifyAll();
-    waitUntilFinished(cancelCriterion);
+  public void executeRollback() {
+    executeAction(Action.ROLLBACK);
+  }
+
+  private synchronized void executeAction(Action action) {
+    this.action = action;
+    signalAndWaitForDoOp();
     if (exception != null) {
       throw exception;
     }
+
   }
 
-  private void waitUntilFinished(CancelCriterion cancelCriterion) {
-    waitForCondition(cancelCriterion, () -> finished);
+  private void signalAndWaitForDoOp() {
+    notifyAll();
+    waitUntilFinished();
   }
 
-  public synchronized void cancel(CancelCriterion cancelCriterion) {
-    cancelled = true;
-    signalAndWaitForDoOp(cancelCriterion);
+  private void waitUntilFinished() {
+    waitForCondition(null, () -> finished);
+  }
+
+  public synchronized void cancel() {
+    action = Action.CANCEL;
+    signalAndWaitForDoOp();
   }
 
   public synchronized boolean isStarted() {

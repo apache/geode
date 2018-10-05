@@ -191,7 +191,7 @@ public class OffHeapRegionEntryHelper {
       @Released StoredObject expectedValue) {
     long oldAddress = objectToAddress(expectedValue);
     final long newAddress = objectToAddress(Token.REMOVED_PHASE2);
-    if (re.setAddress(oldAddress, newAddress) || re.getAddress() != newAddress) {
+    if (re.setAddress(oldAddress, newAddress)) {
       releaseAddress(oldAddress);
     } /*
        * else { if (!calledSetValue || re.getAddress() != newAddress) { expectedValue.release(); } }
@@ -276,7 +276,9 @@ public class OffHeapRegionEntryHelper {
   }
 
   static int decodeAddressToDataSize(long addr) {
-    assert (addr & ENCODED_BIT) != 0;
+    if ((addr & ENCODED_BIT) == 0) {
+      throw new AssertionError("Invalid address: " + addr);
+    }
     boolean isLong = (addr & LONG_BIT) != 0;
     if (isLong) {
       return 9;
@@ -291,7 +293,9 @@ public class OffHeapRegionEntryHelper {
    * @throws UnsupportedOperationException if the address has compressed data
    */
   static byte[] decodeUncompressedAddressToBytes(long addr) {
-    assert (addr & COMPRESSED_BIT) == 0 : "Did not expect encoded address to be compressed";
+    if ((addr & COMPRESSED_BIT) != 0) {
+      throw new AssertionError("Did not expect encoded address to be compressed");
+    }
     return decodeAddressToRawBytes(addr);
   }
 
@@ -300,7 +304,9 @@ public class OffHeapRegionEntryHelper {
    * compressed then the raw bytes are the compressed bytes.
    */
   static byte[] decodeAddressToRawBytes(long addr) {
-    assert (addr & ENCODED_BIT) != 0;
+    if ((addr & ENCODED_BIT) == 0) {
+      throw new AssertionError("Invalid address: " + addr);
+    }
     int size = (int) ((addr & SIZE_MASK) >> SIZE_SHIFT);
     boolean isLong = (addr & LONG_BIT) != 0;
     byte[] bytes;

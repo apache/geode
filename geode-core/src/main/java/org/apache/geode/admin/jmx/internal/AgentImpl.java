@@ -65,7 +65,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -185,6 +185,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @throws IllegalArgumentException if agentConfig is null
    */
   public AgentImpl(AgentConfigImpl agentConfig) throws AdminException, IllegalArgumentException {
+    shutdownHook = new LoggingThread("Shutdown", false, () -> disconnectFromSystem());
     addShutdownHook();
     if (agentConfig == null) {
       throw new IllegalArgumentException(
@@ -362,8 +363,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
       logger.info(LocalizedMessage.create(LocalizedStrings.AgentImpl_AGENT_HAS_STOPPED));
     } finally {
       LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
-      LoggingThreadGroup.cleanUpThreadGroups(); // bug35388 - logwriters accumulate, causing mem
-                                                // leak
     }
 
   }
@@ -834,13 +833,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     return this.logWriter;
   }
 
-  private final Thread shutdownHook =
-      new Thread(LoggingThreadGroup.createThreadGroup("Shutdown"), "Shutdown") {
-        @Override
-        public void run() {
-          disconnectFromSystem();
-        }
-      };
+  private final Thread shutdownHook;
 
   /**
    * Adds a ShutdownHook to the Agent for cleaning up any resources

@@ -17,10 +17,14 @@
 # limitations under the License.
 
 
+sanitizeName() {
+  echo ${1} | tr "._/" "-" | tr '[:upper:]' '[:lower:]'
+}
+
 getSanitizedBranch () {
-  echo ${1} | tr "_/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-20
+  echo $(sanitizeName ${1}) | cut -c 1-20
 }
 
 getSanitizedFork () {
-  echo ${1} | tr "_/" "-" | tr '[:upper:]' '[:lower:]' | cut -c 1-16
+  echo $(sanitizeName ${1}) | cut -c 1-16
 }

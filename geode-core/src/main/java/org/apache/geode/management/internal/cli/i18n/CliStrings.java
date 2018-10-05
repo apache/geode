@@ -1547,7 +1547,7 @@ public class CliStrings {
   public static final String HINT__MSG__SHELL_NOT_INITIALIZED =
       "Shell is not initialized properly. Please restart the shell. Check gfsh-<timestamp>.log for errors.";
   public static final String HINT__MSG__UNKNOWN_TOPIC =
-      "Unknown topic: {0}. Use " + HINT + "; to view the list of available topics.";
+      "Unknown topic: {0}. Use " + HINT + " to view the list of available topics.";
   public static final String HINT__MSG__TOPICS_AVAILABLE =
       "Hints are available for the following topics. Use \"" + HINT
           + " <topic-name>\" for a specific hint.";
@@ -1594,6 +1594,9 @@ public class CliStrings {
   public static final String IMPORT_DATA__INVOKE_CALLBACKS = "invoke-callbacks";
   public static final String IMPORT_DATA__INVOKE_CALLBACKS__HELP =
       "Whether callbacks should be invoked";
+
+  public static final String INTERCEPTOR_PASSWORD = "Password: ";
+  public static final String INTERCEPTOR_USERNAME = "Username: ";
 
   /* 'list async-event-queues' command */
   public static final String LIST_ASYNC_EVENT_QUEUES = "list async-event-queues";

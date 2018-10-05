@@ -23,10 +23,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -57,7 +53,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
@@ -113,14 +109,12 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
       ThreadsMonitoring tMonitoring) {
-    super(LoggingThreadGroup.createThreadGroup("Event Processor for GatewaySender_" + id, logger),
-        "Event Processor for GatewaySender_" + id, sender, tMonitoring);
+    super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
 
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();
 
     initializeMessageQueue(id);
-    setDaemon(true);
   }
 
   @Override
@@ -384,9 +378,6 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       if (m != null) {
         for (EventWrapper ew : m.values()) {
           GatewaySenderEventImpl gatewayEvent = ew.event;
-          if (logger.isDebugEnabled()) {
-            logger.debug("releaseUnprocessedEvents:" + gatewayEvent);
-          }
           gatewayEvent.release();
         }
         this.unprocessedEvents = null;
@@ -431,14 +422,9 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         } else {
           // If it is not, create an uninitialized GatewayEventImpl and
           // put it into the map of unprocessed events.
-          // 2 Special cases:
-          // 1) UPDATE_VERSION_STAMP: only enqueue to primary
-          // 2) CME && !originRemote: only enqueue to primary
-          if (!(event.getOperation().equals(Operation.UPDATE_VERSION_STAMP)
-              || ((EntryEventImpl) event).isConcurrencyConflict() && !event.isOriginRemote())) {
-            senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false); // OFFHEAP
-            handleSecondaryEvent(senderEvent);
-          }
+          senderEvent = new GatewaySenderEventImpl(operation, event, substituteValue, false); // OFFHEAP
+                                                                                              // ok
+          handleSecondaryEvent(senderEvent);
         }
       }
     }
@@ -828,20 +814,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
    * Initialize the Executor that handles listener events. Only used by non-primary gateway senders
    */
   private void initializeListenerExecutor() {
-    // Create the ThreadGroups
-    final ThreadGroup loggerGroup =
-        LoggingThreadGroup.createThreadGroup("Gateway Listener Group", logger);
-
-    // Create the Executor
-    ThreadFactory tf = new ThreadFactory() {
-      public Thread newThread(Runnable command) {
-        Thread thread = new Thread(loggerGroup, command, "Queued Gateway Listener Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
-    this.executor = new ThreadPoolExecutor(1, 1/* max unused */, 120, TimeUnit.SECONDS, q, tf);
+    this.executor =
+        LoggingExecutors.newFixedThreadPoolWithTimeout("Queued Gateway Listener Thread", 1, 120);
   }
 
   private void shutdownListenerExecutor() {
