@@ -32,7 +32,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -98,12 +97,12 @@ public class ClientStatsManager {
       currentCache.getCancelCriterion().checkCancelInProgress(cwx);
       // TODO: Need to analyze these exception scenarios.
       logger.warn(
-          LocalizedStrings.ClientStatsManager_FAILED_TO_SEND_CLIENT_HEALTH_STATS_TO_CACHESERVER,
+          "Failed to send client health stats to cacheserver.",
           cwx);
     } catch (Exception e) {
       pool.getCancelCriterion().checkCancelInProgress(e);
       currentCache.getCancelCriterion().checkCancelInProgress(e);
-      logger.info(LocalizedStrings.ClientStatsManager_FAILED_TO_PUBLISH_CLIENT_STATISTICS, e);
+      logger.info("Failed to publish client statistics", e);
     }
 
     if (logger.isDebugEnabled()) {
@@ -138,7 +137,7 @@ public class ClientStatsManager {
     if (restart) {
       if (logger.isInfoEnabled()) {
         logger.info(
-            LocalizedStrings.ClientStatsManager_CLIENTSTATSMANAGER_INTIALIZING_THE_STATISTICS);
+            "ClientStatsManager, intializing the statistics...");
       }
       cachePerfStats = null;
       vmStats = null;
@@ -166,14 +165,14 @@ public class ClientStatsManager {
 
     // Validate that cache has changed before logging the warning, thus logging it once per cache
     if (cachePerfStats == null && restart) {
-      logger.warn(LocalizedStrings.ClientStatsManager_CLIENTSTATSMANAGER_0_ARE_NOT_AVAILABLE
-          .toLocalizedString("CachePerfStats"));
+      logger.warn(String.format("ClientStatsManager, %s are not available.",
+          "CachePerfStats"));
     }
 
     // Validate that cache has changed before logging the warning, thus logging it once per cache
     if (vmStats == null && restart) {
-      logger.warn(LocalizedStrings.ClientStatsManager_CLIENTSTATSMANAGER_0_ARE_NOT_AVAILABLE
-          .toLocalizedString("VMStats"));
+      logger.warn(String.format("ClientStatsManager, %s are not available.",
+          "VMStats"));
     }
 
     return true;

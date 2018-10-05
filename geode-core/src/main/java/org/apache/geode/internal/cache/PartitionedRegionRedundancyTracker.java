@@ -17,9 +17,7 @@ package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Keeps track redundancy statistics across the buckets of a given {@link PartitionedRegion}
@@ -82,9 +80,8 @@ class PartitionedRegionRedundancyTracker {
   synchronized void reportBucketCount(int bucketCopies) {
     if (bucketCopies < lowestBucketCopies) {
       lowestBucketCopies = bucketCopies;
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.BucketAdvisor_REDUNDANCY_HAS_DROPPED_BELOW_0_CONFIGURED_COPIES_TO_1_ACTUAL_COPIES_FOR_2,
-          new Object[] {targetRedundancy + 1, bucketCopies, regionPath}));
+      logger.warn("Redundancy has dropped below {} configured copies to {} actual copies for {}",
+          new Object[] {targetRedundancy + 1, bucketCopies, regionPath});
     }
   }
 

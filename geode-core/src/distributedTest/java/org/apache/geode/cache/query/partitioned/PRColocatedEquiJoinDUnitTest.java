@@ -60,7 +60,6 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -772,8 +771,9 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
       } catch (UnsupportedOperationException e) {
         if (!e.getMessage().equalsIgnoreCase(
-            LocalizedStrings.DefaultQuery_A_QUERY_ON_A_PARTITIONED_REGION_0_MAY_NOT_REFERENCE_ANY_OTHER_REGION_1
-                .toLocalizedString(name, "/" + coloName))) {
+            String.format(
+                "A query on a Partitioned Region ( %s ) may not reference any other region if query is NOT executed within a Function",
+                name, "/" + coloName))) {
           throw e;
         }
       }

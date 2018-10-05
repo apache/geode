@@ -18,7 +18,6 @@ import java.io.IOException;
 
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -26,7 +25,6 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -51,7 +49,7 @@ public class UnregisterInterest extends BaseCommand {
     String regionName = null;
     Object key = null;
     int interestType = 0;
-    StringId errMessage = null;
+    String errMessage = null;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
     regionNamePart = clientMessage.getPart(0);
@@ -88,14 +86,14 @@ public class UnregisterInterest extends BaseCommand {
     // Process the unregister interest request
     if ((key == null) && (regionName == null)) {
       errMessage =
-          LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_AND_KEY_FOR_THE_UNREGISTER_INTEREST_REQUEST_ARE_NULL;
+          "The input region name and key for the unregister interest request are null.";
     } else if (key == null) {
       errMessage =
-          LocalizedStrings.UnRegisterInterest_THE_INPUT_KEY_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
+          "The input key for the unregister interest request is null.";
     } else if (regionName == null) {
       errMessage =
-          LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
-      String s = errMessage.toLocalizedString();
+          "The input region name for the unregister interest request is null.";
+      String s = errMessage;
       logger.warn("{}: {}", serverConnection.getName(), s);
       writeErrorResponse(clientMessage, MessageType.UNREGISTER_INTEREST_DATA_ERROR, s,
           serverConnection);

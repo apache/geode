@@ -39,9 +39,7 @@ import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A model of the load on all of the members for a partitioned region. This model is used to find
@@ -286,10 +284,10 @@ public class PartitionedRegionLoadModel {
         }
         // This state should never happen
         if (!memberRollup.getBuckets().isEmpty()) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.PartitionedRegionLoadModel_INCOMPLETE_COLOCATION,
+          logger.warn(
+              "PartitionedRegionLoadModel - member {} has incomplete colocation, but it has buckets for some regions. Should have colocated regions {} but had {} and contains buckets {}",
               new Object[] {memberRollup, this.allColocatedRegions,
-                  memberRollup.getColocatedMembers().keySet(), memberRollup.getBuckets()}));
+                  memberRollup.getColocatedMembers().keySet(), memberRollup.getBuckets()});
         }
         for (Bucket bucket : new HashSet<Bucket>(memberRollup.getBuckets())) {
           bucket.removeMember(memberRollup);

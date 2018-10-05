@@ -33,7 +33,6 @@ import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialAsyncEventQueueCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
@@ -152,7 +151,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   public AsyncEventQueue create(String asyncQueueId, AsyncEventListener listener) {
     if (listener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AsyncEventQueue_ASYNC_EVENT_LISTENER_CANNOT_BE_NULL.toLocalizedString());
+          "AsyncEventListener cannot be null");
     }
 
     AsyncEventQueue asyncEventQueue;
@@ -188,8 +187,8 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 
     if (gatewaySenderAttributes.getDispatcherThreads() <= 0) {
       throw new AsyncEventQueueConfigurationException(
-          LocalizedStrings.AsyncEventQueue_0_CANNOT_HAVE_DISPATCHER_THREADS_LESS_THAN_1
-              .toLocalizedString(id));
+          String.format("AsyncEventQueue %s can not be created with dispatcher threads less than 1",
+              id));
     }
 
     GatewaySender sender;
@@ -197,8 +196,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       if (gatewaySenderAttributes.getOrderPolicy() != null
           && gatewaySenderAttributes.getOrderPolicy().equals(OrderPolicy.THREAD)) {
         throw new AsyncEventQueueConfigurationException(
-            LocalizedStrings.AsyncEventQueue_0_CANNOT_BE_CREATED_WITH_ORDER_POLICY_1
-                .toLocalizedString(id, gatewaySenderAttributes.getOrderPolicy()));
+            String.format(
+                "AsyncEventQueue %s can not be created with OrderPolicy %s when it is set parallel",
+                id, gatewaySenderAttributes.getOrderPolicy()));
       }
 
       if (cache instanceof CacheCreation) {

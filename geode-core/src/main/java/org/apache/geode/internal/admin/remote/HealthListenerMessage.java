@@ -25,7 +25,6 @@ import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular agent who was registered a health listener on a GemFireVM.
@@ -81,8 +80,8 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
 
   @Override
   public String toString() {
-    return LocalizedStrings.HealthListenerMessage_THE_STATUS_OF_LISTENER_0_IS_1
-        .toLocalizedString(new Object[] {Integer.valueOf(this.listenerId), this.status});
+    return String.format("The status of listener %s is %s",
+        new Object[] {Integer.valueOf(this.listenerId), this.status});
   }
 
 }

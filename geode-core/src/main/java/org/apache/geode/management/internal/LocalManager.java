@@ -113,10 +113,10 @@ public class LocalManager extends Manager {
 
               }
             };
-            final ThreadGroup group = LoggingThreadGroup.createThreadGroup(
-                ManagementStrings.MANAGEMENT_TASK_THREAD_GROUP.toLocalizedString(), logger);
+            final ThreadGroup group =
+                LoggingThreadGroup.createThreadGroup("Management Task Thread Group", logger);
             Thread thread =
-                new Thread(group, r, ManagementStrings.MANAGEMENT_TASK.toLocalizedString());
+                new Thread(group, r, "Management Task");
             thread.setDaemon(true);
             return thread;
           }
@@ -368,7 +368,7 @@ public class LocalManager extends Manager {
         }
       } catch (CancelException ex) {
         if (logger.isDebugEnabled())
-          logger.debug(ManagementStrings.MANAGEMENT_TASK_CANCELLED.toLocalizedString());
+          logger.debug("Management Task Cancelled");
         return;
       } catch (GemFireException ex) {
         if (!cache.isClosed() && logger.isDebugEnabled()) {

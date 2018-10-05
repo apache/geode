@@ -203,7 +203,6 @@ import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.AbstractConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
@@ -270,14 +269,15 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   private void minMaxCheck(String propName, int value, int minValue, int maxValue) {
     if (value < minValue) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-              .toLocalizedString(
-                  propName, value, minValue));
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
+
+              propName, value, minValue));
     } else if (value > maxValue) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2
-              .toLocalizedString(
-                  propName, value, maxValue));
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be greater than \"%s\".",
+              propName, value, maxValue));
     }
   }
 
@@ -294,9 +294,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected int checkTcpPort(int value) {
     if (getClusterSSLEnabled() && value != 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
-              .toLocalizedString(
-                  TCP_PORT, value, CLUSTER_SSL_ENABLED));
+          String.format("Could not set %s to %s because its value must be 0 when %s is true.",
+              TCP_PORT, value, CLUSTER_SSL_ENABLED));
     }
     return value;
   }
@@ -305,9 +304,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected int checkMcastPort(int value) {
     if (getClusterSSLEnabled() && value != 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_0_WHEN_2_IS_TRUE
-              .toLocalizedString(
-                  MCAST_PORT, value, CLUSTER_SSL_ENABLED));
+          String.format("Could not set %s to %s because its value must be 0 when %s is true.",
+              MCAST_PORT, value, CLUSTER_SSL_ENABLED));
     }
     return value;
   }
@@ -316,8 +314,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected InetAddress checkMcastAddress(InetAddress value) {
     if (!value.isMulticastAddress()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_IT_WAS_NOT_A_MULTICAST_ADDRESS
-              .toLocalizedString(MCAST_ADDRESS, value));
+          String.format("Could not set %s to %s because it was not a multicast address.",
+              MCAST_ADDRESS, value));
     }
     return value;
   }
@@ -326,8 +324,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected String checkBindAddress(String value) {
     if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-              .toLocalizedString(value, SocketCreator.getMyAddresses()));
+          String.format(
+              "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
+              value, SocketCreator.getMyAddresses()));
     }
     return value;
   }
@@ -336,8 +335,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected String checkServerBindAddress(String value) {
     if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-              .toLocalizedString(value, SocketCreator.getMyAddresses()));
+          String.format(
+              "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
+              value, SocketCreator.getMyAddresses()));
     }
     return value;
   }
@@ -346,8 +346,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected Boolean checkClusterSSLEnabled(Boolean value) {
     if (value && getMcastPort() != 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_MUST_BE_FALSE_WHEN_2_IS_NOT_0
-              .toLocalizedString(CLUSTER_SSL_ENABLED, value, MCAST_PORT));
+          String.format("Could not set %s to %s because its value must be false when %s is not 0.",
+              CLUSTER_SSL_ENABLED, value, MCAST_PORT));
     }
     return value;
   }
@@ -356,8 +356,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected String checkHttpServiceBindAddress(String value) {
     if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-              .toLocalizedString(value, SocketCreator.getMyAddresses()));
+          String.format(
+              "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
+              value, SocketCreator.getMyAddresses()));
     }
     return value;
   }
@@ -370,16 +371,18 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     if (distributedSystemListener == null) {
       if (value < MIN_DISTRIBUTED_SYSTEM_ID) {
         throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-                .toLocalizedString(DISTRIBUTED_SYSTEM_ID, value,
-                    MIN_DISTRIBUTED_SYSTEM_ID));
+            String.format(
+                "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
+                DISTRIBUTED_SYSTEM_ID, value,
+                MIN_DISTRIBUTED_SYSTEM_ID));
       }
     }
     if (value > MAX_DISTRIBUTED_SYSTEM_ID) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2
-              .toLocalizedString(DISTRIBUTED_SYSTEM_ID, value,
-                  MAX_DISTRIBUTED_SYSTEM_ID));
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be greater than \"%s\".",
+              DISTRIBUTED_SYSTEM_ID, value,
+              MAX_DISTRIBUTED_SYSTEM_ID));
     }
     return value;
   }
@@ -417,8 +420,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
       }
       if (portIndex < 1) {
         throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0_HOST_NAME_WAS_EMPTY
-                .toLocalizedString(value));
+            String.format("Invalid locator %s. Host name was empty.",
+                value));
       }
 
       // starting in 5.1.0.4 we allow '@' as the bind-addr separator
@@ -455,8 +458,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractDistributionConfig_UNKNOWN_LOCATOR_BIND_ADDRESS_0
-                  .toLocalizedString(bindAddr));
+              String.format("Unknown locator bind address:  %s",
+                  bindAddr));
         }
 
         if (bindAddr.indexOf(':') >= 0) {
@@ -471,8 +474,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
       if (lastIndex == -1) {
         if (locator.indexOf('[') >= 0) {
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0
-                  .toLocalizedString(value));
+              String.format("Invalid locator:  %s",
+                  value));
 
         } else {
           // Using host:port syntax
@@ -488,12 +491,13 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
           return "";
         } else if (portVal < 1 || portVal > 65535) {
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0_THE_PORT_1_WAS_NOT_GREATER_THAN_ZERO_AND_LESS_THAN_65536
-                  .toLocalizedString(value, portVal));
+              String.format(
+                  "Invalid locator %s. The port %s was not greater than zero and less than 65,536.",
+                  value, portVal));
         }
       } catch (NumberFormatException ex) {
         throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_INVALID_LOCATOR_0.toLocalizedString(value));
+            String.format("Invalid locator:  %s", value));
       }
 
       locatorsb.append('[');
@@ -524,33 +528,38 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     int value = params.getByteAllowance();
     if (value < MIN_FC_BYTE_ALLOWANCE) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_BYTEALLOWANCE_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-              .toLocalizedString(MCAST_FLOW_CONTROL, value,
-                  MIN_FC_BYTE_ALLOWANCE));
+          String.format(
+              "Could not set %s.byteAllowance to %s because its value can not be less than %s",
+              MCAST_FLOW_CONTROL, value,
+              MIN_FC_BYTE_ALLOWANCE));
     }
     float fvalue = params.getRechargeThreshold();
     if (fvalue < MIN_FC_RECHARGE_THRESHOLD) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGETHRESHOLD_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-              .toLocalizedString(MCAST_FLOW_CONTROL, fvalue,
-                  MIN_FC_RECHARGE_THRESHOLD));
+          String.format(
+              "Could not set %s.rechargeThreshold to %s because its value can not be less than %s",
+              MCAST_FLOW_CONTROL, fvalue,
+              MIN_FC_RECHARGE_THRESHOLD));
     } else if (fvalue > MAX_FC_RECHARGE_THRESHOLD) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGETHRESHOLD_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2
-              .toLocalizedString(MCAST_FLOW_CONTROL, fvalue,
-                  MAX_FC_RECHARGE_THRESHOLD));
+          String.format(
+              "Could not set %s.rechargeThreshold to %s because its value can not be greater than %s",
+              MCAST_FLOW_CONTROL, fvalue,
+              MAX_FC_RECHARGE_THRESHOLD));
     }
     value = params.getRechargeBlockMs();
     if (value < MIN_FC_RECHARGE_BLOCK_MS) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGEBLOCKMS_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-              .toLocalizedString(MCAST_FLOW_CONTROL, value,
-                  MIN_FC_RECHARGE_BLOCK_MS));
+          String.format(
+              "Could not set %s.rechargeBlockMs to %s because its value can not be less than %s",
+              MCAST_FLOW_CONTROL, value,
+              MIN_FC_RECHARGE_BLOCK_MS));
     } else if (value > MAX_FC_RECHARGE_BLOCK_MS) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_RECHARGEBLOCKMS_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2
-              .toLocalizedString(MCAST_FLOW_CONTROL, value,
-                  MAX_FC_RECHARGE_BLOCK_MS));
+          String.format(
+              "Could not set %s.rechargeBlockMs to %s because its value can not be greater than %s",
+              MCAST_FLOW_CONTROL, value,
+              MAX_FC_RECHARGE_BLOCK_MS));
     }
     return params;
   }
@@ -564,9 +573,10 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     // One for each, UDP, FD_SOCk protocols and Cache Server.
     if (value[1] - value[0] < 2) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-              .toLocalizedString(MEMBERSHIP_PORT_RANGE, value[0] + "-" + value[1],
-                  3));
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
+              MEMBERSHIP_PORT_RANGE, value[0] + "-" + value[1],
+              3));
     }
     return value;
   }
@@ -590,8 +600,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
       String mcastInfo = MCAST_PORT + "[" + getMcastPort() + "]";
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED
-              .toLocalizedString(SECURITY_PEER_AUTH_INIT, value, mcastInfo));
+          String.format("Could not set %s to %s because %s must be 0 when security is enabled.",
+              SECURITY_PEER_AUTH_INIT, value, mcastInfo));
     }
     return value;
   }
@@ -601,8 +611,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     if (value != null && value.length() > 0 && getMcastPort() != 0) {
       String mcastInfo = MCAST_PORT + "[" + getMcastPort() + "]";
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_2_MUST_BE_0_WHEN_SECURITY_IS_ENABLED
-              .toLocalizedString(SECURITY_PEER_AUTHENTICATOR, value, mcastInfo));
+          String.format("Could not set %s to %s because %s must be 0 when security is enabled.",
+              SECURITY_PEER_AUTHENTICATOR, value, mcastInfo));
     }
     return value;
   }
@@ -611,15 +621,17 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected int checkSecurityLogLevel(int value) {
     if (value < MIN_LOG_LEVEL) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_LESS_THAN_2
-              .toLocalizedString(SECURITY_LOG_LEVEL,
-                  LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MIN_LOG_LEVEL)));
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be less than \"%s\".",
+              SECURITY_LOG_LEVEL,
+              LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MIN_LOG_LEVEL)));
     }
     if (value > MAX_LOG_LEVEL) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_COULD_NOT_SET_0_TO_1_BECAUSE_ITS_VALUE_CAN_NOT_BE_GREATER_THAN_2
-              .toLocalizedString(SECURITY_LOG_LEVEL,
-                  LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MAX_LOG_LEVEL)));
+          String.format(
+              "Could not set \"%s\" to \"%s\" because its value can not be greater than \"%s\".",
+              SECURITY_LOG_LEVEL,
+              LogWriterImpl.levelToString(value), LogWriterImpl.levelToString(MAX_LOG_LEVEL)));
     }
     return value;
   }
@@ -630,8 +642,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         || !protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.ASCII.name())
             && !protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.BINARY.name())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_MEMCACHED_PROTOCOL_MUST_BE_ASCII_OR_BINARY
-              .toLocalizedString());
+          "memcached-protocol must be ASCII or BINARY ");
     }
     return protocol;
   }
@@ -644,8 +655,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected String checkMemcachedBindAddress(String value) {
     if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_MEMCACHED_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-              .toLocalizedString(value, SocketCreator.getMyAddresses()));
+          String.format(
+              "The memcached-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
+              value, SocketCreator.getMyAddresses()));
     }
     return value;
   }
@@ -654,8 +666,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected String checkRedisBindAddress(String value) {
     if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AbstractDistributionConfig_REDIS_BIND_ADDRESS_0_INVALID_MUST_BE_IN_1
-              .toLocalizedString(value, SocketCreator.getMyAddresses()));
+          String.format(
+              "The redis-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
+              value, SocketCreator.getMyAddresses()));
     }
     return value;
   }
@@ -680,24 +693,23 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
           continue;
         default:
           throw new IllegalArgumentException(
-              LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_0_INVALID_TRY_1
-                  .toLocalizedString(value,
-                      StringUtils
-                          .join(new String[] {SecurableCommunicationChannel.ALL.getConstant(),
-                              SecurableCommunicationChannel.CLUSTER.getConstant(),
-                              SecurableCommunicationChannel.SERVER.getConstant(),
-                              SecurableCommunicationChannel.GATEWAY.getConstant(),
-                              SecurableCommunicationChannel.JMX.getConstant(),
-                              SecurableCommunicationChannel.WEB.getConstant(),
-                              SecurableCommunicationChannel.LOCATOR.getConstant()}, ",")));
+              String.format("%s is not in the valid set of options %s",
+                  value,
+                  StringUtils
+                      .join(new String[] {SecurableCommunicationChannel.ALL.getConstant(),
+                          SecurableCommunicationChannel.CLUSTER.getConstant(),
+                          SecurableCommunicationChannel.SERVER.getConstant(),
+                          SecurableCommunicationChannel.GATEWAY.getConstant(),
+                          SecurableCommunicationChannel.JMX.getConstant(),
+                          SecurableCommunicationChannel.WEB.getConstant(),
+                          SecurableCommunicationChannel.LOCATOR.getConstant()}, ",")));
       }
     }
     if (value.length > 0) {
       if (getClusterSSLEnabled() || getJmxManagerSSLEnabled() || getHttpServiceSSLEnabled()
           || getServerSSLEnabled() || getGatewaySSLEnabled()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-                .toLocalizedString());
+            "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
       }
     }
     return value;
@@ -723,8 +735,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
       // null is a "valid" value for any class
       if (!validValueClass.isInstance(attValue)) {
         throw new InvalidValueException(
-            LocalizedStrings.AbstractDistributionConfig_0_VALUE_1_MUST_BE_OF_TYPE_2
-                .toLocalizedString(attName, attValue, validValueClass.getName()));
+            String.format("%s  value %s must be of type  %s",
+                attName, attValue, validValueClass.getName()));
       }
     }
 
@@ -761,8 +773,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         return;
       }
       throw new InternalGemFireException(
-          LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0
-              .toLocalizedString(attName));
+          String.format("unhandled attribute name %s.",
+              attName));
     }
 
     Class[] pTypes = setter.getParameterTypes();
@@ -808,8 +820,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         return getSecurity(attName);
       }
       throw new InternalGemFireException(
-          LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0
-              .toLocalizedString(attName));
+          String.format("unhandled attribute name %s.",
+              attName));
     }
 
     try {
@@ -876,8 +888,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         return String.class;
       }
       throw new InternalGemFireException(
-          LocalizedStrings.AbstractDistributionConfig_UNHANDLED_ATTRIBUTE_NAME_0
-              .toLocalizedString(attName));
+          String.format("unhandled attribute name %s.",
+              attName));
     }
     return ca.type();
   }
@@ -888,131 +900,156 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     Map<String, String> m = new HashMap<>();
 
     m.put(ACK_WAIT_THRESHOLD,
-        LocalizedStrings.AbstractDistributionConfig_DEFAULT_ACK_WAIT_THRESHOLD_0_1_2
-            .toLocalizedString(DEFAULT_ACK_WAIT_THRESHOLD,
-                MIN_ACK_WAIT_THRESHOLD, MIN_ACK_WAIT_THRESHOLD));
+        String.format(
+            "The number of seconds a distributed message can wait for acknowledgment before it sends an alert to signal that something might be wrong with the system node that is unresponsive. After sending this alert the waiter continues to wait. The alerts are logged in the system log as warnings and if a gfc is running will cause a console alert to be signalled.  Defaults to %s.  Legal values are in the range [%s..%s].",
+            DEFAULT_ACK_WAIT_THRESHOLD,
+            MIN_ACK_WAIT_THRESHOLD, MIN_ACK_WAIT_THRESHOLD));
 
     m.put(ARCHIVE_FILE_SIZE_LIMIT,
-        LocalizedStrings.AbstractDistributionConfig_ARCHIVE_FILE_SIZE_LIMIT_NAME
-            .toLocalizedString());
+        "The maximum size in megabytes of a statistic archive file. Once this limit is exceeded, a new statistic archive file is created, and the current archive file becomes inactive. If set to zero, file size is unlimited.");
 
     m.put(ACK_SEVERE_ALERT_THRESHOLD,
-        LocalizedStrings.AbstractDistributionConfig_ACK_SEVERE_ALERT_THRESHOLD_NAME
-            .toLocalizedString(ACK_WAIT_THRESHOLD,
-                DEFAULT_ACK_SEVERE_ALERT_THRESHOLD,
-                MIN_ACK_SEVERE_ALERT_THRESHOLD,
-                MAX_ACK_SEVERE_ALERT_THRESHOLD));
+        String.format(
+            "The number of seconds a distributed message can wait for acknowledgment past %s before it ejects unresponsive members from the distributed system.  Defaults to %s.  Legal values are in the range [%s..%s].",
+            ACK_WAIT_THRESHOLD,
+            DEFAULT_ACK_SEVERE_ALERT_THRESHOLD,
+            MIN_ACK_SEVERE_ALERT_THRESHOLD,
+            MAX_ACK_SEVERE_ALERT_THRESHOLD));
 
     m.put(ARCHIVE_DISK_SPACE_LIMIT,
-        LocalizedStrings.AbstractDistributionConfig_ARCHIVE_DISK_SPACE_LIMIT_NAME
-            .toLocalizedString());
+        "The maximum size in megabytes of all inactive statistic archive files combined. If this limit is exceeded, inactive archive files will be deleted, oldest first, until the total size is within the limit. If set to zero, disk space usage is unlimited.");
 
-    m.put(CACHE_XML_FILE, LocalizedStrings.AbstractDistributionConfig_CACHE_XML_FILE_NAME_0
-        .toLocalizedString(DEFAULT_CACHE_XML_FILE));
+    m.put(CACHE_XML_FILE, String.format(
+        "The file whose contents is used, by default, to initialize a cache if one is created.  Defaults to %s.",
+        DEFAULT_CACHE_XML_FILE));
 
-    m.put(DISABLE_TCP, LocalizedStrings.AbstractDistributionConfig_DISABLE_TCP_NAME_0
-        .toLocalizedString(Boolean.FALSE));
+    m.put(DISABLE_TCP, String.format(
+        "Determines whether TCP/IP communications will be disabled, forcing use of datagrams between members of the distributed system. Defaults to %s",
+        Boolean.FALSE));
 
     m.put(ENABLE_TIME_STATISTICS,
-        LocalizedStrings.AbstractDistributionConfig_ENABLE_TIME_STATISTICS_NAME
-            .toLocalizedString());
+        "Turns on timings in distribution and cache statistics.  These are normally turned off to avoid expensive clock probes.");
 
-    m.put(DEPLOY_WORKING_DIR, LocalizedStrings.AbstractDistributionConfig_DEPLOY_WORKING_DIR_0
-        .toLocalizedString(DEFAULT_DEPLOY_WORKING_DIR));
+    m.put(DEPLOY_WORKING_DIR, String.format(
+        "The working directory that can be used to persist JARs deployed during runtime. Defaults to %s.",
+        DEFAULT_DEPLOY_WORKING_DIR));
 
-    m.put(LOG_FILE, LocalizedStrings.AbstractDistributionConfig_LOG_FILE_NAME_0
-        .toLocalizedString(DEFAULT_LOG_FILE));
+    m.put(LOG_FILE,
+        String.format("The file a running system will write log messages to.  Defaults to %s.",
+            DEFAULT_LOG_FILE));
 
     m.put(LOG_LEVEL,
-        LocalizedStrings.AbstractDistributionConfig_LOG_LEVEL_NAME_0_1
-            .toLocalizedString(LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL),
-                LogWriterImpl.allowedLogLevels()));
+        String.format(
+            "Controls the type of messages that will actually be written to the system log.  Defaults to %s.  Allowed values %s.",
+            LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL),
+            LogWriterImpl.allowedLogLevels()));
 
     m.put(LOG_FILE_SIZE_LIMIT,
-        LocalizedStrings.AbstractDistributionConfig_LOG_FILE_SIZE_LIMIT_NAME.toLocalizedString());
+        "The maximum size in megabytes of a child log file. Once this limit is exceeded, a new child log is created, and the current child log becomes inactive. If set to zero, child logging is disabled.");
 
     m.put(LOG_DISK_SPACE_LIMIT,
-        LocalizedStrings.AbstractDistributionConfig_LOG_DISK_SPACE_LIMIT_NAME.toLocalizedString());
+        "The maximum size in megabytes of all inactive log files combined. If this limit is exceeded, inactive log files will be deleted, oldest first, until the total size is within the limit. If set to zero, disk space usage is unlimited.");
 
-    m.put(LOCATORS, LocalizedStrings.AbstractDistributionConfig_LOCATORS_NAME_0
-        .toLocalizedString(DEFAULT_LOCATORS));
+    m.put(LOCATORS, String.format(
+        "A possibly empty list of locators used to find other system nodes. Each element of the list must be a host name followed by bracketed, [], port number. Host names may be followed by a colon and a bind address used by the locator on that host.  Multiple elements must be comma separated. Defaults to %s.",
+        DEFAULT_LOCATORS));
 
-    m.put(LOCATOR_WAIT_TIME, LocalizedStrings.AbstractDistributionConfig_LOCATOR_WAIT_TIME_NAME_0
-        .toLocalizedString(DEFAULT_LOCATOR_WAIT_TIME));
+    m.put(LOCATOR_WAIT_TIME, String.format(
+        "The amount of time, in seconds, to wait for a locator to be available before throwing an exception during startup.  The default is %s.",
+        DEFAULT_LOCATOR_WAIT_TIME));
 
     m.put(TCP_PORT,
-        LocalizedStrings.AbstractDistributionConfig_TCP_PORT_NAME_0_1_2
-            .toLocalizedString(DEFAULT_TCP_PORT,
-                MIN_TCP_PORT, MAX_TCP_PORT));
+        String.format(
+            "The port used for tcp/ip communcations in the distributed system. If zero then a random available port is selected by the operating system.   Defaults to %s.  Legal values are in the range [%s..%s].",
+            DEFAULT_TCP_PORT,
+            MIN_TCP_PORT, MAX_TCP_PORT));
 
     m.put(MCAST_PORT,
-        LocalizedStrings.AbstractDistributionConfig_MCAST_PORT_NAME_0_1_2
-            .toLocalizedString(DEFAULT_MCAST_PORT,
-                MIN_MCAST_PORT, MAX_MCAST_PORT));
+        String.format(
+            "The port used for multicast communcations in the distributed system. If zero then locators are used, and multicast is disabled.   Defaults to %s.  Legal values are in the range [%s..%s].",
+            DEFAULT_MCAST_PORT,
+            MIN_MCAST_PORT, MAX_MCAST_PORT));
 
     m.put(MCAST_ADDRESS,
-        LocalizedStrings.AbstractDistributionConfig_MCAST_ADDRESS_NAME_0_1.toLocalizedString(
+        String.format(
+            "The address used for multicast communications. Only used if %s is non-zero.  Defaults to %s.",
             DEFAULT_MCAST_PORT, DEFAULT_MCAST_ADDRESS));
 
     m.put(MCAST_TTL,
-        LocalizedStrings.AbstractDistributionConfig_MCAST_TTL_NAME_0_1_2
-            .toLocalizedString(DEFAULT_MCAST_TTL,
-                MIN_MCAST_TTL, MAX_MCAST_TTL));
+        String.format(
+            "Determines how far through your network mulicast packets will propogate. Defaults to %s.  Legal values are in the range [%s..%s].",
+            DEFAULT_MCAST_TTL,
+            MIN_MCAST_TTL, MAX_MCAST_TTL));
 
     m.put(MCAST_SEND_BUFFER_SIZE,
-        LocalizedStrings.AbstractDistributionConfig_MCAST_SEND_BUFFER_SIZE_NAME_0
-            .toLocalizedString(DEFAULT_MCAST_SEND_BUFFER_SIZE));
+        String.format(
+            "Sets the size of multicast socket transmission buffers, in bytes.  Defaults to %s but this may be limited by operating system settings",
+            DEFAULT_MCAST_SEND_BUFFER_SIZE));
 
     m.put(MCAST_RECV_BUFFER_SIZE,
-        LocalizedStrings.AbstractDistributionConfig_MCAST_RECV_BUFFER_SIZE_NAME_0
-            .toLocalizedString(DEFAULT_MCAST_RECV_BUFFER_SIZE));
+        String.format(
+            "Sets the size of multicast socket receive buffers, in bytes.  Defaults to %s but this may be limited by operating system settings",
+            DEFAULT_MCAST_RECV_BUFFER_SIZE));
 
-    m.put(MCAST_FLOW_CONTROL, LocalizedStrings.AbstractDistributionConfig_MCAST_FLOW_CONTROL_NAME_0
-        .toLocalizedString(DEFAULT_MCAST_FLOW_CONTROL));
+    m.put(MCAST_FLOW_CONTROL, String.format(
+        "Sets the flow-of-control parameters for multicast messaging.  Defaults to %s.",
+        DEFAULT_MCAST_FLOW_CONTROL));
 
-    m.put(MEMBER_TIMEOUT, LocalizedStrings.AbstractDistributionConfig_MEMBER_TIMEOUT_NAME_0
-        .toLocalizedString(DEFAULT_MEMBER_TIMEOUT));
+    m.put(MEMBER_TIMEOUT, String.format(
+        "Sets the number of milliseconds to wait for ping responses when determining whether another member is still alive. Defaults to %s.",
+        DEFAULT_MEMBER_TIMEOUT));
 
     // for some reason the default port range is null under some circumstances
     int[] range = DEFAULT_MEMBERSHIP_PORT_RANGE;
     String srange = range == null ? "not available" : "" + range[0] + "-" + range[1];
-    String msg = LocalizedStrings.AbstractDistributionConfig_MEMBERSHIP_PORT_RANGE_NAME_0
-        .toLocalizedString(srange);
+    String msg = String.format(
+        "Sets the range of datagram socket ports that can be used for membership ID purposes and unicast datagram messaging. Defaults to %s.",
+        srange);
     m.put(MEMBERSHIP_PORT_RANGE, msg);
 
     m.put(UDP_SEND_BUFFER_SIZE,
-        LocalizedStrings.AbstractDistributionConfig_UDP_SEND_BUFFER_SIZE_NAME_0
-            .toLocalizedString(DEFAULT_UDP_SEND_BUFFER_SIZE));
+        String.format(
+            "Sets the size of datagram socket transmission buffers, in bytes.  Defaults to %s but this may be limited by operating system settings",
+            DEFAULT_UDP_SEND_BUFFER_SIZE));
 
     m.put(UDP_RECV_BUFFER_SIZE,
-        LocalizedStrings.AbstractDistributionConfig_UDP_RECV_BUFFER_SIZE_NAME_0
-            .toLocalizedString(DEFAULT_UDP_RECV_BUFFER_SIZE));
+        String.format(
+            "Sets the size of datagram socket receive buffers, in bytes. Defaults to %s but this may be limited by operating system settings",
+            DEFAULT_UDP_RECV_BUFFER_SIZE));
 
-    m.put(UDP_FRAGMENT_SIZE, LocalizedStrings.AbstractDistributionConfig_UDP_FRAGMENT_SIZE_NAME_0
-        .toLocalizedString(DEFAULT_UDP_FRAGMENT_SIZE));
+    m.put(UDP_FRAGMENT_SIZE, String.format(
+        "Sets the maximum size of a datagram for UDP and multicast transmission.  Defaults to %s.",
+        DEFAULT_UDP_FRAGMENT_SIZE));
 
     m.put(SOCKET_LEASE_TIME,
-        LocalizedStrings.AbstractDistributionConfig_SOCKET_LEASE_TIME_NAME_0_1_2
-            .toLocalizedString(DEFAULT_SOCKET_LEASE_TIME,
-                MIN_SOCKET_LEASE_TIME, MAX_SOCKET_LEASE_TIME));
+        String.format(
+            "The number of milliseconds a thread can keep exclusive access to a socket that it is not actively using. Once a thread loses its lease to a socket it will need to re-acquire a socket the next time it sends a message. A value of zero causes socket leases to never expire. Defaults to %s .  Legal values are in the range [%s..%s].",
+            DEFAULT_SOCKET_LEASE_TIME,
+            MIN_SOCKET_LEASE_TIME, MAX_SOCKET_LEASE_TIME));
 
     m.put(SOCKET_BUFFER_SIZE,
-        LocalizedStrings.AbstractDistributionConfig_SOCKET_BUFFER_SIZE_NAME_0_1_2
-            .toLocalizedString(DEFAULT_SOCKET_BUFFER_SIZE,
-                MIN_SOCKET_BUFFER_SIZE, MAX_SOCKET_BUFFER_SIZE));
+        String.format(
+            "The size of each socket buffer, in bytes. Smaller buffers conserve memory. Larger buffers can improve performance; in particular if large messages are being sent. Defaults to %s.  Legal values are in the range [%s..%s].",
+            DEFAULT_SOCKET_BUFFER_SIZE,
+            MIN_SOCKET_BUFFER_SIZE, MAX_SOCKET_BUFFER_SIZE));
 
-    m.put(CONSERVE_SOCKETS, LocalizedStrings.AbstractDistributionConfig_CONSERVE_SOCKETS_NAME_0
-        .toLocalizedString(Boolean.TRUE));
+    m.put(CONSERVE_SOCKETS, String.format(
+        "If true then a minimal number of sockets will be used when connecting to the distributed system. This conserves resource usage but can cause performance to suffer. If false, the default, then every application thread that sends distribution messages to other members of the distributed system will own its own sockets and have exclusive access to them. Defaults to %s.",
+        DEFAULT_CONSERVE_SOCKETS));
 
     m.put(ROLES,
-        LocalizedStrings.AbstractDistributionConfig_ROLES_NAME_0.toLocalizedString(DEFAULT_ROLES));
+        String.format(
+            "The application roles that this member performs in the distributed system. This is a comma delimited list of user-defined strings. Any number of members can be configured to perform the same role, and a member can be configured to perform any number of roles. Defaults to %s.",
+            DEFAULT_ROLES));
 
-    m.put(BIND_ADDRESS, LocalizedStrings.AbstractDistributionConfig_BIND_ADDRESS_NAME_0
-        .toLocalizedString(DEFAULT_BIND_ADDRESS));
+    m.put(BIND_ADDRESS, String.format(
+        "The address server sockets will listen on. An empty string causes the server socket to listen on all local addresses. Defaults to %s.",
+        DEFAULT_BIND_ADDRESS));
 
     m.put(SERVER_BIND_ADDRESS,
-        LocalizedStrings.AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0
-            .toLocalizedString(DEFAULT_BIND_ADDRESS));
+        String.format(
+            "The address server sockets in a client-server topology will listen on. An empty string causes the server socket to listen on all local addresses. Defaults to %s.",
+            DEFAULT_BIND_ADDRESS));
 
     m.put(NAME,
         "A name that uniquely identifies a member in its distributed system."
@@ -1020,34 +1057,41 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
             + " Defaults to \"\".");
 
     m.put(STATISTIC_ARCHIVE_FILE,
-        LocalizedStrings.AbstractDistributionConfig_STATISTIC_ARCHIVE_FILE_NAME_0
-            .toLocalizedString(DEFAULT_STATISTIC_ARCHIVE_FILE));
+        String.format("The file a running system will write statistic samples to.  Defaults to %s.",
+            DEFAULT_STATISTIC_ARCHIVE_FILE));
 
     m.put(STATISTIC_SAMPLE_RATE,
-        LocalizedStrings.AbstractDistributionConfig_STATISTIC_SAMPLE_RATE_NAME_0_1_2
-            .toLocalizedString(DEFAULT_STATISTIC_SAMPLE_RATE,
-                MIN_STATISTIC_SAMPLE_RATE,
-                MAX_STATISTIC_SAMPLE_RATE));
+        String.format(
+            "The rate, in milliseconds, that a running system will sample statistics.  Defaults to %s.  Legal values are in the range [%s..%s].",
+            DEFAULT_STATISTIC_SAMPLE_RATE,
+            MIN_STATISTIC_SAMPLE_RATE,
+            MAX_STATISTIC_SAMPLE_RATE));
 
     m.put(STATISTIC_SAMPLING_ENABLED,
-        LocalizedStrings.AbstractDistributionConfig_STATISTIC_SAMPLING_ENABLED_NAME_0
-            .toLocalizedString(Boolean.TRUE));
+        String.format(
+            "If false then archiving is disabled and operating system statistics are no longer updated.  Defaults to %s.",
+            Boolean.TRUE));
 
-    m.put(SSL_CLUSTER_ALIAS, LocalizedStrings.AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+    m.put(SSL_CLUSTER_ALIAS, String.format(
+        "SSL communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to %s.",
+        Boolean.valueOf(DEFAULT_SSL_ALIAS)));
 
-    m.put(CLUSTER_SSL_ENABLED, LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_NAME_0
-        .toLocalizedString(Boolean.FALSE));
+    m.put(CLUSTER_SSL_ENABLED, String.format(
+        "Communication is performed through SSL when this property is set to true. Defaults to %s.",
+        Boolean.FALSE));
 
-    m.put(CLUSTER_SSL_PROTOCOLS, LocalizedStrings.AbstractDistributionConfig_SSL_PROTOCOLS_NAME_0
-        .toLocalizedString(DEFAULT_SSL_PROTOCOLS));
+    m.put(CLUSTER_SSL_PROTOCOLS, String.format(
+        "List of available SSL protocols that are to be enabled. Defaults to %s meaning your provider's defaults.",
+        DEFAULT_SSL_PROTOCOLS));
 
-    m.put(CLUSTER_SSL_CIPHERS, LocalizedStrings.AbstractDistributionConfig_SSL_CIPHERS_NAME_0
-        .toLocalizedString(DEFAULT_SSL_CIPHERS));
+    m.put(CLUSTER_SSL_CIPHERS, String.format(
+        "List of available SSL cipher suites that are to be enabled. Defaults to %s meaning your provider's defaults.",
+        DEFAULT_SSL_CIPHERS));
 
     m.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION,
-        LocalizedStrings.AbstractDistributionConfig_SSL_REQUIRE_AUTHENTICATION_NAME
-            .toLocalizedString(Boolean.TRUE));
+        String.format(
+            "if set to false, ciphers and protocols that permit anonymous peers are allowed. Defaults to %s.",
+            Boolean.TRUE));
 
     m.put(CLUSTER_SSL_KEYSTORE,
         "Location of the Java keystore file containing an distributed member's own certificate and private key.");
@@ -1065,106 +1109,121 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
     m.put(MAX_WAIT_TIME_RECONNECT,
-        LocalizedStrings.AbstractDistributionConfig_MAX_WAIT_TIME_FOR_RECONNECT
-            .toLocalizedString());
+        "Specifies the maximum time to wait before trying to reconnect to distributed system in the case of required role loss.");
 
     m.put(MAX_NUM_RECONNECT_TRIES,
-        LocalizedStrings.AbstractDistributionConfig_MAX_NUM_RECONNECT_TRIES.toLocalizedString());
+        "Maximum number of tries before shutting the member down in the case of required role loss.");
 
     m.put(ASYNC_DISTRIBUTION_TIMEOUT,
-        LocalizedStrings.AbstractDistributionConfig_ASYNC_DISTRIBUTION_TIMEOUT_NAME_0_1_2
-            .toLocalizedString(DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT,
-                MIN_ASYNC_DISTRIBUTION_TIMEOUT,
-                MAX_ASYNC_DISTRIBUTION_TIMEOUT));
+        String.format(
+            "The number of milliseconds before a publishing process should attempt to distribute a cache operation before switching over to asynchronous messaging for this process. Defaults to %s. Legal values are in the range [%s..%s].",
+            DEFAULT_ASYNC_DISTRIBUTION_TIMEOUT,
+            MIN_ASYNC_DISTRIBUTION_TIMEOUT,
+            MAX_ASYNC_DISTRIBUTION_TIMEOUT));
 
     m.put(ASYNC_QUEUE_TIMEOUT,
-        LocalizedStrings.AbstractDistributionConfig_ASYNC_QUEUE_TIMEOUT_NAME_0_1_2
-            .toLocalizedString(DEFAULT_ASYNC_QUEUE_TIMEOUT,
-                MIN_ASYNC_QUEUE_TIMEOUT,
-                MAX_ASYNC_QUEUE_TIMEOUT));
+        String.format(
+            "The number of milliseconds a queuing may enqueue asynchronous messages without any distribution to this process before that publisher requests this process to depart. Defaults to %s Legal values are in the range [%s..%s].",
+            DEFAULT_ASYNC_QUEUE_TIMEOUT,
+            MIN_ASYNC_QUEUE_TIMEOUT,
+            MAX_ASYNC_QUEUE_TIMEOUT));
 
     m.put(ASYNC_MAX_QUEUE_SIZE,
-        LocalizedStrings.AbstractDistributionConfig_ASYNC_MAX_QUEUE_SIZE_NAME_0_1_2
-            .toLocalizedString(DEFAULT_ASYNC_MAX_QUEUE_SIZE,
-                MIN_ASYNC_MAX_QUEUE_SIZE,
-                MAX_ASYNC_MAX_QUEUE_SIZE));
+        String.format(
+            "The maximum size in megabytes that a publishing process should be allowed to asynchronously enqueue for this process before asking this process to depart from the distributed system. Defaults to %s. Legal values are in the range [%s..%s].",
+            DEFAULT_ASYNC_MAX_QUEUE_SIZE,
+            MIN_ASYNC_MAX_QUEUE_SIZE,
+            MAX_ASYNC_MAX_QUEUE_SIZE));
 
     m.put(START_LOCATOR,
-        LocalizedStrings.AbstractDistributionConfig_START_LOCATOR_NAME.toLocalizedString());
+        "The host|bindAddress[port] of a Locator to start in this VM along with the DistributedSystem. The default is to not start a Locator.");
 
-    m.put(DURABLE_CLIENT_ID, LocalizedStrings.AbstractDistributionConfig_DURABLE_CLIENT_ID_NAME_0
-        .toLocalizedString(DEFAULT_DURABLE_CLIENT_ID));
+    m.put(DURABLE_CLIENT_ID, String.format(
+        "An id used by durable clients to identify themselves as durable to servers. Defaults to %s.",
+        DEFAULT_DURABLE_CLIENT_ID));
 
-    m.put(CONFLATE_EVENTS, LocalizedStrings.AbstractDistributionConfig_CLIENT_CONFLATION_PROP_NAME
-        .toLocalizedString());
+    m.put(CONFLATE_EVENTS, "Client override for server queue conflation setting");
 
     m.put(DURABLE_CLIENT_TIMEOUT,
-        LocalizedStrings.AbstractDistributionConfig_DURABLE_CLIENT_TIMEOUT_NAME_0
-            .toLocalizedString(DEFAULT_DURABLE_CLIENT_TIMEOUT));
+        String.format(
+            "The value (in seconds) used by the server to keep disconnected durable clients alive. Defaults to %s.",
+            DEFAULT_DURABLE_CLIENT_TIMEOUT));
 
     m.put(SECURITY_CLIENT_AUTH_INIT,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_AUTH_INIT_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_CLIENT_AUTH_INIT));
+        String.format(
+            "User defined fully qualified method name implementing AuthInitialize interface for client. Defaults to %s. Legal values can be any method name of a static method that is present in the classpath.",
+            DEFAULT_SECURITY_CLIENT_AUTH_INIT));
 
     m.put(ENABLE_NETWORK_PARTITION_DETECTION, "Whether network partitioning detection is enabled");
 
     m.put(DISABLE_AUTO_RECONNECT, "Whether auto reconnect is attempted after a network partition");
 
     m.put(SECURITY_CLIENT_AUTHENTICATOR,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_AUTHENTICATOR_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_CLIENT_AUTHENTICATOR));
+        String.format(
+            "User defined fully qualified method name implementing Authenticator interface for client verification. Defaults to %s. Legal values can be any method name of a static method that is present in the classpath.",
+            DEFAULT_SECURITY_CLIENT_AUTHENTICATOR));
 
     m.put(SECURITY_CLIENT_DHALGO,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_DHALGO_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_CLIENT_DHALGO));
+        String.format(
+            "User defined name for the symmetric encryption algorithm to use in Diffie-Hellman key exchange for encryption of credentials.  Defaults to %s. Legal values can be any of the available symmetric algorithm names in JDK like DES, DESede, AES, Blowfish. It may be required to install Unlimited Strength Jurisdiction Policy Files from Sun for some symmetric algorithms to work (like AES)",
+            DEFAULT_SECURITY_CLIENT_DHALGO));
 
     m.put(SECURITY_UDP_DHALGO,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_UDP_DHALGO_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_UDP_DHALGO));
+        String.format(
+            "User defined name for the symmetric encryption algorithm to use in Diffie-Hellman key exchange for encryption of udp messages.  Defaults to %s. Legal values can be any of the available symmetric algorithm names in JDK like DES, DESede, AES, Blowfish. It may be required to install Unlimited Strength Jurisdiction Policy Files from Sun for some symmetric algorithms to work (like AES)",
+            DEFAULT_SECURITY_UDP_DHALGO));
 
     m.put(SECURITY_PEER_AUTH_INIT,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_AUTH_INIT_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_PEER_AUTH_INIT));
+        String.format(
+            "User defined fully qualified method name implementing AuthInitialize interface for peer. Defaults to %s. Legal values can be any method name of a static method that is present in the classpath.",
+            DEFAULT_SECURITY_PEER_AUTH_INIT));
 
     m.put(SECURITY_PEER_AUTHENTICATOR,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_AUTHENTICATOR_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_PEER_AUTHENTICATOR));
+        String.format(
+            "User defined fully qualified method name implementing Authenticator interface for peer verificaiton. Defaults to %s. Legal values can be any method name of a static method that is present in the classpath.",
+            DEFAULT_SECURITY_PEER_AUTHENTICATOR));
 
     m.put(SECURITY_CLIENT_ACCESSOR,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_ACCESSOR_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_CLIENT_ACCESSOR));
+        String.format(
+            "User defined fully qualified method name implementing AccessControl interface for client authorization. Defaults to %s. Legal values can be any method name of a static method that is present in the classpath.",
+            DEFAULT_SECURITY_CLIENT_ACCESSOR));
 
     m.put(SECURITY_CLIENT_ACCESSOR_PP,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_CLIENT_ACCESSOR_PP_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_CLIENT_ACCESSOR_PP));
+        String.format(
+            "User defined fully qualified method name implementing AccessControl interface for client authorization in post-processing phase. Defaults to %s. Legal values can be any method name of a static method that is present in the classpath.",
+            DEFAULT_SECURITY_CLIENT_ACCESSOR_PP));
 
     m.put(SECURITY_LOG_LEVEL,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_LOG_LEVEL_NAME_0_1
-            .toLocalizedString(LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL),
-                LogWriterImpl.allowedLogLevels()));
+        String.format(
+            "Controls the type of messages that will actually be written to the system security log. Defaults to %s.  Allowed values %s.",
+            LogWriterImpl.levelToString(DEFAULT_LOG_LEVEL),
+            LogWriterImpl.allowedLogLevels()));
 
-    m.put(SECURITY_LOG_FILE, LocalizedStrings.AbstractDistributionConfig_SECURITY_LOG_FILE_NAME_0
-        .toLocalizedString(DEFAULT_SECURITY_LOG_FILE));
+    m.put(SECURITY_LOG_FILE, String.format(
+        "The file a running system will write security log messages to. Defaults to %s.",
+        DEFAULT_SECURITY_LOG_FILE));
 
     m.put(SECURITY_PEER_VERIFY_MEMBER_TIMEOUT,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_PEER_VERIFYMEMBER_TIMEOUT_NAME_0
-            .toLocalizedString(DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT));
+        String.format(
+            "The timeout value (in milliseconds) used by a peer to verify membership of an unknown authenticated peer requesting a secure connection. Defaults to %s milliseconds. The timeout value should not exceed peer handshake timeout.",
+            DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT));
 
     m.put(SECURITY_PREFIX,
-        LocalizedStrings.AbstractDistributionConfig_SECURITY_PREFIX_NAME.toLocalizedString());
+        "Prefix for security related properties which are packed together and invoked as authentication parameter. Neither key nor value can be NULL. Legal tags can be [security-username, security-digitalid] and Legal values can be any string data.");
 
     m.put(USERDEFINED_PREFIX_NAME,
-        LocalizedStrings.AbstractDistributionConfig_USERDEFINED_PREFIX_NAME.toLocalizedString());
+        "Prefix for user defined properties which are used for replacements in Cache.xml. Neither key nor value can be NULL. Legal tags can be [custom-any-string] and Legal values can be any string data.");
 
     m.put(REMOVE_UNRESPONSIVE_CLIENT,
-        LocalizedStrings.AbstractDistributionConfig_REMOVE_UNRESPONSIVE_CLIENT_PROP_NAME_0
-            .toLocalizedString(DEFAULT_REMOVE_UNRESPONSIVE_CLIENT));
+        String.format("Whether to remove unresponsive client or not. Defaults to %s.",
+            DEFAULT_REMOVE_UNRESPONSIVE_CLIENT));
 
     m.put(DELTA_PROPAGATION, "Whether delta propagation is enabled");
 
     m.put(REMOTE_LOCATORS,
-        LocalizedStrings.AbstractDistributionConfig_REMOTE_DISTRIBUTED_SYSTEMS_NAME_0
-            .toLocalizedString(DEFAULT_REMOTE_LOCATORS));
+        String.format(
+            "A possibly empty list of locators used to find other distributed systems. Each element of the list must be a host name followed by bracketed, [], port number. Host names may be followed by a colon and a bind address used by the locator on that host.  Multiple elements must be comma separated. Defaults to %s.",
+            DEFAULT_REMOTE_LOCATORS));
 
     m.put(DISTRIBUTED_SYSTEM_ID,
         "An id that uniquely idenitifies this distributed system. "
@@ -1188,11 +1247,12 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "If true then the jmx manager will be started when the cache is created. Defaults to false.");
     m.put(JMX_MANAGER_SSL_ENABLED,
         "If true then the jmx manager will only allow SSL clients to connect. Defaults to false. This property is ignored if jmx-manager-port is \"0\".");
-    m.put(SSL_JMX_ALIAS, LocalizedStrings.AbstractDistributionConfig_JMX_MANAGER_SSL_ALIAS_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+    m.put(SSL_JMX_ALIAS, String.format(
+        "SSL jmx communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to %s.",
+        Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(JMX_MANAGER_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for JMX Manager. Defaults to \""
-            + DEFAULT_JMX_MANAGER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_JMX_MANAGER_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(JMX_MANAGER_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for JMX Manager. Defaults to \""
             + DEFAULT_JMX_MANAGER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1226,8 +1286,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "The rate in milliseconds at which this member will send updates to each jmx manager. Default is "
             + DEFAULT_JMX_MANAGER_UPDATE_RATE + ". Values must be in the range "
             + MIN_JMX_MANAGER_UPDATE_RATE + ".." + MAX_JMX_MANAGER_UPDATE_RATE + ".");
-    m.put(SSL_LOCATOR_ALIAS, LocalizedStrings.AbstractDistributionConfig_LOCATOR_SSL_ALIAS_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+    m.put(SSL_LOCATOR_ALIAS, String.format(
+        "SSL locator communications uses this alias when determining the key to use from the keystore for SSL. Defaults to %s.",
+        Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(MEMCACHED_PORT,
         "The port GemFireMemcachedServer will listen on. Default is 0. Set to zero to disable GemFireMemcachedServer.");
     m.put(MEMCACHED_PROTOCOL,
@@ -1241,23 +1302,24 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(REDIS_PASSWORD,
         "The password which client of GeodeRedisServer must use to authenticate themselves. The default is none and no authentication will be required.");
     m.put(ENABLE_CLUSTER_CONFIGURATION,
-        LocalizedStrings.AbstractDistributionConfig_ENABLE_SHARED_CONFIGURATION
-            .toLocalizedString());
+        "Enables cluster configuration support in dedicated locators.  This allows the locator to share configuration information amongst members and save configuration changes made using GFSH.");
     m.put(USE_CLUSTER_CONFIGURATION,
-        LocalizedStrings.AbstractDistributionConfig_USE_SHARED_CONFIGURATION.toLocalizedString());
+        "Boolean flag that allows the cache to use the cluster configuration provided by the cluster config service");
     m.put(LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
-        LocalizedStrings.AbstractDistributionConfig_LOAD_SHARED_CONFIGURATION_FROM_DIR
-            .toLocalizedString(
-                InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
+        String.format(
+            "Loads cluster configuration from the %s directory of a locator. This is property is only applicable to the locator(s)",
+
+            InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
     m.put(CLUSTER_CONFIGURATION_DIR,
-        LocalizedStrings.AbstractDistributionConfig_CLUSTER_CONFIGURATION_DIR.toLocalizedString());
-    m.put(SSL_SERVER_ALIAS, LocalizedStrings.AbstractDistributionConfig_SERVER_SSL_ALIAS_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+        "The directory to store the cluster configuration artifacts and disk-store. This property is only applicable to the locator(s)");
+    m.put(SSL_SERVER_ALIAS, String.format(
+        "SSL inter-server communication (peer-to-peer) uses the this alias when determining the key to use from the keystore for SSL. Defaults to %s.",
+        Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(SERVER_SSL_ENABLED,
         "If true then the cache server will only allow SSL clients to connect. Defaults to false.");
     m.put(SERVER_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for CacheServer. Defaults to \""
-            + DEFAULT_SERVER_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_SERVER_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(SERVER_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for CacheServer. Defaults to \""
             + DEFAULT_SERVER_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1280,13 +1342,14 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SERVER_SSL_TRUSTSTORE_PASSWORD,
         "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
-    m.put(SSL_GATEWAY_ALIAS, LocalizedStrings.AbstractDistributionConfig_GATEWAY_SSL_ALIAS_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+    m.put(SSL_GATEWAY_ALIAS, String.format(
+        "SSL gateway communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to %s.",
+        Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(GATEWAY_SSL_ENABLED,
         "If true then the gateway receiver will only allow SSL gateway sender to connect. Defaults to false.");
     m.put(GATEWAY_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for Gateway Receiver. Defaults to \""
-            + DEFAULT_GATEWAY_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_GATEWAY_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(GATEWAY_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for Gateway Receiver. Defaults to \""
             + DEFAULT_GATEWAY_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1309,8 +1372,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD,
         "Password to unlock the keystore file (store password) specified by  javax.net.ssl.trustStore.");
 
-    m.put(SSL_WEB_ALIAS, LocalizedStrings.AbstractDistributionConfig_HTTP_SERVICE_SSL_ALIAS_0
-        .toLocalizedString(Boolean.valueOf(DEFAULT_SSL_ALIAS)));
+    m.put(SSL_WEB_ALIAS, String.format(
+        "SSL http service communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to %s.",
+        Boolean.valueOf(DEFAULT_SSL_ALIAS)));
     m.put(HTTP_SERVICE_PORT,
         "If non zero, then the gemfire developer REST service will be deployed and started when the cache is created. Default value is 0.");
     m.put(HTTP_SERVICE_BIND_ADDRESS,
@@ -1320,7 +1384,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "If true then the http service like REST dev api and Pulse will only allow SSL enabled clients to connect. Defaults to false.");
     m.put(HTTP_SERVICE_SSL_CIPHERS,
         "List of available SSL cipher suites that are to be enabled for Http Service. Defaults to \""
-            + DEFAULT_HTTP_SERVICE_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+            + DEFAULT_HTTP_SERVICE_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(HTTP_SERVICE_SSL_PROTOCOLS,
         "List of available SSL protocols that are to be enabled for Http Service. Defaults to \""
             + DEFAULT_HTTP_SERVICE_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
@@ -1345,10 +1409,12 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
     m.put(START_DEV_REST_API,
         "If true then the developer(API) REST service will be started when the cache is created. Defaults to false.");
-    m.put(OFF_HEAP_MEMORY_SIZE, LocalizedStrings.AbstractDistributionConfig_OFF_HEAP_MEMORY_SIZE_0
-        .toLocalizedString(DEFAULT_OFF_HEAP_MEMORY_SIZE));
-    m.put(LOCK_MEMORY, LocalizedStrings.AbstractDistributionConfig_LOCK_MEMORY
-        .toLocalizedString(DEFAULT_LOCK_MEMORY));
+    m.put(OFF_HEAP_MEMORY_SIZE, String.format(
+        "The amount of off-heap memory to be allocated for GemFire. Value is <n>[g|m], where <n> is the size and [g|m] specifies the units in gigabytes or megabytes. Defaults to %s.",
+        DEFAULT_OFF_HEAP_MEMORY_SIZE));
+    m.put(LOCK_MEMORY, String.format(
+        "Locks heap and off-heap memory pages into RAM, thereby preventing the operating system from swapping them out to disk. Defaults to %s",
+        DEFAULT_LOCK_MEMORY));
     m.put(DISTRIBUTED_TRANSACTIONS,
         "Flag to indicate whether all transactions including JTA should be distributed transactions.  Default is false, meaning colocated transactions.");
 
@@ -1370,7 +1436,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "A comma delimited list of components that require SSL communications");
 
     m.put(SSL_CIPHERS, "List of available SSL cipher suites that are to be enabled. Defaults to \""
-        + DEFAULT_SSL_CIPHERS + "\" meaning your provider''s defaults.");
+        + DEFAULT_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled. Defaults to \""
         + DEFAULT_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
     m.put(SSL_REQUIRE_AUTHENTICATION,
@@ -1394,11 +1460,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");
 
     m.put(THREAD_MONITOR_INTERVAL,
-        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_INTERVAL.toLocalizedString());
+        "Defines the time interval (in milliseconds) with which thread monitoring is scheduled to run.");
     m.put(THREAD_MONITOR_ENABLED,
-        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_ENABLED.toLocalizedString());
+        "Defines whether thread monitoring is to be enabled.");
     m.put(THREAD_MONITOR_TIME_LIMIT,
-        LocalizedStrings.AbstractDistributionConfig_THREAD_MONITOR_TIME_LIMIT.toLocalizedString());
+        "Defines the time period (in milliseconds) after which the monitored thread is considered to be stuck.");
     dcAttDescriptions = Collections.unmodifiableMap(m);
   }
 
@@ -1433,8 +1499,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     } catch (UnknownHostException ex) {
       // this should never happen
       throw new Error(
-          LocalizedStrings.AbstractDistributionConfig_UNEXPECTED_PROBLEM_GETTING_INETADDRESS_0
-              .toLocalizedString(ex),
+          String.format("Unexpected problem getting inetAddress: %s",
+              ex),
           ex);
     }
   }

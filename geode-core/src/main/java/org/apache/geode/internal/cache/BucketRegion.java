@@ -87,9 +87,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.concurrent.AtomicLong5;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -558,9 +556,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public long generateTailKey() {
     long key = this.eventSeqNum.addAndGet(this.partitionedRegion.getTotalNumberOfBuckets());
     if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.GatewaySender_SEQUENCENUMBER_GENERATED_FOR_EVENT_IS_INVALID,
-          new Object[] {key, getId()}));
+      logger.error("ERROR! The sequence number {} generated for the bucket {} is incorrect.",
+          new Object[] {key, getId()});
     }
     if (logger.isDebugEnabled()) {
       logger.debug("WAN: On primary bucket {}, setting the seq number as {}", getId(),
@@ -583,9 +580,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       if (getBucketAdvisor().isPrimary()) {
         long key = this.eventSeqNum.addAndGet(this.partitionedRegion.getTotalNumberOfBuckets());
         if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.GatewaySender_SEQUENCENUMBER_GENERATED_FOR_EVENT_IS_INVALID,
-              new Object[] {key, getId()}));
+          logger.error("ERROR! The sequence number {} generated for the bucket {} is incorrect.",
+              new Object[] {key, getId()});
         }
         event.setTailKey(key);
         if (logger.isDebugEnabled()) {
@@ -1136,8 +1132,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.LocalRegion_EXCEPTION_IN_EXPIRATION_TASK), ex);
+        logger.fatal("Exception in expiration task", ex);
       }
     }
   }
@@ -1384,8 +1379,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   public boolean isPrimary() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.BucketRegion_THIS_SHOULD_NEVER_BE_CALLED_ON_0
-            .toLocalizedString(getClass()));
+        String.format("This should never be called on  %s",
+            getClass()));
   }
 
   @Override
@@ -1837,8 +1832,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           throw re;
         } catch (Exception e) {
           throw new DeltaSerializationException(
-              LocalizedStrings.DistributionManager_CAUGHT_EXCEPTION_WHILE_SENDING_DELTA
-                  .toLocalizedString(),
+              "Caught exception while sending delta. ",
               e);
         }
       }
@@ -2442,8 +2436,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         this.partitionedRegion.getRegionAdvisor().getBucketOwners(this.getId());
     hostingservers.remove(cache.getDistributedSystem().getDistributedMember());
 
-    if (cache.getLoggerI18n().fineEnabled())
-      cache.getLoggerI18n()
+    if (cache.getLogger().fineEnabled())
+      cache.getLogger()
           .fine("Pinging secondaries of bucket " + this.getId() + " on servers " + hostingservers);
 
     if (hostingservers.size() == 0)

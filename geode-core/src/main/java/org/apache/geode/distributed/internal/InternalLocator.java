@@ -65,12 +65,10 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -483,7 +481,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   }
 
   private void startTcpServer() throws IOException {
-    logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_0, this));
+    logger.info("Starting {}", this);
     this.server.start();
   }
 
@@ -512,11 +510,10 @@ public class InternalLocator extends Locator implements ConnectListener {
   int startPeerLocation() throws IOException {
     if (isPeerLocator()) {
       throw new IllegalStateException(
-          LocalizedStrings.InternalLocator_PEER_LOCATION_IS_ALREADY_RUNNING_FOR_0
-              .toLocalizedString(this));
+          String.format("Peer location is already running for %s",
+              this));
     }
-    logger.info(LocalizedMessage
-        .create(LocalizedStrings.InternalLocator_STARTING_PEER_LOCATION_FOR_0, this));
+    logger.info("Starting peer location for {}", this);
 
     String locatorsProp = this.config.getLocators();
 
@@ -583,8 +580,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     InternalDistributedSystem existing = InternalDistributedSystem.getConnectedInstance();
     if (existing != null) {
       // LOG: changed from config to info
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.InternalLocator_USING_EXISTING_DISTRIBUTED_SYSTEM__0, existing));
+      logger.info("Using existing distributed system: {}", existing);
       startCache(existing);
     } else {
 
@@ -630,8 +626,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       // using a DistributionConfig earlier in this method
       connectEnv.put(DistributionConfig.DS_CONFIG_NAME, this.config);
 
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_DISTRIBUTED_SYSTEM));
+      logger.info("Starting distributed system");
 
       this.myDs = (InternalDistributedSystem) DistributedSystem.connect(connectEnv);
 
@@ -648,8 +643,8 @@ public class InternalLocator extends Locator implements ConnectListener {
 
       startCache(myDs);
 
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_LOCATOR_STARTED_ON__0,
-          thisLocator));
+      logger.info("Locator started on {}",
+          thisLocator);
 
       myDs.setDependentLocator(this);
     }
@@ -708,18 +703,16 @@ public class InternalLocator extends Locator implements ConnectListener {
   void startServerLocation(InternalDistributedSystem distributedSystem) throws IOException {
     if (isServerLocator()) {
       throw new IllegalStateException(
-          LocalizedStrings.InternalLocator_SERVER_LOCATION_IS_ALREADY_RUNNING_FOR_0
-              .toLocalizedString(this));
+          String.format("Server location is already running for %s",
+              this));
     }
-    logger.info(LocalizedMessage
-        .create(LocalizedStrings.InternalLocator_STARTING_SERVER_LOCATION_FOR_0, this));
+    logger.info("Starting server location for {}", this);
 
     if (distributedSystem == null) {
       distributedSystem = InternalDistributedSystem.getConnectedInstance();
       if (distributedSystem == null) {
         throw new IllegalStateException(
-            LocalizedStrings.InternalLocator_SINCE_SERVER_LOCATION_IS_ENABLED_THE_DISTRIBUTED_SYSTEM_MUST_BE_CONNECTED
-                .toLocalizedString());
+            "Since server location is enabled the distributed system must be connected.");
       }
     }
 
@@ -797,7 +790,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     if (this.server.isAlive()) {
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STOPPING__0, this));
+      logger.info("Stopping {}", this);
       try {
         new TcpClient().stop(this.bindAddress, getPort());
       } catch (ConnectException ignore) {
@@ -809,8 +802,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
       } catch (InterruptedException ex) {
         interrupted = true;
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.InternalLocator_INTERRUPTED_WHILE_STOPPING__0, this), ex);
+        logger.warn("Interrupted while stopping " + this, ex);
 
         // Continue running -- doing our best to stop everything...
       } finally {
@@ -820,8 +812,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
 
       if (this.server.isAlive()) {
-        logger.fatal(LocalizedMessage
-            .create(LocalizedStrings.InternalLocator_COULD_NOT_STOP__0__IN_60_SECONDS, this));
+        logger.fatal("Could not stop {} in 60 seconds", this);
       }
     }
 
@@ -829,7 +820,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
     handleShutdown();
 
-    logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_0__IS_STOPPED, this));
+    logger.info("{} is stopped", this);
 
     if (this.stoppedForReconnect) {
       if (this.myDs != null) {
@@ -875,8 +866,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     this.isSharedConfigurationStarted = false;
     if (this.myDs != null && !this.forcedDisconnect) {
       if (this.myDs.isConnected()) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.InternalLocator_DISCONNECTING_DISTRIBUTED_SYSTEM_FOR_0, this));
+        logger.info("Disconnecting distributed system for {}", this);
         this.myDs.disconnect();
       }
     }

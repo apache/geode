@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to add a health listener.
@@ -42,7 +41,7 @@ public class AddHealthListenerRequest extends AdminRequest {
   public static AddHealthListenerRequest create(GemFireHealthConfig cfg) {
     if (cfg == null) {
       throw new NullPointerException(
-          LocalizedStrings.AddHealthListenerRequest_NULL_GEMFIREHEALTHCONFIG.toLocalizedString());
+          "Null GemFireHealthConfig");
     }
 
     AddHealthListenerRequest m = new AddHealthListenerRequest();
@@ -52,7 +51,7 @@ public class AddHealthListenerRequest extends AdminRequest {
 
   public AddHealthListenerRequest() {
     friendlyName =
-        LocalizedStrings.AddHealthListenerRequest_ADD_HEALTH_LISTENER.toLocalizedString();
+        "Add health listener";
   }
 
   /**

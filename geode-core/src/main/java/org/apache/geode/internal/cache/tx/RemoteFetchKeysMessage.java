@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ObjectIntProcedure;
@@ -75,8 +74,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       if (logger.isDebugEnabled()) {
         logger.debug("Caught exception while sending keys: {}", io.getMessage(), io);
         throw new RemoteOperationException(
-            LocalizedStrings.FetchKeysMessage_UNABLE_TO_SEND_RESPONSE_TO_FETCH_KEYS_REQUEST
-                .toLocalizedString(),
+            "Unable to send response to fetch keys request",
             io);
       }
     }
@@ -415,7 +413,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
         }
       } catch (Exception e) {
         processException(new ReplyException(
-            LocalizedStrings.FetchKeysMessage_ERROR_DESERIALIZING_KEYS.toLocalizedString(), e));
+            "Error deserializing keys", e));
       }
       return doneProcessing;
     }

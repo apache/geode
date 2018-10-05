@@ -23,7 +23,6 @@ import javax.security.auth.Subject;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -66,8 +65,7 @@ public class ManagedPoolCacheImpl extends AbstractPoolCache {
     } catch (ResourceException rex) {
       rex.printStackTrace();
       throw new PoolException(
-          LocalizedStrings.ManagedPoolCacheImpl_MANAGEDPOOLCACHEIMPLGETNEWCONNECTION_EXCEPTION_IN_CREATING_NEW_MANAGED_POOLEDCONNECTION
-              .toLocalizedString(),
+          "ManagedPoolCacheImpl::getNewConnection: Exception in creating new Managed PooledConnection",
           rex);
     }
     manConn

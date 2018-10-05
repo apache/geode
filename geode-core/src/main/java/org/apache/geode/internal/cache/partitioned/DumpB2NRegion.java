@@ -43,7 +43,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -284,8 +283,7 @@ public class DumpB2NRegion extends PartitionMessage {
         logger.debug("B2NResponse got remote CacheException, throwing ForceReattemptException. {}",
             e.getMessage(), e);
         throw new ForceReattemptException(
-            LocalizedStrings.DumpB2NRegion_B2NRESPONSE_GOT_REMOTE_CACHEEXCEPTION_THROWING_FORCEREATTEMPTEXCEPTION
-                .toLocalizedString(),
+            "B2NResponse got remote CacheException, throwing ForceReattemptException.",
             e);
       }
       synchronized (this.primaryInfos) {

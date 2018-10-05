@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Config;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to modify its current
@@ -45,7 +44,7 @@ public class StoreSysCfgRequest extends AdminRequest {
 
   public StoreSysCfgRequest() {
     friendlyName =
-        LocalizedStrings.StoreSysCfgRequest_APPLY_CONFIGURATION_PARAMETERS.toLocalizedString();
+        "Apply configuration parameters";
   }
 
   /**

@@ -52,7 +52,6 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -636,8 +635,8 @@ public class LuceneIndexCommandsIntegrationTest {
         .containsOutput(expectedOutput);
 
     // Verify destroy all indexes again reports no indexes exist
-    expectedOutput = LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
-        .toLocalizedString(new Object[] {"/region"});
+    expectedOutput = String.format("No Lucene indexes were found in region %s",
+        new Object[] {"/region"});
 
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
@@ -646,8 +645,8 @@ public class LuceneIndexCommandsIntegrationTest {
   @Test
   public void testDestroyNonExistentSingleIndex() throws Exception {
     createRegion();
-    String expectedStatus = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
-        .toLocalizedString(new Object[] {INDEX_NAME, '/' + REGION_NAME});
+    String expectedStatus = String.format("Lucene index %s was not found in region %s",
+        new Object[] {INDEX_NAME, '/' + REGION_NAME});
 
     gfsh.executeAndAssertThat("destroy lucene index --name=index --region=region").statusIsSuccess()
         .containsOutput(expectedStatus);
@@ -657,8 +656,8 @@ public class LuceneIndexCommandsIntegrationTest {
   public void testDestroyNonExistentIndexes() throws Exception {
     createRegion();
 
-    String expectedOutput = LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
-        .toLocalizedString(new Object[] {"/region"});
+    String expectedOutput = String.format("No Lucene indexes were found in region %s",
+        new Object[] {"/region"});
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
   }

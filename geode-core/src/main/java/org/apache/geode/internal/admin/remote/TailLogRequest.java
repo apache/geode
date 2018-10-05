@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class TailLogRequest extends AdminRequest {
   public static TailLogRequest create() {
@@ -35,7 +34,7 @@ public class TailLogRequest extends AdminRequest {
   }
 
   public TailLogRequest() {
-    friendlyName = LocalizedStrings.TailLogRequest_TAIL_SYSTEM_LOG.toLocalizedString();
+    friendlyName = "Tail system log";
   }
 
   public int getDSFID() {

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.snapshot;
 
-import static org.apache.geode.distributed.internal.InternalDistributedSystem.getLoggerI18n;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.getLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +60,6 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides an implementation for region snapshots.
@@ -207,8 +206,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       throws IOException, ClassNotFoundException {
     final LocalRegion local = getLocalRegion(region);
 
-    if (getLoggerI18n().infoEnabled())
-      getLoggerI18n().info(LocalizedStrings.Snapshot_IMPORT_BEGIN_0, region.getName());
+    if (getLogger().infoEnabled())
+      getLogger().info(String.format("Importing region %s", region.getName()));
     if (snapshot.isDirectory()) {
       File[] snapshots =
           snapshot.listFiles((File f) -> f.getName().endsWith(SNAPSHOT_FILE_EXTENSION));
@@ -303,9 +302,10 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
         puts.removeFirst().get();
       }
 
-      if (getLoggerI18n().infoEnabled()) {
-        getLoggerI18n().info(LocalizedStrings.Snapshot_IMPORT_END_0_1_2_3,
-            new Object[] {count, bytes, region.getName(), snapshot.getAbsolutePath()});
+      if (getLogger().infoEnabled()) {
+        getLogger().info(String.format(
+            "Snapshot import of %s entries (%s bytes) in region %s from file %s is complete",
+            new Object[] {count, bytes, region.getName(), snapshot.getAbsolutePath()}));
       }
 
     } catch (InterruptedException e) {
@@ -342,8 +342,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     LocalRegion local = getLocalRegion(region);
     Exporter<K, V> exp = createExporter(local.getCache(), region, options);
 
-    if (getLoggerI18n().fineEnabled()) {
-      getLoggerI18n().fine("Writing to snapshot " + snapshot.getAbsolutePath());
+    if (getLogger().fineEnabled()) {
+      getLogger().fine("Writing to snapshot " + snapshot.getAbsolutePath());
     }
 
     long count = 0;
@@ -351,15 +351,17 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     SnapshotWriter writer =
         GFSnapshot.create(snapshot, region.getFullPath(), (InternalCache) region.getCache());
     try {
-      if (getLoggerI18n().infoEnabled())
-        getLoggerI18n().info(LocalizedStrings.Snapshot_EXPORT_BEGIN_0, region.getName());
+      if (getLogger().infoEnabled())
+        getLogger().info(String.format("Exporting region %s", region.getName()));
 
       SnapshotWriterSink sink = new SnapshotWriterSink(writer);
       count = exp.export(region, sink, options);
 
-      if (getLoggerI18n().infoEnabled()) {
-        getLoggerI18n().info(LocalizedStrings.Snapshot_EXPORT_END_0_1_2_3, new Object[] {count,
-            sink.getBytesWritten(), region.getName(), snapshot.getAbsolutePath()});
+      if (getLogger().infoEnabled()) {
+        getLogger().info(String.format(
+            "Snapshot export of %s entries (%s bytes) in region %s to file %s is complete",
+            new Object[] {count,
+                sink.getBytesWritten(), region.getName(), snapshot.getAbsolutePath()}));
       }
 
     } finally {
@@ -520,7 +522,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             local.getCache().getDistributedSystem().getDistributedMember(), args.getFile());
 
         if (f == null || f.isDirectory()) {
-          throw new IOException(LocalizedStrings.Snapshot_INVALID_EXPORT_FILE.toLocalizedString(f));
+          throw new IOException(String.format("File is invalid or is a directory: %s", f));
         }
 
         local.getSnapshotService().save(f, args.getFormat(), args.getOptions());

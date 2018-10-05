@@ -27,11 +27,9 @@ import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
@@ -285,8 +283,7 @@ public abstract class HostStatSampler
         }
         if (statThread.isAlive()) {
           throw new IllegalStateException(
-              LocalizedStrings.HostStatSampler_STATISTICS_SAMPLING_THREAD_IS_ALREADY_RUNNING_INDICATING_AN_INCOMPLETE_SHUTDOWN_OF_A_PREVIOUS_CACHE
-                  .toLocalizedString());
+              "Statistics sampling thread is already running, indicating an incomplete shutdown of a previous cache.");
         }
       }
       ThreadGroup group = LoggingThreadGroup.createThreadGroup("StatSampler Threads");
@@ -342,8 +339,8 @@ public abstract class HostStatSampler
             statThread.interrupt();
             stop(false);
           } else {
-            logger.warn(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
-                LocalizedStrings.HostStatSampler_HOSTSTATSAMPLER_THREAD_COULD_NOT_BE_STOPPED));
+            logger.warn(LogMarker.STATISTICS_MARKER,
+                "HostStatSampler thread could not be stopped during shutdown.");
           }
         } else {
           this.stopRequested = false;
@@ -564,9 +561,8 @@ public abstract class HostStatSampler
       if (wakeupDelay > STAT_SAMPLER_DELAY_THRESHOLD_NANOS) {
         this.samplerStats.incJvmPauses();
         logger.warn(LogMarker.STATISTICS_MARKER,
-            LocalizedMessage.create(
-                LocalizedStrings.HostStatSampler_STATISTICS_SAMPLING_THREAD_DETECTED_A_WAKEUP_DELAY_OF_0_MS_INDICATING_A_POSSIBLE_RESOURCE_ISSUE,
-                NanoTimer.nanosToMillis(wakeupDelay)));
+            "Statistics sampling thread detected a wakeup delay of {} ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.",
+            NanoTimer.nanosToMillis(wakeupDelay));
       }
     }
   }

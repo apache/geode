@@ -79,10 +79,8 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
@@ -259,14 +257,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // addShadowPartitionedRegionForUserRR
         if (this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
           throw new AsyncEventQueueConfigurationException(
-              LocalizedStrings.ParallelAsyncEventQueue_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
-                  .toLocalizedString(new Object[] {
+              String.format(
+                  "Parallel Async Event Queue %s can not be used with replicated region %s",
+                  new Object[] {
                       AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(this.sender.getId()),
                       userRegion.getFullPath()}));
         }
         throw new GatewaySenderConfigurationException(
-            LocalizedStrings.ParallelGatewaySender_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
-                .toLocalizedString(new Object[] {this.sender.getId(), userRegion.getFullPath()}));
+            String.format("Parallel gateway sender %s can not be used with replicated region %s",
+                new Object[] {this.sender.getId(), userRegion.getFullPath()}));
       }
     }
 
@@ -384,13 +383,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           // In case of Replicated Region it may not be necessary.
 
         } catch (IOException veryUnLikely) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-              this.getClass()), veryUnLikely);
+          logger.fatal("Unexpected Exception during init of " +
+              this.getClass(),
+              veryUnLikely);
         } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-              this.getClass()), alsoUnlikely);
+          logger.fatal("Unexpected Exception during init of " +
+              this.getClass(),
+              alsoUnlikely);
         }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
@@ -451,8 +450,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
       if (userPR.getDataPolicy().withPersistence() && !sender.isPersistenceEnabled()) {
         throw new GatewaySenderException(
-            LocalizedStrings.ParallelGatewaySenderQueue_NON_PERSISTENT_GATEWAY_SENDER_0_CAN_NOT_BE_ATTACHED_TO_PERSISTENT_REGION_1
-                .toLocalizedString(new Object[] {this.sender.getId(), userPR.getFullPath()}));
+            String.format(
+                "Non persistent gateway sender %s can not be attached to persistent region %s",
+                new Object[] {this.sender.getId(), userPR.getFullPath()}));
       }
 
       InternalCache cache = sender.getCache();
@@ -526,9 +526,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           prQ.shadowPRWaitForBucketRecovery();
 
         } catch (IOException | ClassNotFoundException veryUnLikely) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-              this.getClass()), veryUnLikely);
+          logger.fatal("Unexpected Exception during init of " +
+              this.getClass(),
+              veryUnLikely);
         }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
@@ -645,9 +645,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         conflationExecutor.shutdownNow(); // Cancel currently executing tasks
         // Wait a while for tasks to respond to being cancelled
         if (!conflationExecutor.awaitTermination(1, TimeUnit.SECONDS)) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ParallelGatewaySenderQueue_COULD_NOT_TERMINATE_CONFLATION_THREADPOOL,
-              (sender == null ? "all" : sender)));
+          logger.warn("Conflation thread pool did not terminate for the GatewaySender : {}",
+              (sender == null ? "all" : sender));
         }
       }
     } catch (InterruptedException e) {
@@ -681,8 +680,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       if (isDebugEnabled) {
         logger.debug("The userRegionNameToshadowPRMap is {}", userRegionNameToshadowPRMap);
       }
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.NOT_QUEUING_AS_USERPR_IS_NOT_YET_CONFIGURED, value));
+      logger.warn(
+          "GatewaySender: Not queuing the event {}, as the region for which this event originated is not yet configured in the GatewaySender",
+          value);
       // does not put into queue
       return false;
     }
@@ -1732,8 +1732,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           logger.debug("BatchRemovalThread exiting due to cancellation: " + e);
         }
       } finally {
-        logger.info(
-            LocalizedMessage.create(LocalizedStrings.HARegionQueue_THE_QUEUEREMOVALTHREAD_IS_DONE));
+        logger.info("The QueueRemovalThread is done.");
       }
     }
 
@@ -1765,8 +1764,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
       }
       if (this.isAlive()) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.HARegionQueue_QUEUEREMOVALTHREAD_IGNORED_CANCELLATION));
+        logger.warn("QueueRemovalThread ignored cancellation");
       }
     }
   }

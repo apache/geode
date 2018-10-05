@@ -42,7 +42,6 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -669,8 +668,9 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
             builder.append(',');
           }
         }
-        assertEquals(LocalizedStrings.LuceneServiceImpl_REGION_0_CANNOT_BE_DESTROYED
-            .toLocalizedString(region.getFullPath(), builder.toString()), e.getLocalizedMessage());
+        assertEquals(String.format(
+            "Region %s cannot be destroyed because it defines Lucene index(es) [%s]. Destroy all Lucene indexes before destroying the region.",
+            region.getFullPath(), builder.toString()), e.getLocalizedMessage());
       }
     }
   }

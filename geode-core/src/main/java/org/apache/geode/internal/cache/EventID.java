@@ -43,7 +43,6 @@ import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.Breadcrumbs;
 
@@ -169,7 +168,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       return hdos.toByteArray();
     } catch (IOException ioe) {
       throw new InternalGemFireException(
-          LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_SERIALIZE_IDENTITY.toLocalizedString(),
+          "Unable to serialize identity",
           ioe);
     }
   }
@@ -548,8 +547,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     if (sys == null) {
       // DistributedSystem is required now before handshaking -Kirk
       throw new IllegalStateException(
-          LocalizedStrings.ClientProxyMembershipID_ATTEMPTING_TO_HANDSHAKE_WITH_CACHESERVER_BEFORE_CREATING_DISTRIBUTEDSYSTEM_AND_CACHE
-              .toLocalizedString());
+          "Attempting to handshake with CacheServer before creating DistributedSystem and Cache.");
     }
     if (EventID.system != sys) {
       // DS already exists... make sure it's for current DS connection
@@ -560,8 +558,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
         client_side_event_identity = hdos.toByteArray();
       } catch (IOException ioe) {
         throw new InternalGemFireException(
-            LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_SERIALIZE_IDENTITY
-                .toLocalizedString(),
+            "Unable to serialize identity",
             ioe);
       }
       if (((InternalDistributedMember) EventID.systemMemberId).getPort() != 0) {

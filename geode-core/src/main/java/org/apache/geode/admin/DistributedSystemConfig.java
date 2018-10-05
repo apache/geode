@@ -478,14 +478,14 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Returns the name of the log file to which informational messages are written.
    *
-   * @see org.apache.geode.i18n.LogWriterI18n
+   * @see org.apache.geode.LogWriter
    */
   String getLogFile();
 
   /**
    * Sets the name of the log file to which informational messages are written.
    *
-   * @see org.apache.geode.i18n.LogWriterI18n
+   * @see org.apache.geode.LogWriter
    */
   void setLogFile(String logFile);
 

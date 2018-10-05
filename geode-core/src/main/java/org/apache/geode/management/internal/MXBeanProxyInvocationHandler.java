@@ -23,8 +23,8 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
 
 /**
  * This proxy handler handles all the method call invoked on an MXBean It follows same route as
@@ -41,7 +41,7 @@ public class MXBeanProxyInvocationHandler {
 
   private final Map<Method, MethodHandler> methodHandlerMap = OpenTypeUtil.newMap();
 
-  private LogWriterI18n logger;
+  private LogWriter logger;
 
   public MXBeanProxyInvocationHandler(ObjectName objectName, Class<?> mxbeanInterface,
       MBeanProxyInvocationHandler proxyHandler) throws Exception {
@@ -53,7 +53,7 @@ public class MXBeanProxyInvocationHandler {
 
     this.proxyHandler = proxyHandler;
 
-    this.logger = InternalDistributedSystem.getLoggerI18n();
+    this.logger = InternalDistributedSystem.getLogger();
     this.initHandlers(mxbeanInterface);
   }
 

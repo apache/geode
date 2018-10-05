@@ -36,7 +36,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is a test for creation of Partition region(PR).
@@ -234,8 +233,8 @@ public class PartitionedRegionCreationJUnitTest {
       pr = (PartitionedRegion) cache.createRegion(regionname, ra);
       fail("testpartionedRegionCreate() Expected IllegalStateException not thrown");
     } catch (RuntimeException expected) {
-      assertTrue(expected.getMessage().contains(LocalizedStrings.CacheCreation_DISKSTORE_NOTFOUND_0
-          .toLocalizedString("nonexistentDiskStore")));
+      assertTrue(expected.getMessage().contains(String.format("Disk store %s not found",
+          "nonexistentDiskStore")));
     }
 
     // Assert that you can't have a diskStoreName unless you are persistent or overflow.

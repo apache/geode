@@ -30,9 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class OverflowOplogSet implements OplogSet {
   private static final Logger logger = LogService.getLogger();
@@ -137,15 +135,16 @@ public class OverflowOplogSet implements OplogSet {
       if (parent.isCompactionEnabled()) { // fix for bug 41835
         idx = lastOverflowDir;
         if (getDirectories()[idx].getAvailableSpace() < minSize) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.DiskRegion_COMPLEXDISKREGIONGETNEXTDIR_MAX_DIRECTORY_SIZE_WILL_GET_VIOLATED__GOING_AHEAD_WITH_THE_SWITCHING_OF_OPLOG_ANY_WAYS_CURRENTLY_AVAILABLE_SPACE_IN_THE_DIRECTORY_IS__0__THE_CAPACITY_OF_DIRECTORY_IS___1,
+          logger.warn(
+              "Even though the configured directory size limit has been exceeded a new oplog will be created because compaction is enabled. The configured limit is {}. The current space used in the directory by this disk store is {}.",
               new Object[] {Long.valueOf(getDirectories()[idx].getUsedSpace()),
-                  Long.valueOf(getDirectories()[idx].getCapacity())}));
+                  Long.valueOf(getDirectories()[idx].getCapacity())});
         }
       } else {
         throw new DiskAccessException(
-            LocalizedStrings.Oplog_DIRECTORIES_ARE_FULL_NOT_ABLE_TO_ACCOMODATE_THIS_OPERATIONSWITCHING_PROBLEM_FOR_ENTRY_HAVING_DISKID_0
-                .toLocalizedString("needed " + minSize + " bytes"),
+            String.format(
+                "Directories are full, not able to accommodate this operation.Switching problem for entry having DiskID= %s",
+                "needed " + minSize + " bytes"),
             parent);
       }
     }

@@ -25,11 +25,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
@@ -111,17 +109,14 @@ public class StatArchiveHandler implements SampleHandler {
     if (this.archiver.getSampleCount() > 0) {
       StringWriter sw = new StringWriter();
       ex.printStackTrace(new PrintWriter(sw, true));
-      logger.warn(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
-          LocalizedStrings.HostStatSampler_STATISTIC_ARCHIVER_SHUTTING_DOWN_BECAUSE__0, sw));
+      logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutting down because: {}", sw);
     }
     try {
       this.archiver.close();
     } catch (GemFireException ignore) {
       if (this.archiver.getSampleCount() > 0) {
-        logger.warn(LogMarker.STATISTICS_MARKER,
-            LocalizedMessage.create(
-                LocalizedStrings.HostStatSampler_STATISIC_ARCHIVER_SHUTDOWN_FAILED_BECAUSE__0,
-                ignore.getMessage()));
+        logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutdown failed because: {}",
+            ignore.getMessage());
       }
     }
     if (this.archiver.getSampleCount() == 0 && this.archiveId != -1) {
@@ -142,10 +137,8 @@ public class StatArchiveHandler implements SampleHandler {
         try {
           archiver.sampled(nanosTimeStamp, resourceInstances);
           if (archiver.getSampleCount() == 1) {
-            logger.info(LogMarker.STATISTICS_MARKER,
-                LocalizedMessage.create(
-                    LocalizedStrings.GemFireStatSampler_ARCHIVING_STATISTICS_TO__0_,
-                    archiver.getArchiveName()));
+            logger.info(LogMarker.STATISTICS_MARKER, "Archiving statistics to {}.",
+                archiver.getArchiveName());
           }
         } catch (IllegalArgumentException e) {
           logger.warn(LogMarker.STATISTICS_MARKER,
@@ -319,8 +312,7 @@ public class StatArchiveHandler implements SampleHandler {
       // disable archiving
       if (!this.disabledArchiving) {
         this.disabledArchiving = true;
-        logger.info(LogMarker.STATISTICS_MARKER, LocalizedMessage
-            .create(LocalizedStrings.GemFireStatSampler_DISABLING_STATISTIC_ARCHIVAL));
+        logger.info(LogMarker.STATISTICS_MARKER, "Disabling statistic archival.");
       }
     } else {
       this.disabledArchiving = false;
@@ -342,9 +334,8 @@ public class StatArchiveHandler implements SampleHandler {
               archiver.close();
             } catch (GemFireException ignore) {
               logger.warn(LogMarker.STATISTICS_MARKER,
-                  LocalizedMessage.create(
-                      LocalizedStrings.GemFireStatSampler_STATISTIC_ARCHIVE_CLOSE_FAILED_BECAUSE__0,
-                      ignore.getMessage()));
+                  "Statistic archive close failed because: {}",
+                  ignore.getMessage());
             }
           }
         }
@@ -358,11 +349,10 @@ public class StatArchiveHandler implements SampleHandler {
         }
         if (!newFile.renameTo(oldFile)) {
           logger.warn(LogMarker.STATISTICS_MARKER,
-              LocalizedMessage.create(LocalizedStrings.GemFireStatSampler_COULD_NOT_RENAME_0_TO_1,
-                  new Object[] {newFile, oldFile}));
+              "Could not rename {} to {}.",
+              new Object[] {newFile, oldFile});
         } else {
-          logger.info(LogMarker.STATISTICS_MARKER, LocalizedMessage.create(
-              LocalizedStrings.GemFireStatSampler_RENAMED_OLD_EXISTING_ARCHIVE_TO__0_, oldFile));
+          logger.info(LogMarker.STATISTICS_MARKER, "Renamed old existing archive to {}.", oldFile);
         }
       } else {
         if (!newFile.getAbsoluteFile().getParentFile().equals(archiveDir)) {
@@ -385,9 +375,8 @@ public class StatArchiveHandler implements SampleHandler {
         newArchiver.initialize(nanosTimeStamp);
       } catch (GemFireIOException ex) {
         logger.warn(LogMarker.STATISTICS_MARKER,
-            LocalizedMessage.create(
-                LocalizedStrings.GemFireStatSampler_COULD_NOT_OPEN_STATISTIC_ARCHIVE_0_CAUSE_1,
-                new Object[] {newFile, ex.getLocalizedMessage()}));
+            "Could not open statistic archive {}. Cause: {}",
+            new Object[] {newFile, ex.getLocalizedMessage()});
         throw ex;
       }
     }
@@ -410,9 +399,8 @@ public class StatArchiveHandler implements SampleHandler {
             archiver.close();
           } catch (GemFireException ignore) {
             logger.warn(LogMarker.STATISTICS_MARKER,
-                LocalizedMessage.create(
-                    LocalizedStrings.GemFireStatSampler_STATISTIC_ARCHIVE_CLOSE_FAILED_BECAUSE__0,
-                    ignore.getMessage()));
+                "Statistic archive close failed because: {}",
+                ignore.getMessage());
           }
           removeOldArchives(newFile, this.config.getArchiveDiskSpaceLimit());
         }

@@ -21,8 +21,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
@@ -91,10 +89,8 @@ public class LogWriterFactory {
 
     // log the config
     if (logConfig && !isLoner) {
-      logger.info(LogMarker.CONFIG_MARKER,
-          LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_STARTUP_CONFIGURATION_0,
-              config.toLoggerString()));
+      logger.info(LogMarker.CONFIG_MARKER, "Startup Configuration: {}",
+          config.toLoggerString());
     }
     return logger;
   }

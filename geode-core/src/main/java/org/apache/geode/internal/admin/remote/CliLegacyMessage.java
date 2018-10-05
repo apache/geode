@@ -17,9 +17,7 @@ package org.apache.geode.internal.admin.remote;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 
 /**
@@ -38,8 +36,8 @@ public abstract class CliLegacyMessage extends AdminRequest {
     try {
       response = createResponse(dm);
     } catch (Exception ex) {
-      logger.error(
-          LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, this.getClass()), ex);
+      logger.error("Error processing request " + this.getClass(),
+          ex);
       response = AdminFailureResponse.create(this.getSender(), ex);
 
     }
@@ -47,8 +45,7 @@ public abstract class CliLegacyMessage extends AdminRequest {
       response.setMsgId(this.getMsgId());
       dm.putOutgoing(response);
     } else {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AdminRequest_RESPONSE_TO__0__WAS_CANCELLED, this.getClass().getName()));
+      logger.info("Response to  {}  was cancelled.", this.getClass().getName());
     }
   }
 }

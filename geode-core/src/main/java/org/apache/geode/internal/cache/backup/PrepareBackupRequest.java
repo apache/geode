@@ -30,9 +30,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A request to from an admin VM to all non admin members to start a backup. In the prepare phase of
@@ -65,7 +63,7 @@ public class PrepareBackupRequest extends CliLegacyMessage {
       persistentIds = prepareBackupFactory
           .createPrepareBackup(dm.getDistributionManagerId(), dm.getCache(), properties).run();
     } catch (IOException | InterruptedException e) {
-      logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
+      logger.error(String.format("Error processing request %s.", getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
     }
     return prepareBackupFactory.createBackupResponse(getSender(), persistentIds);

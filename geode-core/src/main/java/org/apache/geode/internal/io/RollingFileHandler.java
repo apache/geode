@@ -16,7 +16,8 @@ package org.apache.geode.internal.io;
 
 import java.io.File;
 
-import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.LogWriter;
+
 
 /**
  * Defines the constants and methods for rolling files (logs and stat archives).
@@ -32,5 +33,5 @@ public interface RollingFileHandler {
   String formatId(final int id);
 
   void checkDiskSpace(final String type, final File newFile, final long spaceLimit, final File dir,
-      final LogWriterI18n logger);
+      final LogWriter logger);
 }

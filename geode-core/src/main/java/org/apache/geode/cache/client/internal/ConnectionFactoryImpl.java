@@ -31,9 +31,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.GemFireSecurityException;
@@ -115,9 +113,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       throw e;
     } catch (ServerRefusedConnectionException src) {
       // propagate this up, don't retry
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.AutoConnectionSourceImpl_COULD_NOT_CREATE_A_NEW_CONNECTION_TO_SERVER_0,
-          src.getMessage()));
+      logger.warn("Could not create a new connection to server: {}",
+          src.getMessage());
       testFailedConnectionToServer = true;
       throw src;
     } catch (Exception e) {
@@ -128,8 +125,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
           logger.debug("Unable to connect to {}: connection refused", location);
         }
       } else {// print a warning with the exception stack trace
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.ConnectException_COULD_NOT_CONNECT_TO_0, location), e);
+        logger.warn("Could not connect to: %s", location, e);
       }
       testFailedConnectionToServer = true;
     } finally {
@@ -234,8 +230,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
               srce);
         }
       } catch (Exception e) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.ConnectException_COULD_NOT_CONNECT_TO_0, server), e);
+        logger.warn(String.format("Could not connect to: %s", server), e);
       }
 
       excludedServers.add(server);

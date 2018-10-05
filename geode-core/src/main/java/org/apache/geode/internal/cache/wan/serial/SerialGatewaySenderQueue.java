@@ -67,9 +67,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
@@ -852,9 +850,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           && (smallestKeyGreaterThanHalfMax - largestKeyLessThanHalfMax) > MAXIMUM_KEY / 2) {
         this.headKey = smallestKeyGreaterThanHalfMax;
         this.tailKey.set(inc(largestKeyLessThanHalfMax));
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.SingleWriteSingleReadRegionQueue_0_DURING_FAILOVER_DETECTED_THAT_KEYS_HAVE_WRAPPED,
-            new Object[] {this, this.tailKey, Long.valueOf(this.headKey)}));
+        logger.info("{}: During failover, detected that keys have wrapped tailKey={} headKey={}",
+            new Object[] {this, this.tailKey, Long.valueOf(this.headKey)});
       } else {
         this.headKey = smallestKey == -1 ? 0 : smallestKey;
         this.tailKey.set(inc(largestKey));
@@ -961,21 +958,21 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           // Add overflow statistics to the mbean
           addOverflowStatisticsToMBean(gemCache, sender);
         } catch (IOException veryUnLikely) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-              this.getClass()), veryUnLikely);
+          logger.fatal(String.format("Unexpected Exception during init of %s",
+              this.getClass()),
+              veryUnLikely);
         } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-              this.getClass()), alsoUnlikely);
+          logger.fatal(String.format("Unexpected Exception during init of %s",
+              this.getClass()),
+              alsoUnlikely);
         }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, this.region);
         }
       } catch (CacheException e) {
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.SingleWriteSingleReadRegionQueue_0_THE_QUEUE_REGION_NAMED_1_COULD_NOT_BE_CREATED,
-            new Object[] {this, this.regionName}), e);
+        logger.fatal(String.format("%s: The queue region named %s could not be created",
+            new Object[] {this, this.regionName}),
+            e);
       }
     } else {
       throw new IllegalStateException(
@@ -1157,8 +1154,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           logger.debug("BatchRemovalThread exiting due to cancellation: " + e);
         }
       } finally {
-        logger.info(
-            LocalizedMessage.create(LocalizedStrings.HARegionQueue_THE_QUEUEREMOVALTHREAD_IS_DONE));
+        logger.info("The QueueRemovalThread is done.");
       }
     }
 
@@ -1179,8 +1175,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
       }
       if (this.isAlive()) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.HARegionQueue_QUEUEREMOVALTHREAD_IGNORED_CANCELLATION));
+        logger.warn("QueueRemovalThread ignored cancellation");
       }
     }
   }

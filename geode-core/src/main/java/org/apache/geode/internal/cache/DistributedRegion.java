@@ -82,7 +82,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -119,9 +118,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
@@ -197,16 +194,16 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (getDistributionManager().getConfig().getEnableNetworkPartitionDetection()
         && !isInternalRegion() && !attrs.getScope().isAck() && !doesNotDistribute()
         && attrs.getDataPolicy().withStorage()) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.DistributedRegion_REGION_0_1_SPLITBRAIN_CONFIG_WARNING,
-          new Object[] {regionName, attrs.getScope()}));
+      logger.warn(
+          "Region {} is being created with scope {} but enable-network-partition-detection is enabled in the distributed system.  This can lead to cache inconsistencies if there is a network failure.",
+          new Object[] {regionName, attrs.getScope()});
     }
     if (!getDistributionManager().getConfig().getEnableNetworkPartitionDetection()
         && attrs.getDataPolicy().withPersistence()
         && !loggedNetworkPartitionWarning.getAndSet(true)) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.DistributedRegion_REGION_0_ENABLE_NETWORK_PARTITION_WARNING,
-          new Object[] {regionName, attrs.getScope()}));
+      logger.warn(
+          "Creating persistent region {}, but enable-network-partition-detection is set to false. Running with network partition detection disabled can lead to an unrecoverable system in the event of a network split.",
+          regionName);
     }
 
     boolean setRequiresReliabilityCheck = attrs.getMembershipAttributes().hasRequiredRoles() &&
@@ -597,8 +594,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             return;
           Set roles = Collections.unmodifiableSet(new HashSet(this.missingRequiredRoles));
           throw new RegionAccessException(
-              LocalizedStrings.DistributedRegion_OPERATION_IS_DISALLOWED_BY_LOSSACTION_0_BECAUSE_THESE_REQUIRED_ROLES_ARE_MISSING_1
-                  .toLocalizedString(getMembershipAttributes().getLossAction(), roles),
+              String.format(
+                  "Operation is disallowed by LossAction %s because these required roles are missing: %s.",
+                  getMembershipAttributes().getLossAction(), roles),
               getFullPath(), roles);
         }
       }
@@ -623,8 +621,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           Set roles = Collections.unmodifiableSet(new HashSet(this.missingRequiredRoles));
           Assert.assertTrue(!roles.isEmpty());
           throw new RegionAccessException(
-              LocalizedStrings.DistributedRegion_OPERATION_IS_DISALLOWED_BY_LOSSACTION_0_BECAUSE_THESE_REQUIRED_ROLES_ARE_MISSING_1
-                  .toLocalizedString(getMembershipAttributes().getLossAction(), roles),
+              String.format(
+                  "Operation is disallowed by LossAction %s because these required roles are missing: %s.",
+                  getMembershipAttributes().getLossAction(), roles),
               getFullPath(), roles);
         }
       }
@@ -669,8 +668,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
 
       throw new RegionDistributionException(
-          LocalizedStrings.DistributedRegion_OPERATION_DISTRIBUTION_MAY_HAVE_FAILED_TO_NOTIFY_THESE_REQUIRED_ROLES_0
-              .toLocalizedString(failedRoles),
+          String.format("Operation distribution may have failed to notify these required roles: %s",
+              failedRoles),
           getFullPath(), failedRoles);
     }
   }
@@ -691,8 +690,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       MembershipAttributes ra = getMembershipAttributes();
       Set<Role> failedRoles = ra.getRequiredRoles();
       throw new RegionDistributionException(
-          LocalizedStrings.DistributedRegion_OPERATION_DISTRIBUTION_WAS_NOT_DONE_TO_THESE_REQUIRED_ROLES_0
-              .toLocalizedString(failedRoles),
+          String.format("Operation distribution was not done to these required roles: %s",
+              failedRoles),
           getFullPath(), failedRoles);
     }
     return true;
@@ -760,7 +759,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         asyncResumeReliability(id, newlyAcquiredRoles);
       }
     } catch (Exception e) {
-      logger.fatal(LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
+      logger.fatal("Unexpected exception:",
           e);
     }
     return async;
@@ -797,8 +796,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             }
           }
         } catch (Exception e) {
-          logger.fatal(
-              LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION), e);
+          logger.fatal("Unexpected exception:", e);
         }
       }
     });
@@ -866,7 +864,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     } catch (CancelException cce) {
       throw cce;
     } catch (Exception e) {
-      logger.fatal(LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
+      logger.fatal("Unexpected exception:",
           e);
     }
     return async;
@@ -878,7 +876,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (!isInitializing) {
         // moved code to a new thread.
         Thread thread = new Thread(
-            LocalizedStrings.DistributedRegion_RECONNECT_DISTRIBUTED_SYSTEM.toLocalizedString()) {
+            "Reconnect Distributed System") {
           @Override
           public void run() {
             try {
@@ -899,8 +897,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                 }
               }
             } catch (Exception e) {
-              logger.fatal(
-                  LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
+              logger.fatal("Unexpected exception:",
                   e);
             }
           }
@@ -925,7 +922,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     } catch (CancelException ignor) {
       throw ignor;
     } catch (Exception e) {
-      logger.fatal(LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION),
+      logger.fatal("Unexpected exception:",
           e);
     }
   }
@@ -992,8 +989,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     checkForLimitedOrNoAccess();
     if (!this.scope.isGlobal()) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedRegion_DISTRIBUTION_LOCKS_ARE_ONLY_SUPPORTED_FOR_REGIONS_WITH_GLOBAL_SCOPE_NOT_0
-              .toLocalizedString(this.scope));
+          String.format(
+              "Distribution locks are only supported for regions with GLOBAL scope, not  %s",
+              this.scope));
     }
     return new RegionDistributedLock();
   }
@@ -1005,13 +1003,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     checkForLimitedOrNoAccess();
     if (!this.scope.isGlobal()) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedRegion_DISTRIBUTION_LOCKS_ARE_ONLY_SUPPORTED_FOR_REGIONS_WITH_GLOBAL_SCOPE_NOT_0
-              .toLocalizedString(this.scope));
+          String.format(
+              "Distribution locks are only supported for regions with GLOBAL scope, not  %s",
+              this.scope));
     }
     if (isLockingSuspendedByCurrentThread()) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedRegion_THIS_THREAD_HAS_SUSPENDED_ALL_LOCKING_FOR_THIS_REGION
-              .toLocalizedString());
+          "This thread has suspended all locking for this region");
     }
     return new DistributedLock(key);
   }
@@ -1028,14 +1026,16 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           // called and this validation should be removed.
           if (sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
             throw new AsyncEventQueueConfigurationException(
-                LocalizedStrings.ParallelAsyncEventQueue_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
-                    .toLocalizedString(
-                        AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(sender.getId()),
-                        this.getFullPath()));
+                String.format(
+                    "Parallel Async Event Queue %s can not be used with replicated region %s",
+
+                    AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(sender.getId()),
+                    this.getFullPath()));
           } else {
             throw new GatewaySenderConfigurationException(
-                LocalizedStrings.ParallelGatewaySender_0_CAN_NOT_BE_USED_WITH_REPLICATED_REGION_1
-                    .toLocalizedString(sender.getId(), this.getFullPath()));
+                String.format(
+                    "Parallel gateway sender %s can not be used with replicated region %s",
+                    sender.getId(), this.getFullPath()));
           }
         }
       }
@@ -1120,8 +1120,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   private void getInitialImageAndRecovery(InputStream snapshotInputStream,
       InternalDistributedMember imageSrc, InternalRegionArguments internalRegionArgs,
       boolean recoverFromDisk, PersistentMemberID persistentId) throws TimeoutException {
-    logger.info(LocalizedMessage.create(LocalizedStrings.DistributedRegion_INITIALIZING_REGION_0,
-        this.getName()));
+    logger.info("Initializing region {}",
+        this.getName());
 
     ImageState imgState = getImageState();
     imgState.init();
@@ -1131,8 +1131,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
     if (recoverFromDisk && snapshotInputStream != null && !isForConversion) {
       throw new InternalGemFireError(
-          LocalizedStrings.DistributedRegion_IF_LOADING_A_SNAPSHOT_THEN_SHOULD_NOT_BE_RECOVERING_ISRECOVERING_0_SNAPSHOTSTREAM_1
-              .toLocalizedString(new Object[] {true, snapshotInputStream}));
+          String.format(
+              "if loading a snapshot, then should not be recovering; isRecovering= %s ,snapshotStream= %s",
+              new Object[] {true, snapshotInputStream}));
     }
 
     ProfileExchangeProcessor targetProvider;
@@ -1267,8 +1268,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         if (!isDestroyed()) {
           if (recoverFromDisk) {
             logger.info(
-                LocalizedMessage.create(LocalizedStrings.DistributedRegion_INITIALIZED_FROM_DISK,
-                    new Object[] {this.getFullPath(), persistentId, getPersistentID()}));
+                "Region {} recovered from the local disk. Old persistent ID: {}, new persistent ID {}",
+                new Object[] {this.getFullPath(), persistentId, getPersistentID()});
             if (persistentId != null) {
               RegionLogger.logRecovery(this.getFullPath(), persistentId,
                   getDistributionManager().getDistributionManagerId());
@@ -1280,9 +1281,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             if (getPersistentID() != null) {
               RegionLogger.logPersistence(this.getFullPath(),
                   getDistributionManager().getDistributionManagerId(), getPersistentID());
-              logger.info(LocalizedMessage.create(
-                  LocalizedStrings.DistributedRegion_NEW_PERSISTENT_REGION_CREATED,
-                  new Object[] {this.getFullPath(), getPersistentID()}));
+              logger.info("Region {} was created on this member with the persistent id {}.",
+                  new Object[] {this.getFullPath(), getPersistentID()});
             }
           }
 
@@ -1496,8 +1496,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           throw e;
         }
       } catch (Exception e) {
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.DistributedRegion_UNEXPECTED_EXCEPTION), e);
+        logger.fatal("Unexpected exception:", e);
       }
 
     }
@@ -1558,8 +1557,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
     // "Initializing region {0}" which is not acompanied by a completed message. Users think thread
     // is stuck in some operation. Hence adding this log
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.DistributedRegion_INITIALIZING_REGION_COMPLETED_0, this.getName()));
+    logger.info("Initialization of region {} completed", this.getName());
   }
 
   @Override
@@ -1723,8 +1721,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (!event.getOperation().isDistributed() && getScope().isDistributed()
         && getDataPolicy().withReplication()) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedRegion_NOT_ALLOWED_TO_DO_A_LOCAL_INVALIDATION_ON_A_REPLICATED_REGION
-              .toLocalizedString());
+          "Not allowed to do a local invalidation on a replicated region");
     }
     if (shouldDistributeInvalidateRegion(event)) {
       distributeInvalidateRegion(event);
@@ -1813,8 +1810,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       if (event.isLocalInvalid() && !event.getOperation().isLocal() && getScope().isDistributed()
           && getDataPolicy().withReplication()) {
         throw new IllegalStateException(
-            LocalizedStrings.DistributedRegion_NOT_ALLOWED_TO_DO_A_LOCAL_INVALIDATION_ON_A_REPLICATED_REGION
-                .toLocalizedString());
+            "Not allowed to do a local invalidation on a replicated region");
       }
       if (this.requiresOneHopForMissingEntry(event)) {
         // bug #45704: see if a one-hop must be done for this operation
@@ -2116,8 +2112,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   void basicLocalClear(RegionEventImpl rEvent) {
     if (getScope().isDistributed() && getDataPolicy().withReplication()) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.DistributedRegion_LOCALCLEAR_IS_NOT_SUPPORTED_ON_DISTRIBUTED_REPLICATED_REGIONS
-              .toLocalizedString());
+          "localClear is not supported on distributed replicated regions.");
     }
     super.basicLocalClear(rEvent);
   }
@@ -2228,8 +2223,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     checkForLimitedOrNoAccess();
     if (!this.scope.isGlobal()) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedRegion_DISTRIBUTION_LOCKS_ARE_ONLY_SUPPORTED_FOR_REGIONS_WITH_GLOBAL_SCOPE_NOT_0
-              .toLocalizedString(this.scope));
+          String.format(
+              "Distribution locks are only supported for regions with GLOBAL scope, not  %s",
+              this.scope));
     }
 
     DistributedLockService svc = getLockService();
@@ -2513,9 +2509,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           logger.debug("DLS destroy abridged due to shutdown", e);
         }
       } catch (Exception ex) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DistributedRegion_DLS_DESTROY_MAY_HAVE_FAILED_FOR_0,
-            this.getFullPath()), ex);
+        logger.warn("DLS destroy may have failed for " +
+            this.getFullPath(),
+            ex);
       }
     }
     waitForCurrentOperations();
@@ -2534,7 +2530,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         getDistributionAdvisor().waitForCurrentOperations();
       } catch (Exception e) {
         // log this but try to close the region so that listeners are invoked
-        logger.warn(LocalizedMessage.create(LocalizedStrings.GemFireCache_0_ERROR_CLOSING_REGION_1,
+        logger.warn(String.format("%s: error closing region %s",
             new Object[] {this, getFullPath()}), e);
       }
     }
@@ -2570,9 +2566,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
               // error condition, so you also need to check to see if the JVM
               // is still usable:
               SystemFailure.checkFailure();
-              logger.error(
-                  LocalizedMessage.create(
-                      LocalizedStrings.DistributedRegion_EXCEPTION_OCCURRED_IN_REGIONMEMBERSHIPLISTENER),
+              logger.error("Exception occurred in RegionMembershipListener",
                   t);
             }
           }
@@ -2613,8 +2607,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.DistributedRegion_ERROR_CLEANING_UP_FAILED_INITIALIZATION, this), t);
+      logger.warn("Error cleaning up after failed region initialization of region " + this,
+          t);
     }
   }
 
@@ -2714,18 +2708,20 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
     if (!senderIds.isEmpty()) {
       throw new GatewaySenderConfigurationException(
-          LocalizedStrings.Region_REGION_0_HAS_1_GATEWAY_SENDER_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_GATEWAY_SENDER_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_GATEWAY_SENDER_IDS_SHOULD_BE_SAME
-              .toLocalizedString(
-                  new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
+          String.format(
+              "Region %s has %s gateway sender IDs. Another cache has same region with %s gateway sender IDs. For region across all members, gateway sender ids should be same.",
+
+              new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
     }
 
     List<Set<String>> asycnQueueIds = this.getCacheDistributionAdvisor()
         .adviseSameAsyncEventQueueIds(getVisibleAsyncEventQueueIds());
     if (!asycnQueueIds.isEmpty()) {
       throw new GatewaySenderConfigurationException(
-          LocalizedStrings.Region_REGION_0_HAS_1_ASYNC_EVENT_QUEUE_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_QUEUE_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_ASYNC_EVENT_QUEUE_IDS_SHOULD_BE_SAME
-              .toLocalizedString(
-                  new Object[] {this.getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)}));
+          String.format(
+              "Region %s has %s AsyncEvent queue IDs. Another cache has same region with %s AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.",
+
+              new Object[] {this.getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)}));
     }
   }
 
@@ -2757,7 +2753,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       long start = System.currentTimeMillis();
       long timeLeft = getCache().getLockTimeout();
       long lockTimeout = timeLeft;
-      StringId msg = null;
+      String msg = null;
       Object[] msgArgs = null;
       while (timeLeft > 0 || lockTimeout == -1) {
         this.cache.getCancelCriterion().checkCancelInProgress(null);
@@ -2765,8 +2761,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         try {
           Lock dlock = getDistributedLock(key);
           if (!dlock.tryLock(timeLeft, TimeUnit.SECONDS)) {
-            msg =
-                LocalizedStrings.DistributedRegion_ATTEMPT_TO_ACQUIRE_DISTRIBUTED_LOCK_FOR_0_FAILED_AFTER_WAITING_1_SECONDS;
+            msg = "Attempt to acquire distributed lock for %s failed after waiting %s seconds.";
             msgArgs = new Object[] {key, (System.currentTimeMillis() - start) / 1000L};
             break;
           }
@@ -2786,11 +2781,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         }
       } // while
       if (msg == null) {
-        msg =
-            LocalizedStrings.DistributedRegion_TIMED_OUT_AFTER_WAITING_0_SECONDS_FOR_THE_DISTRIBUTED_LOCK_FOR_1;
+        msg = "Timed out after waiting %s seconds for the distributed lock for %s.";
         msgArgs = new Object[] {getCache().getLockTimeout(), key};
       }
-      throw new TimeoutException(msg.toLocalizedString(msgArgs));
+      throw new TimeoutException(String.format(msg, msgArgs));
     } else {
       return null;
     }
@@ -3115,9 +3109,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                     && lockHolder.equals(remoteToken.getLessee())) {
                   if (!severeAlertIssued) {
                     severeAlertIssued = true;
-                    logger.fatal(LocalizedMessage.create(
-                        LocalizedStrings.DistributedRegion_0_SECONDS_HAVE_ELAPSED_WAITING_FOR_GLOBAL_REGION_ENTRY_LOCK_HELD_BY_1,
-                        new Object[] {ackWaitThreshold + ackSAThreshold, lockHolder}));
+                    logger.fatal(
+                        "{} seconds have elapsed waiting for global region entry lock held by {}",
+                        ackWaitThreshold + ackSAThreshold, lockHolder);
                   }
                 } else {
                   // the lock holder has changed
@@ -3158,7 +3152,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     @Override
     public Condition newCondition() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.DistributedRegion_NEWCONDITION_UNSUPPORTED.toLocalizedString());
+          "newCondition unsupported");
     }
   }
 
@@ -3223,7 +3217,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     @Override
     public Condition newCondition() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.DistributedRegion_NEWCONDITION_UNSUPPORTED.toLocalizedString());
+          "newCondition unsupported");
     }
   }
 
@@ -3271,7 +3265,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (op.removeAllDataSize > 0) {
       token = op.startOperation();
     } else {
-      getCache().getLoggerI18n().fine("DR.postRemoveAll: no data to distribute");
+      getCache().getLogger().fine("DR.postRemoveAll: no data to distribute");
     }
     return token;
   }
@@ -3315,8 +3309,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
     if (!getMembershipAttributes().hasRequiredRoles()) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedRegion_REGION_HAS_NOT_BEEN_CONFIGURED_WITH_REQUIRED_ROLES
-              .toLocalizedString());
+          "Region has not been configured with required roles.");
     }
     if (!this.isMissingRequiredRoles) { // should we delete this check?
       if (logger.isDebugEnabled()) {
@@ -3632,8 +3625,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       target = getRandomReplicate();
       if (target == null) {
         throw new FunctionException(
-            LocalizedStrings.DistributedRegion_NO_REPLICATED_REGION_FOUND_FOR_EXECUTING_FUNCTION_0
-                .toLocalizedString(function.getId()));
+            String.format("No Replicated Region found for executing function : %s.",
+                function.getId()));
       }
     }
     final LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);

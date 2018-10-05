@@ -75,7 +75,6 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.partitioned.PRTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -361,7 +360,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
           return mo.tsMessageProcessed >= 1;
         });
         assertTrue("Tombstone GC message is not expected.", mo.thName.contains(
-            LocalizedStrings.DistributionManager_POOLED_MESSAGE_PROCESSOR.toLocalizedString()));
+            "Pooled Message Processor "));
       });
 
     } finally {

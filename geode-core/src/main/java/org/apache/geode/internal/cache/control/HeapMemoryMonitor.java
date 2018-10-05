@@ -48,10 +48,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.internal.statistics.StatisticsManager;
@@ -117,8 +115,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     tenuredMemoryPoolMXBean = matchingMemoryPoolMXBean;
 
     if (tenuredMemoryPoolMXBean == null) {
-      logger.error(LocalizedMessage.create(LocalizedStrings.HeapMemoryMonitor_NO_POOL_FOUND_POOLS_0,
-          getAllMemoryPoolNames()));
+      logger.error("No tenured pools found.  Known pools are: {}",
+          getAllMemoryPoolNames());
     }
   }
 
@@ -212,8 +210,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       return tenuredMemoryPoolMXBean;
     }
 
-    throw new IllegalStateException(LocalizedStrings.HeapMemoryMonitor_NO_POOL_FOUND_POOLS_0
-        .toLocalizedString(getAllMemoryPoolNames()));
+    throw new IllegalStateException(String.format("No tenured pools found.  Known pools are: %s",
+        getAllMemoryPoolNames()));
   }
 
   /**
@@ -378,18 +376,17 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       // Do some basic sanity checking on the new threshold
       if (criticalThreshold > 100.0f || criticalThreshold < 0.0f) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GT_ZERO_AND_LTE_100
-                .toLocalizedString());
+            "Critical percentage must be greater than 0.0 and less than or equal to 100.0.");
       }
       if (getTenuredMemoryPoolMXBean() == null) {
-        throw new IllegalStateException(LocalizedStrings.HeapMemoryMonitor_NO_POOL_FOUND_POOLS_0
-            .toLocalizedString(getAllMemoryPoolNames()));
+        throw new IllegalStateException(
+            String.format("No tenured pools found.  Known pools are: %s",
+                getAllMemoryPoolNames()));
       }
       if (criticalThreshold != 0 && this.thresholds.isEvictionThresholdEnabled()
           && criticalThreshold <= this.thresholds.getEvictionThreshold()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GTE_EVICTION_PERCENTAGE
-                .toLocalizedString());
+            "Critical percentage must be greater than the eviction percentage.");
       }
 
       this.cache.setQueryMonitorRequiredForResourceManager(criticalThreshold != 0);
@@ -429,18 +426,17 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       // Do some basic sanity checking on the new threshold
       if (evictionThreshold > 100.0f || evictionThreshold < 0.0f) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryThresholds_EVICTION_PERCENTAGE_GT_ZERO_AND_LTE_100
-                .toLocalizedString());
+            "Eviction percentage must be greater than 0.0 and less than or equal to 100.0.");
       }
       if (getTenuredMemoryPoolMXBean() == null) {
-        throw new IllegalStateException(LocalizedStrings.HeapMemoryMonitor_NO_POOL_FOUND_POOLS_0
-            .toLocalizedString(getAllMemoryPoolNames()));
+        throw new IllegalStateException(
+            String.format("No tenured pools found.  Known pools are: %s",
+                getAllMemoryPoolNames()));
       }
       if (evictionThreshold != 0 && this.thresholds.isCriticalThresholdEnabled()
           && evictionThreshold >= this.thresholds.getCriticalThreshold()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.MemoryMonitor_EVICTION_PERCENTAGE_LTE_CRITICAL_PERCENTAGE
-                .toLocalizedString());
+            "Eviction percentage must be less than the critical percentage.");
       }
 
       this.thresholds = new MemoryThresholds(this.thresholds.getMaxMemoryBytes(),
@@ -587,9 +583,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     }
 
     final long usageThreshold = memoryPoolMXBean.getUsageThreshold();
-    this.cache.getLoggerI18n().info(
-        LocalizedStrings.HeapMemoryMonitor_OVERRIDDING_MEMORYPOOLMXBEAN_HEAP_0_NAME_1,
-        new Object[] {usageThreshold, memoryPoolMXBean.getName()});
+    this.cache.getLogger().info(
+        String.format("Overridding MemoryPoolMXBean heap threshold bytes %s on pool %s",
+            new Object[] {usageThreshold, memoryPoolMXBean.getName()}));
 
     MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
     NotificationEmitter emitter = (NotificationEmitter) mbean;
@@ -668,29 +664,29 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     }
 
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()) {
-      this.cache.getLoggerI18n().error(
-          LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD,
-          new Object[] {event.getMember(), "heap"});
+      this.cache.getLogger().error(
+          String.format("Member: %s above %s critical threshold",
+              new Object[] {event.getMember(), "heap"}));
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
         this.cache.getQueryMonitor().setLowMemory(true, event.getBytesUsed());
         this.cache.getQueryMonitor().cancelAllQueriesDueToMemory();
       }
 
     } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()) {
-      this.cache.getLoggerI18n().error(
-          LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD,
-          new Object[] {event.getMember(), "heap"});
+      this.cache.getLogger().error(
+          String.format("Member: %s below %s critical threshold",
+              new Object[] {event.getMember(), "heap"}));
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
         this.cache.getQueryMonitor().setLowMemory(false, event.getBytesUsed());
       }
     }
 
     if (event.getState().isEviction() && !event.getPreviousState().isEviction()) {
-      this.cache.getLoggerI18n().info(LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_HIGH_THRESHOLD,
-          new Object[] {event.getMember(), "heap"});
+      this.cache.getLogger().info(String.format("Member: %s above %s eviction threshold",
+          new Object[] {event.getMember(), "heap"}));
     } else if (!event.getState().isEviction() && event.getPreviousState().isEviction()) {
-      this.cache.getLoggerI18n().info(LocalizedStrings.MemoryMonitor_MEMBER_BELOW_HIGH_THRESHOLD,
-          new Object[] {event.getMember(), "heap"});
+      this.cache.getLogger().info(String.format("Member: %s below %s eviction threshold",
+          new Object[] {event.getMember(), "heap"}));
     }
 
     if (logger.isDebugEnabled()) {
@@ -722,8 +718,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        this.cache.getLoggerI18n()
-            .error(LocalizedStrings.MemoryMonitor_EXCEPTION_OCCURRED_WHEN_NOTIFYING_LISTENERS, t);
+        this.cache.getLogger()
+            .error("Exception occurred when notifying listeners ", t);
       }
     }
   }
@@ -784,8 +780,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       Set<DistributedMember> criticalMembersFrom = getHeapCriticalMembersFrom(memberSet);
       if (!criticalMembersFrom.isEmpty()) {
         return new LowMemoryException(
-            LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
-                .toLocalizedString(function.getId(), criticalMembersFrom),
+            String.format(
+                "Function: %s cannot be executed because the members %s are running low on memory",
+                function.getId(), criticalMembersFrom),
             criticalMembersFrom);
       }
     }
@@ -842,8 +839,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         }
       } catch (RejectedExecutionException ignore) {
         if (!HeapMemoryMonitor.this.resourceManager.isClosed()) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS));
+          logger.warn("No memory events will be delivered because of RejectedExecutionException");
         }
       } catch (CacheClosedException ignore) {
         // nothing to do

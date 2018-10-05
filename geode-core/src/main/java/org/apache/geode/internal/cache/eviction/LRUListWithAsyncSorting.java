@@ -27,11 +27,9 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
@@ -147,8 +145,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
       }
 
       if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
-        logger.trace(LogMarker.LRU_CLOCK_VERBOSE, LocalizedMessage
-            .create(LocalizedStrings.NewLRUClockHand_RETURNING_UNUSED_ENTRY, evictionNode));
+        logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "returning unused entry: {}", evictionNode);
       }
       if (evictionNode.isRecentlyUsed()) {
         scanIfNeeded();

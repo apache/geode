@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class represents the data given for binding an overflow mechanism to a client subscription.
@@ -57,8 +56,8 @@ public class ClientHaQueueCreation {
   public String getOverflowDirectory() {
     if (this.getDiskStoreName() != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"getOverflowDirectory", this.getDiskStoreName()}));
+          String.format("Deprecated API %s cannot be used with DiskStore %s",
+              new Object[] {"getOverflowDirectory", this.getDiskStoreName()}));
     }
     return this.overflowDirectory;
   }
@@ -69,8 +68,8 @@ public class ClientHaQueueCreation {
   public void setOverflowDirectory(String overflowDirectory) {
     if (this.getDiskStoreName() != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"setOverflowDirectory", this.getDiskStoreName()}));
+          String.format("Deprecated API %s cannot be used with DiskStore %s",
+              new Object[] {"setOverflowDirectory", this.getDiskStoreName()}));
     }
     this.overflowDirectory = overflowDirectory;
     setHasOverflowDirectory(true);
@@ -84,8 +83,8 @@ public class ClientHaQueueCreation {
   public void setDiskStoreName(String diskStoreName) {
     if (hasOverflowDirectory()) {
       throw new IllegalStateException(
-          LocalizedStrings.DiskStore_Deprecated_API_0_Cannot_Mix_With_DiskStore_1
-              .toLocalizedString(new Object[] {"setDiskStoreName", this.getDiskStoreName()}));
+          String.format("Deprecated API %s cannot be used with DiskStore %s",
+              new Object[] {"setDiskStoreName", this.getDiskStoreName()}));
     }
     this.diskStoreName = diskStoreName;
   }

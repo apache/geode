@@ -67,7 +67,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -707,8 +706,7 @@ public class InternalDistributedSystemJUnitTest {
     new DistributionConfigImpl(props, false);
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-            .getRawText());
+        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -720,8 +718,7 @@ public class InternalDistributedSystemJUnitTest {
 
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-            .getRawText());
+        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -733,8 +730,7 @@ public class InternalDistributedSystemJUnitTest {
 
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-            .getRawText());
+        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -746,8 +742,7 @@ public class InternalDistributedSystemJUnitTest {
 
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_SET_INVALID_DEPRECATED_SSL_SET
-            .getRawText());
+        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
   }
 
   private Properties getCommonProperties() {

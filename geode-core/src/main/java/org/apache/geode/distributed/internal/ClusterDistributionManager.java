@@ -65,7 +65,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
@@ -76,11 +75,9 @@ import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
@@ -573,13 +570,12 @@ public class ClusterDistributionManager implements DistributionManager {
           // Well we didn't hear back from anyone else. We assume that
           // we're the first one.
           if (distributionManager.getOtherDistributionManagerIds().size() == 0) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.DistributionManager_DIDNT_HEAR_BACK_FROM_ANY_OTHER_SYSTEM_I_AM_THE_FIRST_ONE));
+            logger.info("Did not hear back from any other system. I am the first one.");
           } else if (transport.isMcastEnabled()) {
             // perform a multicast ping test
             if (!distributionManager.testMulticast()) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.DistributionManager_RECEIVED_NO_STARTUP_RESPONSES_BUT_OTHER_MEMBERS_EXIST_MULTICAST_IS_NOT_RESPONSIVE));
+              logger.warn(
+                  "Did not receive a startup response but other members exist.  Multicast does not seem to be working.");
             }
           }
         }
@@ -587,8 +583,7 @@ public class ClusterDistributionManager implements DistributionManager {
         Thread.currentThread().interrupt();
         // This is ALWAYS bad; don't consult a CancelCriterion.
         throw new InternalGemFireException(
-            LocalizedStrings.DistributionManager_INTERRUPTED_WHILE_WAITING_FOR_FIRST_STARTUPRESPONSEMESSAGE
-                .toLocalizedString(),
+            "Interrupted while waiting for first StartupResponseMessage",
             ex);
       } catch (IncompatibleSystemException ex) {
         logger.fatal(ex.getMessage(), ex);
@@ -606,9 +601,8 @@ public class ClusterDistributionManager implements DistributionManager {
             ((distributionManager.getDMType() == ADMIN_ONLY_DM_TYPE) ? " (admin only)"
                 : (distributionManager.getDMType() == LOCATOR_DM_TYPE) ? " (locator)" : "")};
         logger.info(LogMarker.DM_MARKER,
-            LocalizedMessage.create(
-                LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGER_0_STARTED_ON_1_THERE_WERE_2_OTHER_DMS_3_4_5,
-                logArgs));
+            "DistributionManager {} started on {}. There were {} other DMs. others: {} {} {}",
+            logArgs);
 
         MembershipLogger.logStartup(distributionManager.getDistributionManagerId());
       }
@@ -720,7 +714,7 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             };
             Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_SERIAL_MESSAGE_PROCESSOR.toLocalizedString());
+                "Serial Message Processor");
             thread.setDaemon(true);
             return thread;
           }
@@ -750,7 +744,7 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             };
             Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_VIEW_MESSAGE_PROCESSOR.toLocalizedString());
+                "View Message Processor");
             thread.setDaemon(true);
             return thread;
           }
@@ -788,7 +782,7 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             };
             Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_POOLED_MESSAGE_PROCESSOR.toLocalizedString()
+                "Pooled Message Processor "
                     + (next++));
             thread.setDaemon(true);
             return thread;
@@ -828,8 +822,8 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             };
             Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_POOLED_HIGH_PRIORITY_MESSAGE_PROCESSOR
-                    .toLocalizedString() + (next++));
+                "Pooled High Priority Message Processor "
+                    + (next++));
             thread.setDaemon(true);
             return thread;
           }
@@ -861,8 +855,8 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             };
             Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_POOLED_WAITING_MESSAGE_PROCESSOR
-                    .toLocalizedString() + (next++));
+                "Pooled Waiting Message Processor "
+                    + (next++));
             thread.setDaemon(true);
             return thread;
           }
@@ -900,8 +894,8 @@ public class ClusterDistributionManager implements DistributionManager {
               }
             };
             Thread thread = new Thread(group, r,
-                LocalizedStrings.DistributionManager_PR_META_DATA_CLEANUP_MESSAGE_PROCESSOR
-                    .toLocalizedString() + (next++));
+                "PrMetaData cleanup Message Processor "
+                    + (next++));
             thread.setDaemon(true);
             return thread;
           }
@@ -1024,10 +1018,9 @@ public class ClusterDistributionManager implements DistributionManager {
 
       sb.append(" ms)");
 
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.DistributionManager_STARTING_DISTRIBUTIONMANAGER_0_1,
+      logger.info("Starting DistributionManager {}. {}",
           new Object[] {this.localAddress,
-              (logger.isInfoEnabled(LogMarker.DM_MARKER) ? sb.toString() : "")}));
+              (logger.isInfoEnabled(LogMarker.DM_MARKER) ? sb.toString() : "")});
 
       this.description = "Distribution manager on " + this.localAddress + " started at "
           + (new Date(System.currentTimeMillis())).toString();
@@ -1122,8 +1115,7 @@ public class ClusterDistributionManager implements DistributionManager {
       if (isCloseInProgress()) {
         logger.debug("Caught unusual exception during shutdown: {}", t.getMessage(), t);
       } else {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.DistributionManager_TASK_FAILED_WITH_EXCEPTION), t);
+        logger.warn("Task failed with exception", t);
       }
     }
   }
@@ -1185,9 +1177,8 @@ public class ClusterDistributionManager implements DistributionManager {
     if (member != getDistributionManagerId()) {
       String relationship = areInSameZone(getDistributionManagerId(), member) ? "" : "not ";
       Object[] logArgs = new Object[] {member, relationship};
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGER_MEMBER_0_IS_1_EQUIVALENT,
-          logArgs));
+      logger.info("Member {} is {} equivalent or in the same redundancy zone.",
+          logArgs);
     }
   }
 
@@ -1259,9 +1250,8 @@ public class ClusterDistributionManager implements DistributionManager {
 
       // And the distinguished guests today are...
       NetView v = membershipManager.getView();
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.DistributionManager_INITIAL_MEMBERSHIPMANAGER_VIEW___0,
-          String.valueOf(v)));
+      logger.info("Initial (distribution manager) view, {}",
+          String.valueOf(v));
 
       // Add them all to our view
       for (InternalDistributedMember internalDistributedMember : v.getMembers()) {
@@ -1270,7 +1260,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
     } catch (Exception ex) {
       throw new InternalGemFireException(
-          LocalizedStrings.DistributionManager_COULD_NOT_PROCESS_INITIAL_VIEW.toLocalizedString(),
+          "Could not process initial view",
           ex);
     }
     try {
@@ -1295,8 +1285,7 @@ public class ClusterDistributionManager implements DistributionManager {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.DistributionManager_UNCAUGHT_EXCEPTION_CALLING_READYFORMESSAGES), t);
+      logger.fatal("Uncaught exception calling readyForMessages", t);
     }
   }
 
@@ -1659,8 +1648,8 @@ public class ClusterDistributionManager implements DistributionManager {
         handleManagerStartup(member);
         break;
       default:
-        throw new InternalGemFireError(LocalizedStrings.DistributionManager_UNKNOWN_MEMBER_TYPE_0
-            .toLocalizedString(Integer.valueOf(vmType)));
+        throw new InternalGemFireError(String.format("Unknown member type:  %s",
+            Integer.valueOf(vmType)));
     }
   }
 
@@ -1711,11 +1700,10 @@ public class ClusterDistributionManager implements DistributionManager {
     // [bruce] log shutdown at info level and with ID to balance the
     // "Starting" message. recycleConn.conf is hard to debug w/o this
     final String exceptionStatus = (this.exceptionInThreads()
-        ? LocalizedStrings.DistributionManager_AT_LEAST_ONE_EXCEPTION_OCCURRED.toLocalizedString()
+        ? "At least one Exception occurred."
         : "");
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.DistributionManager_SHUTTING_DOWN_DISTRIBUTIONMANAGER_0_1,
-        new Object[] {this.localAddress, exceptionStatus}));
+    logger.info("Shutting down DistributionManager {}. {}",
+        new Object[] {this.localAddress, exceptionStatus});
 
     final long start = System.currentTimeMillis();
     try {
@@ -1740,8 +1728,8 @@ public class ClusterDistributionManager implements DistributionManager {
           }
         };
         final Thread t = new Thread(threadGroup, r,
-            LocalizedStrings.DistributionManager_SHUTDOWN_MESSAGE_THREAD_FOR_0
-                .toLocalizedString(this.localAddress));
+            String.format("Shutdown Message Thread for %s",
+                this.localAddress));
         t.start();
         boolean interrupted = Thread.interrupted();
         try {
@@ -1749,9 +1737,7 @@ public class ClusterDistributionManager implements DistributionManager {
         } catch (final InterruptedException e) {
           interrupted = true;
           t.interrupt();
-          logger.warn(
-              LocalizedMessage.create(
-                  LocalizedStrings.DistributionManager_INTERRUPTED_SENDING_SHUTDOWN_MESSAGE_TO_PEERS),
+          logger.warn("Interrupted sending shutdown message to peers",
               e);
         } finally {
           if (interrupted) {
@@ -1761,8 +1747,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
         if (t.isAlive()) {
           t.interrupt();
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.DistributionManager_FAILED_SENDING_SHUTDOWN_MESSAGE_TO_PEERS_TIMEOUT));
+          logger.warn("Failed sending shutdown message to peers (timeout)");
         }
       }
 
@@ -1772,8 +1757,7 @@ public class ClusterDistributionManager implements DistributionManager {
         this.uncleanShutdown(false);
       } finally {
         final Long delta = Long.valueOf(System.currentTimeMillis() - start);
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.DistributionManager_DISTRIBUTIONMANAGER_STOPPED_IN_0_MS, delta));
+        logger.info("DistributionManager stopped in {}ms.", delta);
       }
     }
   }
@@ -1876,8 +1860,7 @@ public class ClusterDistributionManager implements DistributionManager {
     if (t == null)
       return;
     if (t.isAlive()) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.DistributionManager_FORCING_THREAD_STOP_ON__0_, t));
+      logger.warn("Forcing thread stop on < {} >", t);
 
       // Start by being nice.
       t.interrupt();
@@ -1896,8 +1879,7 @@ public class ClusterDistributionManager implements DistributionManager {
       }
 
       if (t.isAlive()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DistributionManager_CLOBBERTHREAD_THREAD_REFUSED_TO_DIE__0, t));
+        logger.warn("Thread refused to die: {}", t);
       }
     }
   }
@@ -1980,15 +1962,13 @@ public class ClusterDistributionManager implements DistributionManager {
         Thread.currentThread().interrupt();
         // Desperation, the shutdown thread is being killed. Don't
         // consult a CancelCriterion.
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.DistributionManager_INTERRUPTED_DURING_SHUTDOWN), e);
+        logger.warn("Interrupted during shutdown", e);
         break;
       }
     } // for
 
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.DistributionManager_DAEMON_THREADS_ARE_SLOW_TO_STOP_CULPRITS_INCLUDE_0,
-        culprits));
+    logger.warn("Daemon threads are slow to stop; culprits include: {}",
+        culprits);
 
     // Kill with no mercy
     if (this.serialThread != null) {
@@ -2079,9 +2059,8 @@ public class ClusterDistributionManager implements DistributionManager {
         }
       } finally {
         if (this.membershipManager != null) {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.DistributionManager_NOW_CLOSING_DISTRIBUTION_FOR__0,
-              this.localAddress));
+          logger.info("Now closing distribution for {}",
+              this.localAddress);
           this.membershipManager.disconnect(beforeJoined);
         }
       }
@@ -2221,8 +2200,7 @@ public class ClusterDistributionManager implements DistributionManager {
               logger.trace("MemberEventInvoker: InterruptedException during shutdown");
             }
           } else {
-            logger.warn(LocalizedMessage
-                .create(LocalizedStrings.DistributionManager_UNEXPECTED_INTERRUPTEDEXCEPTION), e);
+            logger.warn("Unexpected InterruptedException", e);
           }
           break;
         } catch (DistributedSystemDisconnectedException e) {
@@ -2233,14 +2211,12 @@ public class ClusterDistributionManager implements DistributionManager {
               logger.trace("MemberEventInvoker: cancelled");
             }
           } else {
-            logger.warn(LocalizedMessage
-                .create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
+            logger.warn("Unexpected cancellation", e);
           }
           break;
         } catch (Exception e) {
           logger.fatal(
-              LocalizedMessage.create(
-                  LocalizedStrings.DistributionManager_UNCAUGHT_EXCEPTION_PROCESSING_MEMBER_EVENT),
+              "Uncaught exception processing member event",
               e);
         }
       } // for
@@ -2275,9 +2251,8 @@ public class ClusterDistributionManager implements DistributionManager {
   public void close() {
     if (!closed) {
       this.shutdown();
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.DistributionManager_MARKING_DISTRIBUTIONMANAGER_0_AS_CLOSED,
-          this.localAddress));
+      logger.info("Marking DistributionManager {} as closed.",
+          this.localAddress);
       MembershipLogger.logShutdown(this.localAddress);
       closed = true;
     }
@@ -2287,8 +2262,7 @@ public class ClusterDistributionManager implements DistributionManager {
   public void throwIfDistributionStopped() {
     if (this.shutdownMsgSent) {
       throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.DistributionManager_MESSAGE_DISTRIBUTION_HAS_TERMINATED
-              .toLocalizedString(),
+          "Message distribution has terminated",
           this.getRootCause());
     }
   }
@@ -2303,8 +2277,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public void addAdminConsole(InternalDistributedMember theId) {
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.DistributionManager_NEW_ADMINISTRATION_MEMBER_DETECTED_AT_0, theId));
+    logger.info("New administration member detected at {}.", theId);
     synchronized (this.adminConsolesLock) {
       HashSet<InternalDistributedMember> tmp = new HashSet<>(this.adminConsoles);
       tmp.add(theId);
@@ -2424,8 +2397,7 @@ public class ClusterDistributionManager implements DistributionManager {
           enforceUniqueZone());
     } catch (Exception re) {
       throw new SystemConnectException(
-          LocalizedStrings.DistributionManager_ONE_OR_MORE_PEERS_GENERATED_EXCEPTIONS_DURING_CONNECTION_ATTEMPT
-              .toLocalizedString(),
+          "One or more peers generated exceptions during connection attempt",
           re);
     }
     if (this.rejectionMessage != null) {
@@ -2446,8 +2418,8 @@ public class ClusterDistributionManager implements DistributionManager {
         if (unresponsiveCount != 0) {
           if (Boolean.getBoolean("DistributionManager.requireAllStartupResponses")) {
             throw new SystemConnectException(
-                LocalizedStrings.DistributionManager_NO_STARTUP_REPLIES_FROM_0
-                    .toLocalizedString(unfinishedStartups));
+                String.format("No startup replies from:  %s",
+                    unfinishedStartups));
           }
         }
       } // synchronized
@@ -2469,9 +2441,10 @@ public class ClusterDistributionManager implements DistributionManager {
             printStacks(allOthers, false);
           }
           throw new SystemConnectException(
-              LocalizedStrings.DistributionManager_RECEIVED_NO_CONNECTION_ACKNOWLEDGMENTS_FROM_ANY_OF_THE_0_SENIOR_CACHE_MEMBERS_1
-                  .toLocalizedString(
-                      new Object[] {Integer.toString(allOthers.size()), sb.toString()}));
+              String.format(
+                  "Received no connection acknowledgments from any of the  %s  senior cache members:  %s",
+
+                  new Object[] {Integer.toString(allOthers.size()), sb.toString()}));
         } // and none responded
       } // there exist others
 
@@ -2485,9 +2458,9 @@ public class ClusterDistributionManager implements DistributionManager {
             unresponsiveElder = unfinishedStartups.contains(e);
         }
         if (unresponsiveElder) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.DistributionManager_FORCING_AN_ELDER_JOIN_EVENT_SINCE_A_STARTUP_RESPONSE_WAS_NOT_RECEIVED_FROM_ELDER__0_,
-              e));
+          logger.warn(
+              "Forcing an elder join event since a startup response was not received from elder {}.",
+              e);
           handleManagerStartup(e);
         }
       } // an elder exists
@@ -2538,20 +2511,19 @@ public class ClusterDistributionManager implements DistributionManager {
         return; // not yet done with startup
       if (!unfinishedStartups.remove(m))
         return;
-      StringId msg = null;
+      String msg = null;
       if (departed) {
         msg =
-            LocalizedStrings.DistributionManager_STOPPED_WAITING_FOR_STARTUP_REPLY_FROM_0_BECAUSE_THE_PEER_DEPARTED_THE_VIEW;
+            "Stopped waiting for startup reply from <{}> because the peer departed the view.";
       } else {
         msg =
-            LocalizedStrings.DistributionManager_STOPPED_WAITING_FOR_STARTUP_REPLY_FROM_0_BECAUSE_THE_REPLY_WAS_FINALLY_RECEIVED;
+            "Stopped waiting for startup reply from <{}> because the reply was finally received.";
       }
-      logger.info(LocalizedMessage.create(msg, m));
+      logger.info(msg, m);
       int numLeft = unfinishedStartups.size();
       if (numLeft != 0) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.DistributionManager_STILL_AWAITING_0_RESPONSES_FROM_1,
-            new Object[] {Integer.valueOf(numLeft), unfinishedStartups}));
+        logger.info("Still awaiting {} response(s) from: {}.",
+            new Object[] {Integer.valueOf(numLeft), unfinishedStartups});
       }
     } // synchronized
   }
@@ -2675,9 +2647,8 @@ public class ClusterDistributionManager implements DistributionManager {
     if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
       this.stats.incNodes(1);
     }
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.DistributionManager_ADMITTING_MEMBER_0_NOW_THERE_ARE_1_NONADMIN_MEMBERS,
-        new Object[] {theId, Integer.valueOf(tmp.size())}));
+    logger.info("Admitting member <{}>. Now there are {} non-admin member(s).",
+        theId, tmp.size());
     addMemberEvent(new MemberJoinedEvent(theId));
   }
 
@@ -2714,9 +2685,8 @@ public class ClusterDistributionManager implements DistributionManager {
     for (MembershipListener listener : allMembershipListeners) {
       listener.memberJoined(this, theId);
     }
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.DistributionManager_DMMEMBERSHIP_ADMITTING_NEW_ADMINISTRATION_MEMBER__0_,
-        theId));
+    logger.info("DMMembership: Admitting new administration member < {} >.",
+        theId);
     // Note that we don't add the member to the list of admin consoles until
     // we receive a message from them.
   }
@@ -2795,13 +2765,13 @@ public class ClusterDistributionManager implements DistributionManager {
       }
     }
     if (removedConsole) {
-      StringId msg = null;
+      String msg = null;
       if (crashed) {
-        msg = LocalizedStrings.DistributionManager_ADMINISTRATION_MEMBER_AT_0_CRASHED_1;
+        msg = "Administration member at {} crashed: {}";
       } else {
-        msg = LocalizedStrings.DistributionManager_ADMINISTRATION_MEMBER_AT_0_CLOSED_1;
+        msg = "Administration member at {} closed: {}";
       }
-      logger.info(LocalizedMessage.create(msg, new Object[] {theId, reason}));
+      logger.info(msg, new Object[] {theId, reason});
     }
 
     redundancyZones.remove(theId);
@@ -2810,7 +2780,7 @@ public class ClusterDistributionManager implements DistributionManager {
   void shutdownMessageReceived(InternalDistributedMember theId, String reason) {
     this.membershipManager.shutdownMessageReceived(theId, reason);
     handleManagerDeparture(theId, false,
-        LocalizedStrings.ShutdownMessage_SHUTDOWN_MESSAGE_RECEIVED.toLocalizedString());
+        "shutdown message received");
   }
 
   @Override
@@ -2836,17 +2806,17 @@ public class ClusterDistributionManager implements DistributionManager {
       if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
         this.stats.incNodes(-1);
       }
-      StringId msg;
+      String msg;
       if (p_crashed && !isCloseInProgress()) {
         msg =
-            LocalizedStrings.DistributionManager_MEMBER_AT_0_UNEXPECTEDLY_LEFT_THE_DISTRIBUTED_CACHE_1;
+            "Member at {} unexpectedly left the distributed cache: {}";
         addMemberEvent(new MemberCrashedEvent(theId, p_reason));
       } else {
         msg =
-            LocalizedStrings.DistributionManager_MEMBER_AT_0_GRACEFULLY_LEFT_THE_DISTRIBUTED_CACHE_1;
+            "Member at {} gracefully left the distributed cache: {}";
         addMemberEvent(new MemberDepartedEvent(theId, p_reason));
       }
-      logger.info(LocalizedMessage.create(msg, new Object[] {theId, prettifyReason(p_reason)}));
+      logger.info(msg, new Object[] {theId, prettifyReason(p_reason)});
 
       // Remove this manager from the serialQueueExecutor.
       if (this.serialQueuedExecutorPool != null) {
@@ -2912,10 +2882,9 @@ public class ClusterDistributionManager implements DistributionManager {
         stats.incSentMessagesTime(DistributionStats.getStatTime() - startTime);
       }
     } catch (CancelException e) {
-      logger.debug("CancelException caught sending shutdown: {}", e.getMessage(), e);
+      logger.debug(String.format("CancelException caught sending shutdown: %s", e.getMessage()), e);
     } catch (Exception ex2) {
-      logger.fatal(LocalizedMessage
-          .create(LocalizedStrings.DistributionManager_WHILE_SENDING_SHUTDOWN_MESSAGE), ex2);
+      logger.fatal("While sending shutdown message", ex2);
     } finally {
       // Even if the message wasn't sent, *lie* about it, so that
       // everyone believes that message distribution is done.
@@ -2943,8 +2912,8 @@ public class ClusterDistributionManager implements DistributionManager {
       case REGION_FUNCTION_EXECUTION_EXECUTOR:
         return getFunctionExecutor();
       default:
-        throw new InternalGemFireError(LocalizedStrings.DistributionManager_UNKNOWN_PROCESSOR_TYPE
-            .toLocalizedString(processorType));
+        throw new InternalGemFireError(String.format("unknown processor type %s",
+            processorType));
     }
   }
 
@@ -3011,9 +2980,8 @@ public class ClusterDistributionManager implements DistributionManager {
         receiver = message.getRecipientsDescription();
       }
 
-      logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.DistributionManager_WHILE_PUSHING_MESSAGE_0_TO_1,
-              new Object[] {message, receiver}),
+      logger.fatal(String.format("While pushing message <%s> to %s",
+          new Object[] {message, receiver}),
           ex);
       if (message == null || message.forAll())
         return null;
@@ -3035,8 +3003,7 @@ public class ClusterDistributionManager implements DistributionManager {
       DistributionMessage content, ClusterDistributionManager dm, DistributionStats stats)
       throws NotSerializableException {
     if (membershipManager == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.DistributionChannel_ATTEMPTING_A_SEND_TO_A_DISCONNECTED_DISTRIBUTIONMANAGER));
+      logger.warn("Attempting a send to a disconnected DistributionManager");
       if (destinations.length == 1 && destinations[0] == DistributionMessage.ALL_RECIPIENTS)
         return null;
       HashSet<InternalDistributedMember> result = new HashSet<>();
@@ -3066,7 +3033,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public InternalDistributedMember getElderId() throws DistributedSystemDisconnectedException {
-
     return clusterElderManager.getElderId();
   }
 
@@ -3165,15 +3131,13 @@ public class ClusterDistributionManager implements DistributionManager {
     if (agent != null) {
       if (this.agent != null) {
         throw new IllegalStateException(
-            LocalizedStrings.DistributionManager_THERE_IS_ALREADY_AN_ADMIN_AGENT_ASSOCIATED_WITH_THIS_DISTRIBUTION_MANAGER
-                .toLocalizedString());
+            "There is already an Admin Agent associated with this distribution manager.");
       }
 
     } else {
       if (this.agent == null) {
         throw new IllegalStateException(
-            LocalizedStrings.DistributionManager_THERE_WAS_NEVER_AN_ADMIN_AGENT_ASSOCIATED_WITH_THIS_DISTRIBUTION_MANAGER
-                .toLocalizedString());
+            "There was never an Admin Agent associated with this distribution manager.");
       }
     }
     this.agent = agent;
@@ -3561,9 +3525,8 @@ public class ClusterDistributionManager implements DistributionManager {
         if (!isUsed) {
           if (logger.isInfoEnabled(LogMarker.DM_MARKER))
             logger.info(LogMarker.DM_MARKER,
-                LocalizedMessage.create(
-                    LocalizedStrings.DistributionManager_MARKING_THE_SERIALQUEUEDEXECUTOR_WITH_ID__0__USED_BY_THE_MEMBER__1__TO_BE_UNUSED,
-                    new Object[] {queueId, member}));
+                "Marking the SerialQueuedExecutor with id : {} used by the member {} to be unused.",
+                new Object[] {queueId, member});
 
           threadMarkedForUse.add(queueId);
         }
@@ -3705,8 +3668,7 @@ public class ClusterDistributionManager implements DistributionManager {
               logger.trace("MemberEventInvoker: cancelled");
             }
           } else {
-            logger.warn(LocalizedMessage
-                .create(LocalizedStrings.DistributionManager_UNEXPECTED_CANCELLATION), e);
+            logger.warn("Unexpected cancellation", e);
           }
           break;
         } catch (VirtualMachineError err) {
@@ -3721,9 +3683,9 @@ public class ClusterDistributionManager implements DistributionManager {
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.DistributionManager_EXCEPTION_WHILE_CALLING_MEMBERSHIP_LISTENER_FOR_EVENT__0,
-              this), t);
+          logger.warn(String.format("Exception while calling membership listener for event: %s",
+              this),
+              t);
         }
       }
     }
@@ -4082,12 +4044,12 @@ public class ClusterDistributionManager implements DistributionManager {
     InternalCache result = this.cache;
     if (result == null) {
       throw new CacheClosedException(
-          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+          "A cache has not yet been created.");
     }
     result.getCancelCriterion().checkCancelInProgress(null);
     if (result.isClosed()) {
       throw result.getCacheClosedException(
-          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+          "The cache has been closed.", null);
     }
     return result;
   }
@@ -4107,8 +4069,8 @@ public class ClusterDistributionManager implements DistributionManager {
       // remove call to validateDM() to fix bug 38356
 
       if (dm.shutdownMsgSent) {
-        return LocalizedStrings.DistributionManager__0_MESSAGE_DISTRIBUTION_HAS_TERMINATED
-            .toLocalizedString(dm.toString());
+        return String.format("%s: Message distribution has terminated",
+            dm.toString());
       }
       if (dm.rootCause != null) {
         return dm.toString() + ": " + dm.rootCause.getMessage();

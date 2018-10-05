@@ -67,9 +67,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
@@ -304,7 +302,7 @@ public abstract class AbstractRegionMap
   public void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat) {
     if (regionEntry.isTombstone() && getEntryMap().get(key) == regionEntry) {
       logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE),
+          "Internal product error: attempt to directly remove a versioned tombstone from region entry map",
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }
@@ -322,7 +320,7 @@ public abstract class AbstractRegionMap
     boolean success = false;
     if (regionEntry.isTombstone() && getEntryMap().get(key) == regionEntry) {
       logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE),
+          "Internal product error: attempt to directly remove a versioned tombstone from region entry map",
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }

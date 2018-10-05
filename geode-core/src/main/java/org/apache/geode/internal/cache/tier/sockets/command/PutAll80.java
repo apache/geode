@@ -44,8 +44,6 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -107,8 +105,7 @@ public class PutAll80 extends BaseCommand {
 
       if (regionName == null) {
         String putAllMsg =
-            LocalizedStrings.PutAll_THE_INPUT_REGION_NAME_FOR_THE_PUTALL_REQUEST_IS_NULL
-                .toLocalizedString();
+            "The input region name for the putAll request is null";
         logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
         errMessage.append(putAllMsg);
         writeChunkedErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
@@ -170,8 +167,7 @@ public class PutAll80 extends BaseCommand {
         key = keyPart.getStringOrObject();
         if (key == null) {
           String putAllMsg =
-              LocalizedStrings.PutAll_ONE_OF_THE_INPUT_KEYS_FOR_THE_PUTALL_REQUEST_IS_NULL
-                  .toLocalizedString();
+              "One of the input keys for the putAll request is null";
           logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
           errMessage.append(putAllMsg);
           writeChunkedErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR,
@@ -183,8 +179,7 @@ public class PutAll80 extends BaseCommand {
         valuePart = clientMessage.getPart(BASE_PART_COUNT + i * 2 + 1);
         if (valuePart.isNull()) {
           String putAllMsg =
-              LocalizedStrings.PutAll_ONE_OF_THE_INPUT_VALUES_FOR_THE_PUTALL_REQUEST_IS_NULL
-                  .toLocalizedString();
+              "One of the input values for the putAll request is null";
           logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
           errMessage.append(putAllMsg);
           writeChunkedErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR,
@@ -313,7 +308,7 @@ public class PutAll80 extends BaseCommand {
       // If an exception occurs during the put, preserve the connection
       writeChunkedException(clientMessage, ce, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
-      logger.warn(LocalizedMessage.create(LocalizedStrings.Generic_0_UNEXPECTED_EXCEPTION,
+      logger.warn(String.format("%s: Unexpected Exception",
           serverConnection.getName()), ce);
       return;
     } finally {

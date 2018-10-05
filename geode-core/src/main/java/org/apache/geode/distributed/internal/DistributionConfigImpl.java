@@ -88,8 +88,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -1028,8 +1026,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     for (SecurableCommunicationChannel securableCommunicationChannel : sslEnabledComponents) {
       if (!isAliasCorrectlyConfiguredForComponents(securableCommunicationChannel)) {
         throw new IllegalArgumentException(
-            LocalizedStrings.AbstractDistributionConfig_SSL_ENABLED_COMPONENTS_INVALID_ALIAS_OPTIONS
-                .toLocalizedString());
+            "The alias options for the SSL options provided seem to be invalid. Please check that all required aliases are set");
       }
     }
   }
@@ -1599,7 +1596,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         properties.load(url.openStream());
       } catch (IOException io) {
         throw new GemFireIOException(
-            LocalizedStrings.DistributionConfigImpl_FAILED_READING_0.toLocalizedString(url), io);
+            String.format("Failed reading  %s", url), io);
       }
     }
   }
