@@ -125,10 +125,7 @@ public class TXFarSideCMTracker {
   }
 
   boolean foundTxInProgress(TXCommitMessage message) {
-    if (null != message && message.isProcessing()) {
-      return true;
-    }
-    return false;
+    return null != message && message.isProcessing();
   }
 
   boolean foundFromHistory(Object key) {

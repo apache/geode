@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,19 +42,19 @@ public class TXCommitMessageTest {
         mock(TXCommitMessage.CommitProcessQueryMessage.class);
     HashSet farSiders = mock(HashSet.class);
     TXCommitMessage message = spy(new TXCommitMessage());
-    doReturn(dm).when(message).getDm();
+    doReturn(dm).when(message).getDistributionManager();
     when(dm.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     doReturn(member).when(message).getSender();
     doReturn(false).when(message).isProcessing();
-    doReturn(processor).when(message).createReplyProcessor(message);
+    doReturn(processor).when(message).createReplyProcessor();
     doReturn(farSiders).when(message).getFarSiders();
-    doReturn(queryMessage).when(message).createQueryMessage(message, processor);
+    doReturn(queryMessage).when(message).createQueryMessage(processor);
     when(farSiders.isEmpty()).thenReturn(false);
 
     message.memberDeparted(manager, member, false);
 
-    verify(dm).putOutgoing(queryMessage);
-    verify(processor).waitForRepliesUninterruptibly();
+    verify(dm, timeout(60000)).putOutgoing(queryMessage);
+    verify(processor, timeout(60000)).waitForRepliesUninterruptibly();
   }
 
 }

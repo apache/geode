@@ -1978,7 +1978,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     if (!getSender().equals(id)) {
       return;
     }
-    getDm().removeMembershipListener(this);
+    getDistributionManager().removeMembershipListener(this);
 
     synchronized (this) {
       if (isProcessing() || this.departureNoticed) {
@@ -2044,20 +2044,18 @@ public class TXCommitMessage extends PooledDistributionMessage
     return farSiders;
   }
 
-  DistributionManager getDm() {
+  DistributionManager getDistributionManager() {
     return dm;
   }
 
   void doCommitProcessQuery(final InternalDistributedMember id) {
-    final TXCommitMessage message = TXCommitMessage.this;
-
-    CommitProcessQueryReplyProcessor replyProcessor = createReplyProcessor(message);
-    CommitProcessQueryMessage queryMessage = createQueryMessage(message, replyProcessor);
-    queryMessage.setRecipients(message.farSiders);
-    message.getDm().putOutgoing(queryMessage);
+    CommitProcessQueryReplyProcessor replyProcessor = createReplyProcessor();
+    CommitProcessQueryMessage queryMessage = createQueryMessage(replyProcessor);
+    queryMessage.setRecipients(this.farSiders);
+    getDistributionManager().putOutgoing(queryMessage);
     // Wait for any one positive response or all negative responses.
     // (while() loop removed for bug 36983 - you can't loop on waitForReplies()
-    message.getDm().getCancelCriterion().checkCancelInProgress(null);
+    getDistributionManager().getCancelCriterion().checkCancelInProgress(null);
     try {
       replyProcessor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
@@ -2067,33 +2065,32 @@ public class TXCommitMessage extends PooledDistributionMessage
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Transaction associated with lockID: {} from orign {} is processing due to a received \"commit process\" message",
-            message.lockId, id);
+            lockId, id);
       }
 
       try {
         // Set processor to zero to avoid the ack to the now departed origin
-        message.processorId = 0;
-        message.basicProcess();
+        processorId = 0;
+        basicProcess();
       } finally {
-        txTracker.processed(message);
+        txTracker.processed(this);
       }
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Transaction associated with lockID: {} from origin {} ignored.  No other recipients received \"commit process\" message",
-            message.lockId, id);
+            lockId, id);
       }
-      txTracker.removeMessage(message);
+      txTracker.removeMessage(this);
     }
   }
 
-  CommitProcessQueryReplyProcessor createReplyProcessor(TXCommitMessage message) {
-    return new CommitProcessQueryReplyProcessor(message.dm, message.farSiders);
+  CommitProcessQueryReplyProcessor createReplyProcessor() {
+    return new CommitProcessQueryReplyProcessor(dm, farSiders);
   }
 
-  CommitProcessQueryMessage createQueryMessage(TXCommitMessage message,
-      CommitProcessQueryReplyProcessor replProc) {
-    return new CommitProcessQueryMessage(message.getTrackerKey(), replProc.getProcessorId());
+  CommitProcessQueryMessage createQueryMessage(CommitProcessQueryReplyProcessor replyProcessor) {
+    return new CommitProcessQueryMessage(getTrackerKey(), replyProcessor.getProcessorId());
   }
 
   private DistributedMember getMemberFromTrackerKey(Object trackerKey) {
