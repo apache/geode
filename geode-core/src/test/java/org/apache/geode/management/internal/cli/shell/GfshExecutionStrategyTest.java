@@ -17,14 +17,17 @@ package org.apache.geode.management.internal.cli.shell;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -40,6 +43,9 @@ public class GfshExecutionStrategyTest {
   private static final String COMMAND1_SUCCESS = "Command1 Executed successfully";
   private static final String COMMAND2_SUCCESS = "Command2 Executed successfully";
   private static final String COMMAND3_SUCCESS = "Command3 Executed successfully";
+  private static final String COMMAND4_SUCCESS = "Command4 Executed successfully";
+
+  private static final String AFTER_INTERCEPTION_MESSAGE = "After Interception";
 
   private Gfsh gfsh;
   private GfshParseResult parsedCommand;
@@ -100,6 +106,24 @@ public class GfshExecutionStrategyTest {
     assertThat(result.nextLine().trim()).isEqualTo(COMMAND2_SUCCESS);
   }
 
+  @Test
+  public void resolveInterceptorClassName() throws Exception {
+    when(parsedCommand.getMethod())
+        .thenReturn(Commands.class.getDeclaredMethod("interceptedCommand"));
+    when(parsedCommand.getInstance()).thenReturn(new Commands());
+    when(gfsh.isConnectedAndReady()).thenReturn(true);
+    OperationInvoker invoker = mock(OperationInvoker.class);
+
+    Result interceptedResult = new Commands().interceptedCommand();
+    String jsonResult = CommandResponseBuilder.createCommandResponseJson("memberName",
+        (CommandResult) interceptedResult);
+    when(invoker.processCommand(any(CommandRequest.class))).thenReturn(jsonResult);
+    when(gfsh.getOperationInvoker()).thenReturn(invoker);
+    Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
+    assertThat(result.nextLine().trim()).isEqualTo(COMMAND4_SUCCESS);
+    Mockito.verify(parsedCommand, times(1)).setUserInput(AFTER_INTERCEPTION_MESSAGE);
+  }
+
   /**
    * represents class for dummy methods
    */
@@ -117,6 +141,25 @@ public class GfshExecutionStrategyTest {
     @CliMetaData(shellOnly = false)
     public Result onlineCommand() {
       return ResultBuilder.createInfoResult(COMMAND2_SUCCESS);
+    }
+
+    @CliMetaData(shellOnly = false,
+        interceptor = "org.apache.geode.management.internal.cli.shell.GfshExecutionStrategyTest$TestInterceptor")
+    public Result interceptedCommand() {
+      return ResultBuilder.createInfoResult(COMMAND4_SUCCESS);
+    }
+  }
+
+  /*
+   * Test interceptor for use in the interceptedCommand
+   */
+  public static class TestInterceptor extends AbstractCliAroundInterceptor {
+
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+
+      parseResult.setUserInput(AFTER_INTERCEPTION_MESSAGE);
+      return ResultBuilder.createInfoResult("Interceptor Result");
     }
   }
 }

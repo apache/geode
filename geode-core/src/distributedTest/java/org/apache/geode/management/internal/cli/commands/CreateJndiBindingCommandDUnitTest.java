@@ -61,7 +61,7 @@ public class CreateJndiBindingCommandDUnitTest {
 
     // create the binding
     gfsh.executeAndAssertThat(
-        "create jndi-binding --name=jndi1 --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"")
+        "create jndi-binding --name=jndi1 --username=myuser --password=mypass --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1", "server-2");
 
     // verify cluster config is updated
@@ -69,10 +69,14 @@ public class CreateJndiBindingCommandDUnitTest {
       InternalConfigurationPersistenceService ccService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration configuration = ccService.getConfiguration("cluster");
-      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+      String xmlContent = configuration.getCacheXmlContent();
+
+      Document document = XmlUtils.createDocumentFromXml(xmlContent);
       NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
 
-      assertThat(jndiBindings.getLength()).isGreaterThan(0);
+      assertThat(jndiBindings.getLength()).isEqualTo(1);
+      assertThat(xmlContent).contains("user-name=\"myuser\"");
+      assertThat(xmlContent).contains("password=\"mypass\"");
 
       boolean found = false;
       for (int i = 0; i < jndiBindings.getLength(); i++) {
