@@ -14,26 +14,24 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.Locator;
@@ -41,8 +39,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -51,85 +47,78 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 @Category(LoggingTest.class)
 public class LocatorLogFileIntegrationTest {
 
-  private static final int TIMEOUT_MILLISECONDS = 180 * 1000; // 2 minutes
-  private static final int INTERVAL_MILLISECONDS = 100; // 100 milliseconds
+  private File logFile;
+  private String logFileName;
+  private File securityLogFile;
 
+  private int port;
   private Locator locator;
-  private FileInputStream fis;
 
   @Rule
-  public TestName name = new TestName();
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void setUp() {
+    logFile = new File(temporaryFolder.getRoot(),
+        testName.getMethodName() + "-system-" + System.currentTimeMillis() + ".log");
+    logFileName = logFile.getAbsolutePath();
+
+    securityLogFile = new File("");
+
+    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+  }
 
   @After
   public void tearDown() throws Exception {
     if (locator != null) {
       locator.stop();
-      locator = null;
-    }
-    if (fis != null) {
-      fis.close();
     }
   }
 
   @Test
   public void testLocatorCreatesLogFile() throws Exception {
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locators = "localhost[" + port + "]";
+    Properties config = new Properties();
+    config.put(LOG_LEVEL, "config");
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "localhost[" + port + "]");
+    config.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-    final Properties properties = new Properties();
-    properties.put(LOG_LEVEL, "config");
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, locators);
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    locator = Locator.startLocatorAndDS(port, logFile, config);
 
-    final File logFile = new File(name.getMethodName() + "-locator-" + port + ".log");
-    if (logFile.exists()) {
-      logFile.delete();
+    InternalDistributedSystem system = (InternalDistributedSystem) locator.getDistributedSystem();
+
+    await().atMost(5, MINUTES).untilAsserted(() -> assertThat(logFile).exists());
+
+    // assertThat logFile is not empty
+    try (FileInputStream fis = new FileInputStream(logFile)) {
+      assertThat(fis.available()).isGreaterThan(0);
     }
-    assertFalse(logFile.exists());
 
-    locator = Locator.startLocatorAndDS(port, logFile, properties);
+    DistributionConfig distributionConfig = system.getConfig();
 
-    InternalDistributedSystem ds = (InternalDistributedSystem) locator.getDistributedSystem();
-    assertNotNull(ds);
-    DistributionConfig config = ds.getConfig();
-    assertNotNull(config);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.CONFIG_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(config.getLogLevel()),
-        InternalLogWriter.CONFIG_LEVEL, config.getLogLevel());
+    assertThat(distributionConfig.getLogLevel())
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
+    assertThat(distributionConfig.getSecurityLogLevel())
+        .isEqualTo(LogWriterLevel.CONFIG.getLogWriterLevel());
 
-    // CONFIG has been replaced with INFO -- all CONFIG statements are now logged at INFO as well
-    InternalLogWriter logWriter = (InternalLogWriter) ds.getLogWriter();
-    assertNotNull(logWriter);
-    assertTrue(logWriter instanceof LogWriterLogger);
-    assertEquals(
-        "Expected " + LogWriterImpl.levelToString(InternalLogWriter.INFO_LEVEL) + " but was "
-            + LogWriterImpl.levelToString(logWriter.getLogWriterLevel()),
-        InternalLogWriter.INFO_LEVEL, logWriter.getLogWriterLevel());
+    assertThat(distributionConfig.getLogFile().getAbsolutePath()).isEqualTo(logFileName);
+    assertThat(distributionConfig.getSecurityLogFile().getAbsolutePath())
+        .isEqualTo(securityLogFile.getAbsolutePath());
 
-    assertNotNull(locator);
-    Wait.waitForCriterion(new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return logFile.exists();
-      }
+    assertThat(system.getLogWriter()).isInstanceOf(LogWriterLogger.class);
+    assertThat(system.getSecurityLogWriter()).isInstanceOf(LogWriterLogger.class);
 
-      @Override
-      public String description() {
-        return "waiting for log file to exist: " + logFile;
-      }
-    }, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
-    assertTrue(logFile.exists());
-    // assert not empty
-    fis = new FileInputStream(logFile);
-    assertTrue(fis.available() > 0);
-    locator.stop();
-    locator = null;
-    fis.close();
-    fis = null;
+    LogWriterLogger logWriterLogger = (LogWriterLogger) system.getLogWriter();
+    LogWriterLogger securityLogWriterLogger = (LogWriterLogger) system.getSecurityLogWriter();
+
+    assertThat(logWriterLogger.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+    assertThat(securityLogWriterLogger.getLogWriterLevel())
+        .isEqualTo(LogWriterLevel.INFO.getLogWriterLevel());
+
+    assertThat(securityLogFile).doesNotExist();
   }
 }
